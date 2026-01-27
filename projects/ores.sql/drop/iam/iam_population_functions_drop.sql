@@ -28,8 +28,8 @@
 set schema 'production';
 
 -- Permissions
-drop function if exists public.upsert_permission(text, text);
+drop function if exists production.upsert_permission(text, text);
 
 -- Roles
-drop function if exists public.upsert_role(text, text, text);
-drop function if exists public.assign_permission_to_role(text, text, text);
+drop function if exists production.upsert_role(text, text, text);
+drop function if exists production.assign_permission_to_role(text, text, text);

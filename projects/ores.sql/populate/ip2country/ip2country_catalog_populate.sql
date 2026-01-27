@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- IP Geolocation Catalog ---'
 
-select public.upsert_dq_catalogs(
+select metadata.upsert_dq_catalogs(
     'IP Geolocation',
     'IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.',
     'Reference Data Team'

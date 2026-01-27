@@ -34,19 +34,19 @@ set schema 'metadata';
 
 \echo '--- Dataset Bundles ---'
 
-select public.upsert_dq_dataset_bundle(
+select metadata.upsert_dq_dataset_bundle(
     'solvaris',
     'Solvaris',
     'Synthetic reference data for development and testing - an isolated fantasy world with its own countries, currencies, and reference data.'
 );
 
-select public.upsert_dq_dataset_bundle(
+select metadata.upsert_dq_dataset_bundle(
     'base',
     'Base System',
     'Industry-standard reference data (ISO + FpML) for production use. Includes country codes, currency codes, and financial market standards.'
 );
 
-select public.upsert_dq_dataset_bundle(
+select metadata.upsert_dq_dataset_bundle(
     'crypto',
     'Crypto',
     'Base System plus cryptocurrency reference data. Extends the production dataset with cryptocurrency symbols and icons.'

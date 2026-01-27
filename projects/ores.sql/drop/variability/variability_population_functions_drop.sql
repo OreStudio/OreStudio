@@ -28,4 +28,4 @@
 set schema 'production';
 
 -- Feature Flags
-drop function if exists public.upsert_system_flag(text, boolean, text);
+drop function if exists production.upsert_system_flag(text, boolean, text);

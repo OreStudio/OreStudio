@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- IP Geolocation Methodologies ---'
 
-select public.upsert_dq_methodologies(
+select metadata.upsert_dq_methodologies(
     'iptoasn.com IP to Country Database',
     'IPv4 ranges mapped to country codes from iptoasn.com',
     'https://iptoasn.com/',

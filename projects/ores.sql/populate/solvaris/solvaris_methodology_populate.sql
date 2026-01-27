@@ -26,7 +26,7 @@ set schema 'metadata';
 
 \echo '--- Data Quality Slovaris Methodologies ---'
 
-select public.upsert_dq_methodologies(
+select metadata.upsert_dq_methodologies(
     'OreStudio Code Generation Methodology',
     'Methodology for generating artefact files using the OreStudio code generator',
     'https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen',

@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- Cryptocurrency Catalog ---'
 
-select public.upsert_dq_catalogs(
+select metadata.upsert_dq_catalogs(
     'Cryptocurrency',
     'Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.',
     'Digital Assets Team'

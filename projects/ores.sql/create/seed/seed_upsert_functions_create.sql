@@ -75,7 +75,7 @@ $$ language plpgsql;
 /**
  * Upsert a data domain (e.g., Reference Data, Trade Data, Market Data).
  */
-create or replace function public.upsert_dq_data_domains(
+create or replace function metadata.upsert_dq_data_domains(
     p_name text,
     p_description text
 ) returns void as $$
@@ -108,7 +108,7 @@ $$ language plpgsql;
 /**
  * Upsert a subject area within a data domain.
  */
-create or replace function public.upsert_dq_subject_areas(
+create or replace function metadata.upsert_dq_subject_areas(
     p_domain_name text,
     p_name text,
     p_description text
@@ -143,7 +143,7 @@ $$ language plpgsql;
 /**
  * Upsert a data quality catalog (grouping of related datasets).
  */
-create or replace function public.upsert_dq_catalogs(
+create or replace function metadata.upsert_dq_catalogs(
     p_name text,
     p_description text,
     p_owner text default null
@@ -173,7 +173,7 @@ $$ language plpgsql;
 /**
  * Upsert a dataset dependency (declares load order between datasets).
  */
-create or replace function public.upsert_dq_dataset_dependency(
+create or replace function metadata.upsert_dq_dataset_dependency(
     p_dataset_code text,
     p_dependency_code text,
     p_role text
@@ -211,7 +211,7 @@ $$ language plpgsql;
 /**
  * Upsert an origin dimension (Primary, Derived).
  */
-create or replace function public.upsert_dq_origin_dimensions(
+create or replace function metadata.upsert_dq_origin_dimensions(
     p_code text,
     p_name text,
     p_description text
@@ -241,7 +241,7 @@ $$ language plpgsql;
 /**
  * Upsert a nature dimension (Actual, Synthetic, Mock).
  */
-create or replace function public.upsert_dq_nature_dimensions(
+create or replace function metadata.upsert_dq_nature_dimensions(
     p_code text,
     p_name text,
     p_description text
@@ -271,7 +271,7 @@ $$ language plpgsql;
 /**
  * Upsert a treatment dimension (Raw, Masked, Anonymized).
  */
-create or replace function public.upsert_dq_treatment_dimensions(
+create or replace function metadata.upsert_dq_treatment_dimensions(
     p_code text,
     p_name text,
     p_description text
@@ -305,7 +305,7 @@ $$ language plpgsql;
 /**
  * Upsert a change reason category (system, common, trade).
  */
-create or replace function public.upsert_change_reason_category(
+create or replace function metadata.upsert_change_reason_category(
     p_code text,
     p_description text
 ) returns void as $$
@@ -334,7 +334,7 @@ $$ language plpgsql;
 /**
  * Upsert a change reason with full configuration.
  */
-create or replace function public.upsert_change_reason(
+create or replace function metadata.upsert_change_reason(
     p_code text,
     p_description text,
     p_category_code text,
@@ -374,7 +374,7 @@ $$ language plpgsql;
 /**
  * Upsert a coding scheme authority type (official, industry, internal).
  */
-create or replace function public.upsert_dq_coding_scheme_authority_type(
+create or replace function metadata.upsert_dq_coding_scheme_authority_type(
     p_code text,
     p_name text,
     p_description text
@@ -404,7 +404,7 @@ $$ language plpgsql;
 /**
  * Upsert a coding scheme (e.g., ISO 4217, LEI, BIC).
  */
-create or replace function public.upsert_dq_coding_schemes(
+create or replace function metadata.upsert_dq_coding_schemes(
     p_code text,
     p_name text,
     p_authority_type text,
@@ -442,7 +442,7 @@ $$ language plpgsql;
 /**
  * Upsert a data sourcing methodology.
  */
-create or replace function public.upsert_dq_methodologies(
+create or replace function metadata.upsert_dq_methodologies(
     p_name text,
     p_description text,
     p_logic_reference text default null,
@@ -483,7 +483,7 @@ $$ language plpgsql;
  *        Used by the publication service to determine which population
  *        function to call when publishing the dataset.
  */
-create or replace function public.upsert_dq_datasets(
+create or replace function metadata.upsert_dq_datasets(
     p_code text,
     p_catalog_name text,
     p_subject_area_name text,
@@ -545,7 +545,7 @@ $$ language plpgsql;
 /**
  * Upsert a tag for a dataset.
  */
-create or replace function public.upsert_dq_tag(
+create or replace function metadata.upsert_dq_tag(
     p_dataset_name text,
     p_subject_area_name text,
     p_domain_name text,
@@ -593,7 +593,7 @@ $$ language plpgsql;
 /**
  * Upsert a permission code.
  */
-create or replace function public.upsert_permission(
+create or replace function production.upsert_permission(
     p_code text,
     p_description text
 ) returns void as $$
@@ -620,7 +620,7 @@ $$ language plpgsql;
 /**
  * Upsert a role.
  */
-create or replace function public.upsert_role(
+create or replace function production.upsert_role(
     p_name text,
     p_description text,
     p_recorded_by text default 'system'
@@ -647,7 +647,7 @@ $$ language plpgsql;
 /**
  * Assign a permission to a role.
  */
-create or replace function public.assign_permission_to_role(
+create or replace function production.assign_permission_to_role(
     p_role_name text,
     p_permission_code text,
     p_assigned_by text default 'system'
@@ -695,7 +695,7 @@ $$ language plpgsql;
 /**
  * Upsert a system feature flag.
  */
-create or replace function public.upsert_system_flag(
+create or replace function production.upsert_system_flag(
     p_name text,
     p_enabled boolean,
     p_description text
@@ -727,7 +727,7 @@ $$ language plpgsql;
 /**
  * Upsert a dataset bundle (named collection of datasets).
  */
-create or replace function public.upsert_dq_dataset_bundle(
+create or replace function metadata.upsert_dq_dataset_bundle(
     p_code text,
     p_name text,
     p_description text
@@ -759,7 +759,7 @@ $$ language plpgsql;
 /**
  * Upsert a dataset bundle member (links a dataset to a bundle).
  */
-create or replace function public.upsert_dq_dataset_bundle_member(
+create or replace function metadata.upsert_dq_dataset_bundle_member(
     p_bundle_code text,
     p_dataset_code text,
     p_display_order integer

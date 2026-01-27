@@ -26,21 +26,21 @@ set schema 'metadata';
 
 \echo '--- Data Quality Slovaris Tags ---'
 
-select public.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     'Solvaris Countries',
     'Countries',
     'Reference Data',
     'country',
     'Country reference data'
 );
-select public.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     'Solvaris Currencies',
     'Currencies',
     'Reference Data',
     'currency',
     'Currency reference data'
 );
-select public.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     'Solvaris Country Flag Images',
     'Country Flags',
     'Reference Data',

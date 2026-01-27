@@ -37,31 +37,31 @@
 set schema 'production';
 
 -- Seed system flags with their default values
-select public.upsert_system_flag(
+select production.upsert_system_flag(
     'system.bootstrap_mode',
     true,
     'Indicates whether the system is in bootstrap mode (waiting for initial admin account).'
 );
 
-select public.upsert_system_flag(
+select production.upsert_system_flag(
     'system.user_signups',
     false,
     'Controls whether user self-registration is allowed.'
 );
 
-select public.upsert_system_flag(
+select production.upsert_system_flag(
     'system.signup_requires_authorization',
     false,
     'Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail.'
 );
 
-select public.upsert_system_flag(
+select production.upsert_system_flag(
     'system.disable_password_validation',
     false,
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
-select public.upsert_system_flag(
+select production.upsert_system_flag(
     'system.synthetic_data_generation',
     false,
     'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'

@@ -35,7 +35,7 @@ set schema 'metadata';
 \echo '--- Flag Icons Datasets ---'
 
 -- Country Flag Images
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'assets.country_flags',
     'Visual Assets',
     'Country Flags',

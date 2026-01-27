@@ -38,19 +38,19 @@ set schema 'metadata';
 
 \echo '--- Coding Scheme Authority Types ---'
 
-select public.upsert_dq_coding_scheme_authority_type(
+select metadata.upsert_dq_coding_scheme_authority_type(
     'official',
     'Official Standard',
     'Formal standard published by a recognized standards body such as ISO, IEEE, or a regulatory authority. These schemes have official governance, versioning, and maintenance processes.'
 );
 
-select public.upsert_dq_coding_scheme_authority_type(
+select metadata.upsert_dq_coding_scheme_authority_type(
     'industry',
     'Industry Standard',
     'De facto standard widely adopted in the financial industry but not published by a formal standards body. Typically maintained by industry consortiums, trade associations, or market infrastructure providers such as SWIFT, DTCC, or FINRA.'
 );
 
-select public.upsert_dq_coding_scheme_authority_type(
+select metadata.upsert_dq_coding_scheme_authority_type(
     'internal',
     'Internal/Proprietary',
     'Proprietary or organization-specific identifier scheme. Used for internal systems, client identifiers, or custom classifications that are not standardized outside the organization.'

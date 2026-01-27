@@ -35,7 +35,7 @@ set schema 'metadata';
 \echo '--- Cryptocurrency Datasets ---'
 
 -- Cryptocurrency Icon Images
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'assets.crypto_icons',
     'Cryptocurrency',
     'Cryptocurrencies',
@@ -55,7 +55,7 @@ select public.upsert_dq_datasets(
 );
 
 -- Cryptocurrencies Large
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'crypto.large',
     'Cryptocurrency',
     'Cryptocurrencies',
@@ -75,7 +75,7 @@ select public.upsert_dq_datasets(
 );
 
 -- Cryptocurrencies Small
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'crypto.small',
     'Cryptocurrency',
     'Cryptocurrencies',

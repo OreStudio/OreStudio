@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- Cryptocurrency Dataset Tags ---'
 
-select public.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     'Cryptocurrency Icon Images',
     'Cryptocurrencies',
     'Reference Data',
@@ -42,7 +42,7 @@ select public.upsert_dq_tag(
     'Cryptocurrency icon images'
 );
 
-select public.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     'Cryptocurrencies Large',
     'Cryptocurrencies',
     'Reference Data',
@@ -50,7 +50,7 @@ select public.upsert_dq_tag(
     'Cryptocurrency reference data (~12K coins)'
 );
 
-select public.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     'Cryptocurrencies Small',
     'Cryptocurrencies',
     'Reference Data',

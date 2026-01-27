@@ -26,7 +26,7 @@ set schema 'metadata';
 
 \echo '--- Data Quality Slovaris Datasets ---'
 
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'slovaris.country_flags',
     'Slovaris',
     'Country Flags',
@@ -44,7 +44,7 @@ select public.upsert_dq_datasets(
     ' CC BY 4.0',
     'images'
 );
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'slovaris.countries',
     'Slovaris',
     'Countries',
@@ -62,7 +62,7 @@ select public.upsert_dq_datasets(
     ' CC BY 4.0',
     'countries'
 );
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'slovaris.currencies',
     'Slovaris',
     'Currencies',

@@ -32,40 +32,40 @@
 set schema 'production';
 
 -- Account management permissions
-select public.upsert_permission('accounts:create', 'Create new user accounts');
-select public.upsert_permission('accounts:read', 'View user account details');
-select public.upsert_permission('accounts:update', 'Modify user account settings');
-select public.upsert_permission('accounts:delete', 'Delete user accounts');
-select public.upsert_permission('accounts:lock', 'Lock user accounts');
-select public.upsert_permission('accounts:unlock', 'Unlock user accounts');
-select public.upsert_permission('accounts:reset_password', 'Force password reset on user accounts');
+select production.upsert_permission('accounts:create', 'Create new user accounts');
+select production.upsert_permission('accounts:read', 'View user account details');
+select production.upsert_permission('accounts:update', 'Modify user account settings');
+select production.upsert_permission('accounts:delete', 'Delete user accounts');
+select production.upsert_permission('accounts:lock', 'Lock user accounts');
+select production.upsert_permission('accounts:unlock', 'Unlock user accounts');
+select production.upsert_permission('accounts:reset_password', 'Force password reset on user accounts');
 
 -- Currency management permissions
-select public.upsert_permission('currencies:create', 'Create new currencies');
-select public.upsert_permission('currencies:read', 'View currency details');
-select public.upsert_permission('currencies:update', 'Modify currency settings');
-select public.upsert_permission('currencies:delete', 'Delete currencies');
-select public.upsert_permission('currencies:history', 'View currency version history');
+select production.upsert_permission('currencies:create', 'Create new currencies');
+select production.upsert_permission('currencies:read', 'View currency details');
+select production.upsert_permission('currencies:update', 'Modify currency settings');
+select production.upsert_permission('currencies:delete', 'Delete currencies');
+select production.upsert_permission('currencies:history', 'View currency version history');
 
 -- Feature flags permissions
-select public.upsert_permission('flags:create', 'Create new feature flags');
-select public.upsert_permission('flags:read', 'View feature flag status');
-select public.upsert_permission('flags:update', 'Modify feature flag settings');
-select public.upsert_permission('flags:delete', 'Delete feature flags');
+select production.upsert_permission('flags:create', 'Create new feature flags');
+select production.upsert_permission('flags:read', 'View feature flag status');
+select production.upsert_permission('flags:update', 'Modify feature flag settings');
+select production.upsert_permission('flags:delete', 'Delete feature flags');
 
 -- Login info permissions (read-only audit data)
-select public.upsert_permission('login_info:read', 'View login history and info');
+select production.upsert_permission('login_info:read', 'View login history and info');
 
 -- Role management permissions
-select public.upsert_permission('roles:create', 'Create new roles');
-select public.upsert_permission('roles:read', 'View role details');
-select public.upsert_permission('roles:update', 'Modify role permissions');
-select public.upsert_permission('roles:delete', 'Delete roles');
-select public.upsert_permission('roles:assign', 'Assign roles to accounts');
-select public.upsert_permission('roles:revoke', 'Revoke roles from accounts');
+select production.upsert_permission('roles:create', 'Create new roles');
+select production.upsert_permission('roles:read', 'View role details');
+select production.upsert_permission('roles:update', 'Modify role permissions');
+select production.upsert_permission('roles:delete', 'Delete roles');
+select production.upsert_permission('roles:assign', 'Assign roles to accounts');
+select production.upsert_permission('roles:revoke', 'Revoke roles from accounts');
 
 -- Wildcard permission (superuser)
-select public.upsert_permission('*', 'Full access to all operations');
+select production.upsert_permission('*', 'Full access to all operations');
 
 -- Show summary
 select count(*) as total_permissions from production.iam_permissions_tbl

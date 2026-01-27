@@ -40,45 +40,45 @@
 set schema 'production';
 
 -- Create roles
-select public.upsert_role('Admin', 'Full administrative access to all system functions');
-select public.upsert_role('Trading', 'Trading operations - currency read access');
-select public.upsert_role('Sales', 'Sales operations - read-only currency access');
-select public.upsert_role('Operations', 'Operations - currency management and account viewing');
-select public.upsert_role('Support', 'Support - read-only access to all resources and admin screens');
-select public.upsert_role('Viewer', 'Viewer - basic read-only access to domain data');
+select production.upsert_role('Admin', 'Full administrative access to all system functions');
+select production.upsert_role('Trading', 'Trading operations - currency read access');
+select production.upsert_role('Sales', 'Sales operations - read-only currency access');
+select production.upsert_role('Operations', 'Operations - currency management and account viewing');
+select production.upsert_role('Support', 'Support - read-only access to all resources and admin screens');
+select production.upsert_role('Viewer', 'Viewer - basic read-only access to domain data');
 
 -- Assign permissions to Admin role (wildcard)
-select public.assign_permission_to_role('Admin', '*');
+select production.assign_permission_to_role('Admin', '*');
 
 -- Assign permissions to Trading role
-select public.assign_permission_to_role('Trading', 'currencies:read');
-select public.assign_permission_to_role('Trading', 'currencies:history');
-select public.assign_permission_to_role('Trading', 'flags:read');
+select production.assign_permission_to_role('Trading', 'currencies:read');
+select production.assign_permission_to_role('Trading', 'currencies:history');
+select production.assign_permission_to_role('Trading', 'flags:read');
 
 -- Assign permissions to Sales role
-select public.assign_permission_to_role('Sales', 'currencies:read');
-select public.assign_permission_to_role('Sales', 'flags:read');
+select production.assign_permission_to_role('Sales', 'currencies:read');
+select production.assign_permission_to_role('Sales', 'flags:read');
 
 -- Assign permissions to Operations role
-select public.assign_permission_to_role('Operations', 'currencies:create');
-select public.assign_permission_to_role('Operations', 'currencies:read');
-select public.assign_permission_to_role('Operations', 'currencies:update');
-select public.assign_permission_to_role('Operations', 'currencies:delete');
-select public.assign_permission_to_role('Operations', 'currencies:history');
-select public.assign_permission_to_role('Operations', 'flags:read');
-select public.assign_permission_to_role('Operations', 'accounts:read');
+select production.assign_permission_to_role('Operations', 'currencies:create');
+select production.assign_permission_to_role('Operations', 'currencies:read');
+select production.assign_permission_to_role('Operations', 'currencies:update');
+select production.assign_permission_to_role('Operations', 'currencies:delete');
+select production.assign_permission_to_role('Operations', 'currencies:history');
+select production.assign_permission_to_role('Operations', 'flags:read');
+select production.assign_permission_to_role('Operations', 'accounts:read');
 
 -- Assign permissions to Support role
-select public.assign_permission_to_role('Support', 'accounts:read');
-select public.assign_permission_to_role('Support', 'currencies:read');
-select public.assign_permission_to_role('Support', 'currencies:history');
-select public.assign_permission_to_role('Support', 'flags:read');
-select public.assign_permission_to_role('Support', 'login_info:read');
-select public.assign_permission_to_role('Support', 'roles:read');
+select production.assign_permission_to_role('Support', 'accounts:read');
+select production.assign_permission_to_role('Support', 'currencies:read');
+select production.assign_permission_to_role('Support', 'currencies:history');
+select production.assign_permission_to_role('Support', 'flags:read');
+select production.assign_permission_to_role('Support', 'login_info:read');
+select production.assign_permission_to_role('Support', 'roles:read');
 
 -- Assign permissions to Viewer role (default for new accounts)
-select public.assign_permission_to_role('Viewer', 'currencies:read');
-select public.assign_permission_to_role('Viewer', 'flags:read');
+select production.assign_permission_to_role('Viewer', 'currencies:read');
+select production.assign_permission_to_role('Viewer', 'flags:read');
 
 -- Show summary
 select 'Roles:' as summary, count(*) as count from production.iam_roles_tbl

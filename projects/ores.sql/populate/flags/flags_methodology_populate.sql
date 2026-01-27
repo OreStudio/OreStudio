@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- Flag Icons Methodologies ---'
 
-select public.upsert_dq_methodologies(
+select metadata.upsert_dq_methodologies(
     'GitHub Flag Icons Download',
     'SVG images downloaded from lipis/flag-icons GitHub repository',
     'https://github.com/lipis/flag-icons',

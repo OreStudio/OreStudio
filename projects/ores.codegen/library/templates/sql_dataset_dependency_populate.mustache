@@ -11,7 +11,7 @@ set schema 'metadata';
 
 {{#datasets}}
 {{#dataset_dependencies}}
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     '{{parent_code}}',
     '{{dependency_code}}',
     '{{role}}'

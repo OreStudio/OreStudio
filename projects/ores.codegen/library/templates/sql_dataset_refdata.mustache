@@ -17,7 +17,7 @@ set schema 'metadata';
 
 \echo '--- {{dataset.name}} Dataset ---'
 
-select metadata.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     '{{dataset.code}}',
     'FpML Standards',
     '{{entity.subject_area}}',

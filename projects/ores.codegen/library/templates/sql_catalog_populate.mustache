@@ -10,7 +10,7 @@ set schema 'metadata';
 \echo '--- Data Quality Slovaris Catalogs ---'
 
 {{#catalogs}}
-select metadata.upsert_dq_catalogs(
+select metadata.dq_catalogs_upsert_fn(
     '{{name}}',
     '{{description}}',
     '{{owner}}'

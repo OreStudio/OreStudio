@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Hkma Rewrite Party Relationship Type Dataset ---'
 
-select metadata.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'fpml.hkma_rewrite_party_relationship_type',
     'FpML Standards',
     'Parties',

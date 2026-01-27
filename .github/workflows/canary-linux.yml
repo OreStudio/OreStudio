@@ -49,7 +49,7 @@ jobs:
       - name: Validate SQL Schema
         run: |
           pip install --quiet pystache
-          ./projects/ores.sql/scripts/validate_schema.sh
+          ./projects/ores.sql/scripts/validate_schemas.sh
 
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.20

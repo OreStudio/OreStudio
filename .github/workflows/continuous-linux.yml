@@ -77,7 +77,7 @@ jobs:
       - name: Validate SQL Schema
         run: |
           pip install --quiet pystache
-          ./projects/ores.sql/scripts/validate_schema.sh
+          ./projects/ores.sql/scripts/validate_schemas.sh
 
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2

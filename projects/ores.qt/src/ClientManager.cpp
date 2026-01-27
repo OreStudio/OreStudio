@@ -239,6 +239,8 @@ LoginResult ClientManager::connectAndLogin(
                     auto attach_result = session_.attach_client(client_);
                     if (!attach_result) {
                         BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
+                        client_->disconnect();
+                        client_.reset();
                         return {.success = false, .error_message = QString("Failed to initialize session")};
                     }
                     connected_host_ = host;
@@ -340,6 +342,10 @@ LoginResult ClientManager::connectAndLogin(
         auto attach_result = session_.attach_client(client_);
         if (!attach_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
+            client_->disconnect();
+            client_.reset();
+            connected_host_.clear();
+            connected_port_ = 0;
             return {.success = false, .error_message = QString("Failed to initialize session")};
         }
 

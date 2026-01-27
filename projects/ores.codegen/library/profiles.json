@@ -1,0 +1,195 @@
+{
+  "profiles": {
+    "sql": {
+      "description": "SQL schema creation scripts",
+      "model_types": ["domain_entity", "junction"],
+      "templates": [
+        {
+          "template": "sql_schema_domain_entity_create.mustache",
+          "output": "projects/ores.sql/create/{component}/{component}_{entity}_create.sql",
+          "model_types": ["domain_entity"]
+        },
+        {
+          "template": "sql_schema_junction_create.mustache",
+          "output": "projects/ores.sql/create/{component}/{component}_{entity}_create.sql",
+          "model_types": ["junction"]
+        }
+      ]
+    },
+    "qt": {
+      "description": "Qt UI components (model, window, dialogs, controller)",
+      "model_types": ["domain_entity"],
+      "templates": [
+        {
+          "template": "cpp_qt_client_model.hpp.mustache",
+          "output": "projects/ores.qt/include/ores.qt/Client{EntityPascal}Model.hpp"
+        },
+        {
+          "template": "cpp_qt_client_model.cpp.mustache",
+          "output": "projects/ores.qt/src/Client{EntityPascal}Model.cpp"
+        },
+        {
+          "template": "cpp_qt_mdi_window.hpp.mustache",
+          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}MdiWindow.hpp"
+        },
+        {
+          "template": "cpp_qt_mdi_window.cpp.mustache",
+          "output": "projects/ores.qt/src/{EntityPascal}MdiWindow.cpp"
+        },
+        {
+          "template": "cpp_qt_detail_dialog.hpp.mustache",
+          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}DetailDialog.hpp"
+        },
+        {
+          "template": "cpp_qt_detail_dialog.cpp.mustache",
+          "output": "projects/ores.qt/src/{EntityPascal}DetailDialog.cpp"
+        },
+        {
+          "template": "cpp_qt_history_dialog.hpp.mustache",
+          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}HistoryDialog.hpp"
+        },
+        {
+          "template": "cpp_qt_history_dialog.cpp.mustache",
+          "output": "projects/ores.qt/src/{EntityPascal}HistoryDialog.cpp"
+        },
+        {
+          "template": "cpp_qt_controller.hpp.mustache",
+          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}Controller.hpp"
+        },
+        {
+          "template": "cpp_qt_controller.cpp.mustache",
+          "output": "projects/ores.qt/src/{EntityPascal}Controller.cpp"
+        },
+        {
+          "template": "qt_detail_dialog_ui.mustache",
+          "output": "projects/ores.qt/ui/{EntityPascal}DetailDialog.ui"
+        },
+        {
+          "template": "qt_history_dialog_ui.mustache",
+          "output": "projects/ores.qt/ui/{EntityPascal}HistoryDialog.ui"
+        }
+      ]
+    },
+    "protocol": {
+      "description": "Messaging protocol (request/response)",
+      "model_types": ["domain_entity", "schema"],
+      "templates": [
+        {
+          "template": "cpp_protocol.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/messaging/{entity}_protocol.hpp"
+        },
+        {
+          "template": "cpp_protocol.cpp.mustache",
+          "output": "projects/ores.{component}/src/messaging/{entity}_protocol.cpp"
+        }
+      ]
+    },
+    "domain": {
+      "description": "Domain types (class, JSON I/O, table)",
+      "model_types": ["schema"],
+      "templates": [
+        {
+          "template": "cpp_domain_type_class.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}.hpp"
+        },
+        {
+          "template": "cpp_domain_type_json_io.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/io/{entity}_json_io.hpp"
+        },
+        {
+          "template": "cpp_domain_type_json_io.cpp.mustache",
+          "output": "projects/ores.{component}/src/io/{entity}_json_io.cpp"
+        },
+        {
+          "template": "cpp_domain_type_table.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/io/{entity}_table.hpp"
+        },
+        {
+          "template": "cpp_domain_type_table.cpp.mustache",
+          "output": "projects/ores.{component}/src/io/{entity}_table.cpp"
+        },
+        {
+          "template": "cpp_domain_type_table_io.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/io/{entity}_table_io.hpp"
+        },
+        {
+          "template": "cpp_domain_type_table_io.cpp.mustache",
+          "output": "projects/ores.{component}/src/io/{entity}_table_io.cpp"
+        }
+      ]
+    },
+    "generator": {
+      "description": "Fake data generators for testing",
+      "model_types": ["schema"],
+      "templates": [
+        {
+          "template": "cpp_domain_type_generator.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/generator/{entity}_generator.hpp"
+        },
+        {
+          "template": "cpp_domain_type_generator.cpp.mustache",
+          "output": "projects/ores.{component}/src/generator/{entity}_generator.cpp"
+        }
+      ]
+    },
+    "repository": {
+      "description": "Repository layer (entity, mapper, CRUD)",
+      "model_types": ["schema"],
+      "templates": [
+        {
+          "template": "cpp_domain_type_entity.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_entity.hpp"
+        },
+        {
+          "template": "cpp_domain_type_entity.cpp.mustache",
+          "output": "projects/ores.{component}/src/repository/{entity}_entity.cpp"
+        },
+        {
+          "template": "cpp_domain_type_mapper.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_mapper.hpp"
+        },
+        {
+          "template": "cpp_domain_type_mapper.cpp.mustache",
+          "output": "projects/ores.{component}/src/repository/{entity}_mapper.cpp"
+        },
+        {
+          "template": "cpp_domain_type_repository.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_repository.hpp"
+        },
+        {
+          "template": "cpp_domain_type_repository.cpp.mustache",
+          "output": "projects/ores.{component}/src/repository/{entity}_repository.cpp"
+        }
+      ]
+    },
+    "service": {
+      "description": "Service layer",
+      "model_types": ["schema"],
+      "templates": [
+        {
+          "template": "cpp_service.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/service/{entity}_service.hpp"
+        },
+        {
+          "template": "cpp_service.cpp.mustache",
+          "output": "projects/ores.{component}/src/service/{entity}_service.cpp"
+        }
+      ]
+    },
+    "all-cpp": {
+      "description": "All C++ facets (domain, repository, service, protocol, generator)",
+      "model_types": ["schema"],
+      "includes": ["domain", "generator", "repository", "service", "protocol"]
+    },
+    "plantuml": {
+      "description": "PlantUML ER diagrams",
+      "model_types": ["schema", "data"],
+      "templates": [
+        {
+          "template": "plantuml_er.mustache",
+          "output": "output/{entity}_er.puml"
+        }
+      ]
+    }
+  }
+}

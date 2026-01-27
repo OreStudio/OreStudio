@@ -247,6 +247,216 @@ def is_junction_model(model_filename):
     return model_filename.endswith("_junction.json")
 
 
+def get_model_type(model_filename):
+    """
+    Determine the model type from the filename.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        str: The model type ('domain_entity', 'junction', 'schema', 'data', or 'unknown')
+    """
+    if is_domain_entity_model(model_filename):
+        return 'domain_entity'
+    elif is_junction_model(model_filename):
+        return 'junction'
+    elif is_entity_schema_model(model_filename):
+        return 'schema'
+    elif is_entity_data_model(model_filename):
+        return 'data'
+    return 'unknown'
+
+
+def load_profiles(base_dir):
+    """
+    Load profile definitions from profiles.json.
+
+    Args:
+        base_dir (Path): Base directory of the codegen project
+
+    Returns:
+        dict: Dictionary of profile definitions
+    """
+    profiles_path = base_dir / "library" / "profiles.json"
+    if not profiles_path.exists():
+        return {}
+
+    with open(profiles_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return data.get('profiles', {})
+
+
+def snake_to_pascal(snake_str):
+    """
+    Convert a snake_case string to PascalCase.
+
+    Args:
+        snake_str (str): Snake case string (e.g., "dataset_bundle")
+
+    Returns:
+        str: PascalCase string (e.g., "DatasetBundle")
+    """
+    return ''.join(word.capitalize() for word in snake_str.split('_'))
+
+
+def resolve_output_path(output_pattern, model_data, model_type):
+    """
+    Resolve placeholders in an output path pattern.
+
+    Args:
+        output_pattern (str): Output path pattern with placeholders
+        model_data (dict): The loaded model data
+        model_type (str): The model type ('domain_entity', 'junction', etc.)
+
+    Returns:
+        str: Resolved output path
+    """
+    result = output_pattern
+
+    # Extract values based on model type
+    if model_type == 'domain_entity' and 'domain_entity' in model_data:
+        entity = model_data['domain_entity']
+        component = entity.get('component', 'unknown')
+        entity_singular = entity.get('entity_singular', 'unknown')
+        entity_plural = entity.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    elif model_type == 'junction' and 'junction' in model_data:
+        junction = model_data['junction']
+        component = junction.get('component', 'unknown')
+        junction_name = junction.get('name', 'unknown')
+        name_singular = junction.get('name_singular', junction_name.rstrip('s'))
+        entity_pascal = snake_to_pascal(name_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{junction_name}', junction_name)
+        result = result.replace('{entity}', name_singular)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    elif 'schema' in model_data:
+        schema = model_data['schema']
+        component = schema.get('component', 'unknown')
+        entity_singular = schema.get('entity_singular', 'unknown')
+        entity_plural = schema.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    return result
+
+
+def resolve_profile_templates(profile_name, profiles, model_type=None, resolved=None):
+    """
+    Resolve all templates for a profile, including any included profiles.
+
+    Args:
+        profile_name (str): Name of the profile to resolve
+        profiles (dict): Dictionary of all profile definitions
+        model_type (str): The model type for filtering templates
+        resolved (set): Set of already resolved profile names (for cycle detection)
+
+    Returns:
+        list: List of template info dicts with 'template' and optional 'output' keys
+    """
+    if resolved is None:
+        resolved = set()
+
+    if profile_name in resolved:
+        return []  # Avoid infinite recursion
+
+    if profile_name not in profiles:
+        print(f"Warning: Unknown profile '{profile_name}'")
+        return []
+
+    resolved.add(profile_name)
+    profile = profiles[profile_name]
+    templates = []
+
+    # Process templates - handle both old string format and new object format
+    for tmpl in profile.get('templates', []):
+        if isinstance(tmpl, str):
+            # Old format: just template name
+            templates.append({'template': tmpl})
+        elif isinstance(tmpl, dict):
+            # New format: object with template and output
+            # Check if template is compatible with model type
+            tmpl_model_types = tmpl.get('model_types')
+            if tmpl_model_types and model_type and model_type not in tmpl_model_types:
+                continue  # Skip this template - not compatible with model type
+            templates.append(tmpl)
+
+    # Resolve included profiles
+    for included in profile.get('includes', []):
+        templates.extend(resolve_profile_templates(included, profiles, model_type, resolved))
+
+    return templates
+
+
+def validate_profile_for_model(profile_name, profiles, model_type):
+    """
+    Check if a profile is compatible with a model type.
+
+    Args:
+        profile_name (str): Name of the profile
+        profiles (dict): Dictionary of all profile definitions
+        model_type (str): The model type
+
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    if profile_name not in profiles:
+        return False, f"Unknown profile: {profile_name}"
+
+    profile = profiles[profile_name]
+    model_types = profile.get('model_types', [])
+
+    if model_type not in model_types:
+        return False, (f"Profile '{profile_name}' is not compatible with model type '{model_type}'. "
+                      f"Supported types: {', '.join(model_types)}")
+
+    # Also check included profiles
+    for included in profile.get('includes', []):
+        is_valid, error = validate_profile_for_model(included, profiles, model_type)
+        if not is_valid:
+            return False, error
+
+    return True, None
+
+
+def list_profiles(profiles):
+    """
+    Print a formatted list of available profiles.
+
+    Args:
+        profiles (dict): Dictionary of profile definitions
+    """
+    print("Available profiles:")
+    print()
+    for name, profile in sorted(profiles.items()):
+        description = profile.get('description', 'No description')
+        model_types = ', '.join(profile.get('model_types', []))
+        template_count = len(profile.get('templates', []))
+        includes = profile.get('includes', [])
+
+        print(f"  {name}")
+        print(f"    Description:  {description}")
+        print(f"    Model types:  {model_types}")
+        if includes:
+            print(f"    Includes:     {', '.join(includes)}")
+        else:
+            print(f"    Templates:    {template_count}")
+        print()
+
+
 def get_domain_entity_template_mappings():
     """
     Define the mapping for domain entity schema templates.
@@ -268,6 +478,34 @@ def get_junction_template_mappings():
     """
     return [
         ("sql_schema_junction_create.mustache", "_create.sql"),
+    ]
+
+
+def get_qt_domain_entity_template_mappings():
+    """
+    Define the mapping for Qt domain entity templates.
+
+    Returns:
+        list: List of tuples (template_name, output_dir, output_suffix) for Qt generation
+    """
+    return [
+        # Client model facet
+        ("cpp_qt_client_model.hpp.mustache", "include/ores.qt", "Model.hpp"),
+        ("cpp_qt_client_model.cpp.mustache", "src", "Model.cpp"),
+        # MDI window facet
+        ("cpp_qt_mdi_window.hpp.mustache", "include/ores.qt", "MdiWindow.hpp"),
+        ("cpp_qt_mdi_window.cpp.mustache", "src", "MdiWindow.cpp"),
+        # Detail dialog facet
+        ("cpp_qt_detail_dialog.hpp.mustache", "include/ores.qt", "DetailDialog.hpp"),
+        ("cpp_qt_detail_dialog.cpp.mustache", "src", "DetailDialog.cpp"),
+        ("qt_detail_dialog_ui.mustache", "ui", "DetailDialog.ui"),
+        # History dialog facet
+        ("cpp_qt_history_dialog.hpp.mustache", "include/ores.qt", "HistoryDialog.hpp"),
+        ("cpp_qt_history_dialog.cpp.mustache", "src", "HistoryDialog.cpp"),
+        ("qt_history_dialog_ui.mustache", "ui", "HistoryDialog.ui"),
+        # Controller facet
+        ("cpp_qt_controller.hpp.mustache", "include/ores.qt", "Controller.hpp"),
+        ("cpp_qt_controller.cpp.mustache", "src", "Controller.cpp"),
     ]
 
 
@@ -595,7 +833,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_junction = is_junction_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
-    generate_cpp = target_template and target_template.startswith('cpp_')
+    generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
+    # Check for Qt generation flag (qt_ or cpp_qt_ prefix in target_template)
+    generate_qt = target_template and (target_template.startswith('qt_') or target_template.startswith('cpp_qt_'))
 
     # Determine which templates to process
     if target_template:
@@ -651,18 +891,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             elif ds.get('subject_area_name') == 'Countries':
                 data['countries_dataset'] = ds
 
-    # Generate enhanced license with modeline and copyright header
+    # Generate SQL license with modeline and copyright header
     if 'licence-GPL-v3' in data and 'modelines' in data:
         # Get the SQL modeline
         sql_modeline = data['modelines'].get('sql', '')
-        # Generate the enhanced license
-        enhanced_license = generate_license_with_header(
+        # Generate the SQL license
+        sql_license = generate_license_with_header(
             data['licence-GPL-v3'],
             sql_modeline,
             'sql'
         )
         # Add to data for use in templates
-        data['enhanced_license'] = enhanced_license
+        data['sql_license'] = sql_license
         # Also add the modeline separately if needed
         data['sql_modeline'] = sql_modeline
 
@@ -800,6 +1040,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")
             words = domain_entity['entity_singular'].split('_')
             domain_entity['entity_singular_words'] = words[-1] if words else domain_entity['entity_singular']
+            # PascalCase versions for Qt class names (e.g., "dataset_bundle" -> "DatasetBundle")
+            domain_entity['entity_pascal'] = ''.join(w.capitalize() for w in words)
+            domain_entity['entity_snake'] = domain_entity['entity_singular']
+            domain_entity['entity_upper'] = domain_entity['entity_singular'].upper()
+            # Short versions (last word only, e.g., "dataset_bundle" -> "Bundle")
+            domain_entity['entity_pascal_short'] = words[-1].capitalize() if words else domain_entity['entity_singular'].capitalize()
+            domain_entity['entity_pascal_short_plural'] = domain_entity['entity_pascal_short'] + 's'
         if 'entity_plural' in domain_entity:
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
         if 'entity_title' in domain_entity:
@@ -811,6 +1058,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Process Qt-specific fields
+        if 'qt' in domain_entity:
+            qt = domain_entity['qt']
+            # Mark last item in columns for template iteration
+            if 'columns' in qt:
+                _mark_last_item(qt['columns'])
+            # Add iterator variable reference for templates
+            qt['item_var'] = qt.get('item_var', 'item')
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models
@@ -1002,6 +1257,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{sub_dir}/{name_singular}{suffix}"
             else:
                 output_filename = f"{name_singular}.hpp"
+        elif generate_qt and is_domain_entity and 'domain_entity' in data:
+            # Qt generation for domain entity
+            domain_entity = data['domain_entity']
+            entity_pascal = domain_entity.get('entity_pascal', 'Unknown')
+            # Find the mapping for this template
+            qt_mappings = get_qt_domain_entity_template_mappings()
+            mapping = next(((t, d, s) for t, d, s in qt_mappings if t == template_name), None)
+            if mapping:
+                sub_dir, suffix = mapping[1], mapping[2]
+                # Client model uses "Client" prefix
+                if 'client_model' in template_name:
+                    output_filename = f"{sub_dir}/Client{entity_pascal}{suffix}"
+                else:
+                    output_filename = f"{sub_dir}/{entity_pascal}{suffix}"
+            else:
+                output_filename = f"{entity_pascal}.hpp"
         elif is_domain_entity and 'domain_entity' in data:
             # For domain entity models, derive filename from domain_entity definition
             # Use entity_singular for filename (table/indexes/functions use entity_plural)
@@ -1194,12 +1465,16 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Generate code from models using templates')
-    parser.add_argument('model_path', help='Path to the model file')
+    parser.add_argument('model_path', nargs='?', default=None, help='Path to the model file')
     parser.add_argument('output_dir', nargs='?', default=None, help='Output directory (default: output/)')
     parser.add_argument('--template', '-t', dest='target_template',
                         help='Specific template to use (overrides default template selection)')
     parser.add_argument('--output', '-o', dest='target_output',
                         help='Specific output filename (overrides default naming)')
+    parser.add_argument('--profile', '-p', dest='profile',
+                        help='Generate all templates in a profile (e.g., qt, sql, protocol)')
+    parser.add_argument('--list-profiles', action='store_true',
+                        help='List available profiles and exit')
 
     args = parser.parse_args()
 
@@ -1207,6 +1482,18 @@ def main():
     base_dir = Path(__file__).parent.parent
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
+
+    # Load profiles
+    profiles = load_profiles(base_dir)
+
+    # Handle --list-profiles
+    if args.list_profiles:
+        list_profiles(profiles)
+        sys.exit(0)
+
+    # Require model_path if not listing profiles
+    if not args.model_path:
+        parser.error("model_path is required unless using --list-profiles")
 
     # Use provided output directory or default to 'output'
     if args.output_dir:
@@ -1217,11 +1504,65 @@ def main():
     # Create output directory if it doesn't exist
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate from the specified model
-    generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
-                        is_processing_batch=False,
-                        target_template=args.target_template,
-                        target_output=args.target_output)
+    # Handle profile-based generation
+    if args.profile:
+        if args.target_template:
+            parser.error("Cannot use --template and --profile together")
+
+        # Determine model type
+        model_filename = os.path.basename(args.model_path)
+        model_type = get_model_type(model_filename)
+
+        # Validate profile compatibility
+        is_valid, error = validate_profile_for_model(args.profile, profiles, model_type)
+        if not is_valid:
+            print(f"Error: {error}")
+            sys.exit(1)
+
+        # Load model data to resolve output paths
+        with open(args.model_path, 'r', encoding='utf-8') as f:
+            model_data = json.load(f)
+
+        # Resolve all templates in the profile (with model type filtering)
+        templates = resolve_profile_templates(args.profile, profiles, model_type)
+        if not templates:
+            print(f"Error: Profile '{args.profile}' has no templates")
+            sys.exit(1)
+
+        print(f"Generating {len(templates)} templates from profile '{args.profile}'...")
+
+        # Determine project root (parent of projects/ores.codegen)
+        project_root = base_dir.parent.parent
+
+        # Generate each template
+        for tmpl_info in templates:
+            template_name = tmpl_info.get('template') if isinstance(tmpl_info, dict) else tmpl_info
+            output_pattern = tmpl_info.get('output') if isinstance(tmpl_info, dict) else None
+
+            # Resolve output path if pattern is provided
+            if output_pattern:
+                resolved_output = resolve_output_path(output_pattern, model_data, model_type)
+                full_output_path = project_root / resolved_output
+
+                # Create output directory if needed
+                full_output_path.parent.mkdir(parents=True, exist_ok=True)
+
+                generate_from_model(args.model_path, data_dir, templates_dir, full_output_path.parent,
+                                    is_processing_batch=False,
+                                    target_template=template_name,
+                                    target_output=full_output_path.name)
+            else:
+                # Fall back to default output directory
+                generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                                    is_processing_batch=False,
+                                    target_template=template_name,
+                                    target_output=args.target_output)
+    else:
+        # Single template or default generation
+        generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                            is_processing_batch=False,
+                            target_template=args.target_template,
+                            target_output=args.target_output)
 
 
 if __name__ == "__main__":

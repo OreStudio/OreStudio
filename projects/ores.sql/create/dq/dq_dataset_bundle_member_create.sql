@@ -21,12 +21,12 @@
 /**
  * Dataset Bundle Member Table
  *
- * Junction table linking bundles to their constituent datasets.
- * Uses codes for loose coupling - allows declaring membership for datasets
- * that may not yet exist in the system.
+ * Junction table linking bundles to their constituent datasets. Uses codes
+ * for loose coupling - allows declaring membership for datasets that may not
+ * yet exist in the system.
  *
  * Examples:
- * - Bundle "solvaris" contains "slovaris.countries", "slovaris.currencies", etc.
+ * - Bundle "slovaris" contains "slovaris.countries", "slovaris.currencies", etc.
  * - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
  */
 

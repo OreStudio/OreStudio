@@ -1,0 +1,601 @@
+{{! Template to generate Qt MDI window source for domain entities }}
+{{{cpp_license}}}
+#include "ores.qt/{{domain_entity.entity_pascal}}MdiWindow.hpp"
+
+#include <QVBoxLayout>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QMenu>
+#include <QSettings>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+{{#domain_entity.qt.has_uuid_primary_key}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "{{domain_entity.qt.protocol_include}}"
+#include "ores.comms/messaging/frame.hpp"
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+{{domain_entity.entity_pascal}}MdiWindow::{{domain_entity.entity_pascal}}MdiWindow(
+    ClientManager* clientManager,
+    const QString& username,
+    QWidget* parent)
+    : EntityListMdiWindow(parent),
+      clientManager_(clientManager),
+      username_(username),
+      toolbar_(nullptr),
+      tableView_(nullptr),
+      model_(nullptr),
+      proxyModel_(nullptr),
+      reloadAction_(nullptr),
+      addAction_(nullptr),
+      editAction_(nullptr),
+      deleteAction_(nullptr),
+      historyAction_(nullptr) {
+
+    setupUi();
+    setupConnections();
+
+    // Initial load
+    reload();
+}
+
+QSize {{domain_entity.entity_pascal}}MdiWindow::sizeHint() const {
+    return {900, 400};
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::setupUi() {
+    auto* layout = new QVBoxLayout(this);
+
+    setupToolbar();
+    layout->addWidget(toolbar_);
+
+    setupTable();
+    layout->addWidget(tableView_);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
+
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        tr("Reload"));
+    connect(reloadAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    addAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Add, IconUtils::DefaultIconColor),
+        tr("Add"));
+    addAction_->setToolTip(tr("Add new {{domain_entity.entity_singular_words}}"));
+    connect(addAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::addNew);
+
+    editAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Edit, IconUtils::DefaultIconColor),
+        tr("Edit"));
+    editAction_->setToolTip(tr("Edit selected {{domain_entity.entity_singular_words}}"));
+    editAction_->setEnabled(false);
+    connect(editAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::editSelected);
+
+    deleteAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Delete, IconUtils::DefaultIconColor),
+        tr("Delete"));
+    deleteAction_->setToolTip(tr("Delete selected {{domain_entity.entity_singular_words}}"));
+    deleteAction_->setEnabled(false);
+    connect(deleteAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::deleteSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    historyAction_->setToolTip(tr("View {{domain_entity.entity_singular_words}} history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
+    model_ = new Client{{domain_entity.entity_pascal}}Model(clientManager_, this);
+    proxyModel_ = new QSortFilterProxyModel(this);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
+
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->horizontalHeader()->setStretchLastSection(true);
+    tableView_->verticalHeader()->setVisible(false);
+
+    // Set column widths
+{{#domain_entity.qt.columns}}
+    tableView_->setColumnWidth(Client{{domain_entity.entity_pascal}}Model::{{enum_name}}, {{width}});
+{{/domain_entity.qt.columns}}
+
+    // Setup column visibility with context menu
+    setupColumnVisibility();
+
+    // Restore saved settings (column visibility, window size)
+    restoreSettings();
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::setupConnections() {
+    connect(model_, &Client{{domain_entity.entity_pascal}}Model::dataLoaded,
+            this, &{{domain_entity.entity_pascal}}MdiWindow::onDataLoaded);
+    connect(model_, &Client{{domain_entity.entity_pascal}}Model::loadError,
+            this, &{{domain_entity.entity_pascal}}MdiWindow::onLoadError);
+
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &{{domain_entity.entity_pascal}}MdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked,
+            this, &{{domain_entity.entity_pascal}}MdiWindow::onDoubleClicked);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::reload() {
+    BOOST_LOG_SEV(lg(), debug) << "Reloading {{domain_entity.entity_plural_words}}";
+    clearStaleIndicator();
+    emit statusChanged(tr("Loading {{domain_entity.entity_plural_words}}..."));
+    model_->refresh();
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::onDataLoaded() {
+    emit statusChanged(tr("Loaded %1 {{domain_entity.entity_plural_words}}").arg(model_->rowCount()));
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::onLoadError(const QString& error_message,
+                                          const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::onSelectionChanged() {
+    updateActionStates();
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::onDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid())
+        return;
+
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
+        emit show{{domain_entity.entity_pascal_short}}Details(*{{domain_entity.qt.item_var}});
+    }
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::updateActionStates() {
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), debug) << "Add new {{domain_entity.entity_singular_words}} requested";
+    emit addNewRequested();
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::editSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
+        emit show{{domain_entity.entity_pascal_short}}Details(*{{domain_entity.qt.item_var}});
+    }
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting show{{domain_entity.entity_pascal_short}}History for code: "
+                                   << {{domain_entity.qt.item_var}}->code;
+        emit show{{domain_entity.entity_pascal_short}}History(*{{domain_entity.qt.item_var}});
+    }
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete {{domain_entity.entity_singular_words}} while disconnected.");
+        return;
+    }
+
+{{#domain_entity.qt.has_uuid_primary_key}}
+    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> codes;  // For display purposes
+    for (const auto& index : selected) {
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
+            ids.push_back({{domain_entity.qt.item_var}}->id);
+            codes.push_back({{domain_entity.qt.item_var}}->code);
+        }
+    }
+
+    if (ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid {{domain_entity.entity_plural_words}} to delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
+                               << " {{domain_entity.entity_plural_words}}";
+
+    QString confirmMessage;
+    if (ids.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete {{domain_entity.entity_singular_words}} '%1'?")
+            .arg(QString::fromStdString(codes.front()));
+    } else {
+        confirmMessage = QString("Are you sure you want to delete %1 {{domain_entity.entity_plural_words}}?")
+            .arg(ids.size());
+    }
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+    std::vector<std::string> codes;
+    for (const auto& index : selected) {
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
+            codes.push_back({{domain_entity.qt.item_var}}->code);
+        }
+    }
+
+    if (codes.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid {{domain_entity.entity_plural_words}} to delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
+                               << " {{domain_entity.entity_plural_words}}";
+
+    QString confirmMessage;
+    if (codes.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete {{domain_entity.entity_singular_words}} '%1'?")
+            .arg(QString::fromStdString(codes.front()));
+    } else {
+        confirmMessage = QString("Are you sure you want to delete %1 {{domain_entity.entity_plural_words}}?")
+            .arg(codes.size());
+    }
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+    auto reply = MessageBoxHelper::question(this, "Delete {{domain_entity.entity_title}}",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
+        return;
+    }
+
+    QPointer<{{domain_entity.entity_pascal}}MdiWindow> self = this;
+{{#domain_entity.qt.has_uuid_primary_key}}
+    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+
+    auto task = [self, ids, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self) return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+                                   << ids.size() << " {{domain_entity.entity_plural_words}}";
+
+        {{domain_entity.qt.delete_request_class}} request;
+        request.ids = ids;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::{{domain_entity.qt.delete_message_type}},
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            }
+            return results;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to decompress server response"});
+            }
+            return results;
+        }
+
+        auto response = {{domain_entity.qt.delete_response_class}}::
+            deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Invalid server response"});
+            }
+            return results;
+        }
+
+        // Match results with codes for display purposes
+        for (std::size_t i = 0; i < response->results.size(); ++i) {
+            const auto& result = response->results[i];
+            std::string code = (i < codes.size()) ? codes[i] : "";
+            results.push_back({result.id, code, result.success, result.message});
+        }
+
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "{{domain_entity.entity_title}} deleted: " << code;
+                success_count++;
+                emit self->{{domain_entity.qt.item_var}}Deleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "{{domain_entity.entity_title}} deletion failed: "
+                                           << code << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
+            }
+        }
+
+        self->model_->refresh();
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 {{domain_entity.entity_singular_words}}"
+                : QString("Successfully deleted %1 {{domain_entity.entity_plural_words}}").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "{{domain_entity.entity_singular_words}}" : "{{domain_entity.entity_plural_words}}")
+                .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg = QString("Deleted %1, failed to delete %2")
+                .arg(success_count)
+                .arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+
+    auto task = [self, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self) return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+                                   << codes.size() << " {{domain_entity.entity_plural_words}}";
+
+        {{domain_entity.qt.delete_request_class}} request;
+        request.codes = codes;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::{{domain_entity.qt.delete_message_type}},
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to decompress server response"}});
+            }
+            return results;
+        }
+
+        auto response = {{domain_entity.qt.delete_response_class}}::
+            deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Invalid server response"}});
+            }
+            return results;
+        }
+
+        for (const auto& result : response->results) {
+            results.push_back({result.code, {result.success, result.message}});
+        }
+
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [code, result] : results) {
+            if (result.first) {
+                BOOST_LOG_SEV(lg(), debug) << "{{domain_entity.entity_title}} deleted: " << code;
+                success_count++;
+                emit self->{{domain_entity.qt.item_var}}Deleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "{{domain_entity.entity_title}} deletion failed: "
+                                           << code << " - " << result.second;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(result.second);
+                }
+            }
+        }
+
+        self->model_->refresh();
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 {{domain_entity.entity_singular_words}}"
+                : QString("Successfully deleted %1 {{domain_entity.entity_plural_words}}").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "{{domain_entity.entity_singular_words}}" : "{{domain_entity.entity_plural_words}}")
+                .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg = QString("Deleted %1, failed to delete %2")
+                .arg(success_count)
+                .arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::setupColumnVisibility() {
+    QHeaderView* header = tableView_->horizontalHeader();
+
+    // Enable context menu on header for column visibility
+    header->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(header, &QHeaderView::customContextMenuRequested,
+            this, &{{domain_entity.entity_pascal}}MdiWindow::showHeaderContextMenu);
+
+    // Save header state when sections are moved or resized
+    connect(header, &QHeaderView::sectionMoved, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::saveSettings);
+    connect(header, &QHeaderView::sectionResized, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::saveSettings);
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::showHeaderContextMenu(const QPoint& pos) {
+    QHeaderView* header = tableView_->horizontalHeader();
+    QMenu menu(this);
+    menu.setTitle(tr("Columns"));
+
+    // Add action for each column
+    for (int col = 0; col < model_->columnCount(); ++col) {
+        QString columnName = model_->headerData(col, Qt::Horizontal,
+            Qt::DisplayRole).toString();
+
+        QAction* action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(!header->isSectionHidden(col));
+
+        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
+            header->setSectionHidden(col, !visible);
+            saveSettings();
+            BOOST_LOG_SEV(lg(), debug) << "Column " << col
+                                       << " visibility changed to: " << visible;
+        });
+    }
+
+    menu.exec(header->mapToGlobal(pos));
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::saveSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("{{domain_entity.qt.settings_group}}");
+
+    // Save header state (includes column visibility, order, and widths)
+    QHeaderView* header = tableView_->horizontalHeader();
+    settings.setValue("headerState", header->saveState());
+
+    // Save window size
+    settings.setValue("windowSize", size());
+
+    settings.endGroup();
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::restoreSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("{{domain_entity.qt.settings_group}}");
+
+    QHeaderView* header = tableView_->horizontalHeader();
+
+    // Check if we have saved settings
+    if (settings.contains("headerState")) {
+        // Restore header state
+        header->restoreState(settings.value("headerState").toByteArray());
+        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+    } else {
+        // Apply default column visibility (hide Description by default)
+        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
+        header->setSectionHidden(Client{{domain_entity.entity_pascal}}Model::Description, true);
+    }
+
+    // Restore window size if saved
+    if (settings.contains("windowSize")) {
+        resize(settings.value("windowSize").toSize());
+    }
+
+    settings.endGroup();
+}
+
+}

@@ -1,5 +1,6 @@
 {
   "domain_entity": {
+    "schema": "metadata",
     "component": "dq",
     "entity_singular": "dataset_bundle",
     "entity_plural": "dataset_bundles",
@@ -68,6 +69,42 @@
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
       ]
+    },
+
+    "qt": {
+      "domain_include": "ores.dq/domain/dataset_bundle.hpp",
+      "domain_class": "dq::domain::dataset_bundle",
+      "protocol_include": "ores.dq/messaging/dataset_bundle_protocol.hpp",
+      "collection_name": "bundles",
+      "item_var": "bundle",
+      "key_field": "code",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "dq::messaging::get_dataset_bundles_request",
+      "get_response_class": "dq::messaging::get_dataset_bundles_response",
+      "get_message_type": "get_dataset_bundles_request",
+      "save_request_class": "dq::messaging::save_dataset_bundle_request",
+      "save_response_class": "dq::messaging::save_dataset_bundle_response",
+      "save_message_type": "save_dataset_bundle_request",
+      "delete_request_class": "dq::messaging::delete_dataset_bundle_request",
+      "delete_response_class": "dq::messaging::delete_dataset_bundle_response",
+      "delete_message_type": "delete_dataset_bundle_request",
+      "history_request_class": "dq::messaging::get_dataset_bundle_history_request",
+      "history_response_class": "dq::messaging::get_dataset_bundle_history_response",
+      "history_message_type": "get_dataset_bundle_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 150},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "DatasetBundleListWindow",
+      "window_title": "Dataset Bundles",
+      "icon": "Folder"
     }
   }
 }

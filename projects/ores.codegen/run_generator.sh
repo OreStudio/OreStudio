@@ -26,16 +26,22 @@ cd "$SCRIPT_DIR"
 MODEL_PATH=""
 OUTPUT_DIR=""
 TEMPLATE=""
+PROFILE=""
+LIST_PROFILES=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --template)
+        --template|-t)
             TEMPLATE="$2"
             shift 2
             ;;
-        -t)
-            TEMPLATE="$2"
+        --profile|-p)
+            PROFILE="$2"
             shift 2
+            ;;
+        --list-profiles)
+            LIST_PROFILES=true
+            shift
             ;;
         -*)
             echo "Unknown option: $1"
@@ -55,17 +61,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Handle --list-profiles
+if [ "$LIST_PROFILES" = true ]; then
+    python src/generator.py --list-profiles
+    exit 0
+fi
+
 # Check if a model path was provided
 if [ -z "$MODEL_PATH" ]; then
-    echo "Usage: $0 <model_path> [output_dir] [--template <template_name>]"
+    echo "Usage: $0 <model_path> [output_dir] [options]"
     echo ""
     echo "Options:"
-    echo "  --template, -t <name>  Generate only the specified template"
+    echo "  --template, -t <name>   Generate only the specified template"
+    echo "  --profile, -p <name>    Generate all templates in a profile (e.g., qt, sql)"
+    echo "  --list-profiles         List available profiles and exit"
     echo ""
     echo "Examples:"
     echo "  $0 models/slovaris/catalogs.json"
     echo "  $0 models/slovaris/catalogs.json custom_output/"
     echo "  $0 models/dq/dataset_bundle_domain_entity.json output/ --template cpp_protocol.hpp.mustache"
+    echo "  $0 models/dq/dataset_bundle_domain_entity.json output/ --profile qt"
+    echo "  $0 --list-profiles"
     echo ""
     echo "Available models:"
     find models -name "*.json" -type f | head -10
@@ -79,6 +95,9 @@ if [ -n "$OUTPUT_DIR" ]; then
 fi
 if [ -n "$TEMPLATE" ]; then
     CMD="$CMD --template \"$TEMPLATE\""
+fi
+if [ -n "$PROFILE" ]; then
+    CMD="$CMD --profile \"$PROFILE\""
 fi
 
 # Run the generator

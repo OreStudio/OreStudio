@@ -1,0 +1,313 @@
+{{! Template to generate Qt detail dialog source for domain entities }}
+{{{cpp_license}}}
+#include "ores.qt/{{domain_entity.entity_pascal}}DetailDialog.hpp"
+
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
+#include "{{domain_entity.qt.protocol_include}}"
+#include "ores.comms/messaging/frame.hpp"
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+{{domain_entity.entity_pascal}}DetailDialog::{{domain_entity.entity_pascal}}DetailDialog(QWidget* parent)
+    : DetailDialogBase(parent),
+      ui_(new Ui::{{domain_entity.entity_pascal}}DetailDialog),
+      clientManager_(nullptr) {
+
+    ui_->setupUi(this);
+    setupUi();
+    setupConnections();
+}
+
+{{domain_entity.entity_pascal}}DetailDialog::~{{domain_entity.entity_pascal}}DetailDialog() {
+    delete ui_;
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
+    connect(ui_->saveButton, &QPushButton::clicked, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked);
+
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setUsername(const std::string& username) {
+    username_ = username;
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::set{{domain_entity.entity_pascal_short}}(
+    const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
+    {{domain_entity.qt.item_var}}_ = {{domain_entity.qt.item_var}};
+    updateUiFrom{{domain_entity.entity_pascal_short}}();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode) {
+    createMode_ = createMode;
+    ui_->codeEdit->setReadOnly(!createMode);
+    ui_->deleteButton->setVisible(!createMode);
+
+    if (createMode) {
+        ui_->metadataGroup->setVisible(false);
+    }
+
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.entity_pascal_short}}() {
+    ui_->codeEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.code));
+    ui_->nameEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString({{domain_entity.qt.item_var}}_.description));
+
+    ui_->versionEdit->setText(QString::number({{domain_entity.qt.item_var}}_.version));
+    ui_->recordedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.recorded_by));
+    ui_->recordedAtEdit->setText(relative_time_helper::format({{domain_entity.qt.item_var}}_.recorded_at));
+    ui_->commentaryEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.change_commentary));
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_pascal_short}}FromUi() {
+    if (createMode_) {
+        {{domain_entity.qt.item_var}}_.code = ui_->codeEdit->text().trimmed().toStdString();
+    }
+    {{domain_entity.qt.item_var}}_.name = ui_->nameEdit->text().trimmed().toStdString();
+    {{domain_entity.qt.item_var}}_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    {{domain_entity.qt.item_var}}_.recorded_by = username_;
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onFieldChanged() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::updateSaveButtonState() {
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
+    ui_->saveButton->setEnabled(canSave);
+}
+
+bool {{domain_entity.entity_pascal}}DetailDialog::validateInput() {
+    const QString code = ui_->codeEdit->text().trimmed();
+    const QString name = ui_->nameEdit->text().trimmed();
+
+    return !code.isEmpty() && !name.isEmpty();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot save {{domain_entity.entity_singular_words}} while disconnected from server.");
+        return;
+    }
+
+    if (!validateInput()) {
+        MessageBoxHelper::warning(this, "Invalid Input",
+            "Please fill in all required fields (Code and Name).");
+        return;
+    }
+
+    update{{domain_entity.entity_pascal_short}}FromUi();
+
+    BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.code;
+
+    QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
+
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, {{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}}_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        {{domain_entity.qt.save_request_class}} request;
+        request.{{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}};
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::{{domain_entity.qt.save_message_type}},
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, "Failed to decompress response"};
+        }
+
+        auto response = {{domain_entity.qt.save_response_class}}::
+            deserialize(*payload_result);
+
+        if (!response) {
+            return {false, "Invalid server response"};
+        }
+
+        return {response->success, response->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher, &QFutureWatcher<SaveResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} saved successfully";
+            QString code = QString::fromStdString(self->{{domain_entity.qt.item_var}}_.code);
+            emit self->{{domain_entity.qt.item_var}}Saved(code);
+            self->notifySaveSuccess(tr("{{domain_entity.entity_title}} '%1' saved").arg(code));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+        }
+    });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete {{domain_entity.entity_singular_words}} while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString({{domain_entity.qt.item_var}}_.code);
+    auto reply = MessageBoxHelper::question(this, "Delete {{domain_entity.entity_title}}",
+        QString("Are you sure you want to delete {{domain_entity.entity_singular_words}} '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.code;
+
+    QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+{{#domain_entity.qt.has_uuid_primary_key}}
+    auto task = [self, id = {{domain_entity.qt.item_var}}_.id]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        {{domain_entity.qt.delete_request_class}} request;
+        request.ids = {id};
+        auto payload = request.serialize();
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+    auto task = [self, code = {{domain_entity.qt.item_var}}_.code]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        {{domain_entity.qt.delete_request_class}} request;
+        request.codes = {code};
+        auto payload = request.serialize();
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::{{domain_entity.qt.delete_message_type}},
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, "Failed to decompress response"};
+        }
+
+        auto response = {{domain_entity.qt.delete_response_class}}::
+            deserialize(*payload_result);
+
+        if (!response || response->results.empty()) {
+            return {false, "Invalid server response"};
+        }
+
+        return {response->results[0].success, response->results[0].message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} deleted successfully";
+            emit self->statusMessage(QString("{{domain_entity.entity_title}} '%1' deleted").arg(code));
+            emit self->{{domain_entity.qt.item_var}}Deleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+}

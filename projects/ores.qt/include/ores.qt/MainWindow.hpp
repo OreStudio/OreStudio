@@ -67,6 +67,7 @@ class CatalogController;
 class CodingSchemeController;
 class MethodologyController;
 class DatasetController;
+class DatasetBundleController;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -505,6 +506,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<DatasetController> datasetController_;
+
+    /**
+     * @brief Controller managing dataset bundle windows.
+     *
+     * Created after successful login, handles dataset bundle list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<DatasetBundleController> datasetBundleController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

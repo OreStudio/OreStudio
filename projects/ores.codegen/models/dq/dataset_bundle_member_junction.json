@@ -1,5 +1,6 @@
 {
   "junction": {
+    "schema": "metadata",
     "component": "dq",
     "name": "dataset_bundle_members",
     "name_singular": "dataset_bundle_member",

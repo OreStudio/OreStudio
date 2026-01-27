@@ -19,13 +19,14 @@
  */
 
 /**
- * Dataset Bundle Table
+ *  Table
  *
- * A named collection of datasets designed to work together. Installing a bundle
- * gets the system into a ready state with a coherent set of reference data.
+ * Installing a bundle gets the system into a ready state with a coherent set
+ * of reference data. Bundles provide a way to group related datasets that
+ * should be installed together.
  *
  * Examples:
- * - "solvaris": Synthetic reference data for development and testing
+ * - "slovaris": Synthetic reference data for development and testing
  * - "base": Industry-standard reference data (ISO + FpML) for production
  * - "crypto": Base system plus cryptocurrency reference data
  */

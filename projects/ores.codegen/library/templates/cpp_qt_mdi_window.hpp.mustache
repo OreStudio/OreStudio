@@ -1,0 +1,104 @@
+{{! Template to generate Qt MDI window header for domain entities }}
+{{{cpp_license}}}
+#ifndef ORES_QT_{{domain_entity.entity_upper}}_MDI_WINDOW_HPP
+#define ORES_QT_{{domain_entity.entity_upper}}_MDI_WINDOW_HPP
+
+#include <QToolBar>
+#include <QTableView>
+#include <QSortFilterProxyModel>
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/Client{{domain_entity.entity_pascal}}Model.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "{{domain_entity.qt.domain_include}}"
+
+namespace ores::qt {
+
+/**
+ * @brief MDI window for displaying and managing {{domain_entity.entity_plural_words}}.
+ *
+ * Provides a table view of {{domain_entity.entity_plural_words}} with toolbar actions
+ * for reload, add, edit, delete, and viewing history.
+ */
+class {{domain_entity.entity_pascal}}MdiWindow final : public EntityListMdiWindow {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.{{domain_entity.entity_snake}}_mdi_window";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit {{domain_entity.entity_pascal}}MdiWindow(
+        ClientManager* clientManager,
+        const QString& username,
+        QWidget* parent = nullptr);
+    ~{{domain_entity.entity_pascal}}MdiWindow() override = default;
+
+    QSize sizeHint() const override;
+
+public slots:
+    void reload() override;
+
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
+    void show{{domain_entity.entity_pascal_short}}Details(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void addNewRequested();
+    void {{domain_entity.qt.item_var}}Deleted(const QString& code);
+    void show{{domain_entity.entity_pascal_short}}History(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+
+public slots:
+    void addNew();
+    void editSelected();
+    void deleteSelected();
+    void viewHistorySelected();
+
+private slots:
+    void onDataLoaded();
+    void onLoadError(const QString& error_message, const QString& details = {});
+    void onSelectionChanged();
+    void onDoubleClicked(const QModelIndex& index);
+
+private slots:
+    void showHeaderContextMenu(const QPoint& pos);
+
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh {{domain_entity.entity_plural_words}}");
+    }
+
+private:
+    void setupUi();
+    void setupToolbar();
+    void setupTable();
+    void setupColumnVisibility();
+    void setupConnections();
+    void updateActionStates();
+    void saveSettings();
+    void restoreSettings();
+
+    ClientManager* clientManager_;
+    QString username_;
+
+    QToolBar* toolbar_;
+    QTableView* tableView_;
+    Client{{domain_entity.entity_pascal}}Model* model_;
+    QSortFilterProxyModel* proxyModel_;
+
+    // Toolbar actions
+    QAction* reloadAction_;
+    QAction* addAction_;
+    QAction* editAction_;
+    QAction* deleteAction_;
+    QAction* historyAction_;
+};
+
+}
+
+#endif

@@ -1,0 +1,237 @@
+{{! Template to generate Qt client model source for domain entities }}
+{{{cpp_license}}}
+#include "ores.qt/Client{{domain_entity.entity_pascal}}Model.hpp"
+
+#include <QtConcurrent>
+#include "{{domain_entity.qt.protocol_include}}"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.comms/messaging/frame.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
+
+namespace ores::qt {
+
+using namespace ores::logging;
+using ores::comms::messaging::frame;
+using ores::comms::messaging::message_type;
+
+namespace {
+    std::string {{domain_entity.entity_snake}}_key_extractor(const {{domain_entity.qt.domain_class}}& e) {
+        return e.{{domain_entity.qt.key_field}};
+    }
+}
+
+Client{{domain_entity.entity_pascal}}Model::Client{{domain_entity.entity_pascal}}Model(
+    ClientManager* clientManager, QObject* parent)
+    : QAbstractTableModel(parent),
+      clientManager_(clientManager),
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      recencyTracker_({{domain_entity.entity_snake}}_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
+
+    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
+            this, &Client{{domain_entity.entity_pascal}}Model::on{{domain_entity.entity_pascal_short_plural}}Loaded);
+
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &Client{{domain_entity.entity_pascal}}Model::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &Client{{domain_entity.entity_pascal}}Model::onPulsingComplete);
+}
+
+int Client{{domain_entity.entity_pascal}}Model::rowCount(const QModelIndex& parent) const {
+    if (parent.isValid())
+        return 0;
+    return static_cast<int>({{domain_entity.qt.collection_name}}_.size());
+}
+
+int Client{{domain_entity.entity_pascal}}Model::columnCount(const QModelIndex& parent) const {
+    if (parent.isValid())
+        return 0;
+    return ColumnCount;
+}
+
+QVariant Client{{domain_entity.entity_pascal}}Model::data(
+    const QModelIndex& index, int role) const {
+    if (!index.isValid())
+        return {};
+
+    const auto row = static_cast<std::size_t>(index.row());
+    if (row >= {{domain_entity.qt.collection_name}}_.size())
+        return {};
+
+    const auto& {{domain_entity.qt.item_var}} = {{domain_entity.qt.collection_name}}_[row];
+
+    if (role == Qt::DisplayRole) {
+        switch (index.column()) {
+{{#domain_entity.qt.columns}}
+        case {{enum_name}}:
+{{#is_string}}
+            return QString::fromStdString({{domain_entity.qt.item_var}}.{{field}});
+{{/is_string}}
+{{#is_int}}
+            return {{domain_entity.qt.item_var}}.{{field}};
+{{/is_int}}
+{{#is_timestamp}}
+            return relative_time_helper::format({{domain_entity.qt.item_var}}.{{field}});
+{{/is_timestamp}}
+{{/domain_entity.qt.columns}}
+        default:
+            return {};
+        }
+    }
+
+    if (role == Qt::ForegroundRole) {
+        return recency_foreground_color({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}});
+    }
+
+    return {};
+}
+
+QVariant Client{{domain_entity.entity_pascal}}Model::headerData(
+    int section, Qt::Orientation orientation, int role) const {
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return {};
+
+    switch (section) {
+{{#domain_entity.qt.columns}}
+    case {{enum_name}}:
+        return tr("{{header}}");
+{{/domain_entity.qt.columns}}
+    default:
+        return {};
+    }
+}
+
+void Client{{domain_entity.entity_pascal}}Model::refresh() {
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        emit loadError("Not connected to server");
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Starting {{domain_entity.entity_singular_words}} fetch";
+    is_fetching_ = true;
+
+    QPointer<Client{{domain_entity.entity_pascal}}Model> self = this;
+
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
+
+            {{domain_entity.qt.get_request_class}} request;
+            auto payload = request.serialize();
+
+            frame request_frame(
+                message_type::{{domain_entity.qt.get_message_type}},
+                0, std::move(payload)
+            );
+
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
+
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
+
+            auto response = {{domain_entity.qt.get_response_class}}::
+                deserialize(*payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->{{domain_entity.qt.collection_name}}.size()
+                                       << " {{domain_entity.entity_plural_words}}";
+            return {.success = true, .{{domain_entity.qt.collection_name}} = std::move(response->{{domain_entity.qt.collection_name}}),
+                    .error_message = {}, .error_details = {}};
+        }, "{{domain_entity.entity_plural_words}}");
+    });
+
+    watcher_->setFuture(future);
+}
+
+void Client{{domain_entity.entity_pascal}}Model::on{{domain_entity.entity_pascal_short_plural}}Loaded() {
+    is_fetching_ = false;
+
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch {{domain_entity.entity_plural_words}}: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
+        return;
+    }
+
+    beginResetModel();
+    {{domain_entity.qt.collection_name}}_ = std::move(result.{{domain_entity.qt.collection_name}});
+    endResetModel();
+
+    const bool has_recent = recencyTracker_.update({{domain_entity.qt.collection_name}}_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " {{domain_entity.entity_plural_words}} newer than last reload";
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << {{domain_entity.qt.collection_name}}_.size() << " {{domain_entity.entity_plural_words}}";
+    emit dataLoaded();
+}
+
+const {{domain_entity.qt.domain_class}}*
+Client{{domain_entity.entity_pascal}}Model::get{{domain_entity.entity_pascal_short}}(int row) const {
+    const auto idx = static_cast<std::size_t>(row);
+    if (idx >= {{domain_entity.qt.collection_name}}_.size())
+        return nullptr;
+    return &{{domain_entity.qt.collection_name}}_[idx];
+}
+
+QVariant Client{{domain_entity.entity_pascal}}Model::recency_foreground_color(
+    const std::string& code) const {
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
+    }
+    return {};
+}
+
+void Client{{domain_entity.entity_pascal}}Model::onPulseStateChanged(bool /*isOn*/) {
+    if (!{{domain_entity.qt.collection_name}}_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+void Client{{domain_entity.entity_pascal}}Model::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
+}
+
+}

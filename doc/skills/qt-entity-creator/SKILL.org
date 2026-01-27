@@ -31,6 +31,38 @@ Prerequisites:
 
 * How to use this skill
 
+*Recommended approach*: Use code generation first. The =ores.codegen= project can
+generate all Qt UI components from JSON models, ensuring consistency with
+established patterns.
+
+** Priority order
+
+1. *Use code generation*: Create a JSON model and generate Qt components using
+   =--profile qt=. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for details.
+2. *Update templates*: If the entity doesn't fit existing templates, modify the
+   Qt Mustache templates in =library/templates/= to support the new pattern.
+3. *Manual creation*: Only create Qt components manually as a last resort when
+   code generation cannot support the required UI pattern.
+
+** Code generation workflow
+
+1. Ensure a JSON model exists in =projects/ores.codegen/models/{component}/=
+2. Generate all Qt UI components:
+   #+begin_src sh
+   cd projects/ores.codegen
+   ./run_generator.sh models/{component}/{entity}_domain_entity.json output/ --profile qt
+   #+end_src
+3. Review the generated output in =output/=
+4. Copy files to =projects/ores.qt/=:
+   - Headers to =include/ores.qt/=
+   - Sources to =src/=
+   - UI files to =ui/=
+5. Integrate controller into MainWindow (Step 8 below)
+6. Build and test
+7. Raise PRs at designated checkpoints
+
+** Manual workflow (last resort)
+
 1. Gather entity requirements (name, fields, features needed).
 2. Follow the detailed instructions to create components in order.
 3. Each phase ends with a PR checkpoint - raise PR, wait for review, merge.

@@ -287,17 +287,85 @@ def load_profiles(base_dir):
     return data.get('profiles', {})
 
 
-def resolve_profile_templates(profile_name, profiles, resolved=None):
+def snake_to_pascal(snake_str):
+    """
+    Convert a snake_case string to PascalCase.
+
+    Args:
+        snake_str (str): Snake case string (e.g., "dataset_bundle")
+
+    Returns:
+        str: PascalCase string (e.g., "DatasetBundle")
+    """
+    return ''.join(word.capitalize() for word in snake_str.split('_'))
+
+
+def resolve_output_path(output_pattern, model_data, model_type):
+    """
+    Resolve placeholders in an output path pattern.
+
+    Args:
+        output_pattern (str): Output path pattern with placeholders
+        model_data (dict): The loaded model data
+        model_type (str): The model type ('domain_entity', 'junction', etc.)
+
+    Returns:
+        str: Resolved output path
+    """
+    result = output_pattern
+
+    # Extract values based on model type
+    if model_type == 'domain_entity' and 'domain_entity' in model_data:
+        entity = model_data['domain_entity']
+        component = entity.get('component', 'unknown')
+        entity_singular = entity.get('entity_singular', 'unknown')
+        entity_plural = entity.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    elif model_type == 'junction' and 'junction' in model_data:
+        junction = model_data['junction']
+        component = junction.get('component', 'unknown')
+        junction_name = junction.get('name', 'unknown')
+        name_singular = junction.get('name_singular', junction_name.rstrip('s'))
+        entity_pascal = snake_to_pascal(name_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{junction_name}', junction_name)
+        result = result.replace('{entity}', name_singular)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    elif 'schema' in model_data:
+        schema = model_data['schema']
+        component = schema.get('component', 'unknown')
+        entity_singular = schema.get('entity_singular', 'unknown')
+        entity_plural = schema.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    return result
+
+
+def resolve_profile_templates(profile_name, profiles, model_type=None, resolved=None):
     """
     Resolve all templates for a profile, including any included profiles.
 
     Args:
         profile_name (str): Name of the profile to resolve
         profiles (dict): Dictionary of all profile definitions
+        model_type (str): The model type for filtering templates
         resolved (set): Set of already resolved profile names (for cycle detection)
 
     Returns:
-        list: List of template names
+        list: List of template info dicts with 'template' and optional 'output' keys
     """
     if resolved is None:
         resolved = set()
@@ -311,11 +379,24 @@ def resolve_profile_templates(profile_name, profiles, resolved=None):
 
     resolved.add(profile_name)
     profile = profiles[profile_name]
-    templates = list(profile.get('templates', []))
+    templates = []
+
+    # Process templates - handle both old string format and new object format
+    for tmpl in profile.get('templates', []):
+        if isinstance(tmpl, str):
+            # Old format: just template name
+            templates.append({'template': tmpl})
+        elif isinstance(tmpl, dict):
+            # New format: object with template and output
+            # Check if template is compatible with model type
+            tmpl_model_types = tmpl.get('model_types')
+            if tmpl_model_types and model_type and model_type not in tmpl_model_types:
+                continue  # Skip this template - not compatible with model type
+            templates.append(tmpl)
 
     # Resolve included profiles
     for included in profile.get('includes', []):
-        templates.extend(resolve_profile_templates(included, profiles, resolved))
+        templates.extend(resolve_profile_templates(included, profiles, model_type, resolved))
 
     return templates
 
@@ -1438,20 +1519,44 @@ def main():
             print(f"Error: {error}")
             sys.exit(1)
 
-        # Resolve all templates in the profile
-        templates = resolve_profile_templates(args.profile, profiles)
+        # Load model data to resolve output paths
+        with open(args.model_path, 'r', encoding='utf-8') as f:
+            model_data = json.load(f)
+
+        # Resolve all templates in the profile (with model type filtering)
+        templates = resolve_profile_templates(args.profile, profiles, model_type)
         if not templates:
             print(f"Error: Profile '{args.profile}' has no templates")
             sys.exit(1)
 
         print(f"Generating {len(templates)} templates from profile '{args.profile}'...")
 
+        # Determine project root (parent of projects/ores.codegen)
+        project_root = base_dir.parent.parent
+
         # Generate each template
-        for template in templates:
-            generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
-                                is_processing_batch=False,
-                                target_template=template,
-                                target_output=args.target_output)
+        for tmpl_info in templates:
+            template_name = tmpl_info.get('template') if isinstance(tmpl_info, dict) else tmpl_info
+            output_pattern = tmpl_info.get('output') if isinstance(tmpl_info, dict) else None
+
+            # Resolve output path if pattern is provided
+            if output_pattern:
+                resolved_output = resolve_output_path(output_pattern, model_data, model_type)
+                full_output_path = project_root / resolved_output
+
+                # Create output directory if needed
+                full_output_path.parent.mkdir(parents=True, exist_ok=True)
+
+                generate_from_model(args.model_path, data_dir, templates_dir, full_output_path.parent,
+                                    is_processing_batch=False,
+                                    target_template=template_name,
+                                    target_output=full_output_path.name)
+            else:
+                # Fall back to default output directory
+                generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                                    is_processing_batch=False,
+                                    target_template=template_name,
+                                    target_output=args.target_output)
     else:
         # Single template or default generation
         generate_from_model(args.model_path, data_dir, templates_dir, output_dir,

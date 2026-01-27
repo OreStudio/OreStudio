@@ -681,18 +681,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             elif ds.get('subject_area_name') == 'Countries':
                 data['countries_dataset'] = ds
 
-    # Generate enhanced license with modeline and copyright header
+    # Generate SQL license with modeline and copyright header
     if 'licence-GPL-v3' in data and 'modelines' in data:
         # Get the SQL modeline
         sql_modeline = data['modelines'].get('sql', '')
-        # Generate the enhanced license
-        enhanced_license = generate_license_with_header(
+        # Generate the SQL license
+        sql_license = generate_license_with_header(
             data['licence-GPL-v3'],
             sql_modeline,
             'sql'
         )
         # Add to data for use in templates
-        data['enhanced_license'] = enhanced_license
+        data['sql_license'] = sql_license
         # Also add the modeline separately if needed
         data['sql_modeline'] = sql_modeline
 

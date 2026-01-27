@@ -449,10 +449,14 @@ ApplyProvisioningPage::ApplyProvisioningPage(SystemProvisionerWizard* wizard)
 
     layout->addSpacing(20);
 
-    // Progress bar
+    // Progress bar with visible animation style
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0);  // Indeterminate initially
     progressBar_->setMinimumWidth(400);
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_, 0, Qt::AlignCenter);
 
     layout->addSpacing(20);
@@ -478,6 +482,12 @@ void ApplyProvisioningPage::initializePage() {
     provisioningSuccess_ = false;
     logOutput_->clear();
     progressBar_->setRange(0, 0);  // Indeterminate
+
+    // Disable Finish button during provisioning
+    wizard()->button(QWizard::FinishButton)->setEnabled(false);
+
+    // Also hide the Back button during provisioning
+    wizard()->button(QWizard::BackButton)->setVisible(false);
 
     // Start provisioning after a short delay
     QTimer::singleShot(100, this, &ApplyProvisioningPage::startProvisioning);
@@ -648,6 +658,9 @@ void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& resul
         setStatus(tr("Provisioning completed successfully!"));
         provisioningComplete_ = true;
         provisioningSuccess_ = true;
+
+        // Re-enable Finish button now that provisioning is complete
+        wizard()->button(QWizard::FinishButton)->setEnabled(true);
         emit completeChanged();
 
         // Show next steps message
@@ -670,6 +683,9 @@ void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& resul
 
         provisioningComplete_ = true;
         provisioningSuccess_ = false;
+
+        // Re-enable Finish button so user can close the wizard
+        wizard()->button(QWizard::FinishButton)->setEnabled(true);
         emit completeChanged();
         emit wizard_->provisioningFailed(result.error_message);
     }

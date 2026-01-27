@@ -1,0 +1,75 @@
+{
+  "junction": {
+    "component": "dq",
+    "name": "dataset_bundle_members",
+    "name_singular": "dataset_bundle_member",
+    "name_title": "Dataset Bundle Member",
+    "name_singular_words": "membership",
+    "brief": "Links a dataset to a bundle.",
+    "description": "Junction table linking bundles to their constituent datasets. Uses codes\nfor loose coupling - allows declaring membership for datasets that may not\nyet exist in the system.\n\nExamples:\n- Bundle \"slovaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
+
+    "left": {
+      "column": "bundle_code",
+      "column_short": "bundle",
+      "column_title": "Bundle",
+      "type": "text",
+      "cpp_type": "std::string",
+      "index_comment": "Index for looking up datasets in a bundle",
+      "description": "Code of the bundle this membership belongs to.",
+      "detail": "References dataset_bundle.code (soft FK).",
+      "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
+    },
+
+    "right": {
+      "column": "dataset_code",
+      "column_short": "dataset",
+      "column_title": "Dataset",
+      "type": "text",
+      "cpp_type": "std::string",
+      "index_comment": "Index for finding bundles containing a dataset",
+      "description": "Code of the dataset that is a member of the bundle.",
+      "detail": "References dataset.code (soft FK).",
+      "generator_expr": "std::string(faker::word::noun()) + \".\" + std::string(faker::word::noun())"
+    },
+
+    "columns": [
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default_value": "0",
+        "description": "Order in which this dataset should be displayed or processed.",
+        "detail": "Lower numbers appear first. Used for controlling installation order\nand UI presentation.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "dq_dataset_bundle_members_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "member",
+      "name_short": "members",
+      "name_singular_words": "dataset bundle member",
+      "name_words": "dataset bundle members",
+      "order_column": "display_order"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "m",
+      "table_display": [
+        {"column": "bundle_code", "header": "Bundle"},
+        {"column": "dataset_code", "header": "Dataset"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

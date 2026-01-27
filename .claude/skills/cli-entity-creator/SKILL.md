@@ -1,0 +1,705 @@
+---
+name: cli-entity-creator
+description: Create CLI commands for domain entities in ores.cli including import, export, list, delete, and add operations.
+license: Complete terms in LICENSE.txt
+---
+
+
+# When to use this skill
+
+When you need to add CLI commands for a new entity in `ores.cli`. This skill guides you through creating the options structs, entity parser, and application logic following established patterns.
+
+Prerequisites:
+
+-   The domain type must already exist
+-   The repository for CRUD operations must be implemented
+-   Table I/O and JSON I/O must be available for output formatting
+
+These are all implemented by [domain-type-creator](../domain-type-creator/SKILL.md) skill.
+
+
+# How to use this skill
+
+1.  Gather entity requirements (name, operations needed, parameters).
+2.  Follow the detailed instructions to create CLI support in phases.
+3.  Each phase ends with a PR checkpoint - raise PR, wait for review, merge.
+4.  Create a fresh branch from main for the next phase (see [feature-branch-manager](../feature-branch-manager/SKILL.md)).
+5.  Build and test after each step.
+
+
+# PR Strategy
+
+This skill is structured into **three phases**, each resulting in a separate PR.
+
+| Phase | Steps     | PR Title Template                             |
+|----- |--------- |--------------------------------------------- |
+| 1     | Steps 1-4 | `[cli] Add <entity> list and export commands` |
+| 2     | Steps 5-7 | `[cli] Add <entity> add and delete commands`  |
+| 3     | Step 8    | `[doc] Add <entity> CLI command recipes`      |
+
+After each PR is merged, use [feature-branch-manager](../feature-branch-manager/SKILL.md) to transition to the next phase.
+
+
+# Detailed instructions
+
+The following sections describe the step-by-step process for creating CLI commands for an entity.
+
+
+## Gather Requirements
+
+Before starting, gather the following information:
+
+-   **Entity name**: The name of the entity (e.g., `currency`, `account`, `feature_flags`).
+-   **Component location**: Which domain the entity belongs to (e.g., `ores.refdata`, `ores.iam`).
+-   **Command name**: The CLI command name (typically plural with hyphens, e.g., `currencies`, `accounts`, `feature-flags`).
+
+-   **Operations needed**:
+    -   [ ] Import from external files (ORE XML, etc.)
+    -   [ ] Export to external formats (XML, CSV)
+    -   [ ] List in internal formats (JSON, table)
+    -   [ ] Delete by key
+    -   [ ] Add new entity from command-line parameters
+-   **Key field**: The primary identifier for filtering (e.g., `iso_code` for currencies).
+-   **Required add parameters**: What fields are required when adding a new entity.
+-   **Optional add parameters**: What fields have defaults.
+
+
+# Phase 1: List and Export Commands
+
+This phase creates the entity parser with basic list/export operations. After completing Steps 1-4, raise a PR.
+
+**Suggested PR title:** `[cli] Add <entity> list and export commands`
+
+
+## Step 1: Add Entity Enum Value
+
+Add the entity to the enumeration of available entities in [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.cli/include/ores.cli/config/entity.hppprojects/ores.cli/include/ores.cli/config/entity.hpp) as follows:
+
+```cpp
+enum class entity {
+    currencies,
+    accounts,
+    feature_flags,
+    login_info,
+    <entity>  // Add new entity here
+};
+```
+
+
+## Step 2: Create Entity Parser
+
+
+## Phase 1 Checkpoint: Raise PR
+
+At this point:
+
+1.  Build and verify: `cmake --build --preset linux-clang-debug`
+2.  Test manually: `./ores.cli <entities> --help`
+3.  Test list: `./ores.cli <entities> list --format table`
+4.  Commit all changes.
+5.  Push branch and raise PR.
+
+**PR Title:** `[cli] Add <entity> list and export commands`
+
+**PR Description:**
+
+```
+## Summary
+
+- Add <entities> entity enum value
+- Create <entities>_parser for command handling
+- Implement list and export operations with JSON/table formats
+- Register in main parser
+
+## Test Plan
+
+- [ ] Build succeeds
+- [ ] `<entities> --help` shows available operations
+- [ ] `<entities> list --format json` outputs JSON
+- [ ] `<entities> list --format table` outputs table
+```
+
+Wait for review feedback and merge before continuing to Phase 2.
+
+
+# Phase 2: Add and Delete Commands
+
+After Phase 1 PR is merged, use [feature-branch-manager](../feature-branch-manager/SKILL.md) to transition to Phase 2.
+
+**Suggested PR title:** `[cli] Add <entity> add and delete commands`
+
+
+## Step 5: Create Add Options Struct
+
+Create the options struct for add command parameters.
+
+
+### Header file location
+
+`projects/ores.cli/include/ores.cli/config/add_<entity>_options.hpp`
+
+
+### Header structure
+
+```cpp
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * licensing text...
+ */
+#ifndef ORES_CLI_CONFIG_ADD_<ENTITY>_OPTIONS_HPP
+#define ORES_CLI_CONFIG_ADD_<ENTITY>_OPTIONS_HPP
+
+#include <iosfwd>
+#include <string>
+#include <optional>
+
+namespace ores::cli::config {
+
+/**
+ * @brief Configuration for adding a <entity> entity via command-line arguments.
+ */
+struct add_<entity>_options final {
+    // Required fields
+    std::string <key_field>;
+    std::string modified_by;
+
+    // Optional fields with defaults
+    std::optional<std::string> optional_field1;
+    std::optional<int> optional_field2;
+};
+
+std::ostream& operator<<(std::ostream& s, const add_<entity>_options& v);
+
+}
+
+#endif
+```
+
+
+### Implementation file location
+
+`projects/ores.cli/src/config/add_<entity>_options.cpp`
+
+
+### Implementation structure
+
+```cpp
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * licensing text...
+ */
+#include "ores.cli/config/add_<entity>_options.hpp"
+
+#include <ostream>
+
+namespace ores::cli::config {
+
+std::ostream& operator<<(std::ostream& s, const add_<entity>_options& v) {
+    s << "{ <key_field>: " << v.<key_field>
+      << ", modified_by: " << v.modified_by;
+
+    if (v.optional_field1) s << ", optional_field1: " << *v.optional_field1;
+    if (v.optional_field2) s << ", optional_field2: " << *v.optional_field2;
+
+    s << " }";
+    return s;
+}
+
+}
+```
+
+
+### Commit message
+
+```
+[cli] Add add_<entity>_options struct
+```
+
+
+## Step 6: Update Add Options Variant
+
+Add the new options type to the add\_options variant.
+
+
+### File to modify
+
+`projects/ores.cli/include/ores.cli/config/add_options.hpp`
+
+
+### Changes required
+
+Add include:
+
+```cpp
+#include "ores.cli/config/add_<entity>_options.hpp"
+```
+
+Add to variant:
+
+```cpp
+using add_options = std::variant<
+    add_currency_options,
+    add_account_options,
+    add_feature_flag_options,
+    add_login_info_options,
+    add_<entity>_options  // Add new type
+>;
+```
+
+
+### Commit message
+
+```
+[cli] Add add_<entity>_options to variant
+```
+
+
+## Step 7: Extend Parser and Application for Add/Delete
+
+Add the add and delete operations to the parser and application.
+
+
+### Parser changes
+
+Update `projects/ores.cli/src/config/entity_parsers/<entities>_parser.cpp`:
+
+1.  Add include:
+
+```cpp
+#include "ores.cli/config/add_<entity>_options.hpp"
+```
+
+1.  Add command names:
+
+```cpp
+const std::string delete_command_name("delete");
+const std::string add_command_name("add");
+
+const std::vector<std::string> allowed_operations{
+    export_command_name, list_command_name,
+    delete_command_name, add_command_name
+};
+```
+
+1.  Add options description function:
+
+```cpp
+/**
+ * @brief Creates the options related to adding <entities>.
+ */
+options_description make_add_<entity>_options_description() {
+    options_description r("Add <Entity> Options");
+    r.add_options()
+        ("<key-field>",
+            value<std::string>(),
+            "<Key field> (required)")
+        ("optional-field1",
+            value<std::string>()->default_value(""),
+            "Optional field 1")
+        ("optional-field2",
+            value<int>()->default_value(0),
+            "Optional field 2")
+        ("modified-by",
+            value<std::string>(),
+            "Username of modifier (required)");
+
+    return r;
+}
+```
+
+1.  Add read function:
+
+```cpp
+/**
+ * @brief Reads the add configuration from the variables map for <entities>.
+ */
+ores::cli::config::add_<entity>_options
+read_add_<entity>_options(const variables_map& vm) {
+    ores::cli::config::add_<entity>_options r;
+
+    if (vm.count("modified-by") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --modified-by for add command."));
+    }
+    r.modified_by = vm["modified-by"].as<std::string>();
+
+    // Required fields
+    if (vm.count("<key-field>") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --<key-field> for add command."));
+    }
+    r.<key_field> = vm["<key-field>"].as<std::string>();
+
+    // Optional fields
+    if (vm.count("optional-field1") != 0)
+        r.optional_field1 = vm["optional-field1"].as<std::string>();
+    if (vm.count("optional-field2") != 0)
+        r.optional_field2 = vm["optional-field2"].as<int>();
+
+    return r;
+}
+```
+
+1.  Update help operations list:
+
+```cpp
+const std::vector<std::pair<std::string, std::string>> operations = {
+    {"export", "Export <entities> to external formats"},
+    {"list", "List <entities> as JSON or table"},
+    {"delete", "Delete a <entity> by <key>"},
+    {"add", "Add a new <entity>"}
+};
+```
+
+1.  Add operation handlers in `handle_<entities>_command()`:
+
+```cpp
+} else if (operation == delete_command_name) {
+    auto d = add_common_options(make_delete_options_description());
+    if (has_help) {
+        print_help_command("<entities> delete", d, info);
+        return {};
+    }
+    store(command_line_parser(o).options(d).run(), vm);
+    store(parse_environment(d, name_mapper), vm);
+    r.deleting = read_delete_options(vm, entity::<entities>);
+} else if (operation == add_command_name) {
+    auto d = add_common_options(make_add_<entity>_options_description());
+    if (has_help) {
+        print_help_command("<entities> add", d, info);
+        return {};
+    }
+    store(command_line_parser(o).options(d).run(), vm);
+    store(parse_environment(d, name_mapper), vm);
+    r.adding = read_add_<entity>_options(vm);
+}
+```
+
+
+### Application changes
+
+Update `projects/ores.cli/src/app/application.cpp`:
+
+1.  Add include:
+
+```cpp
+#include "ores.cli/config/add_<entity>_options.hpp"
+```
+
+1.  Add delete method:
+
+```cpp
+void application::
+delete_<entity>(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting <entity>: " << cfg.key;
+    <component>::repository::<entity>_repository repo(context_);
+    repo.remove(cfg.key);
+    output_stream_ << "<Entity> deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted <entity>: " << cfg.key;
+}
+```
+
+1.  Add to `delete_data()` switch:
+
+```cpp
+case config::entity::<entities>:
+    delete_<entity>(cfg);
+    break;
+```
+
+1.  Add add method:
+
+```cpp
+void application::
+add_<entity>(const config::add_<entity>_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding <entity>: " << cfg.<key_field>;
+
+    // Construct <entity> from command-line arguments
+    <component>::domain::<entity> item;
+    item.<key_field> = cfg.<key_field>;
+    item.optional_field1 = cfg.optional_field1.value_or("");
+    item.optional_field2 = cfg.optional_field2.value_or(0);
+    item.recorded_by = cfg.modified_by;
+
+    // Write to database
+    <component>::repository::<entity>_repository repo(context_);
+    repo.write(item);
+
+    output_stream_ << "Successfully added <entity>: " << item.<key_field> << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added <entity>: " << item.<key_field>;
+}
+```
+
+1.  Add to `add_data()` visitor:
+
+```cpp
+} else if constexpr (std::is_same_v<T, config::add_<entity>_options>) {
+    add_<entity>(opts);
+}
+```
+
+1.  Update application header with new method declarations.
+
+
+### Update parser command description
+
+In `parser.cpp`, update the command description:
+
+```cpp
+const std::string <entities>_command_desc("Manage <entities> (list, export, delete, add).");
+```
+
+
+### Commit message
+
+```
+[cli] Add <entity> add and delete operations
+
+Implement add command with entity-specific options and
+delete command for removing <entities> by key.
+```
+
+
+## Phase 2 Checkpoint: Raise PR
+
+At this point:
+
+1.  Build and verify: `cmake --build --preset linux-clang-debug`
+2.  Test add: `./ores.cli <entities> add --<key-field> test --modified-by admin`
+3.  Test delete: `./ores.cli <entities> delete --key test`
+4.  Commit all changes.
+5.  Push branch and raise PR.
+
+**PR Title:** `[cli] Add <entity> add and delete commands`
+
+**PR Description:**
+
+```
+## Summary
+
+- Add add_<entity>_options struct for add parameters
+- Implement add command for creating new <entities>
+- Implement delete command for removing <entities> by key
+- Update parser to support all four operations
+
+## Test Plan
+
+- [ ] Build succeeds
+- [ ] `<entities> add --help` shows required parameters
+- [ ] `<entities> add` creates new <entity>
+- [ ] `<entities> delete --key <key>` removes <entity>
+```
+
+Wait for review feedback and merge before continuing to Phase 3.
+
+
+# Phase 3: Recipe Documentation
+
+After Phase 2 PR is merged, use [feature-branch-manager](../feature-branch-manager/SKILL.md) to transition to Phase 3.
+
+**Suggested PR title:** `[doc] Add <entity> CLI command recipes`
+
+
+## Step 8: Add CLI Recipes
+
+Add all new commands to CLI recipes following the [ores-cli-recipes](../ores-cli-recipes/SKILL.md) skill. This ensures every command is documented with runnable examples.
+
+
+### File to modify
+
+`doc/recipes/cli_recipes.org`
+
+
+### Recipe requirements
+
+Create recipes that test **every command** added for the entity:
+
+1.  **Help recipe**: Show the entity command help output
+2.  **List recipe**: Demonstrate listing all entities (JSON and table formats)
+3.  **Add recipe**: Demonstrate creating a new entity
+4.  **Delete recipe**: Demonstrate deleting an entity
+
+
+### Recipe section structure
+
+Add a new section for the entity following the existing pattern in `cli_recipes.org`:
+
+\#+begin\_src fundamental
+
+
+## <Entities>
+
+<Entity> management operations from the ORE Studio <Component> Component.
+
+
+### Help
+
+Show available operations for <entities>.
+
+```sh
+./ores.cli <entities> --help
+```
+
+
+### List
+
+List all <entities> in table format.
+
+```sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> list ${db_args} ${log_args} --format table
+```
+
+
+### List as JSON
+
+List all <entities> in JSON format.
+
+```sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> list ${db_args} ${log_args} --format json
+```
+
+
+### Add
+
+Create a new <entity>.
+
+```sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> add ${db_args} ${log_args} \
+  --<key-field> test_value \
+  --modified-by admin
+```
+
+
+### Delete
+
+Delete a <entity> by key.
+
+```sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> delete ${db_args} ${log_args} --key test_value
+```
+
+\#+end\_src
+
+
+### Recipe conventions
+
+-   Set `:header-args+: :wrap src json` at section level for default JSON output
+-   Use `:wrap src text` override for help and table output
+-   Include `export ORES_CLI_DB_PASSWORD` before commands needing DB access
+-   Use `${db_args}` and `${log_args}` variables (defined in file header)
+-   Add descriptive paragraph before each recipe explaining what it demonstrates
+-   Link to the component's org-mode documentation using `[[id:...][...]]`
+
+
+### Updating ores-cli-recipes entity table
+
+After adding recipes, update the entity operations table in the [ores-cli-recipes](../ores-cli-recipes/SKILL.md) skill (`doc/skills/ores-cli-recipes/skill.org`) to include the new entity:
+
+```fundamental
+| <entities>    | list, delete, add                       |
+```
+
+
+### Commit message
+
+```
+[doc] Add <entity> CLI command recipes
+
+Document all <entity> CLI commands with runnable examples:
+- Help menu
+- List all <entities>
+- Add new <entity>
+- Delete <entity>
+```
+
+
+## Phase 3 Checkpoint: Raise PR
+
+At this point:
+
+1.  Verify recipes execute correctly.
+2.  Check output formatting is correct.
+3.  Commit all changes.
+4.  Push branch and raise PR.
+
+**PR Title:** `[doc] Add <entity> CLI command recipes`
+
+**PR Description:**
+
+```
+## Summary
+
+- Add CLI recipes section for <entity> commands
+- Document help, list, add, and delete operations
+- Include runnable examples with expected output
+
+## Test Plan
+
+- [ ] All recipes execute without errors
+- [ ] Output matches expected format
+- [ ] Documentation renders correctly
+```
+
+
+# Key conventions reference
+
+
+## Output formatting
+
+| Outcome | Format                                               |
+|------- |---------------------------------------------------- |
+| Success | `output_stream_ << "Successfully..." << std::endl;`  |
+| Error   | `BOOST_THROW_EXCEPTION(application_exception(...));` |
+| List    | `output_stream_ << items << std::endl;`              |
+
+
+## Logging levels
+
+| Level | Use Case                              |
+|----- |------------------------------------- |
+| debug | Operation start, parameter values     |
+| info  | Successful completion with counts/IDs |
+| warn  | Operation failed but handled          |
+| error | Invalid input, unexpected state       |
+
+
+## Option patterns
+
+| Type     | Pattern                                         |
+|-------- |----------------------------------------------- |
+| Required | Check `vm.count()`, throw if missing            |
+| Optional | Use `->default_value()` or check before reading |
+| String   | `value<std::string>()`                          |
+| Integer  | `value<int>()`                                  |
+
+
+## File locations summary
+
+| Component             | Location                                                       |
+|--------------------- |-------------------------------------------------------------- |
+| Entity enum           | `include/ores.cli/config/entity.hpp`                           |
+| Parser header         | `include/ores.cli/config/entity_parsers/<entities>_parser.hpp` |
+| Parser implementation | `src/config/entity_parsers/<entities>_parser.cpp`              |
+| Add options header    | `include/ores.cli/config/add_<entity>_options.hpp`             |
+| Add options impl      | `src/config/add_<entity>_options.cpp`                          |
+| Add options variant   | `include/ores.cli/config/add_options.hpp`                      |
+| Main parser           | `src/config/parser.cpp`                                        |
+| Application header    | `include/ores.cli/app/application.hpp`                         |
+| Application impl      | `src/app/application.cpp`                                      |
+| CLI recipes           | `doc/recipes/cli_recipes.org`                                  |
+
+
+## Related skills
+
+-   [domain-type-creator](../domain-type-creator/SKILL.md) - For creating the underlying domain type
+-   [feature-branch-manager](../feature-branch-manager/SKILL.md) - For transitioning between phases
+-   [ores-cli-recipes](../ores-cli-recipes/SKILL.md) - For updating CLI documentation
+-   [shell-entity-creator](../shell-entity-creator/SKILL.md) - Similar skill for shell commands

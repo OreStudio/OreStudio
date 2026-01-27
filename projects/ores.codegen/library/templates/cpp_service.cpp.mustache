@@ -1,0 +1,110 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/service/{{entity_singular}}_service.hpp"
+
+#include <stdexcept>
+#include <boost/uuid/uuid_io.hpp>
+
+namespace ores::{{component}}::service {
+
+using namespace ores::logging;
+
+{{entity_singular}}_service::{{entity_singular}}_service(context ctx)
+    : repo_(ctx) {}
+
+std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
+    return repo_.read_latest();
+}
+
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_service::find_{{entity_singular_short}}(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}}: " << id;
+    auto results = repo_.read_latest(id);
+    if (results.empty()) {
+        return std::nullopt;
+    }
+    return results.front();
+}
+
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_service::find_{{entity_singular_short}}_by_code(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by code: " << code;
+    auto results = repo_.read_latest_by_code(code);
+    if (results.empty()) {
+        return std::nullopt;
+    }
+    return results.front();
+}
+
+void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& {{entity_singular_short}}) {
+    if ({{entity_singular_short}}.id.is_nil()) {
+        throw std::invalid_argument("{{entity_title}} ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << {{entity_singular_short}}.id;
+    repo_.write({{entity_singular_short}});
+    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << {{entity_singular_short}}.id;
+}
+
+void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << id;
+    repo_.remove(id);
+    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << id;
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_singular_short}}_history(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}: " << id;
+    return repo_.read_all(id);
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/service/{{name_singular}}_service.hpp"
+
+#include <stdexcept>
+
+namespace ores::{{component}}::service {
+
+using namespace ores::logging;
+
+{{name_singular}}_service::{{name_singular}}_service(context ctx)
+    : repo_(ctx) {}
+
+std::vector<domain::{{name_singular}}> {{name_singular}}_service::list_{{name_short}}() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all {{name_words}}";
+    return repo_.read_latest();
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing {{name_words}} for {{left.column_title_lower}}: " << {{left.column}};
+    return repo_.read_latest_by_{{left.column_short}}({{left.column}});
+}
+
+void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}}) {
+    if ({{name_singular_short}}.{{left.column}}.empty()) {
+        throw std::invalid_argument("{{left.column_title}} cannot be empty.");
+    }
+    if ({{name_singular_short}}.{{right.column}}.empty()) {
+        throw std::invalid_argument("{{right.column_title}} cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
+                               << "/" << {{name_singular_short}}.{{right.column}};
+    repo_.write({{name_singular_short}});
+    BOOST_LOG_SEV(lg(), info) << "Saved {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
+                              << "/" << {{name_singular_short}}.{{right.column}};
+}
+
+void {{name_singular}}_service::remove_{{name_singular_short}}(const std::string& {{left.column}},
+    const std::string& {{right.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}}: " << {{left.column}}
+                               << "/" << {{right.column}};
+    repo_.remove({{left.column}}, {{right.column}});
+    BOOST_LOG_SEV(lg(), info) << "Removed {{name_singular_words}}: " << {{left.column}}
+                              << "/" << {{right.column}};
+}
+
+}
+{{/junction}}

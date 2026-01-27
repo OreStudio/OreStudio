@@ -1,0 +1,147 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/repository/{{entity_singular}}_mapper.hpp"
+
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::{{entity_singular}}
+{{entity_singular}}_mapper::map(const {{entity_singular}}_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::{{entity_singular}} r;
+    r.version = v.version;
+    r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
+{{#natural_keys}}
+    r.{{column}} = v.{{column}};
+{{/natural_keys}}
+{{#columns}}
+    r.{{name}} = v.{{name}};
+{{/columns}}
+    r.recorded_by = v.modified_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+{{entity_singular}}_entity
+{{entity_singular}}_mapper::map(const domain::{{entity_singular}}& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    {{entity_singular}}_entity r;
+    r.{{primary_key.column}} = boost::uuids::to_string(v.{{primary_key.column}});
+    r.version = v.version;
+{{#natural_keys}}
+    r.{{column}} = v.{{column}};
+{{/natural_keys}}
+{{#columns}}
+    r.{{name}} = v.{{name}};
+{{/columns}}
+    r.modified_by = v.recorded_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_mapper::map(const std::vector<{{entity_singular}}_entity>& v) {
+    return map_vector<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<{{entity_singular}}_entity>
+{{entity_singular}}_mapper::map(const std::vector<domain::{{entity_singular}}>& v) {
+    return map_vector<domain::{{entity_singular}}, {{entity_singular}}_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/repository/{{name_singular}}_mapper.hpp"
+
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.{{component}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::{{name_singular}}
+{{name_singular}}_mapper::map(const {{name_singular}}_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::{{name_singular}} r;
+    r.version = v.version;
+    r.{{left.column}} = v.{{left.column}}.value();
+    r.{{right.column}} = v.{{right.column}};
+{{#columns}}
+    r.{{name}} = v.{{name}};
+{{/columns}}
+    r.recorded_by = v.modified_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+{{name_singular}}_entity
+{{name_singular}}_mapper::map(const domain::{{name_singular}}& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    {{name_singular}}_entity r;
+    r.{{left.column}} = v.{{left.column}};
+    r.{{right.column}} = v.{{right.column}};
+    r.version = v.version;
+{{#columns}}
+    r.{{name}} = v.{{name}};
+{{/columns}}
+    r.modified_by = v.recorded_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_mapper::map(const std::vector<{{name_singular}}_entity>& v) {
+    return map_vector<{{name_singular}}_entity, domain::{{name_singular}}>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<{{name_singular}}_entity>
+{{name_singular}}_mapper::map(const std::vector<domain::{{name_singular}}>& v) {
+    return map_vector<domain::{{name_singular}}, {{name_singular}}_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
+}
+
+}
+{{/junction}}

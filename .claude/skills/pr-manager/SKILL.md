@@ -1,0 +1,189 @@
+---
+name: pr-manager
+description: Manage pull request lifecycle from creation through merge.
+license: Complete terms in LICENSE.txt
+---
+
+This skill manages the complete lifecycle of a Pull Request (PR), from generating a summary based on committed work, through creating a PR and merging it.
+
+
+# When to Use This Skill
+
+Use this skill when you want to:
+
+-   Generate a PR title and overview from committed work.
+-   Create a PR and manage its lifecycle through to merge.
+
+
+# How to Use This Skill
+
+1.  Ensure your local branch contains the commits you wish to include in the PR.
+2.  Run the skill from within the repository root.
+3.  The skill will guide you through the complete PR lifecycle.
+
+
+# Detailed Instructions
+
+
+## Step 1: Generate PR Summary
+
+Identify the branching point and collect commit messages:
+
+```sh
+# Identify branch point
+merge_base=$(git merge-base HEAD main)
+
+# Collect commit messages
+git log --pretty=format:"%s" ${merge_base}..HEAD
+```
+
+Process the commit messages to generate:
+
+-   A short PR title following the format: `[COMPONENT] Description`
+-   A structured overview summarising the changes.
+
+
+### PR Body Format
+
+Use the following format for the PR body:
+
+```markdown
+## Summary
+
+[One paragraph summary of what this PR does and why]
+
+## Changes
+
+- Change 1: Brief description
+- Change 2: Brief description
+- Change 3: Brief description
+
+## Implementation Details
+
+### Component A
+- Modified files: file1.cpp, file2.hpp
+- What was changed: [description]
+- Why: [rationale]
+
+### Component B
+- Modified files: file3.cpp
+- What was changed: [description]
+- Why: [rationale]
+
+## Testing
+
+- [X] All existing tests pass
+- [X] Added new tests for [feature]
+- [X] Manual testing performed: [description]
+- [X] No compilation warnings
+
+## Questions/Assumptions
+
+1. Assumption: [description of assumption made]
+   - Rationale: [why this seemed reasonable]
+
+2. Question: [question that arose during implementation]
+   - Implementation: [how it was handled]
+
+## Related
+
+- Closes story: [story title from sprint backlog]
+- Related commits: [list of key commits]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-authored-by: Claude <noreply@anthropic.com>
+```
+
+
+## Step 2: Create PR
+
+Create the PR:
+
+```sh
+gh pr create --title "<title>" --body "<overview>"
+```
+
+
+## Step 3: Wait for CI and Address Review Comments
+
+After creating the PR, inform the user:
+
+> PR created. Please monitor the CI workflows and confirm when the build is green. You can check the status with:
+> 
+> `gh pr checks`
+> 
+> Let me know when the build has passed and you're ready to merge.
+
+While waiting for CI to pass, review comments may be posted. Address these as follows:
+
+1.  Read the review comments using `gh pr view --comments` or the GitHub UI.
+2.  Make the necessary code changes to address each comment.
+3.  Create a new commit for the fixes (do not amend existing commits).
+4.  Push the changes when the user requests.
+
+```sh
+# Address review comments
+git add <modified-files>
+git commit -m "[component] Address review comments
+
+- Fixed issue X
+- Updated Y per reviewer feedback
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+
+# Push when user requests
+git push
+```
+
+**Important**:
+
+-   Do not proceed to merge until the user explicitly confirms that the CI build is green.
+-   Never amend commits; always create new commits for fixes. This preserves the review history and makes it easier for reviewers to see what changed.
+
+
+## Step 4: Merge the PR
+
+Once CI has passed and review comments are addressed, merge the PR:
+
+```sh
+gh pr merge --delete-branch
+```
+
+The `--delete-branch` flag removes the feature branch after merge.
+
+
+# Example Workflow
+
+```sh
+# Step 1: Generate summary
+merge_base=$(git merge-base HEAD main)
+git log --pretty=format:"%s" ${merge_base}..HEAD
+
+# Step 2: Create PR
+gh pr create --title "[cli] Add validation for user input" \
+  --body "$(cat <<'EOF'
+## Summary
+
+- Add input validation for CLI commands
+- Improve error messages for invalid arguments
+
+## Changes
+
+- Modified argument parser to validate inputs
+- Added descriptive error messages
+EOF
+)"
+
+# Step 3: Check CI status and address review comments
+gh pr checks
+gh pr view --comments
+
+# Address any review comments with new commits (never amend)
+git add <files>
+git commit -m "[component] Address review comments"
+git push  # when user requests
+
+# Step 4: Merge (after user confirms CI is green)
+gh pr merge --delete-branch
+```

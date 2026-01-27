@@ -1,0 +1,49 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_GENERATORS_{{entity_singular_upper}}_GENERATOR_HPP
+#define ORES_{{component_upper}}_GENERATORS_{{entity_singular_upper}}_GENERATOR_HPP
+
+#include <vector>
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+
+namespace ores::{{component}}::generators {
+
+/**
+ * @brief Generates a synthetic {{entity_singular}}.
+ */
+domain::{{entity_singular}} generate_synthetic_{{entity_singular}}();
+
+/**
+ * @brief Generates N synthetic {{entity_plural}}.
+ */
+std::vector<domain::{{entity_singular}}>
+generate_synthetic_{{entity_plural}}(std::size_t n);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
+#define ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
+
+#include <vector>
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::generators {
+
+/**
+ * @brief Generates a synthetic {{name_singular}}.
+ */
+domain::{{name_singular}} generate_synthetic_{{name_singular}}();
+
+/**
+ * @brief Generates N synthetic {{name}}.
+ */
+std::vector<domain::{{name_singular}}>
+generate_synthetic_{{name}}(std::size_t n);
+
+}
+
+#endif
+{{/junction}}

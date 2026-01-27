@@ -1,0 +1,14 @@
+This facet provides instructions on how to generate test data generator support for a domain type.
+
+Create two files for test data generation:
+
+1.  Header: `projects/COMPONENT/include/COMPONENT/generators/TYPE_NAME_generator.hpp`
+2.  Implementation: `projects/COMPONENT/src/generators/TYPE_NAME_generator.cpp`
+
+The generator class should:
+
+-   Provide a static method `generate()` that creates a random instance
+-   Provide a static method `generate_set(size_t n)` that creates n random instances
+-   Use `faker-cxx` library for generating realistic fake data
+-   Use `ores.utility/uuid/uuid_v7_generator` for generating UUIDs
+-   Follow the pattern in `projects/ores.accounts/src/generators/account_generator.cpp`

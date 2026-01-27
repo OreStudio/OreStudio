@@ -1,0 +1,73 @@
+{
+  "domain_entity": {
+    "component": "dq",
+    "entity_singular": "dataset_bundle",
+    "entity_plural": "dataset_bundles",
+    "entity_title": "Dataset Bundle",
+    "brief": "A named collection of datasets designed to work together.",
+    "description": "Installing a bundle gets the system into a ready state with a coherent set\nof reference data. Bundles provide a way to group related datasets that\nshould be installed together.\n\nExamples:\n- \"slovaris\": Synthetic reference data for development and testing\n- \"base\": Industry-standard reference data (ISO + FpML) for production\n- \"crypto\": Base system plus cryptocurrency reference data",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this bundle.",
+      "detail": "This is the surrogate key for the bundle."
+    },
+
+    "natural_keys": [
+      {
+        "column": "code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique code for stable referencing.",
+        "detail": "Examples: \"slovaris\", \"base\", \"crypto\".",
+        "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
+      },
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the bundle.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" \" + std::string(faker::word::noun()) + \" Bundle\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the bundle's contents and purpose.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      }
+    ],
+
+    "sql": {
+      "tablename": "dq_dataset_bundles_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "bundle",
+      "entity_plural_short": "bundles",
+      "entity_singular_words": "dataset bundle",
+      "entity_plural_words": "dataset bundles"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "b",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

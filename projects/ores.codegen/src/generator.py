@@ -221,6 +221,134 @@ def is_entity_data_model(model_filename):
     return model_filename.endswith("_data.json")
 
 
+def is_domain_entity_model(model_filename):
+    """
+    Check if a model file is a domain entity model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a domain entity model
+    """
+    return model_filename.endswith("_domain_entity.json")
+
+
+def is_junction_model(model_filename):
+    """
+    Check if a model file is a junction table model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a junction table model
+    """
+    return model_filename.endswith("_junction.json")
+
+
+def get_domain_entity_template_mappings():
+    """
+    Define the mapping for domain entity schema templates.
+
+    Returns:
+        list: List of tuples (template_name, output_suffix) for domain entity generation
+    """
+    return [
+        ("sql_schema_domain_entity_create.mustache", "_create.sql"),
+    ]
+
+
+def get_junction_template_mappings():
+    """
+    Define the mapping for junction table schema templates.
+
+    Returns:
+        list: List of tuples (template_name, output_suffix) for junction table generation
+    """
+    return [
+        ("sql_schema_junction_create.mustache", "_create.sql"),
+    ]
+
+
+def get_cpp_domain_entity_template_mappings():
+    """
+    Define the mapping for C++ domain entity templates.
+
+    Returns:
+        list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
+    """
+    return [
+        # Class definition facet
+        ("cpp_domain_type_class.hpp.mustache", "include/{component}/domain", ".hpp"),
+        # JSON I/O facet
+        ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
+        ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
+        # Table facet
+        ("cpp_domain_type_table.hpp.mustache", "include/{component}/domain", "_table.hpp"),
+        ("cpp_domain_type_table.cpp.mustache", "src/domain", "_table.cpp"),
+        ("cpp_domain_type_table_io.hpp.mustache", "include/{component}/domain", "_table_io.hpp"),
+        ("cpp_domain_type_table_io.cpp.mustache", "src/domain", "_table_io.cpp"),
+        # Generator facet
+        ("cpp_domain_type_generator.hpp.mustache", "include/{component}/generators", "_generator.hpp"),
+        ("cpp_domain_type_generator.cpp.mustache", "src/generators", "_generator.cpp"),
+        # Repository entity facet
+        ("cpp_domain_type_entity.hpp.mustache", "include/{component}/repository", "_entity.hpp"),
+        ("cpp_domain_type_entity.cpp.mustache", "src/repository", "_entity.cpp"),
+        # Repository mapper facet
+        ("cpp_domain_type_mapper.hpp.mustache", "include/{component}/repository", "_mapper.hpp"),
+        ("cpp_domain_type_mapper.cpp.mustache", "src/repository", "_mapper.cpp"),
+        # Repository CRUD facet
+        ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
+        ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
+        # Service facet
+        ("cpp_service.hpp.mustache", "include/{component}/service", "_service.hpp"),
+        ("cpp_service.cpp.mustache", "src/service", "_service.cpp"),
+        # Protocol facet
+        ("cpp_protocol.hpp.mustache", "include/{component}/messaging", "_protocol.hpp"),
+        ("cpp_protocol.cpp.mustache", "src/messaging", "_protocol.cpp"),
+    ]
+
+
+def get_cpp_junction_template_mappings():
+    """
+    Define the mapping for C++ junction table templates.
+
+    Returns:
+        list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
+    """
+    return [
+        # Class definition facet
+        ("cpp_domain_type_class.hpp.mustache", "include/{component}/domain", ".hpp"),
+        # JSON I/O facet
+        ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
+        ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
+        # Table facet
+        ("cpp_domain_type_table.hpp.mustache", "include/{component}/domain", "_table.hpp"),
+        ("cpp_domain_type_table.cpp.mustache", "src/domain", "_table.cpp"),
+        ("cpp_domain_type_table_io.hpp.mustache", "include/{component}/domain", "_table_io.hpp"),
+        ("cpp_domain_type_table_io.cpp.mustache", "src/domain", "_table_io.cpp"),
+        # Generator facet
+        ("cpp_domain_type_generator.hpp.mustache", "include/{component}/generators", "_generator.hpp"),
+        ("cpp_domain_type_generator.cpp.mustache", "src/generators", "_generator.cpp"),
+        # Repository entity facet
+        ("cpp_domain_type_entity.hpp.mustache", "include/{component}/repository", "_entity.hpp"),
+        ("cpp_domain_type_entity.cpp.mustache", "src/repository", "_entity.cpp"),
+        # Repository mapper facet
+        ("cpp_domain_type_mapper.hpp.mustache", "include/{component}/repository", "_mapper.hpp"),
+        ("cpp_domain_type_mapper.cpp.mustache", "src/repository", "_mapper.cpp"),
+        # Repository CRUD facet
+        ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
+        ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
+        # Service facet
+        ("cpp_service.hpp.mustache", "include/{component}/service", "_service.hpp"),
+        ("cpp_service.cpp.mustache", "src/service", "_service.cpp"),
+        # Protocol facet
+        ("cpp_protocol.hpp.mustache", "include/{component}/messaging", "_protocol.hpp"),
+        ("cpp_protocol.cpp.mustache", "src/messaging", "_protocol.cpp"),
+    ]
+
+
 def get_populate_template_mappings():
     """
     Define the mapping for entity populate templates (per-dataset).
@@ -313,6 +441,95 @@ def _mark_last_item(data_list):
             data_list[-1]['last'] = True
 
 
+def _format_description_as_comment(description):
+    """
+    Format a multi-line description as SQL comment block content.
+
+    Adds ' * ' prefix to each line after the first, handling empty lines
+    as ' *' (just asterisk).
+
+    Args:
+        description (str): Multi-line description text
+
+    Returns:
+        str: Formatted description with comment prefixes
+    """
+    if not description:
+        return description
+
+    lines = description.split('\n')
+    formatted_lines = []
+    for i, line in enumerate(lines):
+        if i == 0:
+            # First line doesn't get prefix (it follows the title line)
+            formatted_lines.append(line)
+        elif line.strip():
+            # Non-empty lines get ' * ' prefix
+            formatted_lines.append(' * ' + line)
+        else:
+            # Empty lines get just ' *'
+            formatted_lines.append(' *')
+    return '\n'.join(formatted_lines)
+
+
+def _prepare_table_display(cpp_section):
+    """
+    Prepare table_display items by adding iterator_var to each item.
+
+    Mustache can't access parent context variables from within a loop,
+    so we add the iterator_var to each table_display item.
+
+    Args:
+        cpp_section (dict): The 'cpp' section of the model
+    """
+    if 'table_display' not in cpp_section:
+        return
+
+    iter_var = cpp_section.get('iterator_var', 'e')
+    for item in cpp_section['table_display']:
+        item['iter_var'] = iter_var
+
+
+def _format_detail_for_doxygen(detail):
+    """
+    Format a multi-line detail string for doxygen comments.
+
+    Adds '     * ' prefix to continuation lines.
+
+    Args:
+        detail (str): Multi-line detail text
+
+    Returns:
+        str: Formatted detail with proper doxygen prefixes
+    """
+    if not detail or '\n' not in detail:
+        return detail
+
+    lines = detail.split('\n')
+    formatted_lines = [lines[0]]  # First line as-is
+    for line in lines[1:]:
+        if line.strip():
+            formatted_lines.append('     * ' + line)
+        else:
+            formatted_lines.append('     *')
+    return '\n'.join(formatted_lines)
+
+
+def _format_columns_for_doxygen(columns):
+    """
+    Format detail fields in columns for doxygen comments.
+
+    Args:
+        columns (list): List of column dictionaries
+    """
+    if not columns:
+        return
+
+    for col in columns:
+        if 'detail' in col:
+            col['detail'] = _format_detail_for_doxygen(col['detail'])
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -374,10 +591,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Check if this is an entity schema model or data model
     is_schema_model = is_entity_schema_model(model_filename)
     is_data_model = is_entity_data_model(model_filename)
+    is_domain_entity = is_domain_entity_model(model_filename)
+    is_junction = is_junction_model(model_filename)
+
+    # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
+    generate_cpp = target_template and target_template.startswith('cpp_')
 
     # Determine which templates to process
     if target_template:
         templates_to_process = [target_template]
+    elif is_domain_entity:
+        # Domain entity models use a specific template
+        templates_to_process = [t[0] for t in get_domain_entity_template_mappings()]
+    elif is_junction:
+        # Junction table models use a specific template
+        templates_to_process = [t[0] for t in get_junction_template_mappings()]
     elif is_schema_model:
         # Entity schema models use a different template set
         templates_to_process = [t[0] for t in get_schema_template_mappings()]
@@ -437,6 +665,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         data['enhanced_license'] = enhanced_license
         # Also add the modeline separately if needed
         data['sql_modeline'] = sql_modeline
+
+        # Get the C++ modeline and generate C++ license
+        cpp_modeline = data['modelines'].get('c++', '')
+        cpp_license = generate_license_with_header(
+            data['licence-GPL-v3'],
+            cpp_modeline,
+            'c++'
+        )
+        data['cpp_license'] = cpp_license
+        data['cpp_modeline'] = cpp_modeline
 
     # Add the model data to the template data
     # Use the model filename (without extension) as the key
@@ -531,6 +769,93 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Add image linking configuration if defined in entity model
         if 'image_linking' in entity:
             data['image_linking'] = entity['image_linking']
+
+    # Special processing for domain entity models
+    if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
+        domain_entity = model['domain_entity']
+        # Get iterator_var from cpp section for column processing
+        iter_var = domain_entity.get('cpp', {}).get('iterator_var', 'e')
+        if 'columns' in domain_entity:
+            _mark_last_item(domain_entity['columns'])
+            _format_columns_for_doxygen(domain_entity['columns'])
+            # Add is_int flag and iterator_var for protocol serialization
+            for col in domain_entity['columns']:
+                col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
+                col['iter_var'] = iter_var
+        if 'natural_keys' in domain_entity:
+            _mark_last_item(domain_entity['natural_keys'])
+            # Add iterator_var to natural_keys for protocol serialization
+            for key in domain_entity['natural_keys']:
+                key['iter_var'] = iter_var
+        # Format description as comment block lines (for SQL)
+        if 'description' in domain_entity:
+            domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
+            # Split description into lines for C++ doxygen comments
+            domain_entity['description_lines'] = domain_entity['description'].split('\n')
+        # Add uppercase versions for C++ include guards
+        if 'component' in domain_entity:
+            domain_entity['component_upper'] = domain_entity['component'].upper()
+        if 'entity_singular' in domain_entity:
+            domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
+            # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")
+            words = domain_entity['entity_singular'].split('_')
+            domain_entity['entity_singular_words'] = words[-1] if words else domain_entity['entity_singular']
+        if 'entity_plural' in domain_entity:
+            domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
+        if 'entity_title' in domain_entity:
+            domain_entity['entity_title_lower'] = domain_entity['entity_title'].lower()
+        # Prepare table display items for C++ templates
+        if 'cpp' in domain_entity:
+            _prepare_table_display(domain_entity['cpp'])
+        # Copy repository section fields to top level for template access
+        if 'repository' in domain_entity:
+            for key, value in domain_entity['repository'].items():
+                domain_entity[key] = value
+        data['domain_entity'] = domain_entity
+
+    # Special processing for junction models
+    if is_junction and isinstance(model, dict) and 'junction' in model:
+        junction = model['junction']
+        # Get iterator_var from cpp section for column processing
+        iter_var = junction.get('cpp', {}).get('iterator_var', 'm')
+        if 'columns' in junction:
+            _mark_last_item(junction['columns'])
+            _format_columns_for_doxygen(junction['columns'])
+            # Add is_int flag and iterator_var for protocol serialization
+            for col in junction['columns']:
+                col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
+                col['iter_var'] = iter_var
+        # Add lowercase versions for left/right columns
+        if 'left' in junction and 'column_title' in junction['left']:
+            junction['left']['column_title_lower'] = junction['left']['column_title'].lower()
+        if 'right' in junction and 'column_title' in junction['right']:
+            junction['right']['column_title_lower'] = junction['right']['column_title'].lower()
+        # Format description as comment block lines (for SQL)
+        if 'description' in junction:
+            junction['description_formatted'] = _format_description_as_comment(junction['description'])
+            # Split description into lines for C++ doxygen comments
+            junction['description_lines'] = junction['description'].split('\n')
+        # Add uppercase versions for C++ include guards
+        if 'component' in junction:
+            junction['component_upper'] = junction['component'].upper()
+        if 'name_singular' in junction:
+            junction['name_singular_upper'] = junction['name_singular'].upper()
+            # Human-readable version - use explicit value or derive from last word
+            if 'name_singular_words' not in junction:
+                words = junction['name_singular'].split('_')
+                junction['name_singular_words'] = words[-1] if words else junction['name_singular']
+        if 'name' in junction:
+            junction['name_upper'] = junction['name'].upper()
+        if 'name_title' in junction:
+            junction['name_title_lower'] = junction['name_title'].lower()
+        # Prepare table display items for C++ templates
+        if 'cpp' in junction:
+            _prepare_table_display(junction['cpp'])
+        # Copy repository section fields to top level for template access
+        if 'repository' in junction:
+            for key, value in junction['repository'].items():
+                junction[key] = value
+        data['junction'] = junction
 
     # Special processing for entity data models (populate scripts)
     if is_data_model and isinstance(model, dict):
@@ -647,6 +972,54 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Determine output filename
         if target_output:
             output_filename = target_output
+        elif generate_cpp and is_domain_entity and 'domain_entity' in data:
+            # C++ generation for domain entity
+            domain_entity = data['domain_entity']
+            component = domain_entity.get('component', 'unknown')
+            entity_singular = domain_entity.get('entity_singular', 'unknown')
+            # Find the mapping for this template
+            cpp_mappings = get_cpp_domain_entity_template_mappings()
+            mapping = next(((t, d, s) for t, d, s in cpp_mappings if t == template_name), None)
+            if mapping:
+                output_dir_pattern, suffix = mapping[1], mapping[2]
+                # Replace {component} placeholder
+                sub_dir = output_dir_pattern.replace('{component}', f'ores.{component}')
+                output_filename = f"{sub_dir}/{entity_singular}{suffix}"
+            else:
+                output_filename = f"{entity_singular}.hpp"
+        elif generate_cpp and is_junction and 'junction' in data:
+            # C++ generation for junction
+            junction = data['junction']
+            component = junction.get('component', 'unknown')
+            name_singular = junction.get('name_singular', 'unknown')
+            # Find the mapping for this template
+            cpp_mappings = get_cpp_junction_template_mappings()
+            mapping = next(((t, d, s) for t, d, s in cpp_mappings if t == template_name), None)
+            if mapping:
+                output_dir_pattern, suffix = mapping[1], mapping[2]
+                # Replace {component} placeholder
+                sub_dir = output_dir_pattern.replace('{component}', f'ores.{component}')
+                output_filename = f"{sub_dir}/{name_singular}{suffix}"
+            else:
+                output_filename = f"{name_singular}.hpp"
+        elif is_domain_entity and 'domain_entity' in data:
+            # For domain entity models, derive filename from domain_entity definition
+            # Use entity_singular for filename (table/indexes/functions use entity_plural)
+            domain_entity = data['domain_entity']
+            component = domain_entity.get('component', 'unknown')
+            entity_singular = domain_entity.get('entity_singular', 'unknown')
+            domain_entity_mappings = get_domain_entity_template_mappings()
+            suffix = next((s for t, s in domain_entity_mappings if t == template_name), '_create.sql')
+            output_filename = f"{component}_{entity_singular}{suffix}"
+        elif is_junction and 'junction' in data:
+            # For junction table models, derive filename from junction definition
+            # Use name_singular for filename (table/indexes/functions use name)
+            junction = data['junction']
+            component = junction.get('component', 'unknown')
+            name_singular = junction.get('name_singular', 'unknown')
+            junction_mappings = get_junction_template_mappings()
+            suffix = next((s for t, s in junction_mappings if t == template_name), '_create.sql')
+            output_filename = f"{component}_{name_singular}{suffix}"
         elif is_schema_model and 'entity' in data:
             # For entity schema models, derive filename from entity definition
             entity = data['entity']
@@ -688,8 +1061,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             output_filename = template_name.replace('.mustache', output_ext)
 
         # Apply prefix if provided, replacing 'sql_' with prefix + '_'
-        # Skip prefix handling for schema models (they use entity-based naming)
-        if prefix and not is_schema_model:
+        # Skip prefix handling for schema/domain_entity/junction models (they use entity-based naming)
+        if prefix and not is_schema_model and not is_domain_entity and not is_junction:
             # Special case: master include file should be just {prefix}.sql
             if template_name == 'sql_batch_execute.mustache':
                 output_filename = f"{prefix}.sql"
@@ -699,6 +1072,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{prefix}_{output_filename}"
 
         output_path = output_dir / output_filename
+
+        # Create parent directories if needed (for C++ templates with subdirectories)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Write output to file
         with open(output_path, 'w', encoding='utf-8') as f:
@@ -815,15 +1191,17 @@ def _resolve_file_references(model_data, model_dir, global_data):
 def main():
     """Main function to run the code generator."""
     import sys
+    import argparse
 
-    # Check if a model path was provided as command-line argument
-    if len(sys.argv) < 2:
-        print("Usage: python generator.py <model_path> [output_dir]")
-        print("Example: python generator.py models/slovaris/catalogs.json")
-        print("Example with custom output: python generator.py models/slovaris/catalogs.json custom_output/")
-        return
+    parser = argparse.ArgumentParser(description='Generate code from models using templates')
+    parser.add_argument('model_path', help='Path to the model file')
+    parser.add_argument('output_dir', nargs='?', default=None, help='Output directory (default: output/)')
+    parser.add_argument('--template', '-t', dest='target_template',
+                        help='Specific template to use (overrides default template selection)')
+    parser.add_argument('--output', '-o', dest='target_output',
+                        help='Specific output filename (overrides default naming)')
 
-    model_path = sys.argv[1]
+    args = parser.parse_args()
 
     # Define paths
     base_dir = Path(__file__).parent.parent
@@ -831,8 +1209,8 @@ def main():
     templates_dir = base_dir / "library" / "templates"
 
     # Use provided output directory or default to 'output'
-    if len(sys.argv) > 2:
-        output_dir = Path(sys.argv[2])
+    if args.output_dir:
+        output_dir = Path(args.output_dir)
     else:
         output_dir = base_dir / "output"
 
@@ -840,7 +1218,10 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate from the specified model
-    generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False)
+    generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                        is_processing_batch=False,
+                        target_template=args.target_template,
+                        target_output=args.target_output)
 
 
 if __name__ == "__main__":

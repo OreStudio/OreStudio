@@ -1,0 +1,97 @@
+{{! Template to generate SQL schema for domain entity table with UUID primary key }}
+{{{enhanced_license}}}
+
+/**
+ * {{domain_entity.entity_singular_title}} Table
+ *
+ * {{{domain_entity.description_formatted}}}
+ */
+
+set schema 'ores';
+
+create table if not exists "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (
+    "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
+    "version" integer not null,
+{{#domain_entity.natural_keys}}
+    "{{column}}" {{type}} not null,
+{{/domain_entity.natural_keys}}
+{{#domain_entity.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+{{/domain_entity.columns}}
+    "modified_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key ({{domain_entity.primary_key.column}}, valid_from, valid_to),
+    exclude using gist (
+        {{domain_entity.primary_key.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to"),
+    check ("{{domain_entity.primary_key.column}}" <> '00000000-0000-0000-0000-000000000000'::uuid)
+);
+{{#domain_entity.natural_keys}}
+
+-- Unique {{column}} for active records
+create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_{{column}}_uniq_idx
+on "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{column}})
+where valid_to = ores.utility_infinity_timestamp_fn();
+{{/domain_entity.natural_keys}}
+
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_version_uniq_idx
+on "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+create or replace function ores.{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    -- Version management
+    select version into current_version
+    from "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        update "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+        set valid_to = current_timestamp
+        where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores.utility_infinity_timestamp_fn();
+
+    if NEW.modified_by is null or NEW.modified_by = '' then
+        NEW.modified_by = current_user;
+    end if;
+
+    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
+
+    return NEW;
+end;
+$$ language plpgsql;
+
+create or replace trigger {{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
+before insert on "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+for each row execute function ores.{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
+
+create or replace rule {{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_rule as
+on delete to "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead
+    update "ores"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    set valid_to = current_timestamp
+    where {{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
+      and valid_to = ores.utility_infinity_timestamp_fn();

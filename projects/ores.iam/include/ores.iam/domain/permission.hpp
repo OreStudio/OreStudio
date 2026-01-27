@@ -155,6 +155,16 @@ namespace permissions {
     constexpr auto treatment_dimensions_write = "treatment_dimensions:write";
     constexpr auto treatment_dimensions_delete = "treatment_dimensions:delete";
 
+    // Data Quality - Dataset bundles
+    constexpr auto dataset_bundles_read = "dataset_bundles:read";
+    constexpr auto dataset_bundles_write = "dataset_bundles:write";
+    constexpr auto dataset_bundles_delete = "dataset_bundles:delete";
+
+    // Data Quality - Dataset bundle members
+    constexpr auto dataset_bundle_members_read = "dataset_bundle_members:read";
+    constexpr auto dataset_bundle_members_write = "dataset_bundle_members:write";
+    constexpr auto dataset_bundle_members_delete = "dataset_bundle_members:delete";
+
     // Wildcard - grants all permissions
     constexpr auto all = "*";
 }

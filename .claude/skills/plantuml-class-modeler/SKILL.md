@@ -1,0 +1,577 @@
+---
+name: plantuml-class-modeler
+description: PlantUML class diagrams for ORE Studio C++ components.
+license: See LICENSE.txt
+---
+
+
+# When to Use This Skill
+
+When a user requests an updated PlantUML diagram for a specific ORE Studio component (e.g. `ores.utility`).
+
+
+# How to Use This Skill
+
+1.  **Validate component** – must exist under `projects/`. If not, inform user.
+2.  **Read source** – primarily `.hpp` files in `include/`. Glance at `.cpp` files in `src/` for **architecturally significant** dependencies.
+3.  **Generate** – follow rules below to produce a clean, uncluttered diagram.
+4.  **Validate** – compile with component's CMake target; fix syntax errors.
+
+
+# Diagram File Locations
+
+
+## Component diagrams
+
+Component-level class diagrams are located at:
+
+-   Directory: `projects/COMPONENT/modeling/`
+-   File: `COMPONENT.puml` (e.g., `projects/ores.utility/modeling/ores.utility.puml`)
+
+
+## System architecture diagram
+
+The system-level architecture diagram showing all components and their relationships:
+
+-   Directory: `projects/modeling/`
+-   File: `ores.puml` (full path: `projects/modeling/ores.puml`)
+
+
+# Generation Rules
+
+
+## 1. File location & naming
+
+| Item      | Rule                                        |
+|--------- |------------------------------------------- |
+| Directory | `COMPONENT/modeling/`                       |
+| File name | `COMPONENT.puml` (e.g. `ores.utility.puml`) |
+
+**Create folder if missing: `mkdir -p COMPONENT/modeling`.**
+
+
+## 2. PlantUML skeleton
+
+```plantuml
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+' <<< BODY GOES HERE >>>
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar COMPONENT.puml"
+' End:
+@enduml
+```
+
+**Update copyright year as needed.**
+
+
+## 3. Namespace handling
+
+-   Use **nested** `namespace` blocks.
+-   Top-level `ores` → **no note**.
+-   All other namespaces → add **note** from `namespace_name.hpp` (if exists).
+-   No relationships to namespaces.
+
+| Namespace name | Colour    | Stereotype |
+|-------------- |--------- |---------- |
+| `database`     | `#C6F0D8` | `<<orm>>`  |
+| **any other**  | `#F2F2F2` | –          |
+
+
+## 4. Class / Struct styling
+
+Check conditions **in order**:
+
+| Condition                                                                  | Colour    | Stereotype      | Applies to   |
+|-------------------------------------------------------------------------- |--------- |--------------- |------------ |
+| ends with `_entity`, `_mapper`, `_repository` ****and**** in `repository/` | `#99CB99` | `<<orm>>`       | class/struct |
+| ends with `_option` ****and**** in `config/`                               | `#FFC072` | `<<config>>`    | struct       |
+| ends with `_request` or `_response` ****and**** in `messaging/`            | `#E1F5FF` | `<<message>>`   | struct       |
+| ends with `_exception`                                                     | `#D6B19F` | `<<exception>>` | class        |
+| **default struct**                                                         | `#F7E5FF` | –               | struct       |
+| **default class**                                                          | `#ECECEC` | –               | class        |
+
+**Stereotype after name:** `class Foo <<orm>> #99CB99`
+
+
+## 5. Members & notes
+
+-   **Include methods and fields** with appropriate visibility (`+`, `-`, `#`):
+    -   Public methods (`+`): Include all public methods
+    -   Protected methods (`#`): Include important protected methods
+    -   Private methods (`-`): Include key private methods
+    -   Fields: Prefix with `{field}` marker (e.g., `+{field} name std::string`)
+-   **Ignore**: `operator<<`, default values, logging members, trivial getters/setters.
+-   Add **note after** class/struct:
+    -   Top-level comment
+    -   One line per field: `type name // comment`
+-   ORM structs with `schema` / `tablename` → omit from members, add to note:
+    
+    ```plantuml
+    ORM Settings:
+    
+    - Schema: my_schema
+    - Table:  my_table
+    ```
+
+
+## 6. Relationships
+
+-   Use **fully qualified** names.
+-   **Ignore** external component types.
+-   **Always include inheritance relationships** for classes that extend base classes.
+-   Arrows:
+    -   Inheritance: `-up-|>` (derived class -up-|> base class) - forces parent above child
+    -   Composition: `*--` (strong ownership)
+    -   Aggregation: `o--` (weak ownership/reference)
+    -   Association: `--`
+    -   Dependency: `..>` (label `: uses`, `: creates`, `: generates`)
+-   **Use directional arrows** (`-up-`, `-down-`, `-left-`, `-right-`) to control layout when needed
+
+
+## 7. Implementation-file dependencies (classes only)
+
+Scan `.cpp` for:
+
+-   Static method calls on component classes
+-   Instantiation of non-member helpers
+-   Message-handler patterns (`deserialize()`, response construction)
+
+Model as `A ..> B : uses` **only if architecturally significant**.
+
+
+## 8. Enumerations
+
+```plantuml
+enum MyEnum #F2DAFD {
+    VALUE_1
+    VALUE_2
+}
+```
+
+
+## 9. Generator functions
+
+In `generators/` folder and name starts with `_generate`:
+
+```plantuml
+class generate_foo <<generator>> #D89EF1 {}
+note top of generate_foo
+Generates a foo.
+end note
+generate_foo --> ores::foo::Bar : generates
+```
+
+
+## 10. Test suites
+
+Add test suites to provide visibility into test coverage and available tests.
+
+
+### Location
+
+Test suites should be added in a `tests` namespace at the component level:
+
+```plantuml
+namespace ores #F2F2F2 {
+    namespace component_name #F2F2F2 {
+        ' ... domain, repository, service namespaces ...
+
+        namespace tests #F2F2F2 {
+            ' test suite classes here
+        }
+    }
+}
+```
+
+
+### Test suite styling
+
+| Item            | Value                                |
+|--------------- |------------------------------------ |
+| Stereotype      | `<<test suite>>`                     |
+| Colour          | `#C5E1A5` (light green)              |
+| Namespace color | `#F2F2F2` (same as other namespaces) |
+
+
+### Finding test files
+
+Test files are located in `projects/COMPONENT/tests/*.cpp`. Exclude `main.cpp`. Use `grep` to extract test case names:
+
+```bash
+grep -E "TEST_CASE\(|TEST_CASE_METHOD\(" projects/COMPONENT/tests/*.cpp
+```
+
+
+### Test suite structure
+
+For each test file `foo_tests.cpp`, create a test suite class `foo_tests`:
+
+```plantuml
+class domain_account_tests <<test suite>> #C5E1A5 {
+    +create_account_with_valid_fields() void
+    +create_admin_account() void
+    +account_with_specific_uuid() void
+    +account_serialization_to_json() void
+}
+
+note top of domain_account_tests
+Test suite for account domain model.
+
+Tests cover account creation, admin flags, UUIDs,
+and JSON serialization.
+end note
+
+domain_account_tests ..> ores::accounts::domain::account : tests
+```
+
+
+### Test suite guidelines
+
+-   **Class name**: Match test file name (e.g., `domain_account_tests.cpp` → `domain_account_tests`)
+-   **Methods**: List all TEST\_CASE functions as public methods with `void` return type
+-   **Note**: Provide brief summary of what the test suite covers
+-   **Relationships**: Use `..> : tests` dependency arrow to classes under test
+    -   For protocol tests that test multiple message types, add one arrow per message class
+    -   For handler/service tests, add arrow to the handler/service class
+-   **No ghost types**: Avoid relationship arrows to external component types to prevent PlantUML from creating placeholder boxes
+    -   Keep field declarations that reference external types (shows actual code structure)
+    -   But omit the corresponding relationship arrows
+
+
+### Example with multiple test suites
+
+```plantuml
+namespace tests #F2F2F2 {
+    class domain_feature_flags_tests <<test suite>> #C5E1A5 {
+        +create_feature_flag_with_valid_fields() void
+        +feature_flag_serialization_to_json() void
+        +create_feature_flag_with_faker() void
+    }
+
+    note top of domain_feature_flags_tests
+    Test suite for feature_flags domain model.
+
+    Tests cover creation, serialization, and faker data.
+    end note
+
+    domain_feature_flags_tests ..> ores::variability::domain::feature_flags : tests
+
+    class repository_feature_flags_repository_tests <<test suite>> #C5E1A5 {
+        +write_single_feature_flag() void
+        +read_latest_feature_flags() void
+        +read_all_feature_flags() void
+    }
+
+    note top of repository_feature_flags_repository_tests
+    Test suite for feature_flags_repository.
+
+    Tests cover write, read latest, and read all operations.
+    end note
+
+    repository_feature_flags_repository_tests ..> ores::variability::repository::feature_flags_repository : tests
+}
+```
+
+
+## 11. Layout groupings
+
+Use layout groupings to make diagrams more "square" rather than long horizontal lines. PlantUML tends to arrange classes horizontally by default, which can result in diagrams with poor aspect ratios (e.g., 5:1). Layout groupings help achieve ratios closer to 2:1 or even 1:1.
+
+
+### Layout engine selection
+
+The default GraphViz engine sometimes has issues with `together` blocks, causing classes to appear outside their namespaces. If this occurs, try the Smetana engine by adding this pragma after `@startuml`:
+
+```plantuml
+@startuml
+!pragma layout smetana
+```
+
+Use the default engine when it renders correctly, and switch to Smetana only when needed.
+
+
+### Together blocks
+
+Use `together` blocks to group related classes that should be rendered near each other:
+
+```plantuml
+' Group: Request/Response pairs
+together {
+    class login_request
+    class login_response
+}
+
+' Group: Entity/Mapper/Repository chain
+together {
+    class account_entity
+    class account_mapper
+    class account_repository
+}
+```
+
+
+### Hidden relationships
+
+Use hidden relationships to force vertical stacking within or between groups:
+
+```plantuml
+' Stack request above response
+login_request -[hidden]down- login_response
+
+' Stack entity chain vertically
+account_entity -[hidden]down- account_mapper
+account_mapper -[hidden]down- account_repository
+
+' Create row structure between groups
+result -[hidden]down- frame_header
+frame -[hidden]down- ping
+```
+
+
+### Common grouping patterns
+
+| Pattern                  | Classes to group                             |
+|------------------------ |-------------------------------------------- |
+| Request/Response pairs   | `foo_request`, `foo_response`                |
+| Handshake sequence       | `handshake_request`, `_response`, `_ack`     |
+| Entity/Mapper/Repository | `foo_entity`, `foo_mapper`, `foo_repository` |
+| Infrastructure classes   | `result`, `message_type_range`, `handler`    |
+| Config/Options           | `parser`, `parser_exception`, `options`      |
+| Test suites              | Group related test suite classes             |
+
+
+### Structure within namespace
+
+Place layout groupings at the **top** of each namespace block, before class definitions:
+
+```plantuml
+namespace messaging #F2F2F2 {
+    '
+    ' Layout groupings
+    '
+
+    ' Group: Infrastructure classes
+    together {
+        class result
+        class message_type_range
+        class message_handler
+    }
+
+    ' Group: Heartbeat messages
+    together {
+        class ping
+        class pong
+    }
+
+    ' Hidden relationships for vertical stacking
+    ping -[hidden]down- pong
+    result -[hidden]down- frame_header
+
+    '
+    ' Class definitions
+    '
+
+    class result #ECECEC {
+        ...
+    }
+}
+```
+
+
+### Guidelines
+
+-   Add `together` blocks for logically related classes (2-4 classes per group)
+-   Use `-[hidden]down-` between classes in the same group for vertical stacking
+-   Use `-[hidden]down-` between groups to create row structure
+-   Place all groupings and hidden relationships before class definitions
+-   Use blank comment lines (`'`) to separate sections visually
+-   Aim for aspect ratios between 2:1 and 3:1 for readability
+
+
+# Evaluation Checklist
+
+| Check                        | How                                                     |
+|---------------------------- |------------------------------------------------------- |
+| No class-to-namespace arrows | Search for `namespace` in arrows                        |
+| Correct stereotype order     | `class Name <<stereo>> #COLOR`                          |
+| Consistent colours           | Match table in section 4                                |
+| Syntax valid                 | Run `cmake --build --target generate_COMPONENT_diagram` |
+
+
+# Example (complete snippet)
+
+```plantuml
+namespace ores #F2F2F2 {
+    note "Utility component" as N1
+    utility --- N1
+
+    namespace utility #F2F2F2 {
+        class base_options #ECECEC {
+            +base_options()
+            +~base_options()
+            +{abstract} validate() bool
+            #{field} is_valid_ bool
+        }
+        note top of base_options
+        Base class for options.
+        - is_valid_: validation state
+        end note
+
+        class options #ECECEC {
+            +options(const std::string& name)
+            +~options()
+            +validate() bool
+            +add(const std::string& key, const std::string& value) void
+            +get(const std::string& key) std::vector<std::string>
+            +has(const std::string& key) bool
+            -{field} name_ std::string
+            -{field} kvps_ std::unordered_map<std::string, std::list<std::string>>
+        }
+        note top of options
+        Stores system options.
+        - name_: option name
+        - kvps_: key/value pairs
+        end note
+
+        ' Relationships
+        ores::utility::options -up-|> ores::utility::base_options
+        ores::utility::options o-- ores::utility::database_configuration
+    }
+}
+```
+
+
+# System-Level Component Diagrams
+
+When creating a system-level architecture diagram showing all ORE Studio components and their relationships:
+
+
+## 1. File location & naming
+
+-   Directory: `projects/modeling/`
+-   Diagram file: `ores.puml`
+-   CMakeLists: `projects/modeling/CMakeLists.txt`
+
+
+## 2. System description
+
+Add a system-level note at the top sourced from `projects/ores.hpp`:
+
+```plantuml
+note as SystemNote
+The ORE Studio application.
+end note
+```
+
+
+## 3. Diagram structure
+
+Use PlantUML component diagram syntax with packages to group components by architectural layer. Place component notes **inside** their package:
+
+```plantuml
+@startuml
+title ORE Studio System Architecture
+
+note as SystemNote
+The ORE Studio application.
+end note
+
+package "Foundation Layer" #LIGHTBLUE {
+    component [ores.utility] as utility #ECECEC
+
+    note right of utility
+    Miscellaneous classes that do not fit elsewhere.
+    end note
+}
+
+package "Application Layer" #LIGHTCORAL {
+    component [ores.cli] as cli #ECECEC
+
+    note right of cli
+    Console tool for ORE Studio.
+    end note
+}
+
+' Dependencies
+cli --> utility
+
+@enduml
+```
+
+
+## 4. Component descriptions
+
+For each component:
+
+1.  Read the component header file (e.g., `projects/ores.accounts/include/ores.accounts/ores.accounts.hpp`)
+2.  Extract the `@brief` description from the namespace documentation
+3.  Add a `note right of component` **inside** the package block
+4.  Place the note immediately after the component definition
+
+
+## 5. Component dependencies
+
+Determine dependencies by analyzing `CMakeLists.txt` files in `projects/COMPONENT/src/`:
+
+1.  Look for `target_link_libraries` statements
+2.  Extract `ores.*.lib` dependencies (ignore external libraries)
+3.  Create arrows using `-->` syntax
+4.  Group related dependencies with comments (by layer)
+
+
+## 6. Architectural layers
+
+Organize components into packages by layer:
+
+| Layer                | Colour         | Components                                   |
+|-------------------- |-------------- |-------------------------------------------- |
+| Foundation Layer     | `#LIGHTBLUE`   | ores.utility                                 |
+| Infrastructure Layer | `#LIGHTGREEN`  | ores.comms, ores.testing                     |
+| Domain Layer         | `#LIGHTYELLOW` | ores.refdata, ores.accounts                  |
+| Application Layer    | `#LIGHTCORAL`  | ores.client, ores.cli, ores.qt, ores.service |
+
+
+## 7. CMakeLists.txt setup
+
+Create `projects/modeling/CMakeLists.txt` following the same pattern as component diagrams:
+
+```cmake
+set(name "ores")
+
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})
+```
+
+Then add to `projects/CMakeLists.txt`:
+
+```cmake
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+```
+
+
+## 8. Example system diagram
+
+See `projects/modeling/ores.puml` for a complete example showing all ORE Studio components organized by architectural layer with their dependencies.

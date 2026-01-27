@@ -1,0 +1,220 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/repository/{{entity_singular}}_repository.hpp"
+
+#include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.{{component}}/repository/{{entity_singular}}_mapper.hpp"
+
+namespace ores::{{component}}::repository {
+
+using namespace sqlgen;
+using namespace sqlgen::literals;
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+std::string {{entity_singular}}_repository::sql() {
+    return generate_create_table_sql<{{entity_singular}}_entity>(lg());
+}
+
+{{entity_singular}}_repository::{{entity_singular}}_repository(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+void {{entity_singular}}_repository::write(const domain::{{entity_singular}}& {{entity_singular_short}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}} to database: "
+                               << {{entity_singular_short}}.id;
+    execute_write_query(ctx_, {{entity_singular}}_mapper::map({{entity_singular_short}}),
+        lg(), "writing {{entity_singular_words}} to database");
+}
+
+void {{entity_singular}}_repository::write(
+    const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}} to database. Count: "
+                               << {{entity_plural_short}}.size();
+    execute_write_query(ctx_, {{entity_singular}}_mapper::map({{entity_plural_short}}),
+        lg(), "writing {{entity_plural_words}} to database");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest() {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("name"_c);
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}}");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. Id: " << id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto id_str = boost::uuids::to_string(id);
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("id"_c == id_str && "valid_to"_c == max.value());
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by id.");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest_by_code(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. Code: " << code;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("code"_c == code && "valid_to"_c == max.value());
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by code.");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_all(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. Id: " << id;
+
+    const auto id_str = boost::uuids::to_string(id);
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("id"_c == id_str) |
+        order_by("version"_c.desc());
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading all {{entity_singular_words}} versions by id.");
+}
+
+void {{entity_singular}}_repository::remove(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}} from database: " << id;
+
+    const auto id_str = boost::uuids::to_string(id);
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("id"_c == id_str);
+
+    execute_delete_query(ctx_, query, lg(), "removing {{entity_singular_words}} from database");
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/repository/{{name_singular}}_repository.hpp"
+
+#include <sqlgen/postgres.hpp>
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.{{component}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component}}/repository/{{name_singular}}_entity.hpp"
+#include "ores.{{component}}/repository/{{name_singular}}_mapper.hpp"
+
+namespace ores::{{component}}::repository {
+
+using namespace sqlgen;
+using namespace sqlgen::literals;
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+std::string {{name_singular}}_repository::sql() {
+    return generate_create_table_sql<{{name_singular}}_entity>(lg());
+}
+
+{{name_singular}}_repository::{{name_singular}}_repository(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+void {{name_singular}}_repository::write(
+    const domain::{{name_singular}}& {{name_singular_short}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{name_singular_words}} to database: "
+                               << {{name_singular_short}}.{{left.column}} << "/" << {{name_singular_short}}.{{right.column}};
+    execute_write_query(ctx_, {{name_singular}}_mapper::map({{name_singular_short}}),
+        lg(), "writing {{name_singular_words}} to database");
+}
+
+void {{name_singular}}_repository::write(
+    const std::vector<domain::{{name_singular}}>& {{name_short}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{name_words}} to database. Count: "
+                               << {{name_short}}.size();
+    execute_write_query(ctx_, {{name_singular}}_mapper::map({{name_short}}),
+        lg(), "writing {{name_words}} to database");
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest() {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c, "{{order_column}}"_c);
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}}");
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{left.column_short}}(const std::string& {{left.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
+                               << {{left.column}};
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        order_by("{{order_column}}"_c);
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{left.column_short}}.");
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{right.column_short}}(const std::string& {{right.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
+                               << {{right.column}};
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c);
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{right.column_short}}.");
+}
+
+void {{name_singular}}_repository::remove(
+    const std::string& {{left.column}}, const std::string& {{right.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}} from database: "
+                               << {{left.column}} << "/" << {{right.column}};
+
+    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+        where("{{left.column}}"_c == {{left.column}} && "{{right.column}}"_c == {{right.column}});
+
+    execute_delete_query(ctx_, query, lg(),
+        "removing {{name_singular_words}} from database");
+}
+
+void {{name_singular}}_repository::remove_by_{{left.column_short}}(const std::string& {{left.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing all {{name_words}} from database: "
+                               << {{left.column}};
+
+    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+        where("{{left.column}}"_c == {{left.column}});
+
+    execute_delete_query(ctx_, query, lg(),
+        "removing all {{name_words}} from database");
+}
+
+}
+{{/junction}}

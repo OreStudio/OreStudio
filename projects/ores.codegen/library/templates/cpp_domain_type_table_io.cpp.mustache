@@ -1,0 +1,47 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/domain/{{entity_singular}}_table_io.hpp"
+
+#include <ostream>
+#include "ores.{{component}}/domain/{{entity_singular}}_table.hpp"
+
+namespace ores::{{component}}::domain {
+
+namespace {
+
+void print_{{entity_singular}}_table(std::ostream& s, const std::vector<{{entity_singular}}>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<{{entity_singular}}>& v) {
+    print_{{entity_singular}}_table(s, v);
+    return s;
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/domain/{{name_singular}}_table_io.hpp"
+
+#include <ostream>
+#include "ores.{{component}}/domain/{{name_singular}}_table.hpp"
+
+namespace ores::{{component}}::domain {
+
+namespace {
+
+void print_{{name_singular}}_table(std::ostream& s, const std::vector<{{name_singular}}>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<{{name_singular}}>& v) {
+    print_{{name_singular}}_table(s, v);
+    return s;
+}
+
+}
+{{/junction}}

@@ -22,26 +22,67 @@ source "$VENV_PATH/bin/activate"
 # Change to the project directory
 cd "$SCRIPT_DIR"
 
+# Parse arguments
+MODEL_PATH=""
+OUTPUT_DIR=""
+TEMPLATE=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --template)
+            TEMPLATE="$2"
+            shift 2
+            ;;
+        -t)
+            TEMPLATE="$2"
+            shift 2
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+        *)
+            if [ -z "$MODEL_PATH" ]; then
+                MODEL_PATH="$1"
+            elif [ -z "$OUTPUT_DIR" ]; then
+                OUTPUT_DIR="$1"
+            else
+                echo "Too many positional arguments"
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
 # Check if a model path was provided
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <model_path> [output_dir]"
-    echo "Example: $0 models/slovaris/catalogs.json"
-    echo "Example with custom output: $0 models/slovaris/catalogs.json custom_output/"
+if [ -z "$MODEL_PATH" ]; then
+    echo "Usage: $0 <model_path> [output_dir] [--template <template_name>]"
+    echo ""
+    echo "Options:"
+    echo "  --template, -t <name>  Generate only the specified template"
+    echo ""
+    echo "Examples:"
+    echo "  $0 models/slovaris/catalogs.json"
+    echo "  $0 models/slovaris/catalogs.json custom_output/"
+    echo "  $0 models/dq/dataset_bundle_domain_entity.json output/ --template cpp_protocol.hpp.mustache"
     echo ""
     echo "Available models:"
     find models -name "*.json" -type f | head -10
     exit 1
 fi
 
-MODEL_PATH="$1"
-OUTPUT_DIR="$2"
-
-# Run the generator with the provided model path and optional output directory
-if [ -z "$OUTPUT_DIR" ]; then
-    python src/generator.py "$MODEL_PATH"
-else
-    python src/generator.py "$MODEL_PATH" "$OUTPUT_DIR"
+# Build the command
+CMD="python src/generator.py \"$MODEL_PATH\""
+if [ -n "$OUTPUT_DIR" ]; then
+    CMD="$CMD \"$OUTPUT_DIR\""
 fi
+if [ -n "$TEMPLATE" ]; then
+    CMD="$CMD --template \"$TEMPLATE\""
+fi
+
+# Run the generator
+eval $CMD
 
 echo ""
 echo "Generation completed successfully!"

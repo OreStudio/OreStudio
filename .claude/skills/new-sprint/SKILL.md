@@ -1,0 +1,275 @@
+---
+name: new-sprint-skill
+description: Open a new ORE Studio sprint by updating all required files.
+license: Complete terms in LICENSE.txt
+---
+
+This skill updates all files related to version and task management for a new Agile sprint in the ORE Studio project.
+
+
+# When to Use This Skill
+
+When the user requests to open up a new sprint.
+
+
+# How to Use This Skill
+
+1.  Determine the number of the sprint by looking at files in `doc/agile/v0` with the name `sprint_backlog_NN.org` where `NN` is the sprint number. Example: `sprint_backlog_01.org`. The file with the highest sprint number is the current sprint. The new sprint will be one more than the current sprint, e.g. 01 is the current sprint and 02 is the new sprint for the example.
+2.  Confirm with the user the new sprint number.
+3.  Follow the instructions in section Detailed Instructions.
+
+
+# Detailed Instructions
+
+1.  Update the sprint number in the `readme.org` to the current sprint:
+
+```diff
+-#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_04.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-4-blue.svg"/></a>
++#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_05.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-5-blue.svg"/></a>
+```
+
+1.  Update commits since in the `readme.org` to the current sprint (note - not the new sprint). Example: assuming the new sprint is 05 and the current sprint is 04, update `v0.0.3` to `v0.0.4`.
+
+```diff
+-#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.3.svg"/></a>
++#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.4.svg"/></a>
+```
+
+1.  Update the version in the `readme.org` with the new sprint. Example, if the new sprint is 05, update the version to `0.0.5`:
+
+```diff
+-Where =${VERSION}= is your ORE Studio version, such as =0.0.4=.
++Where =${VERSION}= is your ORE Studio version, such as =0.0.5=.
+```
+
+1.  Update the package version in `.github/workflows/` for the following files:
+
+2.  `continuous-linux.yml`
+3.  `continuous-macos.yml`
+4.  `continuous-windows.yml`
+
+Update it to the new sprint. Examples assuming the new sprint version is 05.
+
+For `continuous-linux.yml`:
+
+```diff
+-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/orestudio_0.0.4_amd64.deb
++          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/orestudio_0.0.5_amd64.deb
+```
+
+For `continuous-macos.yml`:
+
+```diff
+-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.4-Darwin.dmg
++          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.5-Darwin.dmg
+```
+
+For `continuous-windows.yml`:
+
+```diff
+-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.4-win64.*
++          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.5-win64.*
+```
+
+1.  Update the top-level `CMakeLists.txt`. Example for new sprint 05:
+
+```diff
+-project(OreStudio VERSION 0.0.4 LANGUAGES CXX
++project(OreStudio VERSION 0.0.5 LANGUAGES CXX
+```
+
+1.  Update `vcpkg.json`. Example for new sprint 05:
+
+```diff
+-    "version-string": "0.0.4",
++    "version-string": "0.0.5",
+```
+
+1.  Update `doc/agile/v0/version_zero.org` adding a row to the Sprints table for the new sprint. The table has three columns: Sprint number, Backlog link, and Mission. Use the GUID from the new sprint backlog file you will create in step
+    1.  Example for sprint 08:
+
+```diff
+ | Sprint | Backlog                                                          | Mission                                                                             |
+ |--------+------------------------------------------------------------------+-------------------------------------------------------------------------------------|
+ |     01 | [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.              |
+ ...
+ |     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
++|     08 | [[id:NEW-GUID-HERE][Sprint Backlog 08]] | Sprint mission from step 8.                                                         |
+```
+
+1.  Create a new agile sprint backlog for the new sprint in `doc/agile/v0`, with the file name `sprint_backlog_NN.org` where NN is the new sprint. Use the template below to create the file. First generate the template without any changes and git stage the file so that I can look at the modifications you make. Then, do these updates:
+
+2.  `GUID`: use `uuid` tool to generate a new UUID.
+3.  update all references to a sprint to the new sprint.
+
+Template:
+
+```fundamental
+:PROPERTIES:
+:ID: GUID
+:END:
+#+title: Sprint Backlog 05
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+startup: inlineimages
+
+* Sprint Mission
+
+- implement bootstrap mode.
+- implement claude code skills for common functionality.
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2025-11-16 Sun 12:34], for Sunday, November 16, 2025.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
+#+end:
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2025-11-16 Sun 12:34]
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
+#+end:
+
+*** Sprint and product backlog refinement                             :agile:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+name: pie-stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_05_stories_pie_sorted.png :width 1920 :height 1080
+library(conflicted)
+library(ggplot2)
+library(tidyverse)
+library(tibble)
+
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
+stories <- unlist(clean_sprint_summary[2])
+percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame and explicitly sort the stories by defining factor levels
+df <- data.frame(
+  stories = stories,
+  percent = percent_values
+) %>%
+  # 1. Sort the data frame by percentage in descending order
+  arrange(desc(percent)) %>%
+  # 2. Convert 'stories' to a factor, setting the levels based on the sorted order.
+  # This makes the order of the slices explicit for ggplot.
+  mutate(
+    stories = factor(stories, levels = stories),
+    lab.pos = cumsum(percent) - 0.5 * percent
+  )
+
+# Manually selected colors to resemble the screenshot
+custom_palette <- c(
+  "#21518f", "#f37735", "#ffc425", "#81b214", "#d7385e",
+  "#662e91", "#00a9ae", "#5c5c5c", "#a0c6e0", "#f8b195",
+  "#ffe385", "#bde0fe", "#c5e0d4", "#e0b8a0", "#a56f8f",
+  "#7a448a", "#4a9a9b", "#9b9b9b", "#6fa8dc", "#f7a072",
+  "#ffd166", "#99d98c", "#ef5d60", "#9d529f", "#3a86ff",
+  "#c1d6e1", "#f9e0ac", "#c2d6a4", "#e69a8d", "#a07d9f"
+)
+
+# Ensure the palette has enough colors for all stories.
+if (length(custom_palette) < length(df$stories)) {
+  warning("Not enough custom colors for all stories. Colors will repeat.")
+  custom_palette <- rep(custom_palette, length.out = length(df$stories))
+}
+
+
+p <- ggplot(df, aes(x = "", y = percent, fill = stories)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(values = custom_palette) +
+  ggtitle("Sprint 5: Resourcing per Story")  +
+  labs(x = NULL, y = NULL, fill = "Stories") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(hjust = 0.5, size = 18),
+    legend.position = "right",
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12)
+  )
+
+print(p)
+#+end_src
+
+#+RESULTS: pie-stories-chart
+[[file:sprint_backlog_04_stories_pie_sorted.png]]
+
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_05_stories.png :width 1200 :height 650
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
+  y = seq(length(names)) * 0.9
+)
+
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 5: Resourcing per Story") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+```
+
+,#+RESULTS: stories-chart ![img](sprint_backlog_04_stories.png)
+
+,#+name: tags-chart ,#+begin\_src R :var sprint\_summary=sprint\_summary :colnames yes :results file graphics :exports results :file sprint\_backlog\_05\_tags.png :width 600 :height 400 library(conflicted) library(grid) library(tidyverse) library(tibble)
+
+clean\_sprint\_summary <- sprint\_summary %>% dplyr::filter(Tags != "") names <- unlist(clean\_sprint\_summary[1]) values <- as.numeric(unlist(clean\_sprint\_summary[6]))
+
+df <- data.frame( cost = values, tags = names, y = seq(length(names)) \* 0.9 )
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum), c("cost", "tags"))
+
+blue <- "#076fa2"
+
+p <- ggplot(df2) + aes(x = cost, y = tags) + geom\_col(fill = blue, width = 0.6) + ggtitle("Sprint 5: Resourcing per Tag") + xlab("Resourcing (%)") + ylab("Story types") + theme(text = element\_text(size = 15))
+
+print(p) ,#+end\_src
+
+,#+RESULTS: tags-chart ![img](sprint_backlog_04_tags.png)
+
+,\*\*\* Footer
+
+|                                                         |
+|-------------------------------------------------------- |
+| Previous: [Version Zero](../../agile/v0/version_zero.md) |
+
+\#+end\_src

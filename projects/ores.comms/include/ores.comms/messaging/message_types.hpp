@@ -210,8 +210,19 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 22.5 adds resolve_dependencies_request/response messages (0x6094-0x6095)
 // for client-side dependency resolution before publishing. This allows clients
 // to preview the dependency order without actually publishing.
+//
+// Version 22.6 adds dataset bundle messages for managing named collections of
+// datasets. New messages: get_dataset_bundles_request/response (0x60A0-0x60A1),
+// save_dataset_bundle_request/response (0x60A2-0x60A3),
+// delete_dataset_bundle_request/response (0x60A4-0x60A5),
+// get_dataset_bundle_history_request/response (0x60A6-0x60A7).
+// Also adds dataset bundle member messages for managing bundle membership:
+// get_dataset_bundle_members_request/response (0x60B0-0x60B1),
+// get_dataset_bundle_members_by_bundle_request/response (0x60B2-0x60B3),
+// save_dataset_bundle_member_request/response (0x60B4-0x60B5),
+// delete_dataset_bundle_member_request/response (0x60B6-0x60B7).
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 5;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 6;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -502,6 +513,26 @@ enum class message_type {
     get_publications_response = 0x6093,
     resolve_dependencies_request = 0x6094,
     resolve_dependencies_response = 0x6095,
+
+    // Dataset Bundle (0x60A0 - 0x60A7)
+    get_dataset_bundles_request = 0x60A0,
+    get_dataset_bundles_response = 0x60A1,
+    save_dataset_bundle_request = 0x60A2,
+    save_dataset_bundle_response = 0x60A3,
+    delete_dataset_bundle_request = 0x60A4,
+    delete_dataset_bundle_response = 0x60A5,
+    get_dataset_bundle_history_request = 0x60A6,
+    get_dataset_bundle_history_response = 0x60A7,
+
+    // Dataset Bundle Member (0x60B0 - 0x60B7)
+    get_dataset_bundle_members_request = 0x60B0,
+    get_dataset_bundle_members_response = 0x60B1,
+    get_dataset_bundle_members_by_bundle_request = 0x60B2,
+    get_dataset_bundle_members_by_bundle_response = 0x60B3,
+    save_dataset_bundle_member_request = 0x60B4,
+    save_dataset_bundle_member_response = 0x60B5,
+    delete_dataset_bundle_member_request = 0x60B6,
+    delete_dataset_bundle_member_response = 0x60B7,
 
     last_value
 };

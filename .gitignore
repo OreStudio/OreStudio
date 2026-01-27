@@ -46,9 +46,6 @@ CMakeUserPresets.json
 projects/ores.utility/config/config.hpp
 projects/ores.utility/include/ores.utility/version/version.hpp
 
-# For now ignore the project claude directory
-.claude/
-
 # VSCode
 .vscode/
 

@@ -1,0 +1,75 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_MAPPER_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_MAPPER_HPP
+
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Maps {{entity_singular}} domain entities to data storage layer and vice-versa.
+ */
+class {{entity_singular}}_mapper {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.repository.{{entity_singular}}_mapper";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+public:
+    static domain::{{entity_singular}} map(const {{entity_singular}}_entity& v);
+    static {{entity_singular}}_entity map(const domain::{{entity_singular}}& v);
+
+    static std::vector<domain::{{entity_singular}}>
+    map(const std::vector<{{entity_singular}}_entity>& v);
+    static std::vector<{{entity_singular}}_entity>
+    map(const std::vector<domain::{{entity_singular}}>& v);
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_MAPPER_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_MAPPER_HPP
+
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component}}/repository/{{name_singular}}_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Maps {{name_singular}} domain entities to data storage layer and vice-versa.
+ */
+class {{name_singular}}_mapper {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.repository.{{name_singular}}_mapper";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+public:
+    static domain::{{name_singular}} map(const {{name_singular}}_entity& v);
+    static {{name_singular}}_entity map(const domain::{{name_singular}}& v);
+
+    static std::vector<domain::{{name_singular}}>
+    map(const std::vector<{{name_singular}}_entity>& v);
+    static std::vector<{{name_singular}}_entity>
+    map(const std::vector<domain::{{name_singular}}>& v);
+};
+
+}
+
+#endif
+{{/junction}}

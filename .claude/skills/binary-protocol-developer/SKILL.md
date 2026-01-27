@@ -1,0 +1,1047 @@
+---
+name: binary-protocol-developer
+description: Guide for extending and modifying the ORE Studio binary messaging protocol.
+license: Complete terms in LICENSE.txt
+---
+
+
+# When to use this skill
+
+When you need to add new message types, modify existing protocol messages, or make any changes to the binary messaging protocol used for client-server communication in ORE Studio.
+
+
+# How to use this skill
+
+1.  Determine if your change is breaking (major version bump) or backward compatible (minor version bump).
+2.  Follow the detailed instructions to add or modify protocol messages.
+3.  Update the protocol version appropriately.
+4.  Build and test the changes.
+
+
+# Detailed instructions
+
+
+## Understanding the protocol architecture
+
+The ORE Studio binary protocol is organized into subsystems, each with a dedicated message type range:
+
+| Subsystem   | Range           | Example                                                     |
+|----------- |--------------- |----------------------------------------------------------- |
+| Core        | 0x0000 - 0x0FFF | handshake, error, ping/pong, subscribe, notification        |
+| Refdata     | 0x1000 - 0x1FFF | currencies, currency history, countries                     |
+| IAM         | 0x2000 - 0x2FFF | login, accounts, lock/unlock, rbac, signup, sessions        |
+| Variability | 0x3000 - 0x3FFF | feature flags, feature flag history                         |
+| Assets      | 0x4000 - 0x4FFF | images, image management                                    |
+| Telemetry   | 0x5000 - 0x5FFF | log records, telemetry stats                                |
+| DQ          | 0x6000 - 0x6FFF | catalogs, datasets, coding schemes, dimensions, change mgmt |
+
+Protocol definitions are located in:
+
+-   [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.comms/include/ores.comms/messaging/message_types.hppores.comms/messaging/message\_types.hpp) - Message type enum and protocol version
+-   `projects/COMPONENT/include/COMPONENT/messaging/*_protocol.hpp` - Protocol structs for each subsystem, e.g. [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.iam/include/ores.iam/messaging/login_protocol.hppores.iam/messaging/login\_protocol.hpp)
+
+
+## Step 1: Determine version impact
+
+Before making changes, understand the versioning requirements:
+
+
+### Major version bump (breaking change)
+
+Bump the major version and reset minor to 0 when:
+
+-   Removing fields from existing request/response structs
+-   Changing the order of serialized fields
+-   Changing field types in a way that changes wire format
+-   Removing message types
+-   Changing the semantics of existing fields
+
+
+### Minor version bump (backward compatible)
+
+Bump the minor version when:
+
+-   Adding new message types
+-   Adding new optional fields to the end of existing structs
+-   Adding new subsystems
+
+
+## Step 2: Update message types enum
+
+Add new message types to [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.comms/include/ores.comms/messaging/message_types.hppmessage\_types.hpp):
+
+```cpp
+enum class message_type {
+    // ... existing types ...
+
+    // Accounts subsystem messages (0x2000 - 0x2FFF)
+    your_new_request = 0x2015,   // Use next available hex value
+    your_new_response = 0x2016,
+
+    last_value
+};
+```
+
+
+### Naming conventions for message types
+
+-   Request/response pairs: `action_request` / `action_response`
+-   Use snake\_case for all enum values
+-   Requests end with `_request`, responses end with `_response`
+-   Use verbs that describe the action: `create_`, `list_`, `delete_`, `get_`, `update_`, `lock_`, `unlock_`
+
+
+## Step 3: Create protocol structs
+
+Create request and response structs in the appropriate protocol header.
+
+
+### File organization
+
+Protocol files are named by feature:
+
+-   `projects/COMPONENT/include/COMPONENT/messaging/FEATURE_protocol.hpp`
+-   `projects/COMPONENT/src/messaging/FEATURE_protocol.cpp`
+
+For example:
+
+-   [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.iam/include/ores.iam/messaging/account_protocol.hppaccount\_protocol.hpp) - Account CRUD operations
+-   [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.iam/include/ores.iam/messaging/login_protocol.hpplogin\_protocol.hpp) - Authentication operations
+-   [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.iam/include/ores.iam/messaging/bootstrap_protocol.hppbootstrap\_protocol.hpp) - Initial admin setup
+
+
+### Struct naming conventions
+
+-   Struct names match the enum value exactly: `lock_account_request`, `lock_account_response`
+-   Use `final` keyword on all protocol structs
+-   Requests contain input data, responses contain results
+
+
+### Request struct pattern
+
+```cpp
+/**
+ * @brief Request to perform action on resource.
+ *
+ * Describe authorization requirements if any.
+ */
+struct action_resource_request final {
+    boost::uuids::uuid resource_id;  // Primary identifier
+    // Additional fields as needed
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: resource_id (UUID)
+     * - N bytes: additional fields...
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<action_resource_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const action_resource_request& v);
+```
+
+
+### Response struct pattern
+
+```cpp
+/**
+ * @brief Response indicating operation result.
+ */
+struct action_resource_response final {
+    bool success = false;
+    std::string error_message;  // Empty on success
+    // Additional result fields as needed
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<action_resource_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const action_resource_response& v);
+```
+
+
+### Adding message\_traits specialization
+
+After defining the request/response pair, add a `message_traits` specialization to enable the simplified `process_request` API. This should be added at the end of the protocol header, in the `ores::comms::messaging` namespace:
+
+```cpp
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for action_resource_request.
+ */
+template<>
+struct message_traits<COMPONENT::messaging::action_resource_request> {
+    using request_type = COMPONENT::messaging::action_resource_request;
+    using response_type = COMPONENT::messaging::action_resource_response;
+    static constexpr message_type request_message_type =
+        message_type::action_resource_request;
+};
+
+}
+```
+
+Include the traits header at the top of your protocol file:
+
+```cpp
+#include "ores.comms/messaging/message_traits.hpp"
+```
+
+The `message_traits` template provides:
+
+-   `request_type`: The request struct type
+-   `response_type`: The corresponding response struct type
+-   `request_message_type`: The `message_type` enum value for the request
+
+This enables using the simplified client API:
+
+```cpp
+// Old verbose API (still works):
+auto result = client_->process_request<
+    action_resource_request,
+    action_resource_response,
+    messaging::message_type::action_resource_request>(std::move(req));
+
+// New simplified API using traits:
+auto result = client_->process_request(std::move(req));
+```
+
+The `has_message_traits` concept can be used to constrain templates:
+
+```cpp
+template <typename RequestType>
+    requires messaging::has_message_traits<RequestType>
+void process(RequestType request) {
+    using traits = messaging::message_traits<RequestType>;
+    // Use traits::response_type, traits::request_message_type, etc.
+}
+```
+
+
+## Step 4: Implement serialization
+
+Use the reader/writer utilities for consistent serialization:
+
+```cpp
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
+
+std::vector<std::byte> action_resource_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, resource_id);
+    writer::write_string(buffer, some_string);
+    writer::write_bool(buffer, some_flag);
+    writer::write_uint32(buffer, some_number);
+    return buffer;
+}
+
+std::expected<action_resource_request, comms::messaging::error_code>
+action_resource_request::deserialize(std::span<const std::byte> data) {
+    action_resource_request request;
+
+    auto id_result = reader::read_uuid(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    request.resource_id = *id_result;
+
+    auto str_result = reader::read_string(data);
+    if (!str_result) return std::unexpected(str_result.error());
+    request.some_string = *str_result;
+
+    // Continue for all fields...
+
+    return request;
+}
+```
+
+
+### Field serialization formats
+
+| C++ Type             | Wire Format                     | Writer/Reader              |
+|-------------------- |------------------------------- |-------------------------- |
+| `bool`               | 1 byte (0x00/0x01)              | write\_bool/read\_bool     |
+| `std::uint16_t`      | 2 bytes big-endian              | write\_uint16/read\_uint16 |
+| `std::uint32_t`      | 4 bytes big-endian              | write\_uint32/read\_uint32 |
+| `boost::uuids::uuid` | 16 bytes raw                    | write\_uuid/read\_uuid     |
+| `std::string`        | 2 bytes length + N bytes UTF-8  | write\_string/read\_string |
+| `std::vector<T>`     | 4 bytes count + N \* T elements | write\_uint32/read\_count  |
+
+
+### Important serialization rules
+
+1.  Fields must be serialized in declaration order
+2.  Document the wire format in the `serialize()` method's doxygen comment
+3.  Deserialization must read fields in the same order as serialization
+4.  Always check for errors during deserialization
+5.  Use `std::unexpected` to propagate errors
+6.  Use `read_count()` instead of `read_uint32()` for collection sizes
+
+
+### Defensive limits for collections
+
+To prevent memory exhaustion from corrupted or malicious data, always use `reader::read_count()` when reading collection sizes. This function validates the count against `MAX_ELEMENT_COUNT` (100,000) before the collection is allocated.
+
+```cpp
+#include "ores.utility/serialization/reader.hpp"
+
+// In reader.hpp:
+// constexpr std::uint32_t MAX_ELEMENT_COUNT = 100'000;
+
+std::expected<get_items_response, error_code>
+get_items_response::deserialize(std::span<const std::byte> data) {
+    get_items_response response;
+
+    // Use read_count() instead of read_uint32() for collection sizes
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.items.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        // Deserialize each item...
+        auto item_result = deserialize_item(data);
+        if (!item_result) return std::unexpected(item_result.error());
+        response.items.push_back(std::move(*item_result));
+    }
+
+    return response;
+}
+```
+
+If the count exceeds the limit, `read_count()` returns `error_code::limit_exceeded`, preventing a huge memory allocation.
+
+For custom limits, pass a second argument:
+
+```cpp
+// Allow at most 1000 items
+auto count_result = reader::read_count(data, 1000);
+```
+
+
+### Decompression limits
+
+Compressed payloads are also protected. The `decompress()` function in `ores.comms/messaging/compression.hpp` limits decompressed output to `MAX_DECOMPRESSED_SIZE` (16 MB) to prevent zip bomb attacks.
+
+
+## Step 5: Add JSON output support
+
+For debugging and logging, implement the stream operator using reflect-cpp:
+
+```cpp
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
+
+std::ostream& operator<<(std::ostream& s, const action_resource_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+```
+
+
+## Step 6: Create message handler
+
+Add a handler method to the appropriate message handler class:
+
+```cpp
+// In COMPONENT_message_handler.hpp
+
+handler_result
+handle_action_resource_request(std::span<const std::byte> payload,
+    const std::string& remote_address);
+
+// In COMPONENT_message_handler.cpp
+
+case message_type::action_resource_request:
+    co_return co_await handle_action_resource_request(payload, remote_address);
+```
+
+
+### Message handler as thin dispatcher
+
+Message handlers should be **thin dispatchers** that delegate business logic to the service layer. They should:
+
+1.  Deserialize the request payload
+2.  Call the appropriate service method
+3.  Build and serialize the response
+
+**DO NOT** implement business logic (such as upsert decisions) in the message handler. For save operations, call the service's `save_*` method directly - the service layer handles upsert semantics via the repository:
+
+```cpp
+// CORRECT: Thin dispatcher - delegates to service
+handler_result message_handler::handle_save_entity_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    auto request = save_entity_request::deserialize(payload);
+    if (!request) {
+        co_return make_error_response(request.error());
+    }
+
+    service_.save_entity(request->entity);  // Service handles upsert
+
+    save_entity_response response;
+    response.success = true;
+    co_return make_response(response);
+}
+```
+
+```cpp
+// WRONG: Business logic in message handler
+handler_result message_handler::handle_save_entity_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    // DON'T do this - upsert logic belongs in service layer
+    auto existing = service_.find_entity(request->entity.id);
+    if (existing) {
+        service_.update_entity(request->entity);  // Wrong pattern
+    } else {
+        service_.create_entity(request->entity);  // Wrong pattern
+    }
+}
+```
+
+
+## Step 7: Update protocol version
+
+After making changes, update the version in `message_types.hpp`:
+
+```cpp
+// Breaking change: bump major, reset minor
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 8;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+
+// Backward compatible: bump minor only
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 8;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+```
+
+Add a comment documenting what changed:
+
+```cpp
+// Version 8.0 removes requester_account_id from lock_account_request and
+// unlock_account_request. Authorization is now handled via server-side session
+// tracking instead of client-provided identity. This is a breaking change.
+```
+
+
+## Step 8: Write tests
+
+Create tests in `projects/COMPONENT/tests/messaging_protocol_tests.cpp`:
+
+```cpp
+TEST_CASE("action_resource_request_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    action_resource_request e;
+    e.resource_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = action_resource_request::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.resource_id == e.resource_id);
+}
+```
+
+
+## Step 9: Update umbrella protocol header
+
+Add the new protocol header to the subsystem's umbrella header:
+
+```cpp
+// In projects/COMPONENT/include/COMPONENT/messaging/protocol.hpp
+#include "COMPONENT/messaging/FEATURE_protocol.hpp"
+```
+
+
+# Security considerations
+
+
+## Never trust client-provided identity
+
+The requester's identity should be determined from server-side session context, not from fields in the request. This prevents identity forgery attacks.
+
+
+## Authorization checks
+
+Always perform authorization checks in the message handler, not in the client. The server is the authority for access control decisions.
+
+
+### Passing authorization\_service to message handlers
+
+Message handlers that perform write, delete, or sensitive operations should receive `auth_service` for RBAC permission checks:
+
+1.  Update the registrar to accept `auth_service`:
+
+```cpp
+// In registrar.hpp
+#include "ores.iam/service/authorization_service.hpp"
+
+static void register_handlers(comms::net::server& server,
+    database::context ctx,
+    std::shared_ptr<iam::service::authorization_service> auth_service);
+```
+
+1.  Update the message handler constructor:
+
+```cpp
+// In message_handler.hpp
+#include "ores.iam/service/authorization_service.hpp"
+
+message_handler(database::context ctx,
+    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<iam::service::authorization_service> auth_service);
+
+private:
+    std::shared_ptr<iam::service::authorization_service> auth_service_;
+```
+
+1.  Pass `auth_service` when creating the handler:
+
+```cpp
+// In registrar.cpp
+auto handler = std::make_shared<message_handler>(
+    std::move(ctx), server.sessions(), std::move(auth_service));
+```
+
+1.  Update the call site in `application.cpp`:
+
+```cpp
+ores::COMPONENT::messaging::registrar::register_handlers(*srv, ctx, auth_service);
+```
+
+1.  Add the `ores.iam` dependency to CMakeLists.txt:
+
+```cmake
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.iam.lib
+        # ... other dependencies
+)
+```
+
+**Warning**: Before adding `ores.iam.lib` as a dependency, check `projects/modeling/ores.puml` for the current dependency graph. If IAM already depends on your component (directly or transitively), adding this dependency will create a circular dependency that breaks the build. In such cases, defer authorization to a higher layer (e.g., handle it in the service application that hosts both components).
+
+
+## Sensitive data
+
+Never include passwords or secrets in plain text in protocol messages. Use secure hashing and proper authentication flows.
+
+
+# Common patterns and conventions
+
+
+## Error handling
+
+-   Use `std::expected` for all deserialization results
+-   Return `comms::messaging::error_code` for failures
+-   Provide meaningful error messages in response structs
+
+
+## Logging
+
+-   Log requests at `debug` level on receipt
+-   Log successful operations at `info` level
+-   Log failures at `warn` or `error` level
+
+
+## Code organization
+
+-   Keep protocol structs separate from service logic
+-   Use mappers to convert between protocol types and domain types
+-   Group related message types in the same protocol file
+
+
+# Incremental loading with modified\_since
+
+For list requests that support incremental/as-of loading, add a `modified_since` parameter to filter results to only items changed after a given timestamp. This enables efficient cache updates without fetching all data.
+
+
+## Protocol changes for modified\_since
+
+
+### Request struct
+
+Add an optional `modified_since` field to list requests:
+
+```cpp
+struct list_items_request final {
+    /**
+     * @brief Optional timestamp to filter items.
+     *
+     * When set, only items with recorded_at >= modified_since are returned.
+     * When not set, all items are returned (default behavior).
+     */
+    std::optional<std::chrono::system_clock::time_point> modified_since;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_items_request, error_code>
+    deserialize(std::span<const std::byte> data);
+};
+```
+
+
+### Response struct (info type)
+
+Add `recorded_at` to the info struct returned in list responses:
+
+```cpp
+struct item_info final {
+    std::string item_id;
+    std::string name;
+    // ... other metadata fields ...
+
+    /**
+     * @brief Timestamp when this item was last modified.
+     *
+     * Used by clients to track incremental changes.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+```
+
+
+### Serialization format
+
+Serialize `modified_since` with a flag byte:
+
+```cpp
+std::vector<std::byte> list_items_request::serialize() const {
+    std::vector<std::byte> buffer;
+
+    // Write 1 byte flag: 0 = no filter, 1 = has modified_since
+    if (modified_since) {
+        writer::write_uint8(buffer, 1);
+        writer::write_string(buffer, timepoint_to_string(*modified_since));
+    } else {
+        writer::write_uint8(buffer, 0);
+    }
+
+    return buffer;
+}
+
+std::expected<list_items_request, error_code>
+list_items_request::deserialize(std::span<const std::byte> data) {
+    list_items_request request;
+
+    auto flag_result = reader::read_uint8(data);
+    if (!flag_result) return std::unexpected(flag_result.error());
+
+    if (*flag_result == 1) {
+        auto timestamp_result = reader::read_string(data);
+        if (!timestamp_result) return std::unexpected(timestamp_result.error());
+        request.modified_since = string_to_timepoint(*timestamp_result);
+    }
+
+    return request;
+}
+```
+
+
+## Repository method
+
+Add a `read_latest_since` method to the repository using sqlgen's native WHERE clause with timestamp comparison. This approach stays within sqlgen's type-safe ORM and generates parameterized queries automatically.
+
+```cpp
+// In repository header
+std::vector<domain::item> read_latest_since(context ctx,
+    std::chrono::system_clock::time_point modified_since);
+
+// In repository implementation
+std::vector<domain::item>
+item_repository::read_latest_since(context ctx,
+    std::chrono::system_clock::time_point modified_since) {
+
+    // Format timestamp for sqlgen query (thread-safe)
+    const auto timestamp_str =
+        platform::time::datetime::format_time_point_utc(modified_since);
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest items modified since: "
+                               << timestamp_str;
+
+    // Use sqlgen query with timestamp comparison
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto since_ts = make_timestamp(timestamp_str, lg());
+
+    const auto query = sqlgen::read<std::vector<item_entity>> |
+        where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
+        order_by("valid_from"_c.desc());
+
+    return execute_read_query<item_entity, domain::item>(ctx, query,
+        [](const auto& entities) { return item_mapper::map(entities); },
+        lg(), "Reading latest items since timestamp");
+}
+```
+
+Required include for thread-safe timestamp formatting:
+
+```cpp
+#include "ores.platform/time/datetime.hpp"
+```
+
+See `projects/ores.assets/src/repository/image_repository.cpp` for a reference implementation.
+
+
+## Message handler
+
+Update the handler to use the filter when provided:
+
+```cpp
+handler_result message_handler::handle_list_items_request(
+    std::span<const std::byte> payload) {
+
+    auto request_result = list_items_request::deserialize(payload);
+    if (!request_result) {
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    list_items_response response;
+
+    std::vector<domain::item> items;
+    if (request.modified_since) {
+        BOOST_LOG_SEV(lg(), debug) << "Filtering items modified since timestamp";
+        items = item_repo_.read_latest_since(ctx_, *request.modified_since);
+    } else {
+        items = item_repo_.read_latest(ctx_);
+    }
+
+    // Convert to response...
+    co_return response.serialize();
+}
+```
+
+
+## Client-side usage
+
+Track `last_load_time` and use it for incremental reloads:
+
+```cpp
+// Member variable
+std::optional<std::chrono::system_clock::time_point> last_load_time_;
+
+// On successful load
+last_load_time_ = std::chrono::system_clock::now();
+
+// On reload
+if (last_load_time_) {
+    list_items_request request;
+    request.modified_since = *last_load_time_;
+    // Send request and merge results into cache
+} else {
+    // Full reload
+}
+```
+
+
+## Implementation checklist
+
+When adding `modified_since` support to an entity:
+
+-   [ ] Add `modified_since` optional field to list request struct
+-   [ ] Add `recorded_at` field to info struct in response
+-   [ ] Update request serialization with flag byte pattern
+-   [ ] Update response serialization to include `recorded_at`
+-   [ ] Add `read_latest_since()` method to repository
+-   [ ] Create PostgreSQL `*_read_since_fn()` function
+-   [ ] Update message handler to use filter when provided
+-   [ ] Update client cache to track `last_load_time_`
+-   [ ] Add logging showing last load time and number of items loaded
+
+
+# Traits systems in ORE Studio
+
+ORE Studio uses two complementary traits systems for different purposes:
+
+
+## message\_traits (ores.comms)
+
+Maps request types to their corresponding response types and `message_type` enum values. Used for RPC-style request/response messaging.
+
+| Provides               | Description                            |
+|---------------------- |-------------------------------------- |
+| `request_type`         | The request struct type                |
+| `response_type`        | The corresponding response struct type |
+| `request_message_type` | The `message_type` enum value          |
+
+Location: `ores.comms/messaging/message_traits.hpp`
+
+
+## event\_traits (ores.eventing)
+
+Maps domain events to string names for the pub/sub notification system. Used when subscribing to server-push notifications.
+
+| Provides | Description                                                  |
+|-------- |------------------------------------------------------------ |
+| `name`   | The event type name (e.g., "ores.refdata.currency\_changed") |
+
+Location: `ores.eventing/domain/event_traits.hpp`
+
+
+## How they work together
+
+These traits are orthogonal but work together for the subscription system:
+
+1.  Client uses `event_traits` to get the event name string for a domain event
+2.  Client builds `subscribe_request` with that event name
+3.  Client uses `message_traits` (via `process_request`) to send the request
+4.  Server uses `event_traits` when publishing events to match subscribers
+
+Example flow:
+
+```cpp
+// 1. Get event name from event_traits
+constexpr auto event_name = event_traits<currency_changed_event>::name;
+// Result: "ores.refdata.currency_changed"
+
+// 2. Build subscribe request
+subscribe_request req{.event_type = std::string{event_name}};
+
+// 3. Send using message_traits (process_request infers types)
+auto result = client_->process_request(std::move(req));
+// message_traits<subscribe_request> provides:
+//   response_type = subscribe_response
+//   request_message_type = message_type::subscribe_request
+```
+
+
+# Creating Event Infrastructure for a New Entity
+
+When adding a new entity that needs real-time change notifications in the Qt UI, you must create the complete event infrastructure. This consists of four parts that form an event pipeline:
+
+```
+Database Trigger → Event Type → Comms Registration → Client Subscription
+(pg_notify)        (*_changed_    (application.cpp)   (Qt Controller)
+                    event.hpp)
+```
+
+
+## Prerequisites
+
+Before creating event infrastructure, ensure:
+
+1.  The database table exists with a notify trigger (see [sql-schema-creator](../../recipes/cli_recipes.md))
+2.  The trigger uses `pg_notify('ores_{entity_plural}', payload)`
+3.  The payload JSON contains: `entity`, `timestamp`, `entity_ids`
+
+
+## Step 1: Create the event type
+
+Create the event struct and traits specialization in the component's eventing folder.
+
+
+### File location
+
+`projects/ores.{component}/include/ores.{component}/eventing/{entity}_changed_event.hpp`
+
+
+### Template
+
+```cpp
+#ifndef ORES_{COMPONENT}_EVENTING_{ENTITY}_CHANGED_EVENT_HPP
+#define ORES_{COMPONENT}_EVENTING_{ENTITY}_CHANGED_EVENT_HPP
+
+#include <chrono>
+#include <vector>
+#include <string>
+#include "ores.eventing/domain/event_traits.hpp"
+
+namespace ores::{component}::eventing {
+
+/**
+ * @brief Domain event indicating that {entity} data has changed.
+ *
+ * Published when any {entity} is created, updated, or deleted.
+ */
+struct {entity}_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Identifiers of entities that changed.
+     *
+     * Contains the primary key values of entities that were created,
+     * updated, or deleted. May contain multiple values for batch operations.
+     */
+    std::vector<std::string> {entity}_ids;  // or {entity}_codes for string PKs
+};
+
+}
+
+namespace ores::eventing::domain {
+
+/**
+ * @brief Event traits specialization for {entity}_changed_event.
+ */
+template<>
+struct event_traits<ores::{component}::eventing::{entity}_changed_event> {
+    static constexpr std::string_view name = "ores.{component}.{entity}_changed";
+};
+
+}
+
+#endif
+```
+
+
+### Naming conventions
+
+| Element      | Pattern                             | Example                            |
+|------------ |----------------------------------- |---------------------------------- |
+| Event struct | `{entity}_changed_event`            | `catalog_changed_event`            |
+| Event name   | `ores.{component}.{entity}_changed` | `ores.dq.catalog_changed`          |
+| ID field     | `{entity}_ids` or `{entity}_codes`  | `catalog_names`, `dimension_codes` |
+
+Follow the existing patterns in:
+
+-   `ores.refdata/eventing/currency_changed_event.hpp`
+-   `ores.dq/eventing/change_reason_changed_event.hpp`
+
+
+## Step 2: Register in comms service
+
+Add two registrations in `projects/ores.comms.service/src/app/application.cpp`:
+
+
+### 2a. Register entity-to-event mapping
+
+This tells the event source which PostgreSQL notification channel maps to which event type:
+
+```cpp
+// Near line 159, with other register_mapping calls
+eventing::service::registrar::register_mapping<
+    {component}::eventing::{entity}_changed_event>(
+    event_source, "ores.{component}.{entity}", "ores_{entity_plural}",
+    *channel_registry, "{Entity} data modified");
+```
+
+Where:
+
+-   `ores.{component}.{entity}` matches the `entity` field in the trigger payload
+-   `ores_{entity_plural}` matches the pg\_notify channel name from the trigger
+
+
+### 2b. Bridge event bus to subscription manager
+
+This forwards events to subscribed clients:
+
+```cpp
+// Near line 205, with other event_bus.subscribe calls
+auto {entity}_sub = event_bus.subscribe<{component}::eventing::{entity}_changed_event>(
+    [&subscription_mgr](const {component}::eventing::{entity}_changed_event& e) {
+        using traits = eventing::domain::event_traits<
+            {component}::eventing::{entity}_changed_event>;
+        subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                 e.{entity}_ids);
+    });
+```
+
+
+### 2c. Add include
+
+Add the event header to the includes at the top of the file:
+
+```cpp
+#include "ores.{component}/eventing/{entity}_changed_event.hpp"
+```
+
+
+## Step 3: Subscribe in Qt controller
+
+The Qt controller subscribes to events in its constructor and handles notifications.
+
+
+### 3a. Add event trait constant
+
+```cpp
+namespace {
+    constexpr std::string_view {entity}_event_name =
+        eventing::domain::event_traits<{component}::eventing::{entity}_changed_event>::name;
+}
+```
+
+
+### 3b. Subscribe in constructor
+
+```cpp
+// Subscribe to server notifications
+if (clientManager_) {
+    connect(clientManager_, &ClientManager::notificationReceived,
+            this, &{Entity}Controller::onNotificationReceived);
+
+    connect(clientManager_, &ClientManager::connected, this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to {entity} change events";
+        clientManager_->subscribeToEvent(std::string{{entity}_event_name});
+    });
+
+    connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to {entity} change events";
+        clientManager_->subscribeToEvent(std::string{{entity}_event_name});
+    });
+
+    if (clientManager_->isConnected()) {
+        clientManager_->subscribeToEvent(std::string{{entity}_event_name});
+    }
+}
+```
+
+
+### 3c. Handle notifications
+
+```cpp
+void {Entity}Controller::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{{entity}_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "{Entity} change notification received";
+
+    // Mark list window as stale
+    if (listWindow_) {
+        listWindow_->markAsStale();
+    }
+}
+```
+
+
+## Complete checklist
+
+When adding event infrastructure for a new entity, verify:
+
+-   [ ] Database trigger exists and uses correct channel name
+-   [ ] Event struct created with timestamp and IDs fields
+-   [ ] Event traits specialized with correct event name
+-   [ ] Event registered with `register_mapping` in application.cpp
+-   [ ] Event bridged to subscription manager in application.cpp
+-   [ ] Include added to application.cpp
+-   [ ] Qt controller subscribes to event name
+-   [ ] Qt controller handles notifications and marks windows stale

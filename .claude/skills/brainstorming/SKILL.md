@@ -1,0 +1,276 @@
+---
+name: brainstorming
+description: Explore user intent, requirements and design through collaborative dialogue before implementation.
+license: Complete terms in LICENSE.txt
+---
+
+
+# When to use this skill
+
+Use this skill before creative work:
+
+-   Creating new features.
+-   Building new components.
+-   Adding significant functionality.
+-   Modifying existing behaviour.
+-   Designing new domain types or services.
+-   Planning architectural changes.
+
+This skill turns ideas into fully formed designs through natural collaborative dialogue.
+
+
+# How to use this skill
+
+1.  Understand the current project context.
+2.  Ask questions one at a time to refine the idea.
+3.  Explore 2-3 different approaches with trade-offs.
+4.  Present the design in small sections, validating each.
+5.  Write the validated design to `doc/plans/`.
+6.  Optionally proceed to implementation.
+
+
+# Detailed instructions
+
+
+## Phase 1: Understanding the idea
+
+
+### Gather context
+
+Before asking questions, understand the current project state:
+
+-   Read relevant existing files and documentation.
+-   Check recent commits for context.
+-   Understand which component(s) will be affected.
+-   Review related skills for patterns to follow.
+
+
+### Ask questions one at a time
+
+| Principle                 | Description                                                 |
+|------------------------- |----------------------------------------------------------- |
+| One question per message  | Don't overwhelm with multiple questions.                    |
+| Multiple choice preferred | Easier to answer than open-ended when possible.             |
+| Open-ended when needed    | Complex topics may require free-form responses.             |
+| Explore further           | If a topic needs more exploration, use follow-up questions. |
+
+Focus questions on understanding:
+
+-   **Purpose**: What problem does this solve? Who benefits?
+-   **Constraints**: What limitations exist (time, technology, compatibility)?
+-   **Success criteria**: How will we know when this is done correctly?
+-   **Scope**: What is explicitly in and out of scope?
+
+
+## Phase 2: Exploring approaches
+
+
+### Propose alternatives
+
+Always propose 2-3 different approaches with trade-offs:
+
+| Approach | Pros     | Cons     |
+|-------- |-------- |-------- |
+| Option A | &#x2026; | &#x2026; |
+| Option B | &#x2026; | &#x2026; |
+| Option C | &#x2026; | &#x2026; |
+
+
+### Lead with your recommendation
+
+Present options conversationally:
+
+-   Lead with your recommended option.
+-   Explain why you recommend it.
+-   Be clear about trade-offs.
+-   Invite feedback and discussion.
+
+
+### Apply YAGNI ruthlessly
+
+Remove unnecessary features from all designs:
+
+-   Only include what's needed for the stated requirements.
+-   Defer "nice to have" features to future iterations.
+-   Avoid premature abstractions.
+-   Question every layer of complexity.
+
+
+## Phase 3: Presenting the design
+
+
+### Incremental validation
+
+Once you understand what you're building:
+
+1.  Break the design into sections of 200-300 words.
+2.  Present one section at a time.
+3.  Ask after each section: "Does this look right so far?"
+4.  Be ready to go back and clarify if something doesn't make sense.
+
+
+### Design sections to cover
+
+| Section          | Description                                    |
+|---------------- |---------------------------------------------- |
+| Overview         | Problem statement, goals, success criteria.    |
+| Architecture     | High-level structure, components involved.     |
+| Domain model     | New or modified domain types.                  |
+| Data flow        | How data moves through the system.             |
+| API/Protocol     | New messages, endpoints, or interfaces.        |
+| Error handling   | Failure modes and recovery strategies.         |
+| Testing strategy | How the feature will be tested.                |
+| Migration        | If modifying existing behaviour, upgrade path. |
+
+
+### Reference existing skills
+
+Link to relevant skills for implementation details:
+
+-   Components: [component-creator](../component-creator/SKILL.md)
+-   Domain types: [domain-type-creator](../domain-type-creator/SKILL.md)
+-   Messaging: [binary-protocol-developer](../binary-protocol-developer/SKILL.md)
+-   Diagrams: [plantuml-class-modeler](../plantuml-class-modeler/SKILL.md)
+-   Tests: [unit-test-writer](../unit-test-writer/SKILL.md)
+
+
+## Phase 4: After the design
+
+
+### Document the design
+
+Write the validated design to a org-mode file:
+
+-   Location: `doc/plans/YYYY-MM-DD-<topic>-design.org`
+-   Use clear, concise writing.
+-   Include all validated sections.
+-   Add diagrams if helpful (ASCII or PlantUML references).
+
+Example structure:
+
+```
+:PROPERTIES:
+:ID: NEW_GUID
+:END:
+#+title: Feature Name Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Brief description and goals.
+
+** Architecture
+
+High-level design decisions.
+
+** Domain Model
+
+New types and their relationships.
+
+** Data Flow
+
+How data moves through the system.
+
+** API Changes
+
+New messages or endpoints.
+
+** Error Handling
+
+Failure modes and recovery.
+
+** Testing Strategy
+
+How the feature will be tested.
+
+** Open Questions
+
+Any unresolved decisions.
+```
+
+
+### Commit the design
+
+Commit the design document:
+
+```
+git add doc/plans/YYYY-MM-DD-topic-design.org
+git commit -m "[design] Add design for topic"
+```
+
+
+### Proceed to implementation (optional)
+
+If continuing to implementation:
+
+1.  Ask: "Ready to set up for implementation?"
+2.  Create stories in the sprint backlog per [agile-product-owner](../agile-product-owner/SKILL.md) skill.
+3.  Break the design into implementable tasks.
+4.  Reference the design document in story notes.
+
+
+# Key principles
+
+| Principle                 | Description                                            |
+|------------------------- |------------------------------------------------------ |
+| One question at a time    | Don't overwhelm with multiple questions.               |
+| Multiple choice preferred | Easier to answer than open-ended when possible.        |
+| YAGNI ruthlessly          | Remove unnecessary features from all designs.          |
+| Explore alternatives      | Always propose 2-3 approaches before settling.         |
+| Incremental validation    | Present design in sections, validate each.             |
+| Be flexible               | Go back and clarify when something doesn't make sense. |
+| Reference skills          | Don't duplicate, link to existing skills.              |
+
+
+# Example dialogue
+
+
+## Initial exploration
+
+```
+User: I want to add caching to the currency lookups.
+Claude: Let me understand your requirements. Looking at ores.refdata, I see
+currency lookups happen in the repository layer. First question:
+
+What is the primary goal - reducing database load, or improving response time
+for the client?
+
+A) Reduce database queries (server-side caching)
+B) Faster client responses (could be client or server side)
+C) Both are equally important
+
+User: B - faster client responses.
+
+Claude: Got it. Since you want faster client responses, we have options about
+where to cache. Second question:
+
+Should the cache be:
+
+A) Server-side (in ores.service memory, shared across all clients)
+B) Client-side (in ores.qt, each client caches locally)
+C) Both levels (server reduces DB load, client reduces network calls)
+
+User: A - server side for now, we can add client later.
+```
+
+
+## Presenting design
+
+```
+Claude: Based on our discussion, here is the proposed design for server-side
+currency caching.
+
+*Overview*
+
+Add an in-memory cache to the currency service that stores recently accessed
+currencies. The cache will use a time-based expiration to ensure data freshness
+while reducing database queries for repeated lookups.
+
+Does this overview capture your intent?
+
+User: Yes, but we also need to invalidate when currencies are updated.
+
+Claude: Good point. Let me revise...
+```

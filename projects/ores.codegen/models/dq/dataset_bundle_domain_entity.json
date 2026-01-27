@@ -1,5 +1,6 @@
 {
   "domain_entity": {
+    "schema": "metadata",
     "component": "dq",
     "entity_singular": "dataset_bundle",
     "entity_plural": "dataset_bundles",

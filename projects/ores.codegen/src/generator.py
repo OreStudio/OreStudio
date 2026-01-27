@@ -271,6 +271,34 @@ def get_junction_template_mappings():
     ]
 
 
+def get_qt_domain_entity_template_mappings():
+    """
+    Define the mapping for Qt domain entity templates.
+
+    Returns:
+        list: List of tuples (template_name, output_dir, output_suffix) for Qt generation
+    """
+    return [
+        # Client model facet
+        ("cpp_qt_client_model.hpp.mustache", "include/ores.qt", "Model.hpp"),
+        ("cpp_qt_client_model.cpp.mustache", "src", "Model.cpp"),
+        # MDI window facet
+        ("cpp_qt_mdi_window.hpp.mustache", "include/ores.qt", "MdiWindow.hpp"),
+        ("cpp_qt_mdi_window.cpp.mustache", "src", "MdiWindow.cpp"),
+        # Detail dialog facet
+        ("cpp_qt_detail_dialog.hpp.mustache", "include/ores.qt", "DetailDialog.hpp"),
+        ("cpp_qt_detail_dialog.cpp.mustache", "src", "DetailDialog.cpp"),
+        ("qt_detail_dialog_ui.mustache", "ui", "DetailDialog.ui"),
+        # History dialog facet
+        ("cpp_qt_history_dialog.hpp.mustache", "include/ores.qt", "HistoryDialog.hpp"),
+        ("cpp_qt_history_dialog.cpp.mustache", "src", "HistoryDialog.cpp"),
+        ("qt_history_dialog_ui.mustache", "ui", "HistoryDialog.ui"),
+        # Controller facet
+        ("cpp_qt_controller.hpp.mustache", "include/ores.qt", "Controller.hpp"),
+        ("cpp_qt_controller.cpp.mustache", "src", "Controller.cpp"),
+    ]
+
+
 def get_cpp_domain_entity_template_mappings():
     """
     Define the mapping for C++ domain entity templates.
@@ -595,7 +623,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_junction = is_junction_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
-    generate_cpp = target_template and target_template.startswith('cpp_')
+    generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
+    # Check for Qt generation flag (qt_ or cpp_qt_ prefix in target_template)
+    generate_qt = target_template and (target_template.startswith('qt_') or target_template.startswith('cpp_qt_'))
 
     # Determine which templates to process
     if target_template:
@@ -800,6 +830,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")
             words = domain_entity['entity_singular'].split('_')
             domain_entity['entity_singular_words'] = words[-1] if words else domain_entity['entity_singular']
+            # PascalCase versions for Qt class names (e.g., "dataset_bundle" -> "DatasetBundle")
+            domain_entity['entity_pascal'] = ''.join(w.capitalize() for w in words)
+            domain_entity['entity_snake'] = domain_entity['entity_singular']
+            domain_entity['entity_upper'] = domain_entity['entity_singular'].upper()
+            # Short versions (last word only, e.g., "dataset_bundle" -> "Bundle")
+            domain_entity['entity_pascal_short'] = words[-1].capitalize() if words else domain_entity['entity_singular'].capitalize()
+            domain_entity['entity_pascal_short_plural'] = domain_entity['entity_pascal_short'] + 's'
         if 'entity_plural' in domain_entity:
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
         if 'entity_title' in domain_entity:
@@ -811,6 +848,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Process Qt-specific fields
+        if 'qt' in domain_entity:
+            qt = domain_entity['qt']
+            # Mark last item in columns for template iteration
+            if 'columns' in qt:
+                _mark_last_item(qt['columns'])
+            # Add iterator variable reference for templates
+            qt['item_var'] = qt.get('item_var', 'item')
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models
@@ -1002,6 +1047,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{sub_dir}/{name_singular}{suffix}"
             else:
                 output_filename = f"{name_singular}.hpp"
+        elif generate_qt and is_domain_entity and 'domain_entity' in data:
+            # Qt generation for domain entity
+            domain_entity = data['domain_entity']
+            entity_pascal = domain_entity.get('entity_pascal', 'Unknown')
+            # Find the mapping for this template
+            qt_mappings = get_qt_domain_entity_template_mappings()
+            mapping = next(((t, d, s) for t, d, s in qt_mappings if t == template_name), None)
+            if mapping:
+                sub_dir, suffix = mapping[1], mapping[2]
+                # Client model uses "Client" prefix
+                if 'client_model' in template_name:
+                    output_filename = f"{sub_dir}/Client{entity_pascal}{suffix}"
+                else:
+                    output_filename = f"{sub_dir}/{entity_pascal}{suffix}"
+            else:
+                output_filename = f"{entity_pascal}.hpp"
         elif is_domain_entity and 'domain_entity' in data:
             # For domain entity models, derive filename from domain_entity definition
             # Use entity_singular for filename (table/indexes/functions use entity_plural)

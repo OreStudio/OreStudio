@@ -190,6 +190,14 @@ class Function:
 
 
 @dataclass
+class View:
+    """View definition."""
+    name: str
+    source_file: str
+    line: int
+
+
+@dataclass
 class ParseResult:
     """Result of parsing SQL files."""
     tables: list = field(default_factory=list)
@@ -205,8 +213,10 @@ class SQLParser:
         self.warnings = []
         self.tables = {}
         self.functions = {}
+        self.views = {}
         self.drop_tables = set()
         self.drop_functions = set()
+        self.drop_views = set()
         self.unique_columns = {}  # table_name -> set of column names
         self.table_descriptions = {}  # table_name -> description text
         self.relationships = []  # List of Relationship objects
@@ -273,6 +283,9 @@ class SQLParser:
         # Extract functions
         self._extract_functions(content, lines, relative_path)
 
+        # Extract views (regular and materialized)
+        self._extract_views(content, lines, relative_path)
+
     def _parse_drop_file(self, file_path: Path) -> None:
         """Parse a single DROP SQL file to track what should be dropped."""
         content = file_path.read_text()
@@ -284,6 +297,10 @@ class SQLParser:
         # Track dropped functions (matches metadata, production, or public schemas)
         for match in re.finditer(rf'drop\s+function\s+if\s+exists\s+{SCHEMA_PATTERN}\.(\w+)', content, re.IGNORECASE):
             self.drop_functions.add(match.group(1))
+
+        # Track dropped views (regular and materialized)
+        for match in re.finditer(rf'drop\s+(?:materialized\s+)?view\s+if\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?', content, re.IGNORECASE):
+            self.drop_views.add(match.group(1))
 
     def _extract_table_descriptions(self, content: str) -> None:
         """Extract table descriptions from comments before CREATE TABLE.
@@ -676,6 +693,31 @@ class SQLParser:
                 line=line_num
             )
 
+    def _extract_views(self, content: str, lines: list, file_path: str) -> None:
+        """Extract view definitions from SQL content.
+
+        Handles both regular views and materialized views (including those
+        created with dynamic SQL inside DO $$ blocks).
+        """
+        # Pattern for regular views: CREATE [OR REPLACE] VIEW schema.name
+        view_pattern = re.compile(
+            rf'create\s+(?:or\s+replace\s+)?(?:materialized\s+)?view\s+'
+            rf'(?:if\s+not\s+exists\s+)?'
+            rf'"?{SCHEMA_PATTERN}"?\."?(\w+)"?',
+            re.IGNORECASE
+        )
+
+        for match in view_pattern.finditer(content):
+            view_name = match.group(1)
+            start_pos = match.start()
+            line_num = content[:start_pos].count('\n') + 1
+
+            self.views[view_name] = View(
+                name=view_name,
+                source_file=file_path,
+                line=line_num
+            )
+
     def apply_column_markings(self) -> None:
         """Apply unique and FK markings to columns after all tables are parsed."""
         for table_name, table in self.tables.items():
@@ -725,6 +767,13 @@ class SQLParser:
                                   f"Function '{func_name}' created but not found in drop scripts",
                                   entity_name=func_name)
 
+        # Check views
+        for view_name, view in self.views.items():
+            if view_name not in self.drop_views:
+                self._add_warning(view.source_file, view.line, 'DROP_003',
+                                  f"View '{view_name}' created but not found in drop scripts",
+                                  entity_name=view_name)
+
     def validate_function_naming(self) -> None:
         """Check that functions follow the naming convention.
 
@@ -769,6 +818,29 @@ class SQLParser:
                                   f"Function '{func_name}' should start with a component prefix "
                                   f"(e.g., dq_, iam_, refdata_)",
                                   entity_name=func_name)
+
+    def validate_view_naming(self) -> None:
+        """Check that views follow the naming convention.
+
+        Valid pattern: {component}_{entities}_{qualifier}_vw
+        All views must end with '_vw' suffix.
+        """
+        for view_name, view in self.views.items():
+            # Check that view ends with _vw
+            if not view_name.endswith('_vw'):
+                self._add_warning(view.source_file, view.line, 'NAME_003',
+                                  f"View '{view_name}' should end with '_vw' suffix",
+                                  entity_name=view_name)
+                continue
+
+            # Check that view has a recognized component prefix
+            has_component = any(view_name.startswith(prefix)
+                                for prefix in COMPONENT_PREFIXES.keys())
+            if not has_component:
+                self._add_warning(view.source_file, view.line, 'NAME_004',
+                                  f"View '{view_name}' should start with a component prefix "
+                                  f"(e.g., dq_, iam_, telemetry_)",
+                                  entity_name=view_name)
 
     def _add_warning(self, file_path: str, line: int, code: str, message: str,
                      entity_name: str = '') -> None:
@@ -1116,10 +1188,14 @@ def main():
     # Validate function naming conventions
     sql_parser.validate_function_naming()
 
+    # Validate view naming conventions
+    sql_parser.validate_view_naming()
+
     # Print summary
     print(f"\n=== Validation Summary ===", file=sys.stderr)
     print(f"Tables parsed: {len(sql_parser.tables)}", file=sys.stderr)
     print(f"Functions parsed: {len(sql_parser.functions)}", file=sys.stderr)
+    print(f"Views parsed: {len(sql_parser.views)}", file=sys.stderr)
     print(f"Warnings: {len(sql_parser.warnings)}", file=sys.stderr)
 
     # Generate model (unless validate-only)

@@ -106,7 +106,7 @@ std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
  */
 struct telemetry_stats_hourly_entity {
     constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "telemetry_stats_hourly";
+    constexpr static const char* tablename = "telemetry_stats_hourly_vw";
 
     std::string hour;
     std::string source;
@@ -124,7 +124,7 @@ std::ostream& operator<<(std::ostream& s, const telemetry_stats_hourly_entity& v
  */
 struct telemetry_stats_daily_entity {
     constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "telemetry_stats_daily";
+    constexpr static const char* tablename = "telemetry_stats_daily_vw";
 
     std::string day;
     std::string source;

@@ -21,13 +21,13 @@
 /**
  * System Population Script
  *
- * Seeds the database with all system and reference data required for the
- * application to function. All scripts are idempotent and can be safely
- * re-run without creating duplicate data.
+ * Seeds the database with governance and catalogue data. Foundation layer
+ * data (change reasons, IAM, coding schemes, etc.) is already included in
+ * the database template via setup_template.sql.
  *
  * Population Layers:
  *
- * 1. Foundation Layer (included in template, idempotent re-run here)
+ * 1. Foundation Layer (already in template - not run here)
  *    - Change Control: Categories and reasons for audit trail
  *    - Reference Data Lookup Tables: Rounding types
  *    - Data Governance Framework: Domains, subject areas, authority types, coding schemes
@@ -61,17 +61,9 @@
 \echo ''
 
 -- =============================================================================
--- Foundation Layer (idempotent - already in template, safe to re-run)
--- =============================================================================
-
-\echo '--- Foundation Layer ---'
-\ir foundation/populate_foundation.sql
-
--- =============================================================================
 -- Data Governance Layer
 -- =============================================================================
 
-\echo ''
 \echo '--- Data Governance Layer ---'
 \ir governance/populate_governance.sql
 

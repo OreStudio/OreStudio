@@ -114,6 +114,8 @@ and C++ code.
 | Insert function   | =_insert_fn=    | =iam_accounts_insert_fn()=             |
 | Notify function   | =_notify_fn=    | =iam_accounts_notify_fn()=             |
 | Upsert function   | =_upsert_fn=    | =dq_catalogs_upsert_fn()=              |
+| Publish function  | =_publish_fn=   | =dq_currencies_publish_fn()=           |
+| Preview function  | =_preview_fn=   | =dq_currency_preview_fn()=             |
 | Assign function   | =_assign_fn=    | =iam_role_permissions_assign_fn()=     |
 | Other functions   | =_fn=           | =utility_infinity_timestamp_fn()=      |
 | Delete rule       | =_delete_rule=  | =iam_accounts_delete_rule=             |
@@ -147,6 +149,8 @@ collections of entities.
 | Insert function    | ={component}_{entities}_insert_fn()=             |
 | Notify function    | ={component}_{entities}_notify_fn()=             |
 | Upsert function    | ={component}_{entities}_upsert_fn()=             |
+| Publish function   | ={component}_{entities}_publish_fn()=            |
+| Preview function   | ={component}_{entity}_preview_fn()= (singular)   |
 | Assign function    | ={component}_{entities}_assign_fn()=             |
 | Delete rule        | ={component}_{entities}_delete_rule=             |
 | Column index       | ={component}_{entities}_{column(s)}_idx=         |

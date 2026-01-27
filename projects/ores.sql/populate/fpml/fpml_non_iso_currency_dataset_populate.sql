@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Non Iso Currency Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'fpml.non_iso_currency',
     'FpML Standards',
     'Currencies',

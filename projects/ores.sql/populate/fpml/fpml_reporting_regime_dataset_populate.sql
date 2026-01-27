@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Reporting Regime Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'fpml.reporting_regime',
     'FpML Standards',
     'Regulatory',

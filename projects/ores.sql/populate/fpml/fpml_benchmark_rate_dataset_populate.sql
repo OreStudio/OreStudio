@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Benchmark Rate Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'fpml.benchmark_rate',
     'FpML Standards',
     'Market Data',

@@ -1003,6 +1003,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Mark last item in artefact_indexes list
         if 'artefact_indexes' in entity:
             _mark_last_item(entity['artefact_indexes'])
+        # Determine schema based on component: dq -> metadata, everything else -> production
+        if 'component' in entity:
+            entity['schema'] = 'metadata' if entity['component'] == 'dq' else 'production'
         # Store entity at top level for easier template access
         data['entity'] = entity
 
@@ -1035,6 +1038,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Add uppercase versions for C++ include guards
         if 'component' in domain_entity:
             domain_entity['component_upper'] = domain_entity['component'].upper()
+            # Determine schema based on component: dq -> metadata, everything else -> production
+            domain_entity['schema'] = 'metadata' if domain_entity['component'] == 'dq' else 'production'
         if 'entity_singular' in domain_entity:
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
             # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")
@@ -1093,6 +1098,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Add uppercase versions for C++ include guards
         if 'component' in junction:
             junction['component_upper'] = junction['component'].upper()
+            # Determine schema based on component: dq -> metadata, everything else -> production
+            junction['schema'] = 'metadata' if junction['component'] == 'dq' else 'production'
         if 'name_singular' in junction:
             junction['name_singular_upper'] = junction['name_singular'].upper()
             # Human-readable version - use explicit value or derive from last word

@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Party Role Type Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'fpml.party_role_type',
     'FpML Standards',
     'Parties',

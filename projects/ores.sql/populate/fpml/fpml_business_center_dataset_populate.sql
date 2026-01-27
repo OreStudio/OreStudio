@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Business Center Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     'fpml.business_center',
     'FpML Standards',
     'Trading',

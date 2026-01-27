@@ -1,12 +1,12 @@
 {{! Template to generate SQL schema for entity artefact/staging table }}
 {{{sql_license}}}
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- {{entity.description}} - Artefact Table
 -- =============================================================================
 
-create table if not exists "ores"."dq_{{entity.entity_plural}}_artefact_tbl" (
+create table if not exists "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" (
     "dataset_id" uuid not null,
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
@@ -22,14 +22,14 @@ create table if not exists "ores"."dq_{{entity.entity_plural}}_artefact_tbl" (
 );
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_dataset_idx
-on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" (dataset_id);
+on "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" (dataset_id);
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.primary_key.column}}_idx
-on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" ({{entity.primary_key.column}});
+on "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" ({{entity.primary_key.column}});
 {{#entity.artefact_indexes}}
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx
-on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" ({{columns}});
+on "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" ({{columns}});
 {{/entity.artefact_indexes}}
 {{#entity.has_artefact_insert_fn}}
 

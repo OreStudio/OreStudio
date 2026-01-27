@@ -22,8 +22,8 @@
 drop function if exists metadata.dq_get_bundle_publication_history_fn;
 drop function if exists metadata.dq_bundles_publish_fn;
 drop function if exists metadata.dq_bundle_preview_fn;
-drop function if exists metadata.dq_list_bundle_datasets_fn;
-drop function if exists metadata.dq_list_bundles_fn;
+drop function if exists metadata.dq_bundle_datasets_list_fn;
+drop function if exists metadata.dq_bundles_list_fn;
 
 -- Drop indexes
 drop index if exists metadata.dq_bundle_publications_published_at_idx;

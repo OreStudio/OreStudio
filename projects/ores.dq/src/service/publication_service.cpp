@@ -335,7 +335,7 @@ void publication_service::record_publication(
 
     // Build the INSERT query
     const auto sql = std::format(
-        "INSERT INTO metadata.dq_publications_tbl ("
+        "INSERT INTO metadata.dq_dataset_publications_tbl ("
         "dataset_id, dataset_code, mode, target_table, "
         "records_inserted, records_updated, records_skipped, records_deleted, published_by"
         ") VALUES ('{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",

@@ -26,7 +26,7 @@
  *
  * Usage:
  *   -- List available bundles
- *   SELECT * FROM metadata.dq_list_bundles_fn();
+ *   SELECT * FROM metadata.dq_bundles_list_fn();
  *
  *   -- Preview what will be published
  *   SELECT * FROM metadata.dq_bundle_preview_fn('base');
@@ -83,7 +83,7 @@ create index if not exists dq_bundle_publications_published_at_idx
 /**
  * Lists all available dataset bundles with their member counts.
  */
-create or replace function metadata.dq_list_bundles_fn()
+create or replace function metadata.dq_bundles_list_fn()
 returns table (
     bundle_code text,
     bundle_name text,
@@ -110,7 +110,7 @@ $$ language plpgsql;
 /**
  * Lists datasets in a bundle with their publication readiness status.
  */
-create or replace function metadata.dq_list_bundle_datasets_fn(p_bundle_code text)
+create or replace function metadata.dq_bundle_datasets_list_fn(p_bundle_code text)
 returns table (
     display_order integer,
     dataset_code text,
@@ -390,7 +390,7 @@ begin
             end loop;
 
             -- Record individual dataset publication
-            insert into metadata.dq_publications_tbl (
+            insert into metadata.dq_dataset_publications_tbl (
                 dataset_id, dataset_code, mode, target_table,
                 records_inserted, records_updated, records_skipped, records_deleted,
                 published_by

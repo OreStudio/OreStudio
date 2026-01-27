@@ -19,7 +19,7 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_list_populatable_datasets_fn;
+drop function if exists metadata.dq_datasets_list_publishable_fn;
 drop function if exists metadata.dq_image_preview_fn;
 drop function if exists metadata.dq_images_publish_fn;
 drop function if exists metadata.dq_country_preview_fn;

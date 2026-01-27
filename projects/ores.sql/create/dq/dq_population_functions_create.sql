@@ -25,7 +25,7 @@
  * Designed to support a future UI for dataset management.
  *
  * Usage pattern:
- *   1. List available datasets: SELECT * FROM metadata.dq_list_populatable_datasets_fn();
+ *   1. List available datasets: SELECT * FROM metadata.dq_datasets_list_publishable_fn();
  *   2. Preview what will be copied: SELECT * FROM metadata.dq_preview_*_population(dataset_id);
  *   3. Execute the copy: SELECT * FROM metadata.dq_populate_*(dataset_id, mode);
  *
@@ -45,7 +45,7 @@ set schema 'metadata';
  * Lists all DQ datasets that can be populated into production tables.
  * Returns dataset metadata and record counts for UI display.
  */
-create or replace function metadata.dq_list_populatable_datasets_fn()
+create or replace function metadata.dq_datasets_list_publishable_fn()
 returns table (
     dataset_id uuid,
     dataset_name text,

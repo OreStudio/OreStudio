@@ -521,8 +521,6 @@ void ApplyProvisioningPage::startProvisioning() {
     const std::string email = wizard_->adminEmail().toStdString();
     const QString bundleCode = wizard_->selectedBundleCode();
     ClientManager* clientManager = wizard_->clientManager();
-    const std::string host = clientManager->connectedHost();
-    const std::uint16_t port = clientManager->connectedPort();
 
     // Perform provisioning asynchronously
     auto* watcher = new QFutureWatcher<ProvisioningResult>(this);
@@ -534,7 +532,7 @@ void ApplyProvisioningPage::startProvisioning() {
     });
 
     QFuture<ProvisioningResult> future = QtConcurrent::run(
-        [clientManager, username, password, email, bundleCode, host, port]() -> ProvisioningResult {
+        [clientManager, username, password, email, bundleCode]() -> ProvisioningResult {
             ProvisioningResult result;
 
             // Step 1: Create administrator account
@@ -569,7 +567,7 @@ void ApplyProvisioningPage::startProvisioning() {
             // Step 2: Login as admin to establish session (using standard login flow)
             result.log_messages.append(QString("[2/4] Logging in as administrator..."));
 
-            auto loginResult = clientManager->connectAndLogin(host, port, username, password);
+            auto loginResult = clientManager->login(username, password);
 
             if (!loginResult.success) {
                 result.success = false;

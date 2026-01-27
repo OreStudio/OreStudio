@@ -92,7 +92,7 @@ set schema 'ores';
         description = escape_sql_string(catalog['description'])
         owner = escape_sql_string(catalog['owner'])
 
-        f.write(f"""select ores.upsert_dq_catalogs(
+        f.write(f"""select metadata.upsert_dq_catalogs(
     '{name}',
     '{description}',
     '{owner}'
@@ -135,7 +135,7 @@ set schema 'ores';
             # Build methodology steps from the methodology.txt content
             methodology_steps = escape_sql_string(methodology_text)
 
-            f.write(f"""select ores.upsert_dq_methodologies(
+            f.write(f"""select metadata.upsert_dq_methodologies(
     '{name}',
     '{description}',
     '{url}',
@@ -192,7 +192,7 @@ set schema 'ores';
             artefact_type = dataset['artefact_type']
 
             f.write(f"""-- {name}
-select ores.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     '{code}',
     '{catalog}',
     '{subject_area}',
@@ -253,7 +253,7 @@ set schema 'ores';
             tag_code = dataset['tag_code']
             tag_description = escape_sql_string(dataset['tag_description'])
 
-            f.write(f"""select ores.upsert_dq_tag(
+            f.write(f"""select metadata.upsert_dq_tag(
     '{name}',
     '{subject_area}',
     '{domain}',
@@ -304,7 +304,7 @@ set schema 'ores';
                 dep_code = dep['code']
                 role = dep['role']
 
-                f.write(f"""select ores.upsert_dq_dataset_dependency(
+                f.write(f"""select metadata.upsert_dq_dataset_dependency(
     '{dataset_code}',
     '{dep_code}',
     '{role}'

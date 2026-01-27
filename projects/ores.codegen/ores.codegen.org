@@ -356,7 +356,7 @@ From =models/slovaris/catalogs.json=:
 The =sql_catalog_populate.mustache= template generates SQL code that:
 1. Includes the enhanced license header
 2. Sets the schema to 'ores'
-3. Generates SQL calls to =ores.upsert_dq_catalogs()= function
+3. Generates SQL calls to =metadata.upsert_dq_catalogs()= function
 4. Includes summary queries
 
 * Extending

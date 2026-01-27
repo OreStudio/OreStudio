@@ -10,7 +10,7 @@ set schema 'ores';
 \echo '--- Data Quality Slovaris Tags ---'
 
 {{#tags}}
-select ores.upsert_dq_tag(
+select metadata.upsert_dq_tag(
     '{{dataset_name}}',
     '{{subject_area_name}}',
     '{{domain_name}}',
@@ -27,8 +27,8 @@ select ores.upsert_dq_tag(
 \echo '--- Summary ---'
 
 select 'dq_datasets' as entity, count(*) as count
-from ores.dq_datasets_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_datasets_tbl
+where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'dq_tags_artefact', count(*)
-from ores.dq_tags_artefact_tbl;
+from metadata.dq_tags_artefact_tbl;

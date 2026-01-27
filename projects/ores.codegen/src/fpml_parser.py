@@ -200,7 +200,7 @@ class CodingScheme:
         definition = self.definition.replace("'", "''") if self.definition else ''
         uri = self.canonical_uri.replace("'", "''")
 
-        return f"""select ores.upsert_dq_coding_schemes(
+        return f"""select metadata.upsert_dq_coding_schemes(
     '{code}',
     '{name}',
     'industry',
@@ -222,7 +222,7 @@ class CodingScheme:
         definition = self.definition.replace("'", "''") if self.definition else ''
         uri = self.canonical_uri.replace("'", "''")
 
-        return f"""insert into ores.dq_coding_schemes_artefact_tbl (
+        return f"""insert into metadata.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
@@ -660,7 +660,7 @@ def generate_catalog_sql(manifest: dict, output_path: Path):
         "",
         "\\echo '--- FpML Standards Catalog ---'",
         "",
-        f"select ores.upsert_dq_catalogs(",
+        f"select metadata.upsert_dq_catalogs(",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{owner_escaped}'",
@@ -715,7 +715,7 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
         "",
         "\\echo '--- FPML Methodology ---'",
         "",
-        f"select ores.upsert_dq_methodologies(",
+        f"select metadata.upsert_dq_methodologies(",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{source_url_escaped}',",
@@ -771,7 +771,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         artefact_type = dataset['artefact_type']
 
         lines.append(f"-- {name}")
-        lines.append("select ores.upsert_dq_datasets(")
+        lines.append("select metadata.upsert_dq_datasets(")
         lines.append(f"    '{code}',")
         lines.append(f"    '{catalog}',")
         lines.append(f"    '{subject_area}',")
@@ -823,7 +823,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
         dependency_code = dep['dependency_code']
         role = dep['role']
 
-        lines.append(f"select ores.upsert_dq_dataset_dependency(")
+        lines.append(f"select metadata.upsert_dq_dataset_dependency(")
         lines.append(f"    '{dataset_code}',")
         lines.append(f"    '{dependency_code}',")
         lines.append(f"    '{role}'")
@@ -875,8 +875,8 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         "",
         "-- Publish coding schemes to production (required before other datasets can reference them)",
         "\\echo '--- Publishing FPML Coding Schemes ---'",
-        "select * from ores.dq_populate_coding_schemes(",
-        "    (select id from ores.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),",
+        "select * from metadata.dq_populate_coding_schemes(",
+        "    (select id from metadata.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn()),",
         "    'upsert'",
         ");",
         "",
@@ -928,8 +928,8 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
         " * Populates the dq_coding_schemes_artefact_tbl staging table.",
         " *",
         " * To publish to production:",
-        f" *   SELECT * FROM ores.dq_populate_coding_schemes(",
-        f" *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores.utility_infinity_timestamp_fn()),",
+        f" *   SELECT * FROM metadata.dq_populate_coding_schemes(",
+        f" *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = public.utility_infinity_timestamp_fn()),",
         " *       'upsert'",
         " *   );",
         " */",
@@ -943,10 +943,10 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
         "\\echo '--- FPML Coding Schemes Artefacts ---'",
         "",
         "-- Store dataset_id in psql variable for reuse",
-        f"select id as v_dataset_id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn() \\gset",
+        f"select id as v_dataset_id from metadata.dq_datasets_tbl where code = '{dataset_code}' and valid_to = public.utility_infinity_timestamp_fn() \\gset",
         "",
         "-- Clear existing artefacts for this dataset before inserting",
-        "delete from ores.dq_coding_schemes_artefact_tbl",
+        "delete from metadata.dq_coding_schemes_artefact_tbl",
         "where dataset_id = :'v_dataset_id';",
         ""
     ]

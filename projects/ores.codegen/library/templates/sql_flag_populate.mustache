@@ -11,25 +11,25 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where name = 'Solvaris Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: name="Solvaris Country Flag Images", subject_area="Country Flags", domain="Reference Data"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)
-    delete from ores.dq_images_artefact_tbl
+    delete from metadata.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise notice 'Populating images for dataset: %', 'Solvaris Country Flag Images';
 
     -- Insert images
 {{#country_currency}}
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
@@ -46,8 +46,8 @@ end $$;
 \echo '--- Summary ---'
 
 select 'Data Quality Total Images' as entity, count(*) as count
-from ores.dq_images_artefact_tbl where dataset_id in (
-    select id from ores.dq_datasets_tbl
+from metadata.dq_images_artefact_tbl where dataset_id in (
+    select id from metadata.dq_datasets_tbl
     where name = 'Solvaris Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'

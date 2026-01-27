@@ -34,7 +34,7 @@ on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" ({{columns}});
 {{#entity.has_artefact_insert_fn}}
 
 -- Function to insert {{entity.entity_plural}} into the artefact table
-create or replace function ores.dq_{{entity.entity_plural}}_artefact_insert_fn(
+create or replace function metadata.dq_{{entity.entity_plural}}_artefact_insert_fn(
     p_dataset_id uuid,
     p_{{entity.primary_key.column}} {{entity.primary_key.type}},
     p_version integer,
@@ -46,7 +46,7 @@ create or replace function ores.dq_{{entity.entity_plural}}_artefact_insert_fn(
 {{/entity.has_image_id}}
 ) returns void as $$
 begin
-    insert into ores.dq_{{entity.entity_plural}}_artefact_tbl (
+    insert into metadata.dq_{{entity.entity_plural}}_artefact_tbl (
         dataset_id, {{entity.primary_key.column}}, version,
 {{#entity.columns}}
         {{name}}{{^last}},{{/last}}

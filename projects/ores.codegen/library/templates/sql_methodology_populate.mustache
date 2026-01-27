@@ -10,7 +10,7 @@ set schema 'ores';
 \echo '--- Data Quality Slovaris Methodologies ---'
 
 {{#methodologies}}
-select ores.upsert_dq_methodologies(
+select metadata.upsert_dq_methodologies(
     '{{name}}',
     '{{description}}',
     '{{url}}',
@@ -26,5 +26,5 @@ select ores.upsert_dq_methodologies(
 \echo '--- Summary ---'
 
 select 'Data Quality Total Methodologies' as entity, count(*) as count
-from ores.dq_methodologies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_methodologies_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

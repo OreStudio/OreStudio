@@ -10,7 +10,7 @@ set schema 'ores';
 \echo '--- Data Quality Slovaris Catalogs ---'
 
 {{#catalogs}}
-select ores.upsert_dq_catalogs(
+select metadata.upsert_dq_catalogs(
     '{{name}}',
     '{{description}}',
     '{{owner}}'
@@ -25,5 +25,5 @@ select ores.upsert_dq_catalogs(
 \echo '--- Summary ---'
 
 select 'Data Quality Total Catalogs' as entity, count(*) as count
-from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_catalogs_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

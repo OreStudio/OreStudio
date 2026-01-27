@@ -97,7 +97,7 @@ set schema 'ores';
         description = escape_sql_string(catalog['description'])
         owner = escape_sql_string(catalog['owner'])
 
-        f.write(f"""select ores.upsert_dq_catalogs(
+        f.write(f"""select metadata.upsert_dq_catalogs(
     '{name}',
     '{description}',
     '{owner}'
@@ -136,8 +136,8 @@ def generate_coding_schemes_artefact_sql(manifest: dict, output_file: Path):
  * Populates the dq_coding_schemes_artefact_tbl staging table.
  *
  * To publish to production:
- *   SELECT * FROM ores.dq_populate_coding_schemes(
- *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores.utility_infinity_timestamp_fn()),
+ *   SELECT * FROM metadata.dq_populate_coding_schemes(
+ *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = public.utility_infinity_timestamp_fn()),
  *       'upsert'
  *   );
  */
@@ -151,10 +151,10 @@ set schema 'ores';
 \\echo '--- ISO Standards Coding Schemes Artefacts ---'
 
 -- Store dataset_id in psql variable for reuse
-select id as v_dataset_id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn() \\gset
+select id as v_dataset_id from metadata.dq_datasets_tbl where code = '{dataset_code}' and valid_to = public.utility_infinity_timestamp_fn() \\gset
 
 -- Clear existing artefacts for this dataset before inserting
-delete from ores.dq_coding_schemes_artefact_tbl
+delete from metadata.dq_coding_schemes_artefact_tbl
 where dataset_id = :'v_dataset_id';
 
 """)
@@ -169,7 +169,7 @@ where dataset_id = :'v_dataset_id';
             uri_sql = "'" + uri.replace("'", "''") + "'" if uri else 'null'
             description = escape_sql_string(cs['description'])
 
-            f.write(f"""insert into ores.dq_coding_schemes_artefact_tbl (
+            f.write(f"""insert into metadata.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
@@ -219,7 +219,7 @@ set schema 'ores';
 
 See methodology documentation for detailed steps."""
 
-            f.write(f"""select ores.upsert_dq_methodologies(
+            f.write(f"""select metadata.upsert_dq_methodologies(
     '{name}',
     '{description}',
     '{url}',
@@ -277,7 +277,7 @@ set schema 'ores';
             artefact_type = dataset['artefact_type']
 
             f.write(f"""-- {name}
-select ores.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     '{code}',
     '{catalog}',
     '{subject_area}',
@@ -346,7 +346,7 @@ set schema 'ores';
             artefact_type = dataset['artefact_type']
 
             f.write(f"""-- {name}
-select ores.upsert_dq_datasets(
+select metadata.upsert_dq_datasets(
     '{code}',
     '{catalog}',
     '{subject_area}',
@@ -406,7 +406,7 @@ set schema 'ores';
             tag_code = dataset['tag_code']
             tag_description = escape_sql_string(dataset['tag_description'])
 
-            f.write(f"""select ores.upsert_dq_tag(
+            f.write(f"""select metadata.upsert_dq_tag(
     '{name}',
     '{subject_area}',
     '{domain}',
@@ -451,7 +451,7 @@ set schema 'ores';
             dependency_code = dep['dependency_code']
             role = dep['role']
 
-            f.write(f"""select ores.upsert_dq_dataset_dependency(
+            f.write(f"""select metadata.upsert_dq_dataset_dependency(
     '{dataset_code}',
     '{dependency_code}',
     '{role}'
@@ -505,8 +505,8 @@ def generate_master_sql(output_file: Path):
 
 -- Publish coding schemes to production (required before other datasets can reference them)
 \\echo '--- Publishing ISO Coding Schemes ---'
-select * from ores.dq_populate_coding_schemes(
-    (select id from ores.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),
+select * from metadata.dq_populate_coding_schemes(
+    (select id from metadata.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn()),
     'upsert'
 );
 

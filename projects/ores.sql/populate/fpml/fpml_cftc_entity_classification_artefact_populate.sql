@@ -25,7 +25,7 @@
  * Dataset: fpml.cftc_entity_classification
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_entity_classifications_publish_fn() to publish to production.
+ * Use dq_populate_entity_classifications() to publish to production.
  */
 
 set schema 'metadata';

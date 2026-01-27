@@ -25,7 +25,7 @@
  * Dataset: fpml.benchmark_rate
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_benchmark_rates_publish_fn() to publish to production.
+ * Use dq_populate_benchmark_rates() to publish to production.
  */
 
 set schema 'metadata';

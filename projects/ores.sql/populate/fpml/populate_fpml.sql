@@ -46,7 +46,27 @@ select * from metadata.dq_coding_schemes_publish_fn(
 -- =============================================================================
 
 \echo '--- FPML Datasets ---'
+\ir fpml_account_type_dataset_populate.sql
+\ir fpml_asset_class_dataset_populate.sql
+\ir fpml_asset_measure_dataset_populate.sql
+\ir fpml_benchmark_rate_dataset_populate.sql
+\ir fpml_business_center_dataset_populate.sql
+\ir fpml_business_process_dataset_populate.sql
+\ir fpml_cashflow_type_dataset_populate.sql
+\ir fpml_cftc_entity_classification_dataset_populate.sql
+\ir fpml_cftc_organization_type_dataset_populate.sql
+\ir fpml_entity_type_dataset_populate.sql
+\ir fpml_hkma_rewrite_party_relationship_type_dataset_populate.sql
+\ir fpml_hkma_rewrite_regulatory_corporate_sector_dataset_populate.sql
+\ir fpml_local_jurisdiction_dataset_populate.sql
 \ir fpml_non_iso_currency_dataset_populate.sql
+\ir fpml_party_relationship_type_dataset_populate.sql
+\ir fpml_party_role_dataset_populate.sql
+\ir fpml_party_role_type_dataset_populate.sql
+\ir fpml_person_role_dataset_populate.sql
+\ir fpml_regulatory_corporate_sector_dataset_populate.sql
+\ir fpml_reporting_regime_dataset_populate.sql
+\ir fpml_supervisory_body_dataset_populate.sql
 
 -- =============================================================================
 -- FPML Dataset Dependencies
@@ -60,4 +80,24 @@ select * from metadata.dq_coding_schemes_publish_fn(
 -- =============================================================================
 
 \echo '--- FPML Artefacts ---'
+\ir fpml_account_type_artefact_populate.sql
+\ir fpml_asset_class_artefact_populate.sql
+\ir fpml_asset_measure_artefact_populate.sql
+\ir fpml_benchmark_rate_artefact_populate.sql
+\ir fpml_business_center_artefact_populate.sql
+\ir fpml_business_process_artefact_populate.sql
+\ir fpml_cashflow_type_artefact_populate.sql
+\ir fpml_cftc_entity_classification_artefact_populate.sql
+\ir fpml_cftc_organization_type_artefact_populate.sql
+\ir fpml_entity_type_artefact_populate.sql
+\ir fpml_hkma_rewrite_party_relationship_type_artefact_populate.sql
+\ir fpml_hkma_rewrite_regulatory_corporate_sector_artefact_populate.sql
+\ir fpml_local_jurisdiction_artefact_populate.sql
 \ir fpml_non_iso_currency_artefact_populate.sql
+\ir fpml_party_relationship_type_artefact_populate.sql
+\ir fpml_party_role_artefact_populate.sql
+\ir fpml_party_role_type_artefact_populate.sql
+\ir fpml_person_role_artefact_populate.sql
+\ir fpml_regulatory_corporate_sector_artefact_populate.sql
+\ir fpml_reporting_regime_artefact_populate.sql
+\ir fpml_supervisory_body_artefact_populate.sql

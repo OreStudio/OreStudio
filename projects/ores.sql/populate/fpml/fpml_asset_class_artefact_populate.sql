@@ -25,7 +25,7 @@
  * Dataset: fpml.asset_class
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_asset_classes_publish_fn() to publish to production.
+ * Use dq_populate_asset_classes() to publish to production.
  */
 
 set schema 'metadata';

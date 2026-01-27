@@ -247,6 +247,135 @@ def is_junction_model(model_filename):
     return model_filename.endswith("_junction.json")
 
 
+def get_model_type(model_filename):
+    """
+    Determine the model type from the filename.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        str: The model type ('domain_entity', 'junction', 'schema', 'data', or 'unknown')
+    """
+    if is_domain_entity_model(model_filename):
+        return 'domain_entity'
+    elif is_junction_model(model_filename):
+        return 'junction'
+    elif is_entity_schema_model(model_filename):
+        return 'schema'
+    elif is_entity_data_model(model_filename):
+        return 'data'
+    return 'unknown'
+
+
+def load_profiles(base_dir):
+    """
+    Load profile definitions from profiles.json.
+
+    Args:
+        base_dir (Path): Base directory of the codegen project
+
+    Returns:
+        dict: Dictionary of profile definitions
+    """
+    profiles_path = base_dir / "library" / "profiles.json"
+    if not profiles_path.exists():
+        return {}
+
+    with open(profiles_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return data.get('profiles', {})
+
+
+def resolve_profile_templates(profile_name, profiles, resolved=None):
+    """
+    Resolve all templates for a profile, including any included profiles.
+
+    Args:
+        profile_name (str): Name of the profile to resolve
+        profiles (dict): Dictionary of all profile definitions
+        resolved (set): Set of already resolved profile names (for cycle detection)
+
+    Returns:
+        list: List of template names
+    """
+    if resolved is None:
+        resolved = set()
+
+    if profile_name in resolved:
+        return []  # Avoid infinite recursion
+
+    if profile_name not in profiles:
+        print(f"Warning: Unknown profile '{profile_name}'")
+        return []
+
+    resolved.add(profile_name)
+    profile = profiles[profile_name]
+    templates = list(profile.get('templates', []))
+
+    # Resolve included profiles
+    for included in profile.get('includes', []):
+        templates.extend(resolve_profile_templates(included, profiles, resolved))
+
+    return templates
+
+
+def validate_profile_for_model(profile_name, profiles, model_type):
+    """
+    Check if a profile is compatible with a model type.
+
+    Args:
+        profile_name (str): Name of the profile
+        profiles (dict): Dictionary of all profile definitions
+        model_type (str): The model type
+
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    if profile_name not in profiles:
+        return False, f"Unknown profile: {profile_name}"
+
+    profile = profiles[profile_name]
+    model_types = profile.get('model_types', [])
+
+    if model_type not in model_types:
+        return False, (f"Profile '{profile_name}' is not compatible with model type '{model_type}'. "
+                      f"Supported types: {', '.join(model_types)}")
+
+    # Also check included profiles
+    for included in profile.get('includes', []):
+        is_valid, error = validate_profile_for_model(included, profiles, model_type)
+        if not is_valid:
+            return False, error
+
+    return True, None
+
+
+def list_profiles(profiles):
+    """
+    Print a formatted list of available profiles.
+
+    Args:
+        profiles (dict): Dictionary of profile definitions
+    """
+    print("Available profiles:")
+    print()
+    for name, profile in sorted(profiles.items()):
+        description = profile.get('description', 'No description')
+        model_types = ', '.join(profile.get('model_types', []))
+        template_count = len(profile.get('templates', []))
+        includes = profile.get('includes', [])
+
+        print(f"  {name}")
+        print(f"    Description:  {description}")
+        print(f"    Model types:  {model_types}")
+        if includes:
+            print(f"    Includes:     {', '.join(includes)}")
+        else:
+            print(f"    Templates:    {template_count}")
+        print()
+
+
 def get_domain_entity_template_mappings():
     """
     Define the mapping for domain entity schema templates.
@@ -1255,12 +1384,16 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Generate code from models using templates')
-    parser.add_argument('model_path', help='Path to the model file')
+    parser.add_argument('model_path', nargs='?', default=None, help='Path to the model file')
     parser.add_argument('output_dir', nargs='?', default=None, help='Output directory (default: output/)')
     parser.add_argument('--template', '-t', dest='target_template',
                         help='Specific template to use (overrides default template selection)')
     parser.add_argument('--output', '-o', dest='target_output',
                         help='Specific output filename (overrides default naming)')
+    parser.add_argument('--profile', '-p', dest='profile',
+                        help='Generate all templates in a profile (e.g., qt, sql, protocol)')
+    parser.add_argument('--list-profiles', action='store_true',
+                        help='List available profiles and exit')
 
     args = parser.parse_args()
 
@@ -1268,6 +1401,18 @@ def main():
     base_dir = Path(__file__).parent.parent
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
+
+    # Load profiles
+    profiles = load_profiles(base_dir)
+
+    # Handle --list-profiles
+    if args.list_profiles:
+        list_profiles(profiles)
+        sys.exit(0)
+
+    # Require model_path if not listing profiles
+    if not args.model_path:
+        parser.error("model_path is required unless using --list-profiles")
 
     # Use provided output directory or default to 'output'
     if args.output_dir:
@@ -1278,11 +1423,41 @@ def main():
     # Create output directory if it doesn't exist
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate from the specified model
-    generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
-                        is_processing_batch=False,
-                        target_template=args.target_template,
-                        target_output=args.target_output)
+    # Handle profile-based generation
+    if args.profile:
+        if args.target_template:
+            parser.error("Cannot use --template and --profile together")
+
+        # Determine model type
+        model_filename = os.path.basename(args.model_path)
+        model_type = get_model_type(model_filename)
+
+        # Validate profile compatibility
+        is_valid, error = validate_profile_for_model(args.profile, profiles, model_type)
+        if not is_valid:
+            print(f"Error: {error}")
+            sys.exit(1)
+
+        # Resolve all templates in the profile
+        templates = resolve_profile_templates(args.profile, profiles)
+        if not templates:
+            print(f"Error: Profile '{args.profile}' has no templates")
+            sys.exit(1)
+
+        print(f"Generating {len(templates)} templates from profile '{args.profile}'...")
+
+        # Generate each template
+        for template in templates:
+            generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                                is_processing_batch=False,
+                                target_template=template,
+                                target_output=args.target_output)
+    else:
+        # Single template or default generation
+        generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                            is_processing_batch=False,
+                            target_template=args.target_template,
+                            target_output=args.target_output)
 
 
 if __name__ == "__main__":

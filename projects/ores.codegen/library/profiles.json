@@ -1,0 +1,91 @@
+{
+  "profiles": {
+    "sql": {
+      "description": "SQL schema creation scripts",
+      "model_types": ["domain_entity", "junction"],
+      "templates": [
+        "sql_schema_domain_entity_create.mustache",
+        "sql_schema_junction_create.mustache"
+      ]
+    },
+    "qt": {
+      "description": "Qt UI components (model, window, dialogs, controller)",
+      "model_types": ["domain_entity"],
+      "templates": [
+        "cpp_qt_client_model.hpp.mustache",
+        "cpp_qt_client_model.cpp.mustache",
+        "cpp_qt_mdi_window.hpp.mustache",
+        "cpp_qt_mdi_window.cpp.mustache",
+        "cpp_qt_detail_dialog.hpp.mustache",
+        "cpp_qt_detail_dialog.cpp.mustache",
+        "cpp_qt_history_dialog.hpp.mustache",
+        "cpp_qt_history_dialog.cpp.mustache",
+        "cpp_qt_controller.hpp.mustache",
+        "cpp_qt_controller.cpp.mustache",
+        "qt_detail_dialog_ui.mustache",
+        "qt_history_dialog_ui.mustache"
+      ]
+    },
+    "protocol": {
+      "description": "Messaging protocol (request/response)",
+      "model_types": ["domain_entity", "schema"],
+      "templates": [
+        "cpp_protocol.hpp.mustache",
+        "cpp_protocol.cpp.mustache"
+      ]
+    },
+    "domain": {
+      "description": "Domain types (class, JSON I/O, table)",
+      "model_types": ["schema"],
+      "templates": [
+        "cpp_domain_type_class.hpp.mustache",
+        "cpp_domain_type_json_io.hpp.mustache",
+        "cpp_domain_type_json_io.cpp.mustache",
+        "cpp_domain_type_table.hpp.mustache",
+        "cpp_domain_type_table.cpp.mustache",
+        "cpp_domain_type_table_io.hpp.mustache",
+        "cpp_domain_type_table_io.cpp.mustache"
+      ]
+    },
+    "generator": {
+      "description": "Fake data generators for testing",
+      "model_types": ["schema"],
+      "templates": [
+        "cpp_domain_type_generator.hpp.mustache",
+        "cpp_domain_type_generator.cpp.mustache"
+      ]
+    },
+    "repository": {
+      "description": "Repository layer (entity, mapper, CRUD)",
+      "model_types": ["schema"],
+      "templates": [
+        "cpp_domain_type_entity.hpp.mustache",
+        "cpp_domain_type_entity.cpp.mustache",
+        "cpp_domain_type_mapper.hpp.mustache",
+        "cpp_domain_type_mapper.cpp.mustache",
+        "cpp_domain_type_repository.hpp.mustache",
+        "cpp_domain_type_repository.cpp.mustache"
+      ]
+    },
+    "service": {
+      "description": "Service layer",
+      "model_types": ["schema"],
+      "templates": [
+        "cpp_service.hpp.mustache",
+        "cpp_service.cpp.mustache"
+      ]
+    },
+    "all-cpp": {
+      "description": "All C++ facets (domain, repository, service, protocol, generator)",
+      "model_types": ["schema"],
+      "includes": ["domain", "generator", "repository", "service", "protocol"]
+    },
+    "plantuml": {
+      "description": "PlantUML ER diagrams",
+      "model_types": ["schema", "data"],
+      "templates": [
+        "plantuml_er.mustache"
+      ]
+    }
+  }
+}

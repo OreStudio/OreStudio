@@ -1,0 +1,39 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_HPP
+
+#include <string>
+#include <vector>
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Converts {{entity_plural}} to the table format.
+ */
+std::string convert_to_table(const std::vector<{{entity_singular}}>& v);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_HPP
+
+#include <string>
+#include <vector>
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Converts {{name}} to the table format.
+ */
+std::string convert_to_table(const std::vector<{{name_singular}}>& v);
+
+}
+
+#endif
+{{/junction}}

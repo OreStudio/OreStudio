@@ -282,6 +282,11 @@ def get_cpp_domain_entity_template_mappings():
         # JSON I/O facet
         ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
         ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
+        # Table facet
+        ("cpp_domain_type_table.hpp.mustache", "include/{component}/domain", "_table.hpp"),
+        ("cpp_domain_type_table.cpp.mustache", "src/domain", "_table.cpp"),
+        ("cpp_domain_type_table_io.hpp.mustache", "include/{component}/domain", "_table_io.hpp"),
+        ("cpp_domain_type_table_io.cpp.mustache", "src/domain", "_table_io.cpp"),
     ]
 
 
@@ -296,6 +301,11 @@ def get_cpp_junction_template_mappings():
         # JSON I/O facet
         ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
         ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
+        # Table facet
+        ("cpp_domain_type_table.hpp.mustache", "include/{component}/domain", "_table.hpp"),
+        ("cpp_domain_type_table.cpp.mustache", "src/domain", "_table.cpp"),
+        ("cpp_domain_type_table_io.hpp.mustache", "include/{component}/domain", "_table_io.hpp"),
+        ("cpp_domain_type_table_io.cpp.mustache", "src/domain", "_table_io.cpp"),
     ]
 
 

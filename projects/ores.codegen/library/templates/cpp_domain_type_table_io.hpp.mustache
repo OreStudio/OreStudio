@@ -1,0 +1,39 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_IO_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_IO_HPP
+
+#include <iosfwd>
+#include <vector>
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Dumps the {{entity_singular}} objects to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<{{entity_singular}}>& v);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
+
+#include <iosfwd>
+#include <vector>
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Dumps the {{name_singular}} objects to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<{{name_singular}}>& v);
+
+}
+
+#endif
+{{/junction}}

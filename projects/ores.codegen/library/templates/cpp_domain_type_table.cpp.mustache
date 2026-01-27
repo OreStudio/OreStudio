@@ -1,0 +1,44 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/domain/{{entity_singular}}_table.hpp"
+
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+
+namespace ores::{{component}}::domain {
+
+std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
+
+    for (const auto& e : v) {
+        table{{#cpp.table_display}} << e.{{column}}{{/cpp.table_display}} << fort::endr;
+    }
+    return table.to_string();
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/domain/{{name_singular}}_table.hpp"
+
+#include <fort.hpp>
+
+namespace ores::{{component}}::domain {
+
+std::string convert_to_table(const std::vector<{{name_singular}}>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
+
+    for (const auto& e : v) {
+        table{{#cpp.table_display}} << e.{{column}}{{/cpp.table_display}} << fort::endr;
+    }
+    return table.to_string();
+}
+
+}
+{{/junction}}

@@ -204,7 +204,7 @@ exec "${SCRIPT_DIR}/xsdcpp_generate.sh" \
 | `historicalreturnconfig.xsd` | Unknown | |
 | `simmcalibration.xsd` | Unknown | |
 | `baselTrafficLightconfig.xsd` | Unknown | |
-| `input.xsd` | Unknown | |
+| `input.xsd` | Used | Main entry point for code generation |
 
 ---
 

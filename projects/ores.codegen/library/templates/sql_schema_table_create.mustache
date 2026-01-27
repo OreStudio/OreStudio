@@ -23,19 +23,36 @@ create table if not exists "{{entity.schema}}"."{{entity.component}}_{{entity.en
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+{{#entity.has_coding_scheme}}
+    primary key ({{entity.primary_key.column}}, coding_scheme_code, valid_from, valid_to),
+    exclude using gist (
+        {{entity.primary_key.column}} WITH =,
+        coding_scheme_code WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/entity.has_coding_scheme}}
+{{^entity.has_coding_scheme}}
     primary key ({{entity.primary_key.column}}, valid_from, valid_to),
     exclude using gist (
         {{entity.primary_key.column}} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
+{{/entity.has_coding_scheme}}
     check ("valid_from" < "valid_to"),
     check ("{{entity.primary_key.column}}" <> ''),
     check ("change_reason_code" <> '')
 );
 
+{{#entity.has_coding_scheme}}
+create unique index if not exists {{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, coding_scheme_code, version)
+where valid_to = public.utility_infinity_timestamp_fn();
+{{/entity.has_coding_scheme}}
+{{^entity.has_coding_scheme}}
 create unique index if not exists {{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
 on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, version)
 where valid_to = public.utility_infinity_timestamp_fn();
+{{/entity.has_coding_scheme}}
 {{#entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{entity.component}}_{{entity.entity_plural}}_{{name}}_idx

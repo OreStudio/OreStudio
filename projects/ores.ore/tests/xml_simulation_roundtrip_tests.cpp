@@ -105,6 +105,13 @@ void test_simulation_roundtrip(const std::string& xml_content,
     BOOST_LOG_SEV(lg, info) << "Roundtrip test passed for: " << source_name;
 }
 
+void test_simulation_roundtrip_from_file(const std::string& relative_path) {
+    const auto f = ore_path(relative_path);
+    using ores::platform::filesystem::file;
+    const std::string content = file::read_content(f);
+    test_simulation_roundtrip(content, f.string());
+}
+
 }
 
 // =============================================================================
@@ -112,50 +119,18 @@ void test_simulation_roundtrip(const std::string& xml_content,
 // =============================================================================
 
 TEST_CASE("simulation_roundtrip_ore_api", tags) {
-    const auto f = ore_path("examples/ORE-API/Input/simulation.xml");
-    using ores::platform::filesystem::file;
-
-    if (!std::filesystem::exists(f)) {
-        SKIP("File not found: " << f.string());
-    }
-
-    const std::string content = file::read_content(f);
-    test_simulation_roundtrip(content, f.string());
+    test_simulation_roundtrip_from_file("examples/ORE-API/Input/simulation.xml");
 }
 
 TEST_CASE("simulation_roundtrip_minimal_setup", tags) {
-    const auto f = ore_path("examples/MinimalSetup/Input/simulation.xml");
-    using ores::platform::filesystem::file;
-
-    if (!std::filesystem::exists(f)) {
-        SKIP("File not found: " << f.string());
-    }
-
-    const std::string content = file::read_content(f);
-    test_simulation_roundtrip(content, f.string());
+    test_simulation_roundtrip_from_file("examples/MinimalSetup/Input/simulation.xml");
 }
 
 TEST_CASE("simulation_roundtrip_american_mc", tags) {
-    const auto f = ore_path("examples/AmericanMonteCarlo/Input/simulation.xml");
-    using ores::platform::filesystem::file;
-
-    if (!std::filesystem::exists(f)) {
-        SKIP("File not found: " << f.string());
-    }
-
-    const std::string content = file::read_content(f);
-    test_simulation_roundtrip(content, f.string());
+    test_simulation_roundtrip_from_file("examples/AmericanMonteCarlo/Input/simulation.xml");
 }
 
 TEST_CASE("simulation_roundtrip_xva_risk", tags) {
-    const auto f = ore_path("examples/XvaRisk/Input/simulation.xml");
-    using ores::platform::filesystem::file;
-
-    if (!std::filesystem::exists(f)) {
-        SKIP("File not found: " << f.string());
-    }
-
-    const std::string content = file::read_content(f);
-    test_simulation_roundtrip(content, f.string());
+    test_simulation_roundtrip_from_file("examples/XvaRisk/Input/simulation.xml");
 }
 

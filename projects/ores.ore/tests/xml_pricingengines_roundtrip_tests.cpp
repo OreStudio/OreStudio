@@ -84,6 +84,13 @@ void test_pricingengines_roundtrip(const std::string& xml_content,
     BOOST_LOG_SEV(lg, info) << "Roundtrip test passed for: " << source_name;
 }
 
+void test_pricingengines_roundtrip_from_file(const std::string& relative_path) {
+    const auto f = ore_path(relative_path);
+    using ores::platform::filesystem::file;
+    const std::string content = file::read_content(f);
+    test_pricingengines_roundtrip(content, f.string());
+}
+
 }
 
 // =============================================================================
@@ -91,34 +98,14 @@ void test_pricingengines_roundtrip(const std::string& xml_content,
 // =============================================================================
 
 TEST_CASE("pricingengines_roundtrip_main_xml", tags) {
-    const auto f = ore_path("examples/Input/pricingengine.xml");
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
-
-    test_pricingengines_roundtrip(content, f.string());
+    test_pricingengines_roundtrip_from_file("examples/Input/pricingengine.xml");
 }
 
 TEST_CASE("pricingengines_roundtrip_ore_api", tags) {
-    const auto f = ore_path("examples/ORE-API/Input/pricingengine.xml");
-    using ores::platform::filesystem::file;
-
-    if (!std::filesystem::exists(f)) {
-        SKIP("File not found: " << f.string());
-    }
-
-    const std::string content = file::read_content(f);
-    test_pricingengines_roundtrip(content, f.string());
+    test_pricingengines_roundtrip_from_file("examples/ORE-API/Input/pricingengine.xml");
 }
 
 TEST_CASE("pricingengines_roundtrip_minimal_setup", tags) {
-    const auto f = ore_path("examples/MinimalSetup/Input/pricingengine.xml");
-    using ores::platform::filesystem::file;
-
-    if (!std::filesystem::exists(f)) {
-        SKIP("File not found: " << f.string());
-    }
-
-    const std::string content = file::read_content(f);
-    test_pricingengines_roundtrip(content, f.string());
+    test_pricingengines_roundtrip_from_file("examples/MinimalSetup/Input/pricingengine.xml");
 }
 

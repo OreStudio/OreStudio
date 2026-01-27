@@ -17,55 +17,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-26 Mon 17:42], for Monday, January 26, 2026.
-|       | <75>                                            |        |      |      |       |
-| Tags  | Headline                                        | Time   |      |      |     % |
-|-------+-------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                    | *7:29* |      |      | 100.0 |
-|-------+-------------------------------------------------+--------+------+------+-------|
-|       | Stories                                         | 7:29   |      |      | 100.0 |
-|       | Active                                          |        | 7:29 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint              |        |      | 0:46 |  10.2 |
-| code  | Generate C++ code for ORE                       |        |      | 1:10 |  15.6 |
-| code  | Fix windows CI break due to XSD code generation |        |      | 0:18 |   4.0 |
-| code  | Clean up data layers                            |        |      | 1:21 |  18.0 |
-| code  | Add rounding type table                         |        |      | 1:37 |  21.6 |
-| code  | Add dataset bundles                             |        |      | 2:17 |  30.5 |
+#+CAPTION: Clock summary at [2026-01-27 Tue 01:54], for Tuesday, January 27, 2026.
+|      | <75>                                                  |        |      |      |       |
+| Tags | Headline                                              | Time   |      |      |     % |
+|------+-------------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                          | *1:51* |      |      | 100.0 |
+|------+-------------------------------------------------------+--------+------+------+-------|
+|      | Stories                                               | 1:51   |      |      | 100.0 |
+|      | Active                                                |        | 1:51 |      | 100.0 |
+| code | Add dataset bundles                                   |        |      | 0:27 |  24.3 |
+| code | Add UI for bootstrapping from Qt                      |        |      | 0:56 |  50.5 |
+| code | Separate catalog metadata schema from production data |        |      | 0:28 |  25.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-26 Mon 17:42]
-|       | <75>                                                |         |       |      |       |
-| Tags  | Headline                                            | Time    |       |      |     % |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *59:24* |       |      | 100.0 |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 59:24   |       |      | 100.0 |
-|       | Active                                              |         | 59:24 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:17 |   2.2 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 7:06 |  12.0 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  12.9 |
-| code  | Party related schemes                               |         |       | 5:20 |   9.0 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   2.9 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   0.7 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   0.9 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   4.7 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |   6.0 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   2.8 |
-| code  | Refactor SQL directories                            |         |       | 3:24 |   5.7 |
-| code  | Code-generate ER diagram                            |         |       | 3:01 |   5.1 |
-| code  | Add "words" to icons                                |         |       | 0:28 |   0.8 |
-| code  | Add mapping artefact to population functions        |         |       | 2:19 |   3.9 |
-| code  | Add a ORE component for import/export               |         |       | 4:00 |   6.7 |
-| code  | Generate C++ code for ORE                           |         |       | 6:43 |  11.3 |
-| code  | Fix windows CI break due to XSD code generation     |         |       | 0:18 |   0.5 |
-| code  | Clean up data layers                                |         |       | 1:21 |   2.3 |
-| code  | Add rounding type table                             |         |       | 1:37 |   2.7 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   2.2 |
-| code  | Add FPML export and import                          |         |       | 0:19 |   0.5 |
-| code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.5 |
-| code  | Add dataset bundles                                 |         |       | 2:17 |   3.8 |
+#+CAPTION: Clock summary at [2026-01-27 Tue 01:54]
+|       | <75>                                                  |         |       |      |       |
+| Tags  | Headline                                              | Time    |       |      |     % |
+|-------+-------------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                          | *65:11* |       |      | 100.0 |
+|-------+-------------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                               | 65:11   |       |      | 100.0 |
+|       | Active                                                |         | 65:11 |      | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       | 1:17 |   2.0 |
+| infra | OCR scan notebooks for this sprint                    |         |       | 7:06 |  10.9 |
+| code  | Create a simple code generator                        |         |       | 7:38 |  11.7 |
+| code  | Party related schemes                                 |         |       | 5:20 |   8.2 |
+| code  | Image cache not reloading on new datasets             |         |       | 1:43 |   2.6 |
+| code  | Create a script to download and split GLEIF data      |         |       | 0:25 |   0.6 |
+| code  | Incremental image cache loading with modified_since   |         |       | 0:31 |   0.8 |
+| code  | Fix issues with misspell action                       |         |       | 2:47 |   4.3 |
+| code  | Tidy-up external data storage                         |         |       | 3:33 |   5.4 |
+| code  | Coding schemes are in production tables               |         |       | 1:39 |   2.5 |
+| code  | Refactor SQL directories                              |         |       | 3:24 |   5.2 |
+| code  | Code-generate ER diagram                              |         |       | 3:01 |   4.6 |
+| code  | Add "words" to icons                                  |         |       | 0:28 |   0.7 |
+| code  | Add mapping artefact to population functions          |         |       | 2:19 |   3.6 |
+| code  | Add a ORE component for import/export                 |         |       | 4:00 |   6.1 |
+| code  | Generate C++ code for ORE                             |         |       | 6:43 |  10.3 |
+| code  | Fix windows CI break due to XSD code generation       |         |       | 0:18 |   0.5 |
+| code  | Clean up data layers                                  |         |       | 1:21 |   2.1 |
+| code  | Add rounding type table                               |         |       | 1:37 |   2.5 |
+| code  | Add code generation support for domain types SQL      |         |       | 1:20 |   2.0 |
+| code  | Add FPML export and import                            |         |       | 0:19 |   0.5 |
+| code  | Base the compute approach on BOINC                    |         |       | 0:18 |   0.5 |
+| code  | Add dataset bundles                                   |         |       | 3:53 |   6.0 |
+| code  | Add UI for bootstrapping from Qt                      |         |       | 3:28 |   5.3 |
+| code  | Separate catalog metadata schema from production data |         |       | 0:43 |   1.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -948,7 +947,7 @@ Allowed Values for roundingDirection:
 - Nearest: Standard mathematical rounding (0.5 rounds up).
 #+end_quote
 
-*** STARTED Add code generation support for domain types SQL           :code:
+*** COMPLETED Add code generation support for domain types SQL         :code:
     :LOGBOOK:
     CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
     CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
@@ -1223,6 +1222,7 @@ Table: =assimilated_data= (TimescaleDB Hypertable)
 
 *** STARTED Add dataset bundles                                        :code:
     :LOGBOOK:
+    CLOCK: [2026-01-27 Tue 01:27]--[2026-01-27 Tue 01:54] =>  0:27
     CLOCK: [2026-01-26 Mon 22:50]--[2026-01-26 Mon 23:30] =>  0:40
     CLOCK: [2026-01-26 Mon 17:41]--[2026-01-26 Mon 18:10] =>  0:29
     CLOCK: [2026-01-26 Mon 16:40]--[2026-01-26 Mon 16:53] =>  0:13
@@ -1270,6 +1270,7 @@ Highlights:
 
 *** STARTED Add UI for bootstrapping from Qt                           :code:
     :LOGBOOK:
+    CLOCK: [2026-01-27 Tue 00:30]--[2026-01-27 Tue 01:26] =>  0:56
     CLOCK: [2026-01-26 Mon 23:31]--[2026-01-26 Mon 23:44] =>  0:13
     CLOCK: [2026-01-26 Mon 21:30]--[2026-01-26 Mon 22:50] =>  1:20
     CLOCK: [2026-01-26 Mon 19:01]--[2026-01-26 Mon 20:00] =>  0:59
@@ -1458,13 +1459,45 @@ the database.
 
 *** STARTED Separate catalog metadata schema from production data      :code:
     :LOGBOOK:
-    CLOCK: [2026-01-26 Mon 23:45]
+    CLOCK: [2026-01-26 Mon 23:45]--[2026-01-27 Tue 00:28] =>  0:43
     :END:
 
 Refactor the database architecture to separate catalog/metadata tables from
 production data tables. This resolves a bootstrapping paradox where catalog
 metadata must exist before provisioning, but provisioning populates the
 database.
+
+#+begin_quote
+This pull request implements a significant architectural change by dividing the
+monolithic database schema into logical metadata and production schemas. This
+separation is designed to streamline data management, improve data governance,
+and provide a clearer distinction between data used for defining and staging
+information versus data actively used by applications. The change impacts nearly
+all SQL files, requiring updates to schema references, function calls, and data
+population logic to align with the new structure.
+
+Highlights:
+
+- Schema Restructuring: The single ores PostgreSQL schema has been split into
+  two distinct schemas: metadata and production, along with a public schema for
+  shared utilities. This enhances separation of concerns and clarifies data
+  ownership.
+- Schema Content Definition: The metadata schema now houses data governance,
+  classification, and staging tables (e.g., dq_*, change_control). The
+  production schema contains operational data consumed by applications (e.g.,
+  refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*).
+- Cross-Schema References and Validation: All SQL scripts, including table
+  creations, triggers, functions, and population logic, have been updated to use
+  schema-qualified names. Foreign key validations and data population functions
+  now correctly reference tables across the new metadata and production schemas.
+- ER Diagram Generation Update: The ER diagram generator has been updated to
+  correctly parse and represent the new multi-schema architecture, ensuring
+  visual documentation remains accurate.
+- Documentation Updates: Extensive documentation has been added and updated to
+  explain the new schema mental model, key principles of data flow
+  (unidirectional from metadata to production), and clear boundaries of
+  responsibility for each schema.
+#+end_quote
 
 **** Problem Statement
 
@@ -1505,6 +1538,31 @@ Evaluate options:
 **** Related Stories
 
 - "Add System Provisioner Wizard to Qt" - blocked by this work.
+
+*** Split create schemas from main populate script                     :code:
+
+We should probably add a create schemas script.
+
+*** Message handlers are not scalable                                  :code:
+
+Claude just mentioned this in passing:
+
+#+begin_quote
+Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
+  ⎿  Error: File content (25665 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.
+● Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
+  ⎿  Read 200 lines
+#+end_quote
+
+This will not work when we have hundreds of types in a component. We need to
+split these files by message type.
+
+*** C++ Complexity Measurements                                        :code:
+
+Since we are no longer taking a close look at the generated code and since
+Gemini code review does not catch all issues, we should try to find some
+automated tools to measure complexity and point to places where generated code
+is not ideal.
 
 *** Generate C++ code for FPML                                         :code:
 

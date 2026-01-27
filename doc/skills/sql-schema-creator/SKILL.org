@@ -711,6 +711,134 @@ new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reas
 This validates that the change reason code exists in =dq_change_reasons_tbl= and
 raises an exception with SQLSTATE 23503 if invalid.
 
+* Using the Code Generator
+
+The code generator can automatically create SQL schema files from JSON model
+definitions. This is the recommended approach for new tables.
+
+** Generator location
+
+#+begin_example
+projects/ores.codegen/
+├── run_generator.sh           # Main entry point
+├── src/generator.py           # Generator implementation
+├── library/templates/         # Mustache templates
+│   ├── sql_schema_domain_entity_create.mustache
+│   └── sql_schema_junction_create.mustache
+└── models/                    # Model definitions
+    └── dq/
+        ├── dataset_bundle_domain_entity.json
+        └── dataset_bundle_member_junction.json
+#+end_example
+
+** Model types
+
+*** Domain Entity models
+
+Use for tables with UUID primary key and natural key constraints. File naming
+convention: =*_domain_entity.json=.
+
+Example: =dq_dataset_bundles_tbl= (UUID PK, code/name natural keys)
+
+#+begin_src json
+{
+  "domain_entity": {
+    "component": "dq",
+    "entity_singular": "dataset_bundle",
+    "entity_plural": "dataset_bundles",
+    "entity_title": "Dataset Bundle",
+    "brief": "A named collection of datasets.",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [
+      {"column": "code", "type": "text"},
+      {"column": "name", "type": "text"}
+    ],
+    "columns": [
+      {"name": "description", "type": "text", "nullable": false}
+    ],
+    "sql": {
+      "tablename": "dq_dataset_bundles_tbl"
+    }
+  }
+}
+#+end_src
+
+*** Junction models
+
+Use for association tables with composite text primary keys. File naming
+convention: =*_junction.json=.
+
+Example: =dq_dataset_bundle_members_tbl= (bundle_code + dataset_code PK)
+
+#+begin_src json
+{
+  "junction": {
+    "component": "dq",
+    "name": "dataset_bundle_members",
+    "name_singular": "dataset_bundle_member",
+    "brief": "Links a dataset to a bundle.",
+    "left": {
+      "column": "bundle_code",
+      "type": "text"
+    },
+    "right": {
+      "column": "dataset_code",
+      "type": "text"
+    },
+    "columns": [
+      {"name": "display_order", "type": "integer", "nullable": false}
+    ],
+    "sql": {
+      "tablename": "dq_dataset_bundle_members_tbl"
+    }
+  }
+}
+#+end_src
+
+** Running the generator
+
+#+begin_src sh
+cd projects/ores.codegen
+
+# Generate SQL schema for a domain entity
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template sql_schema_domain_entity_create.mustache
+
+# Generate SQL schema for a junction table
+./run_generator.sh models/dq/dataset_bundle_member_junction.json output/ \
+    --template sql_schema_junction_create.mustache
+#+end_src
+
+** Generated output
+
+Domain entity template produces:
+- Table with UUID primary key and null-UUID check
+- Unique indexes on natural key columns for active records
+- Version uniqueness index
+- GIST exclusion constraint on (id, temporal range)
+- Insert trigger with version conflict detection
+- Delete rule for soft deletes
+
+Junction template produces:
+- Table with composite primary key (left_code, right_code, valid_from)
+- GIST exclusion on both keys + temporal range
+- Indexes on both foreign key columns
+- Unique index on composite key for active records
+- Non-empty check on change_reason_code
+- Insert trigger with composite key lookup
+
+** Workflow
+
+1. Create a JSON model in =projects/ores.codegen/models/{component}/=
+2. Run the generator to produce SQL
+3. Review the output in =output/=
+4. Copy to =projects/ores.sql/create/{component}/=
+5. Update orchestration scripts (see Step 6)
+6. Test and validate (see Steps 7-8)
+
 * Integration with Domain Type Creator
 
 When creating a new domain type using the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill, the SQL

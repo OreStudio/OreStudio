@@ -182,6 +182,156 @@ tests and documentation.
 
 The domain type implementation is now complete.
 
+* Using the Code Generator
+
+The code generator can automatically create most domain type artefacts from JSON
+model definitions. This is the recommended approach for new domain types.
+
+** Generator location
+
+#+begin_example
+projects/ores.codegen/
+├── run_generator.sh           # Main entry point
+├── src/generator.py           # Generator implementation
+├── library/templates/         # Mustache templates
+└── models/                    # Model definitions
+    └── dq/
+        ├── dataset_bundle_domain_entity.json
+        └── dataset_bundle_member_junction.json
+#+end_example
+
+** Model types
+
+*** Domain Entity models (=*_domain_entity.json=)
+
+For types with UUID primary key and natural key constraints.
+
+*** Junction models (=*_junction.json=)
+
+For association tables with composite text primary keys.
+
+** Available templates
+
+| Template                          | Output                           | Purpose                       |
+|-----------------------------------+----------------------------------+-------------------------------|
+| =cpp_domain_type_class.hpp=       | =domain/{entity}.hpp=            | Domain class definition       |
+| =cpp_domain_type_json_io.hpp=     | =io/{entity}_json_io.hpp=        | JSON serialization header     |
+| =cpp_domain_type_json_io.cpp=     | =io/{entity}_json_io.cpp=        | JSON serialization impl       |
+| =cpp_domain_type_table.hpp=       | =io/{entity}_table.hpp=          | Table I/O header              |
+| =cpp_domain_type_table.cpp=       | =io/{entity}_table.cpp=          | Table I/O impl                |
+| =cpp_domain_type_table_io.hpp=    | =io/{entity}_table_io.hpp=       | Table model header            |
+| =cpp_domain_type_table_io.cpp=    | =io/{entity}_table_io.cpp=       | Table model impl              |
+| =cpp_domain_type_generator.hpp=   | =generator/{entity}_generator.hpp= | Test data generator header  |
+| =cpp_domain_type_generator.cpp=   | =generator/{entity}_generator.cpp= | Test data generator impl    |
+| =cpp_domain_type_entity.hpp=      | =repository/{entity}_entity.hpp= | Repository entity header      |
+| =cpp_domain_type_entity.cpp=      | =repository/{entity}_entity.cpp= | Repository entity impl        |
+| =cpp_domain_type_mapper.hpp=      | =repository/{entity}_mapper.hpp= | Entity/domain mapper header   |
+| =cpp_domain_type_mapper.cpp=      | =repository/{entity}_mapper.cpp= | Entity/domain mapper impl     |
+| =cpp_domain_type_repository.hpp=  | =repository/{entity}_repository.hpp= | Repository CRUD header    |
+| =cpp_domain_type_repository.cpp=  | =repository/{entity}_repository.cpp= | Repository CRUD impl      |
+| =cpp_service.hpp=                 | =service/{entity}_service.hpp=   | Service layer header          |
+| =cpp_service.cpp=                 | =service/{entity}_service.cpp=   | Service layer impl            |
+| =cpp_protocol.hpp=                | =messaging/{entity}_protocol.hpp= | Binary protocol header       |
+| =cpp_protocol.cpp=                | =messaging/{entity}_protocol.cpp= | Binary protocol impl         |
+| =sql_schema_domain_entity_create= | =sql/{component}_{entity}_create.sql= | SQL table schema         |
+| =sql_schema_junction_create=      | =sql/{component}_{entity}_create.sql= | SQL junction schema      |
+
+** Running the generator
+
+#+begin_src sh
+cd projects/ores.codegen
+
+# Generate all C++ files for a domain entity
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/
+
+# Generate specific template only
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template cpp_domain_type_class.hpp.mustache
+
+# Generate service and protocol (commonly needed for messaging)
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template cpp_service.hpp.mustache
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template cpp_protocol.hpp.mustache
+#+end_src
+
+** Workflow with code generation
+
+1. Create a JSON model in =projects/ores.codegen/models/{component}/=
+2. Run the generator to produce C++ files
+3. Review the output in =output/=
+4. Copy files to the appropriate =projects/ores.{component}/= directories
+5. Update =CMakeLists.txt= if needed (files picked up automatically via GLOB)
+6. Build and verify
+
+** Model structure
+
+Example domain entity model with full C++ support:
+
+#+begin_src json
+{
+  "domain_entity": {
+    "component": "dq",
+    "entity_singular": "dataset_bundle",
+    "entity_plural": "dataset_bundles",
+    "entity_title": "Dataset Bundle",
+    "brief": "A named collection of datasets.",
+    "description": "Detailed multi-line description...",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this bundle."
+    },
+
+    "natural_keys": [
+      {
+        "column": "code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique code for stable referencing.",
+        "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the bundle.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      }
+    ],
+
+    "sql": {"tablename": "dq_dataset_bundles_tbl"},
+
+    "repository": {
+      "entity_singular_short": "bundle",
+      "entity_plural_short": "bundles"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "b"
+    }
+  }
+}
+#+end_src
+
+** Benefits of code generation
+
+- Consistency across all domain types
+- Reduces boilerplate errors
+- Single source of truth for entity definitions
+- Easy to update all instances when patterns change
+- Supports both domain entity and junction table patterns
+
 * Common patterns and conventions
 
 ** Naming conventions

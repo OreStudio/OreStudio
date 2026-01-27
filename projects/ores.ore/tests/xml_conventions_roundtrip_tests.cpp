@@ -149,8 +149,8 @@ TEST_CASE("conventions_roundtrip_main_conventions_xml", tags) {
     test_conventions_roundtrip(content, f.string());
 }
 
-TEST_CASE("conventions_roundtrip_example_1", tags) {
-    const auto f = ore_path("examples/Legacy/Example_1/Input/conventions.xml");
+TEST_CASE("conventions_roundtrip_minimal_setup", tags) {
+    const auto f = ore_path("examples/MinimalSetup/Input/conventions.xml");
     using ores::platform::filesystem::file;
 
     if (!std::filesystem::exists(f)) {

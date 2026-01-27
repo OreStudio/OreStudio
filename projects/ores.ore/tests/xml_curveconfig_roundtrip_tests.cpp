@@ -226,7 +226,7 @@ TEST_CASE("curveconfig_roundtrip_ore_api", tags) {
 }
 
 TEST_CASE("curveconfig_roundtrip_inflation", tags) {
-    const auto f = ore_path("examples/Inflation/Input/curveconfig_inflation.xml");
+    const auto f = ore_path("examples/Exposure/Input/curveconfig_inflation.xml");
     using ores::platform::filesystem::file;
 
     if (!std::filesystem::exists(f)) {
@@ -238,7 +238,7 @@ TEST_CASE("curveconfig_roundtrip_inflation", tags) {
 }
 
 TEST_CASE("curveconfig_roundtrip_sabr", tags) {
-    const auto f = ore_path("examples/SABR/Input/curveconfig_sabr.xml");
+    const auto f = ore_path("examples/CurveBuilding/Input/curveconfig_sabr.xml");
     using ores::platform::filesystem::file;
 
     if (!std::filesystem::exists(f)) {

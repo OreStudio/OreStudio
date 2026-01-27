@@ -295,6 +295,12 @@ def get_cpp_domain_entity_template_mappings():
         # Repository entity facet
         ("cpp_domain_type_entity.hpp.mustache", "include/{component}/repository", "_entity.hpp"),
         ("cpp_domain_type_entity.cpp.mustache", "src/repository", "_entity.cpp"),
+        # Repository mapper facet
+        ("cpp_domain_type_mapper.hpp.mustache", "include/{component}/repository", "_mapper.hpp"),
+        ("cpp_domain_type_mapper.cpp.mustache", "src/repository", "_mapper.cpp"),
+        # Repository CRUD facet
+        ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
+        ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
     ]
 
 
@@ -322,6 +328,12 @@ def get_cpp_junction_template_mappings():
         # Repository entity facet
         ("cpp_domain_type_entity.hpp.mustache", "include/{component}/repository", "_entity.hpp"),
         ("cpp_domain_type_entity.cpp.mustache", "src/repository", "_entity.cpp"),
+        # Repository mapper facet
+        ("cpp_domain_type_mapper.hpp.mustache", "include/{component}/repository", "_mapper.hpp"),
+        ("cpp_domain_type_mapper.cpp.mustache", "src/repository", "_mapper.cpp"),
+        # Repository CRUD facet
+        ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
+        ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
     ]
 
 
@@ -774,6 +786,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Prepare table display items for C++ templates
         if 'cpp' in domain_entity:
             _prepare_table_display(domain_entity['cpp'])
+        # Copy repository section fields to top level for template access
+        if 'repository' in domain_entity:
+            for key, value in domain_entity['repository'].items():
+                domain_entity[key] = value
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models
@@ -803,6 +819,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Prepare table display items for C++ templates
         if 'cpp' in junction:
             _prepare_table_display(junction['cpp'])
+        # Copy repository section fields to top level for template access
+        if 'repository' in junction:
+            for key, value in junction['repository'].items():
+                junction[key] = value
         data['junction'] = junction
 
     # Special processing for entity data models (populate scripts)

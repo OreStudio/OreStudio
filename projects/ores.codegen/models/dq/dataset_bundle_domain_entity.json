@@ -48,6 +48,13 @@
       "tablename": "dq_dataset_bundles_tbl"
     },
 
+    "repository": {
+      "entity_singular_short": "bundle",
+      "entity_plural_short": "bundles",
+      "entity_singular_words": "dataset bundle",
+      "entity_plural_words": "dataset bundles"
+    },
+
     "cpp": {
       "includes": {
         "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],

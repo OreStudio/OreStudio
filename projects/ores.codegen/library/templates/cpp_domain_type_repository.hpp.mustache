@@ -1,0 +1,108 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
+
+#include <string>
+#include <vector>
+#include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Reads and writes {{entity_plural_words}} to data storage.
+ */
+class {{entity_singular}}_repository {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.repository.{{entity_singular}}_repository";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    explicit {{entity_singular}}_repository(context ctx);
+
+    std::string sql();
+
+    void write(const domain::{{entity_singular}}& {{entity_singular_short}});
+    void write(const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}});
+
+    std::vector<domain::{{entity_singular}}> read_latest();
+    std::vector<domain::{{entity_singular}}> read_latest(const boost::uuids::uuid& id);
+    std::vector<domain::{{entity_singular}}> read_latest_by_code(const std::string& code);
+
+    std::vector<domain::{{entity_singular}}> read_all(const boost::uuids::uuid& id);
+    void remove(const boost::uuids::uuid& id);
+
+private:
+    context ctx_;
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_REPOSITORY_HPP
+
+#include <string>
+#include <vector>
+#include <sqlgen/postgres.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Reads and writes {{name_words}} to data storage.
+ */
+class {{name_singular}}_repository {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.repository.{{name_singular}}_repository";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    explicit {{name_singular}}_repository(context ctx);
+
+    std::string sql();
+
+    void write(const domain::{{name_singular}}& {{name_singular_short}});
+    void write(const std::vector<domain::{{name_singular}}>& {{name_short}});
+
+    std::vector<domain::{{name_singular}}> read_latest();
+    std::vector<domain::{{name_singular}}>
+    read_latest_by_{{left.column_short}}(const std::string& {{left.column}});
+    std::vector<domain::{{name_singular}}>
+    read_latest_by_{{right.column_short}}(const std::string& {{right.column}});
+
+    void remove(const std::string& {{left.column}}, const std::string& {{right.column}});
+    void remove_by_{{left.column_short}}(const std::string& {{left.column}});
+
+private:
+    context ctx_;
+};
+
+}
+
+#endif
+{{/junction}}

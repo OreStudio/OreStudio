@@ -11,6 +11,7 @@
     "left": {
       "column": "bundle_code",
       "column_short": "bundle",
+      "column_title": "Bundle",
       "type": "text",
       "cpp_type": "std::string",
       "index_comment": "Index for looking up datasets in a bundle",
@@ -22,6 +23,7 @@
     "right": {
       "column": "dataset_code",
       "column_short": "dataset",
+      "column_title": "Dataset",
       "type": "text",
       "cpp_type": "std::string",
       "index_comment": "Index for finding bundles containing a dataset",
@@ -45,6 +47,14 @@
 
     "sql": {
       "tablename": "dq_dataset_bundle_members_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "member",
+      "name_short": "members",
+      "name_singular_words": "dataset bundle member",
+      "name_words": "dataset bundle members",
+      "order_column": "display_order"
     },
 
     "cpp": {

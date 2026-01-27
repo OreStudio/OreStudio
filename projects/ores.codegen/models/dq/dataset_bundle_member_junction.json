@@ -4,9 +4,9 @@
     "name": "dataset_bundle_members",
     "name_singular": "dataset_bundle_member",
     "name_title": "Dataset Bundle Member",
+    "name_singular_words": "membership",
     "brief": "Links a dataset to a bundle.",
     "description": "Junction table linking bundles to their constituent datasets. Uses codes\nfor loose coupling - allows declaring membership for datasets that may not\nyet exist in the system.\n\nExamples:\n- Bundle \"slovaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
-    "name_singular_words": "membership",
 
     "left": {
       "column": "bundle_code",
@@ -15,7 +15,8 @@
       "cpp_type": "std::string",
       "index_comment": "Index for looking up datasets in a bundle",
       "description": "Code of the bundle this membership belongs to.",
-      "detail": "References dataset_bundle.code (soft FK)."
+      "detail": "References dataset_bundle.code (soft FK).",
+      "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
     },
 
     "right": {
@@ -25,7 +26,8 @@
       "cpp_type": "std::string",
       "index_comment": "Index for finding bundles containing a dataset",
       "description": "Code of the dataset that is a member of the bundle.",
-      "detail": "References dataset.code (soft FK)."
+      "detail": "References dataset.code (soft FK).",
+      "generator_expr": "std::string(faker::word::noun()) + \".\" + std::string(faker::word::noun())"
     },
 
     "columns": [
@@ -36,7 +38,8 @@
         "nullable": false,
         "default_value": "0",
         "description": "Order in which this dataset should be displayed or processed.",
-        "detail": "Lower numbers appear first. Used for controlling installation order\nand UI presentation."
+        "detail": "Lower numbers appear first. Used for controlling installation order\nand UI presentation.",
+        "generator_expr": "faker::number::integer(1, 100)"
       }
     ],
 
@@ -52,12 +55,7 @@
         {"column": "display_order", "header": "Order"},
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
-      ],
-      "generator": {
-        "bundle_code": "std::string(faker::word::noun()) + \"_bundle\"",
-        "dataset_code": "std::string(faker::word::noun()) + \".\" + std::string(faker::word::noun())",
-        "display_order": "faker::number::integer(1, 100)"
-      }
+      ]
     }
   }
 }

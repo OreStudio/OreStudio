@@ -21,13 +21,15 @@
         "type": "text",
         "cpp_type": "std::string",
         "description": "Unique code for stable referencing.",
-        "detail": "Examples: \"slovaris\", \"base\", \"crypto\"."
+        "detail": "Examples: \"slovaris\", \"base\", \"crypto\".",
+        "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
       },
       {
         "column": "name",
         "type": "text",
         "cpp_type": "std::string",
-        "description": "Human-readable name for the bundle."
+        "description": "Human-readable name for the bundle.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" \" + std::string(faker::word::noun()) + \" Bundle\""
       }
     ],
 
@@ -37,7 +39,8 @@
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Detailed description of the bundle's contents and purpose."
+        "description": "Detailed description of the bundle's contents and purpose.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
       }
     ],
 
@@ -53,12 +56,7 @@
         {"column": "description", "header": "Description"},
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
-      ],
-      "generator": {
-        "code": "std::string(faker::word::noun()) + \"_bundle\"",
-        "name": "std::string(faker::word::adjective()) + \" \" + std::string(faker::word::noun()) + \" Bundle\"",
-        "description": "std::string(faker::lorem::sentence())"
-      }
+      ]
     }
   }
 }

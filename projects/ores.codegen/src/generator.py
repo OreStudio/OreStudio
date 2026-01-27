@@ -289,6 +289,9 @@ def get_cpp_domain_entity_template_mappings():
         ("cpp_domain_type_table.cpp.mustache", "src/domain", "_table.cpp"),
         ("cpp_domain_type_table_io.hpp.mustache", "include/{component}/domain", "_table_io.hpp"),
         ("cpp_domain_type_table_io.cpp.mustache", "src/domain", "_table_io.cpp"),
+        # Generator facet
+        ("cpp_domain_type_generator.hpp.mustache", "include/{component}/generators", "_generator.hpp"),
+        ("cpp_domain_type_generator.cpp.mustache", "src/generators", "_generator.cpp"),
     ]
 
 
@@ -310,6 +313,9 @@ def get_cpp_junction_template_mappings():
         ("cpp_domain_type_table.cpp.mustache", "src/domain", "_table.cpp"),
         ("cpp_domain_type_table_io.hpp.mustache", "include/{component}/domain", "_table_io.hpp"),
         ("cpp_domain_type_table_io.cpp.mustache", "src/domain", "_table_io.cpp"),
+        # Generator facet
+        ("cpp_domain_type_generator.hpp.mustache", "include/{component}/generators", "_generator.hpp"),
+        ("cpp_domain_type_generator.cpp.mustache", "src/generators", "_generator.cpp"),
     ]
 
 

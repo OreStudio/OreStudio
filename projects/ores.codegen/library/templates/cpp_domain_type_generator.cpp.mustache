@@ -1,0 +1,76 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/generators/{{entity_singular}}_generator.hpp"
+
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+
+namespace ores::{{component}}::generators {
+
+using ores::utility::uuid::uuid_v7_generator;
+
+domain::{{entity_singular}} generate_synthetic_{{entity_singular}}() {
+    static uuid_v7_generator uuid_gen;
+
+    domain::{{entity_singular}} r;
+    r.version = 1;
+    r.{{primary_key.column}} = uuid_gen();
+{{#natural_keys}}
+    r.{{column}} = {{{generator_expr}}};
+{{/natural_keys}}
+{{#columns}}
+    r.{{name}} = {{{generator_expr}}};
+{{/columns}}
+    r.recorded_by = std::string(faker::internet::username());
+    r.change_reason_code = "system.new";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = utility::faker::datetime::past_timepoint();
+    return r;
+}
+
+std::vector<domain::{{entity_singular}}>
+generate_synthetic_{{entity_plural}}(std::size_t n) {
+    std::vector<domain::{{entity_singular}}> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_{{entity_singular}}());
+    return r;
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/generators/{{name_singular}}_generator.hpp"
+
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/faker/datetime.hpp"
+
+namespace ores::{{component}}::generators {
+
+domain::{{name_singular}} generate_synthetic_{{name_singular}}() {
+    domain::{{name_singular}} r;
+    r.version = 1;
+    r.{{left.column}} = {{{left.generator_expr}}};
+    r.{{right.column}} = {{{right.generator_expr}}};
+{{#columns}}
+    r.{{name}} = {{{generator_expr}}};
+{{/columns}}
+    r.recorded_by = std::string(faker::internet::username());
+    r.change_reason_code = "system.new";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = utility::faker::datetime::past_timepoint();
+    return r;
+}
+
+std::vector<domain::{{name_singular}}>
+generate_synthetic_{{name}}(std::size_t n) {
+    std::vector<domain::{{name_singular}}> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_{{name_singular}}());
+    return r;
+}
+
+}
+{{/junction}}

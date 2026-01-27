@@ -432,6 +432,24 @@ def _format_description_as_comment(description):
     return '\n'.join(formatted_lines)
 
 
+def _prepare_table_display(cpp_section):
+    """
+    Prepare table_display items by adding iterator_var to each item.
+
+    Mustache can't access parent context variables from within a loop,
+    so we add the iterator_var to each table_display item.
+
+    Args:
+        cpp_section (dict): The 'cpp' section of the model
+    """
+    if 'table_display' not in cpp_section:
+        return
+
+    iter_var = cpp_section.get('iterator_var', 'e')
+    for item in cpp_section['table_display']:
+        item['iter_var'] = iter_var
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -689,6 +707,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
         if 'entity_plural' in domain_entity:
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
+        # Prepare table display items for C++ templates
+        if 'cpp' in domain_entity:
+            _prepare_table_display(domain_entity['cpp'])
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models
@@ -706,6 +727,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction['name_singular_upper'] = junction['name_singular'].upper()
         if 'name' in junction:
             junction['name_upper'] = junction['name'].upper()
+        # Prepare table display items for C++ templates
+        if 'cpp' in junction:
+            _prepare_table_display(junction['cpp'])
         data['junction'] = junction
 
     # Special processing for entity data models (populate scripts)

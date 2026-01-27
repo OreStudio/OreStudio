@@ -44,6 +44,7 @@
         "domain": ["<chrono>", "<string>"],
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
+      "iterator_var": "m",
       "table_display": [
         {"column": "bundle_code", "header": "Bundle"},
         {"column": "dataset_code", "header": "Dataset"},

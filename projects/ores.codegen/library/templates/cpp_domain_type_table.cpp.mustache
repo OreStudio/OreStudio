@@ -13,8 +13,8 @@ std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
 
     table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
 
-    for (const auto& e : v) {
-        table{{#cpp.table_display}} << e.{{column}}{{/cpp.table_display}} << fort::endr;
+    for (const auto& {{cpp.iterator_var}} : v) {
+        table{{#cpp.table_display}} << {{iter_var}}.{{column}}{{/cpp.table_display}} << fort::endr;
     }
     return table.to_string();
 }
@@ -34,8 +34,8 @@ std::string convert_to_table(const std::vector<{{name_singular}}>& v) {
 
     table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
 
-    for (const auto& e : v) {
-        table{{#cpp.table_display}} << e.{{column}}{{/cpp.table_display}} << fort::endr;
+    for (const auto& {{cpp.iterator_var}} : v) {
+        table{{#cpp.table_display}} << {{iter_var}}.{{column}}{{/cpp.table_display}} << fort::endr;
     }
     return table.to_string();
 }

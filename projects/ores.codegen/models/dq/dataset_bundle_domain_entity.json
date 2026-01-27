@@ -46,6 +46,7 @@
         "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
+      "iterator_var": "b",
       "table_display": [
         {"column": "code", "header": "Code"},
         {"column": "name", "header": "Name"},

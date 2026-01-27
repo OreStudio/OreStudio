@@ -208,26 +208,29 @@ exec "${SCRIPT_DIR}/xsdcpp_generate.sh" \
 
 ---
 
-## 6. Recommendations
+## 6. Fixed Issues
 
-1. **Verify code generator configuration** - Ensure all XSD files are included, especially `instruments.xsd`
+The following issues have been fixed in xsdcpp:
 
-2. **Fix cardinality mapping** - `maxOccurs="unbounded"` should generate `xsd::vector<T>` not `xsd::optional<T>`
+1. **`xs:group ref` now expanded** - Trade data types (SwapData, FxForwardData, etc.) are now generated
+2. **`maxOccurs="unbounded"` in xs:choice** - Now correctly generates `xsd::vector<T>`
 
-3. **Support XSD substitution groups** - Handle `substitutionGroup` patterns for `nettingSetGroup`
+## 7. Remaining Issues
 
-4. **Add XML attributes support** - Handle `ccy` attribute on `LGM` element
+1. **XSD substitution groups** - `substitutionGroup` patterns like `nettingSetGroup` are not yet handled
+   - `NettingSetId` in envelope is still missing
+   - Portfolio tests use inline XML as a workaround
 
-5. **Verify XSD includes/imports** - Check that all `xs:include` and `xs:import` statements are followed
+2. **XML attributes** - The `ccy` attribute on `LGM` element is not yet supported
 
 ---
 
-## 7. Test Files Affected
+## 8. Test Files Status
 
-| Test | Status | Blocking Issue |
-|------|--------|----------------|
-| Portfolio roundtrip | Fails | Missing `NettingSetId` in envelope |
-| Simulation roundtrip | Fails | LGM cardinality (should be vector) |
+| Test | Status | Notes |
+|------|--------|-------|
+| Portfolio roundtrip | Works | Uses inline XML (NettingSetId not supported) |
+| Simulation roundtrip | Works | Uses real ORE sample files |
 | Conventions roundtrip | Works | - |
 | CurrencyConfig roundtrip | Works | - |
 | TodaysMarket roundtrip | Works | - |

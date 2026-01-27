@@ -22,6 +22,582 @@ struct scheduleData_Rules_t_Tenor_t;
 struct scheduleData_Dates_t;
 struct scheduleData_Dates_t_Tenor_t;
 struct scheduleData_Dates_t_Dates_t;
+struct swapData;
+struct legData;
+struct legData_PaymentCalendar_t;
+struct legData_Amortizations_t;
+struct amortizationData;
+struct amortizationData_StartDate_t;
+struct amortizationData_EndDate_t;
+struct amortizationData_Frequency_t;
+struct legData_Notionals_t;
+struct legData_Notionals_t_Notional_t;
+struct fxreset;
+struct fxreset_StartDate_t;
+struct fxreset_FXIndex_t;
+struct fxreset_FixingCalendar_t;
+struct exchanges;
+struct legData_PaymentDates_t;
+struct legData_Indexings_t;
+struct indexingData;
+struct indexingData_Index_t;
+struct indexingData_IndexFixingCalendar_t;
+struct indexingData_FixingCalendar_t;
+struct legData_SettlementData_t;
+struct legData_SettlementData_t_FXIndex_t;
+struct legData_SettlementData_t_FixingDate_t;
+struct callableSwapData;
+struct optionData;
+struct optionData_LongShort_t;
+struct optionData_OptionType_t;
+struct optionData_PayoffType_t;
+struct optionData_PayoffType2_t;
+struct optionData_Style_t;
+struct optionData_NoticePeriod_t;
+struct optionData_NoticeCalendar_t;
+struct optionData_NoticeConvention_t;
+struct optionData_MidCouponExercise_t;
+struct optionData_PayOffAtExpiry_t;
+struct optionData_PremiumAmount_t;
+struct optionData_PremiumPayDate_t;
+struct premiumData;
+struct premiumData_Premium_t;
+struct premiumData_Premium_t_SettlementData_t;
+struct premiumData_Premium_t_SettlementData_t_FXIndex_t;
+struct premiumData_Premium_t_SettlementData_t_FixingDate_t;
+struct optionData_ExercisePrices_t;
+struct optionData_ExerciseFees_t;
+struct optionData_ExerciseFees_t_ExerciseFee_t;
+struct optionData_ExerciseFeeSettlementPeriod_t;
+struct optionData_ExerciseFeeSettlementCalendar_t;
+struct optionData_ExerciseFeeSettlementConvention_t;
+struct optionExerciseData;
+struct optionPaymentData;
+struct optionPaymentData_Dates_t;
+struct optionPaymentData_Rules_t;
+struct optionData_SettlementData_t;
+struct optionData_SettlementData_t_FXIndex_t;
+struct optionData_SettlementData_t_FixingDate_t;
+struct arcOptionData;
+struct stFreeStyleLongShort;
+struct stFreeStyleIndex;
+struct stFreeStyleEventSchedule;
+struct stFreeStyleEventScheduleBase;
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t;
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t;
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t;
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t;
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t;
+struct stFreeStyleNumber;
+struct stFreeStyleEvent;
+struct stFreeStyleCurrency;
+struct swaptionData;
+struct varianceSwapData;
+struct varianceSwapData_LongShort_t;
+struct forwardRateAgreementData;
+struct forwardRateAgreementData_Index_t;
+struct fxForwardData;
+struct fxForwardSettlementData;
+struct fxForwardSettlementData_FXIndex_t;
+struct fxForwardSettlementData_Rules_t;
+struct fxAverageForwardData;
+struct fxAverageForwardData_FXIndex_t;
+struct fxOptionData;
+struct fxOptionData_FXIndex_t;
+struct fxBarrierOptionData;
+struct barrierData;
+struct barrierData_Levels_t;
+struct fxBarrierOptionData_FXIndex_t;
+struct fxBarrierOptionData_FXIndexDailyLows_t;
+struct fxBarrierOptionData_FXIndexDailyHighs_t;
+struct fxDigitalOptionData;
+struct fxKIKOBarrierOptionData;
+struct fxKIKOBarrierOptionData_Barriers_t;
+struct fxKIKOBarrierOptionData_FXIndex_t;
+struct fxDigitalBarrierOptionData;
+struct fxDigitalBarrierOptionData_FXIndex_t;
+struct fxDigitalBarrierOptionData_FXIndexDailyLows_t;
+struct fxDigitalBarrierOptionData_FXIndexDailyHighs_t;
+struct fxTouchOptionData;
+struct fxTouchOptionData_FXIndex_t;
+struct fxTouchOptionData_FXIndexDailyLows_t;
+struct fxTouchOptionData_FXIndexDailyHighs_t;
+struct fxTouchOptionData_Calendar_t;
+struct fxSwapData;
+struct capFloorData;
+struct legData_capfloor;
+struct legData_capfloor_PaymentCalendar_t;
+struct legData_capfloor_Notionals_t;
+struct legData_capfloor_Notionals_t_Notional_t;
+struct legData_capfloor_PaymentDates_t;
+struct capFloorData_Caps_t;
+struct capFloorData_Caps_t_Cap_t;
+struct capFloorData_Floors_t;
+struct capFloorData_Floors_t_Floor_t;
+struct capFloorData_PremiumAmount_t;
+struct capFloorData_PremiumPayDate_t;
+struct equityFutureOptionData;
+struct equityOptionData;
+struct eqBarrierOptionData;
+struct eqBarrierOptionData_EQIndex_t;
+struct equityForwardData;
+struct eqForwardSettlementData;
+struct eqForwardSettlementData_FXIndex_t;
+struct eqForwardSettlementData_Rules_t;
+struct eqDigitalOptionData;
+struct eqTouchOptionData;
+struct eqTouchOptionData_EQIndex_t;
+struct cliquetOptionData;
+struct bondData;
+struct bondData_IssuerId_t;
+struct bondData_CreditCurveId_t;
+struct bondData_CreditGroup_t;
+struct bondData_SecurityId_t;
+struct bondData_ReferenceCurveId_t;
+struct bondData_IncomeCurveId_t;
+struct bondData_VolatilityCurveId_t;
+struct bondData_SettlementDays_t;
+struct bondData_Calendar_t;
+struct bondData_IssueDate_t;
+struct bondData_PriceQuoteMethod_t;
+struct bondData_PriceQuoteBaseValue_t;
+struct bondData_BondNotional_t;
+struct bondData_Payer_t;
+struct bondData_SubType_t;
+struct forwardBondData;
+struct settlementData;
+struct settlementData_ForwardMaturityDate_t;
+struct settlementData_ForwardSettlementDate_t;
+struct settlementData_Settlement_t;
+struct settlementData_LockRateDayCounter_t;
+struct settlementData_SettlementDirty_t;
+struct forwardBondData_PremiumData_t;
+struct forwardBondData_PremiumData_t_Amount_t;
+struct forwardBondData_PremiumData_t_Date_t;
+struct forwardBondData_LongInForward_t;
+struct bondFutureData;
+struct bondFutureData_ContractName_t;
+struct bondFutureData_ContractNotional_t;
+struct bondFutureData_LongShort_t;
+struct bondFutureData_ContractMonth_t;
+struct bondFutureData_DeliverableGrade_t;
+struct bondFutureData_FairPrice_t;
+struct bondFutureData_Settlement_t;
+struct bondFutureData_SettlementDirty_t;
+struct bondFutureData_RootDate_t;
+struct bondFutureData_ExpiryBasis_t;
+struct bondFutureData_SettlementBasis_t;
+struct bondFutureData_ExpiryLag_t;
+struct bondFutureData_SettlementLag_t;
+struct bondFutureData_LastTradingDate_t;
+struct bondFutureData_LastDeliveryDate_t;
+struct deliveryBasket;
+struct deliveryBasket_Id_t;
+struct creditDefaultSwapData;
+struct creditDefaultSwapData_IssuerId_t;
+struct creditDefaultSwapData_ReferenceObligation_t;
+struct creditDefaultSwapData_ProtectionPaymentTime_t;
+struct creditDefaultSwapOptionData;
+struct creditDefaultSwapOptionData_Term_t;
+struct auctionSettlementInformation;
+struct commodityForwardData;
+struct commodityForwardData_Name_t;
+struct commodityForwardData_FutureExpiryOffset_t;
+struct commodityForwardData_FutureExpiryOffsetCalendar_t;
+struct commForwardSettlementData;
+struct commForwardSettlementData_FXIndex_t;
+struct commodityOptionData;
+struct commodityOptionData_Name_t;
+struct commodityDigitalAveragePriceOptionData;
+struct commodityDigitalAveragePriceOptionData_Name_t;
+struct commodityDigitalAveragePriceOptionData_FXIndex_t;
+struct commodityDigitalOptionData;
+struct commodityDigitalOptionData_Name_t;
+struct commoditySpreadOptionData;
+struct commoditySpreadOptionStripPaymentData;
+struct commoditySwapData;
+struct commoditySwaptionData;
+struct commodityAveragePriceOptionData;
+struct commodityAveragePriceOptionData_Name_t;
+struct commodityAveragePriceOptionData_FXIndex_t;
+struct commodityOptionStripData;
+struct callsPutsType;
+struct longShortsType;
+struct strikes;
+struct commodityOptionStripData_PremiumAmount_t;
+struct commodityOptionStripData_PremiumPayDate_t;
+struct commodityOptionStripData_Style_t;
+struct commodityPositionData;
+struct underlying;
+struct underlying_Type_t;
+struct underlying_Name_t;
+struct underlying_IdentifierType_t;
+struct underlying_Exchange_t;
+struct underlying_PriceType_t;
+struct underlying_DeliveryRollCalendar_t;
+struct underlying_FutureExpiryDate_t;
+struct underlying_FutureContractMonth_t;
+struct underlying_Interpolation_t;
+struct singleUnderlyingAsianOptionData;
+struct singleUnderlyingAsianOptionData_Settlement_t;
+struct bondOptionData;
+struct bondOptionData_Redemption_t;
+struct bondOptionData_PriceType_t;
+struct bondRepoData;
+struct bondRepoData_RepoData_t;
+struct bondTRSData;
+struct totalReturnData;
+struct totalReturnData_Payer_t;
+struct totalReturnData_PriceType_t;
+struct totalReturnData_ObservationLag_t;
+struct totalReturnData_PaymentDates_t;
+struct fxTermsData;
+struct fxTermsData_FXIndex_t;
+struct fxTermsData_FXIndexCalendar_t;
+struct fundingData;
+struct cdoData;
+struct cdoData_Qualifier_t;
+struct cdoData_ProtectionPaymentTime_t;
+struct basketData;
+struct nameData;
+struct nameData_IssuerId_t;
+struct nameData_Qualifier_t;
+struct creditLinkedSwapData;
+struct creditLinkedSwapData_CreditCurveId_t;
+struct creditLinkedSwapData_DefaultPaymentTime_t;
+struct creditLinkedSwapData_IndependentPayments_t;
+struct creditLinkedSwapData_ContingentPayments_t;
+struct creditLinkedSwapData_DefaultPayments_t;
+struct creditLinkedSwapData_RecoveryPayments_t;
+struct indexCreditDefaultSwapData;
+struct indexCreditDefaultSwapData_IssuerId_t;
+struct indexCreditDefaultSwapData_CreditCurveId_t;
+struct indexCreditDefaultSwapData_ProtectionPaymentTime_t;
+struct indexCreditDefaultSwapOptionData;
+struct indexCreditDefaultSwapOptionData_IndexTerm_t;
+struct multiLegOptionData;
+struct ascotData;
+struct convertibleBondData;
+struct cbCallData;
+struct cbCallData_Styles_t;
+struct cbCallData_Styles_t_Style_t;
+struct cbCallData_Prices_t;
+struct cbCallData_Prices_t_Price_t;
+struct cbCallData_PriceTypes_t;
+struct cbCallData_PriceTypes_t_PriceType_t;
+struct cbCallData_IncludeAccruals_t;
+struct cbCallData_IncludeAccruals_t_IncludeAccrual_t;
+struct cbCallData_Soft_t;
+struct cbCallData_Soft_t_Soft_t;
+struct cbCallData_TriggerRatios_t;
+struct cbCallData_TriggerRatios_t_TriggerRatio_t;
+struct cbCallData_NOfMTriggers_t;
+struct cbCallData_NOfMTriggers_t_NOfMTrigger_t;
+struct cbCallData_MakeWhole_t;
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t;
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_StockPrices_t;
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t;
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t_CrIncrease_t;
+struct cbConversionData;
+struct cbConversionData_Styles_t;
+struct cbConversionData_Styles_t_Style_t;
+struct cbConversionData_ConversionRatios_t;
+struct cbConversionData_ConversionRatios_t_ConversionRatio_t;
+struct cbConversionData_FixedAmountConversion_t;
+struct cbConversionData_FixedAmountConversion_t_Currency_t;
+struct cbConversionData_FixedAmountConversion_t_Amounts_t;
+struct cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t;
+struct cbContingentConversionData;
+struct cbContingentConversionData_Observations_t;
+struct cbContingentConversionData_Observations_t_Observation_t;
+struct cbContingentConversionData_Barriers_t;
+struct cbContingentConversionData_Barriers_t_Barrier_t;
+struct cbMandatoryConversionData;
+struct cbMandatoryConversionData_Type_t;
+struct cbPepsData;
+struct cbConversionResetData;
+struct cbConversionResetData_References_t;
+struct cbConversionResetData_References_t_Reference_t;
+struct cbConversionResetData_Thresholds_t;
+struct cbConversionResetData_Thresholds_t_Threshold_t;
+struct cbConversionResetData_Gearings_t;
+struct cbConversionResetData_Gearings_t_Gearing_t;
+struct cbConversionResetData_Floors_t;
+struct cbConversionResetData_Floors_t_Floor_t;
+struct cbConversionResetData_GlobalFloors_t;
+struct cbConversionResetData_GlobalFloors_t_GloobalFloor_t;
+struct cbConversionData_FXIndex_t;
+struct cbExchangeableData;
+struct cbExchangeableData_EquityCreditCurve_t;
+struct cbDividendProtectionData;
+struct cbDividendProtectionData_AdjustmentStyles_t;
+struct cbDividendProtectionData_AdjustmentStyles_t_AdjustmentStyle_t;
+struct cbDividendProtectionData_DividendTypes_t;
+struct cbDividendProtectionData_DividendTypes_t_DividendType_t;
+struct cbDividendProtectionData_Thresholds_t;
+struct cbDividendProtectionData_Thresholds_t_Threshold_t;
+struct callableBondData;
+struct callableBondCallData;
+struct callableBondCallData_Styles_t;
+struct callableBondCallData_Styles_t_Style_t;
+struct callableBondCallData_Prices_t;
+struct callableBondCallData_Prices_t_Price_t;
+struct callableBondCallData_PriceTypes_t;
+struct callableBondCallData_PriceTypes_t_PriceType_t;
+struct callableBondCallData_IncludeAccruals_t;
+struct callableBondCallData_IncludeAccruals_t_IncludeAccrual_t;
+struct tlockData;
+struct rpaData;
+struct rpaData_CreditCurveId_t;
+struct rpaData_IssuerId_t;
+struct rpaData_ProtectionFee_t;
+struct rpaData_Underlying_t;
+struct cbodata;
+struct cboInvestment;
+struct cboInvestment_TrancheName_t;
+struct cboInvestment_StructureId_t;
+struct cboStructure;
+struct cboStructure_DayCounter_t;
+struct cboStructure_PaymentConvention_t;
+struct cboStructure_ReinvestmentEndDate_t;
+struct cboStructure_FeeDayCounter_t;
+struct cboBondBasketData;
+struct cboBondBasketData_Trade_t;
+struct cbotranches;
+struct cbotranche;
+struct cbotranche_Name_t;
+struct bondBasketData;
+struct bondBasketData_Identifier_t;
+struct equityPositionData;
+struct equityOptionPositionData;
+struct equityOptionUnderlyingData;
+struct totalReturnSwapData;
+struct trsUnderlyingData;
+struct trsUnderlyingData_Derivative_t;
+struct trsUnderlyingData_Derivative_t_Id_t;
+struct trsUnderlyingData_Derivative_t_Trade_t;
+struct compositeTradeData;
+struct compositeTradeData_BasketName_t;
+struct compositeTradeComponents;
+struct compositeTradeComponents_Trade_t;
+struct pairwiseVarianceSwapData1;
+struct stFreeStyleIndexVector;
+struct stFreeStyleIndexVectorBase;
+struct stFreeStyleIndexVectorBase_Value_t;
+struct stFreeStyleNumberVector;
+struct stFreeStyleNumberVectorBase;
+struct pairwiseVarianceSwapData2;
+struct eqOutperformanceOptionData;
+struct flexiSwapData;
+struct flexiSwapData_LowerNotionalBounds_t;
+struct flexiSwapData_LowerNotionalBounds_t_Notional_t;
+struct flexiSwapData_Prepayment_t;
+struct flexiSwapData_Prepayment_t_NoticePeriod_t;
+struct flexiSwapData_Prepayment_t_NoticeCalendar_t;
+struct flexiSwapData_Prepayment_t_NoticeConvention_t;
+struct flexiSwapData_Prepayment_t_PrepaymentOptions_t;
+struct flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t;
+struct flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t_Type_t;
+struct bgSwapData;
+struct bgSwapData_ReferenceSecurity_t;
+struct tranches;
+struct tranche;
+struct tranche_Description_t;
+struct tranche_SecurityId_t;
+struct tranche_Notionals_t;
+struct tranche_Notionals_t_Notional_t;
+struct commodityRevenueOptionData;
+struct stFreeStyleOptionType;
+struct basketVarianceSwapData;
+struct stFreeStyleBool;
+struct basketVarianceSwapData2;
+struct underlyings;
+struct extendedAccumulatorData;
+struct varianceOptionData;
+struct varianceDispersionSwapData;
+struct kikoVarianceSwapData;
+struct stFreeStyleBarrierType;
+struct corridorVarianceSwapData;
+struct indexedCorridorVarianceSwapData;
+struct kikoCorridorVarianceSwapData;
+struct corridorVarianceDispersionSwapData;
+struct koCorridorVarianceDispersionSwapData;
+struct pairwiseGeometricVarianceDispersionSwapData;
+struct conditionalVarianceSwap01Data;
+struct conditionalVarianceSwap02Data;
+struct gammaSwapData;
+struct bestEntryOptionData;
+struct dualEuroBinaryOptionData;
+struct dualEuroBinaryOptionDoubleKOData;
+struct volBarrierOptionData;
+struct tarfData2;
+struct tarfData2_Strikes_t;
+struct tarfData2_Strikes_t_Strike_t;
+struct tarfData2_SettlementLag_t;
+struct tarfData2_RangeBounds_t;
+struct rangeBound;
+struct tarfData2_RangeBoundSet_t;
+struct tarfData2_RangeBoundSet_t_RangeBounds_t;
+struct tarfData2_Barriers_t;
+struct accumulatorData;
+struct accumulatorData_SettlementLag_t;
+struct accumulatorData_RangeBounds_t;
+struct accumulatorData_Barriers_t;
+struct windowBarrierOptionData2;
+struct basketOptionData;
+struct basketOptionData_Settlement_t;
+struct genericBarrierOptionData;
+struct genericBarrierOptionData_SettlementLag_t;
+struct genericBarrierOptionData_Barriers_t;
+struct genericBarrierOptionData_TransatlanticBarrier_t;
+struct rainbowOptionData;
+struct rainbowOptionData_Settlement_t;
+struct autocallable01Data;
+struct autocallable01Data_FixingDates_t;
+struct autocallable01Data_SettlementDates_t;
+struct autocallable01Data_AccumulationFactors_t;
+struct doubleDigitalOptionData;
+struct doubleDigitalOptionData_Type1_t;
+struct doubleDigitalOptionData_Type2_t;
+struct doubleDigitalOptionData_Name1_t;
+struct doubleDigitalOptionData_Name2_t;
+struct performanceOption01Data;
+struct performanceOption01Data_StrikePrices_t;
+struct scriptedTradeData;
+struct scriptedTradeData_ScriptName_t;
+struct scriptedTradeData_ProductTag_t;
+struct ore_script;
+struct ore_script_Code_t;
+struct ore_script_NPV_t;
+struct ore_script_Results_t;
+struct ore_script_Results_t_Result_t;
+struct ore_script_PricingEngineConfigOverwrite_t;
+struct ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t;
+struct ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t_Parameter_t;
+struct ore_script_PricingEngineConfigOverwrite_t_EngineParameters_t;
+struct ore_script_PricingEngineConfigOverwrite_t_EngineParameters_t_Parameter_t;
+struct ore_script_CalibrationSpec_t;
+struct ore_script_CalibrationSpec_t_Calibration_t;
+struct ore_script_CalibrationSpec_t_Calibration_t_Index_t;
+struct ore_script_CalibrationSpec_t_Calibration_t_Strikes_t;
+struct ore_script_CalibrationSpec_t_Calibration_t_Strikes_t_Strike_t;
+struct ore_script_ScheduleCoarsening_t;
+struct ore_script_ScheduleCoarsening_t_EligibleSchedule_t;
+struct ore_script_NewSchedules_t;
+struct ore_script_NewSchedules_t_NewSchedule_t;
+struct ore_script_NewSchedules_t_NewSchedule_t_Name_t;
+struct ore_script_NewSchedules_t_NewSchedule_t_Operation_t;
+struct ore_script_NewSchedules_t_NewSchedule_t_Schedules_t;
+struct ore_script_NewSchedules_t_NewSchedule_t_Schedules_t_Schedule_t;
+struct ore_script_StickyCloseOutStates_t;
+struct ore_script_StickyCloseOutStates_t_StickyCloseOutState_t;
+struct ore_script_ConditionalExpectation_t;
+struct ore_script_ConditionalExpectation_t_ModelStates_t;
+struct ore_script_ConditionalExpectation_t_ModelStates_t_ModelState_t;
+struct ore_script_AmcCg_t;
+struct ore_script_AmcCg_t_Components_t;
+struct ore_script_AmcCg_t_Components_t_Component_t;
+struct ore_script_AmcCg_t_Target_t;
+struct ore_script_AmcCg_t_Target_t_Value_t;
+struct ore_script_AmcCg_t_Target_t_Derivative_t;
+struct scriptedTradeData_Data_t;
+struct scriptedTradeData_Data_t_Number_t;
+struct scriptedTradeData_Data_t_Number_t_Name_t;
+struct scriptedTradeData_Data_t_Number_t_Value_t;
+struct scriptedTradeData_Data_t_Number_t_Values_t;
+struct scriptedTradeData_Data_t_Currency_t;
+struct scriptedTradeData_Data_t_Currency_t_Name_t;
+struct scriptedTradeData_Data_t_Currency_t_Value_t;
+struct scriptedTradeData_Data_t_Currency_t_Values_t;
+struct scriptedTradeData_Data_t_Index_t;
+struct scriptedTradeData_Data_t_Index_t_Name_t;
+struct scriptedTradeData_Data_t_Index_t_Value_t;
+struct scriptedTradeData_Data_t_Index_t_Values_t;
+struct scriptedTradeData_Data_t_Index_t_Values_t_Value_t;
+struct scriptedTradeData_Data_t_Event_t;
+struct scriptedTradeData_Data_t_Event_t_Name_t;
+struct scriptedTradeData_Data_t_Event_t_Value_t;
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t;
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t;
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t;
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t;
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t;
+struct scriptedTradeData_Data_t_Daycounter_t;
+struct scriptedTradeData_Data_t_Daycounter_t_Name_t;
+struct scriptedTradeData_Data_t_Daycounter_t_Value_t;
+struct scriptedTradeData_Data_t_Daycounter_t_Values_t;
+struct vanillaBasketOptionData;
+struct asianBasketOptionData;
+struct averageStrikeBasketOptionData;
+struct lookbackCallBasketOptionData;
+struct lookbackPutBasketOptionData;
+struct bestOfAirbagData;
+struct worstOfBasketSwapData;
+struct stFreeStyleDayCounter;
+struct worstOfBasketSwapData2;
+struct worstOfBasketSwapData2_InitialPrices_t;
+struct worstOfBasketSwapData2_KnockOutLevels_t;
+struct worstOfBasketSwapData2_FixedTriggerLevels_t;
+struct worstOfBasketSwapData2_FloatingIndex_t;
+struct worstOfBasketSwapData2_FloatingLookback_t;
+struct worstOfBasketSwapData2_FloatingRateCutoff_t;
+struct worstPerformanceRainbowOption01Data;
+struct worstPerformanceRainbowOption02Data;
+struct worstPerformanceRainbowOption03Data;
+struct worstPerformanceRainbowOption04Data;
+struct worstPerformanceRainbowOption05Data;
+struct worstPerformanceRainbowOption06Data;
+struct worstPerformanceRainbowOption07Data;
+struct bestOfAssetOrCashRainbowOptionData;
+struct worstOfAssetOrCashRainbowOptionData;
+struct minRainbowOptionData;
+struct maxRainbowOptionData;
+struct windowBarrierOptionData;
+struct accumulator01Data;
+struct accumulator02Data;
+struct bestEntryOptionData2;
+struct tarfData;
+struct europeanRainbowCallSpreadOptionData;
+struct rainbowCallSpreadBarrierOptionData;
+struct asianRainbowCallSpreadOptionData;
+struct asianIrCapFloorData;
+struct forwardVolatilityAgreementData;
+struct correlationSwapData;
+struct assetLinkedCliquetOptionData;
+struct constantMaturityVolatilitySwapData;
+struct cmsCapFloorBarrierData;
+struct fixedStrikeForwardStartingOptionData;
+struct floatingStrikeForwardStartingOptionData;
+struct forwardStartingSwaptionData;
+struct flooredAverageCPIZCIISData;
+struct genericBarrierOptionDataRaw;
+struct stFreeStyleBarrierTypeVector;
+struct stFreeStyleOptionTypeVectorBase;
+struct stFreeStyleOptionTypeVectorBase_Value_t;
+struct stFreeStyleCurrencyVector;
+struct stFreeStyleCurrencyVectorBase;
+struct movingMaxYYIISData;
+struct irregularYYIISData;
+struct europeanOptionBarrierData;
+struct europeanOptionBarrierData_PutCall_t;
+struct europeanOptionBarrierData_BarrierType_t;
+struct europeanOptionBarrierData_BarrierStyle_t;
+struct ladderLockInOptionData;
+struct lapseHedgeSwapData;
+struct knockOutSwapData;
+struct LPISwapData;
+struct cashPositionData;
+struct strikeResettableOptionData;
+struct strikeResettableOptionData2;
+struct trsUnderlyingData_Trade_t;
+struct trsUnderlyingData_PortfolioIndexTradeData_t;
+struct trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t;
+struct trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t;
+struct trsReturnData;
+struct trsReturnData_ObservationLag_t;
+struct trsReturnData_PaymentDates_t;
+struct trsFundingData;
+struct trsAdditionalCashflowData;
 struct simulation;
 struct parameters;
 struct parameters_Grid_t;
@@ -1228,6 +1804,183 @@ struct trade
     domain::oreTradeType TradeType;
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::tradeActions> TradeActions;
+    xsd::optional<domain::swapData> CrossCurrencySwapData;
+    xsd::optional<domain::swapData> InflationSwapData;
+    xsd::optional<domain::swapData> SwapData;
+    xsd::optional<domain::swapData> EquitySwapData;
+    xsd::optional<domain::callableSwapData> CallableSwapData;
+    xsd::optional<domain::arcOptionData> ArcOptionData;
+    xsd::optional<domain::swaptionData> SwaptionData;
+    xsd::optional<domain::varianceSwapData> VarianceSwapData;
+    xsd::optional<domain::varianceSwapData> EquityVarianceSwapData;
+    xsd::optional<domain::varianceSwapData> FxVarianceSwapData;
+    xsd::optional<domain::varianceSwapData> CommodityVarianceSwapData;
+    xsd::optional<domain::forwardRateAgreementData> ForwardRateAgreementData;
+    xsd::optional<domain::fxForwardData> FxForwardData;
+    xsd::optional<domain::fxAverageForwardData> FxAverageForwardData;
+    xsd::optional<domain::fxOptionData> FxOptionData;
+    xsd::optional<domain::fxBarrierOptionData> FxBarrierOptionData;
+    xsd::optional<domain::fxBarrierOptionData> FxDoubleBarrierOptionData;
+    xsd::optional<domain::fxDigitalOptionData> FxDigitalOptionData;
+    xsd::optional<domain::fxBarrierOptionData> FxEuropeanBarrierOptionData;
+    xsd::optional<domain::fxKIKOBarrierOptionData> FxKIKOBarrierOptionData;
+    xsd::optional<domain::fxDigitalBarrierOptionData> FxDigitalBarrierOptionData;
+    xsd::optional<domain::fxTouchOptionData> FxTouchOptionData;
+    xsd::optional<domain::fxTouchOptionData> FxDoubleTouchOptionData;
+    xsd::optional<domain::fxSwapData> FxSwapData;
+    xsd::optional<domain::capFloorData> CapFloorData;
+    xsd::optional<domain::equityFutureOptionData> EquityFutureOptionData;
+    xsd::optional<domain::equityOptionData> EquityOptionData;
+    xsd::optional<domain::eqBarrierOptionData> EquityBarrierOptionData;
+    xsd::optional<domain::eqBarrierOptionData> EquityDoubleBarrierOptionData;
+    xsd::optional<domain::equityForwardData> EquityForwardData;
+    xsd::optional<domain::eqBarrierOptionData> EquityEuropeanBarrierOptionData;
+    xsd::optional<domain::eqDigitalOptionData> EquityDigitalOptionData;
+    xsd::optional<domain::eqTouchOptionData> EquityDoubleTouchOptionData;
+    xsd::optional<domain::eqTouchOptionData> EquityTouchOptionData;
+    xsd::optional<domain::cliquetOptionData> EquityCliquetOptionData;
+    xsd::optional<domain::bondData> BondData;
+    xsd::optional<domain::forwardBondData> ForwardBondData;
+    xsd::optional<domain::bondFutureData> BondFutureData;
+    xsd::optional<domain::creditDefaultSwapData> CreditDefaultSwapData;
+    xsd::optional<domain::creditDefaultSwapOptionData> CreditDefaultSwapOptionData;
+    xsd::optional<domain::commodityForwardData> CommodityForwardData;
+    xsd::optional<domain::commodityOptionData> CommodityOptionData;
+    xsd::optional<domain::commodityDigitalAveragePriceOptionData> CommodityDigitalAveragePriceOptionData;
+    xsd::optional<domain::commodityDigitalOptionData> CommodityDigitalOptionData;
+    xsd::optional<domain::commoditySpreadOptionData> CommoditySpreadOptionData;
+    xsd::optional<domain::commoditySwapData> CommoditySwapData;
+    xsd::optional<domain::commoditySwaptionData> CommoditySwaptionData;
+    xsd::optional<domain::commodityAveragePriceOptionData> CommodityAveragePriceOptionData;
+    xsd::optional<domain::commodityOptionStripData> CommodityOptionStripData;
+    xsd::optional<domain::commodityPositionData> CommodityPositionData;
+    xsd::optional<domain::singleUnderlyingAsianOptionData> EquityAsianOptionData;
+    xsd::optional<domain::singleUnderlyingAsianOptionData> FxAsianOptionData;
+    xsd::optional<domain::singleUnderlyingAsianOptionData> CommodityAsianOptionData;
+    xsd::optional<domain::bondOptionData> BondOptionData;
+    xsd::optional<domain::bondRepoData> BondRepoData;
+    xsd::optional<domain::bondTRSData> BondTRSData;
+    xsd::optional<domain::cdoData> CdoData;
+    xsd::optional<domain::creditLinkedSwapData> CreditLinkedSwapData;
+    xsd::optional<domain::indexCreditDefaultSwapData> IndexCreditDefaultSwapData;
+    xsd::optional<domain::indexCreditDefaultSwapOptionData> IndexCreditDefaultSwapOptionData;
+    xsd::optional<domain::multiLegOptionData> MultiLegOptionData;
+    xsd::optional<domain::ascotData> AscotData;
+    xsd::optional<domain::convertibleBondData> ConvertibleBondData;
+    xsd::optional<domain::callableBondData> CallableBondData;
+    xsd::optional<domain::tlockData> TreasuryLockData;
+    xsd::optional<domain::rpaData> RiskParticipationAgreementData;
+    xsd::optional<domain::cbodata> CBOData;
+    xsd::optional<domain::bondBasketData> BondBasketData;
+    xsd::optional<domain::equityPositionData> EquityPositionData;
+    xsd::optional<domain::equityOptionPositionData> EquityOptionPositionData;
+    xsd::optional<domain::totalReturnSwapData> TotalReturnSwapData;
+    xsd::optional<domain::totalReturnSwapData> ContractForDifferenceData;
+    xsd::optional<domain::compositeTradeData> CompositeTradeData;
+    xsd::optional<domain::pairwiseVarianceSwapData1> PairwiseVarianceSwapData;
+    xsd::optional<domain::pairwiseVarianceSwapData2> EquityPairwiseVarianceSwapData;
+    xsd::optional<domain::pairwiseVarianceSwapData2> FxPairwiseVarianceSwapData;
+    xsd::optional<domain::eqOutperformanceOptionData> EquityOutperformanceOptionData;
+    xsd::optional<domain::flexiSwapData> FlexiSwapData;
+    xsd::optional<domain::bgSwapData> BalanceGuaranteedSwapData;
+    xsd::optional<domain::commodityRevenueOptionData> CommodityRevenueOptionData;
+    xsd::optional<domain::basketVarianceSwapData> BasketVarianceSwapData;
+    xsd::optional<domain::basketVarianceSwapData2> EquityBasketVarianceSwapData;
+    xsd::optional<domain::basketVarianceSwapData2> FxBasketVarianceSwapData;
+    xsd::optional<domain::basketVarianceSwapData2> CommodityBasketVarianceSwapData;
+    xsd::optional<domain::extendedAccumulatorData> ExtendedAccumulatorData;
+    xsd::optional<domain::varianceOptionData> VarianceOptionData;
+    xsd::optional<domain::varianceDispersionSwapData> VarianceDispersionSwapData;
+    xsd::optional<domain::kikoVarianceSwapData> KIKOVarianceSwapData;
+    xsd::optional<domain::corridorVarianceSwapData> CorridorVarianceSwapData;
+    xsd::optional<domain::indexedCorridorVarianceSwapData> IndexedCorridorVarianceSwapData;
+    xsd::optional<domain::kikoCorridorVarianceSwapData> KIKOCorridorVarianceSwapData;
+    xsd::optional<domain::corridorVarianceDispersionSwapData> CorridorVarianceDispersionSwapData;
+    xsd::optional<domain::koCorridorVarianceDispersionSwapData> KOCorridorVarianceDispersionSwapData;
+    xsd::optional<domain::pairwiseGeometricVarianceDispersionSwapData> PairwiseGeometricVarianceDispersionSwapData;
+    xsd::optional<domain::conditionalVarianceSwap01Data> ConditionalVarianceSwap01Data;
+    xsd::optional<domain::conditionalVarianceSwap02Data> ConditionalVarianceSwap02Data;
+    xsd::optional<domain::gammaSwapData> GammaSwapData;
+    xsd::optional<domain::bestEntryOptionData> BestEntryOptionData;
+    xsd::optional<domain::dualEuroBinaryOptionData> DualEuroBinaryOptionData;
+    xsd::optional<domain::dualEuroBinaryOptionDoubleKOData> DualEuroBinaryOptionDoubleKOData;
+    xsd::optional<domain::volBarrierOptionData> VolatilityBarrierOptionData;
+    xsd::optional<domain::tarfData2> FxTaRFData;
+    xsd::optional<domain::tarfData2> EquityTaRFData;
+    xsd::optional<domain::tarfData2> CommodityTaRFData;
+    xsd::optional<domain::accumulatorData> FxAccumulatorData;
+    xsd::optional<domain::accumulatorData> EquityAccumulatorData;
+    xsd::optional<domain::accumulatorData> CommodityAccumulatorData;
+    xsd::optional<domain::windowBarrierOptionData2> FxWindowBarrierOptionData;
+    xsd::optional<domain::windowBarrierOptionData2> EquityWindowBarrierOptionData;
+    xsd::optional<domain::windowBarrierOptionData2> CommodityWindowBarierOptionData;
+    xsd::optional<domain::basketOptionData> EquityBasketOptionData;
+    xsd::optional<domain::basketOptionData> FxBasketOptionData;
+    xsd::optional<domain::basketOptionData> CommodityBasketOptionData;
+    xsd::optional<domain::genericBarrierOptionData> FxGenericBarrierOptionData;
+    xsd::optional<domain::genericBarrierOptionData> EquityGenericBarrierOptionData;
+    xsd::optional<domain::genericBarrierOptionData> CommodityGenericBarrierOptionData;
+    xsd::optional<domain::rainbowOptionData> EquityRainbowOptionData;
+    xsd::optional<domain::rainbowOptionData> FxRainbowOptionData;
+    xsd::optional<domain::rainbowOptionData> CommodityRainbowOptionData;
+    xsd::optional<domain::autocallable01Data> Autocallable01Data;
+    xsd::optional<domain::doubleDigitalOptionData> DoubleDigitalOptionData;
+    xsd::optional<domain::performanceOption01Data> PerformanceOption01Data;
+    xsd::optional<domain::scriptedTradeData> ScriptedTradeData;
+    xsd::optional<domain::vanillaBasketOptionData> VanillaBasketOptionData;
+    xsd::optional<domain::asianBasketOptionData> AsianBasketOptionData;
+    xsd::optional<domain::averageStrikeBasketOptionData> AverageStrikeBasketOptionData;
+    xsd::optional<domain::lookbackCallBasketOptionData> LookbackCallBasketOptionData;
+    xsd::optional<domain::lookbackPutBasketOptionData> LookbackPutBasketOptionData;
+    xsd::optional<domain::bestOfAirbagData> BestOfAirbagData;
+    xsd::optional<domain::worstOfBasketSwapData> WorstOfBasketSwapData;
+    xsd::optional<domain::worstOfBasketSwapData2> FxWorstOfBasketSwapData;
+    xsd::optional<domain::worstOfBasketSwapData2> EquityWorstOfBasketSwapData;
+    xsd::optional<domain::worstOfBasketSwapData2> CommodityWorstOfBasketSwapData;
+    xsd::optional<domain::worstPerformanceRainbowOption01Data> WorstPerformanceRainbowOption01Data;
+    xsd::optional<domain::worstPerformanceRainbowOption02Data> WorstPerformanceRainbowOption02Data;
+    xsd::optional<domain::worstPerformanceRainbowOption03Data> WorstPerformanceRainbowOption03Data;
+    xsd::optional<domain::worstPerformanceRainbowOption04Data> WorstPerformanceRainbowOption04Data;
+    xsd::optional<domain::worstPerformanceRainbowOption05Data> WorstPerformanceRainbowOption05Data;
+    xsd::optional<domain::worstPerformanceRainbowOption06Data> WorstPerformanceRainbowOption06Data;
+    xsd::optional<domain::worstPerformanceRainbowOption07Data> WorstPerformanceRainbowOption07Data;
+    xsd::optional<domain::bestOfAssetOrCashRainbowOptionData> BestOfAssetOrCashRainbowOptionData;
+    xsd::optional<domain::worstOfAssetOrCashRainbowOptionData> WorstOfAssetOrCashRainbowOptionData;
+    xsd::optional<domain::minRainbowOptionData> MinRainbowOptionData;
+    xsd::optional<domain::maxRainbowOptionData> MaxRainbowOptionData;
+    xsd::optional<domain::windowBarrierOptionData> WindowBarrierOptionData;
+    xsd::optional<domain::accumulator01Data> Accumulator01Data;
+    xsd::optional<domain::accumulator02Data> Accumulator02Data;
+    xsd::optional<domain::bestEntryOptionData2> EquityBestEntryOptionData;
+    xsd::optional<domain::bestEntryOptionData2> FxBestEntryOptionData;
+    xsd::optional<domain::bestEntryOptionData2> CommodityBestEntryOptionData;
+    xsd::optional<domain::tarfData> TaRFData;
+    xsd::optional<domain::europeanRainbowCallSpreadOptionData> EuropeanRainbowCallSpreadOptionData;
+    xsd::optional<domain::rainbowCallSpreadBarrierOptionData> RainbowCallSpreadBarrierOptionData;
+    xsd::optional<domain::asianRainbowCallSpreadOptionData> AsianRainbowCallSpreadOptionData;
+    xsd::optional<domain::asianIrCapFloorData> AsianIrCapFloorData;
+    xsd::optional<domain::forwardVolatilityAgreementData> ForwardVolatilityAgreementData;
+    xsd::optional<domain::correlationSwapData> CorrelationSwapData;
+    xsd::optional<domain::assetLinkedCliquetOptionData> AssetLinkedCliquetOptionData;
+    xsd::optional<domain::constantMaturityVolatilitySwapData> ConstantMaturityVolatilitySwapData;
+    xsd::optional<domain::cmsCapFloorBarrierData> CMSCapFloorBarrierData;
+    xsd::optional<domain::fixedStrikeForwardStartingOptionData> FixedStrikeForwardStartingOptionData;
+    xsd::optional<domain::floatingStrikeForwardStartingOptionData> FloatingStrikeForwardStartingOptionData;
+    xsd::optional<domain::forwardStartingSwaptionData> ForwardStartingSwaptionData;
+    xsd::optional<domain::flooredAverageCPIZCIISData> FlooredAverageCPIZCIISData;
+    xsd::optional<domain::genericBarrierOptionDataRaw> GenericBarrierOptionData;
+    xsd::optional<domain::movingMaxYYIISData> MovingMaxYYIISData;
+    xsd::optional<domain::irregularYYIISData> IrregularYYIISData;
+    xsd::optional<domain::europeanOptionBarrierData> EuropeanOptionBarrierData;
+    xsd::optional<domain::ladderLockInOptionData> LadderLockInOptionData;
+    xsd::optional<domain::lapseHedgeSwapData> LapseHedgeSwapData;
+    xsd::optional<domain::knockOutSwapData> KnockOutSwapData;
+    xsd::optional<domain::LPISwapData> LPISwapData;
+    xsd::optional<domain::cashPositionData> CashPositionData;
+    xsd::optional<domain::strikeResettableOptionData> StrikeResettableOptionData;
+    xsd::optional<domain::strikeResettableOptionData2> EquityStrikeResettableOptionData;
+    xsd::optional<domain::strikeResettableOptionData2> FxStrikeResettableOptionData;
+    xsd::optional<domain::strikeResettableOptionData2> CommodityStrikeResettableOptionData;
 };
 
 struct simulation
@@ -1488,8 +2241,8 @@ std::string to_string(bool_);
 
 struct crossAssetModel_InterestRateModels_t
 {
-    xsd::optional<domain::lgm> LGM;
-    xsd::optional<domain::hw> HWModel;
+    xsd::vector<domain::lgm> LGM;
+    xsd::vector<domain::hw> HWModel;
 };
 
 struct crossAssetModel
@@ -1798,13 +2551,343 @@ struct tradeActions
     xsd::vector<domain::tradeAction> TradeAction;
 };
 
-struct parameters_Grid_t : xsd::string
+enum class settlementType
+{
+    Physical,
+    Cash,
+};
+
+std::string to_string(settlementType);
+
+struct swapData
+{
+    xsd::optional<bool> RoundNettedFloatingLegs;
+    xsd::optional<uint64_t> NettingPrecision;
+    xsd::optional<domain::settlementType> Settlement;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct callableSwapData
+{
+    xsd::optional<domain::optionData> OptionData;
+    xsd::vector<domain::legData> LegData;
+};
+
+enum class type_t
+{
+    currency,
+};
+
+std::string to_string(type_t);
+
+struct stFreeStyleLongShort : xsd::string
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct stFreeStyleIndex : xsd::string
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct stFreeStyleEventScheduleBase
+{
+    xsd::optional<domain::scheduleData> ScheduleData;
+    xsd::optional<domain::stFreeStyleEventScheduleBase_DerivedSchedule_t> DerivedSchedule;
+};
+
+struct stFreeStyleEventSchedule : domain::stFreeStyleEventScheduleBase
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct stFreeStyleNumber : xsd::base<float>
+{
+    xsd::optional<domain::type_t> type;
+};
+
+typedef xsd::string date;
+
+struct stFreeStyleEvent : domain::date
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct stFreeStyleCurrency : xsd::base<domain::currencyCode>
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct arcOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleNumber StrikeFactor;
+    domain::stFreeStyleNumber BarrierFactor;
+    domain::stFreeStyleNumber CapRate;
+    domain::stFreeStyleNumber Offset;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent SettlementDate;
+};
+
+struct swaptionData
+{
+    xsd::optional<domain::optionData> OptionData;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct varianceSwapData_LongShort_t : xsd::string
 {
 };
 
-struct parameters_Calendar_t : xsd::string
+typedef xsd::string calendar;
+
+enum class momentType
+{
+    Variance,
+    Volatility,
+};
+
+std::string to_string(momentType);
+
+struct varianceSwapData
+{
+    domain::date StartDate;
+    domain::date EndDate;
+    domain::currencyCode Currency;
+    domain::varianceSwapData_LongShort_t LongShort;
+    float Strike;
+    float Notional;
+    domain::calendar Calendar;
+    xsd::optional<domain::momentType> MomentType;
+    xsd::optional<bool> AddPastDividends;
+};
+
+struct forwardRateAgreementData_Index_t : xsd::string
 {
 };
+
+enum class longShort
+{
+    Long,
+    Short,
+};
+
+std::string to_string(longShort);
+
+struct forwardRateAgreementData
+{
+    domain::date StartDate;
+    domain::date EndDate;
+    domain::currencyCode Currency;
+    domain::forwardRateAgreementData_Index_t Index;
+    domain::longShort LongShort;
+    float Strike;
+    float Notional;
+};
+
+struct fxForwardData
+{
+    domain::date ValueDate;
+    domain::currencyCode BoughtCurrency;
+    float BoughtAmount;
+    domain::currencyCode SoldCurrency;
+    float SoldAmount;
+    xsd::optional<domain::settlementType> Settlement;
+    xsd::optional<domain::fxForwardSettlementData> SettlementData;
+};
+
+struct scheduleData
+{
+    xsd::vector<domain::scheduleData_Rules_t> Rules;
+    xsd::vector<domain::scheduleData_Dates_t> Dates;
+};
+
+struct fxAverageForwardData_FXIndex_t : xsd::string
+{
+};
+
+struct fxAverageForwardData
+{
+    domain::date PaymentDate;
+    domain::scheduleData ObservationDates;
+    domain::bool_ FixedPayer;
+    float ReferenceNotional;
+    domain::currencyCode ReferenceCurrency;
+    float SettlementNotional;
+    domain::currencyCode SettlementCurrency;
+    xsd::optional<domain::settlementType> Settlement;
+    domain::fxAverageForwardData_FXIndex_t FXIndex;
+};
+
+struct optionData_LongShort_t : xsd::string
+{
+};
+
+enum class settlementMethod
+{
+    PhysicalOTC,
+    PhysicalCleared,
+    CollateralizedCashPrice,
+    ParYieldCurve,
+};
+
+std::string to_string(settlementMethod);
+
+typedef xsd::string premiumCurrencyCode;
+
+struct optionData
+{
+    domain::optionData_LongShort_t LongShort;
+    xsd::optional<domain::optionData_OptionType_t> OptionType;
+    xsd::optional<domain::optionData_PayoffType_t> PayoffType;
+    xsd::optional<domain::optionData_PayoffType2_t> PayoffType2;
+    xsd::optional<domain::optionData_Style_t> Style;
+    xsd::optional<domain::optionData_NoticePeriod_t> NoticePeriod;
+    xsd::optional<domain::optionData_NoticeCalendar_t> NoticeCalendar;
+    xsd::optional<domain::optionData_NoticeConvention_t> NoticeConvention;
+    xsd::optional<domain::optionData_MidCouponExercise_t> MidCouponExercise;
+    xsd::optional<domain::settlementType> Settlement;
+    xsd::optional<domain::settlementMethod> SettlementMethod;
+    xsd::optional<domain::optionData_PayOffAtExpiry_t> PayOffAtExpiry;
+    xsd::optional<domain::optionData_PremiumAmount_t> PremiumAmount;
+    xsd::optional<domain::premiumCurrencyCode> PremiumCurrency;
+    xsd::optional<domain::optionData_PremiumPayDate_t> PremiumPayDate;
+    xsd::optional<domain::premiumData> Premiums;
+    xsd::optional<domain::optionData_ExercisePrices_t> ExercisePrices;
+    xsd::optional<domain::optionData_ExerciseFees_t> ExerciseFees;
+    xsd::optional<domain::optionData_ExerciseFeeSettlementPeriod_t> ExerciseFeeSettlementPeriod;
+    xsd::optional<domain::optionData_ExerciseFeeSettlementCalendar_t> ExerciseFeeSettlementCalendar;
+    xsd::optional<domain::optionData_ExerciseFeeSettlementConvention_t> ExerciseFeeSettlementConvention;
+    xsd::optional<domain::bool_> AutomaticExercise;
+    xsd::optional<domain::optionExerciseData> ExerciseData;
+    xsd::optional<domain::optionPaymentData> PaymentData;
+    xsd::optional<domain::optionData_SettlementData_t> SettlementData;
+};
+
+struct fxOptionData
+{
+    domain::optionData OptionData;
+    domain::currencyCode BoughtCurrency;
+    float BoughtAmount;
+    domain::currencyCode SoldCurrency;
+    xsd::optional<float> SoldAmount;
+    xsd::optional<float> Delta;
+    xsd::optional<domain::fxOptionData_FXIndex_t> FXIndex;
+};
+
+struct fxBarrierOptionData
+{
+    xsd::vector<domain::optionData> OptionData;
+    xsd::vector<domain::barrierData> BarrierData;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::fxBarrierOptionData_FXIndex_t> FXIndex;
+    xsd::optional<domain::fxBarrierOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
+    xsd::optional<domain::fxBarrierOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
+    domain::currencyCode BoughtCurrency;
+    float BoughtAmount;
+    domain::currencyCode SoldCurrency;
+    float SoldAmount;
+};
+
+struct fxDigitalOptionData
+{
+    xsd::vector<domain::optionData> OptionData;
+    float Strike;
+    xsd::optional<domain::currencyCode> PayoffCurrency;
+    float PayoffAmount;
+    domain::currencyCode ForeignCurrency;
+    domain::currencyCode DomesticCurrency;
+};
+
+struct fxKIKOBarrierOptionData_Barriers_t
+{
+    xsd::vector<domain::barrierData> BarrierData;
+};
+
+struct fxKIKOBarrierOptionData
+{
+    domain::optionData OptionData;
+    domain::fxKIKOBarrierOptionData_Barriers_t Barriers;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::fxKIKOBarrierOptionData_FXIndex_t> FXIndex;
+    domain::currencyCode BoughtCurrency;
+    float BoughtAmount;
+    domain::currencyCode SoldCurrency;
+    float SoldAmount;
+};
+
+struct fxDigitalBarrierOptionData
+{
+    xsd::vector<domain::optionData> OptionData;
+    xsd::vector<domain::barrierData> BarrierData;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::fxDigitalBarrierOptionData_FXIndex_t> FXIndex;
+    xsd::optional<domain::fxDigitalBarrierOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
+    xsd::optional<domain::fxDigitalBarrierOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
+    float Strike;
+    float PayoffAmount;
+    xsd::optional<domain::currencyCode> PayoffCurrency;
+    domain::currencyCode ForeignCurrency;
+    domain::currencyCode DomesticCurrency;
+};
+
+struct fxTouchOptionData
+{
+    xsd::vector<domain::optionData> OptionData;
+    xsd::vector<domain::barrierData> BarrierData;
+    domain::currencyCode ForeignCurrency;
+    domain::currencyCode DomesticCurrency;
+    domain::currencyCode PayoffCurrency;
+    float PayoffAmount;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::fxTouchOptionData_FXIndex_t> FXIndex;
+    xsd::optional<domain::fxTouchOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
+    xsd::optional<domain::fxTouchOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
+    xsd::optional<domain::fxTouchOptionData_Calendar_t> Calendar;
+};
+
+struct fxSwapData
+{
+    domain::date NearDate;
+    domain::currencyCode NearBoughtCurrency;
+    float NearBoughtAmount;
+    domain::currencyCode NearSoldCurrency;
+    float NearSoldAmount;
+    domain::date FarDate;
+    float FarBoughtAmount;
+    float FarSoldAmount;
+    xsd::optional<domain::settlementType> Settlement;
+};
+
+enum class legType
+{
+    Fixed,
+    Floating,
+    CPI,
+    YY,
+    CMS,
+    CMB,
+    DigitalCMS,
+    CMSSpread,
+    DigitalCMSSpread,
+    Cashflow,
+    Equity,
+    FormulaBased,
+    ZeroCouponFixed,
+    CommodityFixed,
+    CommodityFloating,
+    EquityMargin,
+    DurationAdjustedCMS,
+};
+
+std::string to_string(legType);
 
 enum class dayCounter
 {
@@ -1882,6 +2965,2502 @@ enum class dayCounter
 };
 
 std::string to_string(dayCounter);
+
+enum class businessDayConvention
+{
+    F,
+    Following,
+    FOLLOWING,
+    MF,
+    ModifiedFollowing,
+    Modified_Following,
+    MODIFIEDF,
+    MODFOLLOWING,
+    P,
+    Preceding,
+    PRECEDING,
+    MP,
+    ModifiedPreceding,
+    Modified_Preceding,
+    MODIFIEDP,
+    U,
+    Unadjusted,
+    INDIFF,
+    HMMF,
+    HalfMonthModifiedFollowing,
+    HalfMonthMF,
+    Half_Month_Modified_Following,
+    HALFMONTHMF,
+    NEAREST,
+    NONE,
+    NotApplicable,
+    _,
+};
+
+std::string to_string(businessDayConvention);
+
+typedef xsd::string paymentLag;
+
+struct legData_capfloor_Notionals_t
+{
+    xsd::vector<domain::legData_capfloor_Notionals_t_Notional_t> Notional;
+    xsd::vector<domain::fxreset> FXReset;
+    xsd::vector<domain::exchanges> Exchanges;
+};
+
+struct legData_capfloor
+{
+    xsd::optional<bool> Payer;
+    domain::legType LegType;
+    domain::currencyCode Currency;
+    domain::dayCounter DayCounter;
+    xsd::optional<domain::businessDayConvention> PaymentConvention;
+    xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::legData_capfloor_PaymentCalendar_t> PaymentCalendar;
+    domain::legData_capfloor_Notionals_t Notionals;
+    domain::scheduleData ScheduleData;
+    xsd::optional<domain::legData_capfloor_PaymentDates_t> PaymentDates;
+};
+
+struct capFloorData
+{
+    domain::longShort LongShort;
+    domain::legData_capfloor LegData;
+    xsd::optional<domain::capFloorData_Caps_t> Caps;
+    xsd::optional<domain::capFloorData_Floors_t> Floors;
+    xsd::optional<domain::capFloorData_PremiumAmount_t> PremiumAmount;
+    xsd::optional<domain::premiumCurrencyCode> PremiumCurrency;
+    xsd::optional<domain::capFloorData_PremiumPayDate_t> PremiumPayDate;
+    xsd::optional<domain::premiumData> Premiums;
+};
+
+struct equityFutureOptionData
+{
+    domain::optionData OptionData;
+    domain::currencyCode Currency;
+    float Strike;
+    float Quantity;
+    xsd::optional<domain::date> FutureExpiryDate;
+};
+
+typedef xsd::string extendedCurrencyCode;
+
+struct equityOptionData
+{
+    domain::optionData OptionData;
+    domain::extendedCurrencyCode Currency;
+    xsd::optional<domain::extendedCurrencyCode> StrikeCurrency;
+    float Quantity;
+};
+
+enum class barrierType
+{
+    UpAndOut,
+    UpAndIn,
+    DownAndOut,
+    DownAndIn,
+    KnockIn,
+    KnockOut,
+    CumulatedProfitCap,
+    CumulatedProfitCapPoints,
+    FixingCap,
+    FixingFloor,
+};
+
+std::string to_string(barrierType);
+
+enum class barrierCompare
+{
+    _0,
+    _1,
+    _2,
+};
+
+std::string to_string(barrierCompare);
+
+enum class barrierStyle
+{
+    American,
+    European,
+};
+
+std::string to_string(barrierStyle);
+
+struct barrierData_Levels_t
+{
+    xsd::vector<float> Level;
+};
+
+enum class barrierData_RebatePayTime_t
+{
+    atHit,
+    atExpiry,
+};
+
+std::string to_string(barrierData_RebatePayTime_t);
+
+struct barrierData
+{
+    domain::barrierType Type;
+    xsd::optional<domain::barrierCompare> StrictComparison;
+    xsd::optional<domain::barrierStyle> Style;
+    domain::barrierData_Levels_t Levels;
+    xsd::optional<float> Rebate;
+    xsd::optional<domain::currencyCode> RebateCurrency;
+    xsd::optional<domain::barrierData_RebatePayTime_t> RebatePayTime;
+    xsd::optional<domain::bool_> OverrideTriggered;
+};
+
+struct eqBarrierOptionData
+{
+    domain::optionData OptionData;
+    domain::barrierData BarrierData;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::eqBarrierOptionData_EQIndex_t> EQIndex;
+    domain::currencyCode Currency;
+    float Quantity;
+};
+
+struct equityForwardData
+{
+    domain::longShort LongShort;
+    domain::date Maturity;
+    domain::extendedCurrencyCode Currency;
+    float Strike;
+    xsd::optional<domain::extendedCurrencyCode> StrikeCurrency;
+    float Quantity;
+    xsd::optional<domain::eqForwardSettlementData> SettlementData;
+};
+
+struct eqDigitalOptionData
+{
+    domain::optionData OptionData;
+    float Strike;
+    xsd::optional<domain::currencyCode> PayoffCurrency;
+    float PayoffAmount;
+    float Quantity;
+};
+
+struct eqTouchOptionData
+{
+    domain::optionData OptionData;
+    domain::barrierData BarrierData;
+    domain::currencyCode PayoffCurrency;
+    float PayoffAmount;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::eqTouchOptionData_EQIndex_t> EQIndex;
+};
+
+enum class optionType
+{
+    Call,
+    Put,
+};
+
+std::string to_string(optionType);
+
+struct cliquetOptionData
+{
+    domain::currencyCode Currency;
+    float Notional;
+    domain::longShort LongShort;
+    domain::optionType OptionType;
+    float Moneyness;
+    xsd::optional<float> LocalCap;
+    xsd::optional<float> LocalFloor;
+    xsd::optional<float> GlobalCap;
+    xsd::optional<float> GlobalFloor;
+    domain::scheduleData ScheduleData;
+    xsd::optional<int64_t> SettlementDays;
+    xsd::optional<float> Premium;
+    xsd::optional<domain::date> PremiumPaymentDate;
+    xsd::optional<domain::currencyCode> PremiumCurrency;
+};
+
+struct bondData_SecurityId_t : xsd::string
+{
+};
+
+enum class bondPriceType
+{
+    Clean,
+    Dirty,
+};
+
+std::string to_string(bondPriceType);
+
+struct bondData
+{
+    xsd::optional<domain::bondData_IssuerId_t> IssuerId;
+    xsd::optional<domain::bondData_CreditCurveId_t> CreditCurveId;
+    xsd::optional<domain::bondData_CreditGroup_t> CreditGroup;
+    domain::bondData_SecurityId_t SecurityId;
+    xsd::optional<domain::bondData_ReferenceCurveId_t> ReferenceCurveId;
+    xsd::optional<domain::bondData_IncomeCurveId_t> IncomeCurveId;
+    xsd::optional<domain::bondData_VolatilityCurveId_t> VolatilityCurveId;
+    xsd::optional<domain::bondData_SettlementDays_t> SettlementDays;
+    xsd::optional<domain::bondData_Calendar_t> Calendar;
+    xsd::optional<domain::bondData_IssueDate_t> IssueDate;
+    xsd::optional<domain::bondData_PriceQuoteMethod_t> PriceQuoteMethod;
+    xsd::optional<domain::bondData_PriceQuoteBaseValue_t> PriceQuoteBaseValue;
+    xsd::optional<domain::bondData_BondNotional_t> BondNotional;
+    xsd::optional<domain::bondPriceType> PriceType;
+    xsd::optional<domain::bondData_Payer_t> Payer;
+    xsd::vector<domain::legData> LegData;
+    xsd::optional<domain::bool_> CreditRisk;
+    xsd::optional<domain::bondData_SubType_t> SubType;
+};
+
+struct settlementData_ForwardMaturityDate_t : xsd::string
+{
+};
+
+struct settlementData
+{
+    domain::settlementData_ForwardMaturityDate_t ForwardMaturityDate;
+    xsd::optional<domain::settlementData_ForwardSettlementDate_t> ForwardSettlementDate;
+    xsd::optional<domain::settlementData_Settlement_t> Settlement;
+    xsd::optional<float> Amount;
+    xsd::optional<float> LockRate;
+    xsd::optional<float> dv01;
+    xsd::optional<domain::settlementData_LockRateDayCounter_t> LockRateDayCounter;
+    xsd::optional<domain::settlementData_SettlementDirty_t> SettlementDirty;
+};
+
+struct forwardBondData_LongInForward_t : xsd::string
+{
+};
+
+struct forwardBondData
+{
+    domain::bondData BondData;
+    domain::settlementData SettlementData;
+    xsd::optional<domain::forwardBondData_PremiumData_t> PremiumData;
+    domain::forwardBondData_LongInForward_t LongInForward;
+    xsd::optional<bool> KnockOut;
+};
+
+struct bondFutureData_ContractName_t : xsd::string
+{
+};
+
+struct bondFutureData_ContractNotional_t : xsd::string
+{
+};
+
+struct bondFutureData_LongShort_t : xsd::string
+{
+};
+
+struct bondFutureData
+{
+    domain::bondFutureData_ContractName_t ContractName;
+    domain::bondFutureData_ContractNotional_t ContractNotional;
+    domain::bondFutureData_LongShort_t LongShort;
+    xsd::optional<domain::currencyCode> Currency;
+    xsd::optional<domain::bondFutureData_ContractMonth_t> ContractMonth;
+    xsd::optional<domain::bondFutureData_DeliverableGrade_t> DeliverableGrade;
+    xsd::optional<domain::bondFutureData_FairPrice_t> FairPrice;
+    xsd::optional<domain::bondFutureData_Settlement_t> Settlement;
+    xsd::optional<domain::bondFutureData_SettlementDirty_t> SettlementDirty;
+    xsd::optional<domain::bondFutureData_RootDate_t> RootDate;
+    xsd::optional<domain::bondFutureData_ExpiryBasis_t> ExpiryBasis;
+    xsd::optional<domain::bondFutureData_SettlementBasis_t> SettlementBasis;
+    xsd::optional<domain::bondFutureData_ExpiryLag_t> ExpiryLag;
+    xsd::optional<domain::bondFutureData_SettlementLag_t> SettlementLag;
+    xsd::optional<domain::bondFutureData_LastTradingDate_t> LastTradingDate;
+    xsd::optional<domain::bondFutureData_LastDeliveryDate_t> LastDeliveryDate;
+    xsd::optional<domain::deliveryBasket> DeliveryBasket;
+};
+
+struct legData
+{
+    bool Payer;
+    domain::legType LegType;
+    xsd::optional<domain::extendedCurrencyCode> Currency;
+    xsd::optional<domain::businessDayConvention> PaymentConvention;
+    xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<int64_t> NotionalPaymentLag;
+    xsd::optional<domain::legData_PaymentCalendar_t> PaymentCalendar;
+    xsd::optional<domain::dayCounter> DayCounter;
+    xsd::optional<domain::legData_Amortizations_t> Amortizations;
+    xsd::optional<domain::legData_Notionals_t> Notionals;
+    xsd::optional<domain::scheduleData> ScheduleData;
+    xsd::optional<domain::legData_PaymentDates_t> PaymentDates;
+    xsd::optional<domain::legData_Indexings_t> Indexings;
+    xsd::optional<domain::dayCounter> LastPeriodDayCounter;
+    xsd::optional<bool> StrictNotionalDates;
+    xsd::optional<domain::scheduleData> PaymentSchedule;
+    xsd::optional<domain::legData_SettlementData_t> SettlementData;
+};
+
+struct creditDefaultSwapData
+{
+    xsd::optional<domain::creditDefaultSwapData_IssuerId_t> IssuerId;
+    xsd::optional<domain::creditDefaultSwapData_ReferenceObligation_t> ReferenceObligation;
+    xsd::optional<domain::bool_> SettlesAccrual;
+    xsd::optional<domain::bool_> RebatesAccrual;
+    xsd::optional<domain::bool_> PaysAtDefaultTime;
+    xsd::optional<domain::creditDefaultSwapData_ProtectionPaymentTime_t> ProtectionPaymentTime;
+    xsd::optional<domain::date> ProtectionStart;
+    xsd::optional<domain::date> UpfrontDate;
+    xsd::optional<float> UpfrontFee;
+    xsd::optional<float> FixedRecoveryRate;
+    domain::legData LegData;
+    xsd::optional<domain::date> TradeDate;
+    xsd::optional<uint64_t> CashSettlementDays;
+};
+
+enum class creditDefaultSwapOptionData_StrikeType_t
+{
+    Spread,
+};
+
+std::string to_string(creditDefaultSwapOptionData_StrikeType_t);
+
+struct creditDefaultSwapOptionData
+{
+    domain::optionData OptionData;
+    domain::creditDefaultSwapData CreditDefaultSwapData;
+    xsd::optional<float> Strike;
+    xsd::optional<domain::creditDefaultSwapOptionData_StrikeType_t> StrikeType;
+    xsd::optional<domain::bool_> KnockOut;
+    xsd::optional<domain::creditDefaultSwapOptionData_Term_t> Term;
+    xsd::optional<domain::auctionSettlementInformation> AuctionSettlementInformation;
+};
+
+struct commodityForwardData_Name_t : xsd::string
+{
+};
+
+struct commodityForwardData
+{
+    domain::longShort Position;
+    domain::date Maturity;
+    domain::commodityForwardData_Name_t Name;
+    domain::currencyCode Currency;
+    float Strike;
+    float Quantity;
+    xsd::optional<domain::bool_> IsFuturePrice;
+    xsd::optional<domain::date> FutureExpiryDate;
+    xsd::optional<domain::commodityForwardData_FutureExpiryOffset_t> FutureExpiryOffset;
+    xsd::optional<domain::commodityForwardData_FutureExpiryOffsetCalendar_t> FutureExpiryOffsetCalendar;
+    xsd::optional<domain::bool_> PhysicallySettled;
+    xsd::optional<domain::date> PaymentDate;
+    xsd::optional<domain::commForwardSettlementData> SettlementData;
+};
+
+struct commodityOptionData_Name_t : xsd::string
+{
+};
+
+struct commodityOptionData
+{
+    domain::optionData OptionData;
+    domain::commodityOptionData_Name_t Name;
+    domain::currencyCode Currency;
+    float Strike;
+    float Quantity;
+    xsd::optional<domain::bool_> IsFuturePrice;
+    xsd::optional<domain::date> FutureExpiryDate;
+};
+
+struct commodityDigitalAveragePriceOptionData_Name_t : xsd::string
+{
+};
+
+enum class priceType
+{
+    Spot,
+    FutureSettlement,
+};
+
+std::string to_string(priceType);
+
+typedef double positiveDecimal;
+
+enum class commodityQuantityFrequencyType
+{
+    PerCalculationPeriod,
+    PerCalendarDay,
+    PerPricingDay,
+    PerHour,
+    PerHourAndCalendarDay,
+};
+
+std::string to_string(commodityQuantityFrequencyType);
+
+enum class commodityPayRelativeToType
+{
+    CalculationPeriodStartDate,
+    CalculationPeriodEndDate,
+    FutureExpiryDate,
+    TerminationDate,
+};
+
+std::string to_string(commodityPayRelativeToType);
+
+struct commodityDigitalAveragePriceOptionData
+{
+    domain::optionData OptionData;
+    xsd::optional<domain::barrierData> BarrierData;
+    domain::commodityDigitalAveragePriceOptionData_Name_t Name;
+    domain::currencyCode Currency;
+    float DigitalCashPayoff;
+    float Strike;
+    domain::priceType PriceType;
+    domain::date StartDate;
+    domain::date EndDate;
+    domain::calendar PaymentCalendar;
+    domain::paymentLag PaymentLag;
+    domain::businessDayConvention PaymentConvention;
+    domain::calendar PricingCalendar;
+    xsd::optional<domain::date> PaymentDate;
+    xsd::optional<domain::positiveDecimal> Gearing;
+    xsd::optional<float> Spread;
+    xsd::optional<domain::commodityQuantityFrequencyType> CommodityQuantityFrequency;
+    xsd::optional<domain::commodityPayRelativeToType> CommodityPayRelativeTo;
+    xsd::optional<int64_t> FutureMonthOffset;
+    xsd::optional<uint64_t> DeliveryRollDays;
+    xsd::optional<bool> IncludePeriodEnd;
+    xsd::optional<domain::commodityDigitalAveragePriceOptionData_FXIndex_t> FXIndex;
+};
+
+struct commodityDigitalOptionData_Name_t : xsd::string
+{
+};
+
+struct commodityDigitalOptionData
+{
+    domain::optionData OptionData;
+    domain::commodityDigitalOptionData_Name_t Name;
+    domain::currencyCode Currency;
+    float Strike;
+    float Payoff;
+    xsd::optional<domain::bool_> IsFuturePrice;
+    xsd::optional<domain::date> FutureExpiryDate;
+};
+
+struct commoditySpreadOptionData
+{
+    xsd::vector<domain::legData> LegData;
+    domain::optionData OptionData;
+    double SpreadStrike;
+    xsd::optional<domain::commoditySpreadOptionStripPaymentData> OptionStripPaymentDates;
+};
+
+struct commoditySwapData
+{
+    xsd::optional<bool> RoundNettedFloatingLegs;
+    xsd::optional<uint64_t> NettingPrecision;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct commoditySwaptionData
+{
+    domain::optionData OptionData;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct commodityAveragePriceOptionData_Name_t : xsd::string
+{
+};
+
+struct commodityAveragePriceOptionData
+{
+    domain::optionData OptionData;
+    xsd::optional<domain::barrierData> BarrierData;
+    domain::commodityAveragePriceOptionData_Name_t Name;
+    domain::currencyCode Currency;
+    float Quantity;
+    float Strike;
+    domain::priceType PriceType;
+    domain::date StartDate;
+    domain::date EndDate;
+    domain::calendar PaymentCalendar;
+    domain::paymentLag PaymentLag;
+    domain::businessDayConvention PaymentConvention;
+    domain::calendar PricingCalendar;
+    xsd::optional<domain::date> PaymentDate;
+    xsd::optional<domain::positiveDecimal> Gearing;
+    xsd::optional<float> Spread;
+    xsd::optional<domain::commodityQuantityFrequencyType> CommodityQuantityFrequency;
+    xsd::optional<domain::commodityPayRelativeToType> CommodityPayRelativeTo;
+    xsd::optional<int64_t> FutureMonthOffset;
+    xsd::optional<uint64_t> DeliveryRollDays;
+    xsd::optional<bool> IncludePeriodEnd;
+    xsd::optional<domain::commodityAveragePriceOptionData_FXIndex_t> FXIndex;
+};
+
+struct commodityOptionStripData
+{
+    domain::legData LegData;
+    xsd::optional<domain::callsPutsType> Calls;
+    xsd::optional<domain::callsPutsType> Puts;
+    xsd::optional<domain::commodityOptionStripData_PremiumAmount_t> PremiumAmount;
+    xsd::optional<domain::premiumCurrencyCode> PremiumCurrency;
+    xsd::optional<domain::commodityOptionStripData_PremiumPayDate_t> PremiumPayDate;
+    xsd::optional<domain::premiumData> Premiums;
+    xsd::optional<domain::commodityOptionStripData_Style_t> Style;
+    xsd::optional<domain::settlementType> Settlement;
+    xsd::optional<bool> IsDigital;
+    xsd::optional<double> PayoffPerUnit;
+};
+
+struct commodityPositionData
+{
+    float Quantity;
+    xsd::vector<domain::underlying> Underlying;
+};
+
+struct singleUnderlyingAsianOptionData
+{
+    domain::currencyCode Currency;
+    float Quantity;
+    xsd::optional<domain::underlying> Underlying;
+    domain::optionData OptionData;
+    xsd::optional<domain::singleUnderlyingAsianOptionData_Settlement_t> Settlement;
+    xsd::optional<domain::scheduleData> ObservationDates;
+};
+
+struct bondOptionData
+{
+    domain::optionData OptionData;
+    xsd::optional<domain::bondOptionData_Redemption_t> Redemption;
+    xsd::optional<domain::bondOptionData_PriceType_t> PriceType;
+    xsd::optional<domain::bool_> KnocksOut;
+    domain::bondData BondData;
+};
+
+struct bondRepoData_RepoData_t
+{
+    domain::legData LegData;
+};
+
+struct bondRepoData
+{
+    domain::bondData BondData;
+    domain::bondRepoData_RepoData_t RepoData;
+};
+
+struct totalReturnData_Payer_t : xsd::string
+{
+};
+
+struct totalReturnData_PriceType_t : xsd::string
+{
+};
+
+enum class trsFxConversion
+{
+    Start,
+    End,
+};
+
+std::string to_string(trsFxConversion);
+
+struct totalReturnData
+{
+    domain::totalReturnData_Payer_t Payer;
+    xsd::optional<float> InitialPrice;
+    domain::totalReturnData_PriceType_t PriceType;
+    xsd::optional<domain::totalReturnData_ObservationLag_t> ObservationLag;
+    xsd::optional<domain::businessDayConvention> ObservationConvention;
+    xsd::optional<domain::calendar> ObservationCalendar;
+    xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::businessDayConvention> PaymentConvention;
+    xsd::optional<domain::calendar> PaymentCalendar;
+    xsd::optional<domain::totalReturnData_PaymentDates_t> PaymentDates;
+    xsd::optional<domain::trsFxConversion> FXConversion;
+    xsd::optional<domain::fxTermsData> FXTerms;
+    domain::scheduleData ScheduleData;
+    xsd::optional<bool> PayBondCashFlowsImmediately;
+};
+
+struct fundingData
+{
+    domain::legData LegData;
+};
+
+struct bondTRSData
+{
+    domain::bondData BondData;
+    domain::totalReturnData TotalReturnData;
+    domain::fundingData FundingData;
+};
+
+struct cdoData_Qualifier_t : xsd::string
+{
+};
+
+typedef xsd::string emptyFloat;
+
+struct cdoData
+{
+    domain::cdoData_Qualifier_t Qualifier;
+    domain::date ProtectionStart;
+    xsd::optional<domain::date> UpfrontDate;
+    xsd::optional<domain::emptyFloat> UpfrontFee;
+    xsd::optional<domain::bool_> SettlesAccrual;
+    xsd::optional<domain::bool_> RebatesAccrual;
+    xsd::optional<domain::bool_> PaysAtDefaultTime;
+    xsd::optional<domain::cdoData_ProtectionPaymentTime_t> ProtectionPaymentTime;
+    xsd::optional<float> FixedRecoveryRate;
+    float AttachmentPoint;
+    float DetachmentPoint;
+    domain::legData LegData;
+    xsd::optional<domain::basketData> BasketData;
+};
+
+struct creditLinkedSwapData_CreditCurveId_t : xsd::string
+{
+};
+
+struct creditLinkedSwapData
+{
+    domain::creditLinkedSwapData_CreditCurveId_t CreditCurveId;
+    xsd::optional<domain::bool_> SettlesAccrual;
+    xsd::optional<float> FixedRecoveryRate;
+    xsd::optional<domain::creditLinkedSwapData_DefaultPaymentTime_t> DefaultPaymentTime;
+    xsd::optional<domain::creditLinkedSwapData_IndependentPayments_t> IndependentPayments;
+    xsd::optional<domain::creditLinkedSwapData_ContingentPayments_t> ContingentPayments;
+    xsd::optional<domain::creditLinkedSwapData_DefaultPayments_t> DefaultPayments;
+    xsd::optional<domain::creditLinkedSwapData_RecoveryPayments_t> RecoveryPayments;
+};
+
+struct indexCreditDefaultSwapData_CreditCurveId_t : xsd::string
+{
+};
+
+struct indexCreditDefaultSwapData
+{
+    xsd::optional<domain::indexCreditDefaultSwapData_IssuerId_t> IssuerId;
+    domain::indexCreditDefaultSwapData_CreditCurveId_t CreditCurveId;
+    xsd::optional<domain::bool_> SettlesAccrual;
+    xsd::optional<domain::bool_> RebatesAccrual;
+    xsd::optional<domain::bool_> PaysAtDefaultTime;
+    xsd::optional<domain::indexCreditDefaultSwapData_ProtectionPaymentTime_t> ProtectionPaymentTime;
+    xsd::optional<domain::date> ProtectionStart;
+    xsd::optional<domain::date> UpfrontDate;
+    xsd::optional<float> UpfrontFee;
+    domain::legData LegData;
+    xsd::optional<domain::date> TradeDate;
+    xsd::optional<uint64_t> CashSettlementDays;
+    xsd::optional<domain::basketData> BasketData;
+};
+
+enum class cdsOptionstrikeType
+{
+    Spread,
+    Price,
+};
+
+std::string to_string(cdsOptionstrikeType);
+
+struct indexCreditDefaultSwapOptionData
+{
+    xsd::optional<float> Strike;
+    xsd::optional<domain::bool_> KnockOut;
+    xsd::optional<domain::indexCreditDefaultSwapOptionData_IndexTerm_t> IndexTerm;
+    xsd::optional<domain::cdsOptionstrikeType> StrikeType;
+    xsd::optional<domain::date> TradeDate;
+    xsd::optional<domain::date> FrontEndProtectionStartDate;
+    domain::optionData OptionData;
+    domain::indexCreditDefaultSwapData IndexCreditDefaultSwapData;
+};
+
+struct multiLegOptionData
+{
+    xsd::vector<domain::optionData> OptionData;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct convertibleBondData
+{
+    domain::bondData BondData;
+    xsd::optional<domain::cbCallData> CallData;
+    xsd::optional<domain::cbCallData> PutData;
+    xsd::optional<domain::cbConversionData> ConversionData;
+    xsd::optional<domain::cbDividendProtectionData> DividendProtectionData;
+    xsd::optional<domain::bool_> Detachable;
+};
+
+struct ascotData
+{
+    domain::convertibleBondData ConvertibleBondData;
+    domain::optionData OptionData;
+    domain::fundingData ReferenceSwapData;
+};
+
+struct callableBondData
+{
+    domain::bondData BondData;
+    xsd::optional<domain::callableBondCallData> CallData;
+    xsd::optional<domain::callableBondCallData> PutData;
+};
+
+struct tlockData
+{
+    domain::bool_ Payer;
+    domain::bondData BondData;
+    float ReferenceRate;
+    xsd::optional<domain::dayCounter> DayCounter;
+    domain::date TerminationDate;
+    xsd::optional<int64_t> PaymentGap;
+    domain::calendar PaymentCalendar;
+};
+
+struct rpaData_CreditCurveId_t : xsd::string
+{
+};
+
+struct rpaData_ProtectionFee_t
+{
+    xsd::vector<domain::legData> LegData;
+};
+
+struct rpaData_Underlying_t
+{
+    xsd::optional<domain::optionData> OptionData;
+    xsd::optional<bool> NakedOption;
+    xsd::vector<domain::legData> LegData;
+    xsd::optional<domain::tlockData> TreasuryLockData;
+};
+
+struct rpaData
+{
+    float ParticipationRate;
+    domain::date ProtectionStart;
+    domain::date ProtectionEnd;
+    domain::rpaData_CreditCurveId_t CreditCurveId;
+    xsd::optional<domain::rpaData_IssuerId_t> IssuerId;
+    xsd::optional<bool> SettlesAccrual;
+    xsd::optional<float> FixedRecoveryRate;
+    domain::rpaData_ProtectionFee_t ProtectionFee;
+    domain::rpaData_Underlying_t Underlying;
+};
+
+struct cboInvestment_TrancheName_t : xsd::string
+{
+};
+
+struct cboInvestment_StructureId_t : xsd::string
+{
+};
+
+struct cboInvestment
+{
+    domain::cboInvestment_TrancheName_t TrancheName;
+    float Notional;
+    domain::cboInvestment_StructureId_t StructureId;
+};
+
+struct cbodata
+{
+    domain::cboInvestment CBOInvestment;
+    xsd::optional<domain::cboStructure> CBOStructure;
+};
+
+struct bondBasketData
+{
+    xsd::optional<float> Quantity;
+    xsd::optional<domain::bondBasketData_Identifier_t> Identifier;
+    xsd::vector<domain::underlying> Underlying;
+};
+
+struct equityPositionData
+{
+    float Quantity;
+    xsd::vector<domain::underlying> Underlying;
+};
+
+struct equityOptionPositionData
+{
+    float Quantity;
+    xsd::vector<domain::equityOptionUnderlyingData> Underlying;
+};
+
+struct trsUnderlyingData
+{
+    xsd::vector<domain::trsUnderlyingData_Derivative_t> Derivative;
+    xsd::vector<domain::trsUnderlyingData_Trade_t> Trade;
+    xsd::vector<domain::trsUnderlyingData_PortfolioIndexTradeData_t> PortfolioIndexTradeData;
+};
+
+struct trsReturnData
+{
+    bool Payer;
+    domain::currencyCode Currency;
+    domain::scheduleData ScheduleData;
+    xsd::optional<domain::trsReturnData_ObservationLag_t> ObservationLag;
+    xsd::optional<domain::businessDayConvention> ObservationConvention;
+    xsd::optional<domain::calendar> ObservationCalendar;
+    xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::businessDayConvention> PaymentConvention;
+    xsd::optional<domain::calendar> PaymentCalendar;
+    xsd::optional<domain::trsReturnData_PaymentDates_t> PaymentDates;
+    xsd::optional<float> InitialPrice;
+    xsd::optional<domain::extendedCurrencyCode> InitialPriceCurrency;
+    xsd::optional<domain::fxTermsData> FXTerms;
+    xsd::optional<bool> PayUnderlyingCashFlowsImmediately;
+};
+
+struct totalReturnSwapData
+{
+    domain::trsUnderlyingData UnderlyingData;
+    domain::trsReturnData ReturnData;
+    xsd::optional<domain::trsFundingData> FundingData;
+    xsd::optional<domain::trsAdditionalCashflowData> AdditionalCashflowData;
+};
+
+enum class notionalCalculation
+{
+    _,
+    Sum,
+    Mean,
+    Average,
+    First,
+    Last,
+    Min,
+    Max,
+    Override,
+};
+
+std::string to_string(notionalCalculation);
+
+struct compositeTradeData
+{
+    domain::currencyCode Currency;
+    xsd::optional<domain::notionalCalculation> NotionalCalculation;
+    xsd::optional<float> NotionalOverride;
+    xsd::optional<bool> PortfolioBasket;
+    xsd::optional<domain::compositeTradeData_BasketName_t> BasketName;
+    xsd::optional<double> IndexQuantity;
+    xsd::optional<domain::compositeTradeComponents> Components;
+};
+
+struct stFreeStyleIndexVectorBase
+{
+    xsd::vector<domain::stFreeStyleIndexVectorBase_Value_t> Value;
+};
+
+struct stFreeStyleIndexVector : domain::stFreeStyleIndexVectorBase
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct stFreeStyleNumberVectorBase
+{
+    xsd::vector<float> Value;
+};
+
+struct stFreeStyleNumberVector : domain::stFreeStyleNumberVectorBase
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct pairwiseVarianceSwapData1
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector UnderlyingStrikes;
+    domain::stFreeStyleNumberVector UnderlyingNotionals;
+    domain::stFreeStyleNumber BasketNotional;
+    domain::stFreeStyleNumber BasketStrike;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    xsd::optional<domain::stFreeStyleEventSchedule> LaggedValuationSchedule;
+    xsd::optional<domain::stFreeStyleNumber> AccrualLag;
+    xsd::optional<domain::stFreeStyleNumber> PayoffLimit;
+    xsd::optional<domain::stFreeStyleNumber> Cap;
+    xsd::optional<domain::stFreeStyleNumber> Floor;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct pairwiseVarianceSwapData2
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector UnderlyingStrikes;
+    domain::stFreeStyleNumberVector UnderlyingNotionals;
+    domain::stFreeStyleNumber BasketNotional;
+    domain::stFreeStyleNumber BasketStrike;
+    domain::scheduleData ValuationSchedule;
+    xsd::optional<domain::scheduleData> LaggedValuationSchedule;
+    xsd::optional<domain::stFreeStyleNumber> AccrualLag;
+    xsd::optional<domain::stFreeStyleNumber> PayoffLimit;
+    xsd::optional<domain::stFreeStyleNumber> Cap;
+    xsd::optional<domain::stFreeStyleNumber> Floor;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct underlying_Type_t : xsd::string
+{
+};
+
+struct underlying_Name_t : xsd::string
+{
+};
+
+struct underlying
+{
+    domain::underlying_Type_t Type;
+    domain::underlying_Name_t Name;
+    xsd::optional<domain::underlying_IdentifierType_t> IdentifierType;
+    xsd::optional<domain::currencyCode> Currency;
+    xsd::optional<domain::underlying_Exchange_t> Exchange;
+    xsd::optional<float> Weight;
+    xsd::optional<domain::underlying_PriceType_t> PriceType;
+    xsd::optional<uint64_t> FutureMonthOffset;
+    xsd::optional<uint64_t> DeliveryRollDays;
+    xsd::optional<domain::underlying_DeliveryRollCalendar_t> DeliveryRollCalendar;
+    xsd::optional<domain::underlying_FutureExpiryDate_t> FutureExpiryDate;
+    xsd::optional<domain::underlying_FutureContractMonth_t> FutureContractMonth;
+    xsd::optional<domain::underlying_Interpolation_t> Interpolation;
+    xsd::optional<float> BidAskAdjustment;
+};
+
+struct eqOutperformanceOptionData
+{
+    domain::optionData OptionData;
+    domain::currencyCode Currency;
+    float Notional;
+    domain::underlying Underlying1;
+    domain::underlying Underlying2;
+    float InitialPrice1;
+    float InitialPrice2;
+    float StrikeReturn;
+    xsd::optional<float> KnockInPrice;
+    xsd::optional<float> KnockOutPrice;
+    xsd::optional<domain::currencyCode> InitialPriceCurrency1;
+    xsd::optional<domain::fxTermsData> InitialPriceFXTerms1;
+    xsd::optional<domain::currencyCode> InitialPriceCurrency2;
+    xsd::optional<domain::fxTermsData> InitialPriceFXTerms2;
+};
+
+struct flexiSwapData
+{
+    xsd::optional<domain::flexiSwapData_LowerNotionalBounds_t> LowerNotionalBounds;
+    xsd::optional<domain::flexiSwapData_Prepayment_t> Prepayment;
+    domain::longShort OptionLongShort;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct bgSwapData_ReferenceSecurity_t : xsd::string
+{
+};
+
+struct tranches
+{
+    xsd::vector<domain::tranche> Tranche;
+    domain::scheduleData ScheduleData;
+};
+
+struct bgSwapData
+{
+    domain::bgSwapData_ReferenceSecurity_t ReferenceSecurity;
+    domain::tranches Tranches;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct stFreeStyleOptionType : xsd::string
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct commodityRevenueOptionData
+{
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleEventSchedule ValuationDates;
+    domain::stFreeStyleEventSchedule SettlementSchedule;
+    domain::stFreeStyleNumber TrueUp;
+    domain::stFreeStyleEventSchedule MonthlySchedule;
+    domain::stFreeStyleNumberVector MonthlyBaseloadCapacity;
+    domain::stFreeStyleNumberVector MonthlyDuctFiredCapacity;
+    domain::stFreeStyleNumberVector MonthlyBaseloadHeatRate;
+    domain::stFreeStyleNumberVector MonthlyDuctFiredHeatRate;
+    domain::stFreeStyleNumberVector VOM;
+    domain::stFreeStyleNumber HoursPerDay;
+    domain::stFreeStyleIndex GasIndex;
+    domain::stFreeStyleIndex EnergyIndex;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct stFreeStyleBool : xsd::base<bool>
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct basketVarianceSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct underlyings
+{
+    xsd::vector<domain::underlying> Underlying;
+};
+
+struct basketVarianceSwapData2
+{
+    domain::longShort LongShort;
+    float Strike;
+    float Notional;
+    domain::underlyings Underlyings;
+    domain::scheduleData ValuationSchedule;
+    bool SquaredPayoff;
+    xsd::optional<float> Cap;
+    xsd::optional<float> Floor;
+    domain::date SettlementDate;
+    domain::currencyCode Currency;
+};
+
+struct extendedAccumulatorData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber FixingAmount;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber ExtensionTrigger;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleEventSchedule ObservationSettlementDates;
+    domain::stFreeStyleEventSchedule ConditionalObservationDates;
+    domain::stFreeStyleEventSchedule ConditionalSettlementDates;
+    domain::stFreeStyleEvent ExtensionDecisionDate;
+};
+
+struct varianceOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleNumber PremiumAmount;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber VarianceReference;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct varianceDispersionSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings1;
+    domain::stFreeStyleNumberVector Weights1;
+    domain::stFreeStyleNumberVector Strikes1;
+    domain::stFreeStyleNumberVector Spreads1;
+    domain::stFreeStyleNumberVector Notionals1;
+    domain::stFreeStyleNumberVector Caps1;
+    domain::stFreeStyleNumberVector Floors1;
+    domain::stFreeStyleIndexVector Underlyings2;
+    domain::stFreeStyleNumberVector Weights2;
+    domain::stFreeStyleNumberVector Strikes2;
+    domain::stFreeStyleNumberVector Spreads2;
+    domain::stFreeStyleNumberVector Notionals2;
+    domain::stFreeStyleNumberVector Caps2;
+    domain::stFreeStyleNumberVector Floors2;
+    domain::stFreeStyleBool DividendAdjustment;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct stFreeStyleBarrierType : xsd::string
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct kikoVarianceSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct corridorVarianceSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleNumber UpperBarrierLevel;
+    domain::stFreeStyleNumber LowerBarrierLevel;
+    domain::stFreeStyleBool CountBothObservations;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct indexedCorridorVarianceSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleIndex CorridorIndex;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleNumber UpperBarrierLevel;
+    domain::stFreeStyleNumber LowerBarrierLevel;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct kikoCorridorVarianceSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleNumber CorridorUpperBarrierLevel;
+    domain::stFreeStyleNumber CorridorLowerBarrierLevel;
+    domain::stFreeStyleBarrierType KIKOBarrierType;
+    domain::stFreeStyleNumber KIKOBarrierLevel;
+    domain::stFreeStyleBool CountBothObservations;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleEventSchedule SettlementSchedule;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct corridorVarianceDispersionSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleIndexVector Underlyings1;
+    domain::stFreeStyleNumberVector Strikes1;
+    domain::stFreeStyleNumberVector Spreads1;
+    domain::stFreeStyleNumberVector Notionals1;
+    domain::stFreeStyleNumberVector Caps1;
+    domain::stFreeStyleNumberVector Floors1;
+    domain::stFreeStyleIndexVector Underlyings2;
+    domain::stFreeStyleNumberVector Strikes2;
+    domain::stFreeStyleNumberVector Spreads2;
+    domain::stFreeStyleNumberVector Notionals2;
+    domain::stFreeStyleNumberVector Caps2;
+    domain::stFreeStyleNumberVector Floors2;
+    domain::stFreeStyleNumberVector UpperBarrierLevels;
+    domain::stFreeStyleNumberVector LowerBarrierLevels;
+    domain::stFreeStyleBool CountBothObservations;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleBool DividendAdjustment;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct koCorridorVarianceDispersionSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleIndexVector Underlyings1;
+    domain::stFreeStyleNumberVector Strikes1;
+    domain::stFreeStyleNumberVector Spreads1;
+    domain::stFreeStyleNumberVector Notionals1;
+    domain::stFreeStyleNumberVector Caps1;
+    domain::stFreeStyleNumberVector Floors1;
+    domain::stFreeStyleIndexVector Underlyings2;
+    domain::stFreeStyleNumberVector Strikes2;
+    domain::stFreeStyleNumberVector Spreads2;
+    domain::stFreeStyleNumberVector Notionals2;
+    domain::stFreeStyleNumberVector Caps2;
+    domain::stFreeStyleNumberVector Floors2;
+    domain::stFreeStyleNumberVector CorridorUpperBarrierLevels;
+    domain::stFreeStyleNumberVector CorridorLowerBarrierLevels;
+    domain::stFreeStyleNumberVector KOUpperBarrierLevels;
+    domain::stFreeStyleNumberVector KOLowerBarrierLevels;
+    domain::stFreeStyleBool CountBothObservations;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleBool DividendAdjustment;
+    domain::stFreeStyleEventSchedule KnockOutSchedule;
+    domain::stFreeStyleEvent VarianceAccrualStartDate;
+    domain::stFreeStyleEventSchedule SettlementSchedule;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct pairwiseGeometricVarianceDispersionSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber PairCount;
+    domain::stFreeStyleNumber BasketCount;
+    domain::stFreeStyleNumberVector Notionals;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector StrikesVS;
+    domain::stFreeStyleNumberVector StrikesBVS;
+    domain::stFreeStyleNumberVector BasketWeights;
+    domain::stFreeStyleNumberVector VarianceWeights;
+    domain::stFreeStyleNumber Lag;
+    domain::stFreeStyleNumber CapAmountMultiplier;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleBool DividendAdjustment;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct conditionalVarianceSwap01Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleBool CountBothObservations;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct conditionalVarianceSwap02Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber VarianceReference;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleBool SquaredPayoff;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleBool CountBothObservations;
+    domain::stFreeStyleBool AccrualAdjustment;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct gammaSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    xsd::optional<domain::stFreeStyleEventSchedule> SettlementSchedule;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct bestEntryOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Multiplier;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber TriggerLevel;
+    domain::stFreeStyleNumber ResetMinimum;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleEvent ExpiryDate;
+    domain::stFreeStyleEvent StrikeDate;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule StrikeObservationDates;
+    domain::stFreeStyleCurrency Currency;
+};
+
+struct dualEuroBinaryOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule VolSchedule;
+    domain::stFreeStyleNumber VolBarrierLevel;
+    domain::stFreeStyleBarrierType VolBarrierType;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleEvent BarrierDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleNumber SettlementAmount;
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct dualEuroBinaryOptionDoubleKOData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleNumber VolBarrierLevel;
+    domain::stFreeStyleEvent VolBarrierDate;
+    domain::stFreeStyleNumber SpotBarrierLevel;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleNumber SettlementAmount;
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct volBarrierOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber CallNotional;
+    domain::stFreeStyleNumber PutNotional;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleCurrency CallCcy;
+    domain::stFreeStyleCurrency PutCcy;
+};
+
+struct tarfData2_Barriers_t
+{
+    xsd::vector<domain::barrierData> BarrierData;
+};
+
+struct tarfData2
+{
+    domain::currencyCode Currency;
+    float FixingAmount;
+    xsd::optional<float> TargetAmount;
+    xsd::optional<float> TargetPoints;
+    xsd::optional<float> Strike;
+    xsd::optional<domain::tarfData2_Strikes_t> Strikes;
+    domain::underlying Underlying;
+    domain::scheduleData ScheduleData;
+    xsd::optional<domain::tarfData2_SettlementLag_t> SettlementLag;
+    xsd::optional<domain::calendar> SettlementCalendar;
+    xsd::optional<domain::businessDayConvention> SettlementConvention;
+    domain::optionData OptionData;
+    xsd::optional<domain::tarfData2_RangeBounds_t> RangeBounds;
+    xsd::optional<domain::tarfData2_RangeBoundSet_t> RangeBoundSet;
+    domain::tarfData2_Barriers_t Barriers;
+};
+
+struct accumulatorData_RangeBounds_t
+{
+    xsd::vector<domain::rangeBound> RangeBound;
+};
+
+struct accumulatorData
+{
+    domain::currencyCode Currency;
+    float FixingAmount;
+    xsd::optional<bool> DailyFixingAmount;
+    xsd::optional<float> Strike;
+    domain::underlying Underlying;
+    domain::optionData OptionData;
+    xsd::optional<domain::date> StartDate;
+    domain::scheduleData ObservationDates;
+    xsd::optional<domain::scheduleData> PricingDates;
+    xsd::optional<domain::scheduleData> SettlementDates;
+    xsd::optional<domain::accumulatorData_SettlementLag_t> SettlementLag;
+    xsd::optional<domain::calendar> SettlementCalendar;
+    xsd::optional<domain::businessDayConvention> SettlementConvention;
+    xsd::optional<bool> NakedOption;
+    xsd::optional<bool> KnockOutSettlementAtPeriodEnd;
+    xsd::optional<bool> KnockOutFixingAtKOSettlement;
+    xsd::optional<domain::underlying> FxIndex;
+    domain::accumulatorData_RangeBounds_t RangeBounds;
+    xsd::optional<domain::accumulatorData_Barriers_t> Barriers;
+};
+
+struct windowBarrierOptionData2
+{
+    domain::currencyCode Currency;
+    float FixingAmount;
+    domain::underlying Underlying;
+    domain::optionData OptionData;
+    domain::date StartDate;
+    domain::date EndDate;
+    domain::barrierData BarrierData;
+};
+
+struct basketOptionData
+{
+    domain::currencyCode Currency;
+    float Notional;
+    xsd::optional<float> Strike;
+    domain::underlyings Underlyings;
+    domain::optionData OptionData;
+    xsd::optional<domain::basketOptionData_Settlement_t> Settlement;
+    xsd::optional<domain::scheduleData> ObservationDates;
+};
+
+enum class genericBarrierOptionData_Barriers_t_KikoType_t
+{
+    KoAlways,
+    KoBeforeKi,
+    KoAfterKi,
+};
+
+std::string to_string(genericBarrierOptionData_Barriers_t_KikoType_t);
+
+struct genericBarrierOptionData_Barriers_t
+{
+    xsd::optional<domain::scheduleData> ScheduleData;
+    xsd::optional<domain::date> StartDate;
+    xsd::optional<domain::date> EndDate;
+    xsd::vector<domain::barrierData> BarrierData;
+    xsd::optional<domain::genericBarrierOptionData_Barriers_t_KikoType_t> KikoType;
+};
+
+struct genericBarrierOptionData
+{
+    domain::currencyCode PayCurrency;
+    domain::optionData OptionData;
+    xsd::optional<domain::date> SettlementDate;
+    xsd::optional<domain::genericBarrierOptionData_SettlementLag_t> SettlementLag;
+    xsd::optional<domain::calendar> SettlementCalendar;
+    xsd::optional<domain::businessDayConvention> SettlementConvention;
+    xsd::optional<float> Quantity;
+    xsd::optional<float> Strike;
+    xsd::optional<float> Amount;
+    domain::genericBarrierOptionData_Barriers_t Barriers;
+    xsd::optional<domain::genericBarrierOptionData_TransatlanticBarrier_t> TransatlanticBarrier;
+};
+
+struct rainbowOptionData
+{
+    domain::currencyCode Currency;
+    float Notional;
+    float Strike;
+    domain::underlyings Underlyings;
+    domain::optionData OptionData;
+    xsd::optional<domain::rainbowOptionData_Settlement_t> Settlement;
+};
+
+struct autocallable01Data_FixingDates_t
+{
+    domain::scheduleData ScheduleData;
+};
+
+struct autocallable01Data_SettlementDates_t
+{
+    domain::scheduleData ScheduleData;
+};
+
+struct autocallable01Data_AccumulationFactors_t
+{
+    xsd::vector<float> Factor;
+};
+
+struct autocallable01Data
+{
+    float NotionalAmount;
+    float DeterminationLevel;
+    float TriggerLevel;
+    domain::underlying Underlying;
+    domain::longShort Position;
+    domain::currencyCode PayCcy;
+    domain::autocallable01Data_FixingDates_t FixingDates;
+    domain::autocallable01Data_SettlementDates_t SettlementDates;
+    domain::autocallable01Data_AccumulationFactors_t AccumulationFactors;
+    float Cap;
+};
+
+struct doubleDigitalOptionData_Type1_t : xsd::string
+{
+};
+
+struct doubleDigitalOptionData_Type2_t : xsd::string
+{
+};
+
+struct doubleDigitalOptionData
+{
+    domain::date Expiry;
+    domain::date Settlement;
+    float BinaryPayout;
+    float BinaryLevel1;
+    float BinaryLevel2;
+    xsd::optional<float> BinaryLevelUpper1;
+    xsd::optional<float> BinaryLevelUpper2;
+    domain::doubleDigitalOptionData_Type1_t Type1;
+    domain::doubleDigitalOptionData_Type2_t Type2;
+    domain::longShort Position;
+    xsd::optional<domain::underlying> Underlying1;
+    xsd::optional<domain::underlying> Underlying2;
+    xsd::optional<domain::underlying> Underlying3;
+    xsd::optional<domain::underlying> Underlying4;
+    xsd::optional<domain::doubleDigitalOptionData_Name1_t> Name1;
+    xsd::optional<domain::doubleDigitalOptionData_Name2_t> Name2;
+    domain::currencyCode PayCcy;
+};
+
+struct performanceOption01Data_StrikePrices_t
+{
+    xsd::vector<float> StrikePrice;
+};
+
+struct performanceOption01Data
+{
+    float NotionalAmount;
+    float ParticipationRate;
+    domain::date ValuationDate;
+    domain::date SettlementDate;
+    domain::underlyings Underlyings;
+    domain::performanceOption01Data_StrikePrices_t StrikePrices;
+    float Strike;
+    xsd::optional<domain::bool_> StrikeIncluded;
+    domain::longShort Position;
+    domain::currencyCode PayCcy;
+};
+
+struct scriptedTradeData_Data_t
+{
+    xsd::vector<domain::scriptedTradeData_Data_t_Number_t> Number;
+    xsd::vector<domain::scriptedTradeData_Data_t_Currency_t> Currency;
+    xsd::vector<domain::scriptedTradeData_Data_t_Index_t> Index;
+    xsd::vector<domain::scriptedTradeData_Data_t_Event_t> Event;
+    xsd::vector<domain::scriptedTradeData_Data_t_Daycounter_t> Daycounter;
+};
+
+struct scriptedTradeData
+{
+    xsd::optional<domain::scriptedTradeData_ScriptName_t> ScriptName;
+    xsd::optional<domain::scriptedTradeData_ProductTag_t> ProductTag;
+    xsd::optional<domain::ore_script> Script;
+    domain::scriptedTradeData_Data_t Data;
+};
+
+struct vanillaBasketOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct asianBasketOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct averageStrikeBasketOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct lookbackCallBasketOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct lookbackPutBasketOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct bestOfAirbagData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumberVector StrikePrices;
+    domain::stFreeStyleNumber BonusCoupon;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleEventSchedule ObservationSchedule;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct stFreeStyleDayCounter : xsd::string
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct worstOfBasketSwapData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber InitialFixedRate;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleEventSchedule DeterminationDates;
+    domain::stFreeStyleEventSchedule SettlementDates;
+    domain::stFreeStyleNumberVector KnockOutLevels;
+    domain::stFreeStyleNumberVector CouponTriggerLevels;
+    domain::stFreeStyleNumber KnockInLevel;
+    domain::stFreeStyleNumber CouponRate;
+    domain::stFreeStyleBool AccumulatingCoupons;
+    domain::stFreeStyleIndex FloatingIndex;
+    domain::stFreeStyleNumber FloatingSpread;
+    domain::stFreeStyleDayCounter FloatingDayCountFraction;
+    domain::stFreeStyleEventSchedule FixingSchedule;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstOfBasketSwapData2_InitialPrices_t
+{
+    xsd::vector<float> InitialPrice;
+};
+
+struct worstOfBasketSwapData2_KnockOutLevels_t
+{
+    xsd::vector<float> KnockOutLevel;
+};
+
+struct worstOfBasketSwapData2_FixedTriggerLevels_t
+{
+    xsd::vector<float> FixedTriggerLevel;
+};
+
+struct worstOfBasketSwapData2_FloatingIndex_t : xsd::string
+{
+};
+
+struct worstOfBasketSwapData2
+{
+    domain::longShort LongShort;
+    domain::currencyCode Currency;
+    float Quantity;
+    xsd::optional<float> InitialFixedRate;
+    xsd::optional<domain::date> InitialFixedPayDate;
+    domain::underlyings Underlyings;
+    domain::worstOfBasketSwapData2_InitialPrices_t InitialPrices;
+    xsd::optional<domain::date> KnockInPayDate;
+    domain::scheduleData FloatingPeriodSchedule;
+    xsd::optional<domain::scheduleData> FloatingFixingSchedule;
+    xsd::optional<domain::scheduleData> FixedDeterminationSchedule;
+    domain::scheduleData FloatingPayDates;
+    xsd::optional<domain::scheduleData> FixedPayDates;
+    xsd::optional<domain::scheduleData> KnockOutDeterminationSchedule;
+    xsd::optional<domain::scheduleData> FixedAccrualSchedule;
+    domain::worstOfBasketSwapData2_KnockOutLevels_t KnockOutLevels;
+    xsd::optional<bool> BermudanKnockIn;
+    domain::worstOfBasketSwapData2_FixedTriggerLevels_t FixedTriggerLevels;
+    xsd::optional<float> KnockInLevel;
+    xsd::optional<domain::scheduleData> KnockInDeterminationSchedule;
+    float FixedRate;
+    xsd::optional<bool> AccumulatingFixedCoupons;
+    xsd::optional<bool> AccruingFixedCoupons;
+    domain::worstOfBasketSwapData2_FloatingIndex_t FloatingIndex;
+    xsd::optional<float> FloatingSpread;
+    xsd::optional<domain::worstOfBasketSwapData2_FloatingLookback_t> FloatingLookback;
+    xsd::optional<domain::worstOfBasketSwapData2_FloatingRateCutoff_t> FloatingRateCutoff;
+    domain::dayCounter FloatingDayCountFraction;
+    xsd::optional<bool> IsAveraged;
+    xsd::optional<bool> IncludeSpread;
+    xsd::optional<float> Strike;
+};
+
+struct worstPerformanceRainbowOption01Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber PayoffMultiplier;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstPerformanceRainbowOption02Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber PayoffMultiplier;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstPerformanceRainbowOption03Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber PayoffMultiplier;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleBool BermudanBarrier;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleEventSchedule BarrierSchedule;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstPerformanceRainbowOption04Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber PayoffMultiplier;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleBool BermudanBarrier;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleEventSchedule BarrierSchedule;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstPerformanceRainbowOption05Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstPerformanceRainbowOption06Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumberVector StrikePrices;
+    domain::stFreeStyleNumberVector BarrierLevels;
+    domain::stFreeStyleNumberVector KnockInPrices;
+    domain::stFreeStyleNumber BonusCoupon;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleEventSchedule ObservationSchedule;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstPerformanceRainbowOption07Data
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumber FixedRateI;
+    domain::stFreeStyleNumber FixedRateII;
+    domain::stFreeStyleDayCounter DayCountFraction;
+    domain::stFreeStyleNumberVector StrikePrices;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumberVector TriggerLevels;
+    domain::stFreeStyleEventSchedule DeterminationDates;
+    domain::stFreeStyleEventSchedule ObservationSchedule;
+    domain::stFreeStyleEvent ObservationDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct bestOfAssetOrCashRainbowOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct worstOfAssetOrCashRainbowOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct minRainbowOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct maxRainbowOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct windowBarrierOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleEvent StartDate;
+    domain::stFreeStyleEvent EndDate;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent PremiumPayDate;
+    domain::stFreeStyleNumber PremiumAmount;
+    domain::stFreeStyleCurrency PremiumCcy;
+};
+
+struct accumulator01Data
+{
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber FixingAmount;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent StartDate;
+    domain::stFreeStyleEventSchedule FixingDates;
+    domain::stFreeStyleEventSchedule SettlementDates;
+    domain::stFreeStyleNumberVector RangeUpperBounds;
+    domain::stFreeStyleNumberVector RangeLowerBounds;
+    domain::stFreeStyleNumberVector RangeLeverages;
+    domain::stFreeStyleNumber KnockOutLevel;
+    domain::stFreeStyleBarrierType KnockOutType;
+    domain::stFreeStyleBool AmericanKO;
+    domain::stFreeStyleNumber GuaranteedFixings;
+};
+
+struct accumulator02Data
+{
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber FixingAmount;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleEventSchedule KnockOutSettlementDates;
+    domain::stFreeStyleEventSchedule ObservationPeriodEndDates;
+    domain::stFreeStyleEventSchedule SettlementDates;
+    domain::stFreeStyleNumberVector RangeUpperBounds;
+    domain::stFreeStyleNumberVector RangeLowerBounds;
+    domain::stFreeStyleNumberVector RangeLeverages;
+    domain::stFreeStyleNumber DefaultRange;
+    domain::stFreeStyleNumber KnockOutLevel;
+    domain::stFreeStyleBarrierType KnockOutType;
+    domain::stFreeStyleEvent GuaranteedPeriodEndDate;
+};
+
+struct bestEntryOptionData2
+{
+    domain::longShort LongShort;
+    domain::currencyCode Currency;
+    float Notional;
+    float Multiplier;
+    float Cap;
+    float Strike;
+    float TriggerLevel;
+    float ResetMinimum;
+    float Premium;
+    domain::date ExpiryDate;
+    domain::date StrikeDate;
+    domain::date PremiumDate;
+    domain::date SettlementDate;
+    domain::scheduleData StrikeObservationDates;
+    domain::underlying Underlying;
+};
+
+struct tarfData
+{
+    domain::stFreeStyleNumber FixingAmount;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEventSchedule FixingDates;
+    domain::stFreeStyleEventSchedule SettlementDates;
+    domain::stFreeStyleNumberVector RangeUpperBounds;
+    domain::stFreeStyleNumberVector RangeLowerBounds;
+    domain::stFreeStyleNumberVector RangeLeverages;
+    domain::stFreeStyleNumberVector RangeStrikes;
+    domain::stFreeStyleNumber KnockOutProfitAmount;
+    domain::stFreeStyleNumber KnockOutProfitEvents;
+    domain::stFreeStyleNumber TargetAmount;
+    domain::stFreeStyleNumber TargetType;
+};
+
+struct europeanRainbowCallSpreadOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialStrikes;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct rainbowCallSpreadBarrierOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialPrices;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleNumber Gearing;
+    domain::stFreeStyleBool BermudanBarrier;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleEventSchedule BarrierSchedule;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct asianRainbowCallSpreadOptionData
+{
+    domain::stFreeStyleEvent Expiry;
+    domain::stFreeStyleEventSchedule AveragingDates;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleNumberVector InitialStrikes;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct asianIrCapFloorData
+{
+    domain::stFreeStyleNumber NotionalAmount;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleDayCounter FixingLagDc;
+    domain::stFreeStyleNumber MinFixingLag;
+    domain::stFreeStyleNumber MaxFixingLag;
+    domain::stFreeStyleOptionType OptionType;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Gearing;
+    domain::stFreeStyleNumber Spread;
+    domain::stFreeStyleDayCounter DayCountFraction;
+    domain::stFreeStyleNumber FixedAmount;
+    domain::stFreeStyleEvent FixedAmountPayDate;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEventSchedule AccrualSchedule;
+    domain::stFreeStyleEventSchedule FixingSchedule;
+};
+
+struct forwardVolatilityAgreementData
+{
+    domain::stFreeStyleEvent FvaDate;
+    domain::stFreeStyleEvent OptionExpiry;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber ImpliedVolStrike;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent SettlementDate;
+};
+
+struct correlationSwapData
+{
+    domain::stFreeStyleNumber Amount;
+    domain::stFreeStyleNumber FixedRate;
+    domain::stFreeStyleBool FixedRatePayer;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleEventSchedule DeterminationDates;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct assetLinkedCliquetOptionData
+{
+    domain::stFreeStyleNumber Nominal;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleEventSchedule ValuationDates;
+    domain::stFreeStyleEventSchedule PaymentDates;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleIndexVector FXConversions;
+    domain::stFreeStyleNumberVector Weights;
+    domain::stFreeStyleIndex LinkedUnderlying;
+    domain::stFreeStyleNumber PayStrike;
+    domain::stFreeStyleNumber RecStrike;
+};
+
+struct constantMaturityVolatilitySwapData
+{
+    domain::stFreeStyleNumber NotionalAmount;
+    domain::stFreeStyleIndexVector Underlyings;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleDayCounter DayCountFraction;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Settlement;
+    domain::stFreeStyleEventSchedule ResetSchedule;
+};
+
+struct cmsCapFloorBarrierData
+{
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber PremiumAmount;
+    domain::stFreeStyleCurrency PremiumCurrency;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleEvent OptionExpiry;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleOptionType OptionType;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleIndexVector CMSUnderlyings;
+    domain::stFreeStyleNumber Gearing;
+    domain::stFreeStyleNumber Spread;
+    domain::stFreeStyleIndex BarrierUnderlying;
+    domain::stFreeStyleNumber BarrierLevel;
+    domain::stFreeStyleBarrierType BarrierType;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency SettlementCurrency;
+};
+
+struct fixedStrikeForwardStartingOptionData
+{
+    domain::stFreeStyleEvent ForwardDate;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleEvent OptionExpiry;
+    domain::stFreeStyleDayCounter DayCountFraction;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleNumber UnderlyingDrift;
+    domain::stFreeStyleNumber DiscountRate;
+    domain::stFreeStyleNumber ImpliedVolatility;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency SettlementCurrency;
+};
+
+struct floatingStrikeForwardStartingOptionData
+{
+    domain::stFreeStyleEvent ForwardDate;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleEvent OptionExpiry;
+    domain::stFreeStyleNumber PremiumAmount;
+    domain::stFreeStyleCurrency PremiumCurrency;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency SettlementCurrency;
+};
+
+struct forwardStartingSwaptionData
+{
+    domain::stFreeStyleEvent DeterminationDate;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber SwaptionType;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleNumber PremiumAmount;
+    domain::stFreeStyleCurrency PremiumCurrency;
+    domain::stFreeStyleEvent OptionExpiry;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleDayCounter FixedDayCountFraction;
+    domain::stFreeStyleEventSchedule FixedSchedule;
+    domain::stFreeStyleDayCounter FloatingDayCountFraction;
+    domain::stFreeStyleEventSchedule FloatingSchedule;
+    domain::stFreeStyleEventSchedule FixingSchedule;
+};
+
+struct flooredAverageCPIZCIISData
+{
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleDayCounter FixedDayCounter;
+    domain::stFreeStyleNumber FixedRate;
+    domain::stFreeStyleEventSchedule FixedLegSchedule;
+    domain::stFreeStyleBool PayFixLeg;
+    domain::stFreeStyleDayCounter FloatDayCounter;
+    domain::stFreeStyleIndex CPIIndex;
+    domain::stFreeStyleEventSchedule FloatLegSchedule;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleNumber BaseCPI;
+    domain::stFreeStyleEventSchedule ObservationSchedule;
+    domain::stFreeStyleEventSchedule FixingSchedule;
+};
+
+struct stFreeStyleOptionTypeVectorBase
+{
+    xsd::vector<domain::stFreeStyleOptionTypeVectorBase_Value_t> Value;
+};
+
+struct stFreeStyleBarrierTypeVector : domain::stFreeStyleOptionTypeVectorBase
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct stFreeStyleCurrencyVectorBase
+{
+    xsd::vector<domain::currencyCode> Value;
+};
+
+struct stFreeStyleCurrencyVector : domain::stFreeStyleCurrencyVectorBase
+{
+    xsd::optional<domain::type_t> type;
+};
+
+struct genericBarrierOptionDataRaw
+{
+    domain::stFreeStyleNumber PayoffType;
+    domain::stFreeStyleBarrierType TransatlanticBarrierType;
+    domain::stFreeStyleNumber TransatlanticBarrierLevel;
+    domain::stFreeStyleNumber TransatlanticBarrierRebate;
+    domain::stFreeStyleCurrency TransatlanticBarrierRebateCurrency;
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber Amount;
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleEvent ExpiryDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEventSchedule BarrierMonitoringDates;
+    domain::stFreeStyleBarrierTypeVector BarrierTypes;
+    domain::stFreeStyleNumberVector BarrierLevels;
+    domain::stFreeStyleNumberVector BarrierRebates;
+    domain::stFreeStyleCurrencyVector BarrierRebateCurrencies;
+    domain::stFreeStyleNumberVector BarrierRebatePayTimes;
+    domain::stFreeStyleNumber BarrierRebate;
+    domain::stFreeStyleCurrency BarrierRebateCurrency;
+    domain::stFreeStyleNumber KikoType;
+};
+
+struct movingMaxYYIISData
+{
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleDayCounter IborLegDayCounter;
+    domain::stFreeStyleNumber IborSpread;
+    domain::stFreeStyleIndex IborIndex;
+    domain::stFreeStyleBool PayIborLeg;
+    domain::stFreeStyleEventSchedule IborLegSchedule;
+    domain::stFreeStyleEventSchedule IborLegFixingSchedule;
+    domain::stFreeStyleDayCounter InflationLeg1_DayCounter;
+    domain::stFreeStyleIndex InflationLeg1_CPI;
+    domain::stFreeStyleEventSchedule InflationLeg1_Schedule;
+    domain::stFreeStyleEventSchedule InflationLeg1_FixingSchedule;
+    domain::stFreeStyleNumber InflationLeg1_Gearing;
+    domain::stFreeStyleNumber InflationLeg1_Floor;
+    domain::stFreeStyleNumber InflationLeg1_InitialCPI;
+    domain::stFreeStyleBool InflationLeg1_SubtractNotional;
+    domain::stFreeStyleDayCounter InflationLeg2_DayCounter;
+    domain::stFreeStyleIndex InflationLeg2_CPI;
+    domain::stFreeStyleEventSchedule InflationLeg2_Schedule;
+    domain::stFreeStyleEventSchedule InflationLeg2_FixingSchedule;
+    domain::stFreeStyleNumber InflationLeg2_Gearing;
+    domain::stFreeStyleNumber InflationLeg2_Floor;
+    domain::stFreeStyleNumber InflationLeg2_InitialCPI;
+    domain::stFreeStyleBool InflationLeg2_SubtractNotional;
+};
+
+struct irregularYYIISData
+{
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleDayCounter IborLegDayCounter;
+    domain::stFreeStyleNumber IborSpread;
+    domain::stFreeStyleIndex IborIndex;
+    domain::stFreeStyleBool PayIborLeg;
+    domain::stFreeStyleEventSchedule IborLegSchedule;
+    domain::stFreeStyleEventSchedule IborLegFixingSchedule;
+    domain::stFreeStyleDayCounter InflationLeg1_DayCounter;
+    domain::stFreeStyleIndex InflationLeg1_CPI;
+    domain::stFreeStyleEventSchedule InflationLeg1_Schedule;
+    domain::stFreeStyleEventSchedule InflationLeg1_FixingSchedule;
+    domain::stFreeStyleNumber InflationLeg1_Gearing;
+    domain::stFreeStyleNumber InflationLeg1_Floor;
+    domain::stFreeStyleNumber InflationLeg1_InitialCPI;
+    domain::stFreeStyleBool InflationLeg1_SubtractNotional;
+    domain::stFreeStyleDayCounter InflationLeg2_DayCounter;
+    domain::stFreeStyleIndex InflationLeg2_CPI;
+    domain::stFreeStyleEventSchedule InflationLeg2_Schedule;
+    domain::stFreeStyleEventSchedule InflationLeg2_FixingSchedule;
+    domain::stFreeStyleNumber InflationLeg2_Gearing;
+    domain::stFreeStyleNumber InflationLeg2_Floor;
+    domain::stFreeStyleNumber InflationLeg2_InitialCPI;
+    domain::stFreeStyleBool InflationLeg2_SubtractNotional;
+};
+
+struct europeanOptionBarrierData_PutCall_t : xsd::string
+{
+};
+
+struct europeanOptionBarrierData_BarrierType_t : xsd::string
+{
+};
+
+struct europeanOptionBarrierData_BarrierStyle_t : xsd::string
+{
+};
+
+struct europeanOptionBarrierData
+{
+    float Quantity;
+    domain::europeanOptionBarrierData_PutCall_t PutCall;
+    domain::longShort LongShort;
+    float Strike;
+    float PremiumAmount;
+    domain::currencyCode PremiumCurrency;
+    domain::date PremiumDate;
+    xsd::optional<domain::premiumData> Premiums;
+    domain::date OptionExpiry;
+    domain::underlying OptionUnderlying;
+    domain::underlying BarrierUnderlying;
+    float BarrierLevel;
+    domain::europeanOptionBarrierData_BarrierType_t BarrierType;
+    domain::europeanOptionBarrierData_BarrierStyle_t BarrierStyle;
+    xsd::optional<domain::scheduleData> BarrierSchedule;
+    domain::date SettlementDate;
+    domain::currencyCode PayCcy;
+};
+
+struct ladderLockInOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleOptionType PutCall;
+    domain::stFreeStyleNumber PremiumAmount;
+    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleNumberVector LockInLevels;
+    domain::stFreeStyleEventSchedule ObservationSchedule;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleCurrency PayCcy;
+};
+
+struct lapseHedgeSwapData
+{
+    domain::stFreeStyleBool Payer;
+    domain::stFreeStyleNumber Notional;
+    domain::stFreeStyleNumber LapseHedgePercentage;
+    domain::stFreeStyleNumberVector deltaN;
+    domain::stFreeStyleCurrency SettlementCurrency;
+    domain::stFreeStyleDayCounter Paydaycounter;
+    domain::stFreeStyleNumber IRS;
+    domain::stFreeStyleNumber IRSSpread;
+    domain::stFreeStyleNumber Tau;
+    domain::stFreeStyleNumber Fee;
+    domain::stFreeStyleNumberVector IMS;
+    domain::stFreeStyleNumberVector PHFV;
+    domain::stFreeStyleNumberVector Penalty;
+    domain::stFreeStyleNumberVector ExitPrice;
+    domain::stFreeStyleNumberVector ExitFee;
+    domain::stFreeStyleNumber InitialExchangeFee;
+    domain::stFreeStyleEventSchedule InitialExchangeDate;
+    domain::stFreeStyleEventSchedule ValuationDates;
+    domain::stFreeStyleEventSchedule PaymentDates;
+    domain::stFreeStyleEventSchedule ExerciseDates;
+};
+
+struct knockOutSwapData
+{
+    domain::barrierData BarrierData;
+    domain::date BarrierStartDate;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct LPISwapData
+{
+    domain::stFreeStyleCurrency PayCurrency;
+    domain::stFreeStyleBool PayFixLeg;
+    domain::stFreeStyleDayCounter FixedDayCounter;
+    domain::stFreeStyleNumber ZeroCouponRate;
+    domain::stFreeStyleEventSchedule FixedLegSchedule;
+    domain::stFreeStyleNumberVector FixedLegNotionals;
+    domain::stFreeStyleIndex CPIIndex;
+    domain::stFreeStyleEventSchedule FloatLegSchedule;
+    domain::stFreeStyleEvent FloatLegFirstPaymentDate;
+    domain::stFreeStyleNumberVector FloatLegNotional;
+    domain::stFreeStyleNumber Floor;
+    domain::stFreeStyleNumber Cap;
+    domain::stFreeStyleEventSchedule FixingSchedule;
+};
+
+struct cashPositionData
+{
+    domain::extendedCurrencyCode Currency;
+    float Amount;
+};
+
+struct strikeResettableOptionData
+{
+    domain::stFreeStyleLongShort LongShort;
+    domain::stFreeStyleOptionType OptionType;
+    domain::stFreeStyleCurrency Currency;
+    domain::stFreeStyleNumber Strike;
+    domain::stFreeStyleNumber ResetStrike;
+    domain::stFreeStyleNumber Quantity;
+    domain::stFreeStyleNumber TriggerType;
+    domain::stFreeStyleNumber TriggerPrice;
+    domain::stFreeStyleIndex Underlying;
+    domain::stFreeStyleEvent ExpiryDate;
+    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleEventSchedule ObservationDates;
+    domain::stFreeStyleNumber Premium;
+    domain::stFreeStyleEvent PremiumDate;
+};
+
+enum class strikeResettableOptionData2_TriggerType_t
+{
+    Up,
+    Down,
+};
+
+std::string to_string(strikeResettableOptionData2_TriggerType_t);
+
+struct strikeResettableOptionData2
+{
+    domain::longShort LongShort;
+    domain::optionType OptionType;
+    domain::currencyCode Currency;
+    float Strike;
+    float ResetStrike;
+    float Quantity;
+    domain::strikeResettableOptionData2_TriggerType_t TriggerType;
+    float TriggerPrice;
+    domain::underlying Underlying;
+    domain::date ExpiryDate;
+    domain::date SettlementDate;
+    float Premium;
+    domain::date PremiumDate;
+    domain::scheduleData ObservationDates;
+};
+
+struct parameters_Grid_t : xsd::string
+{
+};
+
+struct parameters_Calendar_t : xsd::string
+{
+};
 
 enum class sequenceType
 {
@@ -2356,39 +5935,6 @@ enum class frequencyType
 };
 
 std::string to_string(frequencyType);
-
-enum class businessDayConvention
-{
-    F,
-    Following,
-    FOLLOWING,
-    MF,
-    ModifiedFollowing,
-    Modified_Following,
-    MODIFIEDF,
-    MODFOLLOWING,
-    P,
-    Preceding,
-    PRECEDING,
-    MP,
-    ModifiedPreceding,
-    Modified_Preceding,
-    MODIFIEDP,
-    U,
-    Unadjusted,
-    INDIFF,
-    HMMF,
-    HalfMonthModifiedFollowing,
-    HalfMonthMF,
-    Half_Month_Modified_Following,
-    HALFMONTHMF,
-    NEAREST,
-    NONE,
-    NotApplicable,
-    _,
-};
-
-std::string to_string(businessDayConvention);
 
 struct zeroType
 {
@@ -3308,7 +6854,7 @@ struct discountcurve
 {
     domain::currencyCode ccy;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::discountcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::discountcurve_ShiftTenors_t ShiftTenors;
@@ -3491,8 +7037,6 @@ struct analyticsType_Analytic_t : domain::parameterListType
     xsd::optional<xsd::string> type;
 };
 
-typedef xsd::string calendar;
-
 struct newcalendar
 {
     xsd::string name;
@@ -3550,17 +7094,1420 @@ enum class tradeActionOwner
 
 std::string to_string(tradeActionOwner);
 
-struct scheduleData
-{
-    xsd::vector<domain::scheduleData_Rules_t> Rules;
-    xsd::vector<domain::scheduleData_Dates_t> Dates;
-};
-
 struct tradeAction
 {
     domain::tradeActionType Type;
     domain::tradeActionOwner Owner;
     domain::scheduleData Schedule;
+};
+
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t : xsd::string
+{
+};
+
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t : xsd::string
+{
+};
+
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t : xsd::string
+{
+};
+
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t : xsd::string
+{
+};
+
+struct stFreeStyleEventScheduleBase_DerivedSchedule_t
+{
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t BaseSchedule;
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t Shift;
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t Calendar;
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t Convention;
+};
+
+struct fxForwardSettlementData
+{
+    xsd::optional<domain::currencyCode> Currency;
+    xsd::optional<domain::fxForwardSettlementData_FXIndex_t> FXIndex;
+    xsd::optional<domain::date> Date;
+    xsd::optional<domain::fxForwardSettlementData_Rules_t> Rules;
+};
+
+struct scheduleData_Rules_t_Tenor_t : xsd::string
+{
+};
+
+struct scheduleData_Rules_t
+{
+    domain::date StartDate;
+    xsd::optional<domain::date> EndDate;
+    xsd::optional<domain::bool_> AdjustEndDateToPreviousMonthEnd;
+    domain::scheduleData_Rules_t_Tenor_t Tenor;
+    xsd::optional<domain::calendar> Calendar;
+    domain::businessDayConvention Convention;
+    xsd::optional<domain::businessDayConvention> TermConvention;
+    xsd::optional<domain::dateRule> Rule;
+    xsd::optional<domain::bool_> EndOfMonth;
+    xsd::optional<domain::businessDayConvention> EndOfMonthConvention;
+    xsd::optional<domain::date> FirstDate;
+    xsd::optional<domain::date> LastDate;
+    xsd::optional<bool> RemoveFirstDate;
+    xsd::optional<bool> RemoveLastDate;
+};
+
+struct scheduleData_Dates_t_Dates_t
+{
+    xsd::vector<domain::date> Date;
+};
+
+struct scheduleData_Dates_t
+{
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::businessDayConvention> Convention;
+    xsd::optional<domain::scheduleData_Dates_t_Tenor_t> Tenor;
+    xsd::optional<domain::bool_> EndOfMonth;
+    xsd::optional<domain::bool_> IncludeDuplicateDates;
+    domain::scheduleData_Dates_t_Dates_t Dates;
+};
+
+struct optionData_OptionType_t : xsd::string
+{
+};
+
+struct optionData_PayoffType_t : xsd::string
+{
+};
+
+struct optionData_PayoffType2_t : xsd::string
+{
+};
+
+struct optionData_Style_t : xsd::string
+{
+};
+
+struct optionData_NoticePeriod_t : xsd::string
+{
+};
+
+struct optionData_NoticeCalendar_t : xsd::string
+{
+};
+
+struct optionData_NoticeConvention_t : xsd::string
+{
+};
+
+struct optionData_MidCouponExercise_t : xsd::string
+{
+};
+
+struct optionData_PayOffAtExpiry_t : xsd::string
+{
+};
+
+struct optionData_PremiumAmount_t : xsd::string
+{
+};
+
+struct optionData_PremiumPayDate_t : xsd::string
+{
+};
+
+struct premiumData
+{
+    xsd::vector<domain::premiumData_Premium_t> Premium;
+};
+
+struct optionData_ExercisePrices_t : xsd::string
+{
+};
+
+struct optionData_ExerciseFees_t
+{
+    xsd::vector<domain::optionData_ExerciseFees_t_ExerciseFee_t> ExerciseFee;
+};
+
+struct optionData_ExerciseFeeSettlementPeriod_t : xsd::string
+{
+};
+
+struct optionData_ExerciseFeeSettlementCalendar_t : xsd::string
+{
+};
+
+struct optionData_ExerciseFeeSettlementConvention_t : xsd::string
+{
+};
+
+struct optionExerciseData
+{
+    domain::date Date;
+    xsd::optional<double> Price;
+};
+
+struct optionPaymentData
+{
+    xsd::optional<domain::optionPaymentData_Dates_t> Dates;
+    xsd::optional<domain::optionPaymentData_Rules_t> Rules;
+};
+
+struct optionData_SettlementData_t_FXIndex_t : xsd::string
+{
+};
+
+struct optionData_SettlementData_t
+{
+    domain::currencyCode PayCurrency;
+    domain::optionData_SettlementData_t_FXIndex_t FXIndex;
+    xsd::optional<domain::optionData_SettlementData_t_FixingDate_t> FixingDate;
+};
+
+struct fxOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct fxBarrierOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct fxBarrierOptionData_FXIndexDailyLows_t : xsd::string
+{
+};
+
+struct fxBarrierOptionData_FXIndexDailyHighs_t : xsd::string
+{
+};
+
+struct fxKIKOBarrierOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct fxDigitalBarrierOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct fxDigitalBarrierOptionData_FXIndexDailyLows_t : xsd::string
+{
+};
+
+struct fxDigitalBarrierOptionData_FXIndexDailyHighs_t : xsd::string
+{
+};
+
+struct fxTouchOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct fxTouchOptionData_FXIndexDailyLows_t : xsd::string
+{
+};
+
+struct fxTouchOptionData_FXIndexDailyHighs_t : xsd::string
+{
+};
+
+struct fxTouchOptionData_Calendar_t : xsd::string
+{
+};
+
+struct legData_capfloor_PaymentCalendar_t : xsd::string
+{
+};
+
+struct legData_capfloor_Notionals_t_Notional_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct fxreset_FXIndex_t : xsd::string
+{
+};
+
+struct fxreset
+{
+    domain::currencyCode ForeignCurrency;
+    xsd::optional<domain::fxreset_StartDate_t> StartDate;
+    xsd::optional<double> ForeignAmount;
+    domain::fxreset_FXIndex_t FXIndex;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::fxreset_FixingCalendar_t> FixingCalendar;
+};
+
+struct exchanges
+{
+    xsd::optional<domain::bool_> NotionalInitialExchange;
+    xsd::optional<domain::bool_> NotionalFinalExchange;
+    xsd::optional<domain::bool_> NotionalAmortizingExchange;
+};
+
+struct legData_capfloor_PaymentDates_t
+{
+    xsd::vector<domain::date> PaymentDate;
+};
+
+struct capFloorData_Caps_t
+{
+    xsd::vector<domain::capFloorData_Caps_t_Cap_t> Cap;
+};
+
+struct capFloorData_Floors_t
+{
+    xsd::vector<domain::capFloorData_Floors_t_Floor_t> Floor;
+};
+
+struct capFloorData_PremiumAmount_t : xsd::string
+{
+};
+
+struct capFloorData_PremiumPayDate_t : xsd::string
+{
+};
+
+struct eqBarrierOptionData_EQIndex_t : xsd::string
+{
+};
+
+struct eqForwardSettlementData
+{
+    xsd::optional<domain::eqForwardSettlementData_FXIndex_t> FXIndex;
+    xsd::optional<domain::date> Date;
+    xsd::optional<domain::eqForwardSettlementData_Rules_t> Rules;
+};
+
+struct eqTouchOptionData_EQIndex_t : xsd::string
+{
+};
+
+struct bondData_IssuerId_t : xsd::string
+{
+};
+
+struct bondData_CreditCurveId_t : xsd::string
+{
+};
+
+struct bondData_CreditGroup_t : xsd::string
+{
+};
+
+struct bondData_ReferenceCurveId_t : xsd::string
+{
+};
+
+struct bondData_IncomeCurveId_t : xsd::string
+{
+};
+
+struct bondData_VolatilityCurveId_t : xsd::string
+{
+};
+
+struct bondData_SettlementDays_t : xsd::string
+{
+};
+
+struct bondData_Calendar_t : xsd::string
+{
+};
+
+struct bondData_IssueDate_t : xsd::string
+{
+};
+
+struct bondData_PriceQuoteMethod_t : xsd::string
+{
+};
+
+struct bondData_PriceQuoteBaseValue_t : xsd::string
+{
+};
+
+struct bondData_BondNotional_t : xsd::string
+{
+};
+
+struct bondData_Payer_t : xsd::string
+{
+};
+
+struct bondData_SubType_t : xsd::string
+{
+};
+
+struct settlementData_ForwardSettlementDate_t : xsd::string
+{
+};
+
+struct settlementData_Settlement_t : xsd::string
+{
+};
+
+struct settlementData_LockRateDayCounter_t : xsd::string
+{
+};
+
+struct settlementData_SettlementDirty_t : xsd::string
+{
+};
+
+struct forwardBondData_PremiumData_t_Amount_t : xsd::string
+{
+};
+
+struct forwardBondData_PremiumData_t_Date_t : xsd::string
+{
+};
+
+struct forwardBondData_PremiumData_t
+{
+    domain::forwardBondData_PremiumData_t_Amount_t Amount;
+    domain::forwardBondData_PremiumData_t_Date_t Date;
+};
+
+struct bondFutureData_ContractMonth_t : xsd::string
+{
+};
+
+struct bondFutureData_DeliverableGrade_t : xsd::string
+{
+};
+
+struct bondFutureData_FairPrice_t : xsd::string
+{
+};
+
+struct bondFutureData_Settlement_t : xsd::string
+{
+};
+
+struct bondFutureData_SettlementDirty_t : xsd::string
+{
+};
+
+struct bondFutureData_RootDate_t : xsd::string
+{
+};
+
+struct bondFutureData_ExpiryBasis_t : xsd::string
+{
+};
+
+struct bondFutureData_SettlementBasis_t : xsd::string
+{
+};
+
+struct bondFutureData_ExpiryLag_t : xsd::string
+{
+};
+
+struct bondFutureData_SettlementLag_t : xsd::string
+{
+};
+
+struct bondFutureData_LastTradingDate_t : xsd::string
+{
+};
+
+struct bondFutureData_LastDeliveryDate_t : xsd::string
+{
+};
+
+struct deliveryBasket
+{
+    xsd::vector<domain::deliveryBasket_Id_t> Id;
+};
+
+struct creditDefaultSwapData_IssuerId_t : xsd::string
+{
+};
+
+struct creditDefaultSwapData_ReferenceObligation_t : xsd::string
+{
+};
+
+struct creditDefaultSwapData_ProtectionPaymentTime_t : xsd::string
+{
+};
+
+struct legData_PaymentCalendar_t : xsd::string
+{
+};
+
+struct legData_Amortizations_t
+{
+    xsd::vector<domain::amortizationData> AmortizationData;
+};
+
+struct legData_Notionals_t
+{
+    xsd::vector<domain::legData_Notionals_t_Notional_t> Notional;
+    xsd::vector<domain::fxreset> FXReset;
+    xsd::vector<domain::exchanges> Exchanges;
+};
+
+struct legData_PaymentDates_t
+{
+    xsd::vector<domain::date> PaymentDate;
+};
+
+struct legData_Indexings_t
+{
+    xsd::optional<bool> FromAssetLeg;
+    xsd::vector<domain::indexingData> Indexing;
+};
+
+struct legData_SettlementData_t_FXIndex_t : xsd::string
+{
+};
+
+struct legData_SettlementData_t
+{
+    domain::legData_SettlementData_t_FXIndex_t FXIndex;
+    xsd::optional<domain::legData_SettlementData_t_FixingDate_t> FixingDate;
+};
+
+struct creditDefaultSwapOptionData_Term_t : xsd::string
+{
+};
+
+struct auctionSettlementInformation
+{
+    domain::date AuctionSettlementDate;
+    float AuctionFinalPrice;
+};
+
+struct commodityForwardData_FutureExpiryOffset_t : xsd::string
+{
+};
+
+struct commodityForwardData_FutureExpiryOffsetCalendar_t : xsd::string
+{
+};
+
+struct commForwardSettlementData_FXIndex_t : xsd::string
+{
+};
+
+struct commForwardSettlementData
+{
+    domain::currencyCode PayCurrency;
+    domain::commForwardSettlementData_FXIndex_t FXIndex;
+    domain::date FixingDate;
+};
+
+struct commodityDigitalAveragePriceOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct commoditySpreadOptionStripPaymentData
+{
+    domain::scheduleData OptionStripDefinition;
+    int64_t PaymentLag;
+    domain::businessDayConvention PaymentConvention;
+    domain::calendar PaymentCalendar;
+};
+
+struct commodityAveragePriceOptionData_FXIndex_t : xsd::string
+{
+};
+
+struct callsPutsType
+{
+    xsd::optional<domain::longShortsType> LongShorts;
+    xsd::optional<domain::strikes> Strikes;
+    xsd::optional<domain::barrierData> BarrierData;
+};
+
+struct commodityOptionStripData_PremiumAmount_t : xsd::string
+{
+};
+
+struct commodityOptionStripData_PremiumPayDate_t : xsd::string
+{
+};
+
+struct commodityOptionStripData_Style_t : xsd::string
+{
+};
+
+struct singleUnderlyingAsianOptionData_Settlement_t : xsd::string
+{
+};
+
+struct bondOptionData_Redemption_t : xsd::string
+{
+};
+
+struct bondOptionData_PriceType_t : xsd::string
+{
+};
+
+struct totalReturnData_ObservationLag_t : xsd::string
+{
+};
+
+struct totalReturnData_PaymentDates_t
+{
+    xsd::vector<domain::date> PaymentDate;
+};
+
+struct fxTermsData
+{
+    xsd::vector<domain::fxTermsData_FXIndex_t> FXIndex;
+    xsd::optional<int64_t> FXIndexFixingDays;
+    xsd::optional<domain::fxTermsData_FXIndexCalendar_t> FXIndexCalendar;
+    xsd::optional<bool> ApplyFXIndexFixingDays;
+};
+
+struct cdoData_ProtectionPaymentTime_t : xsd::string
+{
+};
+
+struct basketData
+{
+    xsd::vector<domain::nameData> Name;
+};
+
+struct creditLinkedSwapData_DefaultPaymentTime_t : xsd::string
+{
+};
+
+struct creditLinkedSwapData_IndependentPayments_t
+{
+    xsd::vector<domain::legData> LegData;
+};
+
+struct creditLinkedSwapData_ContingentPayments_t
+{
+    xsd::vector<domain::legData> LegData;
+};
+
+struct creditLinkedSwapData_DefaultPayments_t
+{
+    xsd::vector<domain::legData> LegData;
+};
+
+struct creditLinkedSwapData_RecoveryPayments_t
+{
+    xsd::vector<domain::legData> LegData;
+};
+
+struct indexCreditDefaultSwapData_IssuerId_t : xsd::string
+{
+};
+
+struct indexCreditDefaultSwapData_ProtectionPaymentTime_t : xsd::string
+{
+};
+
+struct indexCreditDefaultSwapOptionData_IndexTerm_t : xsd::string
+{
+};
+
+struct cbCallData_Styles_t
+{
+    xsd::vector<domain::cbCallData_Styles_t_Style_t> Style;
+};
+
+struct cbCallData_Prices_t
+{
+    xsd::vector<domain::cbCallData_Prices_t_Price_t> Price;
+};
+
+struct cbCallData_PriceTypes_t
+{
+    xsd::vector<domain::cbCallData_PriceTypes_t_PriceType_t> PriceType;
+};
+
+struct cbCallData_IncludeAccruals_t
+{
+    xsd::vector<domain::cbCallData_IncludeAccruals_t_IncludeAccrual_t> IncludeAccrual;
+};
+
+struct cbCallData
+{
+    domain::scheduleData ScheduleData;
+    domain::cbCallData_Styles_t Styles;
+    domain::cbCallData_Prices_t Prices;
+    domain::cbCallData_PriceTypes_t PriceTypes;
+    domain::cbCallData_IncludeAccruals_t IncludeAccruals;
+    xsd::optional<domain::cbCallData_Soft_t> Soft;
+    xsd::optional<domain::cbCallData_TriggerRatios_t> TriggerRatios;
+    xsd::optional<domain::cbCallData_NOfMTriggers_t> NOfMTriggers;
+    xsd::optional<domain::cbCallData_MakeWhole_t> MakeWhole;
+};
+
+struct cbConversionData
+{
+    xsd::optional<domain::scheduleData> ScheduleData;
+    xsd::optional<domain::cbConversionData_Styles_t> Styles;
+    xsd::optional<domain::cbConversionData_ConversionRatios_t> ConversionRatios;
+    xsd::optional<domain::cbConversionData_FixedAmountConversion_t> FixedAmountConversion;
+    xsd::optional<domain::cbContingentConversionData> ContingentConversion;
+    xsd::optional<domain::cbMandatoryConversionData> MandatoryConversion;
+    xsd::optional<domain::cbConversionResetData> ConversionResets;
+    xsd::optional<domain::underlying> Underlying;
+    xsd::optional<domain::cbConversionData_FXIndex_t> FXIndex;
+    xsd::optional<domain::calendar> FXIndexCalendar;
+    xsd::optional<int64_t> FXIndexFixingDays;
+    xsd::optional<domain::cbExchangeableData> Exchangeable;
+};
+
+struct cbDividendProtectionData_AdjustmentStyles_t
+{
+    xsd::vector<domain::cbDividendProtectionData_AdjustmentStyles_t_AdjustmentStyle_t> AdjustmentStyle;
+};
+
+struct cbDividendProtectionData_DividendTypes_t
+{
+    xsd::vector<domain::cbDividendProtectionData_DividendTypes_t_DividendType_t> DividendType;
+};
+
+struct cbDividendProtectionData_Thresholds_t
+{
+    xsd::vector<domain::cbDividendProtectionData_Thresholds_t_Threshold_t> Threshold;
+};
+
+struct cbDividendProtectionData
+{
+    domain::scheduleData ScheduleData;
+    domain::cbDividendProtectionData_AdjustmentStyles_t AdjustmentStyles;
+    domain::cbDividendProtectionData_DividendTypes_t DividendTypes;
+    domain::cbDividendProtectionData_Thresholds_t Thresholds;
+};
+
+struct callableBondCallData_Styles_t
+{
+    xsd::vector<domain::callableBondCallData_Styles_t_Style_t> Style;
+};
+
+struct callableBondCallData_Prices_t
+{
+    xsd::vector<domain::callableBondCallData_Prices_t_Price_t> Price;
+};
+
+struct callableBondCallData_PriceTypes_t
+{
+    xsd::vector<domain::callableBondCallData_PriceTypes_t_PriceType_t> PriceType;
+};
+
+struct callableBondCallData_IncludeAccruals_t
+{
+    xsd::vector<domain::callableBondCallData_IncludeAccruals_t_IncludeAccrual_t> IncludeAccrual;
+};
+
+struct callableBondCallData
+{
+    domain::scheduleData ScheduleData;
+    domain::callableBondCallData_Styles_t Styles;
+    domain::callableBondCallData_Prices_t Prices;
+    domain::callableBondCallData_PriceTypes_t PriceTypes;
+    domain::callableBondCallData_IncludeAccruals_t IncludeAccruals;
+};
+
+struct rpaData_IssuerId_t : xsd::string
+{
+};
+
+struct cboStructure_DayCounter_t : xsd::string
+{
+};
+
+struct cboStructure_PaymentConvention_t : xsd::string
+{
+};
+
+struct cboStructure_FeeDayCounter_t : xsd::string
+{
+};
+
+struct cboBondBasketData
+{
+    xsd::vector<domain::cboBondBasketData_Trade_t> Trade;
+};
+
+struct cbotranches
+{
+    xsd::vector<domain::cbotranche> Tranche;
+};
+
+struct cboStructure
+{
+    domain::cboStructure_DayCounter_t DayCounter;
+    domain::cboStructure_PaymentConvention_t PaymentConvention;
+    domain::currencyCode Currency;
+    xsd::optional<domain::cboStructure_ReinvestmentEndDate_t> ReinvestmentEndDate;
+    float SeniorFee;
+    domain::cboStructure_FeeDayCounter_t FeeDayCounter;
+    float SubordinatedFee;
+    float EquityKicker;
+    domain::cboBondBasketData BondBasketData;
+    domain::cbotranches CBOTranches;
+    domain::scheduleData ScheduleData;
+};
+
+struct bondBasketData_Identifier_t : xsd::string
+{
+};
+
+struct equityOptionUnderlyingData
+{
+    domain::underlying Underlying;
+    domain::optionData OptionData;
+    float Strike;
+};
+
+struct trsUnderlyingData_Derivative_t_Id_t : xsd::string
+{
+};
+
+struct trsUnderlyingData_Derivative_t_Trade_t
+{
+    xsd::optional<xsd::string> id;
+    domain::oreTradeType TradeType;
+    xsd::optional<domain::envelope> Envelope;
+    domain::swapData CrossCurrencySwapData;
+    domain::swapData InflationSwapData;
+    domain::swapData SwapData;
+    domain::swapData EquitySwapData;
+    domain::callableSwapData CallableSwapData;
+    domain::arcOptionData ArcOptionData;
+    domain::swaptionData SwaptionData;
+    domain::varianceSwapData VarianceSwapData;
+    domain::varianceSwapData EquityVarianceSwapData;
+    domain::varianceSwapData FxVarianceSwapData;
+    domain::varianceSwapData CommodityVarianceSwapData;
+    domain::forwardRateAgreementData ForwardRateAgreementData;
+    domain::fxForwardData FxForwardData;
+    domain::fxAverageForwardData FxAverageForwardData;
+    domain::fxOptionData FxOptionData;
+    domain::fxBarrierOptionData FxBarrierOptionData;
+    domain::fxBarrierOptionData FxDoubleBarrierOptionData;
+    domain::fxDigitalOptionData FxDigitalOptionData;
+    domain::fxBarrierOptionData FxEuropeanBarrierOptionData;
+    domain::fxKIKOBarrierOptionData FxKIKOBarrierOptionData;
+    domain::fxDigitalBarrierOptionData FxDigitalBarrierOptionData;
+    domain::fxTouchOptionData FxTouchOptionData;
+    domain::fxTouchOptionData FxDoubleTouchOptionData;
+    domain::fxSwapData FxSwapData;
+    domain::capFloorData CapFloorData;
+    domain::equityFutureOptionData EquityFutureOptionData;
+    domain::equityOptionData EquityOptionData;
+    domain::eqBarrierOptionData EquityBarrierOptionData;
+    domain::eqBarrierOptionData EquityDoubleBarrierOptionData;
+    domain::equityForwardData EquityForwardData;
+    domain::eqBarrierOptionData EquityEuropeanBarrierOptionData;
+    domain::eqDigitalOptionData EquityDigitalOptionData;
+    domain::eqTouchOptionData EquityDoubleTouchOptionData;
+    domain::eqTouchOptionData EquityTouchOptionData;
+    domain::cliquetOptionData EquityCliquetOptionData;
+    domain::bondData BondData;
+    domain::forwardBondData ForwardBondData;
+    domain::bondFutureData BondFutureData;
+    domain::creditDefaultSwapData CreditDefaultSwapData;
+    domain::creditDefaultSwapOptionData CreditDefaultSwapOptionData;
+    domain::commodityForwardData CommodityForwardData;
+    domain::commodityOptionData CommodityOptionData;
+    domain::commodityDigitalAveragePriceOptionData CommodityDigitalAveragePriceOptionData;
+    domain::commodityDigitalOptionData CommodityDigitalOptionData;
+    domain::commoditySpreadOptionData CommoditySpreadOptionData;
+    domain::commoditySwapData CommoditySwapData;
+    domain::commoditySwaptionData CommoditySwaptionData;
+    domain::commodityAveragePriceOptionData CommodityAveragePriceOptionData;
+    domain::commodityOptionStripData CommodityOptionStripData;
+    domain::commodityPositionData CommodityPositionData;
+    domain::singleUnderlyingAsianOptionData EquityAsianOptionData;
+    domain::singleUnderlyingAsianOptionData FxAsianOptionData;
+    domain::singleUnderlyingAsianOptionData CommodityAsianOptionData;
+    domain::bondOptionData BondOptionData;
+    domain::bondRepoData BondRepoData;
+    domain::bondTRSData BondTRSData;
+    domain::cdoData CdoData;
+    domain::creditLinkedSwapData CreditLinkedSwapData;
+    domain::indexCreditDefaultSwapData IndexCreditDefaultSwapData;
+    domain::indexCreditDefaultSwapOptionData IndexCreditDefaultSwapOptionData;
+    domain::multiLegOptionData MultiLegOptionData;
+    domain::ascotData AscotData;
+    domain::convertibleBondData ConvertibleBondData;
+    domain::callableBondData CallableBondData;
+    domain::tlockData TreasuryLockData;
+    domain::rpaData RiskParticipationAgreementData;
+    domain::cbodata CBOData;
+    domain::bondBasketData BondBasketData;
+    domain::equityPositionData EquityPositionData;
+    domain::equityOptionPositionData EquityOptionPositionData;
+    domain::totalReturnSwapData TotalReturnSwapData;
+    domain::totalReturnSwapData ContractForDifferenceData;
+    domain::compositeTradeData CompositeTradeData;
+    domain::pairwiseVarianceSwapData1 PairwiseVarianceSwapData;
+    domain::pairwiseVarianceSwapData2 EquityPairwiseVarianceSwapData;
+    domain::pairwiseVarianceSwapData2 FxPairwiseVarianceSwapData;
+    domain::eqOutperformanceOptionData EquityOutperformanceOptionData;
+    domain::flexiSwapData FlexiSwapData;
+    domain::bgSwapData BalanceGuaranteedSwapData;
+    domain::commodityRevenueOptionData CommodityRevenueOptionData;
+    domain::basketVarianceSwapData BasketVarianceSwapData;
+    domain::basketVarianceSwapData2 EquityBasketVarianceSwapData;
+    domain::basketVarianceSwapData2 FxBasketVarianceSwapData;
+    domain::basketVarianceSwapData2 CommodityBasketVarianceSwapData;
+    domain::extendedAccumulatorData ExtendedAccumulatorData;
+    domain::varianceOptionData VarianceOptionData;
+    domain::varianceDispersionSwapData VarianceDispersionSwapData;
+    domain::kikoVarianceSwapData KIKOVarianceSwapData;
+    domain::corridorVarianceSwapData CorridorVarianceSwapData;
+    domain::indexedCorridorVarianceSwapData IndexedCorridorVarianceSwapData;
+    domain::kikoCorridorVarianceSwapData KIKOCorridorVarianceSwapData;
+    domain::corridorVarianceDispersionSwapData CorridorVarianceDispersionSwapData;
+    domain::koCorridorVarianceDispersionSwapData KOCorridorVarianceDispersionSwapData;
+    domain::pairwiseGeometricVarianceDispersionSwapData PairwiseGeometricVarianceDispersionSwapData;
+    domain::conditionalVarianceSwap01Data ConditionalVarianceSwap01Data;
+    domain::conditionalVarianceSwap02Data ConditionalVarianceSwap02Data;
+    domain::gammaSwapData GammaSwapData;
+    domain::bestEntryOptionData BestEntryOptionData;
+    domain::dualEuroBinaryOptionData DualEuroBinaryOptionData;
+    domain::dualEuroBinaryOptionDoubleKOData DualEuroBinaryOptionDoubleKOData;
+    domain::volBarrierOptionData VolatilityBarrierOptionData;
+    domain::tarfData2 FxTaRFData;
+    domain::tarfData2 EquityTaRFData;
+    domain::tarfData2 CommodityTaRFData;
+    domain::accumulatorData FxAccumulatorData;
+    domain::accumulatorData EquityAccumulatorData;
+    domain::accumulatorData CommodityAccumulatorData;
+    domain::windowBarrierOptionData2 FxWindowBarrierOptionData;
+    domain::windowBarrierOptionData2 EquityWindowBarrierOptionData;
+    domain::windowBarrierOptionData2 CommodityWindowBarierOptionData;
+    domain::basketOptionData EquityBasketOptionData;
+    domain::basketOptionData FxBasketOptionData;
+    domain::basketOptionData CommodityBasketOptionData;
+    domain::genericBarrierOptionData FxGenericBarrierOptionData;
+    domain::genericBarrierOptionData EquityGenericBarrierOptionData;
+    domain::genericBarrierOptionData CommodityGenericBarrierOptionData;
+    domain::rainbowOptionData EquityRainbowOptionData;
+    domain::rainbowOptionData FxRainbowOptionData;
+    domain::rainbowOptionData CommodityRainbowOptionData;
+    domain::autocallable01Data Autocallable01Data;
+    domain::doubleDigitalOptionData DoubleDigitalOptionData;
+    domain::performanceOption01Data PerformanceOption01Data;
+    domain::scriptedTradeData ScriptedTradeData;
+    domain::vanillaBasketOptionData VanillaBasketOptionData;
+    domain::asianBasketOptionData AsianBasketOptionData;
+    domain::averageStrikeBasketOptionData AverageStrikeBasketOptionData;
+    domain::lookbackCallBasketOptionData LookbackCallBasketOptionData;
+    domain::lookbackPutBasketOptionData LookbackPutBasketOptionData;
+    domain::bestOfAirbagData BestOfAirbagData;
+    domain::worstOfBasketSwapData WorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 FxWorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 EquityWorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 CommodityWorstOfBasketSwapData;
+    domain::worstPerformanceRainbowOption01Data WorstPerformanceRainbowOption01Data;
+    domain::worstPerformanceRainbowOption02Data WorstPerformanceRainbowOption02Data;
+    domain::worstPerformanceRainbowOption03Data WorstPerformanceRainbowOption03Data;
+    domain::worstPerformanceRainbowOption04Data WorstPerformanceRainbowOption04Data;
+    domain::worstPerformanceRainbowOption05Data WorstPerformanceRainbowOption05Data;
+    domain::worstPerformanceRainbowOption06Data WorstPerformanceRainbowOption06Data;
+    domain::worstPerformanceRainbowOption07Data WorstPerformanceRainbowOption07Data;
+    domain::bestOfAssetOrCashRainbowOptionData BestOfAssetOrCashRainbowOptionData;
+    domain::worstOfAssetOrCashRainbowOptionData WorstOfAssetOrCashRainbowOptionData;
+    domain::minRainbowOptionData MinRainbowOptionData;
+    domain::maxRainbowOptionData MaxRainbowOptionData;
+    domain::windowBarrierOptionData WindowBarrierOptionData;
+    domain::accumulator01Data Accumulator01Data;
+    domain::accumulator02Data Accumulator02Data;
+    domain::bestEntryOptionData2 EquityBestEntryOptionData;
+    domain::bestEntryOptionData2 FxBestEntryOptionData;
+    domain::bestEntryOptionData2 CommodityBestEntryOptionData;
+    domain::tarfData TaRFData;
+    domain::europeanRainbowCallSpreadOptionData EuropeanRainbowCallSpreadOptionData;
+    domain::rainbowCallSpreadBarrierOptionData RainbowCallSpreadBarrierOptionData;
+    domain::asianRainbowCallSpreadOptionData AsianRainbowCallSpreadOptionData;
+    domain::asianIrCapFloorData AsianIrCapFloorData;
+    domain::forwardVolatilityAgreementData ForwardVolatilityAgreementData;
+    domain::correlationSwapData CorrelationSwapData;
+    domain::assetLinkedCliquetOptionData AssetLinkedCliquetOptionData;
+    domain::constantMaturityVolatilitySwapData ConstantMaturityVolatilitySwapData;
+    domain::cmsCapFloorBarrierData CMSCapFloorBarrierData;
+    domain::fixedStrikeForwardStartingOptionData FixedStrikeForwardStartingOptionData;
+    domain::floatingStrikeForwardStartingOptionData FloatingStrikeForwardStartingOptionData;
+    domain::forwardStartingSwaptionData ForwardStartingSwaptionData;
+    domain::flooredAverageCPIZCIISData FlooredAverageCPIZCIISData;
+    domain::genericBarrierOptionDataRaw GenericBarrierOptionData;
+    domain::movingMaxYYIISData MovingMaxYYIISData;
+    domain::irregularYYIISData IrregularYYIISData;
+    domain::europeanOptionBarrierData EuropeanOptionBarrierData;
+    domain::ladderLockInOptionData LadderLockInOptionData;
+    domain::lapseHedgeSwapData LapseHedgeSwapData;
+    domain::knockOutSwapData KnockOutSwapData;
+    domain::LPISwapData LPISwapData;
+    domain::cashPositionData CashPositionData;
+    domain::strikeResettableOptionData StrikeResettableOptionData;
+    domain::strikeResettableOptionData2 EquityStrikeResettableOptionData;
+    domain::strikeResettableOptionData2 FxStrikeResettableOptionData;
+    domain::strikeResettableOptionData2 CommodityStrikeResettableOptionData;
+};
+
+struct trsUnderlyingData_Derivative_t
+{
+    domain::trsUnderlyingData_Derivative_t_Id_t Id;
+    domain::trsUnderlyingData_Derivative_t_Trade_t Trade;
+};
+
+struct trsUnderlyingData_Trade_t
+{
+    xsd::optional<xsd::string> id;
+    domain::oreTradeType TradeType;
+    xsd::optional<domain::envelope> Envelope;
+    domain::swapData CrossCurrencySwapData;
+    domain::swapData InflationSwapData;
+    domain::swapData SwapData;
+    domain::swapData EquitySwapData;
+    domain::callableSwapData CallableSwapData;
+    domain::arcOptionData ArcOptionData;
+    domain::swaptionData SwaptionData;
+    domain::varianceSwapData VarianceSwapData;
+    domain::varianceSwapData EquityVarianceSwapData;
+    domain::varianceSwapData FxVarianceSwapData;
+    domain::varianceSwapData CommodityVarianceSwapData;
+    domain::forwardRateAgreementData ForwardRateAgreementData;
+    domain::fxForwardData FxForwardData;
+    domain::fxAverageForwardData FxAverageForwardData;
+    domain::fxOptionData FxOptionData;
+    domain::fxBarrierOptionData FxBarrierOptionData;
+    domain::fxBarrierOptionData FxDoubleBarrierOptionData;
+    domain::fxDigitalOptionData FxDigitalOptionData;
+    domain::fxBarrierOptionData FxEuropeanBarrierOptionData;
+    domain::fxKIKOBarrierOptionData FxKIKOBarrierOptionData;
+    domain::fxDigitalBarrierOptionData FxDigitalBarrierOptionData;
+    domain::fxTouchOptionData FxTouchOptionData;
+    domain::fxTouchOptionData FxDoubleTouchOptionData;
+    domain::fxSwapData FxSwapData;
+    domain::capFloorData CapFloorData;
+    domain::equityFutureOptionData EquityFutureOptionData;
+    domain::equityOptionData EquityOptionData;
+    domain::eqBarrierOptionData EquityBarrierOptionData;
+    domain::eqBarrierOptionData EquityDoubleBarrierOptionData;
+    domain::equityForwardData EquityForwardData;
+    domain::eqBarrierOptionData EquityEuropeanBarrierOptionData;
+    domain::eqDigitalOptionData EquityDigitalOptionData;
+    domain::eqTouchOptionData EquityDoubleTouchOptionData;
+    domain::eqTouchOptionData EquityTouchOptionData;
+    domain::cliquetOptionData EquityCliquetOptionData;
+    domain::bondData BondData;
+    domain::forwardBondData ForwardBondData;
+    domain::bondFutureData BondFutureData;
+    domain::creditDefaultSwapData CreditDefaultSwapData;
+    domain::creditDefaultSwapOptionData CreditDefaultSwapOptionData;
+    domain::commodityForwardData CommodityForwardData;
+    domain::commodityOptionData CommodityOptionData;
+    domain::commodityDigitalAveragePriceOptionData CommodityDigitalAveragePriceOptionData;
+    domain::commodityDigitalOptionData CommodityDigitalOptionData;
+    domain::commoditySpreadOptionData CommoditySpreadOptionData;
+    domain::commoditySwapData CommoditySwapData;
+    domain::commoditySwaptionData CommoditySwaptionData;
+    domain::commodityAveragePriceOptionData CommodityAveragePriceOptionData;
+    domain::commodityOptionStripData CommodityOptionStripData;
+    domain::commodityPositionData CommodityPositionData;
+    domain::singleUnderlyingAsianOptionData EquityAsianOptionData;
+    domain::singleUnderlyingAsianOptionData FxAsianOptionData;
+    domain::singleUnderlyingAsianOptionData CommodityAsianOptionData;
+    domain::bondOptionData BondOptionData;
+    domain::bondRepoData BondRepoData;
+    domain::bondTRSData BondTRSData;
+    domain::cdoData CdoData;
+    domain::creditLinkedSwapData CreditLinkedSwapData;
+    domain::indexCreditDefaultSwapData IndexCreditDefaultSwapData;
+    domain::indexCreditDefaultSwapOptionData IndexCreditDefaultSwapOptionData;
+    domain::multiLegOptionData MultiLegOptionData;
+    domain::ascotData AscotData;
+    domain::convertibleBondData ConvertibleBondData;
+    domain::callableBondData CallableBondData;
+    domain::tlockData TreasuryLockData;
+    domain::rpaData RiskParticipationAgreementData;
+    domain::cbodata CBOData;
+    domain::bondBasketData BondBasketData;
+    domain::equityPositionData EquityPositionData;
+    domain::equityOptionPositionData EquityOptionPositionData;
+    domain::totalReturnSwapData TotalReturnSwapData;
+    domain::totalReturnSwapData ContractForDifferenceData;
+    domain::compositeTradeData CompositeTradeData;
+    domain::pairwiseVarianceSwapData1 PairwiseVarianceSwapData;
+    domain::pairwiseVarianceSwapData2 EquityPairwiseVarianceSwapData;
+    domain::pairwiseVarianceSwapData2 FxPairwiseVarianceSwapData;
+    domain::eqOutperformanceOptionData EquityOutperformanceOptionData;
+    domain::flexiSwapData FlexiSwapData;
+    domain::bgSwapData BalanceGuaranteedSwapData;
+    domain::commodityRevenueOptionData CommodityRevenueOptionData;
+    domain::basketVarianceSwapData BasketVarianceSwapData;
+    domain::basketVarianceSwapData2 EquityBasketVarianceSwapData;
+    domain::basketVarianceSwapData2 FxBasketVarianceSwapData;
+    domain::basketVarianceSwapData2 CommodityBasketVarianceSwapData;
+    domain::extendedAccumulatorData ExtendedAccumulatorData;
+    domain::varianceOptionData VarianceOptionData;
+    domain::varianceDispersionSwapData VarianceDispersionSwapData;
+    domain::kikoVarianceSwapData KIKOVarianceSwapData;
+    domain::corridorVarianceSwapData CorridorVarianceSwapData;
+    domain::indexedCorridorVarianceSwapData IndexedCorridorVarianceSwapData;
+    domain::kikoCorridorVarianceSwapData KIKOCorridorVarianceSwapData;
+    domain::corridorVarianceDispersionSwapData CorridorVarianceDispersionSwapData;
+    domain::koCorridorVarianceDispersionSwapData KOCorridorVarianceDispersionSwapData;
+    domain::pairwiseGeometricVarianceDispersionSwapData PairwiseGeometricVarianceDispersionSwapData;
+    domain::conditionalVarianceSwap01Data ConditionalVarianceSwap01Data;
+    domain::conditionalVarianceSwap02Data ConditionalVarianceSwap02Data;
+    domain::gammaSwapData GammaSwapData;
+    domain::bestEntryOptionData BestEntryOptionData;
+    domain::dualEuroBinaryOptionData DualEuroBinaryOptionData;
+    domain::dualEuroBinaryOptionDoubleKOData DualEuroBinaryOptionDoubleKOData;
+    domain::volBarrierOptionData VolatilityBarrierOptionData;
+    domain::tarfData2 FxTaRFData;
+    domain::tarfData2 EquityTaRFData;
+    domain::tarfData2 CommodityTaRFData;
+    domain::accumulatorData FxAccumulatorData;
+    domain::accumulatorData EquityAccumulatorData;
+    domain::accumulatorData CommodityAccumulatorData;
+    domain::windowBarrierOptionData2 FxWindowBarrierOptionData;
+    domain::windowBarrierOptionData2 EquityWindowBarrierOptionData;
+    domain::windowBarrierOptionData2 CommodityWindowBarierOptionData;
+    domain::basketOptionData EquityBasketOptionData;
+    domain::basketOptionData FxBasketOptionData;
+    domain::basketOptionData CommodityBasketOptionData;
+    domain::genericBarrierOptionData FxGenericBarrierOptionData;
+    domain::genericBarrierOptionData EquityGenericBarrierOptionData;
+    domain::genericBarrierOptionData CommodityGenericBarrierOptionData;
+    domain::rainbowOptionData EquityRainbowOptionData;
+    domain::rainbowOptionData FxRainbowOptionData;
+    domain::rainbowOptionData CommodityRainbowOptionData;
+    domain::autocallable01Data Autocallable01Data;
+    domain::doubleDigitalOptionData DoubleDigitalOptionData;
+    domain::performanceOption01Data PerformanceOption01Data;
+    domain::scriptedTradeData ScriptedTradeData;
+    domain::vanillaBasketOptionData VanillaBasketOptionData;
+    domain::asianBasketOptionData AsianBasketOptionData;
+    domain::averageStrikeBasketOptionData AverageStrikeBasketOptionData;
+    domain::lookbackCallBasketOptionData LookbackCallBasketOptionData;
+    domain::lookbackPutBasketOptionData LookbackPutBasketOptionData;
+    domain::bestOfAirbagData BestOfAirbagData;
+    domain::worstOfBasketSwapData WorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 FxWorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 EquityWorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 CommodityWorstOfBasketSwapData;
+    domain::worstPerformanceRainbowOption01Data WorstPerformanceRainbowOption01Data;
+    domain::worstPerformanceRainbowOption02Data WorstPerformanceRainbowOption02Data;
+    domain::worstPerformanceRainbowOption03Data WorstPerformanceRainbowOption03Data;
+    domain::worstPerformanceRainbowOption04Data WorstPerformanceRainbowOption04Data;
+    domain::worstPerformanceRainbowOption05Data WorstPerformanceRainbowOption05Data;
+    domain::worstPerformanceRainbowOption06Data WorstPerformanceRainbowOption06Data;
+    domain::worstPerformanceRainbowOption07Data WorstPerformanceRainbowOption07Data;
+    domain::bestOfAssetOrCashRainbowOptionData BestOfAssetOrCashRainbowOptionData;
+    domain::worstOfAssetOrCashRainbowOptionData WorstOfAssetOrCashRainbowOptionData;
+    domain::minRainbowOptionData MinRainbowOptionData;
+    domain::maxRainbowOptionData MaxRainbowOptionData;
+    domain::windowBarrierOptionData WindowBarrierOptionData;
+    domain::accumulator01Data Accumulator01Data;
+    domain::accumulator02Data Accumulator02Data;
+    domain::bestEntryOptionData2 EquityBestEntryOptionData;
+    domain::bestEntryOptionData2 FxBestEntryOptionData;
+    domain::bestEntryOptionData2 CommodityBestEntryOptionData;
+    domain::tarfData TaRFData;
+    domain::europeanRainbowCallSpreadOptionData EuropeanRainbowCallSpreadOptionData;
+    domain::rainbowCallSpreadBarrierOptionData RainbowCallSpreadBarrierOptionData;
+    domain::asianRainbowCallSpreadOptionData AsianRainbowCallSpreadOptionData;
+    domain::asianIrCapFloorData AsianIrCapFloorData;
+    domain::forwardVolatilityAgreementData ForwardVolatilityAgreementData;
+    domain::correlationSwapData CorrelationSwapData;
+    domain::assetLinkedCliquetOptionData AssetLinkedCliquetOptionData;
+    domain::constantMaturityVolatilitySwapData ConstantMaturityVolatilitySwapData;
+    domain::cmsCapFloorBarrierData CMSCapFloorBarrierData;
+    domain::fixedStrikeForwardStartingOptionData FixedStrikeForwardStartingOptionData;
+    domain::floatingStrikeForwardStartingOptionData FloatingStrikeForwardStartingOptionData;
+    domain::forwardStartingSwaptionData ForwardStartingSwaptionData;
+    domain::flooredAverageCPIZCIISData FlooredAverageCPIZCIISData;
+    domain::genericBarrierOptionDataRaw GenericBarrierOptionData;
+    domain::movingMaxYYIISData MovingMaxYYIISData;
+    domain::irregularYYIISData IrregularYYIISData;
+    domain::europeanOptionBarrierData EuropeanOptionBarrierData;
+    domain::ladderLockInOptionData LadderLockInOptionData;
+    domain::lapseHedgeSwapData LapseHedgeSwapData;
+    domain::knockOutSwapData KnockOutSwapData;
+    domain::LPISwapData LPISwapData;
+    domain::cashPositionData CashPositionData;
+    domain::strikeResettableOptionData StrikeResettableOptionData;
+    domain::strikeResettableOptionData2 EquityStrikeResettableOptionData;
+    domain::strikeResettableOptionData2 FxStrikeResettableOptionData;
+    domain::strikeResettableOptionData2 CommodityStrikeResettableOptionData;
+};
+
+struct trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t : xsd::string
+{
+};
+
+struct trsUnderlyingData_PortfolioIndexTradeData_t
+{
+    domain::trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t BasketName;
+    xsd::optional<domain::trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t> IndexQuantity;
+};
+
+struct trsReturnData_ObservationLag_t : xsd::string
+{
+};
+
+struct trsReturnData_PaymentDates_t
+{
+    xsd::vector<domain::date> PaymentDate;
+};
+
+enum class trsNotionalType
+{
+    PeriodReset,
+    DailyReset,
+    Fixed,
+};
+
+std::string to_string(trsNotionalType);
+
+struct trsFundingData
+{
+    xsd::vector<int64_t> FundingResetGracePeriod;
+    xsd::vector<domain::trsNotionalType> NotionalType;
+    xsd::vector<domain::legData> LegData;
+};
+
+struct trsAdditionalCashflowData
+{
+    domain::legData LegData;
+};
+
+struct compositeTradeData_BasketName_t : xsd::string
+{
+};
+
+struct compositeTradeComponents
+{
+    xsd::vector<domain::compositeTradeComponents_Trade_t> Trade;
+};
+
+struct stFreeStyleIndexVectorBase_Value_t : xsd::string
+{
+};
+
+struct underlying_IdentifierType_t : xsd::string
+{
+};
+
+struct underlying_Exchange_t : xsd::string
+{
+};
+
+struct underlying_PriceType_t : xsd::string
+{
+};
+
+struct underlying_DeliveryRollCalendar_t : xsd::string
+{
+};
+
+struct underlying_FutureExpiryDate_t : xsd::string
+{
+};
+
+struct underlying_FutureContractMonth_t : xsd::string
+{
+};
+
+struct underlying_Interpolation_t : xsd::string
+{
+};
+
+struct flexiSwapData_LowerNotionalBounds_t
+{
+    xsd::vector<domain::flexiSwapData_LowerNotionalBounds_t_Notional_t> Notional;
+};
+
+struct flexiSwapData_Prepayment_t
+{
+    xsd::optional<domain::flexiSwapData_Prepayment_t_NoticePeriod_t> NoticePeriod;
+    xsd::optional<domain::flexiSwapData_Prepayment_t_NoticeCalendar_t> NoticeCalendar;
+    xsd::optional<domain::flexiSwapData_Prepayment_t_NoticeConvention_t> NoticeConvention;
+    xsd::vector<domain::flexiSwapData_Prepayment_t_PrepaymentOptions_t> PrepaymentOptions;
+};
+
+struct tranche_SecurityId_t : xsd::string
+{
+};
+
+struct tranche_Notionals_t
+{
+    xsd::vector<domain::tranche_Notionals_t_Notional_t> Notional;
+};
+
+struct tranche
+{
+    xsd::optional<domain::tranche_Description_t> Description;
+    domain::tranche_SecurityId_t SecurityId;
+    int64_t Seniority;
+    domain::tranche_Notionals_t Notionals;
+};
+
+struct tarfData2_Strikes_t
+{
+    xsd::vector<domain::tarfData2_Strikes_t_Strike_t> Strike;
+};
+
+struct tarfData2_SettlementLag_t : xsd::string
+{
+};
+
+struct tarfData2_RangeBounds_t
+{
+    xsd::vector<domain::rangeBound> RangeBound;
+};
+
+struct tarfData2_RangeBoundSet_t
+{
+    xsd::vector<domain::tarfData2_RangeBoundSet_t_RangeBounds_t> RangeBounds;
+};
+
+struct accumulatorData_SettlementLag_t : xsd::string
+{
+};
+
+struct rangeBound
+{
+    xsd::optional<xsd::string> startDate;
+    xsd::optional<float> RangeFrom;
+    xsd::optional<float> RangeTo;
+    xsd::optional<float> Leverage;
+    xsd::optional<float> Strike;
+    xsd::optional<float> StrikeAdjustment;
+};
+
+struct accumulatorData_Barriers_t
+{
+    xsd::vector<domain::barrierData> BarrierData;
+};
+
+struct basketOptionData_Settlement_t : xsd::string
+{
+};
+
+struct genericBarrierOptionData_SettlementLag_t : xsd::string
+{
+};
+
+struct genericBarrierOptionData_TransatlanticBarrier_t
+{
+    xsd::vector<domain::barrierData> BarrierData;
+};
+
+struct rainbowOptionData_Settlement_t : xsd::string
+{
+};
+
+struct doubleDigitalOptionData_Name1_t : xsd::string
+{
+};
+
+struct doubleDigitalOptionData_Name2_t : xsd::string
+{
+};
+
+struct scriptedTradeData_ScriptName_t : xsd::string
+{
+};
+
+struct scriptedTradeData_ProductTag_t : xsd::string
+{
+};
+
+struct ore_script_Code_t : xsd::string
+{
+};
+
+struct ore_script_NPV_t : xsd::string
+{
+};
+
+struct ore_script
+{
+    xsd::optional<xsd::string> purpose;
+    domain::ore_script_Code_t Code;
+    domain::ore_script_NPV_t NPV;
+    xsd::optional<domain::ore_script_Results_t> Results;
+    xsd::optional<domain::ore_script_PricingEngineConfigOverwrite_t> PricingEngineConfigOverwrite;
+    xsd::optional<domain::ore_script_CalibrationSpec_t> CalibrationSpec;
+    xsd::optional<domain::ore_script_ScheduleCoarsening_t> ScheduleCoarsening;
+    xsd::optional<domain::ore_script_NewSchedules_t> NewSchedules;
+    xsd::optional<domain::ore_script_StickyCloseOutStates_t> StickyCloseOutStates;
+    xsd::optional<domain::ore_script_ConditionalExpectation_t> ConditionalExpectation;
+    xsd::optional<domain::ore_script_AmcCg_t> AmcCg;
+};
+
+struct scriptedTradeData_Data_t_Number_t_Name_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Number_t
+{
+    domain::scriptedTradeData_Data_t_Number_t_Name_t Name;
+    xsd::optional<domain::scriptedTradeData_Data_t_Number_t_Value_t> Value;
+    xsd::optional<domain::scriptedTradeData_Data_t_Number_t_Values_t> Values;
+};
+
+struct scriptedTradeData_Data_t_Currency_t_Name_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Currency_t
+{
+    domain::scriptedTradeData_Data_t_Currency_t_Name_t Name;
+    xsd::optional<domain::scriptedTradeData_Data_t_Currency_t_Value_t> Value;
+    xsd::optional<domain::scriptedTradeData_Data_t_Currency_t_Values_t> Values;
+};
+
+struct scriptedTradeData_Data_t_Index_t_Name_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Index_t
+{
+    domain::scriptedTradeData_Data_t_Index_t_Name_t Name;
+    xsd::optional<domain::scriptedTradeData_Data_t_Index_t_Value_t> Value;
+    xsd::optional<domain::scriptedTradeData_Data_t_Index_t_Values_t> Values;
+};
+
+struct scriptedTradeData_Data_t_Event_t_Name_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Event_t
+{
+    domain::scriptedTradeData_Data_t_Event_t_Name_t Name;
+    xsd::optional<domain::scriptedTradeData_Data_t_Event_t_Value_t> Value;
+    xsd::optional<domain::scheduleData> ScheduleData;
+    xsd::optional<domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t> DerivedSchedule;
+    xsd::optional<domain::bool_> ApplyCoarsening;
+};
+
+struct scriptedTradeData_Data_t_Daycounter_t_Name_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Daycounter_t
+{
+    domain::scriptedTradeData_Data_t_Daycounter_t_Name_t Name;
+    xsd::optional<domain::scriptedTradeData_Data_t_Daycounter_t_Value_t> Value;
+    xsd::optional<domain::scriptedTradeData_Data_t_Daycounter_t_Values_t> Values;
+};
+
+struct worstOfBasketSwapData2_FloatingLookback_t : xsd::string
+{
+};
+
+struct worstOfBasketSwapData2_FloatingRateCutoff_t : xsd::string
+{
+};
+
+struct stFreeStyleOptionTypeVectorBase_Value_t : xsd::string
+{
 };
 
 struct parameters_Scenario_t : xsd::string
@@ -4712,8 +9659,6 @@ struct cdsVolatility_CurveDescription_t : xsd::string
 {
 };
 
-typedef double positiveDecimal;
-
 struct cdsVolatility
 {
     domain::cdsVolatility_CurveId_t CurveId;
@@ -4751,8 +9696,6 @@ enum class defaultCurveType
 };
 
 std::string to_string(defaultCurveType);
-
-typedef xsd::string date;
 
 struct defaultCurve
 {
@@ -4986,8 +9929,6 @@ struct equityCurve_CurveId_t : xsd::string
 struct equityCurve_CurveDescription_t : xsd::string
 {
 };
-
-typedef xsd::string extendedCurrencyCode;
 
 struct equityCurve_ForecastingCurve_t : xsd::string
 {
@@ -5809,7 +10750,7 @@ struct indexcurve
 {
     domain::indexNameType index;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::indexcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::indexcurve_ShiftTenors_t ShiftTenors;
@@ -5825,7 +10766,7 @@ struct yieldcurve
     xsd::string name;
     xsd::optional<domain::yieldcurve_CurveType_t> CurveType;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yieldcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::yieldcurve_ShiftTenors_t ShiftTenors;
@@ -5836,7 +10777,7 @@ struct fxspot
 {
     domain::currencyPair ccypair;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::fxspot_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
 };
@@ -5849,7 +10790,7 @@ struct fxvolatility
 {
     domain::currencyPair ccypair;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::fxvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::fxvolatility_ShiftExpiries_t ShiftExpiries;
@@ -5869,7 +10810,7 @@ struct swaptionvolatility
     xsd::optional<xsd::string> key;
     xsd::optional<domain::currencyCode> ccy;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::swaptionvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::swaptionvolatility_ShiftExpiries_t ShiftExpiries;
@@ -5889,7 +10830,7 @@ struct yieldvolatility
 {
     xsd::string name;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yieldvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::yieldvolatility_ShiftExpiries_t ShiftExpiries;
@@ -5905,7 +10846,7 @@ struct capfloorvolatility
     xsd::optional<xsd::string> key;
     xsd::optional<domain::currencyCode> ccy;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::capfloorvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::capfloorvolatility_ShiftExpiries_t ShiftExpiries;
@@ -5923,7 +10864,7 @@ struct cdsvolatility
 {
     xsd::string name;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::cdsvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::cdsvolatility_ShiftExpiries_t ShiftExpiries;
@@ -5938,7 +10879,7 @@ struct creditcurve
     xsd::string name;
     domain::currencyCode Currency;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::creditcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::creditcurve_ShiftTenors_t ShiftTenors;
@@ -5949,7 +10890,7 @@ struct equityspot
 {
     xsd::string equity;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::equityspot_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
 };
@@ -5962,7 +10903,7 @@ struct equityvolatility
 {
     xsd::string equity;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::equityvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::equityvolatility_ShiftExpiries_t ShiftExpiries;
@@ -5977,7 +10918,7 @@ struct zeroinflationindexcurve
 {
     xsd::string index;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::zeroinflationindexcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::zeroinflationindexcurve_ShiftTenors_t ShiftTenors;
@@ -5992,7 +10933,7 @@ struct yyinflationindexcurve
 {
     xsd::string index;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yyinflationindexcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::yyinflationindexcurve_ShiftTenors_t ShiftTenors;
@@ -6007,7 +10948,7 @@ struct cpicapfloorvolatility
 {
     xsd::string index;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::cpicapfloorvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::cpicapfloorvolatility_ShiftExpiries_t ShiftExpiries;
@@ -6022,7 +10963,7 @@ struct yycapfloorvolatility
 {
     xsd::string index;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yycapfloorvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::yycapfloorvolatility_ShiftExpiries_t ShiftExpiries;
@@ -6037,7 +10978,7 @@ struct dividendyield
 {
     xsd::string equity;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::dividendyield_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::dividendyield_ShiftTenors_t ShiftTenors;
@@ -6055,7 +10996,7 @@ struct basecorrelation
 {
     xsd::string indexName;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::basecorrelation_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::basecorrelation_ShiftLossLevels_t ShiftLossLevels;
@@ -6066,7 +11007,7 @@ struct securityspread
 {
     xsd::string security;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::securityspread_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
 };
@@ -6080,7 +11021,7 @@ struct commodityCurve
     xsd::string name;
     domain::currencyCode Currency;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::commodityCurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::commodityCurve_ShiftTenors_t ShiftTenors;
@@ -6095,7 +11036,7 @@ struct commodityvolatility
 {
     xsd::string name;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::commodityvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::commodityvolatility_ShiftExpiries_t ShiftExpiries;
@@ -6111,7 +11052,7 @@ struct correlationcurve
     xsd::string index1;
     xsd::string index2;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::correlationcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::correlationcurve_ShiftExpiries_t ShiftExpiries;
@@ -6197,41 +11138,716 @@ struct envelope_PortfolioIds_t_PortfolioId_t : xsd::string
 {
 };
 
-struct scheduleData_Rules_t_Tenor_t : xsd::string
+struct fxForwardSettlementData_FXIndex_t : xsd::string
 {
 };
 
-struct scheduleData_Rules_t
+struct fxForwardSettlementData_Rules_t
 {
-    domain::date StartDate;
-    xsd::optional<domain::date> EndDate;
-    xsd::optional<domain::bool_> AdjustEndDateToPreviousMonthEnd;
-    domain::scheduleData_Rules_t_Tenor_t Tenor;
-    xsd::optional<domain::calendar> Calendar;
-    domain::businessDayConvention Convention;
-    xsd::optional<domain::businessDayConvention> TermConvention;
-    xsd::optional<domain::dateRule> Rule;
-    xsd::optional<domain::bool_> EndOfMonth;
-    xsd::optional<domain::businessDayConvention> EndOfMonthConvention;
-    xsd::optional<domain::date> FirstDate;
-    xsd::optional<domain::date> LastDate;
-    xsd::optional<bool> RemoveFirstDate;
-    xsd::optional<bool> RemoveLastDate;
+    xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::calendar> PaymentCalendar;
+    xsd::optional<domain::businessDayConvention> PaymentConvention;
 };
 
-struct scheduleData_Dates_t_Dates_t
+struct scheduleData_Dates_t_Tenor_t : xsd::string
+{
+};
+
+struct premiumData_Premium_t
+{
+    float Amount;
+    domain::extendedCurrencyCode Currency;
+    domain::date PayDate;
+    xsd::optional<domain::premiumData_Premium_t_SettlementData_t> SettlementData;
+};
+
+struct optionData_ExerciseFees_t_ExerciseFee_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> type;
+    xsd::optional<xsd::string> startDate;
+};
+
+struct optionPaymentData_Dates_t
 {
     xsd::vector<domain::date> Date;
 };
 
-struct scheduleData_Dates_t
+enum class optionPayRelativeTo
 {
-    xsd::optional<domain::calendar> Calendar;
-    xsd::optional<domain::businessDayConvention> Convention;
-    xsd::optional<domain::scheduleData_Dates_t_Tenor_t> Tenor;
-    xsd::optional<domain::bool_> EndOfMonth;
-    xsd::optional<domain::bool_> IncludeDuplicateDates;
-    domain::scheduleData_Dates_t_Dates_t Dates;
+    Expiry,
+    Exercise,
+};
+
+std::string to_string(optionPayRelativeTo);
+
+struct optionPaymentData_Rules_t
+{
+    uint64_t Lag;
+    domain::calendar Calendar;
+    domain::businessDayConvention Convention;
+    xsd::optional<domain::optionPayRelativeTo> RelativeTo;
+};
+
+struct optionData_SettlementData_t_FixingDate_t : xsd::string
+{
+};
+
+struct fxreset_StartDate_t : xsd::string
+{
+};
+
+struct fxreset_FixingCalendar_t : xsd::string
+{
+};
+
+struct capFloorData_Caps_t_Cap_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct capFloorData_Floors_t_Floor_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct eqForwardSettlementData_FXIndex_t : xsd::string
+{
+};
+
+struct eqForwardSettlementData_Rules_t
+{
+    xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::calendar> PaymentCalendar;
+    xsd::optional<domain::businessDayConvention> PaymentConvention;
+};
+
+struct deliveryBasket_Id_t : xsd::string
+{
+};
+
+enum class amortizationType
+{
+    FixedAmount,
+    RelativeToInitialNotional,
+    RelativeToPreviousNotional,
+    Annuity,
+    LinearToMaturity,
+};
+
+std::string to_string(amortizationType);
+
+struct amortizationData
+{
+    domain::amortizationType Type;
+    xsd::optional<float> Value;
+    xsd::optional<domain::amortizationData_StartDate_t> StartDate;
+    xsd::optional<domain::amortizationData_EndDate_t> EndDate;
+    xsd::optional<domain::amortizationData_Frequency_t> Frequency;
+    xsd::optional<bool> Underflow;
+};
+
+struct legData_Notionals_t_Notional_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct indexingData
+{
+    xsd::optional<float> Quantity;
+    xsd::optional<domain::indexingData_Index_t> Index;
+    xsd::optional<int64_t> IndexFixingDays;
+    xsd::optional<domain::indexingData_IndexFixingCalendar_t> IndexFixingCalendar;
+    xsd::optional<bool> Dirty;
+    xsd::optional<bool> Relative;
+    xsd::optional<bool> ConditionalOnSurvival;
+    xsd::optional<float> InitialFixing;
+    xsd::optional<float> InitialNotionalFixing;
+    xsd::optional<domain::scheduleData> ValuationSchedule;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::indexingData_FixingCalendar_t> FixingCalendar;
+    xsd::optional<domain::businessDayConvention> FixingConvention;
+    xsd::optional<bool> IsInArrears;
+};
+
+struct legData_SettlementData_t_FixingDate_t : xsd::string
+{
+};
+
+struct longShortsType
+{
+    xsd::vector<domain::longShort> LongShort;
+};
+
+struct strikes
+{
+    xsd::vector<float> Strike;
+};
+
+struct fxTermsData_FXIndex_t : xsd::string
+{
+};
+
+struct fxTermsData_FXIndexCalendar_t : xsd::string
+{
+};
+
+struct nameData_IssuerId_t : xsd::string
+{
+};
+
+typedef double recoveryRate;
+
+struct nameData
+{
+    domain::nameData_IssuerId_t IssuerId;
+    xsd::optional<domain::nameData_Qualifier_t> Qualifier;
+    xsd::optional<float> Notional;
+    xsd::optional<float> Weight;
+    xsd::optional<domain::currencyCode> Currency;
+    xsd::optional<domain::non_negative_decimal> PriorNotional;
+    xsd::optional<domain::non_negative_decimal> PriorWeight;
+    xsd::optional<domain::recoveryRate> RecoveryRate;
+    xsd::optional<domain::date> AuctionDate;
+    xsd::optional<domain::date> AuctionSettlementDate;
+    xsd::optional<domain::date> DefaultDate;
+    xsd::optional<domain::date> EventDeterminationDate;
+};
+
+struct cbCallData_Styles_t_Style_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_Prices_t_Price_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_PriceTypes_t_PriceType_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_IncludeAccruals_t_IncludeAccrual_t : xsd::base<domain::bool_>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_Soft_t
+{
+    xsd::vector<domain::cbCallData_Soft_t_Soft_t> Soft;
+};
+
+struct cbCallData_TriggerRatios_t
+{
+    xsd::vector<domain::cbCallData_TriggerRatios_t_TriggerRatio_t> TriggerRatio;
+};
+
+struct cbCallData_NOfMTriggers_t
+{
+    xsd::vector<domain::cbCallData_NOfMTriggers_t_NOfMTrigger_t> NOfMTrigger;
+};
+
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_StockPrices_t : xsd::string
+{
+};
+
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t
+{
+    xsd::vector<domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t_CrIncrease_t> CrIncrease;
+};
+
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t
+{
+    xsd::optional<float> Cap;
+    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_StockPrices_t StockPrices;
+    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t CrIncreases;
+};
+
+struct cbCallData_MakeWhole_t
+{
+    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t ConversionRatioIncrease;
+};
+
+struct cbConversionData_Styles_t
+{
+    xsd::vector<domain::cbConversionData_Styles_t_Style_t> Style;
+};
+
+struct cbConversionData_ConversionRatios_t
+{
+    xsd::vector<domain::cbConversionData_ConversionRatios_t_ConversionRatio_t> ConversionRatio;
+};
+
+struct cbConversionData_FixedAmountConversion_t_Currency_t : xsd::string
+{
+};
+
+struct cbConversionData_FixedAmountConversion_t_Amounts_t
+{
+    xsd::vector<domain::cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t> Amount;
+};
+
+struct cbConversionData_FixedAmountConversion_t
+{
+    domain::cbConversionData_FixedAmountConversion_t_Currency_t Currency;
+    domain::cbConversionData_FixedAmountConversion_t_Amounts_t Amounts;
+};
+
+struct cbContingentConversionData
+{
+    xsd::optional<domain::cbContingentConversionData_Observations_t> Observations;
+    xsd::optional<domain::cbContingentConversionData_Barriers_t> Barriers;
+};
+
+struct cbMandatoryConversionData_Type_t : xsd::string
+{
+};
+
+struct cbPepsData
+{
+    float UpperBarrier;
+    float LowerBarrier;
+    float UpperConversionRatio;
+    float LowerConversionRatio;
+};
+
+struct cbMandatoryConversionData
+{
+    domain::date Date;
+    domain::cbMandatoryConversionData_Type_t Type;
+    domain::cbPepsData PepsData;
+};
+
+struct cbConversionResetData_References_t
+{
+    xsd::vector<domain::cbConversionResetData_References_t_Reference_t> Reference;
+};
+
+struct cbConversionResetData_Thresholds_t
+{
+    xsd::vector<domain::cbConversionResetData_Thresholds_t_Threshold_t> Threshold;
+};
+
+struct cbConversionResetData_Gearings_t
+{
+    xsd::vector<domain::cbConversionResetData_Gearings_t_Gearing_t> Gearing;
+};
+
+struct cbConversionResetData
+{
+    domain::scheduleData ScheduleData;
+    domain::cbConversionResetData_References_t References;
+    domain::cbConversionResetData_Thresholds_t Thresholds;
+    domain::cbConversionResetData_Gearings_t Gearings;
+    xsd::optional<domain::cbConversionResetData_Floors_t> Floors;
+    xsd::optional<domain::cbConversionResetData_GlobalFloors_t> GlobalFloors;
+};
+
+struct cbConversionData_FXIndex_t : xsd::string
+{
+};
+
+struct cbExchangeableData
+{
+    domain::bool_ IsExchangeable;
+    xsd::optional<domain::cbExchangeableData_EquityCreditCurve_t> EquityCreditCurve;
+    xsd::optional<domain::bool_> Secured;
+};
+
+struct cbDividendProtectionData_AdjustmentStyles_t_AdjustmentStyle_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbDividendProtectionData_DividendTypes_t_DividendType_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbDividendProtectionData_Thresholds_t_Threshold_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct callableBondCallData_Styles_t_Style_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct callableBondCallData_Prices_t_Price_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct callableBondCallData_PriceTypes_t_PriceType_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct callableBondCallData_IncludeAccruals_t_IncludeAccrual_t : xsd::base<domain::bool_>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cboStructure_ReinvestmentEndDate_t : xsd::string
+{
+};
+
+struct cboBondBasketData_Trade_t
+{
+    xsd::optional<xsd::string> id;
+    domain::oreTradeType TradeType;
+    xsd::optional<domain::envelope> Envelope;
+    xsd::optional<domain::bondData> BondData;
+};
+
+struct cbotranche_Name_t : xsd::string
+{
+};
+
+struct cbotranche
+{
+    domain::cbotranche_Name_t Name;
+    float ICRatio;
+    float OCRatio;
+    float Notional;
+};
+
+struct trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t : xsd::string
+{
+};
+
+struct compositeTradeComponents_Trade_t
+{
+    xsd::optional<xsd::string> id;
+    domain::oreTradeType TradeType;
+    xsd::optional<domain::envelope> Envelope;
+    domain::swapData CrossCurrencySwapData;
+    domain::swapData InflationSwapData;
+    domain::swapData SwapData;
+    domain::swapData EquitySwapData;
+    domain::callableSwapData CallableSwapData;
+    domain::arcOptionData ArcOptionData;
+    domain::swaptionData SwaptionData;
+    domain::varianceSwapData VarianceSwapData;
+    domain::varianceSwapData EquityVarianceSwapData;
+    domain::varianceSwapData FxVarianceSwapData;
+    domain::varianceSwapData CommodityVarianceSwapData;
+    domain::forwardRateAgreementData ForwardRateAgreementData;
+    domain::fxForwardData FxForwardData;
+    domain::fxAverageForwardData FxAverageForwardData;
+    domain::fxOptionData FxOptionData;
+    domain::fxBarrierOptionData FxBarrierOptionData;
+    domain::fxBarrierOptionData FxDoubleBarrierOptionData;
+    domain::fxDigitalOptionData FxDigitalOptionData;
+    domain::fxBarrierOptionData FxEuropeanBarrierOptionData;
+    domain::fxKIKOBarrierOptionData FxKIKOBarrierOptionData;
+    domain::fxDigitalBarrierOptionData FxDigitalBarrierOptionData;
+    domain::fxTouchOptionData FxTouchOptionData;
+    domain::fxTouchOptionData FxDoubleTouchOptionData;
+    domain::fxSwapData FxSwapData;
+    domain::capFloorData CapFloorData;
+    domain::equityFutureOptionData EquityFutureOptionData;
+    domain::equityOptionData EquityOptionData;
+    domain::eqBarrierOptionData EquityBarrierOptionData;
+    domain::eqBarrierOptionData EquityDoubleBarrierOptionData;
+    domain::equityForwardData EquityForwardData;
+    domain::eqBarrierOptionData EquityEuropeanBarrierOptionData;
+    domain::eqDigitalOptionData EquityDigitalOptionData;
+    domain::eqTouchOptionData EquityDoubleTouchOptionData;
+    domain::eqTouchOptionData EquityTouchOptionData;
+    domain::cliquetOptionData EquityCliquetOptionData;
+    domain::bondData BondData;
+    domain::forwardBondData ForwardBondData;
+    domain::bondFutureData BondFutureData;
+    domain::creditDefaultSwapData CreditDefaultSwapData;
+    domain::creditDefaultSwapOptionData CreditDefaultSwapOptionData;
+    domain::commodityForwardData CommodityForwardData;
+    domain::commodityOptionData CommodityOptionData;
+    domain::commodityDigitalAveragePriceOptionData CommodityDigitalAveragePriceOptionData;
+    domain::commodityDigitalOptionData CommodityDigitalOptionData;
+    domain::commoditySpreadOptionData CommoditySpreadOptionData;
+    domain::commoditySwapData CommoditySwapData;
+    domain::commoditySwaptionData CommoditySwaptionData;
+    domain::commodityAveragePriceOptionData CommodityAveragePriceOptionData;
+    domain::commodityOptionStripData CommodityOptionStripData;
+    domain::commodityPositionData CommodityPositionData;
+    domain::singleUnderlyingAsianOptionData EquityAsianOptionData;
+    domain::singleUnderlyingAsianOptionData FxAsianOptionData;
+    domain::singleUnderlyingAsianOptionData CommodityAsianOptionData;
+    domain::bondOptionData BondOptionData;
+    domain::bondRepoData BondRepoData;
+    domain::bondTRSData BondTRSData;
+    domain::cdoData CdoData;
+    domain::creditLinkedSwapData CreditLinkedSwapData;
+    domain::indexCreditDefaultSwapData IndexCreditDefaultSwapData;
+    domain::indexCreditDefaultSwapOptionData IndexCreditDefaultSwapOptionData;
+    domain::multiLegOptionData MultiLegOptionData;
+    domain::ascotData AscotData;
+    domain::convertibleBondData ConvertibleBondData;
+    domain::callableBondData CallableBondData;
+    domain::tlockData TreasuryLockData;
+    domain::rpaData RiskParticipationAgreementData;
+    domain::cbodata CBOData;
+    domain::bondBasketData BondBasketData;
+    domain::equityPositionData EquityPositionData;
+    domain::equityOptionPositionData EquityOptionPositionData;
+    domain::totalReturnSwapData TotalReturnSwapData;
+    domain::totalReturnSwapData ContractForDifferenceData;
+    domain::compositeTradeData CompositeTradeData;
+    domain::pairwiseVarianceSwapData1 PairwiseVarianceSwapData;
+    domain::pairwiseVarianceSwapData2 EquityPairwiseVarianceSwapData;
+    domain::pairwiseVarianceSwapData2 FxPairwiseVarianceSwapData;
+    domain::eqOutperformanceOptionData EquityOutperformanceOptionData;
+    domain::flexiSwapData FlexiSwapData;
+    domain::bgSwapData BalanceGuaranteedSwapData;
+    domain::commodityRevenueOptionData CommodityRevenueOptionData;
+    domain::basketVarianceSwapData BasketVarianceSwapData;
+    domain::basketVarianceSwapData2 EquityBasketVarianceSwapData;
+    domain::basketVarianceSwapData2 FxBasketVarianceSwapData;
+    domain::basketVarianceSwapData2 CommodityBasketVarianceSwapData;
+    domain::extendedAccumulatorData ExtendedAccumulatorData;
+    domain::varianceOptionData VarianceOptionData;
+    domain::varianceDispersionSwapData VarianceDispersionSwapData;
+    domain::kikoVarianceSwapData KIKOVarianceSwapData;
+    domain::corridorVarianceSwapData CorridorVarianceSwapData;
+    domain::indexedCorridorVarianceSwapData IndexedCorridorVarianceSwapData;
+    domain::kikoCorridorVarianceSwapData KIKOCorridorVarianceSwapData;
+    domain::corridorVarianceDispersionSwapData CorridorVarianceDispersionSwapData;
+    domain::koCorridorVarianceDispersionSwapData KOCorridorVarianceDispersionSwapData;
+    domain::pairwiseGeometricVarianceDispersionSwapData PairwiseGeometricVarianceDispersionSwapData;
+    domain::conditionalVarianceSwap01Data ConditionalVarianceSwap01Data;
+    domain::conditionalVarianceSwap02Data ConditionalVarianceSwap02Data;
+    domain::gammaSwapData GammaSwapData;
+    domain::bestEntryOptionData BestEntryOptionData;
+    domain::dualEuroBinaryOptionData DualEuroBinaryOptionData;
+    domain::dualEuroBinaryOptionDoubleKOData DualEuroBinaryOptionDoubleKOData;
+    domain::volBarrierOptionData VolatilityBarrierOptionData;
+    domain::tarfData2 FxTaRFData;
+    domain::tarfData2 EquityTaRFData;
+    domain::tarfData2 CommodityTaRFData;
+    domain::accumulatorData FxAccumulatorData;
+    domain::accumulatorData EquityAccumulatorData;
+    domain::accumulatorData CommodityAccumulatorData;
+    domain::windowBarrierOptionData2 FxWindowBarrierOptionData;
+    domain::windowBarrierOptionData2 EquityWindowBarrierOptionData;
+    domain::windowBarrierOptionData2 CommodityWindowBarierOptionData;
+    domain::basketOptionData EquityBasketOptionData;
+    domain::basketOptionData FxBasketOptionData;
+    domain::basketOptionData CommodityBasketOptionData;
+    domain::genericBarrierOptionData FxGenericBarrierOptionData;
+    domain::genericBarrierOptionData EquityGenericBarrierOptionData;
+    domain::genericBarrierOptionData CommodityGenericBarrierOptionData;
+    domain::rainbowOptionData EquityRainbowOptionData;
+    domain::rainbowOptionData FxRainbowOptionData;
+    domain::rainbowOptionData CommodityRainbowOptionData;
+    domain::autocallable01Data Autocallable01Data;
+    domain::doubleDigitalOptionData DoubleDigitalOptionData;
+    domain::performanceOption01Data PerformanceOption01Data;
+    domain::scriptedTradeData ScriptedTradeData;
+    domain::vanillaBasketOptionData VanillaBasketOptionData;
+    domain::asianBasketOptionData AsianBasketOptionData;
+    domain::averageStrikeBasketOptionData AverageStrikeBasketOptionData;
+    domain::lookbackCallBasketOptionData LookbackCallBasketOptionData;
+    domain::lookbackPutBasketOptionData LookbackPutBasketOptionData;
+    domain::bestOfAirbagData BestOfAirbagData;
+    domain::worstOfBasketSwapData WorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 FxWorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 EquityWorstOfBasketSwapData;
+    domain::worstOfBasketSwapData2 CommodityWorstOfBasketSwapData;
+    domain::worstPerformanceRainbowOption01Data WorstPerformanceRainbowOption01Data;
+    domain::worstPerformanceRainbowOption02Data WorstPerformanceRainbowOption02Data;
+    domain::worstPerformanceRainbowOption03Data WorstPerformanceRainbowOption03Data;
+    domain::worstPerformanceRainbowOption04Data WorstPerformanceRainbowOption04Data;
+    domain::worstPerformanceRainbowOption05Data WorstPerformanceRainbowOption05Data;
+    domain::worstPerformanceRainbowOption06Data WorstPerformanceRainbowOption06Data;
+    domain::worstPerformanceRainbowOption07Data WorstPerformanceRainbowOption07Data;
+    domain::bestOfAssetOrCashRainbowOptionData BestOfAssetOrCashRainbowOptionData;
+    domain::worstOfAssetOrCashRainbowOptionData WorstOfAssetOrCashRainbowOptionData;
+    domain::minRainbowOptionData MinRainbowOptionData;
+    domain::maxRainbowOptionData MaxRainbowOptionData;
+    domain::windowBarrierOptionData WindowBarrierOptionData;
+    domain::accumulator01Data Accumulator01Data;
+    domain::accumulator02Data Accumulator02Data;
+    domain::bestEntryOptionData2 EquityBestEntryOptionData;
+    domain::bestEntryOptionData2 FxBestEntryOptionData;
+    domain::bestEntryOptionData2 CommodityBestEntryOptionData;
+    domain::tarfData TaRFData;
+    domain::europeanRainbowCallSpreadOptionData EuropeanRainbowCallSpreadOptionData;
+    domain::rainbowCallSpreadBarrierOptionData RainbowCallSpreadBarrierOptionData;
+    domain::asianRainbowCallSpreadOptionData AsianRainbowCallSpreadOptionData;
+    domain::asianIrCapFloorData AsianIrCapFloorData;
+    domain::forwardVolatilityAgreementData ForwardVolatilityAgreementData;
+    domain::correlationSwapData CorrelationSwapData;
+    domain::assetLinkedCliquetOptionData AssetLinkedCliquetOptionData;
+    domain::constantMaturityVolatilitySwapData ConstantMaturityVolatilitySwapData;
+    domain::cmsCapFloorBarrierData CMSCapFloorBarrierData;
+    domain::fixedStrikeForwardStartingOptionData FixedStrikeForwardStartingOptionData;
+    domain::floatingStrikeForwardStartingOptionData FloatingStrikeForwardStartingOptionData;
+    domain::forwardStartingSwaptionData ForwardStartingSwaptionData;
+    domain::flooredAverageCPIZCIISData FlooredAverageCPIZCIISData;
+    domain::genericBarrierOptionDataRaw GenericBarrierOptionData;
+    domain::movingMaxYYIISData MovingMaxYYIISData;
+    domain::irregularYYIISData IrregularYYIISData;
+    domain::europeanOptionBarrierData EuropeanOptionBarrierData;
+    domain::ladderLockInOptionData LadderLockInOptionData;
+    domain::lapseHedgeSwapData LapseHedgeSwapData;
+    domain::knockOutSwapData KnockOutSwapData;
+    domain::LPISwapData LPISwapData;
+    domain::cashPositionData CashPositionData;
+    domain::strikeResettableOptionData StrikeResettableOptionData;
+    domain::strikeResettableOptionData2 EquityStrikeResettableOptionData;
+    domain::strikeResettableOptionData2 FxStrikeResettableOptionData;
+    domain::strikeResettableOptionData2 CommodityStrikeResettableOptionData;
+};
+
+struct flexiSwapData_LowerNotionalBounds_t_Notional_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct flexiSwapData_Prepayment_t_NoticePeriod_t : xsd::string
+{
+};
+
+struct flexiSwapData_Prepayment_t_NoticeCalendar_t : xsd::string
+{
+};
+
+struct flexiSwapData_Prepayment_t_NoticeConvention_t : xsd::string
+{
+};
+
+struct flexiSwapData_Prepayment_t_PrepaymentOptions_t
+{
+    xsd::vector<domain::flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t> PrepaymentOption;
+};
+
+struct tranche_Description_t : xsd::string
+{
+};
+
+struct tranche_Notionals_t_Notional_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct tarfData2_Strikes_t_Strike_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct tarfData2_RangeBoundSet_t_RangeBounds_t
+{
+    xsd::optional<xsd::string> startDate;
+    xsd::vector<domain::rangeBound> RangeBound;
+};
+
+struct ore_script_Results_t
+{
+    xsd::vector<domain::ore_script_Results_t_Result_t> Result;
+};
+
+struct ore_script_PricingEngineConfigOverwrite_t
+{
+    xsd::optional<domain::ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t> ModelParameters;
+    xsd::optional<domain::ore_script_PricingEngineConfigOverwrite_t_EngineParameters_t> EngineParameters;
+};
+
+struct ore_script_CalibrationSpec_t
+{
+    xsd::vector<domain::ore_script_CalibrationSpec_t_Calibration_t> Calibration;
+};
+
+struct ore_script_ScheduleCoarsening_t
+{
+    xsd::optional<domain::ore_script_ScheduleCoarsening_t_EligibleSchedule_t> EligibleSchedule;
+};
+
+struct ore_script_NewSchedules_t
+{
+    xsd::vector<domain::ore_script_NewSchedules_t_NewSchedule_t> NewSchedule;
+};
+
+struct ore_script_StickyCloseOutStates_t
+{
+    xsd::vector<domain::ore_script_StickyCloseOutStates_t_StickyCloseOutState_t> StickyCloseOutState;
+};
+
+struct ore_script_ConditionalExpectation_t
+{
+    xsd::optional<domain::ore_script_ConditionalExpectation_t_ModelStates_t> ModelStates;
+};
+
+struct ore_script_AmcCg_t
+{
+    xsd::optional<domain::ore_script_AmcCg_t_Components_t> Components;
+    xsd::optional<domain::ore_script_AmcCg_t_Target_t> Target;
+};
+
+struct scriptedTradeData_Data_t_Number_t_Value_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Number_t_Values_t
+{
+    xsd::vector<float> Value;
+};
+
+struct scriptedTradeData_Data_t_Currency_t_Value_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Currency_t_Values_t
+{
+    xsd::vector<domain::currencyCode> Value;
+};
+
+struct scriptedTradeData_Data_t_Index_t_Value_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Index_t_Values_t
+{
+    xsd::vector<domain::scriptedTradeData_Data_t_Index_t_Values_t_Value_t> Value;
+};
+
+struct scriptedTradeData_Data_t_Event_t_Value_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t
+{
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t BaseSchedule;
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t Shift;
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t Calendar;
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t Convention;
+};
+
+struct scriptedTradeData_Data_t_Daycounter_t_Value_t : xsd::string
+{
+};
+
+struct scriptedTradeData_Data_t_Daycounter_t_Values_t
+{
+    xsd::vector<domain::dayCounter> Value;
 };
 
 struct market_FxRates_t_CurrencyPairs_t
@@ -6366,8 +11982,8 @@ struct market_FxVolatilities_t_Expiries_t : xsd::string
 
 struct market_FxVolatilities_t_Surface_t
 {
-    xsd::optional<domain::market_FxVolatilities_t_Surface_t_Moneyness_t> Moneyness;
-    xsd::optional<domain::market_FxVolatilities_t_Surface_t_StandardDeviations_t> StandardDeviations;
+    xsd::vector<domain::market_FxVolatilities_t_Surface_t_Moneyness_t> Moneyness;
+    xsd::vector<domain::market_FxVolatilities_t_Surface_t_StandardDeviations_t> StandardDeviations;
 };
 
 struct market_FxVolatilities_t_DayCounters_t
@@ -6547,9 +12163,9 @@ struct curveAlgebraCurve
 struct calibrationBasket
 {
     xsd::optional<xsd::string> parameter;
-    xsd::optional<domain::calibrationCpiCapFloor> CpiCapFloor;
-    xsd::optional<domain::calibrationYoYCapFloor> YoYCapFloor;
-    xsd::optional<domain::calibrationYoYSwap> YoYSwap;
+    xsd::vector<domain::calibrationCpiCapFloor> CpiCapFloor;
+    xsd::vector<domain::calibrationYoYCapFloor> YoYCapFloor;
+    xsd::vector<domain::calibrationYoYSwap> YoYSwap;
 };
 
 struct hw_Volatility_t_InitialValue_t_Sigma_t
@@ -7953,7 +13569,7 @@ struct recoveryrate
 {
     xsd::string name;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::recoveryrate_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
 };
@@ -7966,14 +13582,220 @@ struct survivalprobability
 {
     xsd::string name;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::optional<domain::shiftSizeEntry> ShiftSize;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::survivalprobability_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::survivalprobability_ShiftTenors_t ShiftTenors;
     xsd::optional<domain::parconversion> ParConversion;
 };
 
-struct scheduleData_Dates_t_Tenor_t : xsd::string
+struct premiumData_Premium_t_SettlementData_t_FXIndex_t : xsd::string
+{
+};
+
+struct premiumData_Premium_t_SettlementData_t
+{
+    domain::currencyCode PayCurrency;
+    domain::premiumData_Premium_t_SettlementData_t_FXIndex_t FXIndex;
+    xsd::optional<domain::premiumData_Premium_t_SettlementData_t_FixingDate_t> FixingDate;
+};
+
+struct amortizationData_StartDate_t : xsd::string
+{
+};
+
+struct amortizationData_EndDate_t : xsd::string
+{
+};
+
+struct amortizationData_Frequency_t : xsd::string
+{
+};
+
+struct indexingData_Index_t : xsd::string
+{
+};
+
+struct indexingData_IndexFixingCalendar_t : xsd::string
+{
+};
+
+struct indexingData_FixingCalendar_t : xsd::string
+{
+};
+
+struct nameData_Qualifier_t : xsd::string
+{
+};
+
+struct cbCallData_Soft_t_Soft_t : xsd::base<domain::bool_>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_TriggerRatios_t_TriggerRatio_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_NOfMTriggers_t_NOfMTrigger_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t_CrIncrease_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionData_Styles_t_Style_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionData_ConversionRatios_t_ConversionRatio_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionData_FixedAmountConversion_t_Amounts_t_Amount_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbContingentConversionData_Observations_t
+{
+    xsd::vector<domain::cbContingentConversionData_Observations_t_Observation_t> Observation;
+};
+
+struct cbContingentConversionData_Barriers_t
+{
+    xsd::vector<domain::cbContingentConversionData_Barriers_t_Barrier_t> Barrier;
+};
+
+struct cbConversionResetData_References_t_Reference_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionResetData_Thresholds_t_Threshold_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionResetData_Gearings_t_Gearing_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionResetData_Floors_t
+{
+    xsd::vector<domain::cbConversionResetData_Floors_t_Floor_t> Floor;
+};
+
+struct cbConversionResetData_GlobalFloors_t
+{
+    xsd::vector<domain::cbConversionResetData_GlobalFloors_t_GloobalFloor_t> GloobalFloor;
+};
+
+struct cbExchangeableData_EquityCreditCurve_t : xsd::string
+{
+};
+
+struct flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t_Type_t : xsd::string
+{
+};
+
+struct flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t
+{
+    domain::date ExerciseDate;
+    domain::flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t_Type_t Type;
+    float Value;
+};
+
+struct ore_script_Results_t_Result_t : xsd::string
+{
+    xsd::optional<xsd::string> rename;
+};
+
+struct ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t
+{
+    xsd::optional<domain::ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t_Parameter_t> Parameter;
+};
+
+struct ore_script_PricingEngineConfigOverwrite_t_EngineParameters_t
+{
+    xsd::vector<domain::ore_script_PricingEngineConfigOverwrite_t_EngineParameters_t_Parameter_t> Parameter;
+};
+
+struct ore_script_CalibrationSpec_t_Calibration_t_Index_t : xsd::string
+{
+};
+
+struct ore_script_CalibrationSpec_t_Calibration_t_Strikes_t
+{
+    xsd::vector<domain::ore_script_CalibrationSpec_t_Calibration_t_Strikes_t_Strike_t> Strike;
+};
+
+struct ore_script_CalibrationSpec_t_Calibration_t
+{
+    domain::ore_script_CalibrationSpec_t_Calibration_t_Index_t Index;
+    domain::ore_script_CalibrationSpec_t_Calibration_t_Strikes_t Strikes;
+};
+
+struct ore_script_ScheduleCoarsening_t_EligibleSchedule_t : xsd::string
+{
+};
+
+struct ore_script_NewSchedules_t_NewSchedule_t_Name_t : xsd::string
+{
+};
+
+struct ore_script_NewSchedules_t_NewSchedule_t_Operation_t : xsd::string
+{
+};
+
+struct ore_script_NewSchedules_t_NewSchedule_t_Schedules_t
+{
+    xsd::vector<domain::ore_script_NewSchedules_t_NewSchedule_t_Schedules_t_Schedule_t> Schedule;
+};
+
+struct ore_script_NewSchedules_t_NewSchedule_t
+{
+    domain::ore_script_NewSchedules_t_NewSchedule_t_Name_t Name;
+    domain::ore_script_NewSchedules_t_NewSchedule_t_Operation_t Operation;
+    domain::ore_script_NewSchedules_t_NewSchedule_t_Schedules_t Schedules;
+};
+
+struct ore_script_StickyCloseOutStates_t_StickyCloseOutState_t : xsd::string
+{
+};
+
+struct ore_script_ConditionalExpectation_t_ModelStates_t
+{
+    xsd::vector<domain::ore_script_ConditionalExpectation_t_ModelStates_t_ModelState_t> ModelState;
+};
+
+struct ore_script_AmcCg_t_Components_t
+{
+    xsd::optional<domain::ore_script_AmcCg_t_Components_t_Component_t> Component;
+};
+
+struct ore_script_AmcCg_t_Target_t_Value_t : xsd::string
+{
+};
+
+struct ore_script_AmcCg_t_Target_t_Derivative_t : xsd::string
+{
+};
+
+struct ore_script_AmcCg_t_Target_t
+{
+    domain::ore_script_AmcCg_t_Target_t_Value_t Value;
+    domain::ore_script_AmcCg_t_Target_t_Derivative_t Derivative;
+};
+
+struct scriptedTradeData_Data_t_Index_t_Values_t_Value_t : xsd::string
 {
 };
 
@@ -8580,6 +14402,56 @@ struct recoveryrate_Shifts_t : xsd::string
 };
 
 struct survivalprobability_Shifts_t : xsd::string
+{
+};
+
+struct premiumData_Premium_t_SettlementData_t_FixingDate_t : xsd::string
+{
+};
+
+struct cbContingentConversionData_Observations_t_Observation_t : xsd::string
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbContingentConversionData_Barriers_t_Barrier_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionResetData_Floors_t_Floor_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct cbConversionResetData_GlobalFloors_t_GloobalFloor_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct ore_script_PricingEngineConfigOverwrite_t_ModelParameters_t_Parameter_t : xsd::string
+{
+    xsd::optional<xsd::string> name;
+};
+
+struct ore_script_PricingEngineConfigOverwrite_t_EngineParameters_t_Parameter_t : xsd::string
+{
+    xsd::optional<xsd::string> name;
+};
+
+struct ore_script_CalibrationSpec_t_Calibration_t_Strikes_t_Strike_t : xsd::string
+{
+};
+
+struct ore_script_NewSchedules_t_NewSchedule_t_Schedules_t_Schedule_t : xsd::string
+{
+};
+
+struct ore_script_ConditionalExpectation_t_ModelStates_t_ModelState_t : xsd::string
+{
+};
+
+struct ore_script_AmcCg_t_Components_t_Component_t : xsd::string
 {
 };
 

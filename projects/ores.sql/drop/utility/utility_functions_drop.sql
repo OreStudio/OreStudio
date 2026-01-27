@@ -19,10 +19,10 @@
  */
 set schema 'public';
 
-drop function if exists public.summary_all_layers_fn cascade;
-drop function if exists public.summary_production_layer_fn cascade;
-drop function if exists public.summary_catalogues_layer_fn cascade;
-drop function if exists public.summary_governance_layer_fn cascade;
-drop function if exists public.summary_foundation_layer_fn cascade;
+drop function if exists public.utility_summary_all_layers_fn cascade;
+drop function if exists public.utility_summary_production_layer_fn cascade;
+drop function if exists public.utility_summary_catalogues_layer_fn cascade;
+drop function if exists public.utility_summary_governance_layer_fn cascade;
+drop function if exists public.utility_summary_foundation_layer_fn cascade;
 drop type if exists public.layer_summary_row cascade;
 drop function if exists public.utility_infinity_timestamp_fn cascade;

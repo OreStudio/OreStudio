@@ -43,7 +43,7 @@ begin
         raise notice 'TimescaleDB detected - creating telemetry continuous aggregates';
 
         execute $sql$
-            create materialized view if not exists "production"."telemetry_stats_hourly"
+            create materialized view if not exists "production"."telemetry_stats_hourly_vw"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 hour', timestamp) as hour,
@@ -59,16 +59,16 @@ begin
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'production.telemetry_stats_hourly',
+            'production.telemetry_stats_hourly_vw',
             start_offset => interval '1 day',
             end_offset => interval '15 minutes',
             schedule_interval => interval '15 minutes',
             if_not_exists => true
         );
-        raise notice 'Created telemetry_stats_hourly continuous aggregate';
+        raise notice 'Created telemetry_stats_hourly_vw continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "production"."telemetry_stats_daily"
+            create materialized view if not exists "production"."telemetry_stats_daily_vw"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', timestamp) as day,
@@ -85,16 +85,16 @@ begin
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'production.telemetry_stats_daily',
+            'production.telemetry_stats_daily_vw',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
             if_not_exists => true
         );
-        raise notice 'Created telemetry_stats_daily continuous aggregate';
+        raise notice 'Created telemetry_stats_daily_vw continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "production"."telemetry_stats_aggregate_daily"
+            create materialized view if not exists "production"."telemetry_stats_aggregate_daily_vw"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', timestamp) as day,
@@ -111,28 +111,28 @@ begin
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'production.telemetry_stats_aggregate_daily',
+            'production.telemetry_stats_aggregate_daily_vw',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
             if_not_exists => true
         );
-        raise notice 'Created telemetry_stats_aggregate_daily continuous aggregate';
+        raise notice 'Created telemetry_stats_aggregate_daily_vw continuous aggregate';
 
         perform public.add_retention_policy(
-            'production.telemetry_stats_hourly',
+            'production.telemetry_stats_hourly_vw',
             drop_after => interval '90 days',
             if_not_exists => true
         );
 
         perform public.add_retention_policy(
-            'production.telemetry_stats_daily',
+            'production.telemetry_stats_daily_vw',
             drop_after => interval '1 year',
             if_not_exists => true
         );
 
         perform public.add_retention_policy(
-            'production.telemetry_stats_aggregate_daily',
+            'production.telemetry_stats_aggregate_daily_vw',
             drop_after => interval '1 year',
             if_not_exists => true
         );

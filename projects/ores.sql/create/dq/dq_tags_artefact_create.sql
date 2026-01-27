@@ -36,12 +36,9 @@ on "metadata"."dq_tags_artefact_tbl" (tag_id);
 create index if not exists dq_tags_artefact_name_idx
 on "metadata"."dq_tags_artefact_tbl" (name);
 
--- Unique constraint to prevent duplicate tag names per dataset
-alter table "metadata"."dq_tags_artefact_tbl"
-drop constraint if exists dq_tags_artefact_dataset_name_uq;
-
-alter table "metadata"."dq_tags_artefact_tbl"
-add constraint dq_tags_artefact_dataset_name_uq unique (dataset_id, name);
+-- Unique index to prevent duplicate tag names per dataset
+create unique index if not exists dq_tags_artefact_dataset_name_uniq_idx
+on "metadata"."dq_tags_artefact_tbl" (dataset_id, name);
 
 -- Function to insert tags into the artifact table
 create or replace function metadata.dq_tags_artefact_insert_fn(

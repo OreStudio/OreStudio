@@ -26,7 +26,7 @@ set schema 'metadata';
 
 \echo '--- Data Quality Slovaris Catalogs ---'
 
-select public.upsert_dq_catalogs(
+select metadata.dq_catalogs_upsert_fn(
     'Slovaris',
     'Imaginary world to test all system functions.',
     'Testing Team'

@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- Visual Assets Catalog ---'
 
-select public.upsert_dq_catalogs(
+select metadata.dq_catalogs_upsert_fn(
     'Visual Assets',
     'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
     'Reference Data Team'

@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_account_type_population;
-drop function if exists metadata.dq_populate_account_types_fn;
+drop function if exists metadata.dq_account_type_preview_fn;
+drop function if exists metadata.dq_account_types_publish_fn;

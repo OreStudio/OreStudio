@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- Cryptocurrency Methodologies ---'
 
-select public.upsert_dq_methodologies(
+select metadata.dq_methodologies_upsert_fn(
     'GitHub Cryptocurrency Icons Download',
     'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
     'https://github.com/spothq/cryptocurrency-icons',
@@ -119,7 +119,7 @@ Some cryptocurrencies have special Unicode symbols:
   XRP: ✕ (Ripple)'
 );
 
-select public.upsert_dq_methodologies(
+select metadata.dq_methodologies_upsert_fn(
     'GitHub Cryptocurrencies JSON Download',
     'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
     'https://github.com/crypti/cryptocurrencies',

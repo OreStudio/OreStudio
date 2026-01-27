@@ -31,8 +31,17 @@
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 
 namespace ores::iam::messaging {
+
+/**
+ * @brief Function type for fetching available bundles during bootstrap.
+ *
+ * Returns lightweight bundle info (code, name, description) without
+ * requiring a dependency on ores.dq.
+ */
+using bundle_provider_fn = std::function<std::vector<bootstrap_bundle_info>()>;
 
 /**
  * @brief Message handler for accounts subsystem messages.
@@ -85,12 +94,14 @@ public:
      * @param sessions Shared auth session service for authentication
      * @param auth_service Shared authorization service for RBAC permission checks
      * @param geo_service Shared geolocation service for IP to location lookups
+     * @param bundle_provider Optional callback to fetch available bundles for bootstrap
      */
     accounts_message_handler(database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<comms::service::auth_session_service> sessions,
         std::shared_ptr<service::authorization_service> auth_service,
-        std::shared_ptr<geo::service::geolocation_service> geo_service);
+        std::shared_ptr<geo::service::geolocation_service> geo_service,
+        bundle_provider_fn bundle_provider = nullptr);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
@@ -396,6 +407,7 @@ private:
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
+    bundle_provider_fn bundle_provider_;
 };
 
 }

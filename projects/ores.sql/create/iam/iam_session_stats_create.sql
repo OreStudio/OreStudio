@@ -43,7 +43,7 @@ begin
         raise notice 'TimescaleDB detected - creating continuous aggregates';
 
         execute $sql$
-            create materialized view if not exists "production"."iam_session_stats_daily"
+            create materialized view if not exists "production"."iam_session_stats_daily_vw"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', start_time) as day,
@@ -62,16 +62,16 @@ begin
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'production.iam_session_stats_daily',
+            'production.iam_session_stats_daily_vw',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
             if_not_exists => true
         );
-        raise notice 'Created iam_session_stats_daily continuous aggregate';
+        raise notice 'Created iam_session_stats_daily_vw continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "production"."iam_session_stats_hourly"
+            create materialized view if not exists "production"."iam_session_stats_hourly_vw"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 hour', start_time) as hour,
@@ -87,16 +87,16 @@ begin
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'production.iam_session_stats_hourly',
+            'production.iam_session_stats_hourly_vw',
             start_offset => interval '1 day',
             end_offset => interval '15 minutes',
             schedule_interval => interval '15 minutes',
             if_not_exists => true
         );
-        raise notice 'Created iam_session_stats_hourly continuous aggregate';
+        raise notice 'Created iam_session_stats_hourly_vw continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "production"."iam_session_stats_aggregate_daily"
+            create materialized view if not exists "production"."iam_session_stats_aggregate_daily_vw"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', start_time) as day,
@@ -116,22 +116,22 @@ begin
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'production.iam_session_stats_aggregate_daily',
+            'production.iam_session_stats_aggregate_daily_vw',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
             if_not_exists => true
         );
-        raise notice 'Created iam_session_stats_aggregate_daily continuous aggregate';
+        raise notice 'Created iam_session_stats_aggregate_daily_vw continuous aggregate';
 
         perform public.add_retention_policy(
-            'production.iam_session_stats_daily',
+            'production.iam_session_stats_daily_vw',
             drop_after => interval '3 years',
             if_not_exists => true
         );
 
         perform public.add_retention_policy(
-            'production.iam_session_stats_hourly',
+            'production.iam_session_stats_hourly_vw',
             drop_after => interval '90 days',
             if_not_exists => true
         );

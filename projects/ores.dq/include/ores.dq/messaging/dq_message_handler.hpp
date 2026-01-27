@@ -436,6 +436,16 @@ private:
     handle_resolve_dependencies_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    /**
+     * @brief Handle publish_bundle_request message.
+     *
+     * Requires authentication and bundles:publish permission.
+     * Publishes all datasets in a bundle with optional atomic semantics.
+     */
+    handler_result
+    handle_publish_bundle_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // =========================================================================
     // Dataset Bundle Handlers
     // =========================================================================

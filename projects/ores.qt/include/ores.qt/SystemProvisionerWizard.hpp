@@ -33,19 +33,10 @@
 #include <QComboBox>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
-class ClientManager;
-
-/**
- * @brief Represents a dataset bundle available for provisioning.
- */
-struct BundleInfo {
-    QString code;
-    QString name;
-    QString description;
-};
 
 /**
  * @brief Result of a provisioning operation.
@@ -109,6 +100,7 @@ public:
 
     explicit SystemProvisionerWizard(
         ClientManager* clientManager,
+        const std::vector<BootstrapBundleInfo>& bundles,
         QWidget* parent = nullptr);
 
     ~SystemProvisionerWizard() override = default;
@@ -124,11 +116,9 @@ public:
                              const QString& password);
 
     // Bundle selection
+    const std::vector<BootstrapBundleInfo>& bundles() const { return bundles_; }
     QString selectedBundleCode() const { return selectedBundleCode_; }
     void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
-
-    // Available bundles (hardcoded)
-    static std::vector<BundleInfo> availableBundles();
 
     // Created admin account ID (set after successful creation)
     boost::uuids::uuid adminAccountId() const { return adminAccountId_; }
@@ -138,6 +128,7 @@ private:
     void setupPages();
 
     ClientManager* clientManager_;
+    std::vector<BootstrapBundleInfo> bundles_;
     QString adminUsername_;
     QString adminEmail_;
     QString adminPassword_;
@@ -210,6 +201,7 @@ private slots:
 
 private:
     void setupUI();
+    void populateBundles();
 
     SystemProvisionerWizard* wizard_;
     QComboBox* bundleCombo_;

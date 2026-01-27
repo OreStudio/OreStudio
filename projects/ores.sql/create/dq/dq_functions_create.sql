@@ -25,7 +25,7 @@ set schema 'metadata';
 -- =============================================================================
 
 -- Upsert Methodology
-create or replace function metadata.upsert_dq_methodology(
+create or replace function metadata.dq_methodology_upsert_fn(
     p_name text,
     p_description text,
     p_logic_reference text default null,
@@ -57,7 +57,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Dataset
-create or replace function metadata.upsert_dq_dataset(
+create or replace function metadata.dq_dataset_upsert_fn(
     p_subject_area_name text,
     p_domain_name text,
     p_origin_code text,
@@ -108,7 +108,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Images Artefact (Snapshot)
-create or replace function metadata.upsert_dq_images_artefact(
+create or replace function metadata.dq_images_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
 declare
@@ -154,7 +154,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Tags Artefact (Snapshot)
-create or replace function metadata.upsert_dq_tags_artefact(
+create or replace function metadata.dq_tags_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
 declare
@@ -198,7 +198,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Image Tags Artefact (Snapshot)
-create or replace function metadata.upsert_dq_image_tags_artefact(
+create or replace function metadata.dq_image_tags_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
 declare

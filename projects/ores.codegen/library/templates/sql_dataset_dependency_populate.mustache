@@ -1,7 +1,7 @@
 {{! Template to generate SQL with enhanced GPL v3 license and dataset dependency data }}
 {{{sql_license}}}
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Slovaris Dataset Dependencies
@@ -11,7 +11,7 @@ set schema 'ores';
 
 {{#datasets}}
 {{#dataset_dependencies}}
-select ores.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     '{{parent_code}}',
     '{{dependency_code}}',
     '{{role}}'
@@ -27,7 +27,7 @@ select ores.upsert_dq_dataset_dependency(
 \echo '--- Summary ---'
 
 select dataset_code, dependency_code, role
-from ores.dq_dataset_dependencies_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_dataset_dependencies_tbl
+where valid_to = public.utility_infinity_timestamp_fn()
   and dataset_code like 'slovaris.%'
 order by dataset_code, dependency_code;

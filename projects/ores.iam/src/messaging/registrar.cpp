@@ -30,12 +30,14 @@ void registrar::register_handlers(comms::net::server& server,
     database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<service::authorization_service> auth_service,
-    std::shared_ptr<geo::service::geolocation_service> geo_service) {
+    std::shared_ptr<geo::service::geolocation_service> geo_service,
+    bundle_provider_fn bundle_provider) {
     BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
 
     auto handler = std::make_shared<accounts_message_handler>(
         std::move(ctx), std::move(system_flags), server.sessions(),
-        std::move(auth_service), std::move(geo_service));
+        std::move(auth_service), std::move(geo_service),
+        std::move(bundle_provider));
 
     comms::messaging::message_type_range accounts_range{
         .min = comms::messaging::IAM_SUBSYSTEM_MIN,

@@ -93,64 +93,64 @@ NON_ISO_CURRENCY_ENRICHMENT = {
     'CNH': {
         'name': 'Offshore Chinese Yuan (Hong Kong)',
         'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'hk'
     },
     'CNT': {
         'name': 'Offshore Chinese Yuan (Taiwan)',
         'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'tw'
     },
     # British Crown Dependencies (pegged to GBP)
     'GGP': {
         'name': 'Guernsey Pound',
         'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'gg'
     },
     'IMP': {
         'name': 'Isle of Man Pound',
         'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'im'
     },
     'JEP': {
         'name': 'Jersey Pound',
         'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'je'
     },
     # Pacific Island currencies (pegged to AUD)
     'KID': {
         'name': 'Kiribati Dollar',
         'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'ki'
     },
     'TVD': {
         'name': 'Tuvalu Dollar',
         'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'tv'
     },
     # Historical European currencies
     'MCF': {
         'name': 'Monegasque Franc',
         'symbol': '₣', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '₣#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'mc'
     },
     'SML': {
         'name': 'Sammarinese Lira',
         'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'sm'
     },
     'VAL': {
         'name': 'Vatican Lira',
         'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'va'
     },
 }
@@ -162,7 +162,7 @@ ENTITIES_WITH_SHARED_TABLES = {
         'artefact_type': 'currencies',
         'artefact_table': 'dq_currencies_artefact_tbl',
         'production_table': 'refdata_currencies_tbl',
-        'populate_function': 'dq_populate_currencies',
+        'populate_function': 'dq_currencies_publish_fn',
         'skip_schema_generation': True,
     }
 }
@@ -200,7 +200,7 @@ class CodingScheme:
         definition = self.definition.replace("'", "''") if self.definition else ''
         uri = self.canonical_uri.replace("'", "''")
 
-        return f"""select ores.upsert_dq_coding_schemes(
+        return f"""select metadata.dq_coding_schemes_upsert_fn(
     '{code}',
     '{name}',
     'industry',
@@ -222,7 +222,7 @@ class CodingScheme:
         definition = self.definition.replace("'", "''") if self.definition else ''
         uri = self.canonical_uri.replace("'", "''")
 
-        return f"""insert into ores.dq_coding_schemes_artefact_tbl (
+        return f"""insert into metadata.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
@@ -269,6 +269,7 @@ class MergedEntity:
         """
         return {
             "entity": {
+                "schema": "production",
                 "component": "refdata",
                 "entity_singular": self.entity_name,
                 "entity_plural": self.entity_plural,
@@ -388,7 +389,7 @@ class MergedEntity:
                     "artefact_type": "currencies",
                     "artefact_table": "dq_currencies_artefact_tbl",
                     "production_table": "refdata_currencies_tbl",
-                    "populate_function": "dq_populate_currencies",
+                    "populate_function": "dq_currencies_publish_fn",
                 }
 
             datasets.append(dataset_entry)
@@ -652,7 +653,7 @@ def generate_catalog_sql(manifest: dict, output_path: Path):
         " * This script is idempotent.",
         " */",
         "",
-        "set schema 'ores';",
+        "set schema 'metadata';",
         "",
         "-- =============================================================================",
         "-- FpML Standards Catalog",
@@ -660,7 +661,7 @@ def generate_catalog_sql(manifest: dict, output_path: Path):
         "",
         "\\echo '--- FpML Standards Catalog ---'",
         "",
-        f"select ores.upsert_dq_catalogs(",
+        f"select metadata.dq_catalogs_upsert_fn(",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{owner_escaped}'",
@@ -707,7 +708,7 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
         " * This script is idempotent.",
         " */",
         "",
-        "set schema 'ores';",
+        "set schema 'metadata';",
         "",
         "-- =============================================================================",
         "-- FPML Data Sourcing Methodology",
@@ -715,7 +716,7 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
         "",
         "\\echo '--- FPML Methodology ---'",
         "",
-        f"select ores.upsert_dq_methodologies(",
+        f"select metadata.dq_methodologies_upsert_fn(",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{source_url_escaped}',",
@@ -746,7 +747,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         " * This must be run before other datasets that reference these coding schemes.",
         " */",
         "",
-        "set schema 'ores';",
+        "set schema 'metadata';",
         "",
         "-- =============================================================================",
         "-- FPML Coding Schemes Dataset",
@@ -771,7 +772,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         artefact_type = dataset['artefact_type']
 
         lines.append(f"-- {name}")
-        lines.append("select ores.upsert_dq_datasets(")
+        lines.append("select metadata.dq_datasets_upsert_fn(")
         lines.append(f"    '{code}',")
         lines.append(f"    '{catalog}',")
         lines.append(f"    '{subject_area}',")
@@ -808,7 +809,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
         " * Must be run after fpml dataset populate scripts.",
         " */",
         "",
-        "set schema 'ores';",
+        "set schema 'metadata';",
         "",
         "-- =============================================================================",
         "-- FPML Dataset Dependencies",
@@ -823,7 +824,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
         dependency_code = dep['dependency_code']
         role = dep['role']
 
-        lines.append(f"select ores.upsert_dq_dataset_dependency(")
+        lines.append(f"select metadata.dq_dataset_dependencies_upsert_fn(")
         lines.append(f"    '{dataset_code}',")
         lines.append(f"    '{dependency_code}',")
         lines.append(f"    '{role}'")
@@ -875,8 +876,8 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         "",
         "-- Publish coding schemes to production (required before other datasets can reference them)",
         "\\echo '--- Publishing FPML Coding Schemes ---'",
-        "select * from ores.dq_populate_coding_schemes(",
-        "    (select id from ores.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),",
+        "select * from metadata.dq_coding_schemes_publish_fn(",
+        "    (select id from metadata.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn()),",
         "    'upsert'",
         ");",
         "",
@@ -928,13 +929,13 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
         " * Populates the dq_coding_schemes_artefact_tbl staging table.",
         " *",
         " * To publish to production:",
-        f" *   SELECT * FROM ores.dq_populate_coding_schemes(",
-        f" *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores.utility_infinity_timestamp_fn()),",
+        f" *   SELECT * FROM metadata.dq_coding_schemes_publish_fn(",
+        f" *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = public.utility_infinity_timestamp_fn()),",
         " *       'upsert'",
         " *   );",
         " */",
         "",
-        "set schema 'ores';",
+        "set schema 'metadata';",
         "",
         "-- =============================================================================",
         "-- FPML Coding Schemes Artefacts",
@@ -943,10 +944,10 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
         "\\echo '--- FPML Coding Schemes Artefacts ---'",
         "",
         "-- Store dataset_id in psql variable for reuse",
-        f"select id as v_dataset_id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn() \\gset",
+        f"select id as v_dataset_id from metadata.dq_datasets_tbl where code = '{dataset_code}' and valid_to = public.utility_infinity_timestamp_fn() \\gset",
         "",
         "-- Clear existing artefacts for this dataset before inserting",
-        "delete from ores.dq_coding_schemes_artefact_tbl",
+        "delete from metadata.dq_coding_schemes_artefact_tbl",
         "where dataset_id = :'v_dataset_id';",
         ""
     ]

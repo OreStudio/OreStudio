@@ -34,13 +34,13 @@ set schema 'metadata';
 
 \echo '--- Cryptocurrency Dataset Dependencies ---'
 
-select public.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'crypto.large',
     'assets.crypto_icons',
     'visual_assets'
 );
 
-select public.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'crypto.small',
     'assets.crypto_icons',
     'visual_assets'

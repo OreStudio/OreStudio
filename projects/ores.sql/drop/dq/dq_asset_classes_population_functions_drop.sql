@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_asset_class_population;
-drop function if exists metadata.dq_populate_asset_classes_fn;
+drop function if exists metadata.dq_asset_class_preview_fn;
+drop function if exists metadata.dq_asset_classes_publish_fn;

@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_person_role_population;
-drop function if exists metadata.dq_populate_person_roles_fn;
+drop function if exists metadata.dq_person_role_preview_fn;
+drop function if exists metadata.dq_person_roles_publish_fn;

@@ -76,7 +76,7 @@ struct artefact_type final {
      *
      * This function is called during publication to move data from
      * the artefact table to the target table.
-     * Example: "dq_populate_countries_fn".
+     * Example: "dq_countries_publish_fn".
      */
     std::optional<std::string> populate_function;
 

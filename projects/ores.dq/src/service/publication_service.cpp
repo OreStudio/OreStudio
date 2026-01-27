@@ -335,7 +335,7 @@ void publication_service::record_publication(
 
     // Build the INSERT query
     const auto sql = std::format(
-        "INSERT INTO metadata.dq_publications_tbl ("
+        "INSERT INTO metadata.dq_dataset_publications_tbl ("
         "dataset_id, dataset_code, mode, target_table, "
         "records_inserted, records_updated, records_skipped, records_deleted, published_by"
         ") VALUES ('{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
@@ -418,6 +418,90 @@ domain::publication_result publication_service::call_populate_function(
     }
 
     return result;
+}
+
+messaging::publish_bundle_response publication_service::publish_bundle(
+    const std::string& bundle_code,
+    domain::publication_mode mode,
+    const std::string& published_by,
+    bool atomic) {
+
+    BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << bundle_code
+        << " with mode: " << mode
+        << ", atomic: " << atomic
+        << ", published_by: " << published_by;
+
+    messaging::publish_bundle_response response;
+    const std::string mode_str = to_string(mode);
+
+    // Call the SQL function
+    const auto sql = std::format(
+        "SELECT * FROM metadata.dq_bundles_publish_fn('{}', '{}', '{}', {})",
+        bundle_code, mode_str, published_by, atomic ? "true" : "false");
+
+    try {
+        auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
+            std::format("Publishing bundle {}", bundle_code));
+
+        // Parse results from the function
+        // The function returns (dataset_code, dataset_name, status,
+        //   records_inserted, records_updated, records_skipped, records_deleted,
+        //   error_message) rows
+        for (const auto& row : rows) {
+            if (row.size() >= 8) {
+                messaging::bundle_dataset_result dataset_result;
+                dataset_result.dataset_code = row[0].value_or("");
+                dataset_result.dataset_name = row[1].value_or("");
+                dataset_result.status = row[2].value_or("");
+                dataset_result.records_inserted = row[3].has_value() ?
+                    static_cast<std::uint64_t>(std::stoll(*row[3])) : 0;
+                dataset_result.records_updated = row[4].has_value() ?
+                    static_cast<std::uint64_t>(std::stoll(*row[4])) : 0;
+                dataset_result.records_skipped = row[5].has_value() ?
+                    static_cast<std::uint64_t>(std::stoll(*row[5])) : 0;
+                dataset_result.records_deleted = row[6].has_value() ?
+                    static_cast<std::uint64_t>(std::stoll(*row[6])) : 0;
+                dataset_result.error_message = row[7].value_or("");
+
+                response.datasets_processed++;
+                if (dataset_result.status == "success") {
+                    response.datasets_succeeded++;
+                    response.total_records_inserted += dataset_result.records_inserted;
+                    response.total_records_updated += dataset_result.records_updated;
+                    response.total_records_skipped += dataset_result.records_skipped;
+                    response.total_records_deleted += dataset_result.records_deleted;
+                } else if (dataset_result.status == "failed") {
+                    response.datasets_failed++;
+                } else if (dataset_result.status == "skipped") {
+                    response.datasets_skipped++;
+                }
+
+                response.dataset_results.push_back(std::move(dataset_result));
+            }
+        }
+
+        // Determine overall success
+        if (atomic) {
+            // In atomic mode, we would have thrown an exception if any failed
+            response.success = (response.datasets_failed == 0);
+        } else {
+            // In non-atomic mode, success if at least one dataset succeeded
+            response.success = (response.datasets_succeeded > 0);
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Bundle publication complete: "
+            << response.datasets_processed << " datasets processed, "
+            << response.datasets_succeeded << " succeeded, "
+            << response.datasets_failed << " failed, "
+            << response.datasets_skipped << " skipped";
+
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.error_message = e.what();
+        BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: " << e.what();
+    }
+
+    return response;
 }
 
 }

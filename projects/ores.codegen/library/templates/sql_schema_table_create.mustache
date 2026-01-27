@@ -1,12 +1,12 @@
 {{! Template to generate SQL schema for bi-temporal entity table }}
 {{{sql_license}}}
-set schema 'ores';
+set schema '{{entity.schema}}';
 
 -- =============================================================================
 -- {{entity.description}}
 -- =============================================================================
 
-create table if not exists "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl" (
+create table if not exists "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" (
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
 {{#entity.columns}}
@@ -34,16 +34,16 @@ create table if not exists "ores"."{{entity.component}}_{{entity.entity_plural}}
 );
 
 create unique index if not exists {{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
-on "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 {{#entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{entity.component}}_{{entity.entity_plural}}_{{name}}_idx
-on "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
-where valid_to = ores.utility_infinity_timestamp_fn(){{/current_only}};
+on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
+where valid_to = public.utility_infinity_timestamp_fn(){{/current_only}};
 {{/entity.indexes}}
 
-create or replace function ores.{{entity.component}}_{{entity.entity_plural}}_insert_fn()
+create or replace function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -51,9 +51,9 @@ begin
 {{#entity.has_coding_scheme}}
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores.dq_coding_schemes_tbl
+        select 1 from metadata.dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
@@ -61,12 +61,12 @@ begin
 
 {{/entity.has_coding_scheme}}
     select version into current_version
-    from "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+    from "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
     where {{entity.primary_key.column}} = new.{{entity.primary_key.column}}
 {{#entity.has_coding_scheme}}
       and coding_scheme_code = new.coding_scheme_code
 {{/entity.has_coding_scheme}}
-    and valid_to = ores.utility_infinity_timestamp_fn()
+    and valid_to = public.utility_infinity_timestamp_fn()
     for update;
 
     if found then
@@ -77,42 +77,42 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+        update "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
         set valid_to = current_timestamp
         where {{entity.primary_key.column}} = new.{{entity.primary_key.column}}
 {{#entity.has_coding_scheme}}
           and coding_scheme_code = new.coding_scheme_code
 {{/entity.has_coding_scheme}}
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger {{entity.component}}_{{entity.entity_plural}}_insert_trg
-before insert on "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+before insert on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
 for each row
-execute function ores.{{entity.component}}_{{entity.entity_plural}}_insert_fn();
+execute function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_insert_fn();
 
 create or replace rule {{entity.component}}_{{entity.entity_plural}}_delete_rule as
-on delete to "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+on delete to "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
 do instead
-  update "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+  update "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
   set valid_to = current_timestamp
   where {{entity.primary_key.column}} = old.{{entity.primary_key.column}}
 {{#entity.has_coding_scheme}}
   and coding_scheme_code = old.coding_scheme_code
 {{/entity.has_coding_scheme}}
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

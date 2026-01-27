@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Entity Type Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'fpml.entity_type',
     'FpML Standards',
     'Parties',

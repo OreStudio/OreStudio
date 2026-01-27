@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Party Relationship Type Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'fpml.party_relationship_type',
     'FpML Standards',
     'Parties',

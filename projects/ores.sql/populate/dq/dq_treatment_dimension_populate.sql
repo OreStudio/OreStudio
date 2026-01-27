@@ -38,19 +38,19 @@ set schema 'metadata';
 
 \echo '--- Data Quality Treatment Dimensions ---'
 
-select public.upsert_dq_treatment_dimensions(
+select metadata.dq_treatment_dimensions_upsert_fn(
     'Raw',
     'Raw Data',
     'Untouched, identifiable data.'
 );
 
-select public.upsert_dq_treatment_dimensions(
+select metadata.dq_treatment_dimensions_upsert_fn(
     'Masked',
     'Masked Data',
     'PII has been redacted or obfuscated (replaces "Obfuscated").'
 );
 
-select public.upsert_dq_treatment_dimensions(
+select metadata.dq_treatment_dimensions_upsert_fn(
     'Anonymized',
     'Anonymized Data',
     'Irreversibly altered to prevent re-identification.'

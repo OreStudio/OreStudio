@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_local_jurisdiction_population;
-drop function if exists metadata.dq_populate_local_jurisdictions_fn;
+drop function if exists metadata.dq_local_jurisdiction_preview_fn;
+drop function if exists metadata.dq_local_jurisdictions_publish_fn;

@@ -35,7 +35,7 @@ set schema 'metadata';
 \echo '--- IP Geolocation Datasets ---'
 
 -- IP to Country IPv4 Ranges
-select public.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'geo.ip2country',
     'IP Geolocation',
     'IP Address to Country maps',

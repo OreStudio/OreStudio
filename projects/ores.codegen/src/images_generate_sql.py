@@ -87,18 +87,18 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where name = '{dataset_name}'
       and subject_area_name = '{subject_area_name}'
       and domain_name = '{domain_name}'
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: name="{dataset_name}", subject_area="{subject_area_name}", domain="{domain_name}"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)
-    delete from ores.dq_images_artefact_tbl
+    delete from metadata.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise notice 'Populating images for dataset: %', '{dataset_name}';
@@ -118,7 +118,7 @@ def generate_insert(key: str, description: str, svg_content: str) -> str:
     # Escape single quotes in description
     safe_description = description.replace("'", "''")
     # Use dollar quoting for SVG content to avoid escaping issues
-    return f"""    insert into ores.dq_images_artefact_tbl (
+    return f"""    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, '{key}', '{safe_description}', $svg${svg_content}$svg$

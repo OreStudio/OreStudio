@@ -78,12 +78,7 @@ void ClientManager::cleanupIO() {
     io_context_.reset();
 }
 
-LoginResult ClientManager::connectAndLogin(
-    const std::string& host,
-    std::uint16_t port,
-    const std::string& username,
-    const std::string& password) {
-
+LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) {
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << host << ":" << port;
 
     // Reset user disconnect flag for fresh connection
@@ -246,6 +241,18 @@ LoginResult ClientManager::connectAndLogin(
                     connected_host_ = host;
                     connected_port_ = port;
 
+                    // Extract available bundles from bootstrap response
+                    std::vector<BootstrapBundleInfo> bundles;
+                    for (const auto& b : bootstrap_response->available_bundles) {
+                        bundles.push_back({
+                            .code = QString::fromStdString(b.code),
+                            .name = QString::fromStdString(b.name),
+                            .description = QString::fromStdString(b.description)
+                        });
+                    }
+                    BOOST_LOG_SEV(lg(), debug) << "Received " << bundles.size()
+                                               << " available bundles for bootstrap";
+
                     // Emit connected signal
                     QMetaObject::invokeMethod(this, "connected", Qt::QueuedConnection);
 
@@ -253,13 +260,46 @@ LoginResult ClientManager::connectAndLogin(
                         .success = false,
                         .error_message = QString::fromStdString(bootstrap_response->message),
                         .password_reset_required = false,
-                        .bootstrap_mode = true
+                        .bootstrap_mode = true,
+                        .available_bundles = std::move(bundles)
                     };
                 }
             }
         }
-        BOOST_LOG_SEV(lg(), debug) << "System is not in bootstrap mode, proceeding with login";
+        BOOST_LOG_SEV(lg(), debug) << "System is not in bootstrap mode, ready for login";
 
+        // Store the client and connection info - ready for login()
+        client_ = new_client;
+        auto attach_result = session_.attach_client(client_);
+        if (!attach_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
+            client_->disconnect();
+            client_.reset();
+            return {.success = false, .error_message = QString("Failed to initialize session")};
+        }
+        connected_host_ = host;
+        connected_port_ = port;
+
+        // Emit connected signal
+        QMetaObject::invokeMethod(this, "connected", Qt::QueuedConnection);
+
+        return {.success = true, .error_message = QString()};
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
+        return {.success = false, .error_message = QString::fromStdString(e.what())};
+    }
+}
+
+LoginResult ClientManager::login(const std::string& username, const std::string& password) {
+    BOOST_LOG_SEV(lg(), info) << "Logging in as " << username;
+
+    if (!client_ || !client_->is_connected()) {
+        BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Not connected";
+        return {.success = false, .error_message = QString("Not connected to server")};
+    }
+
+    try {
         // Perform Login
         iam::messaging::login_request request{
             .username = username,
@@ -273,7 +313,7 @@ LoginResult ClientManager::connectAndLogin(
             std::move(payload)
         );
 
-        auto response_result = new_client->send_request_sync(std::move(request_frame));
+        auto response_result = client_->send_request_sync(std::move(request_frame));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Network error during login request"
@@ -328,27 +368,13 @@ LoginResult ClientManager::connectAndLogin(
             return {.success = false, .error_message = QString::fromStdString(response->error_message)};
         }
 
-        // Success - swap in new client and attach to session
-        client_ = new_client;
-        connected_host_ = host;
-        connected_port_ = port;
         const bool password_reset_required = response->password_reset_required;
 
         // Store credentials for re-authentication after reconnection
         stored_username_ = username;
         stored_password_ = password;
 
-        // Attach client to session and set session info
-        auto attach_result = session_.attach_client(client_);
-        if (!attach_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
-            client_->disconnect();
-            client_.reset();
-            connected_host_.clear();
-            connected_port_ = 0;
-            return {.success = false, .error_message = QString("Failed to initialize session")};
-        }
-
+        // Set session info
         session_.set_session_info(comms::net::client_session_info{
             .account_id = response->account_id,
             .username = response->username,
@@ -379,7 +405,7 @@ LoginResult ClientManager::connectAndLogin(
             });
 
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
-                                  << "' authenticated to " << host << ":" << port
+                                  << "' authenticated to " << connected_host_ << ":" << connected_port_
                                   << ", password_reset_required: " << password_reset_required;
 
         // Enable recording if it was requested before connection
@@ -420,18 +446,40 @@ LoginResult ClientManager::connectAndLogin(
         if (event_bus_) {
             event_bus_->publish(comms::eventing::connected_event{
                 .timestamp = std::chrono::system_clock::now(),
-                .host = host,
-                .port = port
+                .host = connected_host_,
+                .port = connected_port_
             });
         }
-        emit connected();
         emit loggedIn();
         return {.success = true, .error_message = QString(), .password_reset_required = password_reset_required};
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Login failed: " << e.what();
         return {.success = false, .error_message = QString::fromStdString(e.what())};
     }
+}
+
+LoginResult ClientManager::connectAndLogin(
+    const std::string& host,
+    std::uint16_t port,
+    const std::string& username,
+    const std::string& password) {
+
+    // First, establish connection
+    auto connect_result = connect(host, port);
+
+    // If bootstrap mode, return early
+    if (connect_result.bootstrap_mode) {
+        return connect_result;
+    }
+
+    // If connection failed, return the error
+    if (!connect_result.success) {
+        return connect_result;
+    }
+
+    // Now perform login
+    return login(username, password);
 }
 
 LoginResult ClientManager::testConnection(

@@ -38,17 +38,17 @@ set schema 'metadata';
 
 \echo '--- Data Quality Data Domains ---'
 
-select public.upsert_dq_data_domains(
+select metadata.dq_data_domains_upsert_fn(
     'Reference Data',
     'Standardized data used across the system.'
 );
 
-select public.upsert_dq_data_domains(
+select metadata.dq_data_domains_upsert_fn(
     'Trade Data',
     'Transaction and position data.'
 );
 
-select public.upsert_dq_data_domains(
+select metadata.dq_data_domains_upsert_fn(
     'Market Data',
     'Pricing and market information.'
 );

@@ -1735,6 +1735,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
 
     updateWindowTitle();
+    updateMenuState();
 }
 
 void MainWindow::showSignUpDialog(const QString& host, int port) {
@@ -1781,24 +1782,25 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
-void MainWindow::showSystemProvisionerWizard() {
+void MainWindow::showSystemProvisionerWizard(
+    const std::vector<BootstrapBundleInfo>& bundles) {
     BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
 
-    auto* wizard = new SystemProvisionerWizard(clientManager_, this);
+    auto* wizard = new SystemProvisionerWizard(clientManager_, bundles, this);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
     // Connect completion signal - on success, proceed with normal flow
     connect(wizard, &SystemProvisionerWizard::provisioningCompleted,
             this, [this](const QString& username) {
-        BOOST_LOG_SEV(lg(), info) << "System provisioning completed, logging in as: "
+        BOOST_LOG_SEV(lg(), info) << "System provisioning completed, user logged in as: "
                                   << username.toStdString();
         ui_->statusbar->showMessage(
-            tr("System provisioned. Administrator account '%1' created.").arg(username));
+            tr("System provisioned. Logged in as administrator '%1'.").arg(username));
 
-        // The system is now provisioned - show login dialog again for the user to log in
-        // with their new admin credentials
-        showLoginDialog();
+        // The system is now provisioned and user is already logged in from provisioning
+        // Call onLoginSuccess to properly initialize the application state
+        onLoginSuccess(username);
     });
 
     // Connect failure signal

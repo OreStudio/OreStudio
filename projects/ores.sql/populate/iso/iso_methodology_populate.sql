@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- ISO Standards Methodologies ---'
 
-select public.upsert_dq_methodologies(
+select metadata.dq_methodologies_upsert_fn(
     'Wikipedia ISO 3166 Extraction',
     'Data extracted from Wikipedia page listing ISO 3166 country codes',
     'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
@@ -42,7 +42,7 @@ select public.upsert_dq_methodologies(
 See methodology documentation for detailed steps.'
 );
 
-select public.upsert_dq_methodologies(
+select metadata.dq_methodologies_upsert_fn(
     'Wikipedia ISO 4217 Extraction',
     'Data extracted from Wikipedia page listing ISO 4217 currency codes',
     'https://en.wikipedia.org/wiki/ISO_4217',

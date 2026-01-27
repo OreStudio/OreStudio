@@ -19,4 +19,4 @@
  */
 set schema 'metadata';
 
-drop table if exists "metadata"."dq_publications_tbl";
+drop table if exists "metadata"."dq_dataset_publications_tbl";

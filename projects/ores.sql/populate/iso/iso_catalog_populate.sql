@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- ISO Standards Catalog ---'
 
-select public.upsert_dq_catalogs(
+select metadata.dq_catalogs_upsert_fn(
     'ISO Standards',
     'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
     'Reference Data Team'

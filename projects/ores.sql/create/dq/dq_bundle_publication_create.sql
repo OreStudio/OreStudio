@@ -26,13 +26,13 @@
  *
  * Usage:
  *   -- List available bundles
- *   SELECT * FROM metadata.dq_list_bundles_fn();
+ *   SELECT * FROM metadata.dq_bundles_list_fn();
  *
  *   -- Preview what will be published
- *   SELECT * FROM metadata.dq_preview_bundle_publication_fn('base');
+ *   SELECT * FROM metadata.dq_bundle_preview_fn('base');
  *
  *   -- Publish a bundle
- *   SELECT * FROM metadata.dq_populate_bundle_fn('base', 'upsert', 'admin');
+ *   SELECT * FROM metadata.dq_bundles_publish_fn('base', 'upsert', 'admin');
  */
 
 set schema 'metadata';
@@ -46,6 +46,7 @@ create table if not exists "metadata"."dq_bundle_publications_tbl" (
     "bundle_code" text not null,
     "bundle_name" text not null,
     "mode" text not null,
+    "atomic" boolean not null default false,
     "datasets_processed" integer not null default 0,
     "datasets_succeeded" integer not null default 0,
     "datasets_failed" integer not null default 0,
@@ -82,7 +83,7 @@ create index if not exists dq_bundle_publications_published_at_idx
 /**
  * Lists all available dataset bundles with their member counts.
  */
-create or replace function metadata.dq_list_bundles_fn()
+create or replace function metadata.dq_bundles_list_fn()
 returns table (
     bundle_code text,
     bundle_name text,
@@ -109,7 +110,7 @@ $$ language plpgsql;
 /**
  * Lists datasets in a bundle with their publication readiness status.
  */
-create or replace function metadata.dq_list_bundle_datasets_fn(p_bundle_code text)
+create or replace function metadata.dq_bundle_datasets_list_fn(p_bundle_code text)
 returns table (
     display_order integer,
     dataset_code text,
@@ -145,7 +146,7 @@ $$ language plpgsql;
  * Preview what would be published for a bundle.
  * Returns summary statistics without actually publishing.
  */
-create or replace function metadata.dq_preview_bundle_publication_fn(p_bundle_code text)
+create or replace function metadata.dq_bundle_preview_fn(p_bundle_code text)
 returns table (
     metric text,
     value bigint
@@ -199,11 +200,12 @@ $$ language plpgsql;
  *
  * Processes datasets in display_order to respect dependencies.
  * Each dataset is published individually, and failures are logged but don't
- * stop the overall bundle publication.
+ * stop the overall bundle publication (unless p_atomic is true).
  *
  * @param p_bundle_code  The bundle to publish (e.g., 'base', 'solvaris', 'crypto')
  * @param p_mode         Publication mode: 'upsert', 'insert_only', or 'replace_all'
  * @param p_published_by User/system publishing the bundle
+ * @param p_atomic       If true, any failure causes entire bundle to rollback
  *
  * @returns Summary of publication results per dataset
  *
@@ -216,10 +218,11 @@ $$ language plpgsql;
  * Where action is one of: 'inserted', 'updated', 'skipped', 'deleted'
  * See dq_population_functions_create.sql for reference implementations.
  */
-create or replace function metadata.dq_populate_bundle_fn(
+create or replace function metadata.dq_bundles_publish_fn(
     p_bundle_code text,
     p_mode text default 'upsert',
-    p_published_by text default current_user
+    p_published_by text default current_user,
+    p_atomic boolean default true
 )
 returns table (
     dataset_code text,
@@ -270,9 +273,9 @@ begin
 
     -- Create bundle publication audit record
     insert into metadata.dq_bundle_publications_tbl (
-        bundle_code, bundle_name, mode, published_by
+        bundle_code, bundle_name, mode, atomic, published_by
     ) values (
-        p_bundle_code, v_bundle_name, p_mode, p_published_by
+        p_bundle_code, v_bundle_name, p_mode, p_atomic, p_published_by
     ) returning id into v_bundle_pub_id;
 
     raise notice 'Starting bundle publication: % (%)', p_bundle_code, v_bundle_name;
@@ -367,7 +370,7 @@ begin
         -- Call the populate function dynamically
         begin
             v_sql := format(
-                'SELECT * FROM ores.%I(%L::uuid, %L::text)',
+                'SELECT * FROM metadata.%I(%L::uuid, %L::text)',
                 v_artefact_type.populate_function,
                 v_dataset.dataset_id,
                 p_mode
@@ -387,7 +390,7 @@ begin
             end loop;
 
             -- Record individual dataset publication
-            insert into metadata.dq_publications_tbl (
+            insert into metadata.dq_dataset_publications_tbl (
                 dataset_id, dataset_code, mode, target_table,
                 records_inserted, records_updated, records_skipped, records_deleted,
                 published_by
@@ -418,6 +421,21 @@ begin
             v_datasets_failed := v_datasets_failed + 1;
             v_error_msg := SQLERRM;
 
+            -- In atomic mode, update audit record and re-raise to abort entire transaction
+            if p_atomic then
+                update metadata.dq_bundle_publications_tbl
+                set datasets_processed = v_datasets_processed,
+                    datasets_succeeded = v_datasets_succeeded,
+                    datasets_failed = v_datasets_failed,
+                    datasets_skipped = v_datasets_skipped,
+                    completed_at = current_timestamp
+                where id = v_bundle_pub_id;
+
+                raise exception 'Atomic bundle publication failed at dataset %: %',
+                    v_dataset.dataset_code, v_error_msg;
+            end if;
+
+            -- Non-atomic mode: log and continue (existing behavior)
             dataset_code := v_dataset.dataset_code;
             dataset_name := v_dataset.dataset_name;
             status := 'failed';

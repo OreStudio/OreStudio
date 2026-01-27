@@ -25,10 +25,10 @@
  *
  * Usage:
  *   -- Preview what will be published
- *   SELECT * FROM metadata.dq_preview_entity_classification_population(dataset_id);
+ *   SELECT * FROM metadata.dq_entity_classification_preview_fn(dataset_id);
  *
  *   -- Publish to production
- *   SELECT * FROM metadata.dq_populate_entity_classifications_fn(dataset_id, 'upsert');
+ *   SELECT * FROM metadata.dq_entity_classifications_publish_fn(dataset_id, 'upsert');
  */
 
 set schema 'metadata';
@@ -40,7 +40,7 @@ set schema 'metadata';
 /**
  * Preview what entity_classifications would be copied from a DQ dataset.
  */
-create or replace function metadata.dq_preview_entity_classification_population(p_dataset_id uuid)
+create or replace function metadata.dq_entity_classification_preview_fn(p_dataset_id uuid)
 returns table (
     action text,
     code text,
@@ -82,7 +82,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Population mode: 'upsert', 'insert_only', or 'replace_all'.
  */
-create or replace function metadata.dq_populate_entity_classifications_fn(
+create or replace function metadata.dq_entity_classifications_publish_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )

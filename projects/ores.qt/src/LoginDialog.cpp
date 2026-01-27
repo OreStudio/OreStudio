@@ -384,7 +384,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
     if (result.bootstrap_mode) {
         BOOST_LOG_SEV(lg(), info) << "System is in bootstrap mode - provisioning required";
         statusLabel_->setText("System requires provisioning...");
-        emit bootstrapModeDetected();
+        emit bootstrapModeDetected(result.available_bundles);
         emit closeRequested();
         return;
     }

@@ -203,7 +203,7 @@ Trigger functions that validate foreign keys need cross-schema references.
 #+begin_src sql
 -- In production table trigger
 select 1 into v_exists
-from ores.dq_coding_schemes_tbl
+from metadata.dq_coding_schemes_tbl
 where code = p_row.coding_scheme_code;
 #+end_src
 

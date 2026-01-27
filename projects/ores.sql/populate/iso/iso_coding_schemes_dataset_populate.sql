@@ -34,7 +34,7 @@ set schema 'metadata';
 \echo '--- ISO Coding Schemes Dataset ---'
 
 -- ISO Coding Schemes
-select public.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'iso.coding_schemes',
     'ISO Standards',
     'General',

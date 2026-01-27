@@ -31,6 +31,20 @@
 namespace ores::iam::messaging {
 
 /**
+ * @brief Lightweight bundle info for bootstrap wizard.
+ *
+ * Contains only the fields needed to display bundle choices during
+ * initial system provisioning. This avoids a dependency on ores.dq.
+ */
+struct bootstrap_bundle_info final {
+    std::string code;
+    std::string name;
+    std::string description;
+};
+
+std::ostream& operator<<(std::ostream& s, const bootstrap_bundle_info& v);
+
+/**
  * @brief Request to create the initial administrator account.
  *
  * This endpoint is only available during bootstrap mode (when no admin accounts exist).
@@ -122,12 +136,24 @@ struct bootstrap_status_response final {
     std::string message;
 
     /**
+     * @brief Available dataset bundles for provisioning.
+     *
+     * Only populated when is_in_bootstrap_mode is true.
+     */
+    std::vector<bootstrap_bundle_info> available_bundles;
+
+    /**
      * @brief Serialize response to bytes.
      *
      * Format:
      * - 1 byte: is_in_bootstrap_mode (boolean)
      * - 2 bytes: message length
      * - N bytes: message (UTF-8)
+     * - 4 bytes: bundle count
+     * - For each bundle:
+     *   - 2 bytes: code length + N bytes code
+     *   - 2 bytes: name length + N bytes name
+     *   - 2 bytes: description length + N bytes description
      */
     std::vector<std::byte> serialize() const;
 

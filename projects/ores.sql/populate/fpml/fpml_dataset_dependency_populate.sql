@@ -14,13 +14,13 @@ set schema 'metadata';
 
 \echo '--- FPML Dataset Dependencies ---'
 
-select public.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'fpml.non_iso_currency',
     'assets.country_flags',
     'visual_assets'
 );
 
-select public.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'fpml.business_center',
     'assets.country_flags',
     'visual_assets'

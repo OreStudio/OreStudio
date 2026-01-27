@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Account Type Dataset ---'
 
-select public.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'fpml.account_type',
     'FpML Standards',
     'Trading',

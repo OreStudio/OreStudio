@@ -28,6 +28,7 @@
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
+#include "ores.dq/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
@@ -194,6 +195,8 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_get_publications_request(payload, remote_address);
     case message_type::resolve_dependencies_request:
         co_return co_await handle_resolve_dependencies_request(payload, remote_address);
+    case message_type::publish_bundle_request:
+        co_return co_await handle_publish_bundle_request(payload, remote_address);
 
     // Dataset bundle messages
     case message_type::get_dataset_bundles_request:
@@ -2285,6 +2288,50 @@ handle_resolve_dependencies_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), error) << "Failed to resolve dependencies: " << e.what();
         co_return std::unexpected(
             ores::utility::serialization::error_code::handler_error);
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_publish_bundle_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing publish_bundle_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        "bundles:publish", "Publish bundle");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = publish_bundle_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize publish_bundle_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << request.bundle_code
+                              << ", mode: " << request.mode
+                              << ", atomic: " << request.atomic;
+
+    publish_bundle_response response;
+    try {
+        response = publication_service_.publish_bundle(
+            request.bundle_code,
+            request.mode,
+            request.published_by,
+            request.atomic);
+
+        BOOST_LOG_SEV(lg(), info) << "Bundle publication complete: "
+                                  << response.datasets_processed << " datasets, "
+                                  << response.datasets_succeeded << " succeeded, "
+                                  << response.datasets_failed << " failed";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: " << e.what();
+        response.success = false;
+        response.error_message = e.what();
     }
 
     co_return response.serialize();

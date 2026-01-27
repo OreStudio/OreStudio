@@ -20,13 +20,13 @@
 set schema 'metadata';
 
 -- =============================================================================
--- Table: dq_publications_tbl
+-- Table: dq_dataset_publications_tbl
 -- =============================================================================
 -- Audit table for tracking dataset publication history.
 -- Records each time a dataset is published to production tables.
 -- =============================================================================
 
-create table if not exists "metadata"."dq_publications_tbl" (
+create table if not exists "metadata"."dq_dataset_publications_tbl" (
     "id" uuid not null default gen_random_uuid(),
     "dataset_id" uuid not null,
     "dataset_code" text not null,
@@ -51,50 +51,50 @@ create table if not exists "metadata"."dq_publications_tbl" (
     check ("published_by" <> '')
 );
 
-comment on table metadata.dq_publications_tbl is
+comment on table metadata.dq_dataset_publications_tbl is
     'Audit table for tracking dataset publication history.';
 
-comment on column metadata.dq_publications_tbl.id is
+comment on column metadata.dq_dataset_publications_tbl.id is
     'Unique identifier for this publication record.';
 
-comment on column metadata.dq_publications_tbl.dataset_id is
+comment on column metadata.dq_dataset_publications_tbl.dataset_id is
     'ID of the dataset that was published.';
 
-comment on column metadata.dq_publications_tbl.dataset_code is
+comment on column metadata.dq_dataset_publications_tbl.dataset_code is
     'Code of the dataset that was published (e.g., iso.currencies).';
 
-comment on column metadata.dq_publications_tbl.mode is
+comment on column metadata.dq_dataset_publications_tbl.mode is
     'Publication mode used: upsert, insert_only, or replace_all.';
 
-comment on column metadata.dq_publications_tbl.target_table is
+comment on column metadata.dq_dataset_publications_tbl.target_table is
     'Name of the production table that received the data.';
 
-comment on column metadata.dq_publications_tbl.records_inserted is
+comment on column metadata.dq_dataset_publications_tbl.records_inserted is
     'Number of records inserted during publication.';
 
-comment on column metadata.dq_publications_tbl.records_updated is
+comment on column metadata.dq_dataset_publications_tbl.records_updated is
     'Number of records updated during publication (upsert mode).';
 
-comment on column metadata.dq_publications_tbl.records_skipped is
+comment on column metadata.dq_dataset_publications_tbl.records_skipped is
     'Number of records skipped during publication.';
 
-comment on column metadata.dq_publications_tbl.records_deleted is
+comment on column metadata.dq_dataset_publications_tbl.records_deleted is
     'Number of records deleted during publication (replace_all mode).';
 
-comment on column metadata.dq_publications_tbl.published_by is
+comment on column metadata.dq_dataset_publications_tbl.published_by is
     'Username of the person who initiated the publication.';
 
-comment on column metadata.dq_publications_tbl.published_at is
+comment on column metadata.dq_dataset_publications_tbl.published_at is
     'Timestamp when the publication occurred.';
 
 -- Index for querying publication history by dataset
-create index if not exists dq_publications_dataset_id_idx
-    on metadata.dq_publications_tbl(dataset_id);
+create index if not exists dq_dataset_publications_dataset_id_idx
+    on metadata.dq_dataset_publications_tbl(dataset_id);
 
 -- Index for querying publication history by time
-create index if not exists dq_publications_published_at_idx
-    on metadata.dq_publications_tbl(published_at);
+create index if not exists dq_dataset_publications_published_at_idx
+    on metadata.dq_dataset_publications_tbl(published_at);
 
 -- Index for querying publication history by user
-create index if not exists dq_publications_published_by_idx
-    on metadata.dq_publications_tbl(published_by);
+create index if not exists dq_dataset_publications_published_by_idx
+    on metadata.dq_dataset_publications_tbl(published_by);

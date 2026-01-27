@@ -44,6 +44,15 @@
 namespace ores::qt {
 
 /**
+ * @brief Lightweight bundle info for bootstrap wizard.
+ */
+struct BootstrapBundleInfo {
+    QString code;
+    QString name;
+    QString description;
+};
+
+/**
  * @brief Result of a login attempt.
  */
 struct LoginResult {
@@ -51,6 +60,7 @@ struct LoginResult {
     QString error_message;
     bool password_reset_required = false;
     bool bootstrap_mode = false;  ///< True if system is in bootstrap mode (no admin exists)
+    std::vector<BootstrapBundleInfo> available_bundles;  ///< Bundles available when in bootstrap mode
 };
 
 /**
@@ -96,7 +106,39 @@ public:
     ~ClientManager() override;
 
     /**
+     * @brief Connect to the server without logging in.
+     *
+     * Establishes a connection and checks bootstrap status. If the system
+     * is in bootstrap mode, returns with bootstrap_mode=true and the client
+     * remains connected (but not logged in). Otherwise, the client is
+     * connected and ready for a login() call.
+     *
+     * @param host Server hostname
+     * @param port Server port
+     * @return LoginResult with bootstrap_mode=true if in bootstrap mode,
+     *         success=true if connected and ready for login, or
+     *         success=false with error_message on failure
+     */
+    LoginResult connect(const std::string& host, std::uint16_t port);
+
+    /**
+     * @brief Login on an already connected client.
+     *
+     * Assumes the client is already connected via connect(). Sets up
+     * session info, stores credentials for reconnection, and emits
+     * the loggedIn signal.
+     *
+     * @param username Login username
+     * @param password Login password
+     * @return LoginResult containing success status, error message, and password_reset_required flag
+     */
+    LoginResult login(const std::string& username, const std::string& password);
+
+    /**
      * @brief Connect to the server and perform login.
+     *
+     * Convenience method that calls connect() followed by login().
+     * If bootstrap mode is detected, returns early with bootstrap_mode=true.
      *
      * @param host Server hostname
      * @param port Server port
@@ -237,6 +279,18 @@ public:
             return "";
         }
         return connected_host_;
+    }
+
+    /**
+     * @brief Get the connected server port.
+     *
+     * @return Server port, or 0 if not connected.
+     */
+    std::uint16_t connectedPort() const {
+        if (!isConnected()) {
+            return 0;
+        }
+        return connected_port_;
     }
 
     /**

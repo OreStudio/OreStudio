@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_party_role_population;
-drop function if exists metadata.dq_populate_party_roles_fn;
+drop function if exists metadata.dq_party_role_preview_fn;
+drop function if exists metadata.dq_party_roles_publish_fn;

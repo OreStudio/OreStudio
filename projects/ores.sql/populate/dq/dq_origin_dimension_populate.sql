@@ -51,13 +51,13 @@ where origin_code = 'Source';
 
 \echo '--- Data Quality Origin Dimensions ---'
 
-select public.upsert_dq_origin_dimensions(
+select metadata.dq_origin_dimensions_upsert_fn(
     'Primary',
     'Primary Data',
     'Raw data ingested directly from the origin without transformations.'
 );
 
-select public.upsert_dq_origin_dimensions(
+select metadata.dq_origin_dimensions_upsert_fn(
     'Derived',
     'Derived Data',
     'Data transformed, aggregated, or calculated via code.'

@@ -272,8 +272,10 @@ private:
      *
      * Displays the SystemProvisionerWizard to create the initial admin account
      * and provision the system with reference data.
+     *
+     * @param bundles Available dataset bundles for provisioning
      */
-    void showSystemProvisionerWizard();
+    void showSystemProvisionerWizard(const std::vector<BootstrapBundleInfo>& bundles);
 
     /**
      * @brief Options for configuring the login dialog.

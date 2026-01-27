@@ -14,7 +14,7 @@ set schema 'metadata';
 
 \echo '--- FPML Methodology ---'
 
-select public.upsert_dq_methodologies(
+select metadata.dq_methodologies_upsert_fn(
     'FpML Genericode Download',
     'Data downloaded from FpML coding scheme repository in Genericode XML format',
     'https://www.fpml.org/the_standard/current/',

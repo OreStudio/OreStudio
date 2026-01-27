@@ -236,7 +236,13 @@ LoginResult ClientManager::connectAndLogin(
 
                     // Store the client and connection info even though we're not logging in
                     client_ = new_client;
-                    session_.attach_client(client_);
+                    auto attach_result = session_.attach_client(client_);
+                    if (!attach_result) {
+                        BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
+                        client_->disconnect();
+                        client_.reset();
+                        return {.success = false, .error_message = QString("Failed to initialize session")};
+                    }
                     connected_host_ = host;
                     connected_port_ = port;
 
@@ -336,6 +342,10 @@ LoginResult ClientManager::connectAndLogin(
         auto attach_result = session_.attach_client(client_);
         if (!attach_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
+            client_->disconnect();
+            client_.reset();
+            connected_host_.clear();
+            connected_port_ = 0;
             return {.success = false, .error_message = QString("Failed to initialize session")};
         }
 

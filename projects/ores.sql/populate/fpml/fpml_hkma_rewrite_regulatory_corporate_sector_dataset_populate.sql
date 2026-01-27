@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Hkma Rewrite Regulatory Corporate Sector Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select metadata.upsert_dq_datasets(
     'fpml.hkma_rewrite_regulatory_corporate_sector',
     'FpML Standards',
     'Regulatory',

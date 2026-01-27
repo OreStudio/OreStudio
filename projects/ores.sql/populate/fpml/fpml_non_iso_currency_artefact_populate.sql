@@ -102,16 +102,16 @@ begin
         c.currency_type,
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
-        ('CNH', 'Offshore Chinese Yuan (Hong Kong)', '', '¥', '分', 100, 'standard', 2, '¥#,##0.00', 'fiat.offshore', 'hk'),
-        ('CNT', 'Offshore Chinese Yuan (Taiwan)', '', '¥', '分', 100, 'standard', 2, '¥#,##0.00', 'fiat.offshore', 'tw'),
-        ('GGP', 'Guernsey Pound', '', '£', 'p', 100, 'standard', 2, '£#,##0.00', 'fiat.emerging', 'gg'),
-        ('IMP', 'Isle of Man Pound', '', '£', 'p', 100, 'standard', 2, '£#,##0.00', 'fiat.emerging', 'im'),
-        ('JEP', 'Jersey Pound', '', '£', 'p', 100, 'standard', 2, '£#,##0.00', 'fiat.emerging', 'je'),
-        ('KID', 'Kiribati Dollar', '', '$', '¢', 100, 'standard', 2, '$#,##0.00', 'fiat.emerging', 'ki'),
-        ('MCF', 'Monegasque Franc', '', '₣', 'c', 100, 'standard', 2, '₣#,##0.00', 'fiat.historical', 'mc'),
-        ('SML', 'Sammarinese Lira', '', '₤', 'c', 100, 'standard', 2, '₤#,##0.00', 'fiat.historical', 'sm'),
-        ('TVD', 'Tuvalu Dollar', '', '$', '¢', 100, 'standard', 2, '$#,##0.00', 'fiat.emerging', 'tv'),
-        ('VAL', 'Vatican Lira', '', '₤', 'c', 100, 'standard', 2, '₤#,##0.00', 'fiat.historical', 'va')
+        ('CNH', 'Offshore Chinese Yuan (Hong Kong)', '', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.offshore', 'hk'),
+        ('CNT', 'Offshore Chinese Yuan (Taiwan)', '', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.offshore', 'tw'),
+        ('GGP', 'Guernsey Pound', '', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'gg'),
+        ('IMP', 'Isle of Man Pound', '', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'im'),
+        ('JEP', 'Jersey Pound', '', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'je'),
+        ('KID', 'Kiribati Dollar', '', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'ki'),
+        ('MCF', 'Monegasque Franc', '', '₣', 'c', 100, 'Closest', 2, '₣#,##0.00', 'fiat.historical', 'mc'),
+        ('SML', 'Sammarinese Lira', '', '₤', 'c', 100, 'Closest', 2, '₤#,##0.00', 'fiat.historical', 'sm'),
+        ('TVD', 'Tuvalu Dollar', '', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'tv'),
+        ('VAL', 'Vatican Lira', '', '₤', 'c', 100, 'Closest', 2, '₤#,##0.00', 'fiat.historical', 'va')
     ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, flag_key)
     left join metadata.dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id

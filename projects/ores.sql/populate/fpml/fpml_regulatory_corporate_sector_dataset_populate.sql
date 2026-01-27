@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Regulatory Corporate Sector Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select metadata.upsert_dq_datasets(
     'fpml.regulatory_corporate_sector',
     'FpML Standards',
     'Regulatory',

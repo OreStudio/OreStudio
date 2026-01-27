@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Local Jurisdiction Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select metadata.upsert_dq_datasets(
     'fpml.local_jurisdiction',
     'FpML Standards',
     'Regulatory',

@@ -25,7 +25,7 @@
  * Dataset: fpml.party_relationship_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_party_relationships_fn() to publish to production.
+ * Use dq_populate_party_relationships() to publish to production.
  */
 
 set schema 'metadata';

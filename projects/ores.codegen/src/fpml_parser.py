@@ -93,64 +93,64 @@ NON_ISO_CURRENCY_ENRICHMENT = {
     'CNH': {
         'name': 'Offshore Chinese Yuan (Hong Kong)',
         'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'hk'
     },
     'CNT': {
         'name': 'Offshore Chinese Yuan (Taiwan)',
         'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'tw'
     },
     # British Crown Dependencies (pegged to GBP)
     'GGP': {
         'name': 'Guernsey Pound',
         'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'gg'
     },
     'IMP': {
         'name': 'Isle of Man Pound',
         'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'im'
     },
     'JEP': {
         'name': 'Jersey Pound',
         'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'je'
     },
     # Pacific Island currencies (pegged to AUD)
     'KID': {
         'name': 'Kiribati Dollar',
         'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'ki'
     },
     'TVD': {
         'name': 'Tuvalu Dollar',
         'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'tv'
     },
     # Historical European currencies
     'MCF': {
         'name': 'Monegasque Franc',
         'symbol': '₣', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '₣#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'mc'
     },
     'SML': {
         'name': 'Sammarinese Lira',
         'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'sm'
     },
     'VAL': {
         'name': 'Vatican Lira',
         'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
-        'rounding_type': 'standard', 'rounding_precision': 2,
+        'rounding_type': 'Closest', 'rounding_precision': 2,
         'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'va'
     },
 }

@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Supervisory Body Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select metadata.upsert_dq_datasets(
     'fpml.supervisory_body',
     'FpML Standards',
     'Regulatory',

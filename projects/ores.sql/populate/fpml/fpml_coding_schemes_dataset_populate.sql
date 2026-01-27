@@ -15,7 +15,7 @@ set schema 'metadata';
 \echo '--- FPML Coding Schemes Dataset ---'
 
 -- FpML Coding Schemes
-select metadata.dq_datasets_upsert_fn(
+select metadata.upsert_dq_datasets(
     'fpml.coding_schemes',
     'FpML Standards',
     'General',

@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Asset Class Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select metadata.upsert_dq_datasets(
     'fpml.asset_class',
     'FpML Standards',
     'Market Data',

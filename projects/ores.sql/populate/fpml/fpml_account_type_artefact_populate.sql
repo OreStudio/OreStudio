@@ -25,7 +25,7 @@
  * Dataset: fpml.account_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_account_types_fn() to publish to production.
+ * Use dq_populate_account_types() to publish to production.
  */
 
 set schema 'metadata';

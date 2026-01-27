@@ -40,20 +40,6 @@ using ores::ore::domain::roundingType;
 using namespace ores::logging;
 
 /**
- * @brief Compare two optional values, checking both presence and value.
- */
-template<typename T>
-bool optionals_equal(const xsd::optional<T>& a, const xsd::optional<T>& b) {
-    if (static_cast<bool>(a) != static_cast<bool>(b)) {
-        return false;
-    }
-    if (!a && !b) {
-        return true;
-    }
-    return *a == *b;
-}
-
-/**
  * @brief Compare two currencyDefinition objects field by field.
  */
 void require_currency_equal(const currencyDefinition& original,

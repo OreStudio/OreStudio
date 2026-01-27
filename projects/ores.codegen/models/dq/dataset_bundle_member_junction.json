@@ -43,6 +43,10 @@
       }
     ],
 
+    "sql": {
+      "tablename": "dq_dataset_bundle_members_tbl"
+    },
+
     "cpp": {
       "includes": {
         "domain": ["<chrono>", "<string>"],

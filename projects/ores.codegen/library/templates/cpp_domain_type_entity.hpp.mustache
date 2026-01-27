@@ -1,0 +1,77 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
+
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Represents a {{entity_title_lower}} in the database.
+ */
+struct {{entity_singular}}_entity {
+    constexpr static const char* schema = "ores";
+    constexpr static const char* tablename = "{{sql.tablename}}";
+
+    sqlgen::PrimaryKey<std::string> {{primary_key.column}};
+    int version = 0;
+{{#natural_keys}}
+    std::string {{column}};
+{{/natural_keys}}
+{{#columns}}
+    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+{{/columns}}
+    std::string modified_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+};
+
+std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_ENTITY_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{name_singular_upper}}_ENTITY_HPP
+
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Represents a {{name_title_lower}} in the database.
+ *
+ * Junction table with composite primary key ({{left.column}}, {{right.column}}, valid_from).
+ */
+struct {{name_singular}}_entity {
+    constexpr static const char* schema = "ores";
+    constexpr static const char* tablename = "{{sql.tablename}}";
+
+    sqlgen::PrimaryKey<std::string> {{left.column}};
+    std::string {{right.column}};
+    int version = 0;
+{{#columns}}
+    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+{{/columns}}
+    std::string modified_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+};
+
+std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
+
+}
+
+#endif
+{{/junction}}

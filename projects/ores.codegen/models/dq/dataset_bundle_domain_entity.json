@@ -44,6 +44,10 @@
       }
     ],
 
+    "sql": {
+      "tablename": "dq_dataset_bundles_tbl"
+    },
+
     "cpp": {
       "includes": {
         "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],

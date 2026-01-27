@@ -292,6 +292,9 @@ def get_cpp_domain_entity_template_mappings():
         # Generator facet
         ("cpp_domain_type_generator.hpp.mustache", "include/{component}/generators", "_generator.hpp"),
         ("cpp_domain_type_generator.cpp.mustache", "src/generators", "_generator.cpp"),
+        # Repository entity facet
+        ("cpp_domain_type_entity.hpp.mustache", "include/{component}/repository", "_entity.hpp"),
+        ("cpp_domain_type_entity.cpp.mustache", "src/repository", "_entity.cpp"),
     ]
 
 
@@ -316,6 +319,9 @@ def get_cpp_junction_template_mappings():
         # Generator facet
         ("cpp_domain_type_generator.hpp.mustache", "include/{component}/generators", "_generator.hpp"),
         ("cpp_domain_type_generator.cpp.mustache", "src/generators", "_generator.cpp"),
+        # Repository entity facet
+        ("cpp_domain_type_entity.hpp.mustache", "include/{component}/repository", "_entity.hpp"),
+        ("cpp_domain_type_entity.cpp.mustache", "src/repository", "_entity.cpp"),
     ]
 
 
@@ -763,6 +769,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['entity_singular_words'] = words[-1] if words else domain_entity['entity_singular']
         if 'entity_plural' in domain_entity:
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
+        if 'entity_title' in domain_entity:
+            domain_entity['entity_title_lower'] = domain_entity['entity_title'].lower()
         # Prepare table display items for C++ templates
         if 'cpp' in domain_entity:
             _prepare_table_display(domain_entity['cpp'])
@@ -790,6 +798,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 junction['name_singular_words'] = words[-1] if words else junction['name_singular']
         if 'name' in junction:
             junction['name_upper'] = junction['name'].upper()
+        if 'name_title' in junction:
+            junction['name_title_lower'] = junction['name_title'].lower()
         # Prepare table display items for C++ templates
         if 'cpp' in junction:
             _prepare_table_display(junction['cpp'])

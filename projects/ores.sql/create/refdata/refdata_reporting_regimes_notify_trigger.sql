@@ -18,7 +18,7 @@
  *
  */
 
-create or replace function .refdata_reporting_regimes_notify_fn()
+create or replace function production.refdata_reporting_regimes_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -45,5 +45,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_reporting_regimes_notify_trg
-after insert or update or delete on .refdata_reporting_regimes_tbl
-for each row execute function .refdata_reporting_regimes_notify_fn();
+after insert or update or delete on production.refdata_reporting_regimes_tbl
+for each row execute function production.refdata_reporting_regimes_notify_fn();

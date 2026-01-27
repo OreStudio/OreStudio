@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema '';
+set schema 'production';
 
 -- =============================================================================
 -- This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply.
 -- =============================================================================
 
-create table if not exists ""."refdata_local_jurisdictions_tbl" (
+create table if not exists "production"."refdata_local_jurisdictions_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -45,14 +45,14 @@ create table if not exists ""."refdata_local_jurisdictions_tbl" (
 );
 
 create unique index if not exists refdata_local_jurisdictions_version_uniq_idx
-on ""."refdata_local_jurisdictions_tbl" (code, version)
+on "production"."refdata_local_jurisdictions_tbl" (code, version)
 where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists refdata_local_jurisdictions_coding_scheme_idx
-on ""."refdata_local_jurisdictions_tbl" (coding_scheme_code)
+on "production"."refdata_local_jurisdictions_tbl" (coding_scheme_code)
 where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function .refdata_local_jurisdictions_insert_fn()
+create or replace function production.refdata_local_jurisdictions_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -68,7 +68,7 @@ begin
     end if;
 
     select version into current_version
-    from ""."refdata_local_jurisdictions_tbl"
+    from "production"."refdata_local_jurisdictions_tbl"
     where code = new.code
       and coding_scheme_code = new.coding_scheme_code
     and valid_to = public.utility_infinity_timestamp_fn()
@@ -82,7 +82,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update ""."refdata_local_jurisdictions_tbl"
+        update "production"."refdata_local_jurisdictions_tbl"
         set valid_to = current_timestamp
         where code = new.code
           and coding_scheme_code = new.coding_scheme_code
@@ -105,14 +105,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_local_jurisdictions_insert_trg
-before insert on ""."refdata_local_jurisdictions_tbl"
+before insert on "production"."refdata_local_jurisdictions_tbl"
 for each row
-execute function .refdata_local_jurisdictions_insert_fn();
+execute function production.refdata_local_jurisdictions_insert_fn();
 
 create or replace rule refdata_local_jurisdictions_delete_rule as
-on delete to ""."refdata_local_jurisdictions_tbl"
+on delete to "production"."refdata_local_jurisdictions_tbl"
 do instead
-  update ""."refdata_local_jurisdictions_tbl"
+  update "production"."refdata_local_jurisdictions_tbl"
   set valid_to = current_timestamp
   where code = old.code
   and coding_scheme_code = old.coding_scheme_code

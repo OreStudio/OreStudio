@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema '';
+set schema 'production';
 
 -- =============================================================================
 -- The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.
 -- =============================================================================
 
-create table if not exists ""."refdata_business_centres_tbl" (
+create table if not exists "production"."refdata_business_centres_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -46,14 +46,14 @@ create table if not exists ""."refdata_business_centres_tbl" (
 );
 
 create unique index if not exists refdata_business_centres_version_uniq_idx
-on ""."refdata_business_centres_tbl" (code, version)
+on "production"."refdata_business_centres_tbl" (code, version)
 where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists refdata_business_centres_coding_scheme_idx
-on ""."refdata_business_centres_tbl" (coding_scheme_code)
+on "production"."refdata_business_centres_tbl" (coding_scheme_code)
 where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function .refdata_business_centres_insert_fn()
+create or replace function production.refdata_business_centres_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -69,7 +69,7 @@ begin
     end if;
 
     select version into current_version
-    from ""."refdata_business_centres_tbl"
+    from "production"."refdata_business_centres_tbl"
     where code = new.code
       and coding_scheme_code = new.coding_scheme_code
     and valid_to = public.utility_infinity_timestamp_fn()
@@ -83,7 +83,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update ""."refdata_business_centres_tbl"
+        update "production"."refdata_business_centres_tbl"
         set valid_to = current_timestamp
         where code = new.code
           and coding_scheme_code = new.coding_scheme_code
@@ -106,14 +106,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_business_centres_insert_trg
-before insert on ""."refdata_business_centres_tbl"
+before insert on "production"."refdata_business_centres_tbl"
 for each row
-execute function .refdata_business_centres_insert_fn();
+execute function production.refdata_business_centres_insert_fn();
 
 create or replace rule refdata_business_centres_delete_rule as
-on delete to ""."refdata_business_centres_tbl"
+on delete to "production"."refdata_business_centres_tbl"
 do instead
-  update ""."refdata_business_centres_tbl"
+  update "production"."refdata_business_centres_tbl"
   set valid_to = current_timestamp
   where code = old.code
   and coding_scheme_code = old.coding_scheme_code

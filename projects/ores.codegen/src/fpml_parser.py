@@ -269,6 +269,7 @@ class MergedEntity:
         """
         return {
             "entity": {
+                "schema": "production",
                 "component": "refdata",
                 "entity_singular": self.entity_name,
                 "entity_plural": self.entity_plural,

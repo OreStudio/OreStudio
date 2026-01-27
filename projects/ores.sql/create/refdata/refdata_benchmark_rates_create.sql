@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema '';
+set schema 'production';
 
 -- =============================================================================
 -- FpML Benchmark rates
 -- =============================================================================
 
-create table if not exists ""."refdata_benchmark_rates_tbl" (
+create table if not exists "production"."refdata_benchmark_rates_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -45,14 +45,14 @@ create table if not exists ""."refdata_benchmark_rates_tbl" (
 );
 
 create unique index if not exists refdata_benchmark_rates_version_uniq_idx
-on ""."refdata_benchmark_rates_tbl" (code, version)
+on "production"."refdata_benchmark_rates_tbl" (code, version)
 where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists refdata_benchmark_rates_coding_scheme_idx
-on ""."refdata_benchmark_rates_tbl" (coding_scheme_code)
+on "production"."refdata_benchmark_rates_tbl" (coding_scheme_code)
 where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function .refdata_benchmark_rates_insert_fn()
+create or replace function production.refdata_benchmark_rates_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -68,7 +68,7 @@ begin
     end if;
 
     select version into current_version
-    from ""."refdata_benchmark_rates_tbl"
+    from "production"."refdata_benchmark_rates_tbl"
     where code = new.code
       and coding_scheme_code = new.coding_scheme_code
     and valid_to = public.utility_infinity_timestamp_fn()
@@ -82,7 +82,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update ""."refdata_benchmark_rates_tbl"
+        update "production"."refdata_benchmark_rates_tbl"
         set valid_to = current_timestamp
         where code = new.code
           and coding_scheme_code = new.coding_scheme_code
@@ -105,14 +105,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_benchmark_rates_insert_trg
-before insert on ""."refdata_benchmark_rates_tbl"
+before insert on "production"."refdata_benchmark_rates_tbl"
 for each row
-execute function .refdata_benchmark_rates_insert_fn();
+execute function production.refdata_benchmark_rates_insert_fn();
 
 create or replace rule refdata_benchmark_rates_delete_rule as
-on delete to ""."refdata_benchmark_rates_tbl"
+on delete to "production"."refdata_benchmark_rates_tbl"
 do instead
-  update ""."refdata_benchmark_rates_tbl"
+  update "production"."refdata_benchmark_rates_tbl"
   set valid_to = current_timestamp
   where code = old.code
   and coding_scheme_code = old.coding_scheme_code

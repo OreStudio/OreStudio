@@ -19,16 +19,22 @@
  */
 
 /**
- * Seed Data Upsert Functions
+ * Upsert Functions
  *
- * These helper functions are used by population scripts to seed the database
- * with reference data in an idempotent manner. Each function checks if a record
- * already exists before inserting, making population scripts safe to re-run.
+ * Helper functions for populating the database with reference data in an
+ * idempotent manner. Each function checks if a record already exists before
+ * inserting, making scripts safe to re-run.
  *
  * Functions are organized by domain:
- * - Data Quality: Datasets, dimensions, catalogs, coding schemes, methodologies
- * - IAM: Roles, permissions, role-permission assignments
- * - Variability: Feature flags
+ * - Data Quality (metadata schema): Datasets, dimensions, catalogs, coding schemes
+ * - IAM (production schema): Roles, permissions, role-permission assignments
+ * - Variability (production schema): Feature flags
+ *
+ * Naming convention: {schema}.{component}_{entities}_{action}_fn
+ * Examples:
+ *   - metadata.dq_catalogs_upsert_fn
+ *   - production.iam_permissions_upsert_fn
+ *   - production.iam_role_permissions_assign_fn
  *
  * All functions follow the pattern:
  * 1. Check if record exists (using natural key + valid_to check for temporal tables)
@@ -52,7 +58,7 @@ set schema 'public';
  * @param p_value The value to validate
  * @param p_field_name Descriptive name of the field (used in error message)
  */
-create or replace function public.seed_validate_not_empty(
+create or replace function public.seed_validate_not_empty_fn(
     p_value text,
     p_field_name text
 ) returns void as $$
@@ -75,12 +81,12 @@ $$ language plpgsql;
 /**
  * Upsert a data domain (e.g., Reference Data, Trade Data, Market Data).
  */
-create or replace function metadata.upsert_dq_data_domains(
+create or replace function metadata.dq_data_domains_upsert_fn(
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_name, 'Data domain name');
+    perform public.seed_validate_not_empty_fn(p_name, 'Data domain name');
 
     insert into metadata.dq_data_domains_tbl (
         name, version, description,
@@ -108,14 +114,14 @@ $$ language plpgsql;
 /**
  * Upsert a subject area within a data domain.
  */
-create or replace function metadata.upsert_dq_subject_areas(
+create or replace function metadata.dq_subject_areas_upsert_fn(
     p_domain_name text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_name, 'Subject area name');
-    perform public.seed_validate_not_empty(p_domain_name, 'Domain name');
+    perform public.seed_validate_not_empty_fn(p_name, 'Subject area name');
+    perform public.seed_validate_not_empty_fn(p_domain_name, 'Domain name');
 
     insert into metadata.dq_subject_areas_tbl (
         name, version, domain_name, description,
@@ -143,13 +149,13 @@ $$ language plpgsql;
 /**
  * Upsert a data quality catalog (grouping of related datasets).
  */
-create or replace function metadata.upsert_dq_catalogs(
+create or replace function metadata.dq_catalogs_upsert_fn(
     p_name text,
     p_description text,
     p_owner text default null
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_name, 'Catalog name');
+    perform public.seed_validate_not_empty_fn(p_name, 'Catalog name');
 
     insert into metadata.dq_catalogs_tbl (
         name, version, description, owner,
@@ -173,15 +179,15 @@ $$ language plpgsql;
 /**
  * Upsert a dataset dependency (declares load order between datasets).
  */
-create or replace function metadata.upsert_dq_dataset_dependency(
+create or replace function metadata.dq_dataset_dependencies_upsert_fn(
     p_dataset_code text,
     p_dependency_code text,
     p_role text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_dataset_code, 'Dataset code');
-    perform public.seed_validate_not_empty(p_dependency_code, 'Dependency code');
-    perform public.seed_validate_not_empty(p_role, 'Role');
+    perform public.seed_validate_not_empty_fn(p_dataset_code, 'Dataset code');
+    perform public.seed_validate_not_empty_fn(p_dependency_code, 'Dependency code');
+    perform public.seed_validate_not_empty_fn(p_role, 'Role');
 
     insert into metadata.dq_dataset_dependencies_tbl (
         dataset_code, dependency_code, role,
@@ -211,13 +217,13 @@ $$ language plpgsql;
 /**
  * Upsert an origin dimension (Primary, Derived).
  */
-create or replace function metadata.upsert_dq_origin_dimensions(
+create or replace function metadata.dq_origin_dimensions_upsert_fn(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Origin dimension code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Origin dimension code');
 
     insert into metadata.dq_origin_dimensions_tbl (
         code, version, name, description,
@@ -241,13 +247,13 @@ $$ language plpgsql;
 /**
  * Upsert a nature dimension (Actual, Synthetic, Mock).
  */
-create or replace function metadata.upsert_dq_nature_dimensions(
+create or replace function metadata.dq_nature_dimensions_upsert_fn(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Nature dimension code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Nature dimension code');
 
     insert into metadata.dq_nature_dimensions_tbl (
         code, version, name, description,
@@ -271,13 +277,13 @@ $$ language plpgsql;
 /**
  * Upsert a treatment dimension (Raw, Masked, Anonymized).
  */
-create or replace function metadata.upsert_dq_treatment_dimensions(
+create or replace function metadata.dq_treatment_dimensions_upsert_fn(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Treatment dimension code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Treatment dimension code');
 
     insert into metadata.dq_treatment_dimensions_tbl (
         code, version, name, description,
@@ -305,12 +311,12 @@ $$ language plpgsql;
 /**
  * Upsert a change reason category (system, common, trade).
  */
-create or replace function metadata.upsert_change_reason_category(
+create or replace function metadata.dq_change_reason_categories_upsert_fn(
     p_code text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Change reason category code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Change reason category code');
 
     insert into metadata.dq_change_reason_categories_tbl (
         code, description, modified_by, change_commentary,
@@ -334,7 +340,7 @@ $$ language plpgsql;
 /**
  * Upsert a change reason with full configuration.
  */
-create or replace function metadata.upsert_change_reason(
+create or replace function metadata.dq_change_reasons_upsert_fn(
     p_code text,
     p_description text,
     p_category_code text,
@@ -344,7 +350,7 @@ create or replace function metadata.upsert_change_reason(
     p_display_order integer
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Change reason code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Change reason code');
 
     insert into metadata.dq_change_reasons_tbl (
         code, description, category_code,
@@ -374,13 +380,13 @@ $$ language plpgsql;
 /**
  * Upsert a coding scheme authority type (official, industry, internal).
  */
-create or replace function metadata.upsert_dq_coding_scheme_authority_type(
+create or replace function metadata.dq_coding_scheme_authority_types_upsert_fn(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Coding scheme authority type code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Coding scheme authority type code');
 
     insert into metadata.dq_coding_scheme_authority_types_tbl (
         code, version, name, description,
@@ -404,7 +410,7 @@ $$ language plpgsql;
 /**
  * Upsert a coding scheme (e.g., ISO 4217, LEI, BIC).
  */
-create or replace function metadata.upsert_dq_coding_schemes(
+create or replace function metadata.dq_coding_schemes_upsert_fn(
     p_code text,
     p_name text,
     p_authority_type text,
@@ -414,7 +420,7 @@ create or replace function metadata.upsert_dq_coding_schemes(
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Coding scheme code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Coding scheme code');
 
     insert into metadata.dq_coding_schemes_tbl (
         code, version, name, authority_type, subject_area_name, domain_name, uri, description,
@@ -442,14 +448,14 @@ $$ language plpgsql;
 /**
  * Upsert a data sourcing methodology.
  */
-create or replace function metadata.upsert_dq_methodologies(
+create or replace function metadata.dq_methodologies_upsert_fn(
     p_name text,
     p_description text,
     p_logic_reference text default null,
     p_implementation_details text default null
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_name, 'Methodology name');
+    perform public.seed_validate_not_empty_fn(p_name, 'Methodology name');
 
     insert into metadata.dq_methodologies_tbl (
         id, version, name, description, logic_reference, implementation_details,
@@ -483,7 +489,7 @@ $$ language plpgsql;
  *        Used by the publication service to determine which population
  *        function to call when publishing the dataset.
  */
-create or replace function metadata.upsert_dq_datasets(
+create or replace function metadata.dq_datasets_upsert_fn(
     p_code text,
     p_catalog_name text,
     p_subject_area_name text,
@@ -504,9 +510,9 @@ create or replace function metadata.upsert_dq_datasets(
 declare
     v_methodology_id uuid;
 begin
-    perform public.seed_validate_not_empty(p_code, 'Dataset code');
-    perform public.seed_validate_not_empty(p_name, 'Dataset name');
-    perform public.seed_validate_not_empty(p_artefact_type, 'Artefact type');
+    perform public.seed_validate_not_empty_fn(p_code, 'Dataset code');
+    perform public.seed_validate_not_empty_fn(p_name, 'Dataset name');
+    perform public.seed_validate_not_empty_fn(p_artefact_type, 'Artefact type');
 
     -- Get methodology ID (only table that still uses UUID PK)
     select id into v_methodology_id from metadata.dq_methodologies_tbl where name = p_methodology_name and valid_to = public.utility_infinity_timestamp_fn();
@@ -545,7 +551,7 @@ $$ language plpgsql;
 /**
  * Upsert a tag for a dataset.
  */
-create or replace function metadata.upsert_dq_tag(
+create or replace function metadata.dq_tags_upsert_fn(
     p_dataset_name text,
     p_subject_area_name text,
     p_domain_name text,
@@ -555,7 +561,7 @@ create or replace function metadata.upsert_dq_tag(
 declare
     v_dataset_id uuid;
 begin
-    perform public.seed_validate_not_empty(p_tag_name, 'Tag name');
+    perform public.seed_validate_not_empty_fn(p_tag_name, 'Tag name');
 
     -- Get dataset ID
     select id into v_dataset_id
@@ -593,12 +599,12 @@ $$ language plpgsql;
 /**
  * Upsert a permission code.
  */
-create or replace function production.upsert_permission(
+create or replace function production.iam_permissions_upsert_fn(
     p_code text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Permission code');
+    perform public.seed_validate_not_empty_fn(p_code, 'Permission code');
 
     insert into production.iam_permissions_tbl (id, code, description, valid_from, valid_to)
     values (gen_random_uuid(), p_code, p_description,
@@ -620,13 +626,13 @@ $$ language plpgsql;
 /**
  * Upsert a role.
  */
-create or replace function production.upsert_role(
+create or replace function production.iam_roles_upsert_fn(
     p_name text,
     p_description text,
     p_recorded_by text default 'system'
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_name, 'Role name');
+    perform public.seed_validate_not_empty_fn(p_name, 'Role name');
 
     -- Insert role if it doesn't exist (uses partial unique index for atomicity)
     insert into production.iam_roles_tbl (id, version, name, description, modified_by,
@@ -647,7 +653,7 @@ $$ language plpgsql;
 /**
  * Assign a permission to a role.
  */
-create or replace function production.assign_permission_to_role(
+create or replace function production.iam_role_permissions_assign_fn(
     p_role_name text,
     p_permission_code text,
     p_assigned_by text default 'system'
@@ -695,13 +701,13 @@ $$ language plpgsql;
 /**
  * Upsert a system feature flag.
  */
-create or replace function production.upsert_system_flag(
+create or replace function production.variability_feature_flags_upsert_fn(
     p_name text,
     p_enabled boolean,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_name, 'System flag name');
+    perform public.seed_validate_not_empty_fn(p_name, 'System flag name');
 
     -- Insert flag if it doesn't exist (preserve existing values)
     -- Cast boolean to integer for the enabled column
@@ -727,14 +733,14 @@ $$ language plpgsql;
 /**
  * Upsert a dataset bundle (named collection of datasets).
  */
-create or replace function metadata.upsert_dq_dataset_bundle(
+create or replace function metadata.dq_dataset_bundles_upsert_fn(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_code, 'Dataset bundle code');
-    perform public.seed_validate_not_empty(p_name, 'Dataset bundle name');
+    perform public.seed_validate_not_empty_fn(p_code, 'Dataset bundle code');
+    perform public.seed_validate_not_empty_fn(p_name, 'Dataset bundle name');
 
     insert into metadata.dq_dataset_bundles_tbl (
         id, version, code, name, description,
@@ -759,14 +765,14 @@ $$ language plpgsql;
 /**
  * Upsert a dataset bundle member (links a dataset to a bundle).
  */
-create or replace function metadata.upsert_dq_dataset_bundle_member(
+create or replace function metadata.dq_dataset_bundle_members_upsert_fn(
     p_bundle_code text,
     p_dataset_code text,
     p_display_order integer
 ) returns void as $$
 begin
-    perform public.seed_validate_not_empty(p_bundle_code, 'Bundle code');
-    perform public.seed_validate_not_empty(p_dataset_code, 'Dataset code');
+    perform public.seed_validate_not_empty_fn(p_bundle_code, 'Bundle code');
+    perform public.seed_validate_not_empty_fn(p_dataset_code, 'Dataset code');
 
     insert into metadata.dq_dataset_bundle_members_tbl (
         bundle_code, dataset_code, version, display_order,

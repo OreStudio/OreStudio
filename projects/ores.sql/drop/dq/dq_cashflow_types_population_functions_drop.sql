@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_cashflow_type_population;
+drop function if exists metadata.dq_preview_cashflow_type_population_fn;
 drop function if exists metadata.dq_populate_cashflow_types_fn;

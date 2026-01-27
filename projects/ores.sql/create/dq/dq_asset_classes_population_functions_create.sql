@@ -25,7 +25,7 @@
  *
  * Usage:
  *   -- Preview what will be published
- *   SELECT * FROM metadata.dq_preview_asset_class_population(dataset_id);
+ *   SELECT * FROM metadata.dq_preview_asset_class_population_fn(dataset_id);
  *
  *   -- Publish to production
  *   SELECT * FROM metadata.dq_populate_asset_classes_fn(dataset_id, 'upsert');
@@ -40,7 +40,7 @@ set schema 'metadata';
 /**
  * Preview what asset_classes would be copied from a DQ dataset.
  */
-create or replace function metadata.dq_preview_asset_class_population(p_dataset_id uuid)
+create or replace function metadata.dq_preview_asset_class_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     code text,

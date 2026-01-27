@@ -49,7 +49,7 @@ CREATE TYPE public.layer_summary_row AS (
 -- Foundation Layer Summary
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION public.summary_foundation_layer_fn()
+CREATE OR REPLACE FUNCTION public.utility_summary_foundation_layer_fn()
 RETURNS SETOF public.layer_summary_row AS $$
 BEGIN
     RETURN QUERY
@@ -95,14 +95,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-COMMENT ON FUNCTION public.summary_foundation_layer_fn() IS
+COMMENT ON FUNCTION public.utility_summary_foundation_layer_fn() IS
 'Returns a summary of the Foundation layer: essential lookup and configuration data required for schema integrity.';
 
 -- =============================================================================
 -- Data Governance Layer Summary
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION public.summary_governance_layer_fn()
+CREATE OR REPLACE FUNCTION public.utility_summary_governance_layer_fn()
 RETURNS SETOF public.layer_summary_row AS $$
 BEGIN
     RETURN QUERY
@@ -136,14 +136,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-COMMENT ON FUNCTION public.summary_governance_layer_fn() IS
+COMMENT ON FUNCTION public.utility_summary_governance_layer_fn() IS
 'Returns a summary of the Data Governance layer: metadata defining rules and classifications for data organization.';
 
 -- =============================================================================
 -- Data Catalogues Layer Summary
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION public.summary_catalogues_layer_fn()
+CREATE OR REPLACE FUNCTION public.utility_summary_catalogues_layer_fn()
 RETURNS SETOF public.layer_summary_row AS $$
 BEGIN
     RETURN QUERY
@@ -219,14 +219,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-COMMENT ON FUNCTION public.summary_catalogues_layer_fn() IS
+COMMENT ON FUNCTION public.utility_summary_catalogues_layer_fn() IS
 'Returns a summary of the Data Catalogues layer: catalogued reference data awaiting publication to production.';
 
 -- =============================================================================
 -- Production Layer Summary
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION public.summary_production_layer_fn()
+CREATE OR REPLACE FUNCTION public.utility_summary_production_layer_fn()
 RETURNS SETOF public.layer_summary_row AS $$
 BEGIN
     RETURN QUERY
@@ -305,27 +305,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-COMMENT ON FUNCTION public.summary_production_layer_fn() IS
+COMMENT ON FUNCTION public.utility_summary_production_layer_fn() IS
 'Returns a summary of the Production layer: published reference data in production tables.';
 
 -- =============================================================================
 -- All Layers Summary
 -- =============================================================================
 
-CREATE OR REPLACE FUNCTION public.summary_all_layers_fn()
+CREATE OR REPLACE FUNCTION public.utility_summary_all_layers_fn()
 RETURNS SETOF public.layer_summary_row AS $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM public.summary_foundation_layer_fn()
+    SELECT * FROM public.utility_summary_foundation_layer_fn()
     UNION ALL
-    SELECT * FROM public.summary_governance_layer_fn()
+    SELECT * FROM public.utility_summary_governance_layer_fn()
     UNION ALL
-    SELECT * FROM public.summary_catalogues_layer_fn()
+    SELECT * FROM public.utility_summary_catalogues_layer_fn()
     UNION ALL
-    SELECT * FROM public.summary_production_layer_fn()
+    SELECT * FROM public.utility_summary_production_layer_fn()
     ORDER BY 1, 2;
 END;
 $$ LANGUAGE plpgsql STABLE;
 
-COMMENT ON FUNCTION public.summary_all_layers_fn() IS
+COMMENT ON FUNCTION public.utility_summary_all_layers_fn() IS
 'Returns a summary of all database layers: Foundation, Governance, Catalogues, and Production.';

@@ -18,5 +18,8 @@
  *
  */
 
+-- Upsert helper functions (metadata schema DQ functions)
+\ir ./upsert_functions_drop.sql
+
 -- Population helper functions (dropped last as others may depend on it)
 \ir ./seed_population_functions_drop.sql

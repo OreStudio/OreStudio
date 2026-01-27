@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_benchmark_rate_population;
+drop function if exists metadata.dq_preview_benchmark_rate_population_fn;
 drop function if exists metadata.dq_populate_benchmark_rates_fn;

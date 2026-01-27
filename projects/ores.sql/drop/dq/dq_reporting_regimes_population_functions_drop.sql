@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_reporting_regime_population;
+drop function if exists metadata.dq_preview_reporting_regime_population_fn;
 drop function if exists metadata.dq_populate_reporting_regimes_fn;

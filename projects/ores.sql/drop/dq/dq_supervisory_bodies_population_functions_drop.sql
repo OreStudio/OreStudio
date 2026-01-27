@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_supervisory_body_population;
+drop function if exists metadata.dq_preview_supervisory_body_population_fn;
 drop function if exists metadata.dq_populate_supervisory_bodies_fn;

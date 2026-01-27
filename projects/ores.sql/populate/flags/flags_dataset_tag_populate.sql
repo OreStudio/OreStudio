@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- Flag Icons Dataset Tags ---'
 
-select metadata.upsert_dq_tag(
+select metadata.dq_tags_upsert_fn(
     'Country Flag Images',
     'Country Flags',
     'Reference Data',

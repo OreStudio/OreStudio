@@ -33,25 +33,25 @@ set schema 'metadata';
 
 \echo '--- ISO Standards Dataset Dependencies ---'
 
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'iso.countries',
     'iso.coding_schemes',
     'coding_scheme'
 );
 
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'iso.countries',
     'assets.country_flags',
     'visual_assets'
 );
 
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'iso.currencies',
     'iso.coding_schemes',
     'coding_scheme'
 );
 
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'iso.currencies',
     'assets.country_flags',
     'visual_assets'

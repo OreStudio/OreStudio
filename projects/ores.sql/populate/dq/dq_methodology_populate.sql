@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- General Methodologies ---'
 
-select metadata.upsert_dq_methodologies(
+select metadata.dq_methodologies_upsert_fn(
     'Synthetic Data Generation',
     'Test data generated programmatically using the ores.synthetic library with seeded random generation',
     'https://github.com/cieslarmichal/faker-cxx',

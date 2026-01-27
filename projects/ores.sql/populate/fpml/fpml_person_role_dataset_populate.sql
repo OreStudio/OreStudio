@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Person Role Dataset ---'
 
-select metadata.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'fpml.person_role',
     'FpML Standards',
     'Parties',

@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_entity_classification_population;
+drop function if exists metadata.dq_preview_entity_classification_population_fn;
 drop function if exists metadata.dq_populate_entity_classifications_fn;

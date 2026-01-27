@@ -18,4 +18,4 @@
  *
  */
 
-\ir ./seed_upsert_functions_create.sql
+\ir ./upsert_functions_create.sql

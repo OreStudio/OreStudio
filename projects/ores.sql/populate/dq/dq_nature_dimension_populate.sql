@@ -38,19 +38,19 @@ set schema 'metadata';
 
 \echo '--- Data Quality Nature Dimensions ---'
 
-select metadata.upsert_dq_nature_dimensions(
+select metadata.dq_nature_dimensions_upsert_fn(
     'Actual',
     'Actual Data',
     'Real-world data (replaces "Real").'
 );
 
-select metadata.upsert_dq_nature_dimensions(
+select metadata.dq_nature_dimensions_upsert_fn(
     'Synthetic',
     'Synthetic Data',
     'Artificially generated data for testing/modeling.'
 );
 
-select metadata.upsert_dq_nature_dimensions(
+select metadata.dq_nature_dimensions_upsert_fn(
     'Mock',
     'Mock Data',
     'Static, hand-written data for unit tests.'

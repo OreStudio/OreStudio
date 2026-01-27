@@ -43,7 +43,7 @@ set schema 'production';
 \endif
 
 -- Update the flag using the upsert function
-select production.upsert_system_flag(
+select production.variability_feature_flags_upsert_fn(
     'system.disable_password_validation',
     :new_value::boolean,
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'

@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_regulatory_corporate_sector_population;
+drop function if exists metadata.dq_preview_regulatory_corporate_sector_population_fn;
 drop function if exists metadata.dq_populate_regulatory_corporate_sectors_fn;

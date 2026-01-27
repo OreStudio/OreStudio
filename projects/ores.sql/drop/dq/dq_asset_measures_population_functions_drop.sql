@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_asset_measure_population;
+drop function if exists metadata.dq_preview_asset_measure_population_fn;
 drop function if exists metadata.dq_populate_asset_measures_fn;

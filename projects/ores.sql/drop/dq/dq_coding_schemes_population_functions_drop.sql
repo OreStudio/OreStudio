@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_coding_scheme_population;
+drop function if exists metadata.dq_preview_coding_scheme_population_fn;
 drop function if exists metadata.dq_populate_coding_schemes_fn;

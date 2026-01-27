@@ -725,6 +725,51 @@ class SQLParser:
                                   f"Function '{func_name}' created but not found in drop scripts",
                                   entity_name=func_name)
 
+    def validate_function_naming(self) -> None:
+        """Check that functions follow the naming convention.
+
+        Valid patterns:
+        - {component}_{entities}_{action}_fn (e.g., dq_catalogs_upsert_fn)
+        - {component}_{entity}_fn (e.g., utility_infinity_timestamp_fn)
+
+        Valid actions: insert, notify, upsert, assign, validate, lookup, populate
+        """
+        # Functions that don't need to follow component prefix pattern
+        exempt_prefixes = ['utility_', 'seed_', 'admin_', 'refdata_validate_']
+
+        # Known valid function name patterns (regex)
+        valid_action_suffixes = [
+            r'_insert_fn$',
+            r'_notify_fn$',
+            r'_upsert_fn$',
+            r'_assign_fn$',
+            r'_validate_fn$',
+            r'_lookup_fn$',
+            r'_populate_fn$',
+            r'_fn$',  # Generic function suffix
+        ]
+
+        for func_name, func in self.functions.items():
+            # Skip functions with exempt prefixes
+            if any(func_name.startswith(prefix) for prefix in exempt_prefixes):
+                continue
+
+            # Check that function ends with _fn
+            if not func_name.endswith('_fn'):
+                self._add_warning(func.source_file, func.line, 'NAME_001',
+                                  f"Function '{func_name}' should end with '_fn' suffix",
+                                  entity_name=func_name)
+                continue
+
+            # Check that function has a recognized component prefix
+            has_component = any(func_name.startswith(prefix)
+                                for prefix in COMPONENT_PREFIXES.keys())
+            if not has_component:
+                self._add_warning(func.source_file, func.line, 'NAME_002',
+                                  f"Function '{func_name}' should start with a component prefix "
+                                  f"(e.g., dq_, iam_, refdata_)",
+                                  entity_name=func_name)
+
     def _add_warning(self, file_path: str, line: int, code: str, message: str,
                      entity_name: str = '') -> None:
         """Add a warning if warnings are enabled and not ignored."""
@@ -1067,6 +1112,9 @@ def main():
 
     # Validate drop completeness
     sql_parser.validate_drop_completeness()
+
+    # Validate function naming conventions
+    sql_parser.validate_function_naming()
 
     # Print summary
     print(f"\n=== Validation Summary ===", file=sys.stderr)

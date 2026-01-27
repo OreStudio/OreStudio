@@ -36,7 +36,7 @@ set schema 'metadata';
 \echo '--- ISO Standards Datasets ---'
 
 -- ISO 3166 Country Codes
-select metadata.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'iso.countries',
     'ISO Standards',
     'Countries',
@@ -56,7 +56,7 @@ select metadata.upsert_dq_datasets(
 );
 
 -- ISO 4217 Currency Codes
-select metadata.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'iso.currencies',
     'ISO Standards',
     'Currencies',

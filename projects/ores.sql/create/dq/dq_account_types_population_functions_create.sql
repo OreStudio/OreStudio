@@ -25,7 +25,7 @@
  *
  * Usage:
  *   -- Preview what will be published
- *   SELECT * FROM metadata.dq_preview_account_type_population(dataset_id);
+ *   SELECT * FROM metadata.dq_preview_account_type_population_fn(dataset_id);
  *
  *   -- Publish to production
  *   SELECT * FROM metadata.dq_populate_account_types_fn(dataset_id, 'upsert');
@@ -40,7 +40,7 @@ set schema 'metadata';
 /**
  * Preview what account_types would be copied from a DQ dataset.
  */
-create or replace function metadata.dq_preview_account_type_population(p_dataset_id uuid)
+create or replace function metadata.dq_preview_account_type_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     code text,

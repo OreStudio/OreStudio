@@ -14,7 +14,7 @@ set schema 'metadata';
 
 \echo '--- FPML Coding Schemes ---'
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_ACCOUNT_TYPE',
     'accountTypeScheme',
     'industry',
@@ -24,7 +24,7 @@ select metadata.upsert_dq_coding_schemes(
     'Contains a code representing the type of an account, for example in a clearing or exchange model.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_ASSET_CLASS',
     'assetClassScheme',
     'industry',
@@ -34,7 +34,7 @@ select metadata.upsert_dq_coding_schemes(
     'Defines a simple asset class categorization. Used for classification of the risk class of the trade.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_ASSET_MEASURE',
     'assetMeasureScheme',
     'industry',
@@ -44,7 +44,7 @@ select metadata.upsert_dq_coding_schemes(
     'The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_BENCHMARK_RATE',
     'benchmarkRateScheme',
     'industry',
@@ -54,7 +54,7 @@ select metadata.upsert_dq_coding_schemes(
     'FpML Benchmark rates'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_BUSINESS_CENTER',
     'businessCenterScheme',
     'industry',
@@ -64,7 +64,7 @@ select metadata.upsert_dq_coding_schemes(
     'The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_BUSINESS_PROCESS',
     'businessProcessScheme',
     'industry',
@@ -74,7 +74,7 @@ select metadata.upsert_dq_coding_schemes(
     'Contains a code representing the type of business process a message (e.g. a status request) applies to.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_CASHFLOW_TYPE',
     'cashflowTypeScheme',
     'industry',
@@ -84,7 +84,7 @@ select metadata.upsert_dq_coding_schemes(
     'The type of cash flows associated with OTC derivatives contracts and their lifecycle events.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_CFTC_ENTITY_CLASSIFICATION',
     'entityClassificationScheme',
     'industry',
@@ -94,7 +94,7 @@ select metadata.upsert_dq_coding_schemes(
     'Financial Entity Indicator as defined by the CFTC.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_CFTC_ORGANIZATION_TYPE',
     'organizationTypeScheme',
     'industry',
@@ -104,7 +104,7 @@ select metadata.upsert_dq_coding_schemes(
     'Indicates whether a counterparty is an entity established pursuant to a U.S. federal law, including CFTC Amendments to Part 45 (2020).'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_ENTITY_TYPE',
     'entityTypeScheme',
     'industry',
@@ -114,7 +114,7 @@ select metadata.upsert_dq_coding_schemes(
     'This specifies the reference entity types corresponding to a list of types defined in the ISDA First to Default documentation.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_LOCAL_JURISDICTION',
     'localJurisdictionScheme',
     'industry',
@@ -124,7 +124,7 @@ select metadata.upsert_dq_coding_schemes(
     'This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_NON_ISO_CURRENCY',
     'nonIsoCurrencyScheme',
     'industry',
@@ -134,7 +134,7 @@ select metadata.upsert_dq_coding_schemes(
     'Includes the currency codes to expand the ISO 4217 currency list, including the offshore and historical currencies.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
     'partyRelationshipTypeScheme',
     'industry',
@@ -144,7 +144,7 @@ select metadata.upsert_dq_coding_schemes(
     'Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_PARTY_RELATIONSHIP_TYPE',
     'partyRelationshipTypeScheme',
     'industry',
@@ -154,7 +154,7 @@ select metadata.upsert_dq_coding_schemes(
     'A type is containing a code representing how two parties are related, e.g. Affiliated, Intragroup.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_PARTY_ROLE',
     'partyRoleScheme',
     'industry',
@@ -164,7 +164,7 @@ select metadata.upsert_dq_coding_schemes(
     'Contains a code representing a related party role. This can be extended to provide custom roles.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_PARTY_ROLE_TYPE',
     'partyRoleTypeScheme',
     'industry',
@@ -174,7 +174,7 @@ select metadata.upsert_dq_coding_schemes(
     'Contains a code representing a related party role type. A type refining the role a role played by a party in one or more transactions. This can be extended to provide custom types.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_PERSON_ROLE',
     'personRoleScheme',
     'industry',
@@ -184,7 +184,7 @@ select metadata.upsert_dq_coding_schemes(
     'Indicates the role of a person in a transaction.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
     'regulatoryCorporateSectorScheme',
     'industry',
@@ -194,7 +194,7 @@ select metadata.upsert_dq_coding_schemes(
     'Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_REGULATORY_CORPORATE_SECTOR',
     'regulatoryCorporateSectorScheme',
     'industry',
@@ -204,7 +204,7 @@ select metadata.upsert_dq_coding_schemes(
     'Specifies Corporate sector as defined by or for regulators including ESMA, CFTC, etc.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_REPORTING_REGIME',
     'reportingRegimeNameScheme',
     'industry',
@@ -214,7 +214,7 @@ select metadata.upsert_dq_coding_schemes(
     'Contains a code representing a reporting regime under which this transaction may be reported.'
 );
 
-select metadata.upsert_dq_coding_schemes(
+select metadata.dq_coding_schemes_upsert_fn(
     'FPML_SUPERVISORY_BODY',
     'supervisoryBodyScheme',
     'industry',

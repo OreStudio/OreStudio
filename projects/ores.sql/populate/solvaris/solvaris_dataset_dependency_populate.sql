@@ -26,12 +26,12 @@ set schema 'metadata';
 
 \echo '--- Data Quality Slovaris Dataset Dependencies ---'
 
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'slovaris.countries',
     'slovaris.country_flags',
     'visual_assets'
 );
-select metadata.upsert_dq_dataset_dependency(
+select metadata.dq_dataset_dependencies_upsert_fn(
     'slovaris.currencies',
     'slovaris.country_flags',
     'visual_assets'

@@ -101,7 +101,7 @@ and C++ code.
 | =geo_=         | =production= | ores.geo           | Geolocation services                            |
 | =admin_=       | =ores_admin= | (admin db)         | Database management functions                   |
 | =utility_=     | =public=     | (shared)           | Shared utility functions                        |
-| =seed_=        | =public=     | (shared)           | Seed/upsert helper functions                    |
+| =seed_=        | =public=     | (shared)           | Validation helpers for population               |
 
 ** Entity suffixes
 
@@ -112,6 +112,8 @@ and C++ code.
 | Notify trigger    | =_notify_trg=   | =iam_accounts_notify_trg=              |
 | Insert function   | =_insert_fn=    | =iam_accounts_insert_fn()=             |
 | Notify function   | =_notify_fn=    | =iam_accounts_notify_fn()=             |
+| Upsert function   | =_upsert_fn=    | =dq_catalogs_upsert_fn()=              |
+| Assign function   | =_assign_fn=    | =iam_role_permissions_assign_fn()=     |
 | Other functions   | =_fn=           | =utility_infinity_timestamp_fn()=      |
 | Delete rule       | =_delete_rule=  | =iam_accounts_delete_rule=             |
 | Regular index     | =_idx=          | =iam_accounts_username_idx=            |
@@ -138,18 +140,24 @@ collections of entities.
 | Entity             | Pattern                                          |
 |--------------------+--------------------------------------------------|
 | Table              | ={component}_{entities}_tbl= (plural)            |
-| Insert trigger     | ={component}_{entity}_insert_trg=                |
-| Notify trigger     | ={component}_{entity}_notify_trg=                |
-| Insert function    | ={component}_{entity}_insert_fn()=               |
-| Notify function    | ={component}_{entity}_notify_fn()=               |
-| Delete rule        | ={component}_{entity}_delete_rule=               |
-| Column index       | ={component}_{entity}_{column(s)}_idx=           |
-| Unique index       | ={component}_{entity}_{column(s)}_uniq_idx=      |
+| Insert trigger     | ={component}_{entities}_insert_trg=              |
+| Notify trigger     | ={component}_{entities}_notify_trg=              |
+| Insert function    | ={component}_{entities}_insert_fn()=             |
+| Notify function    | ={component}_{entities}_notify_fn()=             |
+| Upsert function    | ={component}_{entities}_upsert_fn()=             |
+| Assign function    | ={component}_{entities}_assign_fn()=             |
+| Delete rule        | ={component}_{entities}_delete_rule=             |
+| Column index       | ={component}_{entities}_{column(s)}_idx=         |
+| Unique index       | ={component}_{entities}_{column(s)}_uniq_idx=    |
 | Schema file        | ={component}_{entity}_create.sql=                |
 | Notify file        | ={component}_{entity}_notify_trigger.sql=        |
 | Drop file          | ={component}_{entity}_drop.sql=                  |
 | Notify drop file   | ={component}_{entity}_notify_trigger_drop.sql=   |
 | Populate file      | ={component}_{entity}_populate.sql=              |
+
+The key principle is that *function names preserve the table name* for grep-ability.
+For example, the table =dq_catalogs_tbl= has upsert function =dq_catalogs_upsert_fn=,
+so searching for "dq_catalogs" finds both the table and its functions.
 
 ** Utility and generation scripts
 

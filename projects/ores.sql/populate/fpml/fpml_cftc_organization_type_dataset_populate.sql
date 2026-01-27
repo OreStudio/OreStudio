@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- FpML Cftc Organization Type Dataset ---'
 
-select metadata.upsert_dq_datasets(
+select metadata.dq_datasets_upsert_fn(
     'fpml.cftc_organization_type',
     'FpML Standards',
     'Parties',

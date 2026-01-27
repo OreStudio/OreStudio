@@ -30,4 +30,4 @@
 set schema 'public';
 
 -- Validation Helpers
-drop function if exists public.seed_validate_not_empty(text, text);
+drop function if exists public.seed_validate_not_empty_fn(text, text);

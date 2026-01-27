@@ -33,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- ISO Standards Dataset Tags ---'
 
-select metadata.upsert_dq_tag(
+select metadata.dq_tags_upsert_fn(
     'ISO Coding Schemes',
     'General',
     'Reference Data',
@@ -41,7 +41,7 @@ select metadata.upsert_dq_tag(
     'ISO coding scheme definitions'
 );
 
-select metadata.upsert_dq_tag(
+select metadata.dq_tags_upsert_fn(
     'ISO 3166 Country Codes',
     'Countries',
     'Reference Data',
@@ -49,7 +49,7 @@ select metadata.upsert_dq_tag(
     'Country reference data'
 );
 
-select metadata.upsert_dq_tag(
+select metadata.dq_tags_upsert_fn(
     'ISO 4217 Currency Codes',
     'Currencies',
     'Reference Data',

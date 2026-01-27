@@ -34,7 +34,7 @@ set schema 'metadata';
 
 \echo '--- IP Geolocation Dataset Tags ---'
 
-select metadata.upsert_dq_tag(
+select metadata.dq_tags_upsert_fn(
     'IP to Country IPv4 Ranges',
     'IP Address to Country maps',
     'Reference Data',

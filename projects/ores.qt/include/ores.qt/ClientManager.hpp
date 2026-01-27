@@ -250,6 +250,18 @@ public:
     }
 
     /**
+     * @brief Get the connected server port.
+     *
+     * @return Server port, or 0 if not connected.
+     */
+    std::uint16_t connectedPort() const {
+        if (!isConnected()) {
+            return 0;
+        }
+        return connected_port_;
+    }
+
+    /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send

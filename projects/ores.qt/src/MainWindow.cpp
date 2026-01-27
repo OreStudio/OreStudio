@@ -1735,6 +1735,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
 
     updateWindowTitle();
+    updateMenuState();
 }
 
 void MainWindow::showSignUpDialog(const QString& host, int port) {

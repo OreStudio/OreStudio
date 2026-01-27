@@ -521,6 +521,8 @@ void ApplyProvisioningPage::startProvisioning() {
     const std::string email = wizard_->adminEmail().toStdString();
     const QString bundleCode = wizard_->selectedBundleCode();
     ClientManager* clientManager = wizard_->clientManager();
+    const std::string host = clientManager->connectedHost();
+    const std::uint16_t port = clientManager->connectedPort();
 
     // Perform provisioning asynchronously
     auto* watcher = new QFutureWatcher<ProvisioningResult>(this);
@@ -532,7 +534,7 @@ void ApplyProvisioningPage::startProvisioning() {
     });
 
     QFuture<ProvisioningResult> future = QtConcurrent::run(
-        [clientManager, username, password, email, bundleCode]() -> ProvisioningResult {
+        [clientManager, username, password, email, bundleCode, host, port]() -> ProvisioningResult {
             ProvisioningResult result;
 
             // Step 1: Create administrator account
@@ -564,25 +566,14 @@ void ApplyProvisioningPage::startProvisioning() {
             result.log_messages.append(QString("SUCCESS: Administrator account created (ID: %1)")
                 .arg(QString::fromStdString(boost::uuids::to_string(adminResult->account_id))));
 
-            // Step 2: Login as admin to establish session
+            // Step 2: Login as admin to establish session (using standard login flow)
             result.log_messages.append(QString("[2/4] Logging in as administrator..."));
 
-            iam::messaging::login_request loginRequest;
-            loginRequest.username = username;
-            loginRequest.password = password;
+            auto loginResult = clientManager->connectAndLogin(host, port, username, password);
 
-            auto loginResult = clientManager->process_request(std::move(loginRequest));
-
-            if (!loginResult) {
+            if (!loginResult.success) {
                 result.success = false;
-                result.error_message = "Failed to communicate with server for login.";
-                result.log_messages.append("ERROR: Failed to communicate with server.");
-                return result;
-            }
-
-            if (!loginResult->success) {
-                result.success = false;
-                result.error_message = QString::fromStdString(loginResult->error_message);
+                result.error_message = loginResult.error_message;
                 result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
                 return result;
             }

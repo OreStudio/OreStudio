@@ -226,7 +226,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // transactional publishing of dataset bundles. Also adds atomic field to
 // publish_datasets_request for atomic individual dataset publishing. This is
 // a breaking change due to the new field in publish_datasets_request.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 23;
+//
+// Version 24.0 adds available_bundles field to bootstrap_status_response to
+// provide bundle choices during system provisioning without requiring auth.
+// This is a breaking change due to the new field in bootstrap_status_response.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 24;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

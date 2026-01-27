@@ -42,11 +42,13 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<service::authorization_service> auth_service,
-    std::shared_ptr<geo::service::geolocation_service> geo_service)
+    std::shared_ptr<geo::service::geolocation_service> geo_service,
+    bundle_provider_fn bundle_provider)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
-      session_repo_(ctx), geo_service_(std::move(geo_service)) {}
+      session_repo_(ctx), geo_service_(std::move(geo_service)),
+      bundle_provider_(std::move(bundle_provider)) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -742,8 +744,15 @@ handle_bootstrap_status_request(std::span<const std::byte> payload) {
         .is_in_bootstrap_mode = in_bootstrap,
         .message = in_bootstrap
             ? "System in BOOTSTRAP MODE - awaiting initial admin account creation"
-            : "System in SECURE MODE - admin account exists"
+            : "System in SECURE MODE - admin account exists",
+        .available_bundles = {}
     };
+
+    if (in_bootstrap && bundle_provider_) {
+        response.available_bundles = bundle_provider_();
+        BOOST_LOG_SEV(lg(), debug) << "Included " << response.available_bundles.size()
+                                   << " available bundles in bootstrap response";
+    }
 
     co_return response.serialize();
 }

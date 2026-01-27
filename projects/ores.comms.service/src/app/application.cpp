@@ -66,6 +66,7 @@
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
+#include "ores.dq/service/dataset_bundle_service.hpp"
 #include "ores.comms.service/app/application_exception.hpp"
 
 namespace ores::comms::service::app {
@@ -418,11 +419,25 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Create geolocation service using PostgreSQL geoip tables
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
+    // Create bundle provider for bootstrap wizard
+    dq::service::dataset_bundle_service bundle_service(ctx);
+    auto bundle_provider = [&bundle_service]() -> std::vector<iam::messaging::bootstrap_bundle_info> {
+        std::vector<iam::messaging::bootstrap_bundle_info> result;
+        for (const auto& bundle : bundle_service.list_bundles()) {
+            result.push_back({
+                .code = bundle.code,
+                .name = bundle.name,
+                .description = bundle.description
+            });
+        }
+        return result;
+    };
+
     // Register subsystem handlers
     ores::refdata::messaging::registrar::register_handlers(*srv, ctx, system_flags,
         srv->sessions());
     ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service,
-        geo_service);
+        geo_service, bundle_provider);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());

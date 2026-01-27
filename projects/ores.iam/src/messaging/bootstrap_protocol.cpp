@@ -97,6 +97,11 @@ std::ostream& operator<<(std::ostream& s, const create_initial_admin_response& v
     return s;
 }
 
+std::ostream& operator<<(std::ostream& s, const bootstrap_bundle_info& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 std::vector<std::byte> bootstrap_status_request::serialize() const {
     // Empty request - no data to serialize
     return std::vector<std::byte>{};
@@ -117,6 +122,14 @@ std::vector<std::byte> bootstrap_status_response::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_bool(buffer, is_in_bootstrap_mode);
     writer::write_string(buffer, message);
+
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(available_bundles.size()));
+    for (const auto& bundle : available_bundles) {
+        writer::write_string(buffer, bundle.code);
+        writer::write_string(buffer, bundle.name);
+        writer::write_string(buffer, bundle.description);
+    }
+
     return buffer;
 }
 
@@ -131,6 +144,29 @@ bootstrap_status_response::deserialize(std::span<const std::byte> data) {
     auto message_result = reader::read_string(data);
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.available_bundles.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        bootstrap_bundle_info bundle;
+
+        auto code_result = reader::read_string(data);
+        if (!code_result) return std::unexpected(code_result.error());
+        bundle.code = *code_result;
+
+        auto name_result = reader::read_string(data);
+        if (!name_result) return std::unexpected(name_result.error());
+        bundle.name = *name_result;
+
+        auto description_result = reader::read_string(data);
+        if (!description_result) return std::unexpected(description_result.error());
+        bundle.description = *description_result;
+
+        response.available_bundles.push_back(std::move(bundle));
+    }
 
     return response;
 }

@@ -44,6 +44,15 @@
 namespace ores::qt {
 
 /**
+ * @brief Lightweight bundle info for bootstrap wizard.
+ */
+struct BootstrapBundleInfo {
+    QString code;
+    QString name;
+    QString description;
+};
+
+/**
  * @brief Result of a login attempt.
  */
 struct LoginResult {
@@ -51,6 +60,7 @@ struct LoginResult {
     QString error_message;
     bool password_reset_required = false;
     bool bootstrap_mode = false;  ///< True if system is in bootstrap mode (no admin exists)
+    std::vector<BootstrapBundleInfo> available_bundles;  ///< Bundles available when in bootstrap mode
 };
 
 /**

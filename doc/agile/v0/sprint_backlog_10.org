@@ -17,54 +17,56 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-27 Tue 01:54], for Tuesday, January 27, 2026.
+#+CAPTION: Clock summary at [2026-01-27 Tue 12:52], for Tuesday, January 27, 2026.
 |      | <75>                                                  |        |      |      |       |
 | Tags | Headline                                              | Time   |      |      |     % |
 |------+-------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                          | *1:51* |      |      | 100.0 |
+|      | *Total time*                                          | *4:47* |      |      | 100.0 |
 |------+-------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                               | 1:51   |      |      | 100.0 |
-|      | Active                                                |        | 1:51 |      | 100.0 |
-| code | Add dataset bundles                                   |        |      | 0:27 |  24.3 |
-| code | Add UI for bootstrapping from Qt                      |        |      | 0:56 |  50.5 |
-| code | Separate catalog metadata schema from production data |        |      | 0:28 |  25.2 |
+|      | Stories                                               | 4:47   |      |      | 100.0 |
+|      | Active                                                |        | 4:47 |      | 100.0 |
+| code | Separate catalog metadata schema from production data |        |      | 0:28 |   9.8 |
+| code | Fix issues with xsdcpp when generating ORE code       |        |      | 0:11 |   3.8 |
+| code | Add dataset bundles                                   |        |      | 3:12 |  66.9 |
+| code | Add UI for bootstrapping from Qt                      |        |      | 0:56 |  19.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-27 Tue 01:54]
+#+CAPTION: Clock summary at [2026-01-27 Tue 12:52]
 |       | <75>                                                  |         |       |      |       |
 | Tags  | Headline                                              | Time    |       |      |     % |
 |-------+-------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                          | *65:11* |       |      | 100.0 |
+|       | *Total time*                                          | *68:07* |       |      | 100.0 |
 |-------+-------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                               | 65:11   |       |      | 100.0 |
-|       | Active                                                |         | 65:11 |      | 100.0 |
-| agile | Sprint and product backlog refinement                 |         |       | 1:17 |   2.0 |
-| infra | OCR scan notebooks for this sprint                    |         |       | 7:06 |  10.9 |
-| code  | Create a simple code generator                        |         |       | 7:38 |  11.7 |
-| code  | Party related schemes                                 |         |       | 5:20 |   8.2 |
-| code  | Image cache not reloading on new datasets             |         |       | 1:43 |   2.6 |
+|       | Stories                                               | 68:07   |       |      | 100.0 |
+|       | Active                                                |         | 68:07 |      | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       | 1:17 |   1.9 |
+| infra | OCR scan notebooks for this sprint                    |         |       | 7:06 |  10.4 |
+| code  | Create a simple code generator                        |         |       | 7:38 |  11.2 |
+| code  | Party related schemes                                 |         |       | 5:20 |   7.8 |
+| code  | Image cache not reloading on new datasets             |         |       | 1:43 |   2.5 |
 | code  | Create a script to download and split GLEIF data      |         |       | 0:25 |   0.6 |
 | code  | Incremental image cache loading with modified_since   |         |       | 0:31 |   0.8 |
-| code  | Fix issues with misspell action                       |         |       | 2:47 |   4.3 |
-| code  | Tidy-up external data storage                         |         |       | 3:33 |   5.4 |
-| code  | Coding schemes are in production tables               |         |       | 1:39 |   2.5 |
-| code  | Refactor SQL directories                              |         |       | 3:24 |   5.2 |
-| code  | Code-generate ER diagram                              |         |       | 3:01 |   4.6 |
+| code  | Fix issues with misspell action                       |         |       | 2:47 |   4.1 |
+| code  | Tidy-up external data storage                         |         |       | 3:33 |   5.2 |
+| code  | Coding schemes are in production tables               |         |       | 1:39 |   2.4 |
+| code  | Refactor SQL directories                              |         |       | 3:24 |   5.0 |
+| code  | Code-generate ER diagram                              |         |       | 3:01 |   4.4 |
 | code  | Add "words" to icons                                  |         |       | 0:28 |   0.7 |
-| code  | Add mapping artefact to population functions          |         |       | 2:19 |   3.6 |
-| code  | Add a ORE component for import/export                 |         |       | 4:00 |   6.1 |
-| code  | Generate C++ code for ORE                             |         |       | 6:43 |  10.3 |
-| code  | Fix windows CI break due to XSD code generation       |         |       | 0:18 |   0.5 |
-| code  | Clean up data layers                                  |         |       | 1:21 |   2.1 |
-| code  | Add rounding type table                               |         |       | 1:37 |   2.5 |
+| code  | Add mapping artefact to population functions          |         |       | 2:19 |   3.4 |
+| code  | Add a ORE component for import/export                 |         |       | 4:00 |   5.9 |
+| code  | Fix windows CI break due to XSD code generation       |         |       | 0:18 |   0.4 |
+| code  | Clean up data layers                                  |         |       | 1:21 |   2.0 |
+| code  | Add rounding type table                               |         |       | 1:37 |   2.4 |
 | code  | Add code generation support for domain types SQL      |         |       | 1:20 |   2.0 |
-| code  | Add FPML export and import                            |         |       | 0:19 |   0.5 |
-| code  | Base the compute approach on BOINC                    |         |       | 0:18 |   0.5 |
-| code  | Add dataset bundles                                   |         |       | 3:53 |   6.0 |
-| code  | Add UI for bootstrapping from Qt                      |         |       | 3:28 |   5.3 |
 | code  | Separate catalog metadata schema from production data |         |       | 0:43 |   1.1 |
+| code  | Generate C++ code for ORE                             |         |       | 6:43 |   9.9 |
+| code  | Fix issues with xsdcpp when generating ORE code       |         |       | 0:11 |   0.3 |
+| code  | Add FPML export and import                            |         |       | 0:19 |   0.5 |
+| code  | Base the compute approach on BOINC                    |         |       | 0:18 |   0.4 |
+| code  | Add dataset bundles                                   |         |       | 6:38 |   9.7 |
+| code  | Add UI for bootstrapping from Qt                      |         |       | 3:28 |   5.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -755,55 +757,6 @@ Highlights:
   from the outset.
 #+end_quote
 
-*** COMPLETED Generate C++ code for ORE                                :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-26 Mon 00:55]--[2026-01-26 Mon 01:10] =>  0:15
-    CLOCK: [2026-01-25 Sun 20:01]--[2026-01-26 Mon 00:55] =>  4:54
-    CLOCK: [2026-01-25 Sun 10:06]--[2026-01-25 Sun 10:35] =>  0:29
-    CLOCK: [2026-01-25 Sun 09:00]--[2026-01-25 Sun 10:05] =>  1:05
-    :END:
-
-It seems a bit painful to have to manually craft entities for parsing ORE and
-FPML code. Explore tooling in this area.
-
-#+begin_quote
-This pull request significantly upgrades the system's data handling capabilities
-by integrating xsdcpp for automated C++ type generation from XML schemas. This
-change not only modernizes the way ORE XML types are managed but also enhances
-the data quality publication process by introducing a dedicated artefact_type
-mechanism for managing target tables and population functions. Additionally, it
-standardizes SQL function naming and corrects currency rounding logic, leading
-to a more robust and maintainable codebase.
-
-Highlights:
-
-- XSDCPP Code Generation Integration: Introduced infrastructure to automatically
-  generate C++ types from XSD schemas using the xsdcpp tool, streamlining the
-  creation and maintenance of domain types for ORE XML configurations.
-- Refactored ORE XML Types: Replaced manually crafted CurrencyConfig and
-  CurrencyElement C++ types with automatically generated currencyConfig and
-  currencyDefinition types, improving consistency and reducing manual effort.
-- Enhanced Data Quality (DQ) Publication Infrastructure: Added a new
-  artefact_type domain, entity, mapper, and repository to centralize the lookup
-  of target_table and populate_function for dataset publication, removing these
-  fields directly from the dataset entity.
-- SQL Naming Convention Enforcement: Renamed all dq_populate_* SQL functions to
-  follow a consistent dq_populate_*_fn suffix convention across the database
-  schema.
-- Currency Rounding Type Correction: Fixed invalid currency rounding types in
-  the CURRENCY_DEFAULTS_POOL within generator.py and in SQL populate scripts,
-  changing 'standard' and 'swedish' to 'Closest', and 'none' to 'Down' for
-  commodity currencies.
-#+end_quote
-Links:
-
-- [[https://www.codesynthesis.com/products/xsd/][codesynthesis xsd]]: good but requires their own library at runtime and it's not
-  on vcpg.
-- [[https://www.codesynthesis.com/products/xsde/][codesynthesis xsde]]: good but requires their own library at runtime and it's
-  not on vcpg.
-- [[https://github.com/craflin/xsdcpp/issues/11][#11: Issues parsing XSD for ORE (Open Source Risk Engine)]]: raised issue
-  against xsdcpp project for ORE schema.
-
 *** COMPLETED Fix windows CI break due to XSD code generation          :code:
     :LOGBOOK:
     CLOCK: [2026-01-26 Mon 09:11]--[2026-01-26 Mon 09:29] =>  0:18
@@ -955,6 +908,202 @@ Allowed Values for roundingDirection:
 
 Now that we got the basic codegen infrastructure working, we need to start code
 generating the SQL for domain types.
+
+*** COMPLETED Separate catalog metadata schema from production data    :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 23:45]--[2026-01-27 Tue 00:28] =>  0:43
+    :END:
+
+Refactor the database architecture to separate catalog/metadata tables from
+production data tables. This resolves a bootstrapping paradox where catalog
+metadata must exist before provisioning, but provisioning populates the
+database.
+
+#+begin_quote
+This pull request implements a significant architectural change by dividing the
+monolithic database schema into logical metadata and production schemas. This
+separation is designed to streamline data management, improve data governance,
+and provide a clearer distinction between data used for defining and staging
+information versus data actively used by applications. The change impacts nearly
+all SQL files, requiring updates to schema references, function calls, and data
+population logic to align with the new structure.
+
+Highlights:
+
+- Schema Restructuring: The single ores PostgreSQL schema has been split into
+  two distinct schemas: metadata and production, along with a public schema for
+  shared utilities. This enhances separation of concerns and clarifies data
+  ownership.
+- Schema Content Definition: The metadata schema now houses data governance,
+  classification, and staging tables (e.g., dq_*, change_control). The
+  production schema contains operational data consumed by applications (e.g.,
+  refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*).
+- Cross-Schema References and Validation: All SQL scripts, including table
+  creations, triggers, functions, and population logic, have been updated to use
+  schema-qualified names. Foreign key validations and data population functions
+  now correctly reference tables across the new metadata and production schemas.
+- ER Diagram Generation Update: The ER diagram generator has been updated to
+  correctly parse and represent the new multi-schema architecture, ensuring
+  visual documentation remains accurate.
+- Documentation Updates: Extensive documentation has been added and updated to
+  explain the new schema mental model, key principles of data flow
+  (unidirectional from metadata to production), and clear boundaries of
+  responsibility for each schema.
+#+end_quote
+
+**** Problem Statement
+
+Currently, the following table categories share the same database:
+
+- *Catalog metadata*: =dq_datasets_tbl=, =dq_catalogs_tbl=,
+  =dq_dataset_bundle_tbl=, =dq_dataset_bundle_member_tbl=,
+  =dq_dataset_dependencies_tbl=
+- *Artefact staging*: =dq_*_artefact_tbl= tables (countries, currencies, images,
+  FPML entities, etc.)
+- *Production data*: =refdata_*_tbl=, =assets_*_tbl=, IAM tables
+
+This creates problems:
+
+1. Cannot provision a fresh system because catalog definitions don't exist yet.
+2. Bundle publication requires bundles to be defined before they can be applied.
+3. Unclear separation between "system configuration" and "user data".
+
+**** Proposed Solution
+
+Evaluate options:
+
+1. *Separate schemas*: Keep catalog metadata in a =dq= schema, production in
+   =ores= schema. Template database includes =dq= schema pre-populated.
+2. *Separate databases*: Catalog metadata in a "control plane" database,
+   production in "data plane" database.
+3. *Embedded metadata*: Bundle definitions embedded in application code or
+   configuration files rather than database.
+
+**** Acceptance Criteria
+
+- Clear separation between catalog/metadata and production data.
+- Fresh system can be provisioned without chicken-and-egg problem.
+- Bundle definitions are available before first provisioning.
+- Existing population scripts continue to work.
+- System Provisioner Wizard can be implemented.
+
+**** Related Stories
+
+- "Add System Provisioner Wizard to Qt" - blocked by this work.
+
+*** COMPLETED Generate C++ code for ORE                                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 00:55]--[2026-01-26 Mon 01:10] =>  0:15
+    CLOCK: [2026-01-25 Sun 20:01]--[2026-01-26 Mon 00:55] =>  4:54
+    CLOCK: [2026-01-25 Sun 10:06]--[2026-01-25 Sun 10:35] =>  0:29
+    CLOCK: [2026-01-25 Sun 09:00]--[2026-01-25 Sun 10:05] =>  1:05
+    :END:
+
+It seems a bit painful to have to manually craft entities for parsing ORE and
+FPML code. Explore tooling in this area.
+
+#+begin_quote
+This pull request significantly upgrades the system's data handling capabilities
+by integrating xsdcpp for automated C++ type generation from XML schemas. This
+change not only modernizes the way ORE XML types are managed but also enhances
+the data quality publication process by introducing a dedicated artefact_type
+mechanism for managing target tables and population functions. Additionally, it
+standardizes SQL function naming and corrects currency rounding logic, leading
+to a more robust and maintainable codebase.
+
+Highlights:
+
+- XSDCPP Code Generation Integration: Introduced infrastructure to automatically
+  generate C++ types from XSD schemas using the xsdcpp tool, streamlining the
+  creation and maintenance of domain types for ORE XML configurations.
+- Refactored ORE XML Types: Replaced manually crafted CurrencyConfig and
+  CurrencyElement C++ types with automatically generated currencyConfig and
+  currencyDefinition types, improving consistency and reducing manual effort.
+- Enhanced Data Quality (DQ) Publication Infrastructure: Added a new
+  artefact_type domain, entity, mapper, and repository to centralize the lookup
+  of target_table and populate_function for dataset publication, removing these
+  fields directly from the dataset entity.
+- SQL Naming Convention Enforcement: Renamed all dq_populate_* SQL functions to
+  follow a consistent dq_populate_*_fn suffix convention across the database
+  schema.
+- Currency Rounding Type Correction: Fixed invalid currency rounding types in
+  the CURRENCY_DEFAULTS_POOL within generator.py and in SQL populate scripts,
+  changing 'standard' and 'swedish' to 'Closest', and 'none' to 'Down' for
+  commodity currencies.
+#+end_quote
+Links:
+
+- [[https://www.codesynthesis.com/products/xsd/][codesynthesis xsd]]: good but requires their own library at runtime and it's not
+  on vcpg.
+- [[https://www.codesynthesis.com/products/xsde/][codesynthesis xsde]]: good but requires their own library at runtime and it's
+  not on vcpg.
+- [[https://github.com/craflin/xsdcpp/issues/11][#11: Issues parsing XSD for ORE (Open Source Risk Engine)]]: raised issue
+  against xsdcpp project for ORE schema.
+
+*** STARTED Fix issues with xsdcpp when generating ORE code            :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-27 Tue 09:35]--[2026-01-27 Tue 09:46] =>  0:11
+    :END:
+
+**** Fix issues with xsd tool
+
+#+begin_quote
+This pull request significantly improves the accuracy and completeness of the
+ores.ore domain model by integrating fixes to the xsdcpp code generation tool.
+These changes enable the correct representation of complex XML structures, such
+as trade data types and vector-based model parameters, which in turn allows for
+more comprehensive and realistic testing using actual ORE sample files. The
+update addresses critical XSD parsing limitations, moving the project closer to
+full XSD schema compliance.
+
+Highlights:
+
+- XSD Code Generation Fixes: The xsdcpp tool has been updated to correctly
+  handle xs:group ref expansion, ensuring trade data types (like SwapData,
+  FxForwardData) are properly generated. It also now correctly generates
+  xsd::vector<T> for maxOccurs="unbounded" within xs:choice elements,
+  specifically fixing the LGM generation in InterestRateModels.
+- Domain Code Regeneration: The ores.ore domain types have been regenerated,
+  resulting in significant additions to domain.hpp (+10,752 lines) and
+  domain.cpp (+17,459 lines) to incorporate the newly generated trade data types
+  and their serialization logic.
+- Enhanced Simulation Tests: Simulation roundtrip tests now utilize real ORE
+  sample XML files, leveraging the fix for LGM cardinality, allowing for more
+  robust testing against actual data.
+- Updated Portfolio Tests: Portfolio roundtrip tests have been modified to use
+  inline XML for various trade types, including those with PortfolioIds, as a
+  workaround for the still unsupported XSD substitution groups (NettingSetId).
+#+end_quote
+
+**** Add round-trip tests
+
+#+begin_quote
+This pull request significantly enhances the robustness of the ores.ore library
+by introducing a suite of XML roundtrip tests. These tests validate the
+integrity of data serialization and deserialization for key domain objects,
+ensuring that XML inputs can be correctly parsed into C++ objects and then
+accurately re-serialized back into XML. Complementing this, the PR delivers a
+critical analysis of the current XSD-to-C++ code generation process, pinpointing
+several structural and cardinality mismatches that lead to parsing failures for
+certain ORE sample XMLs. This dual approach not only improves testing coverage
+but also provides actionable insights for future improvements to the XML schema
+and code generation tooling.
+
+Highlights:
+
+- New XML Roundtrip Tests: Added comprehensive structural XML roundtrip tests
+  for various ores.ore domain types, including currencyConfig, conventions,
+  curveconfiguration, todaysmarket, pricingengines, simulation, and portfolio.
+  These tests validate the integrity of data serialization and deserialization.
+- XSD Schema Gaps Analysis: Introduced a new analysis document
+  (doc/analysis/ore_xsd_schema_gaps.md) that meticulously details identified
+  discrepancies between ORE sample XML files and the XSD-generated C++ domain
+  code.
+- Identified Code Generator Limitations: Documented specific limitations of the
+  xsdcpp code generator, such as its failure to expand xs:group ref, handle
+  xs:element substitutionGroup, and correctly map maxOccurs="unbounded" within
+  xs:choice to xsd::vector.
+#+end_quote
 
 *** STARTED Add FPML export and import                                 :code:
     :LOGBOOK:
@@ -1222,6 +1371,12 @@ Table: =assimilated_data= (TimescaleDB Hypertable)
 
 *** STARTED Add dataset bundles                                        :code:
     :LOGBOOK:
+    CLOCK: [2026-01-27 Tue 13:22]--[2026-01-27 Tue 15:03] =>  1:41
+    CLOCK: [2026-01-27 Tue 12:14]--[2026-01-27 Tue 12:52] =>  0:38
+    CLOCK: [2026-01-27 Tue 11:34]--[2026-01-27 Tue 12:13] =>  0:39
+    CLOCK: [2026-01-27 Tue 09:47]--[2026-01-27 Tue 10:35] =>  0:48
+    CLOCK: [2026-01-27 Tue 09:00]--[2026-01-27 Tue 09:20] =>  0:20
+    CLOCK: [2026-01-27 Tue 01:55]--[2026-01-27 Tue 02:15] =>  0:20
     CLOCK: [2026-01-27 Tue 01:27]--[2026-01-27 Tue 01:54] =>  0:27
     CLOCK: [2026-01-26 Mon 22:50]--[2026-01-26 Mon 23:30] =>  0:40
     CLOCK: [2026-01-26 Mon 17:41]--[2026-01-26 Mon 18:10] =>  0:29
@@ -1270,6 +1425,7 @@ Highlights:
 
 *** STARTED Add UI for bootstrapping from Qt                           :code:
     :LOGBOOK:
+    CLOCK: [2026-01-27 Tue 15:03]--[2026-01-27 Tue 16:03] =>  1:00
     CLOCK: [2026-01-27 Tue 00:30]--[2026-01-27 Tue 01:26] =>  0:56
     CLOCK: [2026-01-26 Mon 23:31]--[2026-01-26 Mon 23:44] =>  0:13
     CLOCK: [2026-01-26 Mon 21:30]--[2026-01-26 Mon 22:50] =>  1:20
@@ -1457,87 +1613,10 @@ the database.
 - System exits bootstrap mode upon successful completion.
 - Wizard is first-time only (not re-runnable).
 
-*** STARTED Separate catalog metadata schema from production data      :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-26 Mon 23:45]--[2026-01-27 Tue 00:28] =>  0:43
-    :END:
+*** Create python script to split xsdcpp output                        :code:
 
-Refactor the database architecture to separate catalog/metadata tables from
-production data tables. This resolves a bootstrapping paradox where catalog
-metadata must exist before provisioning, but provisioning populates the
-database.
-
-#+begin_quote
-This pull request implements a significant architectural change by dividing the
-monolithic database schema into logical metadata and production schemas. This
-separation is designed to streamline data management, improve data governance,
-and provide a clearer distinction between data used for defining and staging
-information versus data actively used by applications. The change impacts nearly
-all SQL files, requiring updates to schema references, function calls, and data
-population logic to align with the new structure.
-
-Highlights:
-
-- Schema Restructuring: The single ores PostgreSQL schema has been split into
-  two distinct schemas: metadata and production, along with a public schema for
-  shared utilities. This enhances separation of concerns and clarifies data
-  ownership.
-- Schema Content Definition: The metadata schema now houses data governance,
-  classification, and staging tables (e.g., dq_*, change_control). The
-  production schema contains operational data consumed by applications (e.g.,
-  refdata_*, iam_*, assets_*, geo_*, variability_*, telemetry_*).
-- Cross-Schema References and Validation: All SQL scripts, including table
-  creations, triggers, functions, and population logic, have been updated to use
-  schema-qualified names. Foreign key validations and data population functions
-  now correctly reference tables across the new metadata and production schemas.
-- ER Diagram Generation Update: The ER diagram generator has been updated to
-  correctly parse and represent the new multi-schema architecture, ensuring
-  visual documentation remains accurate.
-- Documentation Updates: Extensive documentation has been added and updated to
-  explain the new schema mental model, key principles of data flow
-  (unidirectional from metadata to production), and clear boundaries of
-  responsibility for each schema.
-#+end_quote
-
-**** Problem Statement
-
-Currently, the following table categories share the same database:
-
-- *Catalog metadata*: =dq_datasets_tbl=, =dq_catalogs_tbl=,
-  =dq_dataset_bundle_tbl=, =dq_dataset_bundle_member_tbl=,
-  =dq_dataset_dependencies_tbl=
-- *Artefact staging*: =dq_*_artefact_tbl= tables (countries, currencies, images,
-  FPML entities, etc.)
-- *Production data*: =refdata_*_tbl=, =assets_*_tbl=, IAM tables
-
-This creates problems:
-
-1. Cannot provision a fresh system because catalog definitions don't exist yet.
-2. Bundle publication requires bundles to be defined before they can be applied.
-3. Unclear separation between "system configuration" and "user data".
-
-**** Proposed Solution
-
-Evaluate options:
-
-1. *Separate schemas*: Keep catalog metadata in a =dq= schema, production in
-   =ores= schema. Template database includes =dq= schema pre-populated.
-2. *Separate databases*: Catalog metadata in a "control plane" database,
-   production in "data plane" database.
-3. *Embedded metadata*: Bundle definitions embedded in application code or
-   configuration files rather than database.
-
-**** Acceptance Criteria
-
-- Clear separation between catalog/metadata and production data.
-- Fresh system can be provisioned without chicken-and-egg problem.
-- Bundle definitions are available before first provisioning.
-- Existing population scripts continue to work.
-- System Provisioner Wizard can be implemented.
-
-**** Related Stories
-
-- "Add System Provisioner Wizard to Qt" - blocked by this work.
+We are generating one very large file with all the types. This is not ideal.
+Also, this will probably not work for FPML as the schema is even larger.
 
 *** Split create schemas from main populate script                     :code:
 

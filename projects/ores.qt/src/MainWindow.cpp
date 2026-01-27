@@ -1781,10 +1781,11 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
-void MainWindow::showSystemProvisionerWizard() {
+void MainWindow::showSystemProvisionerWizard(
+    const std::vector<BootstrapBundleInfo>& bundles) {
     BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
 
-    auto* wizard = new SystemProvisionerWizard(clientManager_, this);
+    auto* wizard = new SystemProvisionerWizard(clientManager_, bundles, this);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 

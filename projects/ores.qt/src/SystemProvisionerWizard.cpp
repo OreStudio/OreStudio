@@ -45,9 +45,11 @@ using namespace ores::logging;
 
 SystemProvisionerWizard::SystemProvisionerWizard(
     ClientManager* clientManager,
+    const std::vector<BootstrapBundleInfo>& bundles,
     QWidget* parent)
     : QWizard(parent),
-      clientManager_(clientManager) {
+      clientManager_(clientManager),
+      bundles_(bundles) {
 
     setWindowTitle(tr("System Provisioner"));
     setMinimumSize(600, 500);
@@ -78,33 +80,6 @@ void SystemProvisionerWizard::setAdminCredentials(
     adminPassword_ = password;
 }
 
-std::vector<BundleInfo> SystemProvisionerWizard::availableBundles() {
-    // Hardcoded from ores.sql/populate/governance/dq_dataset_bundle_populate.sql
-    return {
-        {
-            "solvaris",
-            "Solvaris",
-            "Synthetic reference data for development and testing. "
-            "An isolated fantasy world with fictional currencies, countries, "
-            "and entities - ideal for demos and experimentation without "
-            "affecting real-world data."
-        },
-        {
-            "base",
-            "Base System",
-            "Industry-standard reference data (ISO + FpML) for production use. "
-            "Includes ISO 3166 countries, ISO 4217 currencies, and FpML "
-            "financial reference data. Recommended for production deployments."
-        },
-        {
-            "crypto",
-            "Crypto",
-            "Base System plus cryptocurrency reference data. "
-            "Extends the Base System bundle with additional cryptocurrency "
-            "definitions and related assets."
-        }
-    };
-}
 
 // ============================================================================
 // WelcomePage
@@ -391,20 +366,12 @@ BundleSelectionPage::BundleSelectionPage(SystemProvisionerWizard* wizard)
 void BundleSelectionPage::setupUI() {
     auto* layout = new QVBoxLayout(this);
 
-    // Bundle selection
     auto* selectionLayout = new QFormLayout();
-
     bundleCombo_ = new QComboBox(this);
-    const auto bundles = SystemProvisionerWizard::availableBundles();
-    for (const auto& bundle : bundles) {
-        bundleCombo_->addItem(bundle.name, bundle.code);
-    }
     selectionLayout->addRow(tr("Data Bundle:"), bundleCombo_);
-
     layout->addLayout(selectionLayout);
     layout->addSpacing(20);
 
-    // Description area
     auto* descBox = new QGroupBox(tr("Description"), this);
     auto* descLayout = new QVBoxLayout(descBox);
     descriptionLabel_ = new QLabel(this);
@@ -415,28 +382,37 @@ void BundleSelectionPage::setupUI() {
 
     layout->addStretch();
 
-    // Connect combo box to update description
     connect(bundleCombo_, &QComboBox::currentIndexChanged,
             this, &BundleSelectionPage::onBundleChanged);
 }
 
 void BundleSelectionPage::onBundleChanged(int index) {
-    const auto bundles = SystemProvisionerWizard::availableBundles();
+    const auto& bundles = wizard_->bundles();
     if (index >= 0 && index < static_cast<int>(bundles.size())) {
         descriptionLabel_->setText(bundles[index].description);
     }
     emit completeChanged();
 }
 
-void BundleSelectionPage::initializePage() {
-    // Change Next button to "Provision" to indicate action
-    wizard()->setButtonText(QWizard::NextButton, tr("Provision"));
+void BundleSelectionPage::populateBundles() {
+    bundleCombo_->clear();
 
-    // Select the first bundle by default and show its description
+    const auto& bundles = wizard_->bundles();
+    for (const auto& bundle : bundles) {
+        bundleCombo_->addItem(bundle.name, bundle.code);
+    }
+
     if (bundleCombo_->count() > 0) {
         bundleCombo_->setCurrentIndex(0);
         onBundleChanged(0);
+    } else {
+        descriptionLabel_->setText(tr("No bundles available."));
     }
+}
+
+void BundleSelectionPage::initializePage() {
+    wizard()->setButtonText(QWizard::NextButton, tr("Provision"));
+    populateBundles();
 }
 
 bool BundleSelectionPage::validatePage() {

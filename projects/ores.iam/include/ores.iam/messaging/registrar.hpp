@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/messaging/accounts_message_handler.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 
 namespace ores::iam::messaging {
@@ -41,6 +42,7 @@ namespace ores::iam::messaging {
  * @param system_flags Shared system flags service for flag access
  * @param auth_service Shared authorization service for RBAC permission checks
  * @param geo_service Shared geolocation service for IP to location lookups
+ * @param bundle_provider Optional callback to fetch available bundles for bootstrap
  */
 class registrar {
 private:
@@ -56,7 +58,8 @@ public:
         database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<service::authorization_service> auth_service,
-        std::shared_ptr<geo::service::geolocation_service> geo_service);
+        std::shared_ptr<geo::service::geolocation_service> geo_service,
+        bundle_provider_fn bundle_provider = nullptr);
 };
 
 }

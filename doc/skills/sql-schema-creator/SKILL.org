@@ -45,6 +45,35 @@ For the full schema mental model and cross-schema relationships, see
 
 * How to use this skill
 
+*Recommended approach*: Use code generation first. The =ores.codegen= project can
+generate SQL schema files from JSON models, ensuring consistency and reducing
+errors.
+
+** Priority order
+
+1. *Use code generation*: Create a JSON model and generate the SQL using
+   =--profile sql=. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for details.
+2. *Update templates*: If the entity doesn't fit existing templates, modify the
+   templates in =library/templates/= to support the new pattern.
+3. *Manual creation*: Only create SQL manually as a last resort when code
+   generation cannot support the schema pattern.
+
+** Code generation workflow
+
+1. Create a JSON model in =projects/ores.codegen/models/{component}/=:
+   - For UUID primary key tables: use =*_domain_entity.json= naming
+   - For junction/association tables: use =*_junction.json= naming
+2. Generate SQL:
+   #+begin_src sh
+   cd projects/ores.codegen
+   ./run_generator.sh models/{component}/{entity}_domain_entity.json output/ --profile sql
+   #+end_src
+3. Review the generated output in =output/=
+4. Copy to =projects/ores.sql/create/{component}/=
+5. Continue with steps 5-7 below (orchestration, testing, validation)
+
+** Manual workflow (last resort)
+
 1. Gather requirements about the table (name, columns, relationships).
 2. Determine the appropriate component prefix based on the C++ component.
 3. Follow the detailed instructions to create the required SQL files.

@@ -56,17 +56,17 @@ create table if not exists "metadata"."dq_dataset_bundles_tbl" (
 -- Unique code for active records
 create unique index if not exists dq_dataset_bundles_code_uniq_idx
 on "metadata"."dq_dataset_bundles_tbl" (code)
-where valid_to = metadata.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique name for active records
 create unique index if not exists dq_dataset_bundles_name_uniq_idx
 on "metadata"."dq_dataset_bundles_tbl" (name)
-where valid_to = metadata.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists dq_dataset_bundles_version_uniq_idx
 on "metadata"."dq_dataset_bundles_tbl" (id, version)
-where valid_to = metadata.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create or replace function metadata.dq_dataset_bundles_insert_fn()
 returns trigger as $$
@@ -77,7 +77,7 @@ begin
     select version into current_version
     from "metadata"."dq_dataset_bundles_tbl"
     where id = NEW.id
-      and valid_to = metadata.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -90,14 +90,14 @@ begin
         update "metadata"."dq_dataset_bundles_tbl"
         set valid_to = current_timestamp
         where id = NEW.id
-          and valid_to = metadata.utility_infinity_timestamp_fn()
+          and valid_to = public.utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = metadata.utility_infinity_timestamp_fn();
+    NEW.valid_to = public.utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
@@ -118,4 +118,4 @@ on delete to "metadata"."dq_dataset_bundles_tbl" do instead
     update "metadata"."dq_dataset_bundles_tbl"
     set valid_to = current_timestamp
     where id = OLD.id
-      and valid_to = metadata.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();

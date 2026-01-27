@@ -34,17 +34,17 @@ create table if not exists "{{junction.schema}}"."{{junction.component}}_{{junct
 -- {{junction.left.index_comment}}
 create index if not exists {{junction.component}}_{{junction.name}}_{{junction.left.column_short}}_idx
 on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}})
-where valid_to = {{junction.schema}}.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- {{junction.right.index_comment}}
 create index if not exists {{junction.component}}_{{junction.name}}_{{junction.right.column_short}}_idx
 on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" ({{junction.right.column}})
-where valid_to = {{junction.schema}}.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists {{junction.component}}_{{junction.name}}_uniq_idx
 on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}}, {{junction.right.column}})
-where valid_to = {{junction.schema}}.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create or replace function {{junction.schema}}.{{junction.component}}_{{junction.name}}_insert_fn()
 returns trigger as $$
@@ -56,7 +56,7 @@ begin
     from "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl"
     where {{junction.left.column}} = new.{{junction.left.column}}
     and {{junction.right.column}} = new.{{junction.right.column}}
-    and valid_to = {{junction.schema}}.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -71,14 +71,14 @@ begin
         set valid_to = current_timestamp
         where {{junction.left.column}} = new.{{junction.left.column}}
         and {{junction.right.column}} = new.{{junction.right.column}}
-        and valid_to = {{junction.schema}}.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = {{junction.schema}}.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
 
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
@@ -102,4 +102,4 @@ do instead
   set valid_to = current_timestamp
   where {{junction.left.column}} = old.{{junction.left.column}}
   and {{junction.right.column}} = old.{{junction.right.column}}
-  and valid_to = {{junction.schema}}.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

@@ -23,6 +23,36 @@ with CRUD operations.
 
 * How to use this skill
 
+*Recommended approach*: Use code generation first. The =ores.codegen= project can
+generate all domain type artefacts from JSON models, ensuring consistency and
+reducing boilerplate errors.
+
+** Priority order
+
+1. *Use code generation*: Create a JSON model and generate all artefacts using
+   the appropriate profiles. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for details.
+2. *Update templates*: If the domain type doesn't fit existing templates, modify
+   the Mustache templates in =library/templates/= to support the new pattern.
+3. *Manual creation*: Only create artefacts manually as a last resort when code
+   generation cannot support the required pattern.
+
+** Code generation workflow
+
+1. Create a JSON model in =projects/ores.codegen/models/{component}/=
+2. Generate all C++ artefacts:
+   #+begin_src sh
+   cd projects/ores.codegen
+   # Generate all C++ facets (domain, repository, service, protocol, generator)
+   ./run_generator.sh models/{component}/{entity}_schema.json output/ --profile all-cpp
+   #+end_src
+3. Review the generated output in =output/=
+4. Copy files to the appropriate =projects/ores.{component}/= directories
+5. Update =CMakeLists.txt= if needed (files picked up automatically via GLOB)
+6. Build and verify
+7. Raise PRs at designated checkpoints
+
+** Manual workflow (last resort)
+
 1. Gather information about the domain type (name, fields, project location).
 2. Follow the detailed instructions to create all required artefacts in order.
 3. Build and test the new domain type.

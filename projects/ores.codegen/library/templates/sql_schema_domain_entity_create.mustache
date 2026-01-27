@@ -36,13 +36,13 @@ create table if not exists "{{domain_entity.schema}}"."{{domain_entity.component
 -- Unique {{column}} for active records
 create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_{{column}}_uniq_idx
 on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{column}})
-where valid_to = {{domain_entity.schema}}.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 {{/domain_entity.natural_keys}}
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_version_uniq_idx
 on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
-where valid_to = {{domain_entity.schema}}.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create or replace function {{domain_entity.schema}}.{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
 returns trigger as $$
@@ -53,7 +53,7 @@ begin
     select version into current_version
     from "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
-      and valid_to = {{domain_entity.schema}}.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -66,14 +66,14 @@ begin
         update "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
         set valid_to = current_timestamp
         where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
-          and valid_to = {{domain_entity.schema}}.utility_infinity_timestamp_fn()
+          and valid_to = public.utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = {{domain_entity.schema}}.utility_infinity_timestamp_fn();
+    NEW.valid_to = public.utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
@@ -94,4 +94,4 @@ on delete to "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_en
     update "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     set valid_to = current_timestamp
     where {{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
-      and valid_to = {{domain_entity.schema}}.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();

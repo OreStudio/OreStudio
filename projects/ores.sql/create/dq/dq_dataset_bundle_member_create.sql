@@ -55,17 +55,17 @@ create table if not exists "metadata"."dq_dataset_bundle_members_tbl" (
 -- Index for looking up datasets in a bundle
 create index if not exists dq_dataset_bundle_members_bundle_idx
 on "metadata"."dq_dataset_bundle_members_tbl" (bundle_code)
-where valid_to = metadata.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Index for finding bundles containing a dataset
 create index if not exists dq_dataset_bundle_members_dataset_idx
 on "metadata"."dq_dataset_bundle_members_tbl" (dataset_code)
-where valid_to = metadata.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists dq_dataset_bundle_members_uniq_idx
 on "metadata"."dq_dataset_bundle_members_tbl" (bundle_code, dataset_code)
-where valid_to = metadata.utility_infinity_timestamp_fn();
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create or replace function metadata.dq_dataset_bundle_members_insert_fn()
 returns trigger as $$
@@ -77,7 +77,7 @@ begin
     from "metadata"."dq_dataset_bundle_members_tbl"
     where bundle_code = new.bundle_code
     and dataset_code = new.dataset_code
-    and valid_to = metadata.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -92,14 +92,14 @@ begin
         set valid_to = current_timestamp
         where bundle_code = new.bundle_code
         and dataset_code = new.dataset_code
-        and valid_to = metadata.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = metadata.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
 
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
@@ -123,4 +123,4 @@ do instead
   set valid_to = current_timestamp
   where bundle_code = old.bundle_code
   and dataset_code = old.dataset_code
-  and valid_to = metadata.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

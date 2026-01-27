@@ -23,6 +23,38 @@ communication in ORE Studio.
 
 * How to use this skill
 
+*Recommended approach*: Use code generation for standard CRUD protocol messages.
+The =ores.codegen= project can generate protocol request/response structs from
+JSON models.
+
+** Priority order
+
+1. *Use code generation*: For standard CRUD protocol patterns, create a JSON
+   model and generate using =--profile protocol=. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]].
+2. *Update templates*: If the protocol doesn't fit existing templates, modify
+   the protocol Mustache templates in =library/templates/= to support the new
+   message pattern.
+3. *Manual creation*: Only create protocol messages manually for non-standard
+   patterns (authentication, custom workflows, etc.).
+
+** Code generation workflow
+
+1. Ensure a JSON model exists in =projects/ores.codegen/models/{component}/=
+2. Generate protocol files:
+   #+begin_src sh
+   cd projects/ores.codegen
+   ./run_generator.sh models/{component}/{entity}_domain_entity.json output/ --profile protocol
+   #+end_src
+3. Review the generated output in =output/=
+4. Copy files to =projects/ores.{component}/=:
+   - Headers to =include/ores.{component}/messaging/=
+   - Sources to =src/messaging/=
+5. Add message types to =message_types.hpp= (not yet automated)
+6. Create message handlers (not yet automated)
+7. Update protocol version and test
+
+** Manual workflow
+
 1. Determine if your change is breaking (major version bump) or backward
    compatible (minor version bump).
 2. Follow the detailed instructions to add or modify protocol messages.

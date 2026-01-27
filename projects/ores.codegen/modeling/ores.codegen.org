@@ -50,6 +50,39 @@ will automatically process all dependent models first.
 ./run_generator.sh models/slovaris/model.json
 #+end_src
 
+*** Using Profiles
+
+Profiles allow you to generate all templates for a specific facet in one command.
+Profiles are defined in =library/profiles.json=.
+
+#+begin_src sh
+# List available profiles
+./run_generator.sh --list-profiles
+
+# Generate all Qt UI components for a domain entity
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ --profile qt
+
+# Generate all C++ domain facets (domain type, repository, service, protocol)
+./run_generator.sh models/dq/some_schema.json output/ --profile all-cpp
+
+# Generate SQL schema files
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ --profile sql
+#+end_src
+
+Available profiles:
+
+| Profile     | Description                                     | Model Types           |
+|-------------+-------------------------------------------------+-----------------------|
+| =sql=       | SQL schema creation scripts                     | domain_entity, junction |
+| =qt=        | Qt UI components (model, window, dialogs, controller) | domain_entity   |
+| =protocol=  | Messaging protocol (request/response)           | domain_entity, schema |
+| =domain=    | Domain types (class, JSON I/O, table)           | schema                |
+| =generator= | Fake data generators for testing                | schema                |
+| =repository=| Repository layer (entity, mapper, CRUD)         | schema                |
+| =service=   | Service layer                                   | schema                |
+| =all-cpp=   | All C++ facets combined                         | schema                |
+| =plantuml=  | PlantUML ER diagrams                            | schema, data          |
+
 *** Slovaris Generation
 
 A dedicated script is provided to generate all Solvaris artefacts and place them

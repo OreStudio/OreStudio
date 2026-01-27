@@ -31,7 +31,7 @@ namespace ores::dq::repository {
  * @brief Database entity for the dq_publications_tbl table.
  */
 struct publication_entity final {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "metadata";
     constexpr static const char* tablename = "dq_publications_tbl";
 
     sqlgen::PrimaryKey<std::string> id;

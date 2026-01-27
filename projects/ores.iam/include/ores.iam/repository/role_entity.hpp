@@ -30,7 +30,7 @@ namespace ores::iam::repository {
  * @brief Represents a role in the database.
  */
 struct role_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "iam_roles_tbl";
 
     sqlgen::PrimaryKey<std::string> id;

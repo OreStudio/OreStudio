@@ -31,7 +31,7 @@ namespace ores::dq::repository {
  * @brief Represents a coding_scheme in the database.
  */
 struct coding_scheme_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "metadata";
     constexpr static const char* tablename = "dq_coding_schemes_tbl";
 
     sqlgen::PrimaryKey<std::string> code;

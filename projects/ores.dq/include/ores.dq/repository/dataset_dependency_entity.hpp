@@ -30,7 +30,7 @@ namespace ores::dq::repository {
  * @brief Represents a dataset dependency in the database.
  */
 struct dataset_dependency_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "metadata";
     constexpr static const char* tablename = "dq_dataset_dependencies_tbl";
 
     sqlgen::PrimaryKey<std::string> dataset_code;

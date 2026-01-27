@@ -30,7 +30,7 @@ namespace ores::dq::repository {
  * @brief Represents a treatment_dimension in the database.
  */
 struct treatment_dimension_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "metadata";
     constexpr static const char* tablename = "dq_treatment_dimensions_tbl";
 
     sqlgen::PrimaryKey<std::string> code;

@@ -35,7 +35,7 @@ namespace ores::iam::repository {
  * for efficient time-series queries.
  */
 struct session_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "iam_sessions_tbl";
 
     /**
@@ -111,7 +111,7 @@ std::ostream& operator<<(std::ostream& s, const session_entity& v);
  * @brief Entity for session statistics from continuous aggregates.
  */
 struct session_statistics_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "iam_session_stats_tbl";
 
     std::string day;

@@ -30,7 +30,7 @@ namespace ores::iam::repository {
  * @brief Represents a permission in the database.
  */
 struct permission_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "iam_permissions_tbl";
 
     sqlgen::PrimaryKey<std::string> id;

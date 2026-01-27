@@ -30,7 +30,7 @@ namespace ores::iam::repository {
  * @brief Represents an account in the database.
  */
 struct account_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "iam_accounts_tbl";
 
     sqlgen::PrimaryKey<std::string> id;

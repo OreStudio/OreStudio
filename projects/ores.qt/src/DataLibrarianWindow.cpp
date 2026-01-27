@@ -242,6 +242,12 @@ void DataLibrarianWindow::setupToolbar() {
             Icon::Book, IconUtils::DefaultIconColor),
         tr("Methods"));
     methodologiesAction_->setToolTip(tr("Open Methodologies window"));
+
+    bundlesAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Folder, IconUtils::DefaultIconColor),
+        tr("Bundles"));
+    bundlesAction_->setToolTip(tr("Open Dataset Bundles window"));
 }
 
 void DataLibrarianWindow::setupNavigationSidebar() {
@@ -369,6 +375,8 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::openCodingSchemesRequested);
     connect(methodologiesAction_, &QAction::triggered,
             this, &DataLibrarianWindow::openMethodologiesRequested);
+    connect(bundlesAction_, &QAction::triggered,
+            this, &DataLibrarianWindow::openBundlesRequested);
 
     // Data model signals
     connect(datasetModel_, &ClientDatasetModel::dataLoaded,

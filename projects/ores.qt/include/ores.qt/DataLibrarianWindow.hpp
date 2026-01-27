@@ -100,6 +100,7 @@ signals:
     void openTreatmentDimensionsRequested();
     void openCodingSchemesRequested();
     void openMethodologiesRequested();
+    void openBundlesRequested();
     void openDataDomainsRequested();
     void openSubjectAreasRequested();
     void openCatalogsRequested();
@@ -181,6 +182,7 @@ private:
     QAction* treatmentDimensionsAction_;
     QAction* codingSchemesAction_;
     QAction* methodologiesAction_;
+    QAction* bundlesAction_;
 
     // Central workspace - Dataset table
     QTableView* datasetTable_;

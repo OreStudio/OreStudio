@@ -88,25 +88,55 @@ void test_portfolio_roundtrip(const std::string& xml_content,
 }
 
 // =============================================================================
-// File-Based Roundtrip Tests
+// Roundtrip Tests
 // =============================================================================
 
-// Note: Most ORE portfolio XML files contain elements like NettingSetId
-// that are not in the XSD-generated schema. Tests are limited to compatible files.
+// Note: ORE portfolio XML files use NettingSetId which requires XSD substitution
+// group support. Tests use inline XML without NettingSetId until that's implemented.
 
-TEST_CASE("portfolio_roundtrip_simple", tags) {
-    // Test with a minimal inline portfolio
+TEST_CASE("portfolio_roundtrip_simple_trades", tags) {
     const std::string xml = R"(
 <Portfolio>
   <Trade id="Swap_EUR_1">
     <TradeType>Swap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+    </Envelope>
   </Trade>
   <Trade id="Swap_USD_1">
     <TradeType>Swap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_B</CounterParty>
+    </Envelope>
+  </Trade>
+  <Trade id="FxForward_1">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+    </Envelope>
   </Trade>
 </Portfolio>
 )";
 
-    test_portfolio_roundtrip(xml, "simple_inline");
+    test_portfolio_roundtrip(xml, "simple_trades_inline");
+}
+
+TEST_CASE("portfolio_roundtrip_with_portfolio_ids", tags) {
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Trade_1">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+      <PortfolioIds>
+        <PortfolioId>Portfolio1</PortfolioId>
+        <PortfolioId>Portfolio2</PortfolioId>
+      </PortfolioIds>
+    </Envelope>
+  </Trade>
+</Portfolio>
+)";
+
+    test_portfolio_roundtrip(xml, "with_portfolio_ids_inline");
 }
 

@@ -19,13 +19,20 @@
  */
 #include "ores.ore/domain/domain.hpp"
 
+#include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.ore.simulation.roundtrip.tests");
 const std::string tags("[ore][xml][roundtrip][simulation]");
+
+std::filesystem::path ore_path(const std::string& relative) {
+    return ores::testing::project_root::resolve("external/ore/" + relative);
+}
 
 using ores::ore::domain::simulation;
 using namespace ores::logging;
@@ -44,13 +51,22 @@ void require_simulation_equal(const simulation& original,
 
     // Check Parameters details if present
     if (original.Parameters && roundtripped.Parameters) {
-        // Grid and Calendar are required fields, check their content
         CHECK(std::string(roundtripped.Parameters->Grid) ==
               std::string(original.Parameters->Grid));
         CHECK(std::string(roundtripped.Parameters->Calendar) ==
               std::string(original.Parameters->Calendar));
         CHECK(roundtripped.Parameters->Seed == original.Parameters->Seed);
         CHECK(roundtripped.Parameters->Samples == original.Parameters->Samples);
+    }
+
+    // Check CrossAssetModel details if present
+    if (original.CrossAssetModel && roundtripped.CrossAssetModel) {
+        CHECK(roundtripped.CrossAssetModel->DomesticCcy ==
+              original.CrossAssetModel->DomesticCcy);
+
+        // Check InterestRateModels LGM count
+        CHECK(roundtripped.CrossAssetModel->InterestRateModels.LGM.size() ==
+              original.CrossAssetModel->InterestRateModels.LGM.size());
     }
 }
 
@@ -89,29 +105,32 @@ void test_simulation_roundtrip(const std::string& xml_content,
     BOOST_LOG_SEV(lg, info) << "Roundtrip test passed for: " << source_name;
 }
 
+void test_simulation_roundtrip_from_file(const std::string& relative_path) {
+    const auto f = ore_path(relative_path);
+    using ores::platform::filesystem::file;
+    const std::string content = file::read_content(f);
+    test_simulation_roundtrip(content, f.string());
+}
+
 }
 
 // =============================================================================
 // File-Based Roundtrip Tests
 // =============================================================================
 
-// Note: Most ORE simulation XML files contain multiple LGM elements
-// where the XSD schema only allows 1. Tests are limited to compatible files.
+TEST_CASE("simulation_roundtrip_ore_api", tags) {
+    test_simulation_roundtrip_from_file("examples/ORE-API/Input/simulation.xml");
+}
 
-TEST_CASE("simulation_roundtrip_simple", tags) {
-    // Test with a minimal inline simulation
-    const std::string xml = R"(
-<Simulation>
-  <Parameters>
-    <Grid>1M,3M,6M,1Y</Grid>
-    <Calendar>EUR</Calendar>
-    <Sequence>SobolBrownianBridge</Sequence>
-    <Seed>42</Seed>
-    <Samples>1000</Samples>
-  </Parameters>
-</Simulation>
-)";
+TEST_CASE("simulation_roundtrip_minimal_setup", tags) {
+    test_simulation_roundtrip_from_file("examples/MinimalSetup/Input/simulation.xml");
+}
 
-    test_simulation_roundtrip(xml, "simple_inline");
+TEST_CASE("simulation_roundtrip_american_mc", tags) {
+    test_simulation_roundtrip_from_file("examples/AmericanMonteCarlo/Input/simulation.xml");
+}
+
+TEST_CASE("simulation_roundtrip_xva_risk", tags) {
+    test_simulation_roundtrip_from_file("examples/XvaRisk/Input/simulation.xml");
 }
 

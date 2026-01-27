@@ -134,6 +134,9 @@ private slots:
     // Dataset context menu
     void showDatasetContextMenu(const QPoint& pos);
 
+    // Navigation tree context menu
+    void showNavigationContextMenu(const QPoint& pos);
+
 private:
     void setupUi();
     void setupNavigationSidebar();
@@ -154,6 +157,7 @@ private:
     void setupColumnVisibility();
     void applyDefaultColumnVisibility();
     void fetchBundleMembers();
+    std::vector<dq::domain::dataset> getDatasetsUnderNode(const QModelIndex& index);
 
     ClientManager* clientManager_;
     QString username_;

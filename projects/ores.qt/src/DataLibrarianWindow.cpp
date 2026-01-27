@@ -261,6 +261,7 @@ void DataLibrarianWindow::setupNavigationSidebar() {
     navigationTree_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     navigationTree_->setFrameShape(QFrame::StyledPanel);
     navigationTree_->setFrameShadow(QFrame::Sunken);
+    navigationTree_->setContextMenuPolicy(Qt::CustomContextMenu);
     leftLayout->addWidget(navigationTree_, 1);
 
     // Set minimum/maximum width for left panel
@@ -343,6 +344,10 @@ void DataLibrarianWindow::setupConnections() {
     // Dataset context menu
     connect(datasetTable_, &QTableView::customContextMenuRequested,
             this, &DataLibrarianWindow::showDatasetContextMenu);
+
+    // Navigation tree context menu
+    connect(navigationTree_, &QTreeView::customContextMenuRequested,
+            this, &DataLibrarianWindow::showNavigationContextMenu);
 
     // Toolbar actions
     connect(refreshAction_, &QAction::triggered,
@@ -1260,6 +1265,144 @@ void DataLibrarianWindow::showDatasetContextMenu(const QPoint& pos) {
         onViewDatasetClicked();
     } else if (selectedAction == publishAction) {
         onPublishClicked();
+    }
+}
+
+std::vector<dq::domain::dataset> DataLibrarianWindow::getDatasetsUnderNode(
+    const QModelIndex& index) {
+    std::vector<dq::domain::dataset> datasets;
+
+    if (!index.isValid()) {
+        return datasets;
+    }
+
+    const auto itemType = static_cast<NavigationItemType>(
+        index.data(ItemTypeRole).toInt());
+    const auto itemId = index.data(ItemIdRole).toString();
+
+    // Collect matching datasets based on node type
+    for (int row = 0; row < datasetModel_->rowCount(); ++row) {
+        const auto* dataset = datasetModel_->getDataset(row);
+        if (!dataset) continue;
+
+        bool matches = false;
+
+        switch (itemType) {
+        case NavigationItemType::Root: {
+            // Check if this is "All Datasets" or a category parent
+            const auto itemText = index.data(Qt::DisplayRole).toString();
+            if (itemText == tr("All Datasets")) {
+                matches = true;  // Include all datasets
+            }
+            // For category parents (Domains, Catalogs, Bundles, Dimensions),
+            // collect all datasets from all children
+            break;
+        }
+        case NavigationItemType::Domain:
+            matches = (QString::fromStdString(dataset->domain_name) == itemId);
+            break;
+        case NavigationItemType::SubjectArea:
+            matches = (QString::fromStdString(dataset->subject_area_name) == itemId);
+            break;
+        case NavigationItemType::Catalog:
+            if (dataset->catalog_name.has_value()) {
+                matches = (QString::fromStdString(dataset->catalog_name.value()) == itemId);
+            }
+            break;
+        case NavigationItemType::Bundle: {
+            // Check if dataset is in this bundle's member list
+            auto it = bundleMemberCache_.find(itemId);
+            if (it != bundleMemberCache_.end()) {
+                QString datasetCode = QString::fromStdString(dataset->code);
+                matches = it->second.contains(datasetCode);
+            }
+            break;
+        }
+        case NavigationItemType::OriginDimension:
+            matches = (QString::fromStdString(dataset->origin_code) == itemId);
+            break;
+        case NavigationItemType::NatureDimension:
+            matches = (QString::fromStdString(dataset->nature_code) == itemId);
+            break;
+        case NavigationItemType::TreatmentDimension:
+            matches = (QString::fromStdString(dataset->treatment_code) == itemId);
+            break;
+        }
+
+        if (matches) {
+            datasets.push_back(*dataset);
+        }
+    }
+
+    // For Root nodes that are category parents, recursively collect from children
+    if (itemType == NavigationItemType::Root) {
+        const auto* item = navigationModel_->itemFromIndex(index);
+        if (item && item->hasChildren()) {
+            for (int i = 0; i < item->rowCount(); ++i) {
+                const auto* child = item->child(i);
+                if (child) {
+                    auto childDatasets = getDatasetsUnderNode(child->index());
+                    datasets.insert(datasets.end(),
+                                    childDatasets.begin(), childDatasets.end());
+                }
+            }
+        }
+    }
+
+    // Remove duplicates (datasets might appear in multiple children)
+    std::sort(datasets.begin(), datasets.end(),
+              [](const auto& a, const auto& b) { return a.code < b.code; });
+    datasets.erase(std::unique(datasets.begin(), datasets.end(),
+                               [](const auto& a, const auto& b) {
+                                   return a.code == b.code;
+                               }),
+                   datasets.end());
+
+    return datasets;
+}
+
+void DataLibrarianWindow::showNavigationContextMenu(const QPoint& pos) {
+    const auto index = navigationTree_->indexAt(pos);
+    if (!index.isValid()) {
+        return;
+    }
+
+    // Get datasets under this node
+    auto datasets = getDatasetsUnderNode(index);
+    if (datasets.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "No datasets under selected navigation node";
+        return;
+    }
+
+    const auto itemText = index.data(Qt::DisplayRole).toString();
+
+    QMenu menu(this);
+
+    // Publish action with dataset count
+    QAction* publishAction = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
+        tr("Publish %1 Datasets from \"%2\"")
+            .arg(datasets.size())
+            .arg(itemText));
+
+    // Execute menu
+    QAction* selectedAction = menu.exec(navigationTree_->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == publishAction) {
+        BOOST_LOG_SEV(lg(), info) << "Publishing " << datasets.size()
+                                   << " datasets from navigation node: "
+                                   << itemText.toStdString();
+
+        // Open publish dialog with collected datasets
+        auto* dialog = new PublishDatasetsDialog(clientManager_, username_, this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setDatasets(datasets);
+
+        // Forward published signal (for cache refresh)
+        connect(dialog, &PublishDatasetsDialog::datasetsPublished,
+                this, &DataLibrarianWindow::datasetsPublished);
+
+        dialog->exec();
     }
 }
 

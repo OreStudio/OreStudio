@@ -25,7 +25,7 @@
  * Dataset: fpml.reporting_regime
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_reporting_regimes() to publish to production.
+ * Use dq_reporting_regimes_publish_fn() to publish to production.
  */
 
 set schema 'metadata';

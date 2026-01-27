@@ -162,7 +162,7 @@ ENTITIES_WITH_SHARED_TABLES = {
         'artefact_type': 'currencies',
         'artefact_table': 'dq_currencies_artefact_tbl',
         'production_table': 'refdata_currencies_tbl',
-        'populate_function': 'dq_populate_currencies',
+        'populate_function': 'dq_currencies_publish_fn',
         'skip_schema_generation': True,
     }
 }
@@ -389,7 +389,7 @@ class MergedEntity:
                     "artefact_type": "currencies",
                     "artefact_table": "dq_currencies_artefact_tbl",
                     "production_table": "refdata_currencies_tbl",
-                    "populate_function": "dq_populate_currencies",
+                    "populate_function": "dq_currencies_publish_fn",
                 }
 
             datasets.append(dataset_entry)
@@ -876,7 +876,7 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         "",
         "-- Publish coding schemes to production (required before other datasets can reference them)",
         "\\echo '--- Publishing FPML Coding Schemes ---'",
-        "select * from metadata.dq_populate_coding_schemes_fn(",
+        "select * from metadata.dq_coding_schemes_publish_fn(",
         "    (select id from metadata.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn()),",
         "    'upsert'",
         ");",
@@ -929,7 +929,7 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
         " * Populates the dq_coding_schemes_artefact_tbl staging table.",
         " *",
         " * To publish to production:",
-        f" *   SELECT * FROM metadata.dq_populate_coding_schemes_fn(",
+        f" *   SELECT * FROM metadata.dq_coding_schemes_publish_fn(",
         f" *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = public.utility_infinity_timestamp_fn()),",
         " *       'upsert'",
         " *   );",

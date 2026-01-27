@@ -25,7 +25,7 @@
  * Dataset: fpml.hkma_rewrite_regulatory_corporate_sector
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_regulatory_corporate_sectors() to publish to production.
+ * Use dq_regulatory_corporate_sectors_publish_fn() to publish to production.
  */
 
 set schema 'metadata';

@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_business_process_population_fn;
-drop function if exists metadata.dq_populate_business_processes_fn;
+drop function if exists metadata.dq_business_process_preview_fn;
+drop function if exists metadata.dq_business_processes_publish_fn;

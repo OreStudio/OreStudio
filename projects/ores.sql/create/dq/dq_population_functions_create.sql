@@ -164,7 +164,7 @@ $$ language plpgsql;
  * Preview what images would be copied from a DQ dataset.
  * Shows the action that would be taken for each record.
  */
-create or replace function metadata.dq_preview_image_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_image_preview_fn(p_dataset_id uuid)
 returns table (
     action text,
     image_key text,
@@ -207,7 +207,7 @@ $$ language plpgsql;
  * For upsert mode with existing keys, we use the existing image_id to
  * preserve referential integrity with countries/currencies tables.
  */
-create or replace function metadata.dq_populate_images_fn(
+create or replace function metadata.dq_images_publish_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -313,7 +313,7 @@ $$ language plpgsql;
 /**
  * Preview what countries would be copied from a DQ dataset.
  */
-create or replace function metadata.dq_preview_country_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_country_preview_fn(p_dataset_id uuid)
 returns table (
     action text,
     alpha2_code text,
@@ -356,7 +356,7 @@ $$ language plpgsql;
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
-create or replace function metadata.dq_populate_countries_fn(
+create or replace function metadata.dq_countries_publish_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -483,7 +483,7 @@ $$ language plpgsql;
 /**
  * Preview what currencies would be copied from a DQ dataset.
  */
-create or replace function metadata.dq_preview_currency_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_currency_preview_fn(p_dataset_id uuid)
 returns table (
     action text,
     iso_code text,
@@ -534,7 +534,7 @@ $$ language plpgsql;
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
-create or replace function metadata.dq_populate_currencies_fn(
+create or replace function metadata.dq_currencies_publish_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert',
     p_currency_type_filter text default null
@@ -707,7 +707,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Ignored - always performs replace_all.
  */
-create or replace function metadata.dq_populate_ip2country_fn(
+create or replace function metadata.dq_ip2country_publish_fn(
     p_dataset_id uuid,
     p_mode text default 'replace_all'
 )

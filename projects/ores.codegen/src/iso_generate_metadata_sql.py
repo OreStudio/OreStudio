@@ -136,7 +136,7 @@ def generate_coding_schemes_artefact_sql(manifest: dict, output_file: Path):
  * Populates the dq_coding_schemes_artefact_tbl staging table.
  *
  * To publish to production:
- *   SELECT * FROM metadata.dq_populate_coding_schemes(
+ *   SELECT * FROM metadata.dq_coding_schemes_publish_fn(
  *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = public.utility_infinity_timestamp_fn()),
  *       'upsert'
  *   );
@@ -505,7 +505,7 @@ def generate_master_sql(output_file: Path):
 
 -- Publish coding schemes to production (required before other datasets can reference them)
 \\echo '--- Publishing ISO Coding Schemes ---'
-select * from metadata.dq_populate_coding_schemes(
+select * from metadata.dq_coding_schemes_publish_fn(
     (select id from metadata.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn()),
     'upsert'
 );

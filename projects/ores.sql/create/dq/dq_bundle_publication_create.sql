@@ -29,10 +29,10 @@
  *   SELECT * FROM metadata.dq_list_bundles_fn();
  *
  *   -- Preview what will be published
- *   SELECT * FROM metadata.dq_preview_bundle_publication_fn('base');
+ *   SELECT * FROM metadata.dq_bundle_preview_fn('base');
  *
  *   -- Publish a bundle
- *   SELECT * FROM metadata.dq_populate_bundle_fn('base', 'upsert', 'admin');
+ *   SELECT * FROM metadata.dq_bundles_publish_fn('base', 'upsert', 'admin');
  */
 
 set schema 'metadata';
@@ -146,7 +146,7 @@ $$ language plpgsql;
  * Preview what would be published for a bundle.
  * Returns summary statistics without actually publishing.
  */
-create or replace function metadata.dq_preview_bundle_publication_fn(p_bundle_code text)
+create or replace function metadata.dq_bundle_preview_fn(p_bundle_code text)
 returns table (
     metric text,
     value bigint
@@ -218,7 +218,7 @@ $$ language plpgsql;
  * Where action is one of: 'inserted', 'updated', 'skipped', 'deleted'
  * See dq_population_functions_create.sql for reference implementations.
  */
-create or replace function metadata.dq_populate_bundle_fn(
+create or replace function metadata.dq_bundles_publish_fn(
     p_bundle_code text,
     p_mode text default 'upsert',
     p_published_by text default current_user,

@@ -20,8 +20,8 @@
 
 -- Drop functions (without signatures to avoid NOTICE when function doesn't exist)
 drop function if exists metadata.dq_get_bundle_publication_history_fn;
-drop function if exists metadata.dq_populate_bundle_fn;
-drop function if exists metadata.dq_preview_bundle_publication_fn;
+drop function if exists metadata.dq_bundles_publish_fn;
+drop function if exists metadata.dq_bundle_preview_fn;
 drop function if exists metadata.dq_list_bundle_datasets_fn;
 drop function if exists metadata.dq_list_bundles_fn;
 

@@ -19,5 +19,5 @@
  */
 set schema 'metadata';
 
-drop function if exists metadata.dq_preview_business_centre_population_fn;
-drop function if exists metadata.dq_populate_business_centres_fn;
+drop function if exists metadata.dq_business_centre_preview_fn;
+drop function if exists metadata.dq_business_centres_publish_fn;

@@ -96,7 +96,7 @@ public:
     /**
      * @brief Publishes all datasets in a bundle.
      *
-     * Calls the SQL dq_populate_bundle_fn() which:
+     * Calls the SQL dq_bundles_publish_fn() which:
      * 1. Processes datasets in display_order to respect dependencies
      * 2. Publishes each dataset individually
      * 3. Records publication history for auditing

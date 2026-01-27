@@ -25,7 +25,7 @@
  * Dataset: fpml.local_jurisdiction
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_local_jurisdictions() to publish to production.
+ * Use dq_local_jurisdictions_publish_fn() to publish to production.
  */
 
 set schema 'metadata';

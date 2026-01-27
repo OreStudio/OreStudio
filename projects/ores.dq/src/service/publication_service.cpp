@@ -436,7 +436,7 @@ messaging::publish_bundle_response publication_service::publish_bundle(
 
     // Call the SQL function
     const auto sql = std::format(
-        "SELECT * FROM metadata.dq_populate_bundle_fn('{}', '{}', '{}', {})",
+        "SELECT * FROM metadata.dq_bundles_publish_fn('{}', '{}', '{}', {})",
         bundle_code, mode_str, published_by, atomic ? "true" : "false");
 
     try {

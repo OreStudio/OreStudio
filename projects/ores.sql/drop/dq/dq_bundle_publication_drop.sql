@@ -18,12 +18,12 @@
  *
  */
 
--- Drop functions
-drop function if exists metadata.dq_get_bundle_publication_history_fn(text, integer);
-drop function if exists metadata.dq_populate_bundle_fn(text, text, text);
-drop function if exists metadata.dq_preview_bundle_publication_fn(text);
-drop function if exists metadata.dq_list_bundle_datasets_fn(text);
-drop function if exists metadata.dq_list_bundles_fn();
+-- Drop functions (without signatures to avoid NOTICE when function doesn't exist)
+drop function if exists metadata.dq_get_bundle_publication_history_fn;
+drop function if exists metadata.dq_populate_bundle_fn;
+drop function if exists metadata.dq_preview_bundle_publication_fn;
+drop function if exists metadata.dq_list_bundle_datasets_fn;
+drop function if exists metadata.dq_list_bundles_fn;
 
 -- Drop indexes
 drop index if exists metadata.dq_bundle_publications_published_at_idx;

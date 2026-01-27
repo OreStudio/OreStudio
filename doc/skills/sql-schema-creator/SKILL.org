@@ -159,6 +159,58 @@ The key principle is that *function names preserve the table name* for grep-abil
 For example, the table =dq_catalogs_tbl= has upsert function =dq_catalogs_upsert_fn=,
 so searching for "dq_catalogs" finds both the table and its functions.
 
+** Idempotency patterns
+
+All create and drop scripts should be idempotent (safe to run multiple times).
+Follow these patterns to avoid unnecessary NOTICE messages:
+
+*** Function drops
+
+Drop functions *without* parameter signatures:
+
+#+begin_src sql
+-- GOOD: No NOTICE if function doesn't exist
+drop function if exists metadata.dq_populate_bundle_fn;
+
+-- BAD: Shows NOTICE if specific signature doesn't exist
+drop function if exists metadata.dq_populate_bundle_fn(text, text, text);
+#+end_src
+
+Omitting the signature allows PostgreSQL to drop all overloads silently.
+
+*** Unique constraints
+
+Use =CREATE UNIQUE INDEX IF NOT EXISTS= instead of =ALTER TABLE ADD CONSTRAINT=:
+
+#+begin_src sql
+-- GOOD: Idempotent, no NOTICE on re-run
+create unique index if not exists dq_tags_artefact_dataset_name_uniq_idx
+on metadata.dq_tags_artefact_tbl (dataset_id, name);
+
+-- BAD: Requires DROP/ADD pattern which shows NOTICE
+alter table metadata.dq_tags_artefact_tbl
+drop constraint if exists dq_tags_artefact_dataset_name_uq;
+alter table metadata.dq_tags_artefact_tbl
+add constraint dq_tags_artefact_dataset_name_uq unique (dataset_id, name);
+#+end_src
+
+A unique index provides the same constraint enforcement as =UNIQUE= constraint
+but supports =IF NOT EXISTS= for clean idempotency.
+
+*** Tables and indexes
+
+Use =IF NOT EXISTS= / =IF EXISTS= consistently:
+
+#+begin_src sql
+-- Create scripts
+create table if not exists metadata.dq_example_tbl (...);
+create index if not exists dq_example_code_idx on metadata.dq_example_tbl (code);
+
+-- Drop scripts
+drop function if exists metadata.dq_example_fn;
+drop table if exists metadata.dq_example_tbl;  -- Cascades to indexes
+#+end_src
+
 ** Utility and generation scripts
 
 Scripts that don't create schema objects but provide utility functions or generate

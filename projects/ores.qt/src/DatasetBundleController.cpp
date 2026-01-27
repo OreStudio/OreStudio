@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -94,7 +94,7 @@ void DatasetBundleController::showListWindow() {
         self->listMdiSubWindow_ = nullptr;
     });
 
-    BOOST_LOG_SEV(lg(), debug) << "Dataset bundle list window created";
+    BOOST_LOG_SEV(lg(), debug) << "Dataset Bundle list window created";
 }
 
 void DatasetBundleController::closeAllWindows() {
@@ -151,7 +151,7 @@ void DatasetBundleController::showAddWindow() {
     connect(detailDialog, &DatasetBundleDetailDialog::bundleSaved,
             this, [self = QPointer<DatasetBundleController>(this)](const QString& code) {
         if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset bundle saved: " << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Dataset Bundle saved: " << code.toStdString();
         self->handleEntitySaved();
     });
 
@@ -194,13 +194,13 @@ void DatasetBundleController::showDetailWindow(
     connect(detailDialog, &DatasetBundleDetailDialog::bundleSaved,
             this, [self = QPointer<DatasetBundleController>(this)](const QString& code) {
         if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset bundle saved: " << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Dataset Bundle saved: " << code.toStdString();
         self->handleEntitySaved();
     });
     connect(detailDialog, &DatasetBundleDetailDialog::bundleDeleted,
             this, [self = QPointer<DatasetBundleController>(this), key](const QString& code) {
         if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset bundle deleted: " << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Dataset Bundle deleted: " << code.toStdString();
         self->handleEntityDeleted();
     });
 
@@ -362,8 +362,8 @@ void DatasetBundleController::onRevertVersion(
     connect(detailDialog, &DatasetBundleDetailDialog::bundleSaved,
             this, [self = QPointer<DatasetBundleController>(this)](const QString& code) {
         if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset bundle reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Dataset bundle '%1' reverted successfully").arg(code));
+        BOOST_LOG_SEV(lg(), info) << "Dataset Bundle reverted: " << code.toStdString();
+        emit self->statusMessage(QString("Dataset Bundle '%1' reverted successfully").arg(code));
         self->handleEntitySaved();
     });
 

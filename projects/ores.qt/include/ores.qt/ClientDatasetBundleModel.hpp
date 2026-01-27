@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -76,15 +76,15 @@ public:
         int role = Qt::DisplayRole) const override;
 
     /**
-     * @brief Refresh bundle data from server asynchronously.
+     * @brief Refresh dataset bundle data from server asynchronously.
      */
     void refresh();
 
     /**
-     * @brief Get bundle at the specified row.
+     * @brief Get dataset bundle at the specified row.
      *
      * @param row The row index.
-     * @return The bundle, or nullptr if row is invalid.
+     * @return The dataset bundle, or nullptr if row is invalid.
      */
     const dq::domain::dataset_bundle* getBundle(int row) const;
 

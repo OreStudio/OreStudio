@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -149,6 +149,7 @@ void DatasetBundleMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientDatasetBundleModel::Description, 300);
     tableView_->setColumnWidth(ClientDatasetBundleModel::Version, 80);
     tableView_->setColumnWidth(ClientDatasetBundleModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientDatasetBundleModel::RecordedAt, 150);
 
     // Setup column visibility with context menu
     setupColumnVisibility();
@@ -361,11 +362,11 @@ void DatasetBundleMdiWindow::deleteSelected() {
 
         for (const auto& [id, code, success, message] : results) {
             if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Dataset bundle deleted: " << code;
+                BOOST_LOG_SEV(lg(), debug) << "Dataset Bundle deleted: " << code;
                 success_count++;
                 emit self->bundleDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Dataset bundle deletion failed: "
+                BOOST_LOG_SEV(lg(), error) << "Dataset Bundle deletion failed: "
                                            << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -215,10 +215,10 @@ void DatasetBundleDetailDialog::onSaveClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Dataset bundle saved successfully";
+            BOOST_LOG_SEV(lg(), info) << "Dataset Bundle saved successfully";
             QString code = QString::fromStdString(self->bundle_.code);
             emit self->bundleSaved(code);
-            self->notifySaveSuccess(tr("Dataset bundle '%1' saved").arg(code));
+            self->notifySaveSuccess(tr("Dataset Bundle '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -299,8 +299,8 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Dataset bundle deleted successfully";
-            emit self->statusMessage(QString("Dataset bundle '%1' deleted").arg(code));
+            BOOST_LOG_SEV(lg(), info) << "Dataset Bundle deleted successfully";
+            emit self->statusMessage(QString("Dataset Bundle '%1' deleted").arg(code));
             emit self->bundleDeleted(code);
             self->requestClose();
         } else {

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -224,7 +224,7 @@ void ClientDatasetBundleModel::onBundlesLoaded() {
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
         BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " bundles newer than last reload";
+                                   << " dataset bundles newer than last reload";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << bundles_.size() << " dataset bundles";

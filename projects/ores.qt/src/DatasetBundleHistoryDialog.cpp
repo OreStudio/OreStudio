@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -116,7 +116,7 @@ void DatasetBundleHistoryDialog::loadHistory() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for bundle: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for dataset bundle: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     QPointer<DatasetBundleHistoryDialog> self = this;

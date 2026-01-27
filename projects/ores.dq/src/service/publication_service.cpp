@@ -376,7 +376,7 @@ domain::publication_result publication_service::call_populate_function(
         << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
-        "SELECT * FROM ores.{}('{}'::uuid, '{}'::text)",
+        "SELECT * FROM metadata.{}('{}'::uuid, '{}'::text)",
         function_name, dataset_id_str, mode_str);
 
     try {

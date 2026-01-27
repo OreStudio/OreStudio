@@ -301,6 +301,12 @@ def get_cpp_domain_entity_template_mappings():
         # Repository CRUD facet
         ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
         ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
+        # Service facet
+        ("cpp_service.hpp.mustache", "include/{component}/service", "_service.hpp"),
+        ("cpp_service.cpp.mustache", "src/service", "_service.cpp"),
+        # Protocol facet
+        ("cpp_protocol.hpp.mustache", "include/{component}/messaging", "_protocol.hpp"),
+        ("cpp_protocol.cpp.mustache", "src/messaging", "_protocol.cpp"),
     ]
 
 
@@ -334,6 +340,12 @@ def get_cpp_junction_template_mappings():
         # Repository CRUD facet
         ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
         ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
+        # Service facet
+        ("cpp_service.hpp.mustache", "include/{component}/service", "_service.hpp"),
+        ("cpp_service.cpp.mustache", "src/service", "_service.cpp"),
+        # Protocol facet
+        ("cpp_protocol.hpp.mustache", "include/{component}/messaging", "_protocol.hpp"),
+        ("cpp_protocol.cpp.mustache", "src/messaging", "_protocol.cpp"),
     ]
 
 
@@ -761,11 +773,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for domain entity models
     if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
         domain_entity = model['domain_entity']
+        # Get iterator_var from cpp section for column processing
+        iter_var = domain_entity.get('cpp', {}).get('iterator_var', 'e')
         if 'columns' in domain_entity:
             _mark_last_item(domain_entity['columns'])
             _format_columns_for_doxygen(domain_entity['columns'])
+            # Add is_int flag and iterator_var for protocol serialization
+            for col in domain_entity['columns']:
+                col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
+                col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
+            # Add iterator_var to natural_keys for protocol serialization
+            for key in domain_entity['natural_keys']:
+                key['iter_var'] = iter_var
         # Format description as comment block lines (for SQL)
         if 'description' in domain_entity:
             domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
@@ -795,9 +816,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for junction models
     if is_junction and isinstance(model, dict) and 'junction' in model:
         junction = model['junction']
+        # Get iterator_var from cpp section for column processing
+        iter_var = junction.get('cpp', {}).get('iterator_var', 'm')
         if 'columns' in junction:
             _mark_last_item(junction['columns'])
             _format_columns_for_doxygen(junction['columns'])
+            # Add is_int flag and iterator_var for protocol serialization
+            for col in junction['columns']:
+                col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
+                col['iter_var'] = iter_var
+        # Add lowercase versions for left/right columns
+        if 'left' in junction and 'column_title' in junction['left']:
+            junction['left']['column_title_lower'] = junction['left']['column_title'].lower()
+        if 'right' in junction and 'column_title' in junction['right']:
+            junction['right']['column_title_lower'] = junction['right']['column_title'].lower()
         # Format description as comment block lines (for SQL)
         if 'description' in junction:
             junction['description_formatted'] = _format_description_as_comment(junction['description'])

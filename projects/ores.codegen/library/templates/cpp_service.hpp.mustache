@@ -1,0 +1,168 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
+#define ORES_{{component_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
+
+#include <string>
+#include <vector>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component}}/repository/{{entity_singular}}_repository.hpp"
+
+namespace ores::{{component}}::service {
+
+/**
+ * @brief Service for managing {{entity_plural_words}}.
+ *
+ * This service provides functionality for:
+ * - Managing {{entity_plural_words}} (CRUD operations)
+ */
+class {{entity_singular}}_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.service.{{entity_singular}}_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a {{entity_singular}}_service with required repositories.
+     *
+     * @param ctx The database context.
+     */
+    explicit {{entity_singular}}_service(context ctx);
+
+    /**
+     * @brief Lists all {{entity_plural_words}}.
+     */
+    std::vector<domain::{{entity_singular}}> list_{{entity_plural_short}}();
+
+    /**
+     * @brief Finds a {{entity_singular_words}} by its ID.
+     */
+    std::optional<domain::{{entity_singular}}>
+    find_{{entity_singular_short}}(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Finds a {{entity_singular_words}} by its code.
+     */
+    std::optional<domain::{{entity_singular}}>
+    find_{{entity_singular_short}}_by_code(const std::string& code);
+
+    /**
+     * @brief Saves a {{entity_singular_words}} (creates or updates).
+     *
+     * @param {{entity_singular_short}} The {{entity_singular_words}} to save
+     */
+    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& {{entity_singular_short}});
+
+    /**
+     * @brief Removes a {{entity_singular_words}}.
+     *
+     * @param id The ID of the {{entity_singular_words}} to remove
+     */
+    void remove_{{entity_singular_short}}(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Gets the version history for a {{entity_singular_words}}.
+     *
+     * @param id The {{entity_singular_words}} ID
+     * @return Vector of all versions, newest first
+     */
+    std::vector<domain::{{entity_singular}}>
+    get_{{entity_singular_short}}_history(const boost::uuids::uuid& id);
+
+private:
+    repository::{{entity_singular}}_repository repo_;
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
+#define ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
+
+#include <string>
+#include <vector>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component}}/repository/{{name_singular}}_repository.hpp"
+
+namespace ores::{{component}}::service {
+
+/**
+ * @brief Service for managing {{name_words}}.
+ *
+ * This service provides functionality for:
+ * - Managing {{name_words}} (CRUD operations)
+ */
+class {{name_singular}}_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.service.{{name_singular}}_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a {{name_singular}}_service with required repositories.
+     *
+     * @param ctx The database context.
+     */
+    explicit {{name_singular}}_service(context ctx);
+
+    /**
+     * @brief Lists all {{name_words}}.
+     */
+    std::vector<domain::{{name_singular}}> list_{{name_short}}();
+
+    /**
+     * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}.
+     *
+     * @param {{left.column}} The {{left.column_title_lower}} to filter by
+     */
+    std::vector<domain::{{name_singular}}>
+    list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}});
+
+    /**
+     * @brief Saves a {{name_singular_words}} (creates or updates).
+     *
+     * @param {{name_singular_short}} The {{name_singular_words}} to save
+     */
+    void save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}});
+
+    /**
+     * @brief Removes a {{name_singular_words}}.
+     *
+     * @param {{left.column}} The {{left.column_title_lower}}
+     * @param {{right.column}} The {{right.column_title_lower}}
+     */
+    void remove_{{name_singular_short}}(const std::string& {{left.column}},
+        const std::string& {{right.column}});
+
+private:
+    repository::{{name_singular}}_repository repo_;
+};
+
+}
+
+#endif
+{{/junction}}

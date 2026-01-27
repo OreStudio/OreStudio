@@ -1,0 +1,712 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/messaging/{{entity_singular}}_protocol.hpp"
+
+#include <expected>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.platform/time/datetime.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
+
+namespace ores::{{component}}::messaging {
+
+using ores::utility::serialization::error_code;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+
+namespace {
+
+// ============================================================================
+// {{entity_title}} helpers
+// ============================================================================
+
+void write_{{entity_singular}}(std::vector<std::byte>& buffer,
+    const domain::{{entity_singular}}& {{cpp.iterator_var}}) {
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{cpp.iterator_var}}.version));
+    writer::write_uuid(buffer, {{cpp.iterator_var}}.id);
+{{#natural_keys}}
+    writer::write_string(buffer, {{iter_var}}.{{column}});
+{{/natural_keys}}
+{{#columns}}
+{{#is_int}}
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{iter_var}}.{{name}}));
+{{/is_int}}
+{{^is_int}}
+    writer::write_string(buffer, {{iter_var}}.{{name}});
+{{/is_int}}
+{{/columns}}
+    writer::write_string(buffer, {{cpp.iterator_var}}.recorded_by);
+    writer::write_string(buffer, {{cpp.iterator_var}}.change_reason_code);
+    writer::write_string(buffer, {{cpp.iterator_var}}.change_commentary);
+    writer::write_string(buffer,
+        ores::platform::time::datetime::format_time_point({{cpp.iterator_var}}.recorded_at));
+}
+
+std::expected<domain::{{entity_singular}}, error_code>
+read_{{entity_singular}}(std::span<const std::byte>& data) {
+    domain::{{entity_singular}} {{cpp.iterator_var}};
+
+    auto version_result = reader::read_uint32(data);
+    if (!version_result) return std::unexpected(version_result.error());
+    {{cpp.iterator_var}}.version = static_cast<int>(*version_result);
+
+    auto id_result = reader::read_uuid(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    {{cpp.iterator_var}}.id = *id_result;
+
+{{#natural_keys}}
+    auto {{column}}_result = reader::read_string(data);
+    if (!{{column}}_result) return std::unexpected({{column}}_result.error());
+    {{iter_var}}.{{column}} = *{{column}}_result;
+
+{{/natural_keys}}
+{{#columns}}
+{{#is_int}}
+    auto {{name}}_result = reader::read_uint32(data);
+    if (!{{name}}_result) return std::unexpected({{name}}_result.error());
+    {{iter_var}}.{{name}} = static_cast<int>(*{{name}}_result);
+
+{{/is_int}}
+{{^is_int}}
+    auto {{name}}_result = reader::read_string(data);
+    if (!{{name}}_result) return std::unexpected({{name}}_result.error());
+    {{iter_var}}.{{name}} = *{{name}}_result;
+
+{{/is_int}}
+{{/columns}}
+    auto recorded_by_result = reader::read_string(data);
+    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+    {{cpp.iterator_var}}.recorded_by = *recorded_by_result;
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    {{cpp.iterator_var}}.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    {{cpp.iterator_var}}.change_commentary = *change_commentary_result;
+
+    auto recorded_at_result = reader::read_string(data);
+    if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+    try {
+        {{cpp.iterator_var}}.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at_result);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
+
+    return {{cpp.iterator_var}};
+}
+
+} // anonymous namespace
+
+// ============================================================================
+// {{entity_title}} Messages Implementation
+// ============================================================================
+
+std::vector<std::byte> get_{{entity_plural}}_request::serialize() const {
+    return {};
+}
+
+std::expected<get_{{entity_plural}}_request, error_code>
+get_{{entity_plural}}_request::deserialize(std::span<const std::byte> data) {
+    if (!data.empty()) {
+        return std::unexpected(error_code::payload_too_large);
+    }
+    return get_{{entity_plural}}_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_plural}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_{{entity_plural}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{entity_plural_short}}.size()));
+    for (const auto& {{cpp.iterator_var}} : {{entity_plural_short}}) {
+        write_{{entity_singular}}(buffer, {{cpp.iterator_var}});
+    }
+    return buffer;
+}
+
+std::expected<get_{{entity_plural}}_response, error_code>
+get_{{entity_plural}}_response::deserialize(std::span<const std::byte> data) {
+    get_{{entity_plural}}_response response;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.{{entity_plural_short}}.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto result = read_{{entity_singular}}(data);
+        if (!result) return std::unexpected(result.error());
+        response.{{entity_plural_short}}.push_back(std::move(*result));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_plural}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> save_{{entity_singular}}_request::serialize() const {
+    std::vector<std::byte> buffer;
+    write_{{entity_singular}}(buffer, {{entity_singular_short}});
+    return buffer;
+}
+
+std::expected<save_{{entity_singular}}_request, error_code>
+save_{{entity_singular}}_request::deserialize(std::span<const std::byte> data) {
+    save_{{entity_singular}}_request request;
+
+    auto result = read_{{entity_singular}}(data);
+    if (!result) return std::unexpected(result.error());
+    request.{{entity_singular_short}} = std::move(*result);
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const save_{{entity_singular}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> save_{{entity_singular}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<save_{{entity_singular}}_response, error_code>
+save_{{entity_singular}}_response::deserialize(std::span<const std::byte> data) {
+    save_{{entity_singular}}_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const save_{{entity_singular}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_result& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> delete_{{entity_singular}}_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(ids.size()));
+    for (const auto& id : ids) {
+        writer::write_uuid(buffer, id);
+    }
+    return buffer;
+}
+
+std::expected<delete_{{entity_singular}}_request, error_code>
+delete_{{entity_singular}}_request::deserialize(std::span<const std::byte> data) {
+    delete_{{entity_singular}}_request request;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    request.ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.ids.push_back(*id_result);
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> delete_{{entity_singular}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
+    for (const auto& r : results) {
+        writer::write_uuid(buffer, r.id);
+        writer::write_bool(buffer, r.success);
+        writer::write_string(buffer, r.message);
+    }
+    return buffer;
+}
+
+std::expected<delete_{{entity_singular}}_response, error_code>
+delete_{{entity_singular}}_response::deserialize(std::span<const std::byte> data) {
+    delete_{{entity_singular}}_response response;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.results.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        delete_{{entity_singular}}_result r;
+
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        r.id = *id_result;
+
+        auto success_result = reader::read_bool(data);
+        if (!success_result) return std::unexpected(success_result.error());
+        r.success = *success_result;
+
+        auto message_result = reader::read_string(data);
+        if (!message_result) return std::unexpected(message_result.error());
+        r.message = *message_result;
+
+        response.results.push_back(std::move(r));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_{{entity_singular}}_history_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, id);
+    return buffer;
+}
+
+std::expected<get_{{entity_singular}}_history_request, error_code>
+get_{{entity_singular}}_history_request::deserialize(std::span<const std::byte> data) {
+    get_{{entity_singular}}_history_request request;
+
+    auto id_result = reader::read_uuid(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    request.id = *id_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_singular}}_history_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_{{entity_singular}}_history_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(versions.size()));
+    for (const auto& v : versions) {
+        write_{{entity_singular}}(buffer, v);
+    }
+    return buffer;
+}
+
+std::expected<get_{{entity_singular}}_history_response, error_code>
+get_{{entity_singular}}_history_response::deserialize(std::span<const std::byte> data) {
+    get_{{entity_singular}}_history_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.versions.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto result = read_{{entity_singular}}(data);
+        if (!result) return std::unexpected(result.error());
+        response.versions.push_back(std::move(*result));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_singular}}_history_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/messaging/{{name_singular}}_protocol.hpp"
+
+#include <expected>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.platform/time/datetime.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
+
+namespace ores::{{component}}::messaging {
+
+using ores::utility::serialization::error_code;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+
+namespace {
+
+// ============================================================================
+// {{name_title}} helpers
+// ============================================================================
+
+void write_{{name_singular}}(std::vector<std::byte>& buffer,
+    const domain::{{name_singular}}& {{cpp.iterator_var}}) {
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{cpp.iterator_var}}.version));
+    writer::write_string(buffer, {{cpp.iterator_var}}.{{left.column}});
+    writer::write_string(buffer, {{cpp.iterator_var}}.{{right.column}});
+{{#columns}}
+{{#is_int}}
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{iter_var}}.{{name}}));
+{{/is_int}}
+{{^is_int}}
+    writer::write_string(buffer, {{iter_var}}.{{name}});
+{{/is_int}}
+{{/columns}}
+    writer::write_string(buffer, {{cpp.iterator_var}}.recorded_by);
+    writer::write_string(buffer, {{cpp.iterator_var}}.change_reason_code);
+    writer::write_string(buffer, {{cpp.iterator_var}}.change_commentary);
+    writer::write_string(buffer,
+        ores::platform::time::datetime::format_time_point({{cpp.iterator_var}}.recorded_at));
+}
+
+std::expected<domain::{{name_singular}}, error_code>
+read_{{name_singular}}(std::span<const std::byte>& data) {
+    domain::{{name_singular}} {{cpp.iterator_var}};
+
+    auto version_result = reader::read_uint32(data);
+    if (!version_result) return std::unexpected(version_result.error());
+    {{cpp.iterator_var}}.version = static_cast<int>(*version_result);
+
+    auto {{left.column}}_result = reader::read_string(data);
+    if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
+    {{cpp.iterator_var}}.{{left.column}} = *{{left.column}}_result;
+
+    auto {{right.column}}_result = reader::read_string(data);
+    if (!{{right.column}}_result) return std::unexpected({{right.column}}_result.error());
+    {{cpp.iterator_var}}.{{right.column}} = *{{right.column}}_result;
+
+{{#columns}}
+{{#is_int}}
+    auto {{name}}_result = reader::read_uint32(data);
+    if (!{{name}}_result) return std::unexpected({{name}}_result.error());
+    {{iter_var}}.{{name}} = static_cast<int>(*{{name}}_result);
+
+{{/is_int}}
+{{^is_int}}
+    auto {{name}}_result = reader::read_string(data);
+    if (!{{name}}_result) return std::unexpected({{name}}_result.error());
+    {{iter_var}}.{{name}} = *{{name}}_result;
+
+{{/is_int}}
+{{/columns}}
+    auto recorded_by_result = reader::read_string(data);
+    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+    {{cpp.iterator_var}}.recorded_by = *recorded_by_result;
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    {{cpp.iterator_var}}.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    {{cpp.iterator_var}}.change_commentary = *change_commentary_result;
+
+    auto recorded_at_result = reader::read_string(data);
+    if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+    try {
+        {{cpp.iterator_var}}.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at_result);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
+
+    return {{cpp.iterator_var}};
+}
+
+} // anonymous namespace
+
+// ============================================================================
+// {{name_title}} Messages Implementation
+// ============================================================================
+
+std::vector<std::byte> get_{{name}}_request::serialize() const {
+    return {};
+}
+
+std::expected<get_{{name}}_request, error_code>
+get_{{name}}_request::deserialize(std::span<const std::byte> data) {
+    if (!data.empty()) {
+        return std::unexpected(error_code::payload_too_large);
+    }
+    return get_{{name}}_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_{{name}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{name_short}}.size()));
+    for (const auto& {{cpp.iterator_var}} : {{name_short}}) {
+        write_{{name_singular}}(buffer, {{cpp.iterator_var}});
+    }
+    return buffer;
+}
+
+std::expected<get_{{name}}_response, error_code>
+get_{{name}}_response::deserialize(std::span<const std::byte> data) {
+    get_{{name}}_response response;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.{{name_short}}.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto result = read_{{name_singular}}(data);
+        if (!result) return std::unexpected(result.error());
+        response.{{name_short}}.push_back(std::move(*result));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_{{name}}_by_{{left.column_short}}_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, {{left.column}});
+    return buffer;
+}
+
+std::expected<get_{{name}}_by_{{left.column_short}}_request, error_code>
+get_{{name}}_by_{{left.column_short}}_request::deserialize(std::span<const std::byte> data) {
+    get_{{name}}_by_{{left.column_short}}_request request;
+
+    auto {{left.column}}_result = reader::read_string(data);
+    if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
+    request.{{left.column}} = *{{left.column}}_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_by_{{left.column_short}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_{{name}}_by_{{left.column_short}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{name_short}}.size()));
+    for (const auto& {{cpp.iterator_var}} : {{name_short}}) {
+        write_{{name_singular}}(buffer, {{cpp.iterator_var}});
+    }
+    return buffer;
+}
+
+std::expected<get_{{name}}_by_{{left.column_short}}_response, error_code>
+get_{{name}}_by_{{left.column_short}}_response::deserialize(std::span<const std::byte> data) {
+    get_{{name}}_by_{{left.column_short}}_response response;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.{{name_short}}.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto result = read_{{name_singular}}(data);
+        if (!result) return std::unexpected(result.error());
+        response.{{name_short}}.push_back(std::move(*result));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_by_{{left.column_short}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> save_{{name_singular}}_request::serialize() const {
+    std::vector<std::byte> buffer;
+    write_{{name_singular}}(buffer, {{name_singular_short}});
+    return buffer;
+}
+
+std::expected<save_{{name_singular}}_request, error_code>
+save_{{name_singular}}_request::deserialize(std::span<const std::byte> data) {
+    save_{{name_singular}}_request request;
+
+    auto result = read_{{name_singular}}(data);
+    if (!result) return std::unexpected(result.error());
+    request.{{name_singular_short}} = std::move(*result);
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const save_{{name_singular}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> save_{{name_singular}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<save_{{name_singular}}_response, error_code>
+save_{{name_singular}}_response::deserialize(std::span<const std::byte> data) {
+    save_{{name_singular}}_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const save_{{name_singular}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_result& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, const {{name_singular}}_key& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> delete_{{name_singular}}_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(keys.size()));
+    for (const auto& k : keys) {
+        writer::write_string(buffer, k.{{left.column}});
+        writer::write_string(buffer, k.{{right.column}});
+    }
+    return buffer;
+}
+
+std::expected<delete_{{name_singular}}_request, error_code>
+delete_{{name_singular}}_request::deserialize(std::span<const std::byte> data) {
+    delete_{{name_singular}}_request request;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    request.keys.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        {{name_singular}}_key k;
+
+        auto {{left.column}}_result = reader::read_string(data);
+        if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
+        k.{{left.column}} = *{{left.column}}_result;
+
+        auto {{right.column}}_result = reader::read_string(data);
+        if (!{{right.column}}_result) return std::unexpected({{right.column}}_result.error());
+        k.{{right.column}} = *{{right.column}}_result;
+
+        request.keys.push_back(std::move(k));
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> delete_{{name_singular}}_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
+    for (const auto& r : results) {
+        writer::write_string(buffer, r.{{left.column}});
+        writer::write_string(buffer, r.{{right.column}});
+        writer::write_bool(buffer, r.success);
+        writer::write_string(buffer, r.message);
+    }
+    return buffer;
+}
+
+std::expected<delete_{{name_singular}}_response, error_code>
+delete_{{name_singular}}_response::deserialize(std::span<const std::byte> data) {
+    delete_{{name_singular}}_response response;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.results.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        delete_{{name_singular}}_result r;
+
+        auto {{left.column}}_result = reader::read_string(data);
+        if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
+        r.{{left.column}} = *{{left.column}}_result;
+
+        auto {{right.column}}_result = reader::read_string(data);
+        if (!{{right.column}}_result) return std::unexpected({{right.column}}_result.error());
+        r.{{right.column}} = *{{right.column}}_result;
+
+        auto success_result = reader::read_bool(data);
+        if (!success_result) return std::unexpected(success_result.error());
+        r.success = *success_result;
+
+        auto message_result = reader::read_string(data);
+        if (!message_result) return std::unexpected(message_result.error());
+        r.message = *message_result;
+
+        response.results.push_back(std::move(r));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/junction}}

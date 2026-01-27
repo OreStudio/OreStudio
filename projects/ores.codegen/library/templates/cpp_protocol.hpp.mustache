@@ -1,0 +1,377 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
+#define ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
+
+#include <span>
+#include <iosfwd>
+#include <vector>
+#include <expected>
+#include <boost/uuid/uuid.hpp>
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+
+namespace ores::{{component}}::messaging {
+
+// ============================================================================
+// {{entity_title}} Messages
+// ============================================================================
+
+/**
+ * @brief Request to retrieve all {{entity_plural_words}}.
+ */
+struct get_{{entity_plural}}_request final {
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{entity_plural}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_plural}}_request& v);
+
+/**
+ * @brief Response containing all {{entity_plural_words}}.
+ */
+struct get_{{entity_plural}}_response final {
+    std::vector<domain::{{entity_singular}}> {{entity_plural_short}};
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{entity_plural}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_plural}}_response& v);
+
+/**
+ * @brief Request to save a {{entity_singular_words}} (create or update).
+ */
+struct save_{{entity_singular}}_request final {
+    domain::{{entity_singular}} {{entity_singular_short}};
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_{{entity_singular}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_{{entity_singular}}_request& v);
+
+/**
+ * @brief Response confirming {{entity_singular_words}} save operation.
+ */
+struct save_{{entity_singular}}_response final {
+    bool success;
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_{{entity_singular}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_{{entity_singular}}_response& v);
+
+/**
+ * @brief Result for a single {{entity_singular_words}} deletion.
+ */
+struct delete_{{entity_singular}}_result final {
+    boost::uuids::uuid id;
+    bool success;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_result& v);
+
+/**
+ * @brief Request to delete one or more {{entity_plural_words}}.
+ */
+struct delete_{{entity_singular}}_request final {
+    std::vector<boost::uuids::uuid> ids;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_{{entity_singular}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_request& v);
+
+/**
+ * @brief Response confirming {{entity_singular_words}} deletion(s).
+ */
+struct delete_{{entity_singular}}_response final {
+    std::vector<delete_{{entity_singular}}_result> results;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_{{entity_singular}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_response& v);
+
+/**
+ * @brief Request to retrieve version history for a {{entity_singular_words}}.
+ */
+struct get_{{entity_singular}}_history_request final {
+    boost::uuids::uuid id;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{entity_singular}}_history_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_singular}}_history_request& v);
+
+/**
+ * @brief Response containing {{entity_singular_words}} version history.
+ */
+struct get_{{entity_singular}}_history_response final {
+    bool success;
+    std::string message;
+    std::vector<domain::{{entity_singular}}> versions;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{entity_singular}}_history_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{entity_singular}}_history_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+// {{entity_title}} traits
+template<>
+struct message_traits<{{component}}::messaging::get_{{entity_plural}}_request> {
+    using request_type = {{component}}::messaging::get_{{entity_plural}}_request;
+    using response_type = {{component}}::messaging::get_{{entity_plural}}_response;
+    static constexpr message_type request_message_type =
+        message_type::get_{{entity_plural}}_request;
+};
+
+template<>
+struct message_traits<{{component}}::messaging::save_{{entity_singular}}_request> {
+    using request_type = {{component}}::messaging::save_{{entity_singular}}_request;
+    using response_type = {{component}}::messaging::save_{{entity_singular}}_response;
+    static constexpr message_type request_message_type =
+        message_type::save_{{entity_singular}}_request;
+};
+
+template<>
+struct message_traits<{{component}}::messaging::delete_{{entity_singular}}_request> {
+    using request_type = {{component}}::messaging::delete_{{entity_singular}}_request;
+    using response_type = {{component}}::messaging::delete_{{entity_singular}}_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_{{entity_singular}}_request;
+};
+
+template<>
+struct message_traits<{{component}}::messaging::get_{{entity_singular}}_history_request> {
+    using request_type = {{component}}::messaging::get_{{entity_singular}}_history_request;
+    using response_type = {{component}}::messaging::get_{{entity_singular}}_history_response;
+    static constexpr message_type request_message_type =
+        message_type::get_{{entity_singular}}_history_request;
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_MESSAGING_{{name_singular_upper}}_PROTOCOL_HPP
+#define ORES_{{component_upper}}_MESSAGING_{{name_singular_upper}}_PROTOCOL_HPP
+
+#include <span>
+#include <iosfwd>
+#include <vector>
+#include <expected>
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::messaging {
+
+// ============================================================================
+// {{name_title}} Messages
+// ============================================================================
+
+/**
+ * @brief Request to retrieve all {{name_words}}.
+ */
+struct get_{{name}}_request final {
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{name}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_request& v);
+
+/**
+ * @brief Response containing all {{name_words}}.
+ */
+struct get_{{name}}_response final {
+    std::vector<domain::{{name_singular}}> {{name_short}};
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{name}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_response& v);
+
+/**
+ * @brief Request to retrieve {{name_words}} for a specific {{left.column_title_lower}}.
+ */
+struct get_{{name}}_by_{{left.column_short}}_request final {
+    std::string {{left.column}};
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{name}}_by_{{left.column_short}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_by_{{left.column_short}}_request& v);
+
+/**
+ * @brief Response containing {{name_words}} for a {{left.column_title_lower}}.
+ */
+struct get_{{name}}_by_{{left.column_short}}_response final {
+    std::vector<domain::{{name_singular}}> {{name_short}};
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_{{name}}_by_{{left.column_short}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_{{name}}_by_{{left.column_short}}_response& v);
+
+/**
+ * @brief Request to save a {{name_singular_words}} (create or update).
+ */
+struct save_{{name_singular}}_request final {
+    domain::{{name_singular}} {{name_singular_short}};
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_{{name_singular}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_{{name_singular}}_request& v);
+
+/**
+ * @brief Response confirming {{name_singular_words}} save operation.
+ */
+struct save_{{name_singular}}_response final {
+    bool success;
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_{{name_singular}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_{{name_singular}}_response& v);
+
+/**
+ * @brief Result for a single {{name_singular_words}} deletion.
+ */
+struct delete_{{name_singular}}_result final {
+    std::string {{left.column}};
+    std::string {{right.column}};
+    bool success;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_result& v);
+
+/**
+ * @brief Key identifying a {{name_singular_words}} for deletion.
+ */
+struct {{name_singular}}_key final {
+    std::string {{left.column}};
+    std::string {{right.column}};
+};
+
+std::ostream& operator<<(std::ostream& s, const {{name_singular}}_key& v);
+
+/**
+ * @brief Request to delete one or more {{name_words}}.
+ */
+struct delete_{{name_singular}}_request final {
+    std::vector<{{name_singular}}_key> keys;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_{{name_singular}}_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_request& v);
+
+/**
+ * @brief Response confirming {{name_singular_words}} deletion(s).
+ */
+struct delete_{{name_singular}}_response final {
+    std::vector<delete_{{name_singular}}_result> results;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_{{name_singular}}_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+// {{name_title}} traits
+template<>
+struct message_traits<{{component}}::messaging::get_{{name}}_request> {
+    using request_type = {{component}}::messaging::get_{{name}}_request;
+    using response_type = {{component}}::messaging::get_{{name}}_response;
+    static constexpr message_type request_message_type =
+        message_type::get_{{name}}_request;
+};
+
+template<>
+struct message_traits<{{component}}::messaging::get_{{name}}_by_{{left.column_short}}_request> {
+    using request_type = {{component}}::messaging::get_{{name}}_by_{{left.column_short}}_request;
+    using response_type = {{component}}::messaging::get_{{name}}_by_{{left.column_short}}_response;
+    static constexpr message_type request_message_type =
+        message_type::get_{{name}}_by_{{left.column_short}}_request;
+};
+
+template<>
+struct message_traits<{{component}}::messaging::save_{{name_singular}}_request> {
+    using request_type = {{component}}::messaging::save_{{name_singular}}_request;
+    using response_type = {{component}}::messaging::save_{{name_singular}}_response;
+    static constexpr message_type request_message_type =
+        message_type::save_{{name_singular}}_request;
+};
+
+template<>
+struct message_traits<{{component}}::messaging::delete_{{name_singular}}_request> {
+    using request_type = {{component}}::messaging::delete_{{name_singular}}_request;
+    using response_type = {{component}}::messaging::delete_{{name_singular}}_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_{{name_singular}}_request;
+};
+
+}
+
+#endif
+{{/junction}}

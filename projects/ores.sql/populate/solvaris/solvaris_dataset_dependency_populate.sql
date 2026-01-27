@@ -18,7 +18,7 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Slovaris Dataset Dependencies
@@ -26,12 +26,12 @@ set schema 'ores';
 
 \echo '--- Data Quality Slovaris Dataset Dependencies ---'
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'slovaris.countries',
     'slovaris.country_flags',
     'visual_assets'
 );
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'slovaris.currencies',
     'slovaris.country_flags',
     'visual_assets'
@@ -45,7 +45,7 @@ select ores.upsert_dq_dataset_dependency(
 \echo '--- Summary ---'
 
 select dataset_code, dependency_code, role
-from ores.dq_dataset_dependencies_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_dataset_dependencies_tbl
+where valid_to = public.utility_infinity_timestamp_fn()
   and dataset_code like 'slovaris.%'
 order by dataset_code, dependency_code;

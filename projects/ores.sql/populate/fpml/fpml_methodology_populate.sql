@@ -6,7 +6,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FPML Data Sourcing Methodology
@@ -14,7 +14,7 @@ set schema 'ores';
 
 \echo '--- FPML Methodology ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'FpML Genericode Download',
     'Data downloaded from FpML coding scheme repository in Genericode XML format',
     'https://www.fpml.org/the_standard/current/',

@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Standards Catalog
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- ISO Standards Catalog ---'
 
-select ores.upsert_dq_catalogs(
+select public.upsert_dq_catalogs(
     'ISO Standards',
     'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
     'Reference Data Team'

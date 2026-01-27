@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores.refdata_currencies_notify_fn()
+create or replace function production.refdata_currencies_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -44,5 +44,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_currencies_notify_trg
-after insert or update or delete on ores.refdata_currencies_tbl
-for each row execute function ores.refdata_currencies_notify_fn();
+after insert or update or delete on production.refdata_currencies_tbl
+for each row execute function production.refdata_currencies_notify_fn();

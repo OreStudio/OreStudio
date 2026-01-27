@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Hkma Rewrite Regulatory Corporate Sector Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Hkma Rewrite Regulatory Corporate Sector Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.hkma_rewrite_regulatory_corporate_sector',
     'FpML Standards',
     'Regulatory',

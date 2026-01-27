@@ -27,11 +27,11 @@
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
 
-set schema 'ores';
+set schema 'production';
 
 \echo '--- Rounding Types ---'
 
-insert into ores.refdata_rounding_types_tbl (code, name, description, display_order)
+insert into production.refdata_rounding_types_tbl (code, name, description, display_order)
 values
     ('Up', 'Round Up',
      'Rounds away from zero toward positive infinity. Positive values round up, negative values round to larger absolute value.',
@@ -55,4 +55,4 @@ on conflict (code) do update set
 
 -- Summary
 select 'refdata_rounding_types' as entity, count(*) as count
-from ores.refdata_rounding_types_tbl;
+from production.refdata_rounding_types_tbl;

@@ -21,8 +21,27 @@ When you need to add new SQL tables, triggers, or reference data to the ORE
 Studio database. This skill complements the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill by
 handling the database schema aspects of domain types.
 
-For architecture overview, schema diagrams, and PostgreSQL extensions setup,
+For architecture overview, schema mental model, and PostgreSQL extensions setup,
 see the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] documentation.
+
+* Schema organization
+
+The database uses three schemas with distinct purposes:
+
+| Schema       | Purpose                                    | Table Prefixes                           |
+|--------------+--------------------------------------------+------------------------------------------|
+| =metadata=   | Data governance, classification, staging   | =dq_*= (including =change_control=)      |
+| =production= | Operational data for application use       | =refdata_*=, =iam_*=, =assets_*=, =geo_*=, =variability_*=, =telemetry_*= |
+| =public=     | Shared utility functions                   | =utility_*=, =seed_*=                    |
+
+When creating new tables, choose the schema based on the table's purpose:
+
+- *metadata*: Tables that define, classify, or stage data (governance, artefacts)
+- *production*: Tables consumed by the application (reference data, IAM, assets)
+- *public*: Shared functions used by both schemas
+
+For the full schema mental model and cross-schema relationships, see
+[[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]].
 
 * How to use this skill
 
@@ -42,16 +61,18 @@ and C++ code.
 
 ** Component prefixes
 
-| Prefix         | C++ Component      | Description                                     |
-|----------------+--------------------+-------------------------------------------------|
-| =iam_=         | ores.iam           | Identity and Access Management                  |
-| =refdata_=     | ores.refdata       | Reference data (currencies, countries, etc.)    |
-| =assets_=      | ores.assets        | Digital assets (images, tags)                   |
-| =variability_= | ores.variability   | Feature flags and configuration                 |
-| =telemetry_=   | ores.telemetry     | Telemetry and logging                           |
-| =geo_=         | ores.geo           | Geolocation services                            |
-| =admin_=       | ores_admin db      | Database management functions                   |
-| =utility_=     | (shared)           | Shared utility functions                        |
+| Prefix         | Schema       | C++ Component      | Description                                     |
+|----------------+--------------+--------------------+-------------------------------------------------|
+| =dq_=          | =metadata=   | ores.dq            | Data quality, governance, staging               |
+| =iam_=         | =production= | ores.iam           | Identity and Access Management                  |
+| =refdata_=     | =production= | ores.refdata       | Reference data (currencies, countries, etc.)    |
+| =assets_=      | =production= | ores.assets        | Digital assets (images, tags)                   |
+| =variability_= | =production= | ores.variability   | Feature flags and configuration                 |
+| =telemetry_=   | =production= | ores.telemetry     | Telemetry and logging                           |
+| =geo_=         | =production= | ores.geo           | Geolocation services                            |
+| =admin_=       | =ores_admin= | (admin db)         | Database management functions                   |
+| =utility_=     | =public=     | (shared)           | Shared utility functions                        |
+| =seed_=        | =public=     | (shared)           | Seed/upsert helper functions                    |
 
 ** Entity suffixes
 
@@ -226,7 +247,7 @@ Notification channels use the pattern =ores_{entity}= (plural form):
 | countries  | =ores_countries=   |
 
 The notification payload includes:
-- =entity=: Full entity name (e.g., =ores.iam.account=, =ores.refdata.currency=)
+- =entity=: Full entity name (e.g., =production.iam.account=, =production.refdata.currency=, =metadata.dq.dataset=)
 - =timestamp=: Change timestamp
 - =entity_ids=: Array of affected entity IDs
 
@@ -280,7 +301,8 @@ The file must include:
 2. *Table definition* with temporal support:
 
 #+begin_src sql
-create table if not exists "ores"."{component}_{entity}_tbl" (
+-- Use the appropriate schema: metadata for dq_*, production for others
+create table if not exists "{schema}"."{component}_{entity}_tbl" (
     "{pk_column}" uuid not null,
     "version" integer not null,
     -- domain-specific columns here
@@ -315,24 +337,24 @@ defense in depth alongside service layer validation:
 Examples:
 
 #+begin_src sql
--- For a table with text primary key (e.g., iso_code, code, name):
-create table if not exists "ores"."refdata_currencies_tbl" (
+-- For a table with text primary key (production schema):
+create table if not exists "production"."refdata_currencies_tbl" (
     "iso_code" text not null,
     ...
     check ("valid_from" < "valid_to"),
     check ("iso_code" <> '')
 );
 
--- For a table with UUID primary key:
-create table if not exists "ores"."dq_datasets_tbl" (
+-- For a table with UUID primary key (metadata schema):
+create table if not exists "metadata"."dq_datasets_tbl" (
     "id" uuid not null,
     ...
     check ("valid_from" < "valid_to"),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
--- For composite keys, add checks for each key column:
-create table if not exists "ores"."dq_subject_areas_tbl" (
+-- For composite keys, add checks for each key column (metadata schema):
+create table if not exists "metadata"."dq_subject_areas_tbl" (
     "name" text not null,
     "domain_name" text not null,
     ...
@@ -351,13 +373,13 @@ keys.
 #+begin_src sql
 -- Version uniqueness index (required for optimistic concurrency)
 create unique index if not exists {component}_{entity}_version_uniq_idx
-on "ores"."{component}_{entity}_tbl" ({pk_column}, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "{schema}"."{component}_{entity}_tbl" ({pk_column}, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Natural key uniqueness index (if applicable)
 create unique index if not exists {component}_{entity}_{column}_uniq_idx
-on "ores"."{component}_{entity}_tbl" ({column})
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "{schema}"."{component}_{entity}_tbl" ({column})
+where valid_to = public.utility_infinity_timestamp_fn();
 #+end_src
 
 4. *Insert trigger function* for upsert-by-insert with optimistic concurrency:
@@ -370,15 +392,16 @@ The trigger function implements:
 - *Forced timestamps*: =valid_from= and =valid_to= are always set by the trigger
 
 #+begin_src sql
-create or replace function ores.{component}_{entity}_insert_fn()
+-- Function goes in same schema as the table it serves
+create or replace function {schema}.{component}_{entity}_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."{component}_{entity}_tbl"
+    from "{schema}"."{component}_{entity}_tbl"
     where {pk_column} = NEW.{pk_column}
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         -- This is an update (record with same PK exists)
@@ -390,10 +413,10 @@ begin
         NEW.version = current_version + 1;
 
         -- Close the old record
-        update "ores"."{component}_{entity}_tbl"
+        update "{schema}"."{component}_{entity}_tbl"
         set valid_to = current_timestamp
         where {pk_column} = NEW.{pk_column}
-          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_to = public.utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         -- This is a new record
@@ -401,14 +424,14 @@ begin
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = ores.utility_infinity_timestamp_fn();
+    NEW.valid_to = public.utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    -- Validate change_reason_code (raises exception if invalid)
-    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    -- Validate change_reason_code (in metadata schema)
+    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
@@ -419,19 +442,19 @@ $$ language plpgsql;
 
 #+begin_src sql
 create or replace trigger {component}_{entity}_insert_trg
-before insert on "ores"."{component}_{entity}_tbl"
-for each row execute function ores.{component}_{entity}_insert_fn();
+before insert on "{schema}"."{component}_{entity}_tbl"
+for each row execute function {schema}.{component}_{entity}_insert_fn();
 #+end_src
 
 6. *Delete rule* (soft delete via temporal update):
 
 #+begin_src sql
 create or replace rule {component}_{entity}_delete_rule as
-on delete to "ores"."{component}_{entity}_tbl" do instead
-    update "ores"."{component}_{entity}_tbl"
+on delete to "{schema}"."{component}_{entity}_tbl" do instead
+    update "{schema}"."{component}_{entity}_tbl"
     set valid_to = current_timestamp
     where {pk_column} = OLD.{pk_column}
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 #+end_src
 
 Follow the pattern in =projects/ores.sql/create/iam_accounts_create.sql=.
@@ -452,11 +475,12 @@ will become stale without any indication.
 Create =projects/ores.sql/create/{component}_{entity}_notify_trigger.sql=:
 
 #+begin_src sql
-create or replace function ores.{component}_{entity}_notify_fn()
+-- Notify function goes in same schema as the table
+create or replace function {schema}.{component}_{entity}_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.{cpp_namespace}.{entity}';
+    entity_name text := '{schema}.{cpp_namespace}.{entity}';
     change_timestamp timestamptz := NOW();
     changed_id text;
 begin
@@ -478,11 +502,12 @@ end;
 $$ language plpgsql;
 
 create or replace trigger {component}_{entity}_notify_trg
-after insert or update or delete on ores.{component}_{entity}_tbl
-for each row execute function ores.{component}_{entity}_notify_fn();
+after insert or update or delete on {schema}.{component}_{entity}_tbl
+for each row execute function {schema}.{component}_{entity}_notify_fn();
 #+end_src
 
 Where:
+- ={schema}= is =metadata= or =production= based on the component prefix
 - ={cpp_namespace}= is the C++ namespace (e.g., =iam=, =refdata=, =assets=)
 - ={entity_plural}= is the plural form for the notification channel
 
@@ -493,22 +518,22 @@ Follow the pattern in =projects/ores.sql/create/iam_accounts_notify_trigger.sql=
 Create =projects/ores.sql/drop/{component}_{entity}_drop.sql=:
 
 #+begin_src sql
-set schema 'ores';
+set schema '{schema}';
 
-drop trigger if exists {component}_{entity}_insert_trg on "ores"."{component}_{entity}_tbl";
-drop rule if exists {component}_{entity}_delete_rule on "ores"."{component}_{entity}_tbl";
-drop function if exists ores.{component}_{entity}_insert_fn();
-drop table if exists "ores"."{component}_{entity}_tbl";
+drop trigger if exists {component}_{entity}_insert_trg on "{schema}"."{component}_{entity}_tbl";
+drop rule if exists {component}_{entity}_delete_rule on "{schema}"."{component}_{entity}_tbl";
+drop function if exists {schema}.{component}_{entity}_insert_fn();
+drop table if exists "{schema}"."{component}_{entity}_tbl";
 #+end_src
 
 Also create the notify trigger drop script
 =projects/ores.sql/drop/{component}_{entity}_notify_trigger_drop.sql=:
 
 #+begin_src sql
-set schema 'ores';
+set schema '{schema}';
 
-drop trigger if exists {component}_{entity}_notify_trg on "ores"."{component}_{entity}_tbl";
-drop function if exists ores.{component}_{entity}_notify_fn();
+drop trigger if exists {component}_{entity}_notify_trg on "{schema}"."{component}_{entity}_tbl";
+drop function if exists {schema}.{component}_{entity}_notify_fn();
 #+end_src
 
 ** Step 4: Create population script (if needed)
@@ -521,21 +546,21 @@ trigger to use default behavior) and can omit the temporal columns since the
 trigger will set them.
 
 #+begin_src sql
-set schema 'ores';
+set schema '{schema}';
 
--- Helper function for idempotent inserts
-create or replace function ores.upsert_{entity}(
+-- Helper function for idempotent inserts (goes in public schema)
+create or replace function public.upsert_{entity}(
     p_field1 text,
     p_field2 text
     -- add parameters as needed
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.{component}_{entity}_tbl
+        select 1 from {schema}.{component}_{entity}_tbl
         where field1 = p_field1
-          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_to = public.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.{component}_{entity}_tbl (
+        insert into {schema}.{component}_{entity}_tbl (
             id, version, field1, field2,
             modified_by, change_reason_code, change_commentary
         )
@@ -553,27 +578,29 @@ end;
 $$ language plpgsql;
 
 -- Seed data
-select ores.upsert_{entity}('value1', 'value2');
-select ores.upsert_{entity}('value3', 'value4');
+select public.upsert_{entity}('value1', 'value2');
+select public.upsert_{entity}('value3', 'value4');
 
 -- Cleanup helper function
-drop function ores.upsert_{entity}(text, text);
+drop function public.upsert_{entity}(text, text);
 
 -- Summary
 select '{entity}' as entity, count(*) as count
-from ores.{component}_{entity}_tbl
-where valid_to = ores.utility_infinity_timestamp_fn();
+from {schema}.{component}_{entity}_tbl
+where valid_to = public.utility_infinity_timestamp_fn();
 #+end_src
 
 Follow the pattern in =projects/ores.sql/populate/dq_change_reasons_populate.sql=.
 
 ** Step 5: Update C++ entity file
 
-If you have a corresponding C++ entity, update the =tablename= constant to match:
+If you have a corresponding C++ entity, update the =schema= and =tablename=
+constants to match:
 
 #+begin_src cpp
 struct {entity}_entity {
-    constexpr static const char* schema = "ores";
+    // Use "metadata" for dq_* tables, "production" for others
+    constexpr static const char* schema = "{schema}";
     constexpr static const char* tablename = "{component}_{entity}_tbl";
 
     // ... fields matching SQL columns
@@ -677,11 +704,11 @@ All entity tables use bitemporal support with:
 
 ** Querying current records
 
-Always filter by =valid_to = ores.utility_infinity_timestamp_fn()= to get current records:
+Always filter by =valid_to = public.utility_infinity_timestamp_fn()= to get current records:
 
 #+begin_src sql
-select * from ores.{component}_{entity}_tbl
-where valid_to = ores.utility_infinity_timestamp_fn();
+select * from {schema}.{component}_{entity}_tbl
+where valid_to = public.utility_infinity_timestamp_fn();
 #+end_src
 
 ** Soft delete pattern
@@ -701,15 +728,15 @@ the ID without temporal constraints (the application layer manages consistency):
 ** Change reason validation
 
 All tables with =change_reason_code= validate the code via the insert trigger function.
-The trigger calls =ores.refdata_validate_change_reason_fn()= to ensure the code exists:
+The trigger calls =metadata.refdata_validate_change_reason_fn()= to ensure the code exists:
 
 #+begin_src sql
 -- Inside the insert trigger function:
-new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 #+end_src
 
-This validates that the change reason code exists in =dq_change_reasons_tbl= and
-raises an exception with SQLSTATE 23503 if invalid.
+This validates that the change reason code exists in =metadata.dq_change_reasons_tbl=
+and raises an exception with SQLSTATE 23503 if invalid.
 
 * Integration with Domain Type Creator
 

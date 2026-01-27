@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Flag Icons Data Sourcing Methodologies
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- Flag Icons Methodologies ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'GitHub Flag Icons Download',
     'SVG images downloaded from lipis/flag-icons GitHub repository',
     'https://github.com/lipis/flag-icons',

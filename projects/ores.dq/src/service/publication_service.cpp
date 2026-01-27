@@ -335,7 +335,7 @@ void publication_service::record_publication(
 
     // Build the INSERT query
     const auto sql = std::format(
-        "INSERT INTO ores.dq_publications_tbl ("
+        "INSERT INTO metadata.dq_publications_tbl ("
         "dataset_id, dataset_code, mode, target_table, "
         "records_inserted, records_updated, records_skipped, records_deleted, published_by"
         ") VALUES ('{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
@@ -376,7 +376,7 @@ domain::publication_result publication_service::call_populate_function(
         << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
-        "SELECT * FROM ores.{}('{}'::uuid, '{}'::text)",
+        "SELECT * FROM metadata.{}('{}'::uuid, '{}'::text)",
         function_name, dataset_id_str, mode_str);
 
     try {

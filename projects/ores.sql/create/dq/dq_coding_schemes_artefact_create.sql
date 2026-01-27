@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Coding Schemes Artefact Table
@@ -26,7 +26,7 @@ set schema 'ores';
 -- dq_coding_schemes_tbl. Supports the DQ artefact pipeline pattern.
 -- =============================================================================
 
-create table if not exists "ores"."dq_coding_schemes_artefact_tbl" (
+create table if not exists "metadata"."dq_coding_schemes_artefact_tbl" (
     "dataset_id" uuid not null,
     "code" text not null,
     "version" integer not null default 0,
@@ -39,10 +39,10 @@ create table if not exists "ores"."dq_coding_schemes_artefact_tbl" (
 );
 
 create index if not exists dq_coding_schemes_artefact_dataset_idx
-on "ores"."dq_coding_schemes_artefact_tbl" (dataset_id);
+on "metadata"."dq_coding_schemes_artefact_tbl" (dataset_id);
 
 create index if not exists dq_coding_schemes_artefact_code_idx
-on "ores"."dq_coding_schemes_artefact_tbl" (code);
+on "metadata"."dq_coding_schemes_artefact_tbl" (code);
 
 create index if not exists dq_coding_schemes_artefact_authority_type_idx
-on "ores"."dq_coding_schemes_artefact_tbl" (authority_type);
+on "metadata"."dq_coding_schemes_artefact_tbl" (authority_type);

@@ -35,7 +35,7 @@ namespace ores::telemetry::repository {
  * partitioned by timestamp.
  */
 struct telemetry_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "telemetry_logs_tbl";
 
     /**
@@ -105,7 +105,7 @@ std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
  * @brief Entity for hourly telemetry statistics from continuous aggregates.
  */
 struct telemetry_stats_hourly_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "telemetry_stats_hourly";
 
     std::string hour;
@@ -123,7 +123,7 @@ std::ostream& operator<<(std::ostream& s, const telemetry_stats_hourly_entity& v
  * @brief Entity for daily telemetry statistics from continuous aggregates.
  */
 struct telemetry_stats_daily_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "production";
     constexpr static const char* tablename = "telemetry_stats_daily";
 
     std::string day;

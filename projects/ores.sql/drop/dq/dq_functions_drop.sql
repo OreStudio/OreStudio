@@ -18,10 +18,10 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
-drop function if exists ores.upsert_dq_image_tags_artefact(text);
-drop function if exists ores.upsert_dq_tags_artefact(text);
-drop function if exists ores.upsert_dq_images_artefact(text);
-drop function if exists ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, date, text);
-drop function if exists ores.upsert_dq_methodology(text, text, text, text);
+drop function if exists metadata.upsert_dq_image_tags_artefact(text);
+drop function if exists metadata.upsert_dq_tags_artefact(text);
+drop function if exists metadata.upsert_dq_images_artefact(text);
+drop function if exists metadata.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, date, text);
+drop function if exists metadata.upsert_dq_methodology(text, text, text, text);

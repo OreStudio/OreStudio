@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 drop index if exists telemetry_logs_component_idx;
 drop index if exists telemetry_logs_source_idx;
 drop index if exists telemetry_logs_level_idx;
 drop index if exists telemetry_logs_account_idx;
 drop index if exists telemetry_logs_session_idx;
-drop table if exists "ores"."telemetry_logs_tbl";
+drop table if exists "production"."telemetry_logs_tbl";

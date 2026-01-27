@@ -25,13 +25,13 @@
  *
  * Usage:
  *   -- Preview what will be published
- *   SELECT * FROM ores.dq_preview_asset_class_population(dataset_id);
+ *   SELECT * FROM metadata.dq_preview_asset_class_population(dataset_id);
  *
  *   -- Publish to production
- *   SELECT * FROM ores.dq_populate_asset_classes_fn(dataset_id, 'upsert');
+ *   SELECT * FROM metadata.dq_populate_asset_classes_fn(dataset_id, 'upsert');
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Preview Function
@@ -40,7 +40,7 @@ set schema 'ores';
 /**
  * Preview what asset_classes would be copied from a DQ dataset.
  */
-create or replace function ores.dq_preview_asset_class_population(p_dataset_id uuid)
+create or replace function metadata.dq_preview_asset_class_population(p_dataset_id uuid)
 returns table (
     action text,
     code text,
@@ -62,11 +62,11 @@ begin
             when existing.code is not null then 'Record already exists'
             else 'New record'
         end as reason
-    from ores.dq_asset_classes_artefact_tbl dq
-    left join ores.refdata_asset_classes_tbl existing
+    from metadata.dq_asset_classes_artefact_tbl dq
+    left join production.refdata_asset_classes_tbl existing
         on existing.code = dq.code
         and existing.coding_scheme_code = dq.coding_scheme_code
-        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        and existing.valid_to = public.utility_infinity_timestamp_fn()
     where dq.dataset_id = p_dataset_id
     order by dq.coding_scheme_code, dq.code;
 end;
@@ -82,7 +82,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Population mode: 'upsert', 'insert_only', or 'replace_all'.
  */
-create or replace function ores.dq_populate_asset_classes_fn(
+create or replace function metadata.dq_populate_asset_classes_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -102,9 +102,9 @@ declare
 begin
     -- Validate dataset exists
     select name into v_dataset_name
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where id = p_dataset_id
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
@@ -117,9 +117,9 @@ begin
 
     -- Handle replace_all mode
     if p_mode = 'replace_all' then
-        update ores.refdata_asset_classes_tbl
+        update production.refdata_asset_classes_tbl
         set valid_to = current_timestamp
-        where valid_to = ores.utility_infinity_timestamp_fn();
+        where valid_to = public.utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -131,15 +131,15 @@ begin
             dq.coding_scheme_code,
             dq.source,
             dq.description
-        from ores.dq_asset_classes_artefact_tbl dq
+        from metadata.dq_asset_classes_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
     loop
         -- Check if record already exists
         select exists (
-            select 1 from ores.refdata_asset_classes_tbl existing
+            select 1 from production.refdata_asset_classes_tbl existing
             where existing.code = r.code
               and existing.coding_scheme_code = r.coding_scheme_code
-              and existing.valid_to = ores.utility_infinity_timestamp_fn()
+              and existing.valid_to = public.utility_infinity_timestamp_fn()
         ) into v_exists;
 
         -- In insert_only mode, skip existing records
@@ -149,7 +149,7 @@ begin
         end if;
 
         -- Insert record - trigger handles versioning automatically
-        insert into ores.refdata_asset_classes_tbl (
+        insert into production.refdata_asset_classes_tbl (
             code, version, coding_scheme_code, source, description,
             modified_by, change_reason_code, change_commentary
         ) values (

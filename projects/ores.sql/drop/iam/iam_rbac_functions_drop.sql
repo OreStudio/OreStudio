@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop function if exists ores.iam_account_has_permission_by_id_fn;
-drop function if exists ores.iam_account_has_permission_fn;
-drop function if exists ores.iam_get_account_roles_with_permissions_fn;
-drop function if exists ores.iam_get_roles_by_ids_fn;
-drop function if exists ores.iam_get_role_permission_codes_fn;
-drop function if exists ores.iam_get_all_role_permission_codes_fn;
-drop function if exists ores.iam_get_effective_permissions_fn;
+drop function if exists production.iam_account_has_permission_by_id_fn;
+drop function if exists production.iam_account_has_permission_fn;
+drop function if exists production.iam_get_account_roles_with_permissions_fn;
+drop function if exists production.iam_get_roles_by_ids_fn;
+drop function if exists production.iam_get_role_permission_codes_fn;
+drop function if exists production.iam_get_all_role_permission_codes_fn;
+drop function if exists production.iam_get_effective_permissions_fn;

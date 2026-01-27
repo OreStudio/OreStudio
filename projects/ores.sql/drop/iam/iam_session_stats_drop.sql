@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop function if exists ores.iam_active_session_count_for_account_fn;
-drop function if exists ores.iam_active_session_count_fn;
-drop materialized view if exists "ores"."iam_session_stats_aggregate_daily";
-drop materialized view if exists "ores"."iam_session_stats_hourly";
-drop materialized view if exists "ores"."iam_session_stats_daily";
+drop function if exists production.iam_active_session_count_for_account_fn;
+drop function if exists production.iam_active_session_count_fn;
+drop materialized view if exists "production"."iam_session_stats_aggregate_daily";
+drop materialized view if exists "production"."iam_session_stats_hourly";
+drop materialized view if exists "production"."iam_session_stats_daily";

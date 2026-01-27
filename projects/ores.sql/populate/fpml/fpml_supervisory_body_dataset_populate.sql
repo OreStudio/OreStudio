@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Supervisory Body Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Supervisory Body Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.supervisory_body',
     'FpML Standards',
     'Regulatory',

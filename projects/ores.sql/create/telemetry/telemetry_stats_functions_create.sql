@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 do $$
 declare
@@ -43,7 +43,7 @@ begin
         raise notice 'TimescaleDB detected - creating telemetry continuous aggregates';
 
         execute $sql$
-            create materialized view if not exists "ores"."telemetry_stats_hourly"
+            create materialized view if not exists "production"."telemetry_stats_hourly"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 hour', timestamp) as hour,
@@ -53,13 +53,13 @@ begin
                 count(*) as log_count,
                 count(distinct session_id) filter (where session_id is not null) as unique_sessions,
                 count(distinct account_id) filter (where account_id is not null) as unique_accounts
-            from "ores"."telemetry_logs_tbl"
+            from "production"."telemetry_logs_tbl"
             group by hour, source, source_name, level
             with no data
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'ores.telemetry_stats_hourly',
+            'production.telemetry_stats_hourly',
             start_offset => interval '1 day',
             end_offset => interval '15 minutes',
             schedule_interval => interval '15 minutes',
@@ -68,7 +68,7 @@ begin
         raise notice 'Created telemetry_stats_hourly continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "ores"."telemetry_stats_daily"
+            create materialized view if not exists "production"."telemetry_stats_daily"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', timestamp) as day,
@@ -79,13 +79,13 @@ begin
                 count(*) as log_count,
                 count(distinct session_id) filter (where session_id is not null) as unique_sessions,
                 count(distinct account_id) filter (where account_id is not null) as unique_accounts
-            from "ores"."telemetry_logs_tbl"
+            from "production"."telemetry_logs_tbl"
             group by day, source, source_name, component, level
             with no data
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'ores.telemetry_stats_daily',
+            'production.telemetry_stats_daily',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
@@ -94,7 +94,7 @@ begin
         raise notice 'Created telemetry_stats_daily continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "ores"."telemetry_stats_aggregate_daily"
+            create materialized view if not exists "production"."telemetry_stats_aggregate_daily"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', timestamp) as day,
@@ -105,13 +105,13 @@ begin
                 count(distinct component) filter (where component != '') as unique_components,
                 count(distinct session_id) filter (where session_id is not null) as unique_sessions,
                 count(distinct account_id) filter (where account_id is not null) as unique_accounts
-            from "ores"."telemetry_logs_tbl"
+            from "production"."telemetry_logs_tbl"
             group by day, source, level
             with no data
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'ores.telemetry_stats_aggregate_daily',
+            'production.telemetry_stats_aggregate_daily',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
@@ -120,19 +120,19 @@ begin
         raise notice 'Created telemetry_stats_aggregate_daily continuous aggregate';
 
         perform public.add_retention_policy(
-            'ores.telemetry_stats_hourly',
+            'production.telemetry_stats_hourly',
             drop_after => interval '90 days',
             if_not_exists => true
         );
 
         perform public.add_retention_policy(
-            'ores.telemetry_stats_daily',
+            'production.telemetry_stats_daily',
             drop_after => interval '1 year',
             if_not_exists => true
         );
 
         perform public.add_retention_policy(
-            'ores.telemetry_stats_aggregate_daily',
+            'production.telemetry_stats_aggregate_daily',
             drop_after => interval '1 year',
             if_not_exists => true
         );
@@ -144,17 +144,17 @@ begin
     end if;
 end $$;
 
-create or replace function ores.telemetry_log_count_last_hours_fn(p_hours integer default 24)
+create or replace function production.telemetry_log_count_last_hours_fn(p_hours integer default 24)
 returns bigint
 language sql
 stable
 as $$
     select count(*)
-    from ores.telemetry_logs_tbl
+    from production.telemetry_logs_tbl
     where timestamp > now() - make_interval(hours => p_hours);
 $$;
 
-create or replace function ores.telemetry_log_count_by_level_fn(
+create or replace function production.telemetry_log_count_by_level_fn(
     p_level text,
     p_hours integer default 24
 )
@@ -163,12 +163,12 @@ language sql
 stable
 as $$
     select count(*)
-    from ores.telemetry_logs_tbl
+    from production.telemetry_logs_tbl
     where level = p_level
       and timestamp > now() - make_interval(hours => p_hours);
 $$;
 
-create or replace function ores.telemetry_error_count_fn(
+create or replace function production.telemetry_error_count_fn(
     p_source_name text,
     p_hours integer default 1
 )
@@ -177,13 +177,13 @@ language sql
 stable
 as $$
     select count(*)
-    from ores.telemetry_logs_tbl
+    from production.telemetry_logs_tbl
     where source_name = p_source_name
       and level = 'error'
       and timestamp > now() - make_interval(hours => p_hours);
 $$;
 
-create or replace function ores.telemetry_logs_for_session_fn(
+create or replace function production.telemetry_logs_for_session_fn(
     p_session_id uuid,
     p_limit integer default 1000
 )
@@ -199,7 +199,7 @@ language sql
 stable
 as $$
     select id, timestamp, level, component, message, tag
-    from ores.telemetry_logs_tbl
+    from production.telemetry_logs_tbl
     where session_id = p_session_id
     order by timestamp desc
     limit p_limit;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores.dq_nature_dimensions_notify_fn()
+create or replace function metadata.dq_nature_dimensions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -44,5 +44,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger dq_nature_dimensions_notify_trg
-after insert or update or delete on ores.dq_nature_dimensions_tbl
-for each row execute function ores.dq_nature_dimensions_notify_fn();
+after insert or update or delete on metadata.dq_nature_dimensions_tbl
+for each row execute function metadata.dq_nature_dimensions_notify_fn();

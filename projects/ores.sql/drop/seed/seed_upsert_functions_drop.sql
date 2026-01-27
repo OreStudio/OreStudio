@@ -17,21 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'public';
 
-drop function if exists ores.upsert_dq_data_domains;
-drop function if exists ores.upsert_dq_subject_areas;
-drop function if exists ores.upsert_dq_catalogs;
-drop function if exists ores.upsert_dq_dataset_dependency;
-drop function if exists ores.upsert_dq_origin_dimensions;
-drop function if exists ores.upsert_dq_nature_dimensions;
-drop function if exists ores.upsert_dq_treatment_dimensions;
-drop function if exists ores.upsert_change_reason_category;
-drop function if exists ores.upsert_change_reason;
-drop function if exists ores.upsert_dq_coding_scheme_authority_type;
-drop function if exists ores.upsert_dq_coding_schemes;
-drop function if exists ores.upsert_dq_methodologies;
-drop function if exists ores.upsert_dq_datasets;
-drop function if exists ores.upsert_dq_tag;
-drop function if exists ores.upsert_dq_dataset_bundle;
-drop function if exists ores.upsert_dq_dataset_bundle_member;
+drop function if exists public.upsert_dq_data_domains;
+drop function if exists public.upsert_dq_subject_areas;
+drop function if exists public.upsert_dq_catalogs;
+drop function if exists public.upsert_dq_dataset_dependency;
+drop function if exists public.upsert_dq_origin_dimensions;
+drop function if exists public.upsert_dq_nature_dimensions;
+drop function if exists public.upsert_dq_treatment_dimensions;
+drop function if exists public.upsert_change_reason_category;
+drop function if exists public.upsert_change_reason;
+drop function if exists public.upsert_dq_coding_scheme_authority_type;
+drop function if exists public.upsert_dq_coding_schemes;
+drop function if exists public.upsert_dq_methodologies;
+drop function if exists public.upsert_dq_datasets;
+drop function if exists public.upsert_dq_tag;
+drop function if exists public.upsert_dq_dataset_bundle;
+drop function if exists public.upsert_dq_dataset_bundle_member;

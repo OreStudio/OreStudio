@@ -18,7 +18,7 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Slovaris Methodologies
@@ -26,7 +26,7 @@ set schema 'ores';
 
 \echo '--- Data Quality Slovaris Methodologies ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'OreStudio Code Generation Methodology',
     'Methodology for generating artefact files using the OreStudio code generator',
     'https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen',
@@ -144,5 +144,5 @@ As new artefact types are added to the code generator:
 \echo '--- Summary ---'
 
 select 'Data Quality Total Methodologies' as entity, count(*) as count
-from ores.dq_methodologies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_methodologies_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

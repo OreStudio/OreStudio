@@ -35,7 +35,7 @@
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
-const std::string database_table("ores.iam_accounts_tbl");
+const std::string database_table("production.iam_accounts_tbl");
 const std::string tags("[service]");
 
 }

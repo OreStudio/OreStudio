@@ -41,7 +41,7 @@
  * Reason code format: "category.reason_name"
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Change Reason Categories
@@ -49,17 +49,17 @@ set schema 'ores';
 
 \echo '--- Change Reason Categories ---'
 
-select ores.upsert_change_reason_category(
+select public.upsert_change_reason_category(
     'system',
     'System-generated reasons for automatic operations (not user-selectable)'
 );
 
-select ores.upsert_change_reason_category(
+select public.upsert_change_reason_category(
     'common',
     'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
 );
 
-select ores.upsert_change_reason_category(
+select public.upsert_change_reason_category(
     'trade',
     'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
 );
@@ -72,7 +72,7 @@ select ores.upsert_change_reason_category(
 \echo '--- Change Reasons: System ---'
 
 -- System reasons (auto-assigned, not user-selectable)
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'system.initial_load',
     'Initial system bootstrap or migration',
     'system',
@@ -82,7 +82,7 @@ select ores.upsert_change_reason(
     0       -- display order
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'system.new_record',
     'New record created during normal operations',
     'system',
@@ -92,7 +92,7 @@ select ores.upsert_change_reason(
     10      -- display order
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'system.external_data_import',
     'External data import (requires data lineage)',
     'system',
@@ -102,7 +102,7 @@ select ores.upsert_change_reason(
     20      -- display order
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'system.test',
     'Test data for automated testing',
     'system',
@@ -112,7 +112,7 @@ select ores.upsert_change_reason(
     30      -- display order
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'system.import',
     'Data imported via CLI import command',
     'system',
@@ -129,7 +129,7 @@ select ores.upsert_change_reason(
 \echo ''
 \echo '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.non_material_update',
     'Non-material update (Touch)',
     'common',
@@ -139,7 +139,7 @@ select ores.upsert_change_reason(
     10
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.rectification',
     'User/Booking Error',
     'common',
@@ -149,7 +149,7 @@ select ores.upsert_change_reason(
     20
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.duplicate',
     'Duplicate Record',
     'common',
@@ -159,7 +159,7 @@ select ores.upsert_change_reason(
     30
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.stale_data',
     'Data not updated within required liquidity horizon',
     'common',
@@ -169,7 +169,7 @@ select ores.upsert_change_reason(
     40
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.outlier_correction',
     'Manual override after plausibility check failure',
     'common',
@@ -179,7 +179,7 @@ select ores.upsert_change_reason(
     50
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.feed_failure',
     'Upstream vendor/API data issue',
     'common',
@@ -189,7 +189,7 @@ select ores.upsert_change_reason(
     60
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.mapping_error',
     'Incorrect ID translation (e.g., ISIN to FIGI)',
     'common',
@@ -199,7 +199,7 @@ select ores.upsert_change_reason(
     70
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.judgmental_override',
     'Expert judgment when market prices unavailable',
     'common',
@@ -209,7 +209,7 @@ select ores.upsert_change_reason(
     80
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.regulatory',
     'Mandatory compliance adjustment',
     'common',
@@ -219,7 +219,7 @@ select ores.upsert_change_reason(
     90
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'common.other',
     'Exceptional (requires audit note)',
     'common',
@@ -236,7 +236,7 @@ select ores.upsert_change_reason(
 \echo ''
 \echo '--- Change Reasons: Trade (FINRA / MiFID II) ---'
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'trade.fat_finger',
     'Erroneous execution (wrong quantity/price)',
     'trade',
@@ -246,7 +246,7 @@ select ores.upsert_change_reason(
     10
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'trade.system_malfunction',
     'Technical glitch or algorithm issue',
     'trade',
@@ -256,7 +256,7 @@ select ores.upsert_change_reason(
     20
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'trade.corporate_action',
     'Stock split, dividend, or merger adjustment',
     'trade',
@@ -266,7 +266,7 @@ select ores.upsert_change_reason(
     30
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'trade.allocation_swap',
     'House to client sub-account reallocation',
     'trade',
@@ -276,7 +276,7 @@ select ores.upsert_change_reason(
     40
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'trade.re_booking',
     'Wrong legal entity correction',
     'trade',
@@ -286,7 +286,7 @@ select ores.upsert_change_reason(
     50
 );
 
-select ores.upsert_change_reason(
+select public.upsert_change_reason(
     'trade.other',
     'Exceptional (requires audit note)',
     'trade',
@@ -304,14 +304,14 @@ select ores.upsert_change_reason(
 \echo '--- Summary ---'
 
 select 'Change Reason Categories' as entity, count(*) as count
-from ores.dq_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_change_reason_categories_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons (system)', count(*)
-from ores.dq_change_reasons_tbl where category_code = 'system' and valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_change_reasons_tbl where category_code = 'system' and valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons (common)', count(*)
-from ores.dq_change_reasons_tbl where category_code = 'common' and valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_change_reasons_tbl where category_code = 'common' and valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons (trade)', count(*)
-from ores.dq_change_reasons_tbl where category_code = 'trade' and valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_change_reasons_tbl where category_code = 'trade' and valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

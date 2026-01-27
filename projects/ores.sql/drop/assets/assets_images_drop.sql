@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop rule if exists assets_images_delete_rule on "ores"."assets_images_tbl";
-drop trigger if exists assets_images_insert_trg on "ores"."assets_images_tbl";
-drop function if exists ores.assets_images_insert_fn;
+drop rule if exists assets_images_delete_rule on "production"."assets_images_tbl";
+drop trigger if exists assets_images_insert_trg on "production"."assets_images_tbl";
+drop function if exists production.assets_images_insert_fn;
 drop index if exists assets_images_key_uniq_idx;
 drop index if exists assets_images_version_uniq_idx;
-drop table if exists "ores"."assets_images_tbl";
+drop table if exists "production"."assets_images_tbl";

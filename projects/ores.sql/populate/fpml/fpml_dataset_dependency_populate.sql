@@ -6,7 +6,7 @@
  * Must be run after fpml dataset populate scripts.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FPML Dataset Dependencies
@@ -14,13 +14,13 @@ set schema 'ores';
 
 \echo '--- FPML Dataset Dependencies ---'
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'fpml.non_iso_currency',
     'assets.country_flags',
     'visual_assets'
 );
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'fpml.business_center',
     'assets.country_flags',
     'visual_assets'

@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Financial Entity Indicator as defined by the CFTC. - Artefact Table
 -- =============================================================================
 
-create table if not exists "ores"."dq_entity_classifications_artefact_tbl" (
+create table if not exists "metadata"."dq_entity_classifications_artefact_tbl" (
     "dataset_id" uuid not null,
     "code" text not null,
     "version" integer not null,
@@ -33,10 +33,10 @@ create table if not exists "ores"."dq_entity_classifications_artefact_tbl" (
 );
 
 create index if not exists dq_entity_classifications_artefact_dataset_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (dataset_id);
+on "metadata"."dq_entity_classifications_artefact_tbl" (dataset_id);
 
 create index if not exists dq_entity_classifications_artefact_code_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (code);
+on "metadata"."dq_entity_classifications_artefact_tbl" (code);
 
 create index if not exists dq_entity_classifications_artefact_coding_scheme_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (coding_scheme_code);
+on "metadata"."dq_entity_classifications_artefact_tbl" (coding_scheme_code);

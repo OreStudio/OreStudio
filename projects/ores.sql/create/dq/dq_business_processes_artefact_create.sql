@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Contains a code representing the type of business process a message (e.g. a status request) applies to. - Artefact Table
 -- =============================================================================
 
-create table if not exists "ores"."dq_business_processes_artefact_tbl" (
+create table if not exists "metadata"."dq_business_processes_artefact_tbl" (
     "dataset_id" uuid not null,
     "code" text not null,
     "version" integer not null,
@@ -33,10 +33,10 @@ create table if not exists "ores"."dq_business_processes_artefact_tbl" (
 );
 
 create index if not exists dq_business_processes_artefact_dataset_idx
-on "ores"."dq_business_processes_artefact_tbl" (dataset_id);
+on "metadata"."dq_business_processes_artefact_tbl" (dataset_id);
 
 create index if not exists dq_business_processes_artefact_code_idx
-on "ores"."dq_business_processes_artefact_tbl" (code);
+on "metadata"."dq_business_processes_artefact_tbl" (code);
 
 create index if not exists dq_business_processes_artefact_coding_scheme_idx
-on "ores"."dq_business_processes_artefact_tbl" (coding_scheme_code);
+on "metadata"."dq_business_processes_artefact_tbl" (coding_scheme_code);

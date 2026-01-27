@@ -12,16 +12,17 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SQL_DIR="${SCRIPT_DIR}/../ores.sql"
-
-# Activate the virtual environment
 VENV_PATH="$SCRIPT_DIR/venv"
+
+# Check virtual environment
 if [ ! -d "$VENV_PATH" ]; then
     echo "Error: Virtual environment not found at $VENV_PATH"
-    echo "Please run: python3 -m venv venv && source venv/bin/activate && pip install pystache"
+    echo "Please run: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
     exit 1
 fi
 
 source "$VENV_PATH/bin/activate"
+cd "$SCRIPT_DIR"
 
 echo "=== ER Diagram Generation ==="
 

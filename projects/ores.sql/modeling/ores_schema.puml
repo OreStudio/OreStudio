@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-01-24T15:52:14.103733Z
+' Generated: 2026-01-27T00:08:16.543741Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -27,6 +27,10 @@ skinparam linetype ortho
 
 note as SchemaNote
 ORES Database Schema
+
+Schemas:
+- metadata: Data governance, classification, staging (dq_*)
+- production: Operational data (refdata_*, iam_*, assets_*, etc.)
 
 All temporal tables use valid_from/valid_to
 for bitemporal data management. Junction tables enable
@@ -534,6 +538,20 @@ package "refdata" #FFF3E0 {
     Contains a code representing a reporting regime under which this transaction may be reported.
     end note
 
+    entity refdata_rounding_types_tbl  #F7E5FF {
+        --
+        * code : text
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of refdata_rounding_types_tbl
+    Rounding Types Lookup Table
+    Defines valid rounding methods per ORE XML schema (roundingType).
+    Static configuration data - no bitemporal support required.
+    end note
+
     entity refdata_supervisory_bodies_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
@@ -569,6 +587,23 @@ package "dq" #E1F5FE {
 
     note right of dq_account_types_artefact_tbl
     Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table
+    end note
+
+    entity dq_artefact_types_tbl  #F7E5FF {
+        --
+        * code : text
+        * name : text
+          description : text
+          artefact_table : text
+          target_table : text
+          populate_function : text
+        * display_order : integer
+    }
+
+    note right of dq_artefact_types_tbl
+    Artefact Types Lookup Table
+    Maps artefact type codes to their population functions and tables.
+    Static configuration data - no bitemporal support required.
     end note
 
     entity dq_asset_classes_artefact_tbl  #F7E5FF {
@@ -608,6 +643,29 @@ package "dq" #E1F5FE {
 
     note right of dq_benchmark_rates_artefact_tbl
     FpML Benchmark rates - Artefact Table
+    end note
+
+    entity dq_bundle_publications_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * bundle_code : text
+        * bundle_name : text
+        * mode : text
+        * datasets_processed : integer
+        * datasets_succeeded : integer
+        * datasets_failed : integer
+        * datasets_skipped : integer
+        * total_records_inserted : bigint
+        * total_records_updated : bigint
+        * total_records_skipped : bigint
+        * total_records_deleted : bigint
+        * published_by : text
+        * published_at : timestamptz
+          completed_at : timestamptz
+    }
+
+    note right of dq_bundle_publications_tbl
+    Bundle Publication Audit Table
     end note
 
     entity dq_business_centres_artefact_tbl  #F7E5FF {
@@ -810,6 +868,51 @@ package "dq" #E1F5FE {
     Examples: reference_data, market_data, trade_data.
     end note
 
+    entity dq_dataset_bundle_members_tbl <<temporal>> #C6F0D8 {
+        * bundle_code : text <<PK>>
+        * dataset_code : text <<PK>>
+        --
+        * version : integer
+        * display_order : integer
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of dq_dataset_bundle_members_tbl
+    Junction table linking bundles to their constituent datasets.
+    Uses codes for loose coupling - allows declaring membership for datasets
+    that may not yet exist in the system.
+    Examples:
+    - Bundle "solvaris" contains "slovaris.countries", "slovaris.currencies", etc.
+    - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
+    end note
+
+    entity dq_dataset_bundles_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * version : integer <<unique>>
+        * code : text <<unique>>
+        * name : text <<unique>>
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of dq_dataset_bundles_tbl
+    A named collection of datasets designed to work together. Installing a bundle
+    gets the system into a ready state with a coherent set of reference data.
+    Examples:
+    - "solvaris": Synthetic reference data for development and testing
+    - "base": Industry-standard reference data (ISO + FpML) for production
+    - "crypto": Base system plus cryptocurrency reference data
+    end note
+
     entity dq_dataset_dependencies_tbl <<temporal>> #C6F0D8 {
         * dataset_code : text <<PK>>
         * dependency_code : text <<PK>>
@@ -857,9 +960,7 @@ package "dq" #E1F5FE {
         * as_of_date : timestamptz
         * ingestion_timestamp : timestamptz
           license_info : text
-          artefact_type : text
-          target_table : text
-          populate_function : text
+        * artefact_type : text
         * modified_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
@@ -1229,6 +1330,8 @@ assets_images_tbl ||--o{ dq_countries_artefact_tbl : "has"
 dq_datasets_tbl ||--o{ dq_currencies_artefact_tbl : "contains"
 assets_images_tbl ||--o{ dq_currencies_artefact_tbl : "has"
 dq_change_reasons_tbl ||--o{ dq_data_domains_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_dataset_bundles_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_dataset_bundle_members_tbl : "reason for"
 dq_catalogs_tbl ||--o{ dq_datasets_tbl : "groups"
 dq_subject_areas_tbl ||--o{ dq_datasets_tbl : "classifies"
 dq_data_domains_tbl ||--o{ dq_datasets_tbl : "groups"

@@ -30,9 +30,9 @@
  * - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
  */
 
-set schema 'ores';
+set schema 'metadata';
 
-create table if not exists "ores"."dq_dataset_bundle_members_tbl" (
+create table if not exists "metadata"."dq_dataset_bundle_members_tbl" (
     "bundle_code" text not null,
     "dataset_code" text not null,
     "version" integer not null,
@@ -54,30 +54,30 @@ create table if not exists "ores"."dq_dataset_bundle_members_tbl" (
 
 -- Index for looking up datasets in a bundle
 create index if not exists dq_dataset_bundle_members_bundle_idx
-on "ores"."dq_dataset_bundle_members_tbl" (bundle_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_dataset_bundle_members_tbl" (bundle_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Index for finding bundles containing a dataset
 create index if not exists dq_dataset_bundle_members_dataset_idx
-on "ores"."dq_dataset_bundle_members_tbl" (dataset_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_dataset_bundle_members_tbl" (dataset_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists dq_dataset_bundle_members_uniq_idx
-on "ores"."dq_dataset_bundle_members_tbl" (bundle_code, dataset_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_dataset_bundle_members_tbl" (bundle_code, dataset_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_dataset_bundle_members_insert_fn()
+create or replace function metadata.dq_dataset_bundle_members_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Version management
     select version into current_version
-    from "ores"."dq_dataset_bundle_members_tbl"
+    from "metadata"."dq_dataset_bundle_members_tbl"
     where bundle_code = new.bundle_code
     and dataset_code = new.dataset_code
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -88,39 +88,39 @@ begin
         new.version = current_version + 1;
 
         -- Close existing record
-        update "ores"."dq_dataset_bundle_members_tbl"
+        update "metadata"."dq_dataset_bundle_members_tbl"
         set valid_to = current_timestamp
         where bundle_code = new.bundle_code
         and dataset_code = new.dataset_code
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
 
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger dq_dataset_bundle_members_insert_trg
-before insert on "ores"."dq_dataset_bundle_members_tbl"
+before insert on "metadata"."dq_dataset_bundle_members_tbl"
 for each row
-execute function ores.dq_dataset_bundle_members_insert_fn();
+execute function metadata.dq_dataset_bundle_members_insert_fn();
 
 create or replace rule dq_dataset_bundle_members_delete_rule as
-on delete to "ores"."dq_dataset_bundle_members_tbl"
+on delete to "metadata"."dq_dataset_bundle_members_tbl"
 do instead
-  update "ores"."dq_dataset_bundle_members_tbl"
+  update "metadata"."dq_dataset_bundle_members_tbl"
   set valid_to = current_timestamp
   where bundle_code = old.bundle_code
   and dataset_code = old.dataset_code
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

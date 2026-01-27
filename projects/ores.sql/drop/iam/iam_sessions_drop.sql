@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 drop index if exists iam_sessions_active_idx;
-drop table if exists "ores"."iam_sessions_tbl";
+drop table if exists "production"."iam_sessions_tbl";

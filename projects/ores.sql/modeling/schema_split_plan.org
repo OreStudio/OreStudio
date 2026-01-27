@@ -1,0 +1,483 @@
+:PROPERTIES:
+:ID: F8A2C1D4-E5B3-4A7F-9C6D-2B8E1F0A3D5C
+:END:
+#+title: Schema Split Migration Plan
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+Migration plan for splitting the single =ores= schema into =metadata= and
+=production= schemas.
+
+* Overview
+
+** Current State
+
+All tables exist in a single =ores= schema with prefix-based organization:
+- =dq_*= tables for data quality/governance
+- =refdata_*= tables for reference data
+- =iam_*= tables for identity management
+- =assets_*=, =geo_*=, =variability_*= for other domains
+
+** Target State
+
+Two schemas with clear separation of concerns:
+
+| Schema       | Purpose                              | Tables                |
+|--------------+--------------------------------------+-----------------------|
+| =metadata=   | Define, classify, and stage data     | All =dq_*= tables     |
+| =production= | Operational data for consumption     | =refdata_*=, =iam_*=, =assets_*=, =geo_*=, =variability_*= |
+
+* Scope Analysis
+
+** File Counts
+
+| Category           | Count | Notes                                    |
+|--------------------+-------+------------------------------------------|
+| Table creation     |   129 | All need schema qualification            |
+| Table drop         |   131 | All need schema qualification            |
+| Populate           |   114 | All need schema qualification            |
+| Orchestration      |    10 | Some need reordering                     |
+| Setup/teardown     |     6 | Schema creation statements               |
+| Function files     |   26+ | FK validation logic                      |
+| Total SQL files    |   420 | ~312 =set schema= statements             |
+
+** Schema Assignment
+
+*** metadata Schema
+
+All =dq_*= prefixed tables move to =metadata=:
+
+| Directory        | Files | Tables                                          |
+|------------------+-------+-------------------------------------------------|
+| change_control/  |     6 | =dq_change_reason_categories_tbl=               |
+|                  |       | =dq_change_reasons_tbl=                         |
+| dq/              |    77 | =dq_data_domains_tbl=                           |
+|                  |       | =dq_subject_areas_tbl=                          |
+|                  |       | =dq_origin_dimensions_tbl=                      |
+|                  |       | =dq_nature_dimensions_tbl=                      |
+|                  |       | =dq_treatment_dimensions_tbl=                   |
+|                  |       | =dq_coding_scheme_authority_types_tbl=          |
+|                  |       | =dq_coding_schemes_tbl=                         |
+|                  |       | =dq_methodologies_tbl=                          |
+|                  |       | =dq_artefact_types_tbl=                         |
+|                  |       | =dq_catalogs_tbl=                               |
+|                  |       | =dq_datasets_tbl=                               |
+|                  |       | =dq_dataset_bundles_tbl=                        |
+|                  |       | =dq_dataset_bundle_members_tbl=                 |
+|                  |       | =dq_dataset_dependencies_tbl=                   |
+|                  |       | =dq_publications_tbl=                           |
+|                  |       | =dq_bundle_publications_tbl=                    |
+|                  |       | All =dq_*_artefact_tbl= (20+ tables)            |
+
+*** production Schema
+
+All non-=dq_*= tables move to =production=:
+
+| Directory    | Files | Tables                                          |
+|--------------+-------+-------------------------------------------------|
+| refdata/     |    61 | =refdata_countries_tbl=                         |
+|              |       | =refdata_currencies_tbl=                        |
+|              |       | =refdata_rounding_types_tbl=                    |
+|              |       | All FPML =refdata_*_tbl= tables                 |
+| iam/         |    14 | =iam_accounts_tbl=                              |
+|              |       | =iam_roles_tbl=                                 |
+|              |       | =iam_permissions_tbl=                           |
+|              |       | =iam_account_roles_tbl=                         |
+|              |       | =iam_role_permissions_tbl=                      |
+|              |       | =iam_login_info_tbl=                            |
+| assets/      |     4 | =assets_images_tbl=                             |
+|              |       | =assets_tags_tbl=                               |
+|              |       | =assets_image_tags_tbl=                         |
+| geo/         |     2 | =geo_ip2country_tbl=                            |
+| variability/ |     3 | =variability_feature_flags_tbl=                 |
+| telemetry/   |     3 | =telemetry_logs_tbl=                            |
+
+*** Shared Utilities
+
+| Directory | Files | Decision                                         |
+|-----------+-------+--------------------------------------------------|
+| utility/  |     3 | Create in =public= schema or duplicate in both   |
+| seed/     |     2 | Create in =public= schema (used by both)         |
+
+* Cross-Schema Dependencies
+
+** Foreign Key References (production -> metadata)
+
+These production tables reference metadata tables:
+
+| Production Table             | FK Column             | References                        |
+|------------------------------+-----------------------+-----------------------------------|
+| =refdata_countries_tbl=      | =coding_scheme_code=  | =metadata.dq_coding_schemes_tbl=  |
+| =refdata_currencies_tbl=     | =coding_scheme_code=  | =metadata.dq_coding_schemes_tbl=  |
+| All =refdata_*_tbl=          | =change_reason_code=  | =metadata.dq_change_reasons_tbl=  |
+| All =iam_*_tbl=              | =change_reason_code=  | =metadata.dq_change_reasons_tbl=  |
+| All =assets_*_tbl=           | =change_reason_code=  | =metadata.dq_change_reasons_tbl=  |
+
+** Internal References (within metadata)
+
+| Table                        | FK Column                 | References                    |
+|------------------------------+---------------------------+-------------------------------|
+| =dq_datasets_tbl=            | =upstream_derivation_id=  | =dq_datasets_tbl= (self)      |
+| =dq_datasets_tbl=            | =catalog_name=            | =dq_catalogs_tbl=             |
+| =dq_datasets_tbl=            | =methodology_id=          | =dq_methodologies_tbl=        |
+| =dq_publications_tbl=        | =dataset_id=              | =dq_datasets_tbl=             |
+| =dq_coding_schemes_tbl=      | =authority_type=          | =dq_coding_scheme_authority_types_tbl= |
+
+* Migration Phases
+
+** Phase 1: Infrastructure Setup
+
+Update schema creation in setup files.
+
+*** Files to Modify
+
+| File                        | Changes                                      |
+|-----------------------------+----------------------------------------------|
+| =setup_template.sql=        | Create both schemas, update grants           |
+| =create_database_direct.sql=| Create both schemas, update grants           |
+| =setup_user.sql=            | Grant permissions on both schemas            |
+
+*** Schema Creation Script
+
+#+begin_src sql
+-- Create schemas
+create schema if not exists metadata;
+create schema if not exists production;
+
+-- Grant permissions
+grant usage on schema metadata to ores;
+grant usage on schema production to ores;
+grant create on schema metadata to ores;
+grant create on schema production to ores;
+grant all privileges on all tables in schema metadata to ores;
+grant all privileges on all tables in schema production to ores;
+grant all privileges on all sequences in schema metadata to ores;
+grant all privileges on all sequences in schema production to ores;
+
+-- Set default privileges for future tables
+alter default privileges in schema metadata grant all on tables to ores;
+alter default privileges in schema metadata grant all on sequences to ores;
+alter default privileges in schema production grant all on tables to ores;
+alter default privileges in schema production grant all on sequences to ores;
+
+-- Set search path for convenience
+alter role ores set search_path to production, metadata, public;
+#+end_src
+
+** Phase 2: Update Create Files
+
+Change =set schema 'ores';= to appropriate schema in all create files.
+
+*** Metadata Schema Files (83 files)
+
+#+begin_example
+create/change_control/*.sql  -> set schema 'metadata';
+create/dq/*.sql              -> set schema 'metadata';
+#+end_example
+
+*** Production Schema Files (87 files)
+
+#+begin_example
+create/refdata/*.sql         -> set schema 'production';
+create/iam/*.sql             -> set schema 'production';
+create/assets/*.sql          -> set schema 'production';
+create/geo/*.sql             -> set schema 'production';
+create/variability/*.sql     -> set schema 'production';
+create/telemetry/*.sql       -> set schema 'production';
+#+end_example
+
+*** Utility Files (5 files)
+
+#+begin_example
+create/utility/*.sql         -> set schema 'public';
+create/seed/*.sql            -> set schema 'public';
+#+end_example
+
+** Phase 3: Update FK Validation Functions
+
+Trigger functions that validate foreign keys need cross-schema references.
+
+*** Pattern: Current
+
+#+begin_src sql
+-- In production table trigger
+select 1 into v_exists
+from ores.dq_coding_schemes_tbl
+where code = p_row.coding_scheme_code;
+#+end_src
+
+*** Pattern: Updated
+
+#+begin_src sql
+-- In production table trigger
+select 1 into v_exists
+from metadata.dq_coding_schemes_tbl
+where code = p_row.coding_scheme_code;
+#+end_src
+
+*** Files Requiring FK Validation Updates
+
+All production table create files with triggers that reference =dq_*= tables:
+
+| File                                     | FK References                           |
+|------------------------------------------+-----------------------------------------|
+| =refdata/refdata_currencies_create.sql=  | =dq_coding_schemes_tbl=                 |
+| =refdata/refdata_countries_create.sql=   | =dq_coding_schemes_tbl=                 |
+| All =refdata/*_create.sql=               | =dq_change_reasons_tbl=                 |
+| All =iam/*_create.sql=                   | =dq_change_reasons_tbl=                 |
+| All =assets/*_create.sql=                | =dq_change_reasons_tbl=                 |
+
+** Phase 4: Update Population Functions
+
+DQ population functions write from artefact tables to production tables.
+
+*** Pattern: Current
+
+#+begin_src sql
+insert into ores.refdata_countries_tbl (...)
+select ...
+from ores.dq_countries_artefact_tbl;
+#+end_src
+
+*** Pattern: Updated
+
+#+begin_src sql
+insert into production.refdata_countries_tbl (...)
+select ...
+from metadata.dq_countries_artefact_tbl;
+#+end_src
+
+*** Files Requiring Updates
+
+| File                                              | Source Schema | Target Schema |
+|---------------------------------------------------+---------------+---------------|
+| =dq/dq_population_functions_create.sql=           | metadata      | production    |
+| =dq/dq_*_population_functions_create.sql= (all)   | metadata      | production    |
+
+** Phase 5: Update Drop Files
+
+Change schema references in all drop files.
+
+*** Drop Order Consideration
+
+Due to cross-schema FKs, production must be dropped before metadata:
+
+#+begin_example
+Current order (single schema):
+  geo -> dq -> assets -> telemetry -> iam -> variability -> refdata -> change_control
+
+New order (cross-schema):
+  1. production schema tables (in dependency order)
+  2. metadata schema tables (in dependency order)
+
+Specific order:
+  production: geo -> assets -> telemetry -> iam -> variability -> refdata
+  metadata:   dq -> change_control
+  public:     seed -> utility
+#+end_example
+
+** Phase 6: Update Populate Files
+
+Change =set schema= and table references in all populate files.
+
+*** Files by Target Schema
+
+| Directory                  | Target Schema | Files |
+|----------------------------+---------------+-------|
+| =populate/foundation/=     | metadata      |     6 |
+| =populate/governance/=     | metadata      |     4 |
+| =populate/catalogues/=     | metadata      |    89 |
+| =populate/iam/=            | production    |     2 |
+
+** Phase 7: Update Orchestration
+
+Review and update main orchestration files.
+
+*** Create Order
+
+#+begin_src sql
+-- create/create.sql
+
+-- 1. Public utilities (shared)
+\ir utility/create_utility.sql
+\ir seed/create_seed.sql
+
+-- 2. Metadata schema (must be first - no external dependencies)
+\ir change_control/create_change_control.sql
+\ir dq/create_dq.sql
+
+-- 3. Production schema (depends on metadata)
+\ir refdata/create_refdata.sql
+\ir iam/create_iam.sql
+\ir variability/create_variability.sql
+\ir telemetry/create_telemetry.sql
+\ir assets/create_assets.sql
+\ir geo/create_geo.sql
+#+end_src
+
+*** Drop Order
+
+#+begin_src sql
+-- drop/drop.sql
+
+-- 1. Production schema first (has FKs to metadata)
+\ir geo/drop_geo.sql
+\ir assets/drop_assets.sql
+\ir telemetry/drop_telemetry.sql
+\ir variability/drop_variability.sql
+\ir iam/drop_iam.sql
+\ir refdata/drop_refdata.sql
+
+-- 2. Metadata schema second
+\ir dq/drop_dq.sql
+\ir change_control/drop_change_control.sql
+
+-- 3. Public utilities last
+\ir seed/drop_seed.sql
+\ir utility/drop_utility.sql
+#+end_src
+
+* Implementation Strategy
+
+** Option A: Big Bang (All at Once)
+
+Modify all 420 files in a single coordinated change.
+
+Pros:
+- Single consistent state
+- No intermediate broken states
+- Cleaner git history
+
+Cons:
+- Large change, harder to review
+- Higher risk of errors
+- Difficult to test incrementally
+
+** Option B: Incremental Migration (Recommended)
+
+Migrate in phases with working intermediate states.
+
+*** Step 1: Add Schema Infrastructure
+
+- Create both schemas alongside existing =ores=
+- Add new search path configuration
+- No table changes yet
+
+*** Step 2: Migrate Metadata Tables
+
+- Move all =dq_*= and =change_control= tables to =metadata= schema
+- Update relevant create/drop/populate files
+- Test metadata schema independently
+
+*** Step 3: Migrate Production Tables
+
+- Move all remaining tables to =production= schema
+- Update FK validation to reference =metadata.dq_*=
+- Update population functions for cross-schema writes
+
+*** Step 4: Remove Old Schema
+
+- Remove =ores= schema
+- Update search path
+- Final testing
+
+** Recommended: Option B with Automation
+
+Use scripted transformations for bulk changes:
+
+#+begin_src bash
+# Example: Update all dq/ create files to use metadata schema
+for f in create/dq/*.sql create/change_control/*.sql; do
+    sed -i "s/set schema 'ores'/set schema 'metadata'/g" "$f"
+done
+
+# Example: Update all refdata/ create files to use production schema
+for f in create/refdata/*.sql create/iam/*.sql create/assets/*.sql \
+         create/geo/*.sql create/variability/*.sql create/telemetry/*.sql; do
+    sed -i "s/set schema 'ores'/set schema 'production'/g" "$f"
+done
+#+end_src
+
+* Testing Strategy
+
+** Unit Tests
+
+- Verify each table creates in correct schema
+- Verify FK validation works across schemas
+- Verify triggers fire correctly
+
+** Integration Tests
+
+- Full schema creation from template
+- Complete population flow (foundation -> governance -> catalogues)
+- Publication from metadata artefacts to production tables
+- Drop/recreate cycle
+
+** Regression Tests
+
+- Ensure all existing queries work with search_path
+- Verify application connections function correctly
+
+* Risk Mitigation
+
+| Risk                              | Mitigation                                    |
+|-----------------------------------+-----------------------------------------------|
+| Cross-schema FK validation fails  | Test trigger functions thoroughly             |
+| Search path issues                | Set explicit search path in connection string |
+| Population functions break        | Test each population function individually    |
+| Drop order causes FK violations   | Carefully order drops, test teardown          |
+| Application queries fail          | Use search_path or fully qualify in app code  |
+
+* Estimated Effort
+
+| Phase                    | Files | Estimated Effort |
+|--------------------------+-------+------------------|
+| Phase 1: Infrastructure  |     3 | Small            |
+| Phase 2: Create files    |   175 | Medium (scripted)|
+| Phase 3: FK validation   |    40 | Medium (manual)  |
+| Phase 4: Population fns  |    26 | Medium (manual)  |
+| Phase 5: Drop files      |   131 | Small (scripted) |
+| Phase 6: Populate files  |   114 | Small (scripted) |
+| Phase 7: Orchestration   |    10 | Small            |
+| Testing                  |     - | Medium           |
+
+Total: ~500 file modifications, mostly scriptable.
+
+* Appendix: File Inventory
+
+** Metadata Schema Files
+
+#+begin_example
+create/change_control/create_change_control.sql
+create/change_control/dq_change_reason_categories_create.sql
+create/change_control/dq_change_reason_categories_notify_trigger_create.sql
+create/change_control/dq_change_reason_functions_create.sql
+create/change_control/dq_change_reasons_create.sql
+create/change_control/dq_change_reasons_notify_trigger_create.sql
+
+create/dq/create_dq.sql
+create/dq/dq_*_create.sql (77 files)
+#+end_example
+
+** Production Schema Files
+
+#+begin_example
+create/refdata/create_refdata.sql
+create/refdata/refdata_*_create.sql (60 files)
+
+create/iam/create_iam.sql
+create/iam/iam_*_create.sql (13 files)
+
+create/assets/create_assets.sql
+create/assets/assets_*_create.sql (3 files)
+
+create/geo/create_geo.sql
+create/geo/geo_*_create.sql (1 file)
+
+create/variability/create_variability.sql
+create/variability/variability_*_create.sql (2 files)
+
+create/telemetry/create_telemetry.sql
+create/telemetry/telemetry_*_create.sql (2 files)
+#+end_example

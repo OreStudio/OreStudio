@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop trigger if exists refdata_entity_classifications_notify_trg on "ores"."refdata_entity_classifications_tbl";
-drop function if exists ores.refdata_entity_classifications_notify_fn;
+drop trigger if exists refdata_entity_classifications_notify_trg on "production"."refdata_entity_classifications_tbl";
+drop function if exists production.refdata_entity_classifications_notify_fn;

@@ -6,7 +6,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Standards Catalog
@@ -14,7 +14,7 @@ set schema 'ores';
 
 \echo '--- FpML Standards Catalog ---'
 
-select ores.upsert_dq_catalogs(
+select public.upsert_dq_catalogs(
     'FpML Standards',
     'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
     'Reference Data Team'

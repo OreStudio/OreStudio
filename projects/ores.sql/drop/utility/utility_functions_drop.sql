@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'public';
 
-drop function if exists ores.summary_all_layers_fn cascade;
-drop function if exists ores.summary_production_layer_fn cascade;
-drop function if exists ores.summary_catalogues_layer_fn cascade;
-drop function if exists ores.summary_governance_layer_fn cascade;
-drop function if exists ores.summary_foundation_layer_fn cascade;
-drop type if exists ores.layer_summary_row cascade;
-drop function if exists ores.utility_infinity_timestamp_fn cascade;
+drop function if exists public.summary_all_layers_fn cascade;
+drop function if exists public.summary_production_layer_fn cascade;
+drop function if exists public.summary_catalogues_layer_fn cascade;
+drop function if exists public.summary_governance_layer_fn cascade;
+drop function if exists public.summary_foundation_layer_fn cascade;
+drop type if exists public.layer_summary_row cascade;
+drop function if exists public.utility_infinity_timestamp_fn cascade;

@@ -30,7 +30,7 @@
  * - Mock: Static, hand-written data for unit tests
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Nature Dimensions
@@ -38,19 +38,19 @@ set schema 'ores';
 
 \echo '--- Data Quality Nature Dimensions ---'
 
-select ores.upsert_dq_nature_dimensions(
+select public.upsert_dq_nature_dimensions(
     'Actual',
     'Actual Data',
     'Real-world data (replaces "Real").'
 );
 
-select ores.upsert_dq_nature_dimensions(
+select public.upsert_dq_nature_dimensions(
     'Synthetic',
     'Synthetic Data',
     'Artificially generated data for testing/modeling.'
 );
 
-select ores.upsert_dq_nature_dimensions(
+select public.upsert_dq_nature_dimensions(
     'Mock',
     'Mock Data',
     'Static, hand-written data for unit tests.'
@@ -64,5 +64,5 @@ select ores.upsert_dq_nature_dimensions(
 \echo '--- Summary ---'
 
 select 'Data Quality Nature Dimensions' as entity, count(*) as count
-from ores.dq_nature_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_nature_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

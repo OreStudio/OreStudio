@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
-drop function if exists ores.dq_list_populatable_datasets_fn;
-drop function if exists ores.dq_preview_image_population_fn;
-drop function if exists ores.dq_populate_images_fn;
-drop function if exists ores.dq_preview_country_population_fn;
-drop function if exists ores.dq_populate_countries_fn;
-drop function if exists ores.dq_preview_currency_population_fn;
-drop function if exists ores.dq_populate_currencies_fn;
-drop function if exists ores.dq_preview_ip2country_population_fn;
-drop function if exists ores.dq_populate_ip2country_fn;
+drop function if exists metadata.dq_list_populatable_datasets_fn;
+drop function if exists metadata.dq_preview_image_population_fn;
+drop function if exists metadata.dq_populate_images_fn;
+drop function if exists metadata.dq_preview_country_population_fn;
+drop function if exists metadata.dq_populate_countries_fn;
+drop function if exists metadata.dq_preview_currency_population_fn;
+drop function if exists metadata.dq_populate_currencies_fn;
+drop function if exists metadata.dq_preview_ip2country_population_fn;
+drop function if exists metadata.dq_populate_ip2country_fn;

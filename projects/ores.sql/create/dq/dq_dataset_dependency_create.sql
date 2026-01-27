@@ -35,9 +35,9 @@
  * - "crypto.large" and "crypto.small" depend on "assets.crypto_icons" for icon display
  */
 
-set schema 'ores';
+set schema 'metadata';
 
-create table if not exists "ores"."dq_dataset_dependencies_tbl" (
+create table if not exists "metadata"."dq_dataset_dependencies_tbl" (
     "dataset_code" text not null,
     "dependency_code" text not null,
     "role" text not null,
@@ -59,53 +59,53 @@ create table if not exists "ores"."dq_dataset_dependencies_tbl" (
 
 -- Index for looking up dependencies of a dataset
 create index if not exists dq_dataset_dependencies_dataset_idx
-on "ores"."dq_dataset_dependencies_tbl" (dataset_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_dataset_dependencies_tbl" (dataset_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Index for finding datasets that depend on a given dataset
 create index if not exists dq_dataset_dependencies_dependency_idx
-on "ores"."dq_dataset_dependencies_tbl" (dependency_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_dataset_dependencies_tbl" (dependency_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists dq_dataset_dependencies_uniq_idx
-on "ores"."dq_dataset_dependencies_tbl" (dataset_code, dependency_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_dataset_dependencies_tbl" (dataset_code, dependency_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_dataset_dependencies_insert_fn()
+create or replace function metadata.dq_dataset_dependencies_insert_fn()
 returns trigger as $$
 begin
     -- Close any existing record for this dependency
-    update "ores"."dq_dataset_dependencies_tbl"
+    update "metadata"."dq_dataset_dependencies_tbl"
     set valid_to = current_timestamp
     where dataset_code = new.dataset_code
     and dependency_code = new.dependency_code
-    and valid_to = ores.utility_infinity_timestamp_fn()
+    and valid_to = public.utility_infinity_timestamp_fn()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
 
     if new.recorded_by is null or new.recorded_by = '' then
         new.recorded_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger dq_dataset_dependencies_insert_trg
-before insert on "ores"."dq_dataset_dependencies_tbl"
+before insert on "metadata"."dq_dataset_dependencies_tbl"
 for each row
-execute function ores.dq_dataset_dependencies_insert_fn();
+execute function metadata.dq_dataset_dependencies_insert_fn();
 
 create or replace rule dq_dataset_dependencies_delete_rule as
-on delete to "ores"."dq_dataset_dependencies_tbl"
+on delete to "metadata"."dq_dataset_dependencies_tbl"
 do instead
-  update "ores"."dq_dataset_dependencies_tbl"
+  update "metadata"."dq_dataset_dependencies_tbl"
   set valid_to = current_timestamp
   where dataset_code = old.dataset_code
   and dependency_code = old.dependency_code
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

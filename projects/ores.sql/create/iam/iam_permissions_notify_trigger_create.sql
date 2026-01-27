@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores.iam_permissions_notify_fn()
+create or replace function production.iam_permissions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -44,5 +44,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger iam_permissions_notify_trg
-after insert or update or delete on ores.iam_permissions_tbl
-for each row execute function ores.iam_permissions_notify_fn();
+after insert or update or delete on production.iam_permissions_tbl
+for each row execute function production.iam_permissions_notify_fn();

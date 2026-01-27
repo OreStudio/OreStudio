@@ -28,7 +28,7 @@
  * Use dq_populate_entity_classifications() to publish to production.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Cftc Entity Classification
@@ -43,20 +43,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where code = 'fpml.cftc_entity_classification'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.cftc_entity_classification not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from ores.dq_entity_classifications_artefact_tbl
+    delete from metadata.dq_entity_classifications_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +67,7 @@ begin
         'A commodity pool as defined in CFTC CEA § 2(h)(7)(C).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +78,7 @@ begin
         'An employee benefit plan as defined in paragraphs (3) and (32) of section 1002 of title 29 of the Commodity Exchange Act (CEA).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +89,7 @@ begin
         'A person predominantly engaged in activities that are in the business of banking, or in activities that are financial in nature, as defined in section 1843(k) of title 12 of the Commodity Exchange Act (CEA).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +100,7 @@ begin
         'A major security based swap participant as defined in CFTC CEA § 2(h)(7)(C).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +111,7 @@ begin
         'A major swap participant as defined in CFTC CEA § 2(h)(7)(C).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +122,7 @@ begin
         'None of the other codes apply.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +133,7 @@ begin
         'A private fund as defined in section 80b-2(a) of title 15 of the Commodity Exchange Act (CEA).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +144,7 @@ begin
         'A security-based swap dealer as defined in CFTC CEA § 2(h)(7)(C).'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -168,9 +168,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_entity_classifications_artefact' as entity, count(*) as count
-from ores.dq_entity_classifications_artefact_tbl;
+from metadata.dq_entity_classifications_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from ores.dq_entity_classifications_artefact_tbl
+from metadata.dq_entity_classifications_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

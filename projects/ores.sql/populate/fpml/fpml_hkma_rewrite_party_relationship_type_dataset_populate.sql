@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Hkma Rewrite Party Relationship Type Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Hkma Rewrite Party Relationship Type Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.hkma_rewrite_party_relationship_type',
     'FpML Standards',
     'Parties',

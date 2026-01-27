@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
-create table if not exists "ores"."dq_change_reason_categories_tbl" (
+create table if not exists "metadata"."dq_change_reason_categories_tbl" (
     "code" text not null,
     "version" integer not null,
     "description" text not null,
@@ -37,22 +37,22 @@ create table if not exists "ores"."dq_change_reason_categories_tbl" (
 );
 
 create unique index if not exists dq_change_reason_categories_version_uniq_idx
-on "ores"."dq_change_reason_categories_tbl" (code, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_change_reason_categories_tbl" (code, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create unique index if not exists dq_change_reason_categories_code_uniq_idx
-on "ores"."dq_change_reason_categories_tbl" (code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_change_reason_categories_tbl" (code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_change_reason_categories_insert_fn()
+create or replace function metadata.dq_change_reason_categories_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_change_reason_categories_tbl"
+    from "metadata"."dq_change_reason_categories_tbl"
     where code = new.code
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -62,17 +62,17 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores"."dq_change_reason_categories_tbl"
+        update "metadata"."dq_change_reason_categories_tbl"
         set valid_to = current_timestamp
         where code = new.code
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
@@ -82,14 +82,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger dq_change_reason_categories_insert_trg
-before insert on "ores"."dq_change_reason_categories_tbl"
+before insert on "metadata"."dq_change_reason_categories_tbl"
 for each row
-execute function ores.dq_change_reason_categories_insert_fn();
+execute function metadata.dq_change_reason_categories_insert_fn();
 
 create or replace rule dq_change_reason_categories_delete_rule as
-on delete to "ores"."dq_change_reason_categories_tbl"
+on delete to "metadata"."dq_change_reason_categories_tbl"
 do instead
-  update "ores"."dq_change_reason_categories_tbl"
+  update "metadata"."dq_change_reason_categories_tbl"
   set valid_to = current_timestamp
   where code = old.code
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

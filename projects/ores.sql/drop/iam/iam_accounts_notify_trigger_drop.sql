@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop trigger if exists iam_accounts_notify_trg on "ores"."iam_accounts_tbl";
-drop function if exists ores.iam_accounts_notify_fn;
+drop trigger if exists iam_accounts_notify_trg on "production"."iam_accounts_tbl";
+drop function if exists production.iam_accounts_notify_fn;

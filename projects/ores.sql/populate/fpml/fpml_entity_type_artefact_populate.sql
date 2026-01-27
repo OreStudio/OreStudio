@@ -28,7 +28,7 @@
  * Use dq_populate_entity_classifications() to publish to production.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Entity Type
@@ -43,20 +43,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where code = 'fpml.entity_type'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.entity_type not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from ores.dq_entity_classifications_artefact_tbl
+    delete from metadata.dq_entity_classifications_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +67,7 @@ begin
         'Entity Type of Asian.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +78,7 @@ begin
         'Entity Type of Australian and New Zealand.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +89,7 @@ begin
         'Entity Type of European Emerging Markets.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +100,7 @@ begin
         'Entity Type of Japanese.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +111,7 @@ begin
         'Entity Type of North American High Yield.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +122,7 @@ begin
         'Entity Type of North American Insurance.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +133,7 @@ begin
         'Entity Type of North American Investment Grade.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +144,7 @@ begin
         'Entity Type of Singaporean.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +155,7 @@ begin
         'Entity Type of Western European.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_entity_classifications_artefact_tbl (
+    insert into metadata.dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -179,9 +179,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_entity_classifications_artefact' as entity, count(*) as count
-from ores.dq_entity_classifications_artefact_tbl;
+from metadata.dq_entity_classifications_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from ores.dq_entity_classifications_artefact_tbl
+from metadata.dq_entity_classifications_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

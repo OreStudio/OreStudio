@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Many-to-many: accounts to roles.
 -- Tracks who assigned the role.
 -- =============================================================================
 
-create table if not exists "ores"."iam_account_roles_tbl" (
+create table if not exists "production"."iam_account_roles_tbl" (
     "account_id" uuid not null,
     "role_id" uuid not null,
     "assigned_by" text not null,
@@ -44,46 +44,46 @@ create table if not exists "ores"."iam_account_roles_tbl" (
 );
 
 create index if not exists iam_account_roles_account_idx
-on "ores"."iam_account_roles_tbl" (account_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_account_roles_tbl" (account_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists iam_account_roles_role_idx
-on "ores"."iam_account_roles_tbl" (role_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_account_roles_tbl" (role_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.iam_account_roles_insert_fn()
+create or replace function production.iam_account_roles_insert_fn()
 returns trigger as $$
 begin
-    update "ores"."iam_account_roles_tbl"
+    update "production"."iam_account_roles_tbl"
     set valid_to = current_timestamp
     where account_id = new.account_id
     and role_id = new.role_id
-    and valid_to = ores.utility_infinity_timestamp_fn()
+    and valid_to = public.utility_infinity_timestamp_fn()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     new.assigned_at = current_timestamp;
     if new.assigned_by is null or new.assigned_by = '' then
         new.assigned_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger iam_account_roles_insert_trg
-before insert on "ores"."iam_account_roles_tbl"
+before insert on "production"."iam_account_roles_tbl"
 for each row
-execute function ores.iam_account_roles_insert_fn();
+execute function production.iam_account_roles_insert_fn();
 
 create or replace rule iam_account_roles_delete_rule as
-on delete to "ores"."iam_account_roles_tbl"
+on delete to "production"."iam_account_roles_tbl"
 do instead
-  update "ores"."iam_account_roles_tbl"
+  update "production"."iam_account_roles_tbl"
   set valid_to = current_timestamp
   where account_id = old.account_id
   and role_id = old.role_id
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Many-to-many: roles to permissions.
 -- =============================================================================
 
-create table if not exists "ores"."iam_role_permissions_tbl" (
+create table if not exists "production"."iam_role_permissions_tbl" (
     "role_id" uuid not null,
     "permission_id" uuid not null,
     "valid_from" timestamp with time zone not null,
@@ -38,45 +38,45 @@ create table if not exists "ores"."iam_role_permissions_tbl" (
 );
 
 create index if not exists iam_role_permissions_role_idx
-on "ores"."iam_role_permissions_tbl" (role_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_role_permissions_tbl" (role_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists iam_role_permissions_permission_idx
-on "ores"."iam_role_permissions_tbl" (permission_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_role_permissions_tbl" (permission_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists iam_role_permissions_uniq_idx
-on "ores"."iam_role_permissions_tbl" (role_id, permission_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_role_permissions_tbl" (role_id, permission_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.iam_role_permissions_insert_fn()
+create or replace function production.iam_role_permissions_insert_fn()
 returns trigger as $$
 begin
-    update "ores"."iam_role_permissions_tbl"
+    update "production"."iam_role_permissions_tbl"
     set valid_to = current_timestamp
     where role_id = new.role_id
     and permission_id = new.permission_id
-    and valid_to = ores.utility_infinity_timestamp_fn()
+    and valid_to = public.utility_infinity_timestamp_fn()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger iam_role_permissions_insert_trg
-before insert on "ores"."iam_role_permissions_tbl"
+before insert on "production"."iam_role_permissions_tbl"
 for each row
-execute function ores.iam_role_permissions_insert_fn();
+execute function production.iam_role_permissions_insert_fn();
 
 create or replace rule iam_role_permissions_delete_rule as
-on delete to "ores"."iam_role_permissions_tbl"
+on delete to "production"."iam_role_permissions_tbl"
 do instead
-  update "ores"."iam_role_permissions_tbl"
+  update "production"."iam_role_permissions_tbl"
   set valid_to = current_timestamp
   where role_id = old.role_id
   and permission_id = old.permission_id
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

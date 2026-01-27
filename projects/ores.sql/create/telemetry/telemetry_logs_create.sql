@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Application log entries.
@@ -25,7 +25,7 @@ set schema 'ores';
 -- Partitioned by timestamp.
 -- =============================================================================
 
-create table if not exists "ores"."telemetry_logs_tbl" (
+create table if not exists "production"."telemetry_logs_tbl" (
     "id" uuid not null,
     "timestamp" timestamp with time zone not null,
     "source" text not null,
@@ -41,21 +41,21 @@ create table if not exists "ores"."telemetry_logs_tbl" (
 );
 
 create index if not exists telemetry_logs_session_idx
-on "ores"."telemetry_logs_tbl" (session_id, timestamp desc)
+on "production"."telemetry_logs_tbl" (session_id, timestamp desc)
 where session_id is not null;
 
 create index if not exists telemetry_logs_account_idx
-on "ores"."telemetry_logs_tbl" (account_id, timestamp desc)
+on "production"."telemetry_logs_tbl" (account_id, timestamp desc)
 where account_id is not null;
 
 create index if not exists telemetry_logs_level_idx
-on "ores"."telemetry_logs_tbl" (level, timestamp desc);
+on "production"."telemetry_logs_tbl" (level, timestamp desc);
 
 create index if not exists telemetry_logs_source_idx
-on "ores"."telemetry_logs_tbl" (source, source_name, timestamp desc);
+on "production"."telemetry_logs_tbl" (source, source_name, timestamp desc);
 
 create index if not exists telemetry_logs_component_idx
-on "ores"."telemetry_logs_tbl" (component, timestamp desc)
+on "production"."telemetry_logs_tbl" (component, timestamp desc)
 where component != '';
 
 do $$
@@ -72,7 +72,7 @@ begin
         raise notice '=========================================';
 
         perform public.create_hypertable(
-            'ores.telemetry_logs_tbl',
+            'production.telemetry_logs_tbl',
             'timestamp',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
@@ -85,21 +85,21 @@ begin
             select current_setting('timescaledb.license', true) into current_license;
 
             if current_license = 'timescale' then
-                alter table "ores"."telemetry_logs_tbl" set (
+                alter table "production"."telemetry_logs_tbl" set (
                     timescaledb.compress,
                     timescaledb.compress_segmentby = 'source, source_name, level',
                     timescaledb.compress_orderby = 'timestamp desc'
                 );
 
                 perform public.add_compression_policy(
-                    'ores.telemetry_logs_tbl',
+                    'production.telemetry_logs_tbl',
                     compress_after => interval '3 days',
                     if_not_exists => true
                 );
                 raise notice 'Enabled compression policy (3 days)';
 
                 perform public.add_retention_policy(
-                    'ores.telemetry_logs_tbl',
+                    'production.telemetry_logs_tbl',
                     drop_after => interval '30 days',
                     if_not_exists => true
                 );

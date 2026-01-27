@@ -25,11 +25,11 @@
  * This script is safe to run even if functions don't exist (uses IF EXISTS).
  */
 
-set schema 'ores';
+set schema 'production';
 
 -- Permissions
-drop function if exists ores.upsert_permission(text, text);
+drop function if exists public.upsert_permission(text, text);
 
 -- Roles
-drop function if exists ores.upsert_role(text, text, text);
-drop function if exists ores.assign_permission_to_role(text, text, text);
+drop function if exists public.upsert_role(text, text, text);
+drop function if exists public.assign_permission_to_role(text, text, text);

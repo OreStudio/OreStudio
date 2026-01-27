@@ -28,7 +28,7 @@
  * Use dq_populate_reporting_regimes() to publish to production.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Reporting Regime
@@ -43,20 +43,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where code = 'fpml.reporting_regime'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.reporting_regime not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from ores.dq_reporting_regimes_artefact_tbl
+    delete from metadata.dq_reporting_regimes_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +67,7 @@ begin
         'Australian Securities and Investments Commission Derivative Transaction Rules (Reporting)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +78,7 @@ begin
         'Rule 91-507 Derivatives: Trade Repositories and Derivatives Data. Harmonized rule adopted by Canadian provinces and territories.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +89,7 @@ begin
         'Dodd-Frank Act (US)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +100,7 @@ begin
         'European Markets Infrastructure Regulation'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +111,7 @@ begin
         'Hong Kong Monetary Authority'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +122,7 @@ begin
         'Japan Financial Services Authority'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +133,7 @@ begin
         'The Monetary Authority of Singapore'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +144,7 @@ begin
         'Markets in Financial Instruments Directive'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +155,7 @@ begin
         'Markets in Financial Instruments Directive II'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +166,7 @@ begin
         'Markets in Financial Instruments Regulation'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +177,7 @@ begin
         'OTC Derivatives Regulators Forum'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +188,7 @@ begin
         'Russian regulatory reporting'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +199,7 @@ begin
         'Securities Financing Transactions Regulation'
     );
     v_count := v_count + 1;
-    insert into ores.dq_reporting_regimes_artefact_tbl (
+    insert into metadata.dq_reporting_regimes_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -223,9 +223,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_reporting_regimes_artefact' as entity, count(*) as count
-from ores.dq_reporting_regimes_artefact_tbl;
+from metadata.dq_reporting_regimes_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from ores.dq_reporting_regimes_artefact_tbl
+from metadata.dq_reporting_regimes_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

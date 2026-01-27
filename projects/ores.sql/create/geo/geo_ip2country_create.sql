@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- IP range to country code mapping.
 -- Uses GiST index for fast lookups.
 -- =============================================================================
 
-create table if not exists "ores"."geo_ip2country_tbl" (
+create table if not exists "production"."geo_ip2country_tbl" (
     "ip_range" int8range not null,
     "country_code" text not null
 );
 
 create index if not exists geo_ip2country_range_idx
-on "ores"."geo_ip2country_tbl" using gist (ip_range);
+on "production"."geo_ip2country_tbl" using gist (ip_range);
 
-create or replace function ores.geo_inet_to_bigint_fn(ip_address inet)
+create or replace function production.geo_inet_to_bigint_fn(ip_address inet)
 returns bigint as $$
 begin
     if family(ip_address) <> 4 then
@@ -48,14 +48,14 @@ begin
 end;
 $$ language plpgsql immutable strict;
 
-create or replace function ores.geo_ip2country_lookup_fn(ip_address inet)
+create or replace function production.geo_ip2country_lookup_fn(ip_address inet)
 returns table (
     country_code text
 ) as $$
 declare
     ip_as_bigint bigint;
 begin
-    ip_as_bigint := ores.geo_inet_to_bigint_fn(ip_address);
+    ip_as_bigint := production.geo_inet_to_bigint_fn(ip_address);
 
     if ip_as_bigint is null then
         return;
@@ -63,7 +63,7 @@ begin
 
     return query
     select c.country_code
-    from ores.geo_ip2country_tbl c
+    from production.geo_ip2country_tbl c
     where c.ip_range @> ip_as_bigint
     limit 1;
 end;

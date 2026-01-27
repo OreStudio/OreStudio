@@ -25,9 +25,9 @@
  * Designed to support a future UI for dataset management.
  *
  * Usage pattern:
- *   1. List available datasets: SELECT * FROM ores.dq_list_populatable_datasets_fn();
- *   2. Preview what will be copied: SELECT * FROM ores.dq_preview_*_population(dataset_id);
- *   3. Execute the copy: SELECT * FROM ores.dq_populate_*(dataset_id, mode);
+ *   1. List available datasets: SELECT * FROM metadata.dq_list_populatable_datasets_fn();
+ *   2. Preview what will be copied: SELECT * FROM metadata.dq_preview_*_population(dataset_id);
+ *   3. Execute the copy: SELECT * FROM metadata.dq_populate_*(dataset_id, mode);
  *
  * Modes:
  *   - 'upsert': Insert new records, update existing (default)
@@ -35,7 +35,7 @@
  *   - 'replace_all': Delete all existing, insert fresh (use with caution)
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Discovery Function
@@ -45,7 +45,7 @@ set schema 'ores';
  * Lists all DQ datasets that can be populated into production tables.
  * Returns dataset metadata and record counts for UI display.
  */
-create or replace function ores.dq_list_populatable_datasets_fn()
+create or replace function metadata.dq_list_populatable_datasets_fn()
 returns table (
     dataset_id uuid,
     dataset_name text,
@@ -70,9 +70,9 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_datasets_tbl d
-    join ores.dq_images_artefact_tbl i on i.dataset_id = d.id
-    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    from metadata.dq_datasets_tbl d
+    join metadata.dq_images_artefact_tbl i on i.dataset_id = d.id
+    where d.valid_to = public.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
@@ -89,9 +89,9 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_datasets_tbl d
-    join ores.dq_countries_artefact_tbl c on c.dataset_id = d.id
-    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    from metadata.dq_datasets_tbl d
+    join metadata.dq_countries_artefact_tbl c on c.dataset_id = d.id
+    where d.valid_to = public.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
@@ -108,9 +108,9 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_datasets_tbl d
-    join ores.dq_currencies_artefact_tbl c on c.dataset_id = d.id
-    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    from metadata.dq_datasets_tbl d
+    join metadata.dq_currencies_artefact_tbl c on c.dataset_id = d.id
+    where d.valid_to = public.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
@@ -127,9 +127,9 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_datasets_tbl d
-    join ores.dq_ip2country_artefact_tbl ip on ip.dataset_id = d.id
-    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    from metadata.dq_datasets_tbl d
+    join metadata.dq_ip2country_artefact_tbl ip on ip.dataset_id = d.id
+    where d.valid_to = public.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
@@ -146,9 +146,9 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_datasets_tbl d
-    join ores.dq_coding_schemes_artefact_tbl cs on cs.dataset_id = d.id
-    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    from metadata.dq_datasets_tbl d
+    join metadata.dq_coding_schemes_artefact_tbl cs on cs.dataset_id = d.id
+    where d.valid_to = public.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
@@ -164,7 +164,7 @@ $$ language plpgsql;
  * Preview what images would be copied from a DQ dataset.
  * Shows the action that would be taken for each record.
  */
-create or replace function ores.dq_preview_image_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_preview_image_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     image_key text,
@@ -184,10 +184,10 @@ begin
             when existing.image_id is not null then 'Image with this key already exists'
             else 'New image'
         end as reason
-    from ores.dq_images_artefact_tbl dq
-    left join ores.assets_images_tbl existing
+    from metadata.dq_images_artefact_tbl dq
+    left join production.assets_images_tbl existing
         on existing.key = dq.key
-        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        and existing.valid_to = public.utility_infinity_timestamp_fn()
     where dq.dataset_id = p_dataset_id
     order by dq.key;
 end;
@@ -207,7 +207,7 @@ $$ language plpgsql;
  * For upsert mode with existing keys, we use the existing image_id to
  * preserve referential integrity with countries/currencies tables.
  */
-create or replace function ores.dq_populate_images_fn(
+create or replace function metadata.dq_populate_images_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -227,9 +227,9 @@ declare
 begin
     -- Validate dataset exists
     select name into v_dataset_name
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where id = p_dataset_id
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
@@ -243,9 +243,9 @@ begin
     -- Handle replace_all mode: delete all existing images first
     if p_mode = 'replace_all' then
         -- Soft delete by setting valid_to
-        update ores.assets_images_tbl
+        update production.assets_images_tbl
         set valid_to = current_timestamp
-        where valid_to = ores.utility_infinity_timestamp_fn();
+        where valid_to = public.utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -257,14 +257,14 @@ begin
             dq.key,
             dq.description,
             dq.svg_data
-        from ores.dq_images_artefact_tbl dq
+        from metadata.dq_images_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
     loop
         -- Check if an image with this key already exists
         select image_id into v_existing_image_id
-        from ores.assets_images_tbl existing
+        from production.assets_images_tbl existing
         where existing.key = r.key
-          and existing.valid_to = ores.utility_infinity_timestamp_fn();
+          and existing.valid_to = public.utility_infinity_timestamp_fn();
 
         -- In insert_only mode, skip existing records
         if p_mode = 'insert_only' and v_existing_image_id is not null then
@@ -275,7 +275,7 @@ begin
         -- Insert image - trigger handles versioning automatically
         -- Use existing image_id if updating to preserve referential integrity,
         -- otherwise use the DQ image_id for new images
-        insert into ores.assets_images_tbl (
+        insert into production.assets_images_tbl (
             image_id, version, key, description, svg_data,
             modified_by, change_reason_code, change_commentary
         ) values (
@@ -313,7 +313,7 @@ $$ language plpgsql;
 /**
  * Preview what countries would be copied from a DQ dataset.
  */
-create or replace function ores.dq_preview_country_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_preview_country_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     alpha2_code text,
@@ -335,10 +335,10 @@ begin
             when existing.alpha2_code is not null then 'Country already exists'
             else 'New country'
         end as reason
-    from ores.dq_countries_artefact_tbl dq
-    left join ores.refdata_countries_tbl existing
+    from metadata.dq_countries_artefact_tbl dq
+    left join production.refdata_countries_tbl existing
         on existing.alpha2_code = dq.alpha2_code
-        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        and existing.valid_to = public.utility_infinity_timestamp_fn()
     where dq.dataset_id = p_dataset_id
     order by dq.alpha2_code;
 end;
@@ -356,7 +356,7 @@ $$ language plpgsql;
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
-create or replace function ores.dq_populate_countries_fn(
+create or replace function metadata.dq_populate_countries_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -378,9 +378,9 @@ declare
 begin
     -- Validate dataset exists and get metadata
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where id = p_dataset_id
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
@@ -393,9 +393,9 @@ begin
 
     -- Handle replace_all mode
     if p_mode = 'replace_all' then
-        update ores.refdata_countries_tbl
+        update production.refdata_countries_tbl
         set valid_to = current_timestamp
-        where valid_to = ores.utility_infinity_timestamp_fn();
+        where valid_to = public.utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -409,14 +409,14 @@ begin
             dq.name,
             dq.official_name,
             dq.image_id
-        from ores.dq_countries_artefact_tbl dq
+        from metadata.dq_countries_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
     loop
         -- Check if record already exists (for mode handling and reporting)
         select exists (
-            select 1 from ores.refdata_countries_tbl existing
+            select 1 from production.refdata_countries_tbl existing
             where existing.alpha2_code = r.alpha2_code
-              and existing.valid_to = ores.utility_infinity_timestamp_fn()
+              and existing.valid_to = public.utility_infinity_timestamp_fn()
         ) into v_exists;
 
         -- In insert_only mode, skip existing records
@@ -428,9 +428,9 @@ begin
         -- Resolve image_id: check if image exists in assets_images_tbl
         if r.image_id is not null then
             select image_id into v_resolved_image_id
-            from ores.assets_images_tbl
+            from production.assets_images_tbl
             where image_id = r.image_id
-              and valid_to = ores.utility_infinity_timestamp_fn();
+              and valid_to = public.utility_infinity_timestamp_fn();
 
             -- If not found by ID, image hasn't been populated yet
             if v_resolved_image_id is null then
@@ -443,7 +443,7 @@ begin
 
         -- Insert country - trigger handles versioning automatically
         -- version=0 tells trigger to auto-increment from current version
-        insert into ores.refdata_countries_tbl (
+        insert into production.refdata_countries_tbl (
             alpha2_code, version, alpha3_code, numeric_code, name, official_name,
             coding_scheme_code, image_id,
             modified_by, change_reason_code, change_commentary
@@ -483,7 +483,7 @@ $$ language plpgsql;
 /**
  * Preview what currencies would be copied from a DQ dataset.
  */
-create or replace function ores.dq_preview_currency_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_preview_currency_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     iso_code text,
@@ -507,10 +507,10 @@ begin
             when existing.iso_code is not null then 'Currency already exists'
             else 'New currency'
         end as reason
-    from ores.dq_currencies_artefact_tbl dq
-    left join ores.refdata_currencies_tbl existing
+    from metadata.dq_currencies_artefact_tbl dq
+    left join production.refdata_currencies_tbl existing
         on existing.iso_code = dq.iso_code
-        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        and existing.valid_to = public.utility_infinity_timestamp_fn()
     where dq.dataset_id = p_dataset_id
     order by dq.iso_code;
 end;
@@ -534,7 +534,7 @@ $$ language plpgsql;
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
-create or replace function ores.dq_populate_currencies_fn(
+create or replace function metadata.dq_populate_currencies_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert',
     p_currency_type_filter text default null
@@ -557,9 +557,9 @@ declare
 begin
     -- Validate dataset exists and get metadata
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where id = p_dataset_id
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
@@ -572,9 +572,9 @@ begin
 
     -- Handle replace_all mode
     if p_mode = 'replace_all' then
-        update ores.refdata_currencies_tbl
+        update production.refdata_currencies_tbl
         set valid_to = current_timestamp
-        where valid_to = ores.utility_infinity_timestamp_fn();
+        where valid_to = public.utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -594,15 +594,15 @@ begin
             dq.format,
             dq.currency_type,
             dq.image_id
-        from ores.dq_currencies_artefact_tbl dq
+        from metadata.dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and (p_currency_type_filter is null or dq.currency_type = p_currency_type_filter)
     loop
         -- Check if record already exists (for mode handling and reporting)
         select exists (
-            select 1 from ores.refdata_currencies_tbl existing
+            select 1 from production.refdata_currencies_tbl existing
             where existing.iso_code = r.iso_code
-              and existing.valid_to = ores.utility_infinity_timestamp_fn()
+              and existing.valid_to = public.utility_infinity_timestamp_fn()
         ) into v_exists;
 
         -- In insert_only mode, skip existing records
@@ -614,9 +614,9 @@ begin
         -- Resolve image_id
         if r.image_id is not null then
             select image_id into v_resolved_image_id
-            from ores.assets_images_tbl
+            from production.assets_images_tbl
             where image_id = r.image_id
-              and valid_to = ores.utility_infinity_timestamp_fn();
+              and valid_to = public.utility_infinity_timestamp_fn();
 
             if v_resolved_image_id is null then
                 raise warning 'Image % not found in assets_images_tbl for currency %. Populate images first.',
@@ -628,7 +628,7 @@ begin
 
         -- Insert currency - trigger handles versioning automatically
         -- version=0 tells trigger to auto-increment from current version
-        insert into ores.refdata_currencies_tbl (
+        insert into production.refdata_currencies_tbl (
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision, format, currency_type,
             coding_scheme_code, image_id,
@@ -671,7 +671,7 @@ $$ language plpgsql;
  * Preview what IP ranges would be copied from a DQ dataset.
  * Shows summary statistics rather than individual ranges (too many rows).
  */
-create or replace function ores.dq_preview_ip2country_population_fn(p_dataset_id uuid)
+create or replace function metadata.dq_preview_ip2country_population_fn(p_dataset_id uuid)
 returns table (
     metric text,
     value bigint
@@ -679,19 +679,19 @@ returns table (
 begin
     return query
     select 'total_ranges'::text, count(*)::bigint
-    from ores.dq_ip2country_artefact_tbl
+    from metadata.dq_ip2country_artefact_tbl
     where dataset_id = p_dataset_id
     union all
     select 'unique_countries'::text, count(distinct country_code)::bigint
-    from ores.dq_ip2country_artefact_tbl
+    from metadata.dq_ip2country_artefact_tbl
     where dataset_id = p_dataset_id
     union all
     select 'unrouted_ranges'::text, count(*)::bigint
-    from ores.dq_ip2country_artefact_tbl
+    from metadata.dq_ip2country_artefact_tbl
     where dataset_id = p_dataset_id and country_code = 'None'
     union all
     select 'existing_ranges'::text, count(*)::bigint
-    from ores.geo_ip2country_tbl;
+    from production.geo_ip2country_tbl;
 end;
 $$ language plpgsql;
 
@@ -707,7 +707,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Ignored - always performs replace_all.
  */
-create or replace function ores.dq_populate_ip2country_fn(
+create or replace function metadata.dq_populate_ip2country_fn(
     p_dataset_id uuid,
     p_mode text default 'replace_all'
 )
@@ -722,30 +722,30 @@ declare
 begin
     -- Validate dataset exists
     select name into v_dataset_name
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where id = p_dataset_id
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
     -- Always truncate existing data (IP ranges must be fully replaced)
-    select count(*) into v_deleted from ores.geo_ip2country_tbl;
-    truncate table ores.geo_ip2country_tbl;
+    select count(*) into v_deleted from production.geo_ip2country_tbl;
+    truncate table production.geo_ip2country_tbl;
 
     -- Insert from DQ artefact table, converting to int8range
-    insert into ores.geo_ip2country_tbl (ip_range, country_code)
+    insert into production.geo_ip2country_tbl (ip_range, country_code)
     select
         int8range(range_start, range_end + 1, '[)'),
         country_code
-    from ores.dq_ip2country_artefact_tbl
+    from metadata.dq_ip2country_artefact_tbl
     where dataset_id = p_dataset_id;
 
     get diagnostics v_inserted = row_count;
 
     -- Analyze table for query optimization
-    analyze ores.geo_ip2country_tbl;
+    analyze production.geo_ip2country_tbl;
 
     -- Return summary
     return query

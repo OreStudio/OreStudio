@@ -35,17 +35,25 @@ from typing import Optional
 
 # Known component prefixes and their descriptions
 # Order determines package display order in diagram
+# Schema indicates which PostgreSQL schema the component belongs to:
+#   - metadata: Data governance, classification, staging (dq_*)
+#   - production: Operational data (refdata_*, iam_*, assets_*, etc.)
+#   - public: Shared utility functions
 COMPONENT_PREFIXES = {
-    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'color': '#E8F4FD', 'order': 1},
-    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'color': '#F3E5F5', 'order': 2},
-    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'color': '#FFF3E0', 'order': 3},
-    'dq_': {'name': 'dq', 'description': 'Data Quality', 'color': '#E1F5FE', 'order': 4},
-    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'color': '#E8F5E9', 'order': 5},
-    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'color': '#FCE4EC', 'order': 6},
-    'geo_': {'name': 'geo', 'description': 'Geolocation', 'color': '#FFF9C4', 'order': 7},
-    'utility_': {'name': 'utility', 'description': 'Utility Functions', 'color': '#ECEFF1', 'order': 8},
-    'admin_': {'name': 'admin', 'description': 'Administration', 'color': '#E0E0E0', 'order': 9},
+    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'production', 'color': '#E8F4FD', 'order': 1},
+    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'production', 'color': '#F3E5F5', 'order': 2},
+    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'production', 'color': '#FFF3E0', 'order': 3},
+    'dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'metadata', 'color': '#E1F5FE', 'order': 4},
+    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'production', 'color': '#E8F5E9', 'order': 5},
+    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'production', 'color': '#FCE4EC', 'order': 6},
+    'geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'production', 'color': '#FFF9C4', 'order': 7},
+    'utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
+    'seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
+    'admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
 }
+
+# Valid schema names for pattern matching
+SCHEMA_PATTERN = r'(?:metadata|production|public)'
 
 # Columns that are known FK references by name
 FK_COLUMNS = {
@@ -269,12 +277,12 @@ class SQLParser:
         """Parse a single DROP SQL file to track what should be dropped."""
         content = file_path.read_text()
 
-        # Track dropped tables
-        for match in re.finditer(r'drop\s+table\s+if\s+exists\s+"?ores"?\."?(\w+)"?', content, re.IGNORECASE):
+        # Track dropped tables (matches metadata, production, or public schemas)
+        for match in re.finditer(rf'drop\s+table\s+if\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?', content, re.IGNORECASE):
             self.drop_tables.add(match.group(1))
 
-        # Track dropped functions
-        for match in re.finditer(r'drop\s+function\s+if\s+exists\s+ores\.(\w+)', content, re.IGNORECASE):
+        # Track dropped functions (matches metadata, production, or public schemas)
+        for match in re.finditer(rf'drop\s+function\s+if\s+exists\s+{SCHEMA_PATTERN}\.(\w+)', content, re.IGNORECASE):
             self.drop_functions.add(match.group(1))
 
     def _extract_table_descriptions(self, content: str) -> None:
@@ -291,7 +299,7 @@ class SQLParser:
             r'((?:-- [^\n]*\n)+)'                  # Content lines (captured)
             r'-- =+\s*\n'                          # Closing delimiter
             r'\s*'                                  # Optional whitespace
-            r'create\s+table\s+if\s+not\s+exists\s+"?ores"?\."?(\w+)"?',  # Table name
+            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?',  # Table name
             re.IGNORECASE
         )
 
@@ -323,7 +331,7 @@ class SQLParser:
             r'\s*'                                  # Optional whitespace
             r'(?:-- [^\n]*\n)*'                    # Optional comment lines
             r'\s*'                                  # Optional whitespace
-            r'create\s+table\s+if\s+not\s+exists\s+"?ores"?\."?(\w+)"?',  # Table name
+            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?',  # Table name
             re.IGNORECASE
         )
 
@@ -356,9 +364,9 @@ class SQLParser:
 
     def _extract_tables(self, content: str, lines: list, file_path: str) -> None:
         """Extract table definitions from SQL content."""
-        # Pattern for CREATE TABLE
+        # Pattern for CREATE TABLE (matches metadata, production, or public schemas)
         table_pattern = re.compile(
-            r'create\s+table\s+if\s+not\s+exists\s+"?ores"?\."?(\w+)"?\s*\((.*?)\);',
+            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?\s*\((.*?)\);',
             re.IGNORECASE | re.DOTALL
         )
 
@@ -381,11 +389,11 @@ class SQLParser:
         Handles both single-column and composite unique indexes.
         For composite indexes, all columns in the index are marked as unique.
         """
-        # Pattern: create unique index ... on "ores"."table_name" (col1, col2, ...)
+        # Pattern: create unique index ... on "schema"."table_name" (col1, col2, ...)
         # Captures table name and the entire column list (which may have multiple columns)
         unique_idx_pattern = re.compile(
-            r'create\s+unique\s+index\s+if\s+not\s+exists\s+\w+\s+'
-            r'on\s+"?ores"?\."?(\w+)"?\s*\(([^)]+)\)',
+            rf'create\s+unique\s+index\s+if\s+not\s+exists\s+\w+\s+'
+            rf'on\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?\s*\(([^)]+)\)',
             re.IGNORECASE
         )
 
@@ -651,8 +659,9 @@ class SQLParser:
 
     def _extract_functions(self, content: str, lines: list, file_path: str) -> None:
         """Extract function definitions from SQL content."""
+        # Match functions in metadata, production, or public schemas
         func_pattern = re.compile(
-            r'create\s+or\s+replace\s+function\s+ores\.(\w+)',
+            rf'create\s+or\s+replace\s+function\s+{SCHEMA_PATTERN}\.(\w+)',
             re.IGNORECASE
         )
 

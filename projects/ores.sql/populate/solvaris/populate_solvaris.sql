@@ -6,7 +6,7 @@
  * Includes all solvaris SQL files in the correct dependency order.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Catalogs data for Slovaris

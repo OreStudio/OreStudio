@@ -30,7 +30,7 @@
  * - Anonymized: Irreversibly altered to prevent re-identification
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Treatment Dimensions
@@ -38,19 +38,19 @@ set schema 'ores';
 
 \echo '--- Data Quality Treatment Dimensions ---'
 
-select ores.upsert_dq_treatment_dimensions(
+select public.upsert_dq_treatment_dimensions(
     'Raw',
     'Raw Data',
     'Untouched, identifiable data.'
 );
 
-select ores.upsert_dq_treatment_dimensions(
+select public.upsert_dq_treatment_dimensions(
     'Masked',
     'Masked Data',
     'PII has been redacted or obfuscated (replaces "Obfuscated").'
 );
 
-select ores.upsert_dq_treatment_dimensions(
+select public.upsert_dq_treatment_dimensions(
     'Anonymized',
     'Anonymized Data',
     'Irreversibly altered to prevent re-identification.'
@@ -64,5 +64,5 @@ select ores.upsert_dq_treatment_dimensions(
 \echo '--- Summary ---'
 
 select 'Data Quality Treatment Dimensions' as entity, count(*) as count
-from ores.dq_treatment_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_treatment_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

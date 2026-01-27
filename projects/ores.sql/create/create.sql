@@ -18,35 +18,33 @@
  *
  */
 
--- Utility functions (must be first - other components depend on these)
+-- =============================================================================
+-- 1. Public Schema (shared utilities)
+-- =============================================================================
 \ir ./utility/create_utility.sql
 
--- Change control (must be created before entities that reference them)
+-- =============================================================================
+-- 2. Metadata Schema (must be created before production - no external deps)
+-- =============================================================================
 \ir ./change_control/create_change_control.sql
-
--- Reference data tables
-\ir ./refdata/create_refdata.sql
-
--- IAM tables
-\ir ./iam/create_iam.sql
-
--- Variability tables
-\ir ./variability/create_variability.sql
-
--- Telemetry tables
-\ir ./telemetry/create_telemetry.sql
-
--- Asset tables
-\ir ./assets/create_assets.sql
-
--- Geo tables
-\ir ./geo/create_geo.sql
-
--- Data Quality tables
 \ir ./dq/create_dq.sql
 
--- Seed functions
+-- =============================================================================
+-- 3. Production Schema (depends on metadata for FK validation)
+-- =============================================================================
+\ir ./refdata/create_refdata.sql
+\ir ./iam/create_iam.sql
+\ir ./variability/create_variability.sql
+\ir ./telemetry/create_telemetry.sql
+\ir ./assets/create_assets.sql
+\ir ./geo/create_geo.sql
+
+-- =============================================================================
+-- 4. Seed Functions (public schema, depends on metadata and production tables)
+-- =============================================================================
 \ir ./seed/create_seed.sql
 
--- Summary functions (must be last - depends on all tables)
+-- =============================================================================
+-- 5. Summary Functions (public schema, depends on all tables)
+-- =============================================================================
 \ir ./utility/utility_summary_functions_create.sql

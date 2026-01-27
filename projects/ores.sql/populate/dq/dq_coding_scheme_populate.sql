@@ -35,7 +35,7 @@
  * - internal: Proprietary identifiers
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Coding Schemes
@@ -44,7 +44,7 @@ set schema 'ores';
 \echo '--- Data Quality Coding Schemes ---'
 
 -- Party identification schemes (official - ISO standards)
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'LEI',
     'Legal Entity Identifier',
     'official',
@@ -54,7 +54,7 @@ select ores.upsert_dq_coding_schemes(
     'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'BIC',
     'Business Identifier Code',
     'official',
@@ -64,7 +64,7 @@ select ores.upsert_dq_coding_schemes(
     'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'MIC',
     'Market Identifier Code',
     'official',
@@ -74,7 +74,7 @@ select ores.upsert_dq_coding_schemes(
     'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party context in trade reports.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'NATIONAL_ID',
     'National Identifier',
     'official',
@@ -85,7 +85,7 @@ select ores.upsert_dq_coding_schemes(
 );
 
 -- Party identification schemes (industry - regulatory/consortium standards)
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'CEDB',
     'CFTC Entity Directory',
     'industry',
@@ -95,7 +95,7 @@ select ores.upsert_dq_coding_schemes(
     'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'ACER',
     'EU Agency for Energy Regulation',
     'industry',
@@ -105,7 +105,7 @@ select ores.upsert_dq_coding_schemes(
     'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'DTCC_PARTICIPANT_ID',
     'Depository Trust & Clearing Corporation Participant ID',
     'industry',
@@ -115,7 +115,7 @@ select ores.upsert_dq_coding_schemes(
     'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade reporting, and regulatory submissions in U.S. capital markets.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'MPID',
     'Market Participant Identifier',
     'industry',
@@ -126,7 +126,7 @@ select ores.upsert_dq_coding_schemes(
 );
 
 -- Party identification schemes (internal - proprietary)
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'NATURAL_PERSON',
     'Natural Person',
     'internal',
@@ -136,7 +136,7 @@ select ores.upsert_dq_coding_schemes(
     'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
 );
 
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'INTERNAL',
     'Internal',
     'internal',
@@ -147,7 +147,7 @@ select ores.upsert_dq_coding_schemes(
 );
 
 -- General schemes (internal - placeholder)
-select ores.upsert_dq_coding_schemes(
+select public.upsert_dq_coding_schemes(
     'NONE',
     'No Coding Scheme',
     'internal',
@@ -165,5 +165,5 @@ select ores.upsert_dq_coding_schemes(
 \echo '--- Summary ---'
 
 select 'Coding Schemes' as entity, count(*) as count
-from ores.dq_coding_schemes_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_coding_schemes_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

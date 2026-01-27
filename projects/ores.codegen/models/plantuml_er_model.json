@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-25T00:13:49.060135Z",
+  "generated_at": "2026-01-27T00:08:16.543741Z",
   "packages": [
     {
       "name": "iam",
@@ -2851,6 +2851,63 @@
           "description": "Contains a code representing a reporting regime under which this transaction may be reported."
         },
         {
+          "name": "refdata_rounding_types_tbl",
+          "component": "refdata",
+          "entity": "rounding_types",
+          "classification": "current_state",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/refdata/refdata_rounding_types_create.sql",
+          "description": "Rounding Types Lookup Table\n    Defines valid rounding methods per ORE XML schema (roundingType).\n    Static configuration data - no bitemporal support required."
+        },
+        {
           "name": "refdata_supervisory_bodies_tbl",
           "component": "refdata",
           "entity": "supervisory_bodies",
@@ -3082,7 +3139,7 @@
             {
               "name": "artefact_table",
               "type": "text",
-              "nullable": false,
+              "nullable": true,
               "is_pk": false,
               "is_fk": false,
               "is_unique": false,
@@ -3102,7 +3159,7 @@
             {
               "name": "populate_function",
               "type": "text",
-              "nullable": false,
+              "nullable": true,
               "is_pk": false,
               "is_fk": false,
               "is_unique": false,
@@ -3324,6 +3381,168 @@
           "indexes": [],
           "source_file": "create/dq/dq_benchmark_rates_artefact_create.sql",
           "description": "FpML Benchmark rates - Artefact Table"
+        },
+        {
+          "name": "dq_bundle_publications_tbl",
+          "component": "dq",
+          "entity": "bundle_publications",
+          "classification": "current_state",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              }
+            ],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "bundle_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "bundle_name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "mode",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "datasets_processed",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "datasets_succeeded",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "datasets_failed",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "datasets_skipped",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_inserted",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_updated",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_skipped",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_deleted",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "published_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "published_at",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "current_timestamp",
+              "references": null
+            },
+            {
+              "name": "completed_at",
+              "type": "timestamptz",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_bundle_publication_create.sql",
+          "description": "Bundle Publication Audit Table"
         },
         {
           "name": "dq_business_centres_artefact_tbl",
@@ -4530,6 +4749,214 @@
           "description": "High-level data classification.\n    Examples: reference_data, market_data, trade_data."
         },
         {
+          "name": "dq_dataset_bundle_members_tbl",
+          "component": "dq",
+          "entity": "dataset_bundle_members",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "bundle_code",
+                "type": "text"
+              },
+              {
+                "name": "dataset_code",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_dataset_bundle_member_create.sql",
+          "description": "Junction table linking bundles to their constituent datasets.\n    Uses codes for loose coupling - allows declaring membership for datasets\n    that may not yet exist in the system.\n    Examples:\n    - Bundle \"solvaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n    - Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets"
+        },
+        {
+          "name": "dq_dataset_bundles_tbl",
+          "component": "dq",
+          "entity": "dataset_bundles",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": true,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": true,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": true,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_dataset_bundle_create.sql",
+          "description": "A named collection of datasets designed to work together. Installing a bundle\n    gets the system into a ready state with a coherent set of reference data.\n    Examples:\n    - \"solvaris\": Synthetic reference data for development and testing\n    - \"base\": Industry-standard reference data (ISO + FpML) for production\n    - \"crypto\": Base system plus cryptocurrency reference data"
+        },
+        {
           "name": "dq_dataset_dependencies_tbl",
           "component": "dq",
           "entity": "dataset_dependencies",
@@ -4825,7 +5252,7 @@
             {
               "name": "artefact_type",
               "type": "text",
-              "nullable": true,
+              "nullable": false,
               "is_pk": false,
               "is_fk": false,
               "is_unique": false,
@@ -6759,6 +7186,18 @@
     {
       "from_table": "dq_change_reasons_tbl",
       "to_table": "dq_data_domains_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_dataset_bundles_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_dataset_bundle_members_tbl",
       "cardinality": "||--o{",
       "label": "reason for"
     },

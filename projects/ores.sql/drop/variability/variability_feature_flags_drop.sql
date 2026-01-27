@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop trigger if exists variability_feature_flags_insert_trg on "ores"."variability_feature_flags_tbl";
-drop function if exists ores.variability_feature_flags_insert_fn;
+drop trigger if exists variability_feature_flags_insert_trg on "production"."variability_feature_flags_tbl";
+drop function if exists production.variability_feature_flags_insert_fn;
 drop index if exists variability_feature_flags_version_uniq_idx;
-drop table if exists "ores"."variability_feature_flags_tbl";
+drop table if exists "production"."variability_feature_flags_tbl";

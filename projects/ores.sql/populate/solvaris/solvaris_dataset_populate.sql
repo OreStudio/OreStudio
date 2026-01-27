@@ -18,7 +18,7 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Slovaris Datasets
@@ -26,7 +26,7 @@ set schema 'ores';
 
 \echo '--- Data Quality Slovaris Datasets ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'slovaris.country_flags',
     'Slovaris',
     'Country Flags',
@@ -44,7 +44,7 @@ select ores.upsert_dq_datasets(
     ' CC BY 4.0',
     'images'
 );
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'slovaris.countries',
     'Slovaris',
     'Countries',
@@ -62,7 +62,7 @@ select ores.upsert_dq_datasets(
     ' CC BY 4.0',
     'countries'
 );
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'slovaris.currencies',
     'Slovaris',
     'Currencies',
@@ -89,5 +89,5 @@ select ores.upsert_dq_datasets(
 \echo '--- Summary ---'
 
 select 'Data Quality Total Datasets' as entity, count(*) as count
-from ores.dq_datasets_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_datasets_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
-create table if not exists "ores"."dq_tags_artefact_tbl" (
+create table if not exists "metadata"."dq_tags_artefact_tbl" (
     "dataset_id" uuid not null,
     "tag_id" uuid not null,
     "version" integer not null,
@@ -28,23 +28,23 @@ create table if not exists "ores"."dq_tags_artefact_tbl" (
 );
 
 create index if not exists dq_tags_artefact_dataset_idx
-on "ores"."dq_tags_artefact_tbl" (dataset_id);
+on "metadata"."dq_tags_artefact_tbl" (dataset_id);
 
 create index if not exists dq_tags_artefact_tag_idx
-on "ores"."dq_tags_artefact_tbl" (tag_id);
+on "metadata"."dq_tags_artefact_tbl" (tag_id);
 
 create index if not exists dq_tags_artefact_name_idx
-on "ores"."dq_tags_artefact_tbl" (name);
+on "metadata"."dq_tags_artefact_tbl" (name);
 
 -- Unique constraint to prevent duplicate tag names per dataset
-alter table "ores"."dq_tags_artefact_tbl"
+alter table "metadata"."dq_tags_artefact_tbl"
 drop constraint if exists dq_tags_artefact_dataset_name_uq;
 
-alter table "ores"."dq_tags_artefact_tbl"
+alter table "metadata"."dq_tags_artefact_tbl"
 add constraint dq_tags_artefact_dataset_name_uq unique (dataset_id, name);
 
 -- Function to insert tags into the artifact table
-create or replace function ores.dq_tags_artefact_insert_fn(
+create or replace function metadata.dq_tags_artefact_insert_fn(
     p_dataset_id uuid,
     p_tag_id uuid,
     p_version integer,
@@ -52,7 +52,7 @@ create or replace function ores.dq_tags_artefact_insert_fn(
     p_description text
 ) returns void as $$
 begin
-    insert into ores.dq_tags_artefact_tbl (
+    insert into metadata.dq_tags_artefact_tbl (
         dataset_id, tag_id, version, name, description
     )
     values (

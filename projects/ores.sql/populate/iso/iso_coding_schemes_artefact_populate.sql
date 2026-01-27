@@ -25,7 +25,7 @@
  * Populates the dq_coding_schemes_artefact_tbl staging table.
  *
  * To publish to production:
- *   SELECT * FROM metadata.dq_populate_coding_schemes(
+ *   SELECT * FROM metadata.dq_populate_coding_schemes_fn(
  *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = 'iso.coding_schemes' AND valid_to = public.utility_infinity_timestamp_fn()),
  *       'upsert'
  *   );

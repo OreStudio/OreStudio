@@ -62,6 +62,7 @@
 #include "ores.qt/CodingSchemeController.hpp"
 #include "ores.qt/MethodologyController.hpp"
 #include "ores.qt/DatasetController.hpp"
+#include "ores.qt/DatasetBundleController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -137,6 +138,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionCodingSchemes->setIcon(IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
     ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
     ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
+    ui_->ActionDatasetBundles->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -421,6 +423,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionMethodologies, &QAction::triggered, this, [this]() {
         if (methodologyController_)
             methodologyController_->showListWindow();
+    });
+
+    // Connect Dataset Bundles action to controller
+    connect(ui_->ActionDatasetBundles, &QAction::triggered, this, [this]() {
+        if (datasetBundleController_)
+            datasetBundleController_->showListWindow();
     });
 
     // Connect Data Librarian action
@@ -715,6 +723,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionCodingSchemes->setEnabled(isLoggedIn);
     ui_->ActionMethodologies->setEnabled(isLoggedIn);
     ui_->ActionDataLibrarian->setEnabled(isLoggedIn);
+    ui_->ActionDatasetBundles->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1051,6 +1060,24 @@ void MainWindow::createControllers() {
     connect(datasetController_.get(), &DatasetController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(datasetController_.get(), &DatasetController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create dataset bundle controller
+    datasetBundleController_ = std::make_unique<DatasetBundleController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    // Connect dataset bundle controller signals to status bar and window lifecycle
+    connect(datasetBundleController_.get(), &DatasetBundleController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(datasetBundleController_.get(), &DatasetBundleController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(datasetBundleController_.get(), &DatasetBundleController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(datasetBundleController_.get(), &DatasetBundleController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";
@@ -1702,6 +1729,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (datasetController_) {
         datasetController_->setUsername(username);
+    }
+    if (datasetBundleController_) {
+        datasetBundleController_->setUsername(username);
     }
 
     updateWindowTitle();

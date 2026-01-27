@@ -83,6 +83,7 @@
      <addaction name="ActionNatureDimensions"/>
      <addaction name="ActionTreatmentDimensions"/>
      <addaction name="ActionMethodologies"/>
+     <addaction name="ActionDatasetBundles"/>
      <addaction name="separator"/>
      <addaction name="menuClassifications"/>
      <addaction name="menuOrganization"/>
@@ -526,6 +527,18 @@
    </property>
    <property name="toolTip">
     <string>Open the Data Librarian to browse and manage datasets</string>
+   </property>
+  </action>
+  <action name="ActionDatasetBundles">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_folder_20_regular.svg</normaloff>:/icons/ic_fluent_folder_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Dataset &amp;Bundles</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage dataset bundles - collections of related datasets</string>
    </property>
   </action>
  </widget>

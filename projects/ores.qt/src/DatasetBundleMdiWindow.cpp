@@ -237,7 +237,7 @@ void DatasetBundleMdiWindow::viewHistorySelected() {
     if (auto* bundle = model_->getBundle(sourceIndex.row())) {
         BOOST_LOG_SEV(lg(), debug) << "Emitting showBundleHistory for code: "
                                    << bundle->code;
-        emit showBundleHistory(QString::fromStdString(bundle->code));
+        emit showBundleHistory(*bundle);
     }
 }
 

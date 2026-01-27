@@ -68,7 +68,7 @@ signals:
     void showBundleDetails(const dq::domain::dataset_bundle& bundle);
     void addNewRequested();
     void bundleDeleted(const QString& code);
-    void showBundleHistory(const QString& code);
+    void showBundleHistory(const dq::domain::dataset_bundle& bundle);
 
 public slots:
     void addNew();

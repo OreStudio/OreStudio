@@ -200,7 +200,7 @@ class CodingScheme:
         definition = self.definition.replace("'", "''") if self.definition else ''
         uri = self.canonical_uri.replace("'", "''")
 
-        return f"""select metadata.upsert_dq_coding_schemes(
+        return f"""select metadata.dq_coding_schemes_upsert_fn(
     '{code}',
     '{name}',
     'industry',
@@ -661,7 +661,7 @@ def generate_catalog_sql(manifest: dict, output_path: Path):
         "",
         "\\echo '--- FpML Standards Catalog ---'",
         "",
-        f"select metadata.upsert_dq_catalogs(",
+        f"select metadata.dq_catalogs_upsert_fn(",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{owner_escaped}'",
@@ -716,7 +716,7 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
         "",
         "\\echo '--- FPML Methodology ---'",
         "",
-        f"select metadata.upsert_dq_methodologies(",
+        f"select metadata.dq_methodologies_upsert_fn(",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{source_url_escaped}',",
@@ -772,7 +772,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         artefact_type = dataset['artefact_type']
 
         lines.append(f"-- {name}")
-        lines.append("select metadata.upsert_dq_datasets(")
+        lines.append("select metadata.dq_datasets_upsert_fn(")
         lines.append(f"    '{code}',")
         lines.append(f"    '{catalog}',")
         lines.append(f"    '{subject_area}',")
@@ -824,7 +824,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
         dependency_code = dep['dependency_code']
         role = dep['role']
 
-        lines.append(f"select metadata.upsert_dq_dataset_dependency(")
+        lines.append(f"select metadata.dq_dataset_dependencies_upsert_fn(")
         lines.append(f"    '{dataset_code}',")
         lines.append(f"    '{dependency_code}',")
         lines.append(f"    '{role}'")

@@ -4,25 +4,58 @@
     "name": "dataset_bundle_members",
     "name_singular": "dataset_bundle_member",
     "name_title": "Dataset Bundle Member",
-    "description": "Junction table linking bundles to their constituent datasets.\nUses codes for loose coupling - allows declaring membership for datasets\nthat may not yet exist in the system.\n\nExamples:\n- Bundle \"solvaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
+    "brief": "Links a dataset to a bundle.",
+    "description": "Junction table linking bundles to their constituent datasets.\nUses codes for loose coupling - allows declaring membership for datasets\nthat may not yet exist in the system.\n\nExamples:\n- Bundle \"slovaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
+
     "left": {
       "column": "bundle_code",
       "column_short": "bundle",
       "type": "text",
-      "index_comment": "Index for looking up datasets in a bundle"
+      "cpp_type": "std::string",
+      "index_comment": "Index for looking up datasets in a bundle",
+      "description": "Code of the bundle this membership belongs to.",
+      "detail": "References dataset_bundle.code (soft FK)."
     },
+
     "right": {
       "column": "dataset_code",
       "column_short": "dataset",
       "type": "text",
-      "index_comment": "Index for finding bundles containing a dataset"
+      "cpp_type": "std::string",
+      "index_comment": "Index for finding bundles containing a dataset",
+      "description": "Code of the dataset that is a member of the bundle.",
+      "detail": "References dataset.code (soft FK)."
     },
+
     "columns": [
       {
         "name": "display_order",
         "type": "integer",
-        "nullable": false
+        "cpp_type": "int",
+        "nullable": false,
+        "default_value": "0",
+        "description": "Order in which this dataset should be displayed or processed.",
+        "detail": "Lower numbers appear first. Used for controlling installation order and UI presentation."
       }
-    ]
+    ],
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "table_display": [
+        {"column": "bundle_code", "header": "Bundle"},
+        {"column": "dataset_code", "header": "Dataset"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ],
+      "generator": {
+        "bundle_code": "std::string(faker::word::noun()) + \"_bundle\"",
+        "dataset_code": "std::string(faker::word::noun()) + \".\" + std::string(faker::word::noun())",
+        "display_order": "faker::number::integer(1, 100)"
+      }
+    }
   }
 }

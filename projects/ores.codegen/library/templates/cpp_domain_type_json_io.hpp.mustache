@@ -1,0 +1,37 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
+
+#include <iosfwd>
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Dumps the {{entity_singular}} to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
+
+#include <iosfwd>
+#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Dumps the {{name_singular}} to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
+
+}
+
+#endif
+{{/junction}}

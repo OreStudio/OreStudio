@@ -190,7 +190,7 @@ EOF
   System in BOOTSTRAP MODE - awaiting initial admin account creation
   Use 'bootstrap <username> <password> <email>' to create the initial admin account.
 
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.10
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> Bye!
@@ -282,7 +282,7 @@ ores-shell> Bye!
 
 ** Accounts
    :PROPERTIES:
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 52004 --connect-identifier recipes"
    :END:
 
 Functionality related to the accounts domain entity in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio Accounts
@@ -305,7 +305,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.9
+ORE Studio Shell REPL v0.0.10
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> currencies> Commands available:
@@ -348,18 +348,11 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :51004
-
-⚠ WARNING: System is in BOOTSTRAP MODE
-  System in BOOTSTRAP MODE - awaiting initial admin account creation
-  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
-
+✓ Connected to :52004
 ORE Studio Shell REPL v0.0.10
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019be79e-ebef-70f6-918d-4c6717bc8eda
-  You can now login with the credentials provided.
+ores-shell> ✗ Operation not allowed - system is not in bootstrap mode
 ores-shell> Bye!
 #+end_example
 

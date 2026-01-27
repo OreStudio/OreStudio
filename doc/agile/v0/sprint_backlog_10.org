@@ -17,48 +17,55 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-26 Mon 01:32], for Monday, January 26, 2026.
-|      | <75>                      |        |      |      |       |
-| Tags | Headline                  | Time   |      |      |     % |
-|------+---------------------------+--------+------+------+-------|
-|      | *Total time*              | *1:30* |      |      | 100.0 |
-|------+---------------------------+--------+------+------+-------|
-|      | Stories                   | 1:30   |      |      | 100.0 |
-|      | Active                    |        | 1:30 |      | 100.0 |
-| code | Generate C++ code for ORE |        |      | 1:10 |  77.8 |
-| code | Add rounding type table   |        |      | 0:20 |  22.2 |
+#+CAPTION: Clock summary at [2026-01-26 Mon 17:42], for Monday, January 26, 2026.
+|       | <75>                                            |        |      |      |       |
+| Tags  | Headline                                        | Time   |      |      |     % |
+|-------+-------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                    | *7:29* |      |      | 100.0 |
+|-------+-------------------------------------------------+--------+------+------+-------|
+|       | Stories                                         | 7:29   |      |      | 100.0 |
+|       | Active                                          |        | 7:29 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint              |        |      | 0:46 |  10.2 |
+| code  | Generate C++ code for ORE                       |        |      | 1:10 |  15.6 |
+| code  | Fix windows CI break due to XSD code generation |        |      | 0:18 |   4.0 |
+| code  | Clean up data layers                            |        |      | 1:21 |  18.0 |
+| code  | Add rounding type table                         |        |      | 1:37 |  21.6 |
+| code  | Add dataset bundles                             |        |      | 2:17 |  30.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-26 Mon 01:32]
+#+CAPTION: Clock summary at [2026-01-26 Mon 17:42]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *53:25* |       |      | 100.0 |
+|       | *Total time*                                        | *59:24* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 53:25   |       |      | 100.0 |
-|       | Active                                              |         | 53:25 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:17 |   2.4 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  11.9 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  14.3 |
-| code  | Party related schemes                               |         |       | 5:20 |  10.0 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   3.2 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   0.8 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.0 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   5.2 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |   6.6 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   3.1 |
-| code  | Refactor SQL directories                            |         |       | 3:24 |   6.4 |
-| code  | Code-generate ER diagram                            |         |       | 3:01 |   5.6 |
-| code  | Add "words" to icons                                |         |       | 0:28 |   0.9 |
-| code  | Add mapping artefact to population functions        |         |       | 2:19 |   4.3 |
-| code  | Add a ORE component for import/export               |         |       | 4:00 |   7.5 |
-| code  | Generate C++ code for ORE                           |         |       | 6:43 |  12.6 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   2.5 |
-| code  | Add FPML export and import                          |         |       | 0:19 |   0.6 |
-| code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.6 |
-| code  | Add rounding type table                             |         |       | 0:20 |   0.6 |
+|       | Stories                                             | 59:24   |       |      | 100.0 |
+|       | Active                                              |         | 59:24 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:17 |   2.2 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 7:06 |  12.0 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  12.9 |
+| code  | Party related schemes                               |         |       | 5:20 |   9.0 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   2.9 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   0.7 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   0.9 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   4.7 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |   6.0 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   2.8 |
+| code  | Refactor SQL directories                            |         |       | 3:24 |   5.7 |
+| code  | Code-generate ER diagram                            |         |       | 3:01 |   5.1 |
+| code  | Add "words" to icons                                |         |       | 0:28 |   0.8 |
+| code  | Add mapping artefact to population functions        |         |       | 2:19 |   3.9 |
+| code  | Add a ORE component for import/export               |         |       | 4:00 |   6.7 |
+| code  | Generate C++ code for ORE                           |         |       | 6:43 |  11.3 |
+| code  | Fix windows CI break due to XSD code generation     |         |       | 0:18 |   0.5 |
+| code  | Clean up data layers                                |         |       | 1:21 |   2.3 |
+| code  | Add rounding type table                             |         |       | 1:37 |   2.7 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   2.2 |
+| code  | Add FPML export and import                          |         |       | 0:19 |   0.5 |
+| code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.5 |
+| code  | Add dataset bundles                                 |         |       | 2:17 |   3.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -213,8 +220,9 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_10_tags.png]]
 
-*** COMPLETED OCR scan notebooks for this sprint                      :infra:
+*** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 16:54]--[2026-01-26 Mon 17:40] =>  0:46
     CLOCK: [2026-01-23 Fri 10:59]--[2026-01-23 Fri 11:20] =>  0:21
     CLOCK: [2026-01-23 Fri 10:30]--[2026-01-23 Fri 10:59] =>  0:29
     CLOCK: [2026-01-23 Fri 09:00]--[2026-01-23 Fri 09:30] =>  0:30
@@ -797,6 +805,149 @@ Links:
 - [[https://github.com/craflin/xsdcpp/issues/11][#11: Issues parsing XSD for ORE (Open Source Risk Engine)]]: raised issue
   against xsdcpp project for ORE schema.
 
+*** COMPLETED Fix windows CI break due to XSD code generation          :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 09:11]--[2026-01-26 Mon 09:29] =>  0:18
+    :END:
+
+#+begin_quote
+This pull request provides a crucial fix for Windows MSVC builds by addressing a
+specific compilation error. It ensures the project's compatibility and
+successful compilation on the Windows platform, particularly when dealing with
+code that generates large object files due to complex template structures.
+
+Highlights:
+
+- MSVC Build Fix: Resolves a C1128 build failure on Windows when compiling
+  domain_xsd.hpp with MSVC.
+- Compiler Option Addition: Introduces the /bigobj compiler option to the
+  ores.ore target specifically for MSVC builds.
+- Large Object File Support: This option increases the section limit,
+  accommodating large object files often generated due to extensive template
+  usage.
+#+end_quote
+
+*** COMPLETED Clean up data layers                                     :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 12:01]--[2026-01-26 Mon 12:10] =>  0:09
+    CLOCK: [2026-01-26 Mon 10:48]--[2026-01-26 Mon 12:00] =>  1:12
+    :END:
+
+At present the population is a bit messy. We need to structure it around layers.
+
+*** COMPLETED Add rounding type table                                  :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 09:30]--[2026-01-26 Mon 10:47] =>  1:17
+    CLOCK: [2026-01-26 Mon 01:11]--[2026-01-26 Mon 01:31] =>  0:20
+    :END:
+
+Values:
+
+- Up, Down, Closest, Floor, Ceiling. Maybe none?
+
+Notes:
+
+- Currency should check against these.
+- Supply the mapping table to mappers?
+
+Grok:
+
+#+begin_quote
+Your current list covers several of the most commonly used rounding behaviors in
+applications:
+
+- *Up* → typically means always round away from zero (positive direction) — also
+  called Round Up / Towards +∞ / Ceiling-like but always positive direction
+- *Down* → always round toward zero (truncation) — also called Round Down /
+  Truncation / Towards 0
+- *Closest* → round to nearest (with some tie-breaking rule — usually
+  unspecified/default in casual UIs)
+- *Floor* → round down toward −∞ (always toward more negative)
+- *Ceiling* → round up toward +∞ (always toward more positive)
+
+These are already very solid for most general-purpose apps. However, depending
+on your audience (especially finance, accounting, statistics, or scientific
+users), you are likely missing one or two very frequently requested/expected
+options.
+
+### Commonly missing but important ones to consider adding
+
+1. *Bankers* (or Banker's Rounding / Round Half Even / Round Half to Even) →
+   Round to nearest, but ties (exactly .5) round to the nearest *even* digit.
+   This is the statistically unbiased method, required or strongly preferred in:
+   - Financial applications (interest calculations, totals)
+   - Many accounting systems
+   - IEEE 754 default for binary floating-point
+   - Java BigDecimal.HALF_EVEN, .NET MidpointRounding.ToEven, Python round(),
+     SQL ROUND() in many databases
+
+   Very commonly expected when users see "Closest" is not enough.
+
+2. *Half Up* (or Round Half Away from Zero / Commercial Rounding) → Round to
+   nearest, ties (.5) always round away from zero (2.5 → 3, -2.5 → -3) This is
+   what most people intuitively think "normal rounding" means in school and is
+   the most common tie-breaking rule in non-financial UIs.
+
+   Many users expect this when they choose "Closest".
+
+### Less common but occasionally requested
+
+- *Half Down* — ties round toward zero (2.5 → 2, -2.5 → -2) — rare in business apps
+- *Half Toward Zero* — same as Half Down
+- *Half Away from Zero* — same as Half Up
+- *Half to Odd* — ties round to odd digit (very rare)
+
+### Suggested final list (modern, user-friendly set)
+
+Most applications end up offering roughly these 5–7 options in a dropdown:
+
+- Up (always away from zero / toward +∞ for positive numbers)
+- Down (always toward zero / truncation)
+- Floor (toward −∞)
+- Ceiling (toward +∞)
+- Closest / Nearest (usually implies Half Up in simple UIs)
+- *Half Up* (explicitly — very popular)
+- *Bankers* / Round Half Even / Banker's Rounding (critically important for
+  finance/accounting)
+
+A very clean and common 6-item list seen in many tools:
+
+1. Up
+2. Down
+3. Floor
+4. Ceiling
+5. Nearest, Half Up
+6. Nearest, Half Even (Bankers)
+
+If you want to keep the list very short, adding just *Bankers* to your current
+five is already a big improvement for serious users.
+#+end_quote
+
+FPML via Gemini:
+
+#+begin_quote
+FpML does not use a "Coding Scheme" (like a URL-referenced list) for rounding in
+the same way it does for Currencies or Business Centers. Instead, it uses a
+Complex Type called Rounding and a fixed Enumeration for the direction.
+
+Because rounding logic is typically a structural part of a calculation (e.g.,
+how to round a floating rate or a payout amount), it is "baked into" the schema
+itself rather than being an external lookup table.
+
+1. The Rounding Complex Type
+
+To model rounding in your database or XML, you need two pieces of data:
+
+- precision: An integer representing the number of decimal places.
+- roundingDirection: A fixed value from the RoundingDirectionEnum.
+
+Allowed Values for roundingDirection:
+
+- Up: Round away from zero (or to the next higher number).
+- Down: Round toward zero (truncate).
+- Nearest: Standard mathematical rounding (0.5 rounds up).
+#+end_quote
+
 *** STARTED Add code generation support for domain types SQL           :code:
     :LOGBOOK:
     CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
@@ -1070,117 +1221,290 @@ Table: =assimilated_data= (TimescaleDB Hypertable)
 - [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
 - [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
 
-*** STARTED Add rounding type table                                    :code:
+*** STARTED Add dataset bundles                                        :code:
     :LOGBOOK:
-    CLOCK: [2026-01-26 Mon 01:11]--[2026-01-26 Mon 01:31] =>  0:20
+    CLOCK: [2026-01-26 Mon 22:50]--[2026-01-26 Mon 23:30] =>  0:40
+    CLOCK: [2026-01-26 Mon 17:41]--[2026-01-26 Mon 18:10] =>  0:29
+    CLOCK: [2026-01-26 Mon 16:40]--[2026-01-26 Mon 16:53] =>  0:13
+    CLOCK: [2026-01-26 Mon 12:56]--[2026-01-26 Mon 15:00] =>  2:04
     :END:
 
-Values:
-
-- Up, Down, Closest, Floor, Ceiling. Maybe none?
-
-Notes:
-
-- Currency should check against these.
-- Supply the mapping table to mappers?
-
-Grok:
+Group together datasets so that you can just install a bundle and have a system
+ready to use.
 
 #+begin_quote
-Your current list covers several of the most commonly used rounding behaviors in
-applications:
+This pull request significantly enhances the data management capabilities by
+introducing a robust 'Dataset Bundle' feature. This allows for the logical
+grouping and coordinated publication of multiple datasets, ensuring data
+consistency and simplifying the deployment of related reference data. The
+changes encompass new database schema elements, comprehensive PL/pgSQL functions
+for lifecycle management, and initial seed data to demonstrate its utility,
+ultimately streamlining the process of setting up and maintaining coherent data
+environments.
 
-- *Up* → typically means always round away from zero (positive direction) — also
-  called Round Up / Towards +∞ / Ceiling-like but always positive direction
-- *Down* → always round toward zero (truncation) — also called Round Down /
-  Truncation / Towards 0
-- *Closest* → round to nearest (with some tie-breaking rule — usually
-  unspecified/default in casual UIs)
-- *Floor* → round down toward −∞ (always toward more negative)
-- *Ceiling* → round up toward +∞ (always toward more positive)
+Highlights:
 
-These are already very solid for most general-purpose apps. However, depending
-on your audience (especially finance, accounting, statistics, or scientific
-users), you are likely missing one or two very frequently requested/expected
-options.
-
-### Commonly missing but important ones to consider adding
-
-1. *Bankers* (or Banker's Rounding / Round Half Even / Round Half to Even) →
-   Round to nearest, but ties (exactly .5) round to the nearest *even* digit.
-   This is the statistically unbiased method, required or strongly preferred in:
-   - Financial applications (interest calculations, totals)
-   - Many accounting systems
-   - IEEE 754 default for binary floating-point
-   - Java BigDecimal.HALF_EVEN, .NET MidpointRounding.ToEven, Python round(),
-     SQL ROUND() in many databases
-
-   Very commonly expected when users see "Closest" is not enough.
-
-2. *Half Up* (or Round Half Away from Zero / Commercial Rounding) → Round to
-   nearest, ties (.5) always round away from zero (2.5 → 3, -2.5 → -3) This is
-   what most people intuitively think "normal rounding" means in school and is
-   the most common tie-breaking rule in non-financial UIs.
-
-   Many users expect this when they choose "Closest".
-
-### Less common but occasionally requested
-
-- *Half Down* — ties round toward zero (2.5 → 2, -2.5 → -2) — rare in business apps
-- *Half Toward Zero* — same as Half Down
-- *Half Away from Zero* — same as Half Up
-- *Half to Odd* — ties round to odd digit (very rare)
-
-### Suggested final list (modern, user-friendly set)
-
-Most applications end up offering roughly these 5–7 options in a dropdown:
-
-- Up (always away from zero / toward +∞ for positive numbers)
-- Down (always toward zero / truncation)
-- Floor (toward −∞)
-- Ceiling (toward +∞)
-- Closest / Nearest (usually implies Half Up in simple UIs)
-- *Half Up* (explicitly — very popular)
-- *Bankers* / Round Half Even / Banker's Rounding (critically important for
-  finance/accounting)
-
-A very clean and common 6-item list seen in many tools:
-
-1. Up
-2. Down
-3. Floor
-4. Ceiling
-5. Nearest, Half Up
-6. Nearest, Half Even (Bankers)
-
-If you want to keep the list very short, adding just *Bankers* to your current
-five is already a big improvement for serious users.
+- New Feature: Dataset Bundles: Introduced the concept of 'Dataset Bundles',
+  which are named collections of datasets designed to work together, allowing
+  the system to be brought into a ready state with a coherent set of reference
+  data.
+- New Database Objects: Added three new tables: dq_dataset_bundles_tbl (main
+  bundle definition), dq_dataset_bundle_members_tbl (junction table linking
+  bundles to datasets), and dq_bundle_publications_tbl (audit table for bundle
+  publication history).
+- Bundle Management Functions: Implemented a suite of PostgreSQL functions for
+  managing dataset bundles, including dq_list_bundles_fn() (list available
+  bundles), dq_list_bundle_datasets_fn() (list datasets within a bundle),
+  dq_preview_bundle_publication_fn() (simulate publication),
+  dq_populate_bundle_fn() (publish all datasets in a bundle), and
+  dq_get_bundle_publication_history_fn() (retrieve publication audit records).
+- Automated Bundle Publication: The dq_populate_bundle_fn() function
+  orchestrates the publication of all member datasets within a bundle to
+  production, processing them in a defined display order to respect dependencies
+  and logging individual dataset publication results.
+- Seed Data and Upsert Functions: Added upsert_dq_dataset_bundle() and
+  upsert_dq_dataset_bundle_member() functions to facilitate idempotent seeding
+  of bundle definitions and their members, along with initial seed data for
+  'solvaris', 'base', and 'crypto' bundles.
 #+end_quote
 
-FPML via Gemini:
+*** STARTED Add UI for bootstrapping from Qt                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 23:31]--[2026-01-26 Mon 23:44] =>  0:13
+    CLOCK: [2026-01-26 Mon 21:30]--[2026-01-26 Mon 22:50] =>  1:20
+    CLOCK: [2026-01-26 Mon 19:01]--[2026-01-26 Mon 20:00] =>  0:59
+    :END:
+
+At present we need to go to the shell to bootstrap. It would be easier if we
+just had a button in Qt for this. Actually we probably need a little wizard
+which takes you through choosing an initial population etc.
 
 #+begin_quote
-FpML does not use a "Coding Scheme" (like a URL-referenced list) for rounding in
-the same way it does for Currencies or Business Centers. Instead, it uses a
-Complex Type called Rounding and a fixed Enumeration for the direction.
+This pull request introduces a crucial user experience improvement by providing
+a guided, interactive wizard for first-time system initialization. It resolves
+the 'chicken-and-egg' problem where a new system couldn't be easily set up
+without an existing administrator account or initial data. The wizard
+streamlines the process of creating the first admin and populating the system
+with essential reference data, making the application much more user-friendly
+upon initial deployment.
 
-Because rounding logic is typically a structural part of a calculation (e.g.,
-how to round a floating rate or a payout amount), it is "baked into" the schema
-itself rather than being an external lookup table.
+Highlights:
 
-1. The Rounding Complex Type
-
-To model rounding in your database or XML, you need two pieces of data:
-
-- precision: An integer representing the number of decimal places.
-- roundingDirection: A fixed value from the RoundingDirectionEnum.
-
-Allowed Values for roundingDirection:
-
-- Up: Round away from zero (or to the next higher number).
-- Down: Round toward zero (truncate).
-- Nearest: Standard mathematical rounding (0.5 rounds up).
+- New System Provisioner Wizard: Introduces a multi-page wizard UI
+  (SystemProvisionerWizard) to guide users through the initial setup of a fresh
+  system, including creating an administrator account and selecting an initial
+  data bundle.
+- Bootstrap Mode Detection and Handling: The system now detects if it's in
+  'bootstrap mode' (no administrator account exists). If detected, the
+  LoginDialog emits a signal, and the MainWindow automatically displays the new
+  SystemProvisionerWizard instead of the standard login form.
+- Admin Account Creation and Data Provisioning: The wizard facilitates the
+  creation of the initial administrator account with validation for username,
+  email, and password. It also allows users to select a dataset bundle (e.g.,
+  Solvaris, Base System, Crypto) for initial data provisioning, with progress
+  tracking and logging.
+- Product Backlog Documentation: Two new stories have been added to the product
+  backlog: one detailing the 'System Provisioner Wizard' feature and its
+  acceptance criteria, and another addressing the architectural issue of
+  'Separating catalog metadata schema from production data' which is a
+  prerequisite for full provisioning functionality.
 #+end_quote
+**** Analysis
+
+Some analysis on this via Gemini:
+
+- we should call this "Data Provisioning". The wizard could be the data
+  provisioning wizard.
+- way to improve data setup:
+
+#+begin_quote
+Large systems often use a "Vanilla vs. Flavoured" approach:
+
+- The Vanilla Step: This is the Baseline Configuration. It is non-negotiable and
+  contains ISO codes (Currencies/Countries) and FpML schemas.
+- The Flavor Step: The user chooses a Vertical or Scenario.
+
+/"Apply Financial Services Template?"/ (Adds FpML specific catalogs).
+
+/"Apply IDES/Demo Dataset?"/ (Adds the fictional entities and trades).
+#+end_quote
+
+- "Demonstration and Evaluation": it should be possible to load up the system in
+  a way that it is ready to exercise all of it's functionality.
+
+**** Merged stories
+
+***** Add screen in qt to exit bootstrap mode*
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+***** Add System Provisioner Wizard to Qt                              :code:
+
+Create a =SystemProvisionerWizard= in ores.qt to guide users through first-time
+system initialization. The wizard provisions the system layer-by-layer,
+culminating in a fully operational deployment.
+
+****** Background
+
+During system bootstrap, users need to:
+
+1. Create the initial administrator account.
+2. Provision the Foundation layer (change reasons, IAM permissions/roles, etc.).
+3. Provision the Data Governance layer (dimensions, methodologies, artefact types).
+4. Provision the Data Catalogues layer (catalogs, datasets, artefact data).
+5. Publish selected bundles to Production.
+
+****** Wizard Structure (Option A: Technical/Layer-Aligned)
+
+| Page | Name                    | Purpose                                          |
+|------+-------------------------+--------------------------------------------------|
+|    1 | AdminAccountPage        | Create initial admin (username, email, password) |
+|    2 | FoundationLayerPage     | Select bundle(s) for foundation (mandatory)      |
+|    3 | DataGovernanceLayerPage | Select bundle(s) for governance (mandatory)      |
+|    4 | DataCataloguesLayerPage | Select bundle(s) for catalogues (optional)       |
+|    5 | ProvisioningPage        | Execute all selections, show progress            |
+
+****** Bundle Selection Behavior
+
+- Each layer page displays available bundles with descriptions.
+- Some layers have a single mandatory bundle (Foundation, Data Governance).
+- Some layers allow "leave empty" (Data Catalogues, Production).
+- Selections are collected per-page but applied transactionally at the end.
+- The final page executes all provisioning and shows per-layer progress.
+
+****** Architectural Issue Identified
+
+The current database design places catalog metadata (=dq_datasets_tbl=,
+=dq_catalogs_tbl=, =dq_dataset_bundle_tbl=, etc.) in the same database as
+production data. This creates a bootstrapping paradox: the catalog metadata must
+exist before provisioning can occur, but provisioning is supposed to populate
+the database.
+
+****** Dependencies
+
+- *Prerequisite*: Refactor database to separate catalog/metadata schema from
+  production data schema. This is blocking work for the wizard.
+- *Server-side*: Infrastructure to apply bundles transactionally is not yet
+  implemented. Need bundle application endpoints/services.
+- *Related story*: "Add screen in qt to exit bootstrap mode" - the wizard
+  subsumes this functionality.
+- *Related story*: "Make bootstrap operation atomic using SQL transactions" -
+  same transactional pattern applies.
+
+****** ERP Terminology Mapping
+
+| ORES Layer           | ERP Equivalent                            |
+|----------------------+-------------------------------------------|
+| Foundation           | System Configuration / Core Setup         |
+| Data Governance      | Master Data Governance / Data Stewardship |
+| Data Catalogues      | Master Data / Reference Data Import       |
+| Production (Publish) | Go-Live / Data Activation                 |
+
+****** Acceptance Criteria
+
+- Wizard only appears when system is in bootstrap mode.
+- Admin account creation follows existing =create_initial_admin_request= pattern.
+- Each layer page shows clear description of layer purpose.
+- Bundle selection is intuitive with mandatory/optional indicators.
+- Provisioning is transactional (all-or-nothing).
+- Progress is visible per-layer during execution.
+- System exits bootstrap mode upon successful completion.
+- Wizard is first-time only (not re-runnable).
+
+*** STARTED Separate catalog metadata schema from production data      :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 23:45]
+    :END:
+
+Refactor the database architecture to separate catalog/metadata tables from
+production data tables. This resolves a bootstrapping paradox where catalog
+metadata must exist before provisioning, but provisioning populates the
+database.
+
+**** Problem Statement
+
+Currently, the following table categories share the same database:
+
+- *Catalog metadata*: =dq_datasets_tbl=, =dq_catalogs_tbl=,
+  =dq_dataset_bundle_tbl=, =dq_dataset_bundle_member_tbl=,
+  =dq_dataset_dependencies_tbl=
+- *Artefact staging*: =dq_*_artefact_tbl= tables (countries, currencies, images,
+  FPML entities, etc.)
+- *Production data*: =refdata_*_tbl=, =assets_*_tbl=, IAM tables
+
+This creates problems:
+
+1. Cannot provision a fresh system because catalog definitions don't exist yet.
+2. Bundle publication requires bundles to be defined before they can be applied.
+3. Unclear separation between "system configuration" and "user data".
+
+**** Proposed Solution
+
+Evaluate options:
+
+1. *Separate schemas*: Keep catalog metadata in a =dq= schema, production in
+   =ores= schema. Template database includes =dq= schema pre-populated.
+2. *Separate databases*: Catalog metadata in a "control plane" database,
+   production in "data plane" database.
+3. *Embedded metadata*: Bundle definitions embedded in application code or
+   configuration files rather than database.
+
+**** Acceptance Criteria
+
+- Clear separation between catalog/metadata and production data.
+- Fresh system can be provisioned without chicken-and-egg problem.
+- Bundle definitions are available before first provisioning.
+- Existing population scripts continue to work.
+- System Provisioner Wizard can be implemented.
+
+**** Related Stories
+
+- "Add System Provisioner Wizard to Qt" - blocked by this work.
 
 *** Generate C++ code for FPML                                         :code:
 
@@ -2285,6 +2609,9 @@ We ran out of tokens to address code review comments from:
 
 Notes:
 
+- cannot view domains, edit etc.
+- consider adding nodes to the tree with like dimensions so that users
+  effectively can filter by those.
 - check to see if the diagram is using the new message to retrieve dependencies.
 - most countries don't seem to have flags. How and when is the mapping done?
   actually after a restart I can now see the flags. It seems we need to force a
@@ -2329,33 +2656,6 @@ use something that reminds one of a laboratory.
 - when never connected: nothing.
 - when connected: server, bytes sent, received, status of connection.
 - when disconnected: retries, disconnected since.
-
-*** Add UI for bootstrapping from Qt                                   :code:
-
-At present we need to go to the shell to bootstrap. It would be easier if we
-just had a button in Qt for this. Actually we probably need a little wizard
-which takes you through choosing an initial population etc.
-
-Some analysis on this via gemini:
-
-- we should call this "Data Provisioning". The wizard could be the data
-  provisioning wizard.
-- way to improve data setup:
-
-#+begin_quote
-Large systems often use a "Vanilla vs. Flavoured" approach:
-
-- The Vanilla Step: This is the Baseline Configuration. It is non-negotiable and
-  contains ISO codes (Currencies/Countries) and FpML schemas.
-- The Flavor Step: The user chooses a Vertical or Scenario.
-
-/"Apply Financial Services Template?"/ (Adds FpML specific catalogs).
-
-/"Apply IDES/Demo Dataset?"/ (Adds the fictional entities and trades).
-#+end_quote
-
-- "Demonstration and Evaluation": it should be possible to load up the system in
-  a way that it is ready to exercise all of it's functionality.
 
 *** Add coloured icons                                                 :code:
 
@@ -2608,6 +2908,6 @@ Tasks:
 
 * Footer
 
-|                                                         |
-|---------------------------------------------------------|
+|                        |
+|------------------------|
 | Previous: [[../../agile/v0/version_zero.org][Version Zero]] |

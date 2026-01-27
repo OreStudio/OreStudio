@@ -1,0 +1,35 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::domain {
+
+std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component}}/domain/{{name_singular}}_json_io.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::domain {
+
+std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/junction}}

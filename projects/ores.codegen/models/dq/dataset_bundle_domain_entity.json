@@ -2,29 +2,62 @@
   "domain_entity": {
     "component": "dq",
     "entity_singular": "dataset_bundle",
-    "entity_singular_title": "Dataset Bundle",
     "entity_plural": "dataset_bundles",
-    "description": "A named collection of datasets designed to work together. Installing a bundle\ngets the system into a ready state with a coherent set of reference data.\n\nExamples:\n- \"solvaris\": Synthetic reference data for development and testing\n- \"base\": Industry-standard reference data (ISO + FpML) for production\n- \"crypto\": Base system plus cryptocurrency reference data",
+    "entity_title": "Dataset Bundle",
+    "brief": "A named collection of datasets designed to work together.",
+    "description": "A named collection of datasets designed to work together. Installing a bundle\ngets the system into a ready state with a coherent set of reference data.\n\nExamples:\n- \"slovaris\": Synthetic reference data for development and testing\n- \"base\": Industry-standard reference data (ISO + FpML) for production\n- \"crypto\": Base system plus cryptocurrency reference data",
+
     "primary_key": {
       "column": "id",
-      "type": "uuid"
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this bundle.",
+      "detail": "This is the surrogate key for the bundle."
     },
+
     "natural_keys": [
       {
         "column": "code",
-        "type": "text"
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique code for stable referencing.",
+        "detail": "Examples: \"slovaris\", \"base\", \"crypto\"."
       },
       {
         "column": "name",
-        "type": "text"
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the bundle."
       }
     ],
+
     "columns": [
       {
         "name": "description",
         "type": "text",
-        "nullable": false
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the bundle's contents and purpose."
       }
-    ]
+    ],
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ],
+      "generator": {
+        "code": "std::string(faker::word::noun()) + \"_bundle\"",
+        "name": "std::string(faker::word::adjective()) + \" \" + std::string(faker::word::noun()) + \" Bundle\"",
+        "description": "std::string(faker::lorem::sentence())"
+      }
+    }
   }
 }

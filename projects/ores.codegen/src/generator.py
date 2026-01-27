@@ -271,6 +271,34 @@ def get_junction_template_mappings():
     ]
 
 
+def get_cpp_domain_entity_template_mappings():
+    """
+    Define the mapping for C++ domain entity templates.
+
+    Returns:
+        list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
+    """
+    return [
+        # JSON I/O facet
+        ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
+        ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
+    ]
+
+
+def get_cpp_junction_template_mappings():
+    """
+    Define the mapping for C++ junction table templates.
+
+    Returns:
+        list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
+    """
+    return [
+        # JSON I/O facet
+        ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
+        ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
+    ]
+
+
 def get_populate_template_mappings():
     """
     Define the mapping for entity populate templates (per-dataset).
@@ -458,6 +486,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_domain_entity = is_domain_entity_model(model_filename)
     is_junction = is_junction_model(model_filename)
 
+    # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
+    generate_cpp = target_template and target_template.startswith('cpp_')
+
     # Determine which templates to process
     if target_template:
         templates_to_process = [target_template]
@@ -526,6 +557,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         data['enhanced_license'] = enhanced_license
         # Also add the modeline separately if needed
         data['sql_modeline'] = sql_modeline
+
+        # Get the C++ modeline and generate C++ license
+        cpp_modeline = data['modelines'].get('c++', '')
+        cpp_license = generate_license_with_header(
+            data['licence-GPL-v3'],
+            cpp_modeline,
+            'c++'
+        )
+        data['cpp_license'] = cpp_license
+        data['cpp_modeline'] = cpp_modeline
 
     # Add the model data to the template data
     # Use the model filename (without extension) as the key
@@ -628,9 +669,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _mark_last_item(domain_entity['columns'])
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
-        # Format description as comment block lines
+        # Format description as comment block lines (for SQL)
         if 'description' in domain_entity:
-            domain_entity['description'] = _format_description_as_comment(domain_entity['description'])
+            domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
+        # Add uppercase versions for C++ include guards
+        if 'component' in domain_entity:
+            domain_entity['component_upper'] = domain_entity['component'].upper()
+        if 'entity_singular' in domain_entity:
+            domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
+        if 'entity_plural' in domain_entity:
+            domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models
@@ -638,9 +686,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         junction = model['junction']
         if 'columns' in junction:
             _mark_last_item(junction['columns'])
-        # Format description as comment block lines
+        # Format description as comment block lines (for SQL)
         if 'description' in junction:
-            junction['description'] = _format_description_as_comment(junction['description'])
+            junction['description_formatted'] = _format_description_as_comment(junction['description'])
+        # Add uppercase versions for C++ include guards
+        if 'component' in junction:
+            junction['component_upper'] = junction['component'].upper()
+        if 'name_singular' in junction:
+            junction['name_singular_upper'] = junction['name_singular'].upper()
+        if 'name' in junction:
+            junction['name_upper'] = junction['name'].upper()
         data['junction'] = junction
 
     # Special processing for entity data models (populate scripts)
@@ -758,6 +813,36 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Determine output filename
         if target_output:
             output_filename = target_output
+        elif generate_cpp and is_domain_entity and 'domain_entity' in data:
+            # C++ generation for domain entity
+            domain_entity = data['domain_entity']
+            component = domain_entity.get('component', 'unknown')
+            entity_singular = domain_entity.get('entity_singular', 'unknown')
+            # Find the mapping for this template
+            cpp_mappings = get_cpp_domain_entity_template_mappings()
+            mapping = next(((t, d, s) for t, d, s in cpp_mappings if t == template_name), None)
+            if mapping:
+                output_dir_pattern, suffix = mapping[1], mapping[2]
+                # Replace {component} placeholder
+                sub_dir = output_dir_pattern.replace('{component}', f'ores.{component}')
+                output_filename = f"{sub_dir}/{entity_singular}{suffix}"
+            else:
+                output_filename = f"{entity_singular}.hpp"
+        elif generate_cpp and is_junction and 'junction' in data:
+            # C++ generation for junction
+            junction = data['junction']
+            component = junction.get('component', 'unknown')
+            name_singular = junction.get('name_singular', 'unknown')
+            # Find the mapping for this template
+            cpp_mappings = get_cpp_junction_template_mappings()
+            mapping = next(((t, d, s) for t, d, s in cpp_mappings if t == template_name), None)
+            if mapping:
+                output_dir_pattern, suffix = mapping[1], mapping[2]
+                # Replace {component} placeholder
+                sub_dir = output_dir_pattern.replace('{component}', f'ores.{component}')
+                output_filename = f"{sub_dir}/{name_singular}{suffix}"
+            else:
+                output_filename = f"{name_singular}.hpp"
         elif is_domain_entity and 'domain_entity' in data:
             # For domain entity models, derive filename from domain_entity definition
             # Use entity_singular for filename (table/indexes/functions use entity_plural)
@@ -828,6 +913,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{prefix}_{output_filename}"
 
         output_path = output_dir / output_filename
+
+        # Create parent directories if needed (for C++ templates with subdirectories)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Write output to file
         with open(output_path, 'w', encoding='utf-8') as f:
@@ -944,15 +1032,17 @@ def _resolve_file_references(model_data, model_dir, global_data):
 def main():
     """Main function to run the code generator."""
     import sys
+    import argparse
 
-    # Check if a model path was provided as command-line argument
-    if len(sys.argv) < 2:
-        print("Usage: python generator.py <model_path> [output_dir]")
-        print("Example: python generator.py models/slovaris/catalogs.json")
-        print("Example with custom output: python generator.py models/slovaris/catalogs.json custom_output/")
-        return
+    parser = argparse.ArgumentParser(description='Generate code from models using templates')
+    parser.add_argument('model_path', help='Path to the model file')
+    parser.add_argument('output_dir', nargs='?', default=None, help='Output directory (default: output/)')
+    parser.add_argument('--template', '-t', dest='target_template',
+                        help='Specific template to use (overrides default template selection)')
+    parser.add_argument('--output', '-o', dest='target_output',
+                        help='Specific output filename (overrides default naming)')
 
-    model_path = sys.argv[1]
+    args = parser.parse_args()
 
     # Define paths
     base_dir = Path(__file__).parent.parent
@@ -960,8 +1050,8 @@ def main():
     templates_dir = base_dir / "library" / "templates"
 
     # Use provided output directory or default to 'output'
-    if len(sys.argv) > 2:
-        output_dir = Path(sys.argv[2])
+    if args.output_dir:
+        output_dir = Path(args.output_dir)
     else:
         output_dir = base_dir / "output"
 
@@ -969,7 +1059,10 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate from the specified model
-    generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False)
+    generate_from_model(args.model_path, data_dir, templates_dir, output_dir,
+                        is_processing_batch=False,
+                        target_template=args.target_template,
+                        target_output=args.target_output)
 
 
 if __name__ == "__main__":

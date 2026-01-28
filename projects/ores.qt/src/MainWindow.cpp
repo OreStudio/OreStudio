@@ -486,6 +486,11 @@ MainWindow::MainWindow(QWidget* parent) :
                     if (methodologyController_)
                         methodologyController_->showListWindow();
                 });
+        connect(librarianWindow, &DataLibrarianWindow::openBundlesRequested,
+                this, [this]() {
+                    if (datasetBundleController_)
+                        datasetBundleController_->showListWindow();
+                });
 
         // Reload image cache when image-related datasets are published
         connect(librarianWindow, &DataLibrarianWindow::datasetsPublished,

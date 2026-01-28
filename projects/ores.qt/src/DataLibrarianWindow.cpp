@@ -25,6 +25,8 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QSettings>
+#include <QFutureWatcher>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -33,6 +35,7 @@
 #include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/PublishDatasetsDialog.hpp"
 #include "ores.qt/PublicationHistoryDialog.hpp"
+#include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
 namespace ores::qt {
 
@@ -48,7 +51,11 @@ enum class NavigationItemType {
     Root,
     Domain,
     SubjectArea,
-    Catalog
+    Catalog,
+    Bundle,
+    OriginDimension,
+    NatureDimension,
+    TreatmentDimension
 };
 
 Icon iconForSubjectArea(const QString& subjectAreaName) {
@@ -81,6 +88,10 @@ DataLibrarianWindow::DataLibrarianWindow(
       catalogModel_(new ClientCatalogModel(clientManager, this)),
       datasetDependencyModel_(new ClientDatasetDependencyModel(clientManager, this)),
       methodologyModel_(new ClientMethodologyModel(clientManager, this)),
+      bundleModel_(new ClientDatasetBundleModel(clientManager, this)),
+      originDimensionModel_(new ClientOriginDimensionModel(clientManager, this)),
+      natureDimensionModel_(new ClientNatureDimensionModel(clientManager, this)),
+      treatmentDimensionModel_(new ClientTreatmentDimensionModel(clientManager, this)),
       statusBar_(new QStatusBar(this)),
       loadingProgressBar_(new QProgressBar(this)),
       statusLabel_(new QLabel(this)) {
@@ -129,6 +140,20 @@ DataLibrarianWindow::DataLibrarianWindow(
     statusLabel_->setText(tr("Loading datasets..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting datasets...";
     datasetModel_->refresh();
+
+    statusLabel_->setText(tr("Loading bundles..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting bundles...";
+    bundleModel_->refresh();
+
+    statusLabel_->setText(tr("Loading dimensions..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting origin dimensions...";
+    originDimensionModel_->refresh();
+
+    BOOST_LOG_SEV(lg(), debug) << "Requesting nature dimensions...";
+    natureDimensionModel_->refresh();
+
+    BOOST_LOG_SEV(lg(), debug) << "Requesting treatment dimensions...";
+    treatmentDimensionModel_->refresh();
 }
 
 void DataLibrarianWindow::setupUi() {
@@ -217,6 +242,12 @@ void DataLibrarianWindow::setupToolbar() {
             Icon::Book, IconUtils::DefaultIconColor),
         tr("Methods"));
     methodologiesAction_->setToolTip(tr("Open Methodologies window"));
+
+    bundlesAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Folder, IconUtils::DefaultIconColor),
+        tr("Bundles"));
+    bundlesAction_->setToolTip(tr("Open Dataset Bundles window"));
 }
 
 void DataLibrarianWindow::setupNavigationSidebar() {
@@ -236,6 +267,7 @@ void DataLibrarianWindow::setupNavigationSidebar() {
     navigationTree_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     navigationTree_->setFrameShape(QFrame::StyledPanel);
     navigationTree_->setFrameShadow(QFrame::Sunken);
+    navigationTree_->setContextMenuPolicy(Qt::CustomContextMenu);
     leftLayout->addWidget(navigationTree_, 1);
 
     // Set minimum/maximum width for left panel
@@ -319,6 +351,10 @@ void DataLibrarianWindow::setupConnections() {
     connect(datasetTable_, &QTableView::customContextMenuRequested,
             this, &DataLibrarianWindow::showDatasetContextMenu);
 
+    // Navigation tree context menu
+    connect(navigationTree_, &QTreeView::customContextMenuRequested,
+            this, &DataLibrarianWindow::showNavigationContextMenu);
+
     // Toolbar actions
     connect(refreshAction_, &QAction::triggered,
             this, &DataLibrarianWindow::onRefreshClicked);
@@ -339,6 +375,8 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::openCodingSchemesRequested);
     connect(methodologiesAction_, &QAction::triggered,
             this, &DataLibrarianWindow::openMethodologiesRequested);
+    connect(bundlesAction_, &QAction::triggered,
+            this, &DataLibrarianWindow::openBundlesRequested);
 
     // Data model signals
     connect(datasetModel_, &ClientDatasetModel::dataLoaded,
@@ -356,6 +394,15 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onDatasetDependenciesLoaded);
     connect(methodologyModel_, &ClientMethodologyModel::dataLoaded,
             this, &DataLibrarianWindow::onMethodologiesLoaded);
+
+    connect(bundleModel_, &ClientDatasetBundleModel::dataLoaded,
+            this, &DataLibrarianWindow::onBundlesLoaded);
+    connect(originDimensionModel_, &ClientOriginDimensionModel::dataLoaded,
+            this, &DataLibrarianWindow::onOriginDimensionsLoaded);
+    connect(natureDimensionModel_, &ClientNatureDimensionModel::dataLoaded,
+            this, &DataLibrarianWindow::onNatureDimensionsLoaded);
+    connect(treatmentDimensionModel_, &ClientTreatmentDimensionModel::dataLoaded,
+            this, &DataLibrarianWindow::onTreatmentDimensionsLoaded);
 
     // Header context menu for column visibility
     QHeaderView* header = datasetTable_->horizontalHeader();
@@ -397,6 +444,34 @@ void DataLibrarianWindow::onNavigationSelectionChanged(
     case NavigationItemType::Catalog:
         if (!itemName.isEmpty()) {
             filterDatasetsByCatalog(itemName);
+        } else {
+            clearDatasetFilter();
+        }
+        break;
+    case NavigationItemType::Bundle:
+        if (!itemName.isEmpty()) {
+            filterDatasetsByBundle(itemName);
+        } else {
+            clearDatasetFilter();
+        }
+        break;
+    case NavigationItemType::OriginDimension:
+        if (!itemName.isEmpty()) {
+            filterDatasetsByOrigin(itemName);
+        } else {
+            clearDatasetFilter();
+        }
+        break;
+    case NavigationItemType::NatureDimension:
+        if (!itemName.isEmpty()) {
+            filterDatasetsByNature(itemName);
+        } else {
+            clearDatasetFilter();
+        }
+        break;
+    case NavigationItemType::TreatmentDimension:
+        if (!itemName.isEmpty()) {
+            filterDatasetsByTreatment(itemName);
         } else {
             clearDatasetFilter();
         }
@@ -629,6 +704,106 @@ void DataLibrarianWindow::onMethodologiesLoaded() {
     }
 }
 
+void DataLibrarianWindow::onBundlesLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Bundles loaded: " << bundleModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 bundles...").arg(bundleModel_->rowCount()));
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+    }
+    buildNavigationTree();
+
+    // Fetch bundle members to populate the cache for filtering
+    fetchBundleMembers();
+}
+
+void DataLibrarianWindow::onOriginDimensionsLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Origin dimensions loaded: " << originDimensionModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 origin dimensions...").arg(originDimensionModel_->rowCount()));
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+    }
+    buildNavigationTree();
+}
+
+void DataLibrarianWindow::onNatureDimensionsLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Nature dimensions loaded: " << natureDimensionModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 nature dimensions...").arg(natureDimensionModel_->rowCount()));
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+    }
+    buildNavigationTree();
+}
+
+void DataLibrarianWindow::onTreatmentDimensionsLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Treatment dimensions loaded: " << treatmentDimensionModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 treatment dimensions...").arg(treatmentDimensionModel_->rowCount()));
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+    }
+    buildNavigationTree();
+}
+
+void DataLibrarianWindow::fetchBundleMembers() {
+    BOOST_LOG_SEV(lg(), debug) << "Fetching bundle members...";
+
+    auto* self = this;
+    auto* watcher = new QFutureWatcher<std::vector<dq::domain::dataset_bundle_member>>(this);
+
+    connect(watcher, &QFutureWatcher<std::vector<dq::domain::dataset_bundle_member>>::finished,
+            this, [self, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        // Populate the bundle member cache
+        self->bundleMemberCache_.clear();
+        for (const auto& member : result) {
+            QString bundleCode = QString::fromStdString(member.bundle_code);
+            QString datasetCode = QString::fromStdString(member.dataset_code);
+            self->bundleMemberCache_[bundleCode].append(datasetCode);
+        }
+
+        BOOST_LOG_SEV(self->lg(), info) << "Bundle members loaded: " << result.size()
+                                         << " members across "
+                                         << self->bundleMemberCache_.size() << " bundles";
+    });
+
+    auto task = [self]() -> std::vector<dq::domain::dataset_bundle_member> {
+        dq::messaging::get_dataset_bundle_members_request request;
+        auto result = self->clientManager_->process_request(std::move(request));
+        if (result) {
+            return std::move(result->members);
+        }
+        return {};
+    };
+
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void DataLibrarianWindow::onBundleMembersLoaded() {
+    // This slot is no longer needed as we handle it inline in fetchBundleMembers
+    // Keeping it for compatibility with the header declaration
+}
+
 void DataLibrarianWindow::buildNavigationTree() {
     // Only build when some data is loaded
     if (dataDomainModel_->rowCount() == 0 &&
@@ -641,6 +816,8 @@ void DataLibrarianWindow::buildNavigationTree() {
     // Find or create parent items
     QStandardItem* domainsParent = nullptr;
     QStandardItem* catalogsParent = nullptr;
+    QStandardItem* bundlesParent = nullptr;
+    QStandardItem* dimensionsParent = nullptr;
 
     for (int i = 0; i < rootItem->rowCount(); ++i) {
         auto* item = rootItem->child(i);
@@ -648,6 +825,10 @@ void DataLibrarianWindow::buildNavigationTree() {
             domainsParent = item;
         } else if (item->text() == tr("Catalogs")) {
             catalogsParent = item;
+        } else if (item->text() == tr("Bundles")) {
+            bundlesParent = item;
+        } else if (item->text() == tr("Dimensions")) {
+            dimensionsParent = item;
         }
     }
 
@@ -658,6 +839,24 @@ void DataLibrarianWindow::buildNavigationTree() {
         catalogsParent->setIcon(IconUtils::createRecoloredIcon(
             Icon::Library, IconUtils::DefaultIconColor));
         rootItem->appendRow(catalogsParent);
+    }
+
+    // Create Bundles parent if not exists
+    if (!bundlesParent) {
+        bundlesParent = new QStandardItem(tr("Bundles"));
+        bundlesParent->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
+        bundlesParent->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Folder, IconUtils::DefaultIconColor));
+        rootItem->appendRow(bundlesParent);
+    }
+
+    // Create Dimensions parent if not exists
+    if (!dimensionsParent) {
+        dimensionsParent = new QStandardItem(tr("Dimensions"));
+        dimensionsParent->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
+        dimensionsParent->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Table, IconUtils::DefaultIconColor));
+        rootItem->appendRow(dimensionsParent);
     }
 
     // Build Domains hierarchy using string-based relationships
@@ -721,6 +920,89 @@ void DataLibrarianWindow::buildNavigationTree() {
         }
     }
 
+    // Build Bundles list
+    if (bundlesParent) {
+        bundlesParent->removeRows(0, bundlesParent->rowCount());
+
+        for (int b = 0; b < bundleModel_->rowCount(); ++b) {
+            const auto* bundle = bundleModel_->getBundle(b);
+            if (!bundle) continue;
+
+            auto* bundleItem = new QStandardItem(
+                QString::fromStdString(bundle->name));
+            bundleItem->setData(
+                static_cast<int>(NavigationItemType::Bundle), ItemTypeRole);
+            bundleItem->setData(
+                QString::fromStdString(bundle->code), ItemIdRole);
+            bundleItem->setIcon(IconUtils::createRecoloredIcon(
+                Icon::Folder, IconUtils::DefaultIconColor));
+
+            bundlesParent->appendRow(bundleItem);
+        }
+    }
+
+    // Build Dimensions section with three sub-categories
+    if (dimensionsParent) {
+        dimensionsParent->removeRows(0, dimensionsParent->rowCount());
+
+        // Origin Dimension
+        auto* originParent = new QStandardItem(tr("Origin"));
+        originParent->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
+        originParent->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Globe, IconUtils::DefaultIconColor));
+
+        for (int i = 0; i < originDimensionModel_->rowCount(); ++i) {
+            const auto* dim = originDimensionModel_->getDimension(i);
+            if (!dim) continue;
+
+            auto* dimItem = new QStandardItem(QString::fromStdString(dim->name));
+            dimItem->setData(static_cast<int>(NavigationItemType::OriginDimension), ItemTypeRole);
+            dimItem->setData(QString::fromStdString(dim->code), ItemIdRole);
+            dimItem->setIcon(IconUtils::createRecoloredIcon(
+                Icon::Record, IconUtils::DefaultIconColor));
+            originParent->appendRow(dimItem);
+        }
+        dimensionsParent->appendRow(originParent);
+
+        // Nature Dimension
+        auto* natureParent = new QStandardItem(tr("Nature"));
+        natureParent->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
+        natureParent->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Star, IconUtils::DefaultIconColor));
+
+        for (int i = 0; i < natureDimensionModel_->rowCount(); ++i) {
+            const auto* dim = natureDimensionModel_->getDimension(i);
+            if (!dim) continue;
+
+            auto* dimItem = new QStandardItem(QString::fromStdString(dim->name));
+            dimItem->setData(static_cast<int>(NavigationItemType::NatureDimension), ItemTypeRole);
+            dimItem->setData(QString::fromStdString(dim->code), ItemIdRole);
+            dimItem->setIcon(IconUtils::createRecoloredIcon(
+                Icon::Record, IconUtils::DefaultIconColor));
+            natureParent->appendRow(dimItem);
+        }
+        dimensionsParent->appendRow(natureParent);
+
+        // Treatment Dimension
+        auto* treatmentParent = new QStandardItem(tr("Treatment"));
+        treatmentParent->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
+        treatmentParent->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Settings, IconUtils::DefaultIconColor));
+
+        for (int i = 0; i < treatmentDimensionModel_->rowCount(); ++i) {
+            const auto* dim = treatmentDimensionModel_->getDimension(i);
+            if (!dim) continue;
+
+            auto* dimItem = new QStandardItem(QString::fromStdString(dim->name));
+            dimItem->setData(static_cast<int>(NavigationItemType::TreatmentDimension), ItemTypeRole);
+            dimItem->setData(QString::fromStdString(dim->code), ItemIdRole);
+            dimItem->setIcon(IconUtils::createRecoloredIcon(
+                Icon::Record, IconUtils::DefaultIconColor));
+            treatmentParent->appendRow(dimItem);
+        }
+        dimensionsParent->appendRow(treatmentParent);
+    }
+
     // Expand all tree items so hierarchy is visible on startup
     navigationTree_->expandAll();
 }
@@ -729,6 +1011,10 @@ void DataLibrarianWindow::filterDatasetsByCatalog(const QString& catalogName) {
     selectedCatalogName_ = catalogName;
     selectedDomainName_.clear();
     selectedSubjectAreaName_.clear();
+    selectedBundleCode_.clear();
+    selectedOriginCode_.clear();
+    selectedNatureCode_.clear();
+    selectedTreatmentCode_.clear();
 
     // Filter by catalog column
     datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Catalog);
@@ -743,6 +1029,10 @@ void DataLibrarianWindow::filterDatasetsByDomain(const QString& domainName) {
     selectedDomainName_ = domainName;
     selectedCatalogName_.clear();
     selectedSubjectAreaName_.clear();
+    selectedBundleCode_.clear();
+    selectedOriginCode_.clear();
+    selectedNatureCode_.clear();
+    selectedTreatmentCode_.clear();
 
     // Filter by domain column
     datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Domain);
@@ -757,6 +1047,10 @@ void DataLibrarianWindow::filterDatasetsBySubjectArea(const QString& subjectArea
     selectedSubjectAreaName_ = subjectAreaName;
     selectedCatalogName_.clear();
     selectedDomainName_.clear();
+    selectedBundleCode_.clear();
+    selectedOriginCode_.clear();
+    selectedNatureCode_.clear();
+    selectedTreatmentCode_.clear();
 
     // Filter by subject area column
     datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::SubjectArea);
@@ -767,10 +1061,97 @@ void DataLibrarianWindow::filterDatasetsBySubjectArea(const QString& subjectArea
     selectFirstDataset();
 }
 
+void DataLibrarianWindow::filterDatasetsByBundle(const QString& bundleCode) {
+    selectedBundleCode_ = bundleCode;
+    selectedCatalogName_.clear();
+    selectedDomainName_.clear();
+    selectedSubjectAreaName_.clear();
+    selectedOriginCode_.clear();
+    selectedNatureCode_.clear();
+    selectedTreatmentCode_.clear();
+
+    // Get datasets for this bundle from the cache
+    auto it = bundleMemberCache_.find(bundleCode);
+    if (it != bundleMemberCache_.end() && !it->second.isEmpty()) {
+        // Build a regex pattern that matches any of the dataset codes
+        QStringList escapedCodes;
+        for (const auto& code : it->second) {
+            escapedCodes.append(QRegularExpression::escape(code));
+        }
+        QString pattern = "^(" + escapedCodes.join("|") + ")$";
+        datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Code);
+        datasetProxyModel_->setFilterRegularExpression(
+            QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    } else {
+        // No datasets in bundle - show nothing
+        datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Code);
+        datasetProxyModel_->setFilterFixedString("__NO_MATCH__");
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Filter datasets by bundle: "
+                               << bundleCode.toStdString();
+    selectFirstDataset();
+}
+
+void DataLibrarianWindow::filterDatasetsByOrigin(const QString& originCode) {
+    selectedOriginCode_ = originCode;
+    selectedCatalogName_.clear();
+    selectedDomainName_.clear();
+    selectedSubjectAreaName_.clear();
+    selectedBundleCode_.clear();
+    selectedNatureCode_.clear();
+    selectedTreatmentCode_.clear();
+
+    datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Origin);
+    datasetProxyModel_->setFilterFixedString(originCode);
+
+    BOOST_LOG_SEV(lg(), debug) << "Filter datasets by origin: "
+                               << originCode.toStdString();
+    selectFirstDataset();
+}
+
+void DataLibrarianWindow::filterDatasetsByNature(const QString& natureCode) {
+    selectedNatureCode_ = natureCode;
+    selectedCatalogName_.clear();
+    selectedDomainName_.clear();
+    selectedSubjectAreaName_.clear();
+    selectedBundleCode_.clear();
+    selectedOriginCode_.clear();
+    selectedTreatmentCode_.clear();
+
+    datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Nature);
+    datasetProxyModel_->setFilterFixedString(natureCode);
+
+    BOOST_LOG_SEV(lg(), debug) << "Filter datasets by nature: "
+                               << natureCode.toStdString();
+    selectFirstDataset();
+}
+
+void DataLibrarianWindow::filterDatasetsByTreatment(const QString& treatmentCode) {
+    selectedTreatmentCode_ = treatmentCode;
+    selectedCatalogName_.clear();
+    selectedDomainName_.clear();
+    selectedSubjectAreaName_.clear();
+    selectedBundleCode_.clear();
+    selectedOriginCode_.clear();
+    selectedNatureCode_.clear();
+
+    datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Treatment);
+    datasetProxyModel_->setFilterFixedString(treatmentCode);
+
+    BOOST_LOG_SEV(lg(), debug) << "Filter datasets by treatment: "
+                               << treatmentCode.toStdString();
+    selectFirstDataset();
+}
+
 void DataLibrarianWindow::clearDatasetFilter() {
     selectedCatalogName_.clear();
     selectedDomainName_.clear();
     selectedSubjectAreaName_.clear();
+    selectedBundleCode_.clear();
+    selectedOriginCode_.clear();
+    selectedNatureCode_.clear();
+    selectedTreatmentCode_.clear();
     datasetProxyModel_->setFilterRegularExpression("");
     selectFirstDataset();
 }
@@ -892,6 +1273,144 @@ void DataLibrarianWindow::showDatasetContextMenu(const QPoint& pos) {
         onViewDatasetClicked();
     } else if (selectedAction == publishAction) {
         onPublishClicked();
+    }
+}
+
+std::vector<dq::domain::dataset> DataLibrarianWindow::getDatasetsUnderNode(
+    const QModelIndex& index) {
+    std::vector<dq::domain::dataset> datasets;
+
+    if (!index.isValid()) {
+        return datasets;
+    }
+
+    const auto itemType = static_cast<NavigationItemType>(
+        index.data(ItemTypeRole).toInt());
+    const auto itemId = index.data(ItemIdRole).toString();
+
+    // Collect matching datasets based on node type
+    for (int row = 0; row < datasetModel_->rowCount(); ++row) {
+        const auto* dataset = datasetModel_->getDataset(row);
+        if (!dataset) continue;
+
+        bool matches = false;
+
+        switch (itemType) {
+        case NavigationItemType::Root: {
+            // Check if this is "All Datasets" or a category parent
+            const auto itemText = index.data(Qt::DisplayRole).toString();
+            if (itemText == tr("All Datasets")) {
+                matches = true;  // Include all datasets
+            }
+            // For category parents (Domains, Catalogs, Bundles, Dimensions),
+            // collect all datasets from all children
+            break;
+        }
+        case NavigationItemType::Domain:
+            matches = (QString::fromStdString(dataset->domain_name) == itemId);
+            break;
+        case NavigationItemType::SubjectArea:
+            matches = (QString::fromStdString(dataset->subject_area_name) == itemId);
+            break;
+        case NavigationItemType::Catalog:
+            if (dataset->catalog_name.has_value()) {
+                matches = (QString::fromStdString(dataset->catalog_name.value()) == itemId);
+            }
+            break;
+        case NavigationItemType::Bundle: {
+            // Check if dataset is in this bundle's member list
+            auto it = bundleMemberCache_.find(itemId);
+            if (it != bundleMemberCache_.end()) {
+                QString datasetCode = QString::fromStdString(dataset->code);
+                matches = it->second.contains(datasetCode);
+            }
+            break;
+        }
+        case NavigationItemType::OriginDimension:
+            matches = (QString::fromStdString(dataset->origin_code) == itemId);
+            break;
+        case NavigationItemType::NatureDimension:
+            matches = (QString::fromStdString(dataset->nature_code) == itemId);
+            break;
+        case NavigationItemType::TreatmentDimension:
+            matches = (QString::fromStdString(dataset->treatment_code) == itemId);
+            break;
+        }
+
+        if (matches) {
+            datasets.push_back(*dataset);
+        }
+    }
+
+    // For Root nodes that are category parents, recursively collect from children
+    if (itemType == NavigationItemType::Root) {
+        const auto* item = navigationModel_->itemFromIndex(index);
+        if (item && item->hasChildren()) {
+            for (int i = 0; i < item->rowCount(); ++i) {
+                const auto* child = item->child(i);
+                if (child) {
+                    auto childDatasets = getDatasetsUnderNode(child->index());
+                    datasets.insert(datasets.end(),
+                                    childDatasets.begin(), childDatasets.end());
+                }
+            }
+        }
+    }
+
+    // Remove duplicates (datasets might appear in multiple children)
+    std::sort(datasets.begin(), datasets.end(),
+              [](const auto& a, const auto& b) { return a.code < b.code; });
+    datasets.erase(std::unique(datasets.begin(), datasets.end(),
+                               [](const auto& a, const auto& b) {
+                                   return a.code == b.code;
+                               }),
+                   datasets.end());
+
+    return datasets;
+}
+
+void DataLibrarianWindow::showNavigationContextMenu(const QPoint& pos) {
+    const auto index = navigationTree_->indexAt(pos);
+    if (!index.isValid()) {
+        return;
+    }
+
+    // Get datasets under this node
+    auto datasets = getDatasetsUnderNode(index);
+    if (datasets.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "No datasets under selected navigation node";
+        return;
+    }
+
+    const auto itemText = index.data(Qt::DisplayRole).toString();
+
+    QMenu menu(this);
+
+    // Publish action with dataset count
+    QAction* publishAction = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
+        tr("Publish %1 Datasets from \"%2\"")
+            .arg(datasets.size())
+            .arg(itemText));
+
+    // Execute menu
+    QAction* selectedAction = menu.exec(navigationTree_->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == publishAction) {
+        BOOST_LOG_SEV(lg(), info) << "Publishing " << datasets.size()
+                                   << " datasets from navigation node: "
+                                   << itemText.toStdString();
+
+        // Open publish dialog with collected datasets
+        auto* dialog = new PublishDatasetsDialog(clientManager_, username_, this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setDatasets(datasets);
+
+        // Forward published signal (for cache refresh)
+        connect(dialog, &PublishDatasetsDialog::datasetsPublished,
+                this, &DataLibrarianWindow::datasetsPublished);
+
+        dialog->exec();
     }
 }
 

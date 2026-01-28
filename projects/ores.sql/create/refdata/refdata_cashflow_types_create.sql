@@ -34,9 +34,10 @@ create table if not exists "production"."refdata_cashflow_types_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (code, valid_from, valid_to),
+    primary key (code, coding_scheme_code, valid_from, valid_to),
     exclude using gist (
         code WITH =,
+        coding_scheme_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
@@ -45,7 +46,7 @@ create table if not exists "production"."refdata_cashflow_types_tbl" (
 );
 
 create unique index if not exists refdata_cashflow_types_version_uniq_idx
-on "production"."refdata_cashflow_types_tbl" (code, version)
+on "production"."refdata_cashflow_types_tbl" (code, coding_scheme_code, version)
 where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists refdata_cashflow_types_coding_scheme_idx

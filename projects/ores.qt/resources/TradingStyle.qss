@@ -21,12 +21,15 @@
 
 /*
  * OreStudio - Trading Style
+ *
+ * Typography: Modern sans-serif stack with system UI fallbacks.
+ * Primary: Inter (if installed), Roboto, then platform system fonts.
  */
 
 QWidget {
     background-color: #1A1A1A;
     color: #F0F0F0;
-    font-family: "Fira Code";
+    font-family: "Inter", "Roboto", "Segoe UI", "SF Pro Display", "Helvetica Neue", "Arial", sans-serif;
     font-size: 10pt;
 }
 
@@ -73,16 +76,11 @@ QPushButton {
     border: 1px solid #444444;
     color: #F0F0F0;
     padding: 8px 12px;
-    font-family: "Arial";
 }
 
 QPushButton:hover {
     background-color: #2A2A2A;
     border: 1px solid #007ACC;
-}
-
-QLabel {
-    font-family: "Arial";
 }
 
 /* Toolbar specific styles */
@@ -95,12 +93,11 @@ QToolBar {
 }
 
 QToolBar QToolButton {
-    background-color: transparent; /* Revert from diagnostic green background */
+    background-color: transparent;
     border: none;
     color: #F0F0F0;
     padding: 4px;
     font-size: 7pt;
-    font-family: "Arial";
 }
 
 QToolBar QToolButton:hover {
@@ -116,7 +113,6 @@ QToolBar QToolButton:disabled {
 QMenuBar {
     background-color: #282828;
     color: #F0F0F0;
-    font-family: "Arial";
 }
 
 QMenuBar::item {
@@ -130,7 +126,6 @@ QMenuBar::item:selected {
 QMenu {
     background-color: #282828;
     border: 1px solid #444444;
-    font-family: "Arial";
 }
 
 QMenu::item:selected {

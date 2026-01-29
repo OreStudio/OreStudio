@@ -50,6 +50,17 @@
 (defconst ores/checkout-tag (intern ores/checkout-label)
   "The tag symbol for the current checkout.")
 
+(defun ores/prodigy ()
+  "Open Prodigy buffer for current project's checkout label."
+  (interactive)
+  (let ((label ores/checkout-label))
+    (if label
+        (cunene/prodigy-filter-by-tag (intern label))
+      (user-error "Not in an OreStudio project?"))))
+
+;; Optional: bind to a key
+(define-key global-map (kbd "C-x p 8") #'ores/prodigy)
+
 ;; Remove existing services for THIS checkout only, to allow reloading without
 ;; duplicates while preserving services from other checkouts.
 (when (boundp 'prodigy-services)

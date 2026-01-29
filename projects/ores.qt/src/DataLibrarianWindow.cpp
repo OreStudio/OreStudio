@@ -1286,9 +1286,47 @@ std::vector<dq::domain::dataset> DataLibrarianWindow::getDatasetsUnderNode(
 
     const auto itemType = static_cast<NavigationItemType>(
         index.data(ItemTypeRole).toInt());
-    const auto itemId = index.data(ItemIdRole).toString();
 
-    // Collect matching datasets based on node type
+    if (itemType == NavigationItemType::Root) {
+        const auto itemText = index.data(Qt::DisplayRole).toString();
+        if (itemText == tr("All Datasets")) {
+            datasets.reserve(datasetModel_->rowCount());
+            for (int row = 0; row < datasetModel_->rowCount(); ++row) {
+                if (const auto* dataset = datasetModel_->getDataset(row)) {
+                    datasets.push_back(*dataset);
+                }
+            }
+            return datasets;
+        }
+
+        // For category parents (Domains, Catalogs, etc.), recursively collect
+        // from children
+        const auto* item = navigationModel_->itemFromIndex(index);
+        if (item && item->hasChildren()) {
+            for (int i = 0; i < item->rowCount(); ++i) {
+                if (const auto* child = item->child(i)) {
+                    auto childDatasets = getDatasetsUnderNode(child->index());
+                    datasets.insert(datasets.end(),
+                        std::make_move_iterator(childDatasets.begin()),
+                        std::make_move_iterator(childDatasets.end()));
+                }
+            }
+        }
+
+        // Remove duplicates only for category parents (aggregated from children)
+        std::sort(datasets.begin(), datasets.end(),
+            [](const auto& a, const auto& b) { return a.code < b.code; });
+        datasets.erase(std::unique(datasets.begin(), datasets.end(),
+            [](const auto& a, const auto& b) {
+                return a.code == b.code;
+            }),
+            datasets.end());
+
+        return datasets;
+    }
+
+    // For non-Root nodes, collect matching datasets based on node type
+    const auto itemId = index.data(ItemIdRole).toString();
     for (int row = 0; row < datasetModel_->rowCount(); ++row) {
         const auto* dataset = datasetModel_->getDataset(row);
         if (!dataset) continue;
@@ -1296,16 +1334,6 @@ std::vector<dq::domain::dataset> DataLibrarianWindow::getDatasetsUnderNode(
         bool matches = false;
 
         switch (itemType) {
-        case NavigationItemType::Root: {
-            // Check if this is "All Datasets" or a category parent
-            const auto itemText = index.data(Qt::DisplayRole).toString();
-            if (itemText == tr("All Datasets")) {
-                matches = true;  // Include all datasets
-            }
-            // For category parents (Domains, Catalogs, Bundles, Dimensions),
-            // collect all datasets from all children
-            break;
-        }
         case NavigationItemType::Domain:
             matches = (QString::fromStdString(dataset->domain_name) == itemId);
             break;
@@ -1318,7 +1346,6 @@ std::vector<dq::domain::dataset> DataLibrarianWindow::getDatasetsUnderNode(
             }
             break;
         case NavigationItemType::Bundle: {
-            // Check if dataset is in this bundle's member list
             auto it = bundleMemberCache_.find(itemId);
             if (it != bundleMemberCache_.end()) {
                 QString datasetCode = QString::fromStdString(dataset->code);
@@ -1335,36 +1362,15 @@ std::vector<dq::domain::dataset> DataLibrarianWindow::getDatasetsUnderNode(
         case NavigationItemType::TreatmentDimension:
             matches = (QString::fromStdString(dataset->treatment_code) == itemId);
             break;
+        case NavigationItemType::Root:
+            // This case is handled above
+            break;
         }
 
         if (matches) {
             datasets.push_back(*dataset);
         }
     }
-
-    // For Root nodes that are category parents, recursively collect from children
-    if (itemType == NavigationItemType::Root) {
-        const auto* item = navigationModel_->itemFromIndex(index);
-        if (item && item->hasChildren()) {
-            for (int i = 0; i < item->rowCount(); ++i) {
-                const auto* child = item->child(i);
-                if (child) {
-                    auto childDatasets = getDatasetsUnderNode(child->index());
-                    datasets.insert(datasets.end(),
-                                    childDatasets.begin(), childDatasets.end());
-                }
-            }
-        }
-    }
-
-    // Remove duplicates (datasets might appear in multiple children)
-    std::sort(datasets.begin(), datasets.end(),
-              [](const auto& a, const auto& b) { return a.code < b.code; });
-    datasets.erase(std::unique(datasets.begin(), datasets.end(),
-                               [](const auto& a, const auto& b) {
-                                   return a.code == b.code;
-                               }),
-                   datasets.end());
 
     return datasets;
 }

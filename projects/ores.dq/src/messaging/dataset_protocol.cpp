@@ -33,10 +33,8 @@ using ores::utility::serialization::error_code;
 using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
 
-namespace {
-
 // ============================================================================
-// Dataset helpers
+// Dataset Serialization Helpers
 // ============================================================================
 
 void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d) {
@@ -236,6 +234,8 @@ read_dataset(std::span<const std::byte>& data) {
 
     return d;
 }
+
+namespace {
 
 // ============================================================================
 // Methodology helpers

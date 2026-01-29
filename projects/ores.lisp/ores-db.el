@@ -74,6 +74,7 @@
     (define-key map (kbd "r")   #'ores-db/recreate-at-point)
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
     (define-key map (kbd "R")   #'ores-db/recreate-all)
+    (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "v")   #'ores-db/set-env-vars)
     (define-key map (kbd "g")   #'ores-db/ui-refresh)
     (define-key map (kbd "?")   #'ores-db/menu)
@@ -297,6 +298,23 @@ This runs recreate_database.sh which drops everything and recreates from scratch
          nil
          (lambda (_) "*ores-db-recreate-all*"))))))
 
+(defun ores-db/create-whimsical ()
+  "Create a new database instance with a whimsical name.
+Uses create_instance.sql to create from ores_template."
+  (interactive)
+  (let ((sql-dir (ores-db/sql-scripts-directory)))
+    (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
+           (sql-path (expand-file-name "create_instance.sql" sql-dir))
+           (default-directory sql-dir)
+           (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                       process-environment)))
+      (if (not (file-exists-p sql-path))
+          (user-error "Script not found: %s" sql-path)
+        (compilation-start
+         (format "psql -h localhost -U postgres -f %s" sql-path)
+         nil
+         (lambda (_) "*ores-db-create-whimsical*"))))))
+
 ;;; ==========================================================================
 ;;; Transient Menu
 ;;; ==========================================================================
@@ -311,7 +329,8 @@ This runs recreate_database.sh which drops everything and recreates from scratch
     ("l" "List databases" ores-db/list-databases)
     ("g" "Refresh list" ores-db/ui-refresh)
     ("c" "Connect at point" ores-db/ui-connect-at-point)]
-   ["Recreate"
+   ["Create/Recreate"
+    ("n" "New whimsical database" ores-db/create-whimsical)
     ("d" "Recreate current env" ores-db/recreate-current-env)
     ("r" "Recreate at point" ores-db/recreate-at-point)
     ("e" "Recreate environment..." ores-db/recreate-env-database)

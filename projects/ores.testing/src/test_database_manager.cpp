@@ -49,6 +49,7 @@ using ores::platform::environment::environment;
 context test_database_manager::make_admin_context() {
     auto opts = make_database_options();
     opts.database = "postgres";  // Connect to admin database
+    opts.user = "ores_test_ddl_user";  // Use test DDL user for admin operations
 
     context_factory::configuration db_cfg{
         .database_options = opts,
@@ -77,7 +78,7 @@ context test_database_manager::make_context() {
 database::database_options test_database_manager::make_database_options() {
     return database::database_options {
         .user = environment::environment::get_value_or_default(
-            prefix + "USER", "ores"),
+            prefix + "USER", "ores_test_dml_user"),
         .password = environment::environment::get_value_or_default(
             prefix + "PASSWORD", ""),
         .host = environment::environment::get_value_or_default(

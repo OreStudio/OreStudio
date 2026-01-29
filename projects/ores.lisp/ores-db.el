@@ -153,10 +153,19 @@ The session's working directory is set to ores.sql for easy script access."
       (let ((pw (ores-db/database--get-credential role host :secret)))
         (when pw
           (setq count (1+ count))
-          (if (string= role "postgres")
-              (setenv "PGPASSWORD" pw)
+          (cond
+           ((string= role "postgres")
+            (setenv "PGPASSWORD" pw))
+           ;; Test users need special env vars for the C++ test infrastructure
+           ((string= role "ores_test_ddl_user")
+            (setenv "ORES_TEST_DDL_USER_PASSWORD" pw)
+            (setenv "ORES_TEST_DB_DDL_PASSWORD" pw))
+           ((string= role "ores_test_dml_user")
+            (setenv "ORES_TEST_DML_USER_PASSWORD" pw)
+            (setenv "ORES_TEST_DB_PASSWORD" pw))
+           (t
             (setenv (concat (upcase (replace-regexp-in-string "-" "_" role)) "_PASSWORD")
-                    pw)))))
+                    pw))))))
     (message "[ORES] Exported %d passwords for %s to environment." count host)))
 
 ;;; ==========================================================================

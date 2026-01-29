@@ -41,7 +41,7 @@ database_configuration::make_options_description() {
     options_description r("Database");
     r.add_options()
         ("db-user",
-            value<std::string>()->default_value("ores"),
+            value<std::string>()->default_value("ores_cli_user"),
             "Database user name.")
         ("db-password",
             value<std::string>()->default_value(""),
@@ -51,7 +51,7 @@ database_configuration::make_options_description() {
             "Database host.")
         ("db-database",
             value<std::string>()->default_value("ores_default"),
-            "Database name.")
+            "Database name. Convention: ores_dev_<env> (e.g., ores_dev_local2).")
         ("db-port",
             value<int>()->default_value(5432),
             "Database port.");

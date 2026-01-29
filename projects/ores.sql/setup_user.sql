@@ -111,7 +111,7 @@ create user ores_cli_user      with password :'cli_password'      in role ores_r
 create user ores_wt_user       with password :'wt_password'       in role ores_rw;
 create user ores_comms_user    with password :'comms_password'    in role ores_rw;
 create user ores_http_user     with password :'http_password'     in role ores_rw;
-create user ores_test_ddl_user with password :'test_ddl_password' in role ores_owner;
+create user ores_test_ddl_user with password :'test_ddl_password' in role ores_owner createdb;
 create user ores_test_dml_user with password :'test_dml_password' in role ores_rw;
 
 -- optional: read-only user for devs/bi

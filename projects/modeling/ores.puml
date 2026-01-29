@@ -417,7 +417,9 @@ iam --> database
 iam --> geo
 iam --> security
 ore --> refdata
-ore --> telemetry
+ore --> logging
+ore --> platform
+ore --> utility
 dq --> eventing
 dq --> database
 dq --> utility

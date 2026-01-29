@@ -26,13 +26,21 @@
  *
  * USAGE:
  *   Typically called via recreate_database.sh (handles confirmation prompt):
- *     ./recreate_database.sh -p postgres_pass -o ores_pass [-y] [--no-sql-validation]
+ *     ./recreate_database.sh -p postgres_pass -d ddl_pass -c cli_pass -w wt_pass -m comms_pass -h http_pass -t test_ddl_pass -T test_dml_pass -r ro_pass [-y] [--no-sql-validation]
  *
  *   Direct psql usage (no confirmation prompt):
- *     psql -U postgres -v skip_validation='off' -f recreate_database.sql
+ *     psql -U postgres -v skip_validation='off' -v ddl_password='...' -v cli_password='...' -v wt_password='...' -v comms_password='...' -v http_password='...' -v test_ddl_password='...' -v test_dml_password='...' -v ro_password='...' -f recreate_database.sql
  *
  * Variables:
  *   :skip_validation - 'on' to skip input validation in seed functions (faster)
+ *   :ddl_password - password for DDL operations
+ *   :cli_password - password for CLI service
+ *   :wt_password - password for Web Toolkit service
+ *   :comms_password - password for Communications service
+ *   :http_password - password for HTTP service
+ *   :test_ddl_password - password for test DDL operations
+ *   :test_dml_password - password for test DML operations
+ *   :ro_password - password for read-only access
  *
  * NOTE: To drop instance databases, first run:
  *   psql -U postgres -f admin/admin_teardown_instances_generate.sql

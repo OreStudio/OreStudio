@@ -42,7 +42,7 @@
  * All scripts are idempotent and can be safely re-run.
  *
  * Usage:
- *   psql -U ores -d your_database -f populate/catalogues/populate_catalogues.sql
+ *   psql -U ores_cli_user -d your_database -f populate/catalogues/populate_catalogues.sql
  */
 
 -- Suppress noisy output during population

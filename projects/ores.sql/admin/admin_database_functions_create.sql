@@ -46,13 +46,14 @@ begin
 
     return format(
         e'-- create database from template\n'
-        'create database %I with template = ores_template;\n'
-        'grant all privileges on database %I to ores;\n'
+        'create database %I with template = ores_template owner = ores_ddl_user;\n'
+        'grant all privileges on database %I to ores_owner;\n'
+        'grant connect, temp on database %I to ores_rw, ores_ro;\n'
         '\n'
         '-- Connect to new database and initialize\n'
         '\\c %I\n'
         '\\ir ./instance/init_instance.sql\n',
-        final_name, final_name, final_name
+        final_name, final_name, final_name, final_name
     );
 end;
 $$ language plpgsql volatile;

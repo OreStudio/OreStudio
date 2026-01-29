@@ -50,7 +50,7 @@
  * publish data from DQ artefact tables to production tables.
  *
  * Usage:
- *   psql -U ores -d your_database -f populate/populate.sql
+ *   psql -U ores_cli_user -d your_database -f populate/populate.sql
  */
 
 -- Suppress noisy output during population

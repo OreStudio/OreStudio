@@ -31,7 +31,7 @@
  *
  * PREREQUISITES:
  *   - PostgreSQL superuser access
- *   - The 'ores' user must exist (run setup_user.sql first)
+ *   - The ores roles/users must exist (run setup_user.sql first)
  *
  * This database does NOT contain application code - only admin utilities.
  * Application schema is in ores_template.
@@ -46,8 +46,9 @@
 -- Create admin database
 create database ores_admin;
 
--- Grant permissions to ores user
-grant all privileges on database ores_admin to ores;
+-- Grant permissions to appropriate roles
+grant all privileges on database ores_admin to ores_owner;
+grant connect, temp on database ores_admin to ores_rw, ores_ro;
 
 -- Connect to admin database to create utilities
 \c ores_admin
@@ -61,15 +62,18 @@ grant all privileges on database ores_admin to ores;
 \ir admin_database_functions_create.sql
 \ir admin_cleanup_functions_create.sql
 
--- Grant schema object permissions to ores user
+-- Grant schema object permissions to appropriate roles
 -- (Database-level grants don't include schema object access)
-grant usage on schema public to ores;
-grant select on all tables in schema public to ores;
-grant execute on all functions in schema public to ores;
+grant usage on schema public to ores_owner, ores_rw, ores_ro;
+grant select on all tables in schema public to ores_owner, ores_rw, ores_ro;
+grant execute on all functions in schema public to ores_owner, ores_rw, ores_ro;
 
 -- Set default privileges for future objects
-alter default privileges in schema public grant select on tables to ores;
-alter default privileges in schema public grant execute on functions to ores;
+alter default privileges in schema public grant select on tables to ores_owner;
+alter default privileges in schema public grant select on tables to ores_rw;
+alter default privileges in schema public grant select on tables to ores_ro;
+alter default privileges in schema public grant execute on functions to ores_owner;
+alter default privileges in schema public grant execute on functions to ores_rw;
 
 \echo ''
 \echo '=========================================='

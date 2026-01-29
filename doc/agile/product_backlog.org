@@ -67,6 +67,32 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** ORE Sample Data                                                    :code:
+
+We added examples and XSDs from ORE. We should consider some improvements to
+this dataset:
+
+- remove unnecessary files (notebooks, pngs, pdfs, etc).
+
+
+*** C++ Complexity Measurements                                        :code:
+
+Since we are no longer taking a close look at the generated code and since
+Gemini code review does not catch all issues, we should try to find some
+automated tools to measure complexity and point to places where generated code
+is not ideal.
+
+Links:
+
+- [[https://github.com/metrixplusplus/metrixplusplus?tab=readme-ov-file][GH: metrixplusplus]]: "Metrix++ is an extendable tool for code metrics
+  collection and analysis."
+
+*** Create python script to split xsdcpp output                        :code:
+
+We are generating one very large file with all the types. This is not ideal.
+Also, this will probably not work for FPML as the schema is even larger.
+
+
 *** Add a "is alive" message                                           :code:
 
 We need to brainstorm this. At present we can only tell if a server is there or

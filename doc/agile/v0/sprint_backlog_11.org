@@ -9,7 +9,7 @@
 
 * Sprint Mission
 
-- TBD.
+- Multi-tenant and two-eyes support.
 
 * Stories
 
@@ -17,28 +17,29 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-28 Wed 23:36], for Wednesday, January 28, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:46* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:46   |      |      | 100.0 |
-|       | Active                                |        | 0:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:46 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-29 Thu 00:52], for Thursday, January 29, 2026.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *0:51* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 0:51   |      |      | 100.0 |
+|      | Active                       |        | 0:51 |      | 100.0 |
+| code | Address past review comments |        |      | 0:51 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-28 Wed 23:36]
+#+CAPTION: Clock summary at [2026-01-29 Thu 00:52]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:46* |      |      | 100.0 |
+|       | *Total time*                          | *2:00* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:46   |      |      | 100.0 |
-|       | Active                                |        | 0:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:46 | 100.0 |
+|       | Stories                               | 2:00   |      |      | 100.0 |
+|       | Active                                |        | 2:00 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:46 |  38.3 |
+| code  | Address past review comments          |        |      | 1:14 |  61.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -191,17 +192,83 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_11_tags.png]]
 
+*** Add DB schema version table                                        :code:
+
+At present we have no way of knowing what version of the schema we are running.
+We should probably look into sqitch.
+
+Links:
+
+- [[https://github.com/golang-migrate/migrate][GH: golang-migrate]]: "Database migrations written in Go. Use as CLI or import as
+  library."
+- [[https://github.com/jackc/tern][GH: tern]]: "Tern is a standalone migration tool for PostgreSQL. It includes
+  traditional migrations as well as a separate optional workflow for managing
+  database code such as functions and views."
+- [[https://github.com/sqitchers/sqitch][GH: sqitch]]: "Sqitch is a database change management application."
+
+
+*** COMPLETED Address past review comments                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-29 Thu 00:22]--[2026-01-29 Thu 00:52] =>  0:30
+    CLOCK: [2026-01-28 Wed 23:37]--[2026-01-29 Thu 00:21] =>  0:44
+    :END:
+
+We have a number of comments we did not address from past PRs. PRs:
+
+- https://github.com/OreStudio/OreStudio/pull/389
+- https://github.com/OreStudio/OreStudio/pull/387
+
+#+begin_quote
+This pull request focuses on addressing various code review feedback points and
+performing general maintenance across the Qt, DQ, and ORE components. The
+changes aim to improve UI robustness, enhance code maintainability through
+refactoring and dependency management, and provide more informative user
+feedback, ultimately contributing to a more stable and user-friendly
+application. The updates also include minor documentation clean-up and copyright
+year adjustments.
+
+Highlights:
+
+- Qt Component Enhancements: Multiple MDI windows (ChangeReasonCategory,
+  ChangeReason, Country, Currency, DataLibrarian, DatasetBundle,
+  OriginDimension) now robustly restore their header states. If saved settings
+  are corrupted, they gracefully fall back to default column visibility,
+  preventing potential UI issues. The DataLibrarianWindow::getDatasetsUnderNode
+  method has been optimized to efficiently handle root and category parent
+  nodes, avoiding redundant dataset iterations and ensuring unique entries.
+  Validation feedback for dataset bundles is more specific, pinpointing missing
+  required fields. Batch deletion error messages for dataset bundles now include
+  the codes of failed bundles and their specific failure reasons, improving user
+  clarity. Lambda capture ordering in DatasetBundleController has been adjusted
+  for better readability.
+- DQ Component Refactoring: The write_dataset and read_dataset serialization
+  helpers have been extracted from an anonymous namespace in
+  dataset_protocol.cpp and exposed in dataset_protocol.hpp. This change promotes
+  code reuse, eliminating approximately 200 lines of duplicated serialization
+  logic previously found in publication_protocol.cpp.
+- ORE Component Maintenance: CMake dependencies for the ORE library
+  (projects/ores.ore/src/CMakeLists.txt) have been updated to align with actual
+  code usage and the architecture diagram. This involved removing unused
+  dependencies (e.g., ores.variability.lib, ores.comms.lib, sqlgen::sqlgen,
+  faker-cxx::faker-cxx, libfort::fort) and adding required ones
+  (ores.logging.lib, ores.platform.lib). The copyright year in
+  projects/ores.ore/tests/CMakeLists.txt has been updated from 2024 to 2025.
+- Documentation Updates: The doc/agile/product_backlog.org file has been
+  significantly pruned, removing numerous outdated or completed backlog items.
+  The doc/agile/v0/sprint_backlog_11.org file has been updated to reflect
+  current clock summaries and the status of a sprint backlog item.
+#+end_quote
+
+*** System provisioner needs an icon                                   :code:
+
+Dialog is using default ORE icon.
+
 *** Add "system" account                                               :code:
 
 Modified by must always map to an existing account. We need to create an account
 that cannot login and which is used for all of the initial population.
 
 Publication should be done using the new admin account, not the system account.
-
-*** Create python script to split xsdcpp output                        :code:
-
-We are generating one very large file with all the types. This is not ideal.
-Also, this will probably not work for FPML as the schema is even larger.
 
 *** Split create schemas from main populate script                     :code:
 
@@ -220,13 +287,6 @@ Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
 
 This will not work when we have hundreds of types in a component. We need to
 split these files by message type.
-
-*** C++ Complexity Measurements                                        :code:
-
-Since we are no longer taking a close look at the generated code and since
-Gemini code review does not catch all issues, we should try to find some
-automated tools to measure complexity and point to places where generated code
-is not ideal.
 
 *** Generate C++ code for FPML                                         :code:
 
@@ -270,13 +330,6 @@ the code to make sure we are using sqlgen.
 Notes:
 
 - check for raw libpq in bitemporal operations.
-
-*** ORE Sample Data                                                    :code:
-
-We added examples and XSDs from ORE. We should consider some improvements to
-this dataset:
-
-- remove unnecessary files (notebooks, pngs, pdfs, etc).
 
 *** Make the icon theme "configurable"                                 :code:
 

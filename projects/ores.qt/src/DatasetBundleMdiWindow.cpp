@@ -359,6 +359,7 @@ void DatasetBundleMdiWindow::deleteSelected() {
         int success_count = 0;
         int failure_count = 0;
         QString first_error;
+        QStringList failed_codes;
 
         for (const auto& [id, code, success, message] : results) {
             if (success) {
@@ -369,6 +370,7 @@ void DatasetBundleMdiWindow::deleteSelected() {
                 BOOST_LOG_SEV(lg(), error) << "Dataset Bundle deletion failed: "
                                            << code << " - " << message;
                 failure_count++;
+                failed_codes << QString::fromStdString(code);
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
                 }
@@ -383,18 +385,25 @@ void DatasetBundleMdiWindow::deleteSelected() {
                 : QString("Successfully deleted %1 dataset bundles").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
-            QString msg = QString("Failed to delete %1 %2: %3")
+            QString summary = QString("Failed to delete %1 %2")
                 .arg(failure_count)
-                .arg(failure_count == 1 ? "dataset bundle" : "dataset bundles")
+                .arg(failure_count == 1 ? "dataset bundle" : "dataset bundles");
+            QString details = QString("Failed bundles: %1\n\nReason: %2")
+                .arg(failed_codes.join(", "))
                 .arg(first_error);
-            emit self->errorOccurred(msg);
-            MessageBoxHelper::critical(self, "Delete Failed", msg);
+            emit self->errorOccurred(summary);
+            MessageBoxHelper::critical(self, "Delete Failed", details);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
+            QString summary = QString("Deleted %1 %2, failed to delete %3")
                 .arg(success_count)
+                .arg(success_count == 1 ? "bundle" : "bundles")
                 .arg(failure_count);
-            emit self->statusChanged(msg);
-            MessageBoxHelper::warning(self, "Partial Success", msg);
+            QString details = QString("%1\n\nFailed: %2\nReason: %3")
+                .arg(summary)
+                .arg(failed_codes.join(", "))
+                .arg(first_error);
+            emit self->statusChanged(summary);
+            MessageBoxHelper::warning(self, "Partial Success", details);
         }
     });
 

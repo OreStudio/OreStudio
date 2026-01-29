@@ -657,8 +657,20 @@ void CountryMdiWindow::restoreSettings() {
     QHeaderView* header = countryTableView_->horizontalHeader();
 
     if (settings.contains("headerState")) {
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+        // Restore header state, falling back to defaults if corrupted
+        const bool restored =
+            header->restoreState(settings.value("headerState").toByteArray());
+        if (restored) {
+            BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+        } else {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to restore header state, applying defaults";
+            header->setSectionHidden(ClientCountryModel::NumericCode, true);
+            header->setSectionHidden(ClientCountryModel::OfficialName, true);
+            header->setSectionHidden(ClientCountryModel::Version, true);
+            header->setSectionHidden(ClientCountryModel::RecordedBy, true);
+            header->setSectionHidden(ClientCountryModel::RecordedAt, true);
+        }
     } else {
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
 

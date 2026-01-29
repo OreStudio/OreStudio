@@ -159,12 +159,7 @@ Backlogs]]. The last entry is the active sprint.
    :resource_id: s11
    :END:
 
-- [[id:98E12E24-FC8E-11F0-8B62-40B0768014EB][Sprint Backlog 11]] | TBD.
-
-** Sprint 12
-   :PROPERTIES:
-   :resource_id: s11
-   :END:
+- [[id:98E12E24-FC8E-11F0-8B62-40B0768014EB][Sprint Backlog 11]] | Multi-tenant and two-eyes support.
 
 ** Sprint 12
    :PROPERTIES:

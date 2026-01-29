@@ -891,9 +891,23 @@ void CurrencyMdiWindow::restoreSettings() {
 
     // Check if we have saved settings
     if (settings.contains("headerState")) {
-        // Restore header state
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+        // Restore header state, falling back to defaults if corrupted
+        const bool restored =
+            header->restoreState(settings.value("headerState").toByteArray());
+        if (restored) {
+            BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+        } else {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to restore header state, applying defaults";
+            header->setSectionHidden(ClientCurrencyModel::NumericCode, true);
+            header->setSectionHidden(ClientCurrencyModel::Symbol, true);
+            header->setSectionHidden(ClientCurrencyModel::FractionSymbol, true);
+            header->setSectionHidden(ClientCurrencyModel::FractionsPerUnit, true);
+            header->setSectionHidden(ClientCurrencyModel::RoundingType, true);
+            header->setSectionHidden(ClientCurrencyModel::RoundingPrecision, true);
+            header->setSectionHidden(ClientCurrencyModel::Format, true);
+            header->setSectionHidden(ClientCurrencyModel::CurrencyType, true);
+        }
     } else {
         // Apply default column visibility (hide detail-oriented columns)
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";

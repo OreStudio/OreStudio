@@ -20,6 +20,7 @@
 #ifndef ORES_DQ_MESSAGING_DATASET_PROTOCOL_HPP
 #define ORES_DQ_MESSAGING_DATASET_PROTOCOL_HPP
 
+#include <cstddef>
 #include <span>
 #include <iosfwd>
 #include <vector>
@@ -29,8 +30,27 @@
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::dq::messaging {
+
+// ============================================================================
+// Dataset Serialization Helpers
+// ============================================================================
+
+/**
+ * @brief Serialize a dataset to binary format.
+ *
+ * These helpers are exposed for reuse by other protocol implementations that
+ * need to serialize/deserialize datasets (e.g., publication_protocol).
+ */
+void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d);
+
+/**
+ * @brief Deserialize a dataset from binary format.
+ */
+std::expected<domain::dataset, ores::utility::serialization::error_code>
+read_dataset(std::span<const std::byte>& data);
 
 // ============================================================================
 // Dataset Messages

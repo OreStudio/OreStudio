@@ -156,8 +156,16 @@ void DatasetBundleDetailDialog::onSaveClicked() {
     }
 
     if (!validateInput()) {
+        QStringList missingFields;
+        if (ui_->codeEdit->text().trimmed().isEmpty()) {
+            missingFields << "Code";
+        }
+        if (ui_->nameEdit->text().trimmed().isEmpty()) {
+            missingFields << "Name";
+        }
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+            QString("Please fill in the following required field(s): %1.")
+                .arg(missingFields.join(", ")));
         return;
     }
 

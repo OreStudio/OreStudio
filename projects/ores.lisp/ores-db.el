@@ -70,6 +70,7 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'ores-db/ui-connect-at-point)
     (define-key map (kbd "c")   #'ores-db/ui-connect-at-point)
+    (define-key map (kbd "s")   #'ores-db/show-connections-at-point)
     (define-key map (kbd "k")   #'ores-db/kill-connections-at-point)
     (define-key map (kbd "x")   #'ores-db/drop-at-point)
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
@@ -168,6 +169,23 @@ The session's working directory is set to ores.sql for easy script access."
            (format "%s --host %s %s" script-path host db-name)
            nil
            (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
+
+(defun ores-db/show-connections-at-point ()
+  "Show all connections to the database at point."
+  (interactive)
+  (let* ((id (tabulated-list-get-id))
+         (db-name (car id))
+         (host (cdr id)))
+    (if (not id)
+        (message "No database at point.")
+      (let* ((postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+             (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                        process-environment))
+             (sql "SELECT pid, usename AS user, client_addr AS client, state, backend_start::timestamp(0) AS connected_since, LEFT(query, 60) AS current_query FROM pg_stat_activity WHERE datname = '%s' ORDER BY backend_start;"))
+        (compilation-start
+         (format "psql -h %s -U postgres -c \"%s\"" host (format sql db-name))
+         nil
+         (lambda (_) (format "*ores-db-connections-%s*" db-name)))))))
 
 (defun ores-db/kill-connections-at-point ()
   "Kill all connections to the database at point."
@@ -435,7 +453,8 @@ Uses create_instance.sql to create from ores_template."
     ("l" "List databases" ores-db/list-databases)
     ("g" "Refresh list" ores-db/ui-refresh)
     ("c" "Connect at point" ores-db/ui-connect-at-point)
-    ("k" "Kill connections at point" ores-db/kill-connections-at-point)
+    ("s" "Show connections" ores-db/show-connections-at-point)
+    ("k" "Kill connections" ores-db/kill-connections-at-point)
     ("x" "Drop at point" ores-db/drop-at-point)]
    ["Create/Recreate"
     ("n" "New whimsical database" ores-db/create-whimsical)

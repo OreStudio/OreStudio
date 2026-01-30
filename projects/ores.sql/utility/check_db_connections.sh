@@ -69,7 +69,7 @@ check_db_connections() {
         echo ""
         echo "Please disconnect all clients before recreating the database."
         echo "You can terminate connections with:"
-        echo "  psql -U postgres -c \"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${db_name}' AND pid <> pg_backend_pid();\""
+        echo "  \${SCRIPT_DIR}/utility/kill_db_connections.sh ${db_name}"
         echo ""
         return 1
     fi

@@ -52,14 +52,14 @@ Optional arguments:
 
 Environment Variables:
     PGPASSWORD                          Password for the postgres superuser (overridden by -p)
-    ORES_DDL_USER_PASSWORD              Password for the DDL database user (overridden by -d)
-    ORES_CLI_USER_PASSWORD              Password for the CLI database user (overridden by -c)
-    ORES_WT_USER_PASSWORD               Password for the Web Toolkit database user (overridden by -w)
-    ORES_COMMS_USER_PASSWORD            Password for the Communications database user (overridden by -m)
-    ORES_HTTP_USER_PASSWORD             Password for the HTTP database user (overridden by -h)
-    ORES_TEST_DDL_USER_PASSWORD         Password for the test DDL database user (overridden by -t)
-    ORES_TEST_DML_USER_PASSWORD         Password for the test DML database user (overridden by -T)
-    ORES_READONLY_USER_PASSWORD         Password for the read-only database user (overridden by -r)
+    ORES_DB_DDL_PASSWORD                Password for the DDL database user (overridden by -d)
+    ORES_DB_CLI_PASSWORD                Password for the CLI database user (overridden by -c)
+    ORES_DB_WT_PASSWORD                 Password for the Web Toolkit database user (overridden by -w)
+    ORES_DB_COMMS_PASSWORD              Password for the Communications database user (overridden by -m)
+    ORES_DB_HTTP_PASSWORD               Password for the HTTP database user (overridden by -h)
+    ORES_TEST_DB_DDL_PASSWORD           Password for the test DDL database user (overridden by -t)
+    ORES_TEST_DB_PASSWORD               Password for the test DML database user (overridden by -T)
+    ORES_DB_READONLY_PASSWORD           Password for the read-only database user (overridden by -r)
 
 Example:
     # Using command line arguments
@@ -67,14 +67,14 @@ Example:
 
     # Using environment variables
     export PGPASSWORD=myPostgresPass
-    export ORES_DDL_USER_PASSWORD=ddlPass
-    export ORES_CLI_USER_PASSWORD=cliPass
-    export ORES_WT_USER_PASSWORD=wtPass
-    export ORES_COMMS_USER_PASSWORD=commsPass
-    export ORES_HTTP_USER_PASSWORD=httpPass
-    export ORES_TEST_DDL_USER_PASSWORD=testDdlPass
-    export ORES_TEST_DML_USER_PASSWORD=testDmlPass
-    export ORES_READONLY_USER_PASSWORD=roPass
+    export ORES_DB_DDL_PASSWORD=ddlPass
+    export ORES_DB_CLI_PASSWORD=cliPass
+    export ORES_DB_WT_PASSWORD=wtPass
+    export ORES_DB_COMMS_PASSWORD=commsPass
+    export ORES_DB_HTTP_PASSWORD=httpPass
+    export ORES_TEST_DB_DDL_PASSWORD=testDdlPass
+    export ORES_TEST_DB_PASSWORD=testDmlPass
+    export ORES_DB_READONLY_PASSWORD=roPass
     $(basename "$0")  # No need to specify passwords on command line
 
     # Mixed usage (command line takes precedence)
@@ -92,14 +92,14 @@ fi
 
 # Initialize variables with environment variables as defaults
 POSTGRES_PASSWORD="${PGPASSWORD:-${POSTGRES_PASSWORD:-}}"
-DDL_PASSWORD="${ORES_DDL_USER_PASSWORD:-${DDL_PASSWORD:-}}"
-CLI_PASSWORD="${ORES_CLI_USER_PASSWORD:-${CLI_PASSWORD:-}}"
-WT_PASSWORD="${ORES_WT_USER_PASSWORD:-${WT_PASSWORD:-}}"
-COMMS_PASSWORD="${ORES_COMMS_USER_PASSWORD:-${COMMS_PASSWORD:-}}"
-HTTP_PASSWORD="${ORES_HTTP_USER_PASSWORD:-${HTTP_PASSWORD:-}}"
-TEST_DDL_PASSWORD="${ORES_TEST_DDL_USER_PASSWORD:-${TEST_DDL_PASSWORD:-}}"
-TEST_DML_PASSWORD="${ORES_TEST_DML_USER_PASSWORD:-${TEST_DML_PASSWORD:-}}"
-RO_PASSWORD="${ORES_READONLY_USER_PASSWORD:-${RO_PASSWORD:-}}"
+DDL_PASSWORD="${ORES_DB_DDL_PASSWORD:-${DDL_PASSWORD:-}}"
+CLI_PASSWORD="${ORES_DB_CLI_PASSWORD:-${CLI_PASSWORD:-}}"
+WT_PASSWORD="${ORES_DB_WT_PASSWORD:-${WT_PASSWORD:-}}"
+COMMS_PASSWORD="${ORES_DB_COMMS_PASSWORD:-${COMMS_PASSWORD:-}}"
+HTTP_PASSWORD="${ORES_DB_HTTP_PASSWORD:-${HTTP_PASSWORD:-}}"
+TEST_DDL_PASSWORD="${ORES_TEST_DB_DDL_PASSWORD:-${TEST_DDL_PASSWORD:-}}"
+TEST_DML_PASSWORD="${ORES_TEST_DB_PASSWORD:-${TEST_DML_PASSWORD:-}}"
+RO_PASSWORD="${ORES_DB_READONLY_PASSWORD:-${RO_PASSWORD:-}}"
 DB_NAME="${DEFAULT_DB_NAME}"
 ASSUME_YES=""
 SKIP_VALIDATION="off"
@@ -173,14 +173,14 @@ done
 # Validate required arguments - collect all missing passwords
 MISSING_PASSWORDS=()
 [[ -z "${POSTGRES_PASSWORD}" ]] && MISSING_PASSWORDS+=("postgres (-p or PGPASSWORD)")
-[[ -z "${DDL_PASSWORD}" ]] && MISSING_PASSWORDS+=("ddl (-d or ORES_DDL_USER_PASSWORD)")
-[[ -z "${CLI_PASSWORD}" ]] && MISSING_PASSWORDS+=("cli (-c or ORES_CLI_USER_PASSWORD)")
-[[ -z "${WT_PASSWORD}" ]] && MISSING_PASSWORDS+=("wt (-w or ORES_WT_USER_PASSWORD)")
-[[ -z "${COMMS_PASSWORD}" ]] && MISSING_PASSWORDS+=("comms (-m or ORES_COMMS_USER_PASSWORD)")
-[[ -z "${HTTP_PASSWORD}" ]] && MISSING_PASSWORDS+=("http (-h or ORES_HTTP_USER_PASSWORD)")
-[[ -z "${TEST_DDL_PASSWORD}" ]] && MISSING_PASSWORDS+=("test_ddl (-t or ORES_TEST_DDL_USER_PASSWORD)")
-[[ -z "${TEST_DML_PASSWORD}" ]] && MISSING_PASSWORDS+=("test_dml (-T or ORES_TEST_DML_USER_PASSWORD)")
-[[ -z "${RO_PASSWORD}" ]] && MISSING_PASSWORDS+=("ro (-r or ORES_READONLY_USER_PASSWORD)")
+[[ -z "${DDL_PASSWORD}" ]] && MISSING_PASSWORDS+=("ddl (-d or ORES_DB_DDL_PASSWORD)")
+[[ -z "${CLI_PASSWORD}" ]] && MISSING_PASSWORDS+=("cli (-c or ORES_DB_CLI_PASSWORD)")
+[[ -z "${WT_PASSWORD}" ]] && MISSING_PASSWORDS+=("wt (-w or ORES_DB_WT_PASSWORD)")
+[[ -z "${COMMS_PASSWORD}" ]] && MISSING_PASSWORDS+=("comms (-m or ORES_DB_COMMS_PASSWORD)")
+[[ -z "${HTTP_PASSWORD}" ]] && MISSING_PASSWORDS+=("http (-h or ORES_DB_HTTP_PASSWORD)")
+[[ -z "${TEST_DDL_PASSWORD}" ]] && MISSING_PASSWORDS+=("test_ddl (-t or ORES_TEST_DB_DDL_PASSWORD)")
+[[ -z "${TEST_DML_PASSWORD}" ]] && MISSING_PASSWORDS+=("test_dml (-T or ORES_TEST_DB_PASSWORD)")
+[[ -z "${RO_PASSWORD}" ]] && MISSING_PASSWORDS+=("ro (-r or ORES_DB_READONLY_PASSWORD)")
 
 if [[ ${#MISSING_PASSWORDS[@]} -gt 0 ]]; then
     echo "Error: Missing required passwords:" >&2

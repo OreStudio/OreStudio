@@ -88,6 +88,8 @@
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
     (define-key map (kbd "r")   #'ores-db/recreate-at-point)
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
+    (define-key map (kbd "a")   #'ores-db/recreate-admin)
+    (define-key map (kbd "T")   #'ores-db/recreate-template)
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "v")   #'ores-db/set-env-vars)
@@ -435,6 +437,9 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
 (defun ores-db/recreate-template (&optional skip-validation)
   "Recreate the ores_template database.
 If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
+  (interactive "P")
+  (unless (yes-or-no-p "Recreate ores_template? This affects ALL instance databases! ")
+    (user-error "Aborted"))
   (let ((sql-dir (ores-db/sql-scripts-directory)))
     ;; Set PGPASSWORD and run the script
     (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
@@ -455,6 +460,9 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
 (defun ores-db/recreate-admin (&optional skip-validation)
   "Recreate the ores_admin database.
 If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
+  (interactive "P")
+  (unless (yes-or-no-p "Recreate ores_admin? ")
+    (user-error "Aborted"))
   (let ((sql-dir (ores-db/sql-scripts-directory)))
     (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
            (script-path (expand-file-name "recreate_admin.sh" sql-dir))
@@ -564,6 +572,8 @@ Uses create_instance.sql to create from ores_template."
     ("d" "Recreate current env" ores-db/recreate-current-env)
     ("r" "Recreate at point" ores-db/recreate-at-point)
     ("e" "Recreate environment..." ores-db/recreate-env-database)
+    ("a" "Recreate admin" ores-db/recreate-admin)
+    ("T" "Recreate template" ores-db/recreate-template)
     ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
    ["Utilities"
     ("v" "Export env vars" ores-db/set-env-vars)

@@ -359,6 +359,12 @@ parser::parse(const std::vector<std::string>& arguments,
         err << usage_error_msg << e.what() << std::endl
             << more_information << std::endl;
         BOOST_THROW_EXCEPTION(e);
+    } catch (const boost::program_options::unknown_option& e) {
+        std::string msg = e.what();
+        msg += ": '" + e.get_option_name() + "'";
+        err << usage_error_msg << msg << std::endl
+            << more_information << std::endl;
+        BOOST_THROW_EXCEPTION(parser_exception(msg));
     } catch (const boost::program_options::error& e) {
         err << usage_error_msg << e.what() << std::endl
             << more_information << std::endl;

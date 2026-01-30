@@ -54,17 +54,25 @@
 
 (defun ores-db/database-list-discovery ()
   "Query all hosts in \='ores-db/hosts' for databases starting with \='ores_'."
-  (let (all-dbs)
+  (let ((script-path (expand-file-name "projects/ores.sql/utility/list_databases.sh"
+                                       (when-let ((pr (project-current)))
+                                         (project-root pr))))
+        all-dbs)
     (dolist (host ores-db/hosts)
       (let* ((pw   (ores-db/database--get-credential "postgres" host :secret))
              (port (or (ores-db/database--get-credential "postgres" host :port) "5432"))
              (process-environment (cons (concat "PGPASSWORD=" pw) process-environment))
-             ;; Added -p flag for the specific port
-             (cmd (format "psql -U postgres -h %s -p %s -At -c \"SELECT datname FROM pg_database WHERE datname LIKE 'ores_%%' ORDER BY datname;\""
-                          host port))
-             (results (if pw (split-string (shell-command-to-string cmd) "\n" t) nil)))
-        (dolist (db results)
-          (push (list db host) all-dbs))))
+             (cmd (format "%s -h %s -p %s" script-path host port))
+             (output (if (and pw (file-executable-p script-path))
+                         (shell-command-to-string cmd)
+                       ""))
+             (lines (split-string output "\n" t)))
+        (dolist (line lines)
+          (let* ((fields (split-string line "\t"))
+                 (db (nth 0 fields))
+                 (created (or (nth 1 fields) "")))
+            (when db
+              (push (list db host created) all-dbs))))))
     (nreverse all-dbs)))
 
 ;; Define keymap BEFORE mode (Emacs looks for it during define-derived-mode)
@@ -99,8 +107,8 @@
   "Major mode for browsing ORES databases."
   (setq tabulated-list-format [("M" 1 t)
                                ("Database Name" 30 t)
-                               ("Host" 20 t)
-                               ("Status" 10 t)])
+                               ("Host" 15 t)
+                               ("Created" 20 t)])
   (setq tabulated-list-padding 2)
   (setq ores-db/marked-ids nil)
   (tabulated-list-init-header))
@@ -112,12 +120,13 @@
         (old-marks ores-db/marked-ids))
     (setq tabulated-list-entries
           (mapcar (lambda (rec)
-                    (let* ((db (car rec))
-                           (host (cadr rec))
+                    (let* ((db (nth 0 rec))
+                           (host (nth 1 rec))
+                           (created (nth 2 rec))
                            (id (cons db host))
                            (mark (if (member id old-marks) "*" " ")))
-                      ;; ID is (db . host), columns are mark, db, host, status
-                      (list id (vector mark db host "available"))))
+                      ;; ID is (db . host), columns are mark, db, host, created
+                      (list id (vector mark db host created))))
                   db-records))
     (tabulated-list-print t)))
 

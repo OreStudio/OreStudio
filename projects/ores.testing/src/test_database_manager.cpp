@@ -19,6 +19,7 @@
  */
 #include "ores.testing/test_database_manager.hpp"
 
+#include <iostream>
 #include <random>
 #include <sstream>
 #include <stdexcept>

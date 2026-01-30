@@ -70,12 +70,15 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'ores-db/ui-connect-at-point)
     (define-key map (kbd "c")   #'ores-db/ui-connect-at-point)
+    (define-key map (kbd "k")   #'ores-db/drop-at-point)
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
     (define-key map (kbd "r")   #'ores-db/recreate-at-point)
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "v")   #'ores-db/set-env-vars)
+    (define-key map (kbd "u")   #'ores-db/unset-env-vars)
+    (define-key map (kbd "V")   #'ores-db/show-env-vars)
     (define-key map (kbd "g")   #'ores-db/ui-refresh)
     (define-key map (kbd "?")   #'ores-db/menu)
     (define-key map (kbd "h")   #'ores-db/menu)
@@ -145,8 +148,30 @@ The session's working directory is set to ores.sql for easy script access."
           (ores-db/database-connect-to db-name role host))
       (message "No database at point."))))
 
+(defun ores-db/drop-at-point ()
+  "Drop the database at point using drop_database.sh."
+  (interactive)
+  (let* ((id (tabulated-list-get-id))
+         (db-name (car id))
+         (host (cdr id)))
+    (if (not id)
+        (message "No database at point.")
+      (let* ((sql-dir (ores-db/sql-scripts-directory))
+             (script-path (expand-file-name "drop_database.sh" sql-dir))
+             (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+             (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                        process-environment)))
+        (if (not (file-exists-p script-path))
+            (user-error "Script not found: %s" script-path)
+          (compilation-start
+           (format "%s --host %s %s" script-path host db-name)
+           nil
+           (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
+
 (defun ores-db/set-env-vars (host)
-  "Export all ORES passwords for HOST to environment variables."
+  "Export all ORES passwords for HOST to environment variables.
+Uses ORES_DB_<APP>_PASSWORD convention for service users to avoid
+conflicting with application CLI environment variable mappers."
   (interactive (list (completing-read "Host: " ores-db/hosts nil t)))
   (let ((count 0))
     (dolist (role ores-db/database-roles)
@@ -156,17 +181,68 @@ The session's working directory is set to ores.sql for easy script access."
           (cond
            ((string= role "postgres")
             (setenv "PGPASSWORD" pw))
-           ;; Test users need special env vars for the C++ test infrastructure
+           ;; Test users for C++ test infrastructure
            ((string= role "ores_test_ddl_user")
-            (setenv "ORES_TEST_DDL_USER_PASSWORD" pw)
             (setenv "ORES_TEST_DB_DDL_PASSWORD" pw))
            ((string= role "ores_test_dml_user")
-            (setenv "ORES_TEST_DML_USER_PASSWORD" pw)
             (setenv "ORES_TEST_DB_PASSWORD" pw))
+           ;; Service users: ores_<app>_user -> ORES_DB_<APP>_PASSWORD
+           ;; e.g., ores_cli_user -> ORES_DB_CLI_PASSWORD
+           ((string-match "^ores_\\([a-z]+\\)_user$" role)
+            (let ((app (upcase (match-string 1 role))))
+              (setenv (concat "ORES_DB_" app "_PASSWORD") pw)))
+           ;; Fallback for any other roles
            (t
-            (setenv (concat (upcase (replace-regexp-in-string "-" "_" role)) "_PASSWORD")
+            (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD")
                     pw))))))
     (message "[ORES] Exported %d passwords for %s to environment." count host)))
+
+(defun ores-db/show-env-vars ()
+  "Display all ORES_ environment variables in a buffer."
+  (interactive)
+  (let ((buf (get-buffer-create "*ORES Environment*"))
+        (vars (seq-filter (lambda (v) (string-prefix-p "ORES_" v))
+                          process-environment)))
+    (with-current-buffer buf
+      (read-only-mode -1)
+      (erase-buffer)
+      (insert "ORES Environment Variables\n")
+      (insert "===========================\n\n")
+      (if vars
+          (dolist (var (sort vars #'string<))
+            (insert var "\n"))
+        (insert "(no ORES_ variables set)\n"))
+      (insert "\n")
+      ;; Also show PGPASSWORD if set
+      (when-let ((pw (getenv "PGPASSWORD")))
+        (insert (format "PGPASSWORD=%s\n" pw)))
+      (goto-char (point-min))
+      (read-only-mode 1))
+    (display-buffer buf)))
+
+(defun ores-db/unset-env-vars ()
+  "Unset all ORES password environment variables."
+  (interactive)
+  (let ((count 0))
+    (dolist (role ores-db/database-roles)
+      (cond
+       ((string= role "postgres")
+        (setenv "PGPASSWORD" nil)
+        (setq count (1+ count)))
+       ((string= role "ores_test_ddl_user")
+        (setenv "ORES_TEST_DB_DDL_PASSWORD" nil)
+        (setq count (1+ count)))
+       ((string= role "ores_test_dml_user")
+        (setenv "ORES_TEST_DB_PASSWORD" nil)
+        (setq count (1+ count)))
+       ((string-match "^ores_\\([a-z]+\\)_user$" role)
+        (let ((app (upcase (match-string 1 role))))
+          (setenv (concat "ORES_DB_" app "_PASSWORD") nil)
+          (setq count (1+ count))))
+       (t
+        (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD") nil)
+        (setq count (1+ count)))))
+    (message "[ORES] Unset %d password environment variables." count)))
 
 ;;; ==========================================================================
 ;;; Environment Management
@@ -337,7 +413,8 @@ Uses create_instance.sql to create from ores_template."
    ["Browse"
     ("l" "List databases" ores-db/list-databases)
     ("g" "Refresh list" ores-db/ui-refresh)
-    ("c" "Connect at point" ores-db/ui-connect-at-point)]
+    ("c" "Connect at point" ores-db/ui-connect-at-point)
+    ("k" "Drop at point" ores-db/drop-at-point)]
    ["Create/Recreate"
     ("n" "New whimsical database" ores-db/create-whimsical)
     ("d" "Recreate current env" ores-db/recreate-current-env)
@@ -346,6 +423,8 @@ Uses create_instance.sql to create from ores_template."
     ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
    ["Utilities"
     ("v" "Export env vars" ores-db/set-env-vars)
+    ("u" "Unset env vars" ores-db/unset-env-vars)
+    ("V" "Show env vars" ores-db/show-env-vars)
     ("q" "Quit" transient-quit-one)]])
 
 (provide 'ores-db)

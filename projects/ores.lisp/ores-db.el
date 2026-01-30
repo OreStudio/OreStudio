@@ -158,6 +158,8 @@ The session's working directory is set to ores.sql for easy script access."
          (host (cdr id)))
     (if (not id)
         (message "No database at point.")
+      (unless (yes-or-no-p (format "Drop database '%s' on %s? " db-name host))
+        (user-error "Aborted"))
       (let* ((sql-dir (ores-db/sql-scripts-directory))
              (script-path (expand-file-name "drop_database.sh" sql-dir))
              (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
@@ -166,7 +168,7 @@ The session's working directory is set to ores.sql for easy script access."
         (if (not (file-exists-p script-path))
             (user-error "Script not found: %s" script-path)
           (compilation-start
-           (format "%s --host %s %s" script-path host db-name)
+           (format "%s -y --host %s %s" script-path host db-name)
            nil
            (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
 

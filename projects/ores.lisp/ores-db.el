@@ -237,20 +237,25 @@ The session's working directory is set to ores.sql for easy script access."
                                count (string-join names ", ")))))
         (unless (yes-or-no-p prompt)
           (user-error "Aborted"))
-        (let ((sql-dir (ores-db/sql-scripts-directory))
-              (script-path (expand-file-name "teardown_database.sh" (ores-db/sql-scripts-directory))))
+        (let* ((sql-dir (ores-db/sql-scripts-directory))
+               (script-path (expand-file-name "teardown_database.sh" sql-dir))
+               ;; Use first host's password (assumes same password for all hosts)
+               (host (cdar ids))
+               (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+               (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                          process-environment))
+               ;; Build a single command that runs all teardowns sequentially
+               (commands (mapcar (lambda (id)
+                                   (format "%s -y --host %s %s"
+                                           script-path (cdr id) (car id)))
+                                 ids))
+               (full-command (string-join commands " && ")))
           (if (not (file-exists-p script-path))
               (user-error "Script not found: %s" script-path)
-            (dolist (id ids)
-              (let* ((db-name (car id))
-                     (host (cdr id))
-                     (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
-                     (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                                process-environment)))
-                (compilation-start
-                 (format "%s -y --host %s %s" script-path host db-name)
-                 nil
-                 (lambda (_) (format "*ores-db-teardown-%s*" db-name)))))
+            (compilation-start
+             full-command
+             nil
+             (lambda (_) "*ores-db-teardown*"))
             (setq ores-db/marked-ids nil)))))))
 
 (defun ores-db/show-connections-at-point ()

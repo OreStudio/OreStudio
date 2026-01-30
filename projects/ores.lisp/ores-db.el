@@ -34,6 +34,9 @@
     "ores_test_ddl_user" "ores_test_dml_user" "ores_readonly_user")
   "Available roles to assume when connecting to an ORES database.")
 
+(defvar-local ores-db/marked-ids nil
+  "List of marked database IDs in the current buffer.")
+
 (defun ores-db/database--get-credential (user host key)
   "Get a specific KEY (:secret or :port) for USER at HOST from auth-source."
   (let* ((match (auth-source-search :host host :user user :max 1))
@@ -80,9 +83,13 @@
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "v")   #'ores-db/set-env-vars)
-    (define-key map (kbd "u")   #'ores-db/unset-env-vars)
+    (define-key map (kbd "E")   #'ores-db/unset-env-vars)
     (define-key map (kbd "V")   #'ores-db/show-env-vars)
     (define-key map (kbd "g")   #'ores-db/ui-refresh)
+    (define-key map (kbd "m")   #'ores-db/mark)
+    (define-key map (kbd "u")   #'ores-db/unmark)
+    (define-key map (kbd "U")   #'ores-db/unmark-all)
+    (define-key map (kbd "t")   #'ores-db/toggle-marks)
     (define-key map (kbd "?")   #'ores-db/menu)
     (define-key map (kbd "h")   #'ores-db/menu)
     map)
@@ -90,22 +97,27 @@
 
 (define-derived-mode ores-db/mode tabulated-list-mode "ORES-DB"
   "Major mode for browsing ORES databases."
-  (setq tabulated-list-format [("Database Name" 30 t)
+  (setq tabulated-list-format [("M" 1 t)
+                               ("Database Name" 30 t)
                                ("Host" 20 t)
                                ("Status" 10 t)])
   (setq tabulated-list-padding 2)
+  (setq ores-db/marked-ids nil)
   (tabulated-list-init-header))
 
 (defun ores-db/ui-refresh ()
   "Fetch databases and refresh the tabulated list."
   (interactive)
-  (let ((db-records (ores-db/database-list-discovery)))
+  (let ((db-records (ores-db/database-list-discovery))
+        (old-marks ores-db/marked-ids))
     (setq tabulated-list-entries
           (mapcar (lambda (rec)
-                    (let ((db (car rec))
-                          (host (cadr rec)))
-                      ;; ID is (db . host), columns are db, host, status
-                      (list (cons db host) (vector db host "available"))))
+                    (let* ((db (car rec))
+                           (host (cadr rec))
+                           (id (cons db host))
+                           (mark (if (member id old-marks) "*" " ")))
+                      ;; ID is (db . host), columns are mark, db, host, status
+                      (list id (vector mark db host "available"))))
                   db-records))
     (tabulated-list-print t)))
 
@@ -117,6 +129,44 @@
       (ores-db/mode)
       (ores-db/ui-refresh))
     (switch-to-buffer buf)))
+
+(defun ores-db/mark ()
+  "Mark the database at point."
+  (interactive)
+  (when-let ((id (tabulated-list-get-id)))
+    (unless (member id ores-db/marked-ids)
+      (push id ores-db/marked-ids))
+    (ores-db/ui-refresh)
+    (forward-line 1)))
+
+(defun ores-db/unmark ()
+  "Unmark the database at point."
+  (interactive)
+  (when-let ((id (tabulated-list-get-id)))
+    (setq ores-db/marked-ids (delete id ores-db/marked-ids))
+    (ores-db/ui-refresh)
+    (forward-line 1)))
+
+(defun ores-db/unmark-all ()
+  "Unmark all databases."
+  (interactive)
+  (setq ores-db/marked-ids nil)
+  (ores-db/ui-refresh)
+  (message "All marks cleared."))
+
+(defun ores-db/toggle-marks ()
+  "Toggle marks on all databases."
+  (interactive)
+  (let ((all-ids (mapcar #'car tabulated-list-entries)))
+    (setq ores-db/marked-ids
+          (seq-difference all-ids ores-db/marked-ids))
+    (ores-db/ui-refresh)))
+
+(defun ores-db/get-marked-or-at-point ()
+  "Return list of marked IDs, or list with just the ID at point."
+  (or (and ores-db/marked-ids (copy-sequence ores-db/marked-ids))
+      (when-let ((id (tabulated-list-get-id)))
+        (list id))))
 
 
 (defun ores-db/database-connect-to (db-name role host)
@@ -174,26 +224,34 @@ The session's working directory is set to ores.sql for easy script access."
            (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
 
 (defun ores-db/teardown-at-point ()
-  "Teardown database at point: kill connections and drop."
+  "Teardown marked databases or database at point: kill connections and drop."
   (interactive)
-  (let* ((id (tabulated-list-get-id))
-         (db-name (car id))
-         (host (cdr id)))
-    (if (not id)
-        (message "No database at point.")
-      (unless (yes-or-no-p (format "Teardown '%s' on %s (kill connections + drop)? " db-name host))
-        (user-error "Aborted"))
-      (let* ((sql-dir (ores-db/sql-scripts-directory))
-             (script-path (expand-file-name "teardown_database.sh" sql-dir))
-             (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
-             (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                        process-environment)))
-        (if (not (file-exists-p script-path))
-            (user-error "Script not found: %s" script-path)
-          (compilation-start
-           (format "%s -y --host %s %s" script-path host db-name)
-           nil
-           (lambda (_) (format "*ores-db-teardown-%s*" db-name))))))))
+  (let ((ids (ores-db/get-marked-or-at-point)))
+    (if (not ids)
+        (message "No database at point or marked.")
+      (let* ((count (length ids))
+             (names (mapcar #'car ids))
+             (prompt (if (= count 1)
+                         (format "Teardown '%s' (kill connections + drop)? " (car names))
+                       (format "Teardown %d databases (kill connections + drop)?\n%s "
+                               count (string-join names ", ")))))
+        (unless (yes-or-no-p prompt)
+          (user-error "Aborted"))
+        (let ((sql-dir (ores-db/sql-scripts-directory))
+              (script-path (expand-file-name "teardown_database.sh" (ores-db/sql-scripts-directory))))
+          (if (not (file-exists-p script-path))
+              (user-error "Script not found: %s" script-path)
+            (dolist (id ids)
+              (let* ((db-name (car id))
+                     (host (cdr id))
+                     (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+                     (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                                process-environment)))
+                (compilation-start
+                 (format "%s -y --host %s %s" script-path host db-name)
+                 nil
+                 (lambda (_) (format "*ores-db-teardown-%s*" db-name)))))
+            (setq ores-db/marked-ids nil)))))))
 
 (defun ores-db/show-connections-at-point ()
   "Show all connections to the database at point."
@@ -482,6 +540,11 @@ Uses create_instance.sql to create from ores_template."
     ("k" "Kill connections" ores-db/kill-connections-at-point)
     ("x" "Drop at point" ores-db/drop-at-point)
     ("X" "Teardown (kill+drop)" ores-db/teardown-at-point)]
+   ["Mark"
+    ("m" "Mark" ores-db/mark)
+    ("u" "Unmark" ores-db/unmark)
+    ("U" "Unmark all" ores-db/unmark-all)
+    ("t" "Toggle marks" ores-db/toggle-marks)]
    ["Create/Recreate"
     ("n" "New whimsical database" ores-db/create-whimsical)
     ("d" "Recreate current env" ores-db/recreate-current-env)
@@ -490,7 +553,7 @@ Uses create_instance.sql to create from ores_template."
     ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
    ["Utilities"
     ("v" "Export env vars" ores-db/set-env-vars)
-    ("u" "Unset env vars" ores-db/unset-env-vars)
+    ("E" "Unset env vars" ores-db/unset-env-vars)
     ("V" "Show env vars" ores-db/show-env-vars)
     ("q" "Quit" transient-quit-one)]])
 

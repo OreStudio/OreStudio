@@ -70,7 +70,8 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'ores-db/ui-connect-at-point)
     (define-key map (kbd "c")   #'ores-db/ui-connect-at-point)
-    (define-key map (kbd "k")   #'ores-db/drop-at-point)
+    (define-key map (kbd "k")   #'ores-db/kill-connections-at-point)
+    (define-key map (kbd "x")   #'ores-db/drop-at-point)
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
     (define-key map (kbd "r")   #'ores-db/recreate-at-point)
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
@@ -167,6 +168,26 @@ The session's working directory is set to ores.sql for easy script access."
            (format "%s --host %s %s" script-path host db-name)
            nil
            (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
+
+(defun ores-db/kill-connections-at-point ()
+  "Kill all connections to the database at point."
+  (interactive)
+  (let* ((id (tabulated-list-get-id))
+         (db-name (car id))
+         (host (cdr id)))
+    (if (not id)
+        (message "No database at point.")
+      (let* ((sql-dir (ores-db/sql-scripts-directory))
+             (script-path (expand-file-name "utility/kill_db_connections.sh" sql-dir))
+             (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+             (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                        process-environment)))
+        (if (not (file-exists-p script-path))
+            (user-error "Script not found: %s" script-path)
+          (compilation-start
+           (format "%s --host %s %s" script-path host db-name)
+           nil
+           (lambda (_) (format "*ores-db-kill-%s*" db-name))))))))
 
 (defun ores-db/set-env-vars (host)
   "Export all ORES passwords for HOST to environment variables.
@@ -414,7 +435,8 @@ Uses create_instance.sql to create from ores_template."
     ("l" "List databases" ores-db/list-databases)
     ("g" "Refresh list" ores-db/ui-refresh)
     ("c" "Connect at point" ores-db/ui-connect-at-point)
-    ("k" "Drop at point" ores-db/drop-at-point)]
+    ("k" "Kill connections at point" ores-db/kill-connections-at-point)
+    ("x" "Drop at point" ores-db/drop-at-point)]
    ["Create/Recreate"
     ("n" "New whimsical database" ores-db/create-whimsical)
     ("d" "Recreate current env" ores-db/recreate-current-env)

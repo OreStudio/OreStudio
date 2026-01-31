@@ -9,7 +9,7 @@
 
 * Sprint Mission
 
-- Multi-tenant and two-eyes support.
+- Multi-tenant and four-eyes support.
 
 * Stories
 
@@ -17,33 +17,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-29 Thu 00:52], for Thursday, January 29, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *0:51* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 0:51   |      |      | 100.0 |
-|      | Active                       |        | 0:51 |      | 100.0 |
-| code | Address past review comments |        |      | 0:51 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-31 Sat 01:59], for Saturday, January 31, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *1:30* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 1:30   |      |      | 100.0 |
+|       | Active                                |        | 1:30 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:24 |  26.7 |
+| code  | Split "god" admin account             |        |      | 1:06 |  73.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-29 Thu 00:52]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *2:00* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 2:00   |      |      | 100.0 |
-|       | Active                                |        | 2:00 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:46 |  38.3 |
-| code  | Address past review comments          |        |      | 1:14 |  61.7 |
+#+CAPTION: Clock summary at [2026-01-31 Sat 01:59]
+|       | <75>                                  |         |       |       |       |
+| Tags  | Headline                              | Time    |       |       |     % |
+|-------+---------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                          | *13:41* |       |       | 100.0 |
+|-------+---------------------------------------+---------+-------+-------+-------|
+|       | Stories                               | 13:41   |       |       | 100.0 |
+|       | Active                                |         | 13:41 |       | 100.0 |
+| agile | Sprint and product backlog refinement |         |       |  2:02 |  14.9 |
+| code  | Address past review comments          |         |       |  1:14 |   9.0 |
+| code  | Split "god" admin account             |         |       | 10:05 |  73.7 |
+| code  | Add tenant support                    |         |       |  0:20 |   2.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-31 Sat 07:55]--[2026-01-31 Sat 08:17] =>  0:22
+    CLOCK: [2026-01-31 Sat 01:53]--[2026-01-31 Sat 01:58] =>  0:05
+    CLOCK: [2026-01-31 Sat 01:03]--[2026-01-31 Sat 01:22] =>  0:19
+    CLOCK: [2026-01-29 Thu 09:04]--[2026-01-29 Thu 09:56] =>  0:52
     CLOCK: [2026-01-28 Wed 22:50]--[2026-01-28 Wed 23:36] =>  0:46
     :END:
 
@@ -192,21 +199,6 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_11_tags.png]]
 
-*** Add DB schema version table                                        :code:
-
-At present we have no way of knowing what version of the schema we are running.
-We should probably look into sqitch.
-
-Links:
-
-- [[https://github.com/golang-migrate/migrate][GH: golang-migrate]]: "Database migrations written in Go. Use as CLI or import as
-  library."
-- [[https://github.com/jackc/tern][GH: tern]]: "Tern is a standalone migration tool for PostgreSQL. It includes
-  traditional migrations as well as a separate optional workflow for managing
-  database code such as functions and views."
-- [[https://github.com/sqitchers/sqitch][GH: sqitch]]: "Sqitch is a database change management application."
-
-
 *** COMPLETED Address past review comments                             :code:
     :LOGBOOK:
     CLOCK: [2026-01-29 Thu 00:22]--[2026-01-29 Thu 00:52] =>  0:30
@@ -259,6 +251,427 @@ Highlights:
   current clock summaries and the status of a sprint backlog item.
 #+end_quote
 
+*** COMPLETED Split "god" admin account                                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-31 Sat 01:23]--[2026-01-31 Sat 01:53] =>  0:30
+    CLOCK: [2026-01-31 Sat 00:55]--[2026-01-31 Sat 01:03] =>  0:08
+    CLOCK: [2026-01-30 Fri 22:36]--[2026-01-31 Sat 00:28] =>  2:27
+    CLOCK: [2026-01-29 Thu 21:04]--[2026-01-29 Thu 23:04] =>  2:00
+    CLOCK: [2026-01-29 Thu 14:40]--[2026-01-29 Thu 18:03] =>  3:23
+    CLOCK: [2026-01-29 Thu 11:10]--[2026-01-29 Thu 13:08] =>  1:58
+    CLOCK: [2026-01-29 Thu 10:56]--[2026-01-29 Thu 11:10] =>  0:14
+    :END:
+
+We are using a single account with all the rights. This is not a good idea.
+
+Analysis by Gemini:
+
+#+begin_src markdown
+
+Moving away from a single "god user" is a classic architectural glow-up. Your
+plan aligns well with the **Principle of Least Privilege (PoLP)** and standard
+PostgreSQL security patterns.
+
+In the Postgres ecosystem, this is often referred to as **Role-Based Access
+Control (RBAC)**. Here is a breakdown of your proposal and how to refine it to
+match industry "best practices."
+
+---
+
+### 1. Refined Role Hierarchy
+
+Instead of managing permissions for every single service user individually, most
+Postgres pros use **Group Roles**. You create "nologin" roles that hold the
+permissions, and then your service users "inherit" those permissions.
+
+| Role Type            | Name (Example)   | Purpose                                                        |
+| ---                  | ---              | ---                                                            |
+| **Owner (DDL)**      | `ores_owner`     | Owns all tables/schemas. Used for migrations.                  |
+| **Read/Write (DML)** | `ores_rw`        | Group role with `SELECT`, `INSERT`, `UPDATE`, `DELETE`.        |
+| **Read Only (RO)**   | `ores_ro`        | Group role with only `SELECT`. Great for analytics/debugging.  |
+| **Service Users**    | `ores_http_user` | These roles have `LOGIN` and belong to `ores_rw` or `ores_ro`. |
+
+---
+
+### 2. Feedback on Your Specific Categories
+
+#### **Application Service Users**
+
+Your breakdown (`cli`, `wt`, `comms`, `http`) is excellent for **auditability**.
+If you see a spike in slow queries, you’ll know exactly which service is the
+culprit.
+
+,**Pro Tip:**
+
+Ensure these users do not own the tables they write to. If a service user
+creates a table, the `ores_ddl_user` might not be able to modify it later
+without a `REASSIGN OWNED` command.
+
+#### **The DDL User (The Migrator)**
+
+In Postgres, the most idiomatic way is to make this user the **Owner** of the
+schema.
+
+,**Why?**
+
+Only the owner (or a superuser) can perform `ALTER TABLE` or `DROP INDEX`.
+
+,**Safety:**
+
+Your CI/CD pipeline should use this user, but your application code should
+,**never** have these credentials.
+
+#### **Read-Only & Admin Roles**
+
+- **Read-Only:**: This is non-negotiable for production. Give it to your BI
+  tools (Metabase, Tableau) or developers who need to run manual `SELECT`
+  queries to troubleshoot.
+- **Admin User:**: Usually, the cloud provider (like RDS or GCP) gives you a
+  `postgres` or `cloudsqladmin` user. You rarely need to create a custom one
+  unless you have a dedicated DBA team.
+
+---
+
+### 3. Implementation Gotchas
+
+Postgres permissions can be "sticky." Keep these two things in mind:
+
+1. **Default Privileges:** By default, when `ores_ddl_user` creates a new table,
+   `ores_http_user` won't have access to it unless you use:
+
+```sql
+ALTER DEFAULT PRIVILEGES FOR ROLE ores_ddl_user
+IN SCHEMA public GRANT SELECT, INSERT, UPDATE ON TABLES TO ores_rw;
+
+```
+
+
+2. **Schema Ownership:** Keep the `public` schema (or your custom schema) owned
+   by your DDL user.
+
+---
+
+### 4. Summary Verdict
+
+Your approach is **solid and highly recommended**. It prevents a vulnerability
+in your `http` service from being used to `DROP TABLE`, and it makes your logs
+much more readable.
+#+end_src
+
+*** STARTED Add tenant support                                         :code:
+   :LOGBOOK:
+   CLOCK: [2026-01-29 Thu 10:35]--[2026-01-29 Thu 10:55] =>  0:20
+   :END:
+
+Do some analysis and prototyping around supporting multiple tenants on a single
+database.
+
+*** Move all database entities to public schema                        :code:
+
+Gemini:
+
+#+begin_quote
+## The Agile Story: The Burden of the "Clean" Wall
+
+### 1. The Starting Point: The "Two-Room" Architecture
+
+We initially separated our database into two schemas: **Metadata** and
+**Production**. We did this for "cleanliness"—believing that physical walls
+would make the system easier to navigate.
+
+### 2. The Friction (The "Blockers")
+
+As our feature set grew, we encountered three main "Agile anti-patterns":
+
+- **The Search-Path Tax:** Every time a developer wrote a query, they had to
+  manage the `search_path` or use long-winded prefixes (e.g.,
+  `metadata.system_config JOIN production.ores_iam_accounts`). This added
+  cognitive load and slowed down every PR.
+- **The Catalog Bottleneck:** PostgreSQL's internal brain (the catalog) had to
+  work harder to resolve table locations across multiple namespaces.
+- **Deployment Fragility:** Our CI/CD pipelines became complex. We had to ensure
+  schemas were created in the exact right order, or our foreign key constraints
+  would fail during migration.
+
+### 3. The Pivot: Moving to the "Unified Grand Hall"
+
+We decided to adopt the **Odoo-style Namespacing** approach. We tore down the
+schema walls and moved everything into the `public` schema, but with a strict,
+tiered naming convention: `ores_iam_accounts`.
+
+### 4. The Result (The "Definition of Done")
+
+By consolidating into one schema, we achieved:
+
+- **Higher Velocity:** Joins are now simple and "local." No more prefixing every
+  table name in the code.
+- **Natural Organization:** Because we use the `ores_` prefix, our 2,000+ tables
+  aren't a mess; they are **auto-alphabetized**. All IAM tables sit together,
+  all Financial tables sit together.
+
+- **Standardized Tooling:** Every standard PostgreSQL tool, backup script, and
+  ORM works better with a single schema. We stopped fighting the tools and
+  started using them as intended.
+
+---
+
+### The Executive Summary
+
+> **"We traded the illusion of cleanliness for the reality of speed."** > By
+moving to a single schema with prefixes, we kept the organizational benefits of
+schemas without the operational debt of cross-schema management.
+#+end_quote
+
+*** Add a sample set of gravatars for profiles                         :code:
+
+We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled
+(img123.jpg etc). There are also too many of them. We need to label them so we
+can use them to generate synthetic profiles to test the system and to ensure
+diversity. We probably need the following classes: race (course approximation is
+fine), gender, age (again course approximation - kid, teenager, adult, senior or
+some such classification). Then we need to create a subset of the dataset which
+is a representative sample.
+
+Gemini script that uses ollama:
+
+#+begin_src python
+import ollama
+import os
+import pandas as pd
+import json
+
+# Configuration
+IMAGE_FOLDER = './human-profile-photos' # Path to your dataset
+OUTPUT_FILE = 'labeled_dataset.csv'
+MODEL = 'llama3.2-vision'
+
+# Prompt designed for structured output
+PROMPT = """
+Analyze the person in this image and provide a JSON response with exactly these keys:
+- "race": (e.g., White, Black, Asian, Hispanic, etc.)
+- "gender": (Male, Female)
+- "age_group": (Kid, Teenager, Adult, Senior)
+
+Return ONLY the JSON object.
+"""
+
+def label_images():
+    results = []
+    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+
+    print(f"Starting labeling for {len(image_files)} images...")
+
+    for filename in image_files:
+        path = os.path.join(IMAGE_FOLDER, filename)
+
+        try:
+            response = ollama.chat(
+                model=MODEL,
+                format='json', # Forces the model to output valid JSON
+                messages=[{
+                    'role': 'user',
+                    'content': PROMPT,
+                    'images': [path]
+                }]
+            )
+
+            # Parse the response
+            data = json.loads(response['message']['content'])
+            data['filename'] = filename
+            results.append(data)
+            print(f"Labeled: {filename}")
+
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+
+    # Save to CSV
+    df = pd.DataFrame(results)
+    df.to_csv(OUTPUT_FILE, index=False)
+    print(f"Done! Results saved to {OUTPUT_FILE}")
+
+if __name__ == "__main__":
+    label_images()
+#+end_src
+
+
+*** Add staging support                                                :code:
+
+We need to add support for staging for all entities, in preparation of
+authorisation queue. We probably should just call this "authq" rather than
+staging.
+
+Notes:
+
+- server side writes to staging table instead of production table. Write
+  contains signature.
+- user opens authq for an entity and sees entry. Authorises, which signs the
+  row. If there are enough signatures, row is promoted into production with the
+  last signature. This happens via stored proc which checks where we are in the
+  state machine. If we have finished, we mark the row in staging as completed
+  and copy it into production.
+- end users open the entity dialog. This shows all live rows (e.g. those in
+  production) plus recent deletes, plus "pre-live" rows which are rows waiting
+  for authorisation.
+
+*** Add support for row signing                                        :code:
+
+It would be good to have users sign the changes they make.
+
+Gemini:
+
+#+begin_src markdown
+# Specification: Zero-Knowledge Row-Level Data Signing
+
+## 1. Objective
+
+Implement a system within PostgreSQL and a Client-side application to ensure
+row-level data integrity using digital signatures. The system must support
+,**schema evolution** (changing which columns are signed) and **zero-knowledge
+key management** (the server never sees the user's plain-text private key).
+
+## 2. Core Components
+
+### A. The Signature Registry (The "Recipe")
+
+To handle schema changes, we use a versioned registry.
+
+- **Table:** `signature_registry`
+- **Purpose:** Defines which columns constitute the "canonical payload" for a
+  specific version.
+- **Mechanism:** A function/query that takes a table row, filters it by the
+  versioned column list, and produces a **Deterministic Canonical JSON**
+  (alphabetically sorted keys, consistent date formats).
+
+### B. Zero-Knowledge Key Management
+
+- **Storage:** A table (e.g., `user_keys`) stores the user's **Public Key** and
+  an **Encrypted Private Key** (the "Blob").
+- **Process:** The client encrypts the Private Key using a key derived from the
+  user's password before upload.
+- **Temporal Logic:** This table is **Temporal** (using System-Period
+  Versioning). This ensures that every historical Public Key is preserved,
+  allowing us to verify old signatures even after a user rotates their keys.
+
+### C. The Signing Workflow
+
+- 1. **Client** retrieves the "Active" Registry Version and their Encrypted
+  Private Key.
+- 2. **Client** decrypts the Private Key locally.
+- 3. **Client** constructs the Canonical JSON from the row data based on the
+  Registry Recipe.
+- 4. **Client** signs the JSON and sends the record to the DB along with the
+  `signature` and `registry_version_id`.
+
+## 3. Data Integrity Schema
+
+The target data tables must include:
+
+- `signature` (BYTEA/TEXT): The cryptographic result.
+- `sig_version_id` (FK): Links to `signature_registry`.
+- `key_version_id` (FK): Links to the specific version in the **Temporal Key
+  Table** to prevent clock-drift issues during verification.
+
+## Point 4: Unified Identity & System Signing
+
+While users sign with asymmetric keys (RSA/ECDSA), system processes—like
+automated batch updates or background tasks—use a high-speed **HMAC (Hash-based
+Message Authentication Code)** approach. This allows "System Accounts" to
+participate in the same signature infrastructure without the overhead of
+public/private key pairs.
+
+- **The Machine Secret:** The system uses a 256-bit secret key (stored as an
+  environment variable or a database configuration parameter).
+- **The "Secret" Signature:** When a system account updates a row, it generates
+  a signature using `HMAC_SHA256(canonical_json, system_secret)`.
+- **Verification:** The verification query treats the "Signature" column as
+  polymorphic. If the row belongs to a user, it uses the **Public Key**; if it
+  belongs to a system account, it re-calculates the **HMAC** using the internal
+  secret to verify integrity.
+
+## Point 5: The Checkpointed Merkle Chain (Timeline Lock)
+
+To prevent "Ghost Deletions" (where an attacker deletes an entire row) or
+"History Rewriting," the system implements a Merkle-style chain. This creates a
+mathematical dependency between rows, making it impossible to change one record
+without breaking every subsequent record.
+
+- **Row Chaining:** Every row includes a `row_hash` (generated by the fast
+  ,**XXH3** 64-bit algorithm). This hash is a combination of:
+  `Hash(Current_Data + Current_Signature + Previous_Row_Hash)`.
+- **The Genesis Salt:** The very first row in the database uses a well-known
+  value (`0xFFFFFFFFFFFFFFFF`) as its "Previous Hash" to start the chain.
+- **Periodic Checkpointing:** Every 1,000 records (or every hour), a background
+  service calculates a **Master Checkpoint Hash** (an HMAC of all `row_hash`
+  values in that block).
+- **The Audit Log:** This Master Hash is stored in a separate, append-only
+  `audit_checkpoints` table. This acts as a "Timeline Lock"—once a checkpoint is
+  written, the previous 1,000 rows are effectively "sealed" and cannot be
+  modified or deleted without the system detecting a break in the chain.
+
+## 6. Implementation Requirements for Claude
+
+- 1. **Database Layer:** * Create the `signature_registry` and temporal `user_keys` tables.
+  - Provide a PostgreSQL function to generate a sorted Canonical JSON string
+    from a record given a `version_id`.
+- 2. **Client Layer (JS/Node/Python):** * Logic to derive an encryption key from
+  a password (PBKDF2/Argon2).
+  - Logic to sign the Canonical JSON using the decrypted Private Key.
+- 3. **Verification Layer:**
+  - A query that joins the Data Table with the Temporal Key History and the
+    Registry to re-generate the hash and verify it against the stored signature.
+
+### The Final "Story" Summary for Claude:
+
+> "I am building a PostgreSQL-based row-level integrity system. Users sign rows
+> using an **E2EE Private Key** stored as an encrypted blob. System accounts use
+> an **HMAC secret** to sign their changes. To prevent row deletion or tampering
+> with history, I am using an **XXH3-based Merkle Chain** where each row points
+> to the hash of the previous row. Finally, a background service creates **HMAC
+> Checkpoints** of these hashes to provide a verifiable audit trail of the
+> database timeline. Please implement the SQL triggers and the verification
+> logic for this architecture."
+
+#+end_src
+
+Notes:
+
+- the system should be designed in such a way that any table which requires
+  signing can also require multiple signatures. For example, the query includes
+  the signature field itself. Then the next signature has a "parent ID" (look
+  for proper technical term). The main table just joins against the last
+  signature but we can follow the trail back. The state machine determines how
+  many signatures are required to promote from staging to main table.
+
+*** Add FSM support to postgres                                        :code:
+
+In order to manage aspects such as trade life-cycles, authorisation, etc. We
+will need to support finite state machines. We should probably implement this
+directly in postgres.
+
+Links:
+
+- [[https://raphael.medaer.me/2019/06/12/pgfsm.html][Versioned FSM (Finite-State Machine) with Postgresql]]
+- [[https://felixge.de/2017/07/27/implementing-state-machines-in-postgresql/][Implementing State Machines in PostgreSQL]]
+- [[https://github.com/michelp/pgfsm/blob/master/pgfsm--0.0.1.sql][pgfsm--0.0.1.sql]]
+
+*** Remove postgres passwords from github workflows                    :code:
+
+As a quick hack we added the dev passwords to the workflows. We should really
+generate these on the fly and supply them to the tests.
+
+*** Add pg_cron extension for scheduling                               :code:
+
+We should install pg_cron extension:
+
+#+begin_quote
+pg_cron is a simple cron-based job scheduler for PostgreSQL (10 or higher) that
+runs inside the database as an extension.
+#+end_quote
+
+Links:
+
+- [[https://github.com/citusdata/pg_cron][GH: pg_cron]]
+
 *** System provisioner needs an icon                                   :code:
 
 Dialog is using default ORE icon.
@@ -269,6 +682,11 @@ Modified by must always map to an existing account. We need to create an account
 that cannot login and which is used for all of the initial population.
 
 Publication should be done using the new admin account, not the system account.
+
+*** Add roles for Super Admin                                          :code:
+
+We need to distinguish between the tenant admin and the "super" admin. These
+should have different roles.
 
 *** Split create schemas from main populate script                     :code:
 

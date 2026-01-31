@@ -130,6 +130,19 @@ jobs:
           postgres-version: "18"
         id: postgres
 
+      - name: Setup Roles and Users
+        run: |
+          psql ${{ steps.postgres.outputs.connection-uri }} \
+            -v ddl_password='ahV6aehuij6eingohsiajaiT0' \
+            -v cli_password='ahV6aehuij6eingohsiajaiT0' \
+            -v wt_password='ahV6aehuij6eingohsiajaiT0' \
+            -v comms_password='ahV6aehuij6eingohsiajaiT0' \
+            -v http_password='ahV6aehuij6eingohsiajaiT0' \
+            -v test_ddl_password='ahV6aehuij6eingohsiajaiT0' \
+            -v test_dml_password='ahV6aehuij6eingohsiajaiT0' \
+            -v ro_password='ahV6aehuij6eingohsiajaiT0' \
+            -f ./projects/ores.sql/setup_user.sql
+
       - name: Setup Template Database
         run: |
           psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/ores.sql/setup_template.sql

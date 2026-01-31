@@ -19,6 +19,7 @@
  */
 create table if not exists ores_dq_change_reasons_tbl (
     "code" text not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "description" text not null,
     "category_code" text not null,
@@ -45,11 +46,15 @@ on ores_dq_change_reasons_tbl (code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_dq_change_reasons_code_uniq_idx
-on ores_dq_change_reasons_tbl (code)
+on ores_dq_change_reasons_tbl (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_dq_change_reasons_category_idx
 on ores_dq_change_reasons_tbl (category_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_dq_change_reasons_tenant_idx
+on ores_dq_change_reasons_tbl (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_dq_change_reasons_insert_fn()
@@ -57,6 +62,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     if not exists (
         select 1 from ores_dq_change_reason_categories_tbl
         where code = new.category_code

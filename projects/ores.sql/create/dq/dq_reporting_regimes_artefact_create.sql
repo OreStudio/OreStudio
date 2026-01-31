@@ -23,6 +23,7 @@
 
 create table if not exists "ores_dq_reporting_regimes_artefact_tbl" (
     "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -32,6 +33,9 @@ create table if not exists "ores_dq_reporting_regimes_artefact_tbl" (
 
 create index if not exists ores_dq_reporting_regimes_artefact_dataset_idx
 on "ores_dq_reporting_regimes_artefact_tbl" (dataset_id);
+
+create index if not exists ores_dq_reporting_regimes_artefact_tenant_idx
+on "ores_dq_reporting_regimes_artefact_tbl" (tenant_id);
 
 create index if not exists ores_dq_reporting_regimes_artefact_code_idx
 on "ores_dq_reporting_regimes_artefact_tbl" (code);

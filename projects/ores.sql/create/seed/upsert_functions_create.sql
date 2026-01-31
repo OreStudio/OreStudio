@@ -80,6 +80,7 @@ $$ language plpgsql;
  * Upsert a data domain (e.g., Reference Data, Trade Data, Market Data).
  */
 create or replace function ores_dq_data_domains_upsert_fn(
+    p_tenant_id uuid,
     p_name text,
     p_description text
 ) returns void as $$
@@ -87,15 +88,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Data domain name');
 
     insert into ores_dq_data_domains_tbl (
-        name, version, description,
+        tenant_id, name, version, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_name, 0, p_description,
+        p_tenant_id, p_name, 0, p_description,
         'system', 'system.new_record', 'System seed data - data quality data domain',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created data quality data domain: %', p_name;
@@ -113,6 +114,7 @@ $$ language plpgsql;
  * Upsert a subject area within a data domain.
  */
 create or replace function ores_dq_subject_areas_upsert_fn(
+    p_tenant_id uuid,
     p_domain_name text,
     p_name text,
     p_description text
@@ -122,15 +124,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_domain_name, 'Domain name');
 
     insert into ores_dq_subject_areas_tbl (
-        name, version, domain_name, description,
+        tenant_id, name, version, domain_name, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_name, 0, p_domain_name, p_description,
+        p_tenant_id, p_name, 0, p_domain_name, p_description,
         'system', 'system.new_record', 'System seed data - data quality subject area',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (name, domain_name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, name, domain_name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created data quality subject area: % in domain %', p_name, p_domain_name;
@@ -148,6 +150,7 @@ $$ language plpgsql;
  * Upsert a data quality catalog (grouping of related datasets).
  */
 create or replace function ores_dq_catalogs_upsert_fn(
+    p_tenant_id uuid,
     p_name text,
     p_description text,
     p_owner text default null
@@ -156,15 +159,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Catalog name');
 
     insert into ores_dq_catalogs_tbl (
-        name, version, description, owner,
+        tenant_id, name, version, description, owner,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_name, 0, p_description, p_owner,
+        p_tenant_id, p_name, 0, p_description, p_owner,
         'system', 'system.new_record', 'System seed data - data quality catalog',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created data quality catalog: %', p_name;
@@ -178,6 +181,7 @@ $$ language plpgsql;
  * Upsert a dataset dependency (declares load order between datasets).
  */
 create or replace function ores_dq_dataset_dependencies_upsert_fn(
+    p_tenant_id uuid,
     p_dataset_code text,
     p_dependency_code text,
     p_role text
@@ -188,16 +192,16 @@ begin
     perform ores_seed_validate_not_empty_fn(p_role, 'Role');
 
     insert into ores_dq_dataset_dependencies_tbl (
-        dataset_code, dependency_code, role,
+        tenant_id, dataset_code, dependency_code, role,
         recorded_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_dataset_code, p_dependency_code, p_role,
+        p_tenant_id, p_dataset_code, p_dependency_code, p_role,
         'system', 'system.new_record', 'System seed data - dataset dependency',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (dataset_code, dependency_code)
+    on conflict (tenant_id, dataset_code, dependency_code)
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
@@ -216,6 +220,7 @@ $$ language plpgsql;
  * Upsert an origin dimension (Primary, Derived).
  */
 create or replace function ores_dq_origin_dimensions_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_name text,
     p_description text
@@ -224,15 +229,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Origin dimension code');
 
     insert into ores_dq_origin_dimensions_tbl (
-        code, version, name, description,
+        tenant_id, code, version, name, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_code, 0, p_name, p_description,
+        p_tenant_id, p_code, 0, p_name, p_description,
         'system', 'system.new_record', 'System seed data - data quality origin dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created data quality origin: %', p_code;
@@ -246,6 +251,7 @@ $$ language plpgsql;
  * Upsert a nature dimension (Actual, Synthetic, Mock).
  */
 create or replace function ores_dq_nature_dimensions_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_name text,
     p_description text
@@ -254,15 +260,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Nature dimension code');
 
     insert into ores_dq_nature_dimensions_tbl (
-        code, version, name, description,
+        tenant_id, code, version, name, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_code, 0, p_name, p_description,
+        p_tenant_id, p_code, 0, p_name, p_description,
         'system', 'system.new_record', 'System seed data - data quality nature dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created data quality nature: %', p_code;
@@ -276,6 +282,7 @@ $$ language plpgsql;
  * Upsert a treatment dimension (Raw, Masked, Anonymized).
  */
 create or replace function ores_dq_treatment_dimensions_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_name text,
     p_description text
@@ -284,15 +291,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Treatment dimension code');
 
     insert into ores_dq_treatment_dimensions_tbl (
-        code, version, name, description,
+        tenant_id, code, version, name, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_code, 0, p_name, p_description,
+        p_tenant_id, p_code, 0, p_name, p_description,
         'system', 'system.new_record', 'System seed data - data quality treatment dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created data quality treatment: %', p_code;
@@ -310,6 +317,7 @@ $$ language plpgsql;
  * Upsert a change reason category (system, common, trade).
  */
 create or replace function ores_dq_change_reason_categories_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_description text
 ) returns void as $$
@@ -317,15 +325,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Change reason category code');
 
     insert into ores_dq_change_reason_categories_tbl (
-        code, description, modified_by, change_commentary,
+        tenant_id, code, description, modified_by, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_code, p_description, 'system',
+        p_tenant_id, p_code, p_description, 'system',
         'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created change reason category: %', p_code;
@@ -339,6 +347,7 @@ $$ language plpgsql;
  * Upsert a change reason with full configuration.
  */
 create or replace function ores_dq_change_reasons_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_description text,
     p_category_code text,
@@ -351,17 +360,17 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Change reason code');
 
     insert into ores_dq_change_reasons_tbl (
-        code, description, category_code,
+        tenant_id, code, description, category_code,
         applies_to_amend, applies_to_delete, requires_commentary, display_order,
         modified_by, change_commentary, valid_from, valid_to
     )
     values (
-        p_code, p_description, p_category_code,
+        p_tenant_id, p_code, p_description, p_category_code,
         p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
         'system', 'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created change reason: %', p_code;
@@ -379,6 +388,7 @@ $$ language plpgsql;
  * Upsert a coding scheme authority type (official, industry, internal).
  */
 create or replace function ores_dq_coding_scheme_authority_types_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_name text,
     p_description text
@@ -387,15 +397,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Coding scheme authority type code');
 
     insert into ores_dq_coding_scheme_authority_types_tbl (
-        code, version, name, description,
+        tenant_id, code, version, name, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_code, 0, p_name, p_description,
+        p_tenant_id, p_code, 0, p_name, p_description,
         'system', 'system.new_record', 'System seed data - coding scheme authority type',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created coding scheme authority type: %', p_code;
@@ -409,6 +419,7 @@ $$ language plpgsql;
  * Upsert a coding scheme (e.g., ISO 4217, LEI, BIC).
  */
 create or replace function ores_dq_coding_schemes_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_name text,
     p_authority_type text,
@@ -421,15 +432,15 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Coding scheme code');
 
     insert into ores_dq_coding_schemes_tbl (
-        code, version, name, authority_type, subject_area_name, domain_name, uri, description,
+        tenant_id, code, version, name, authority_type, subject_area_name, domain_name, uri, description,
         modified_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
-        p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
+        p_tenant_id, p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
         'system', 'system.new_record', 'System seed data - coding scheme',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created coding scheme: %', p_code;
@@ -447,6 +458,7 @@ $$ language plpgsql;
  * Upsert a data sourcing methodology.
  */
 create or replace function ores_dq_methodologies_upsert_fn(
+    p_tenant_id uuid,
     p_name text,
     p_description text,
     p_logic_reference text default null,
@@ -456,16 +468,16 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Methodology name');
 
     insert into ores_dq_methodologies_tbl (
-        id, version, name, description, logic_reference, implementation_details,
+        tenant_id, id, version, name, description, logic_reference, implementation_details,
         modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
+        p_tenant_id, gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
         'system', 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created dq_methodologies: %', p_name;
@@ -488,6 +500,7 @@ $$ language plpgsql;
  *        function to call when publishing the dataset.
  */
 create or replace function ores_dq_datasets_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_catalog_name text,
     p_subject_area_name text,
@@ -513,12 +526,12 @@ begin
     perform ores_seed_validate_not_empty_fn(p_artefact_type, 'Artefact type');
 
     -- Get methodology ID (only table that still uses UUID PK)
-    select id into v_methodology_id from ores_dq_methodologies_tbl where name = p_methodology_name and valid_to = ores_utility_infinity_timestamp_fn();
+    select id into v_methodology_id from ores_dq_methodologies_tbl where tenant_id = p_tenant_id and name = p_methodology_name and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
     insert into ores_dq_datasets_tbl (
-        id, version, code, catalog_name, subject_area_name, domain_name, coding_scheme_code,
+        tenant_id, id, version, code, catalog_name, subject_area_name, domain_name, coding_scheme_code,
         origin_code, nature_code, treatment_code, methodology_id,
         name, description, source_system_id, business_context,
         upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
@@ -527,7 +540,7 @@ begin
         valid_from, valid_to
     )
     values (
-        gen_random_uuid(), 0, p_code, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
+        p_tenant_id, gen_random_uuid(), 0, p_code, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
         p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
         p_name, p_description, p_source_system_id, p_business_context,
         null, 0, p_as_of_date, current_timestamp, p_license_info,
@@ -535,7 +548,7 @@ begin
         'system', 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (name, subject_area_name, domain_name)
+    on conflict (tenant_id, name, subject_area_name, domain_name)
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
@@ -550,6 +563,7 @@ $$ language plpgsql;
  * Upsert a tag for a dataset.
  */
 create or replace function ores_dq_tags_upsert_fn(
+    p_tenant_id uuid,
     p_dataset_name text,
     p_subject_area_name text,
     p_domain_name text,
@@ -564,7 +578,8 @@ begin
     -- Get dataset ID
     select id into v_dataset_id
     from ores_dq_datasets_tbl
-    where name = p_dataset_name
+    where tenant_id = p_tenant_id
+      and name = p_dataset_name
       and subject_area_name = p_subject_area_name
       and domain_name = p_domain_name
       and valid_to = ores_utility_infinity_timestamp_fn();
@@ -576,11 +591,11 @@ begin
 
     -- Insert tag if it doesn't exist (uses unique constraint for atomicity)
     insert into ores_dq_tags_artefact_tbl (
-        dataset_id, tag_id, version, name, description
+        tenant_id, dataset_id, tag_id, version, name, description
     ) values (
-        v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
+        p_tenant_id, v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
     )
-    on conflict (dataset_id, name) do nothing;
+    on conflict (tenant_id, dataset_id, name) do nothing;
 
     if found then
         raise notice 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
@@ -598,16 +613,17 @@ $$ language plpgsql;
  * Upsert a permission code.
  */
 create or replace function ores_iam_permissions_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_description text
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Permission code');
 
-    insert into ores_iam_permissions_tbl (id, code, description, valid_from, valid_to)
-    values (gen_random_uuid(), p_code, p_description,
+    insert into ores_iam_permissions_tbl (tenant_id, id, code, description, valid_from, valid_to)
+    values (p_tenant_id, gen_random_uuid(), p_code, p_description,
             current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created permission: %', p_code;
@@ -625,6 +641,7 @@ $$ language plpgsql;
  * Upsert a role.
  */
 create or replace function ores_iam_roles_upsert_fn(
+    p_tenant_id uuid,
     p_name text,
     p_description text,
     p_recorded_by text default 'system'
@@ -633,12 +650,12 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Role name');
 
     -- Insert role if it doesn't exist (uses partial unique index for atomicity)
-    insert into ores_iam_roles_tbl (id, version, name, description, modified_by,
+    insert into ores_iam_roles_tbl (tenant_id, id, version, name, description, modified_by,
         change_reason_code, change_commentary, valid_from, valid_to)
-    values (gen_random_uuid(), 1, p_name, p_description, p_recorded_by,
+    values (p_tenant_id, gen_random_uuid(), 1, p_name, p_description, p_recorded_by,
             'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created role: %', p_name;
@@ -652,6 +669,7 @@ $$ language plpgsql;
  * Assign a permission to a role.
  */
 create or replace function ores_iam_role_permissions_assign_fn(
+    p_tenant_id uuid,
     p_role_name text,
     p_permission_code text,
     p_assigned_by text default 'system'
@@ -663,7 +681,7 @@ begin
     -- Get role ID (roles table uses 'id' column)
     select id into v_role_id
     from ores_iam_roles_tbl
-    where name = p_role_name and valid_to = ores_utility_infinity_timestamp_fn();
+    where tenant_id = p_tenant_id and name = p_role_name and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_role_id is null then
         raise exception 'Role not found: %', p_role_name;
@@ -672,16 +690,16 @@ begin
     -- Get permission ID (permissions table uses 'id' column)
     select id into v_permission_id
     from ores_iam_permissions_tbl
-    where code = p_permission_code and valid_to = ores_utility_infinity_timestamp_fn();
+    where tenant_id = p_tenant_id and code = p_permission_code and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_permission_id is null then
         raise exception 'Permission not found: %', p_permission_code;
     end if;
 
     -- Insert assignment if it doesn't exist
-    insert into ores_iam_role_permissions_tbl (role_id, permission_id, valid_from, valid_to)
-    values (v_role_id, v_permission_id, current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (role_id, permission_id)
+    insert into ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id, valid_from, valid_to)
+    values (p_tenant_id, v_role_id, v_permission_id, current_timestamp, ores_utility_infinity_timestamp_fn())
+    on conflict (tenant_id, role_id, permission_id)
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
@@ -700,6 +718,7 @@ $$ language plpgsql;
  * Upsert a system feature flag.
  */
 create or replace function ores_variability_feature_flags_upsert_fn(
+    p_tenant_id uuid,
     p_name text,
     p_enabled boolean,
     p_description text
@@ -709,12 +728,12 @@ begin
 
     -- Insert flag if it doesn't exist (preserve existing values)
     -- Cast boolean to integer for the enabled column
-    insert into ores_variability_feature_flags_tbl (name, enabled, description, modified_by,
+    insert into ores_variability_feature_flags_tbl (tenant_id, name, enabled, description, modified_by,
         change_reason_code, change_commentary, valid_from, valid_to)
-    values (p_name, p_enabled::int, p_description, 'system',
+    values (p_tenant_id, p_name, p_enabled::int, p_description, 'system',
             'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created system flag: % (default: %)', p_name, p_enabled;
@@ -732,6 +751,7 @@ $$ language plpgsql;
  * Upsert a dataset bundle (named collection of datasets).
  */
 create or replace function ores_dq_dataset_bundles_upsert_fn(
+    p_tenant_id uuid,
     p_code text,
     p_name text,
     p_description text
@@ -741,16 +761,16 @@ begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Dataset bundle name');
 
     insert into ores_dq_dataset_bundles_tbl (
-        id, version, code, name, description,
+        tenant_id, id, version, code, name, description,
         modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        gen_random_uuid(), 0, p_code, p_name, p_description,
+        p_tenant_id, gen_random_uuid(), 0, p_code, p_name, p_description,
         'system', 'system.new_record', 'System seed data - dataset bundle',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise notice 'Created dataset bundle: %', p_code;
@@ -764,6 +784,7 @@ $$ language plpgsql;
  * Upsert a dataset bundle member (links a dataset to a bundle).
  */
 create or replace function ores_dq_dataset_bundle_members_upsert_fn(
+    p_tenant_id uuid,
     p_bundle_code text,
     p_dataset_code text,
     p_display_order integer
@@ -773,16 +794,16 @@ begin
     perform ores_seed_validate_not_empty_fn(p_dataset_code, 'Dataset code');
 
     insert into ores_dq_dataset_bundle_members_tbl (
-        bundle_code, dataset_code, version, display_order,
+        tenant_id, bundle_code, dataset_code, version, display_order,
         modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_bundle_code, p_dataset_code, 0, p_display_order,
+        p_tenant_id, p_bundle_code, p_dataset_code, 0, p_display_order,
         'system', 'system.new_record', 'System seed data - dataset bundle member',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (bundle_code, dataset_code)
+    on conflict (tenant_id, bundle_code, dataset_code)
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then

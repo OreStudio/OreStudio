@@ -26,6 +26,7 @@
 
 create table if not exists ores_telemetry_logs_tbl (
     "id" uuid not null,
+    "tenant_id" uuid not null,
     "timestamp" timestamp with time zone not null,
     "source" text not null,
     "source_name" text not null,
@@ -38,6 +39,9 @@ create table if not exists ores_telemetry_logs_tbl (
     "recorded_at" timestamp with time zone not null default now(),
     primary key (id, timestamp)
 );
+
+create index if not exists ores_telemetry_logs_tenant_idx
+on ores_telemetry_logs_tbl (tenant_id, timestamp desc);
 
 create index if not exists ores_telemetry_logs_session_idx
 on ores_telemetry_logs_tbl (session_id, timestamp desc)

@@ -18,26 +18,8 @@
  *
  */
 
-/**
- * DQ IP to Country Artefact Table
- *
- * Staging table for IPv4 to country mapping data from iptoasn.com.
- * Data is imported here first, then promoted to geo_ip2country_tbl.
- */
-
-create table if not exists "ores_dq_ip2country_artefact_tbl" (
-    "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
-    "range_start" bigint not null,
-    "range_end" bigint not null,
-    "country_code" text not null
-);
-
-create index if not exists ores_dq_ip2country_artefact_dataset_idx
-on "ores_dq_ip2country_artefact_tbl" (dataset_id);
-
-create index if not exists ores_dq_ip2country_artefact_tenant_idx
-on "ores_dq_ip2country_artefact_tbl" (tenant_id);
-
-create index if not exists ores_dq_ip2country_artefact_range_idx
-on "ores_dq_ip2country_artefact_tbl" using gist (int8range(range_start, range_end + 1, '[)'));
+drop function if exists ores_iam_is_system_tenant_fn cascade;
+drop function if exists ores_iam_tenant_by_hostname_fn cascade;
+drop function if exists ores_iam_validate_tenant_fn cascade;
+drop function if exists ores_iam_current_tenant_id_fn cascade;
+drop function if exists ores_iam_system_tenant_id_fn cascade;

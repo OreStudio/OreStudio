@@ -32,6 +32,7 @@
 
 create table if not exists "ores_dq_dataset_bundle_members_tbl" (
     "bundle_code" text not null,
+    "tenant_id" uuid not null,
     "dataset_code" text not null,
     "version" integer not null,
     "display_order" integer not null,
@@ -62,7 +63,11 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists ores_dq_dataset_bundle_members_uniq_idx
-on "ores_dq_dataset_bundle_members_tbl" (bundle_code, dataset_code)
+on "ores_dq_dataset_bundle_members_tbl" (tenant_id, bundle_code, dataset_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_dq_dataset_bundle_members_tenant_idx
+on "ores_dq_dataset_bundle_members_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_dq_dataset_bundle_members_insert_fn()
@@ -70,6 +75,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     -- Version management
     select version into current_version
     from "ores_dq_dataset_bundle_members_tbl"

@@ -19,25 +19,19 @@
  */
 
 /**
- * DQ IP to Country Artefact Table
+ * Tenant Types Population Script
  *
- * Staging table for IPv4 to country mapping data from iptoasn.com.
- * Data is imported here first, then promoted to geo_ip2country_tbl.
+ * Seeds the database with tenant type definitions.
+ * This script is idempotent.
  */
 
-create table if not exists "ores_dq_ip2country_artefact_tbl" (
-    "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
-    "range_start" bigint not null,
-    "range_end" bigint not null,
-    "country_code" text not null
-);
+\echo '--- Tenant Types ---'
 
-create index if not exists ores_dq_ip2country_artefact_dataset_idx
-on "ores_dq_ip2country_artefact_tbl" (dataset_id);
+insert into ores_iam_tenant_types_tbl (type, name, description, display_order) values
+    ('platform', 'Platform', 'System-level tenant for platform administration and shared governance data', 0),
+    ('organisation', 'Organisation', 'Customer organisation tenant for isolated business operations', 10)
+on conflict (type) do nothing;
 
-create index if not exists ores_dq_ip2country_artefact_tenant_idx
-on "ores_dq_ip2country_artefact_tbl" (tenant_id);
-
-create index if not exists ores_dq_ip2country_artefact_range_idx
-on "ores_dq_ip2country_artefact_tbl" using gist (int8range(range_start, range_end + 1, '[)'));
+-- Summary
+select 'Tenant Types' as entity, count(*) as count
+from ores_iam_tenant_types_tbl;

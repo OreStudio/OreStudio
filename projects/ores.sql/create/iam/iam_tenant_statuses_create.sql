@@ -19,30 +19,15 @@
  */
 
 -- =============================================================================
--- Security tracking for login attempts.
--- Current-state table (no temporal versioning).
--- Tracks failed attempts and lock status.
+-- Tenant Statuses Lookup Table
+-- Defines valid tenant lifecycle statuses.
+-- Static configuration data - no bitemporal support required.
 -- =============================================================================
 
-create table if not exists ores_iam_login_info_tbl (
-    "tenant_id" uuid not null,
-    "account_id" uuid not null,
-    "last_ip" inet not null,
-    "last_attempt_ip" inet not null,
-    "failed_logins" integer not null,
-    "locked" integer not null,
-    "last_login" timestamp with time zone not null,
-    "online" integer not null,
-    "password_reset_required" integer not null default 0,
-    primary key (account_id)
+create table if not exists "ores_iam_tenant_statuses_tbl" (
+    "status" text not null primary key,
+    "name" text not null,
+    "description" text not null,
+    "display_order" integer not null default 0,
+    check ("status" <> '')
 );
-
-create index if not exists ores_iam_login_info_tenant_idx
-on ores_iam_login_info_tbl (tenant_id);
-
-create index if not exists ores_iam_login_info_account_id_idx
-on ores_iam_login_info_tbl (account_id);
-
-create index if not exists ores_iam_login_info_locked_idx
-on ores_iam_login_info_tbl (locked)
-where locked = 0;

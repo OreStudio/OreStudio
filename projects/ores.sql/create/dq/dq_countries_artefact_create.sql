@@ -19,6 +19,7 @@
  */
 create table if not exists "ores_dq_countries_artefact_tbl" (
     "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
     "alpha2_code" text not null,
     "version" integer not null,
     "alpha3_code" text not null,
@@ -30,6 +31,9 @@ create table if not exists "ores_dq_countries_artefact_tbl" (
 
 create index if not exists ores_dq_countries_artefact_dataset_idx
 on "ores_dq_countries_artefact_tbl" (dataset_id);
+
+create index if not exists ores_dq_countries_artefact_tenant_idx
+on "ores_dq_countries_artefact_tbl" (tenant_id);
 
 create index if not exists ores_dq_countries_artefact_alpha2_idx
 on "ores_dq_countries_artefact_tbl" (alpha2_code);
@@ -43,6 +47,7 @@ on "ores_dq_countries_artefact_tbl" (numeric_code);
 -- Function to insert countries into the artifact table
 create or replace function ores_dq_countries_artefact_insert_fn(
     p_dataset_id uuid,
+    p_tenant_id uuid,
     p_alpha2_code text,
     p_version integer,
     p_alpha3_code text,
@@ -53,10 +58,10 @@ create or replace function ores_dq_countries_artefact_insert_fn(
 ) returns void as $$
 begin
     insert into ores_dq_countries_artefact_tbl (
-        dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
+        dataset_id, tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
     values (
-        p_dataset_id, p_alpha2_code, p_version, p_alpha3_code, p_numeric_code, p_name, p_official_name, p_image_id
+        p_dataset_id, p_tenant_id, p_alpha2_code, p_version, p_alpha3_code, p_numeric_code, p_name, p_official_name, p_image_id
     );
 end;
 $$ language plpgsql;

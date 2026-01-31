@@ -46,6 +46,15 @@
 \echo ''
 
 -- =============================================================================
+-- Tenant Infrastructure (must be first - all other entities depend on tenants)
+-- =============================================================================
+
+\echo '--- Tenant Infrastructure ---'
+\ir ../iam/iam_tenant_types_populate.sql
+\ir ../iam/iam_tenant_statuses_populate.sql
+\ir ../iam/iam_system_tenant_populate.sql
+
+-- =============================================================================
 -- Change Control (must be populated before entities that use change reasons)
 -- =============================================================================
 
@@ -104,7 +113,16 @@
 \echo ''
 \echo '--- Foundation Layer Summary ---'
 
-select 'Change Reason Categories' as entity, count(*) as count
+select 'Tenant Types' as entity, count(*) as count
+from ores_iam_tenant_types_tbl
+union all
+select 'Tenant Statuses', count(*)
+from ores_iam_tenant_statuses_tbl
+union all
+select 'Tenants', count(*)
+from ores_iam_tenants_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Change Reason Categories', count(*)
 from ores_dq_change_reason_categories_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons', count(*)

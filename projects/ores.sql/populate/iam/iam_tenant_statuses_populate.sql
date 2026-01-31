@@ -19,25 +19,20 @@
  */
 
 /**
- * DQ IP to Country Artefact Table
+ * Tenant Statuses Population Script
  *
- * Staging table for IPv4 to country mapping data from iptoasn.com.
- * Data is imported here first, then promoted to geo_ip2country_tbl.
+ * Seeds the database with tenant lifecycle status definitions.
+ * This script is idempotent.
  */
 
-create table if not exists "ores_dq_ip2country_artefact_tbl" (
-    "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
-    "range_start" bigint not null,
-    "range_end" bigint not null,
-    "country_code" text not null
-);
+\echo '--- Tenant Statuses ---'
 
-create index if not exists ores_dq_ip2country_artefact_dataset_idx
-on "ores_dq_ip2country_artefact_tbl" (dataset_id);
+insert into ores_iam_tenant_statuses_tbl (status, name, description, display_order) values
+    ('active', 'Active', 'Tenant is active and fully operational', 0),
+    ('suspended', 'Suspended', 'Tenant is temporarily suspended - users cannot log in', 10),
+    ('terminated', 'Terminated', 'Tenant has been permanently terminated', 20)
+on conflict (status) do nothing;
 
-create index if not exists ores_dq_ip2country_artefact_tenant_idx
-on "ores_dq_ip2country_artefact_tbl" (tenant_id);
-
-create index if not exists ores_dq_ip2country_artefact_range_idx
-on "ores_dq_ip2country_artefact_tbl" using gist (int8range(range_start, range_end + 1, '[)'));
+-- Summary
+select 'Tenant Statuses' as entity, count(*) as count
+from ores_iam_tenant_statuses_tbl;

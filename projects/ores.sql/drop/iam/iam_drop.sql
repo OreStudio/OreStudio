@@ -38,3 +38,10 @@
 
 -- Population functions
 \ir ./iam_population_functions_drop.sql
+
+-- Tenant infrastructure (dropped last - other tables depend on tenants)
+\ir ./iam_tenants_notify_trigger_drop.sql
+\ir ./iam_tenants_drop.sql
+\ir ./iam_tenant_functions_drop.sql
+\ir ./iam_tenant_statuses_drop.sql
+\ir ./iam_tenant_types_drop.sql

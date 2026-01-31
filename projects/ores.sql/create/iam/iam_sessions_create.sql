@@ -26,6 +26,7 @@
 
 create table if not exists ores_iam_sessions_tbl (
     "id" uuid not null,
+    "tenant_id" uuid not null,
     "account_id" uuid not null,
     "start_time" timestamp with time zone not null,
     "end_time" text not null default '',
@@ -39,6 +40,9 @@ create table if not exists ores_iam_sessions_tbl (
     "protocol" text not null default 'binary',
     primary key (id, start_time)
 );
+
+create index if not exists ores_iam_sessions_tenant_idx
+on ores_iam_sessions_tbl (tenant_id, start_time desc);
 
 create index if not exists ores_iam_sessions_account_id_idx
 on ores_iam_sessions_tbl (account_id, start_time desc);

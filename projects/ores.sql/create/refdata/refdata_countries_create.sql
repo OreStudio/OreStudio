@@ -27,6 +27,7 @@
 
 create table if not exists "ores_refdata_countries_tbl" (
     "alpha2_code" text not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "alpha3_code" text not null,
     "numeric_code" text not null,
@@ -53,6 +54,14 @@ create unique index if not exists ores_refdata_countries_version_uniq_idx
 on "ores_refdata_countries_tbl" (alpha2_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists ores_refdata_countries_code_uniq_idx
+on "ores_refdata_countries_tbl" (tenant_id, alpha2_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_refdata_countries_tenant_idx
+on "ores_refdata_countries_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create index if not exists ores_refdata_countries_alpha3_idx
 on "ores_refdata_countries_tbl" (alpha3_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -66,6 +75,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
         select 1 from ores_dq_coding_schemes_tbl

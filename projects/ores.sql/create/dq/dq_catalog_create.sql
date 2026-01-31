@@ -32,6 +32,7 @@
 
 create table if not exists "ores_dq_catalogs_tbl" (
     "name" text not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "description" text not null,
     "owner" text,
@@ -54,7 +55,11 @@ on "ores_dq_catalogs_tbl" (name, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_dq_catalogs_name_uniq_idx
-on "ores_dq_catalogs_tbl" (name)
+on "ores_dq_catalogs_tbl" (tenant_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_dq_catalogs_tenant_idx
+on "ores_dq_catalogs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_dq_catalogs_insert_fn()
@@ -62,6 +67,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     select version into current_version
     from "ores_dq_catalogs_tbl"
     where name = NEW.name

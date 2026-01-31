@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores_refdata_validate_change_reason_fn(
+create or replace function ores_dq_validate_change_reason_fn(
     p_change_reason_code text
 ) returns text as $$
 begin

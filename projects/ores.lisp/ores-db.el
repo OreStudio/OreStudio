@@ -106,7 +106,8 @@
                                ("Created" 20 t)])
   (setq tabulated-list-padding 2)
   (setq ores-db/marked-ids nil)
-  (tabulated-list-init-header))
+  (tabulated-list-init-header)
+  (hl-line-mode 1))
 
 (defun ores-db/ui-refresh ()
   "Fetch databases and refresh the tabulated list."

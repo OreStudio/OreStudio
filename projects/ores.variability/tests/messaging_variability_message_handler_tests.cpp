@@ -38,7 +38,7 @@ using ores::testing::run_coroutine_test;
 namespace {
 
 const std::string_view test_suite("ores.variability.tests");
-const std::string database_table("production.variability_feature_flags_tbl");
+const std::string database_table("ores_variability_feature_flags_tbl");
 const std::string tags("[messaging][handler]");
 
 ores::variability::domain::feature_flags generate_feature_flag() {

@@ -27,7 +27,7 @@ namespace {
 
 const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[service][system_flags]");
-const std::string table_name("production.variability_feature_flags_tbl");
+const std::string table_name("ores_variability_feature_flags_tbl");
 
 }
 

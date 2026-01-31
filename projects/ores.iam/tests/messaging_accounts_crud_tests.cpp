@@ -46,7 +46,7 @@ using ores::utility::faker::internet;
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
-const std::string database_table("production.iam_accounts_tbl");
+const std::string database_table("ores_iam_accounts_tbl");
 const std::string tags("[messaging][handler][crud]");
 
 save_account_request to_save_account_request(const domain::account& a) {

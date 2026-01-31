@@ -37,8 +37,8 @@ namespace ores::iam::repository {
  * composite primary keys, so this entity omits the PrimaryKey wrapper.
  */
 struct role_permission_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "iam_role_permissions_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_iam_role_permissions_tbl";
 
     std::string role_id;
     std::string permission_id;

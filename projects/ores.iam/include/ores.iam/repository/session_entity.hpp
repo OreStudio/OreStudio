@@ -35,8 +35,8 @@ namespace ores::iam::repository {
  * for efficient time-series queries.
  */
 struct session_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "iam_sessions_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_iam_sessions_tbl";
 
     /**
      * @brief Session UUID - part of composite primary key.
@@ -111,8 +111,8 @@ std::ostream& operator<<(std::ostream& s, const session_entity& v);
  * @brief Entity for session statistics from continuous aggregates.
  */
 struct session_statistics_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "iam_session_stats_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_iam_session_stats_tbl";
 
     std::string day;
     std::string account_id;

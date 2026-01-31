@@ -12,10 +12,6 @@
 * psql -U postgres -f admin/admin_teardown_instances_generate.sql
 */
 
--- Instance: ores_dev_local2
-\set db_name ores_dev_local2
-\ir drop/drop_database.sql
-
 -- Instance: ores_frosty_leaf
 \set db_name ores_frosty_leaf
 \ir drop/drop_database.sql

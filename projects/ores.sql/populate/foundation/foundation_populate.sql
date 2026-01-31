@@ -35,7 +35,7 @@
  * All scripts are idempotent and can be safely re-run.
  *
  * Usage:
- *   psql -U ores_cli_user -d your_database -f populate/foundation/populate_foundation.sql
+ *   psql -U ores_cli_user -d your_database -f populate/foundation/foundation_populate.sql
  */
 
 -- Suppress noisy output during population
@@ -85,7 +85,7 @@
 
 \echo ''
 \echo '--- IAM ---'
-\ir ../iam/populate_iam.sql
+\ir ../iam/iam_populate.sql
 
 -- =============================================================================
 -- System Configuration (Feature Flags)
@@ -93,7 +93,7 @@
 
 \echo ''
 \echo '--- System Configuration ---'
-\ir ../variability/populate_variability.sql
+\ir ../variability/variability_populate.sql
 
 \echo ''
 \echo '=== Foundation Layer Population Complete ==='

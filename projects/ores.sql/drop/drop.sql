@@ -21,21 +21,20 @@
 -- =============================================================================
 -- 1. Operational Tables (have FKs to data governance tables, must be dropped first)
 -- =============================================================================
-\ir ./geo/drop_geo.sql
-\ir ./assets/drop_assets.sql
-\ir ./telemetry/drop_telemetry.sql
-\ir ./variability/drop_variability.sql
-\ir ./iam/drop_iam.sql
-\ir ./refdata/drop_refdata.sql
+\ir ./geo/geo_drop.sql
+\ir ./assets/assets_drop.sql
+\ir ./telemetry/telemetry_drop.sql
+\ir ./variability/variability_drop.sql
+\ir ./iam/iam_drop.sql
+\ir ./refdata/refdata_drop.sql
 
 -- =============================================================================
 -- 2. Data Governance Tables (dropped after operational tables)
 -- =============================================================================
-\ir ./dq/drop_dq.sql
-\ir ./change_control/drop_change_control.sql
+\ir ./dq/dq_drop.sql
 
 -- =============================================================================
 -- 3. Utility Functions (dropped last)
 -- =============================================================================
-\ir ./seed/drop_seed.sql
-\ir ./utility/drop_utility.sql
+\ir ./seed/seed_drop.sql
+\ir ./utility/utility_drop.sql

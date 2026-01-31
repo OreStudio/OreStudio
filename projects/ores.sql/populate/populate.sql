@@ -65,7 +65,7 @@
 -- =============================================================================
 
 \echo '--- Data Governance Layer ---'
-\ir governance/populate_governance.sql
+\ir governance/governance_populate.sql
 
 -- =============================================================================
 -- Data Catalogues Layer
@@ -73,7 +73,7 @@
 
 \echo ''
 \echo '--- Data Catalogues Layer ---'
-\ir catalogues/populate_catalogues.sql
+\ir catalogues/catalogues_populate.sql
 
 \echo ''
 \echo '=== System Population Complete ==='

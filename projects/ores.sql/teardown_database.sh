@@ -140,6 +140,10 @@ TERMINATED=$(PGPASSWORD="${PGPASSWORD}" psql -h "${HOST}" -U postgres -At -c \
 
 echo "Terminated ${TERMINATED} connection(s)."
 
+# Unset template flag if this is a template database
+PGPASSWORD="${PGPASSWORD}" psql -h "${HOST}" -U postgres -c \
+    "UPDATE pg_database SET datistemplate = false WHERE datname = '${DB_NAME}';" 2>/dev/null
+
 # Drop the database
 echo "Dropping database '${DB_NAME}'..."
 PGPASSWORD="${PGPASSWORD}" psql -h "${HOST}" -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"

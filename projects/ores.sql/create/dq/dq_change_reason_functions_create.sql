@@ -17,7 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+-- Tenant-aware change reason validation.
+-- Change reasons are DQ governance data owned by the system tenant,
+-- so we validate against system tenant's change reasons.
 create or replace function ores_dq_validate_change_reason_fn(
+    p_tenant_id uuid,
     p_change_reason_code text
 ) returns text as $$
 begin
@@ -29,9 +33,11 @@ begin
         return p_change_reason_code;
     end if;
 
+    -- Validate against system tenant's change reasons (shared governance data)
     if not exists (
         select 1 from ores_dq_change_reasons_tbl
         where code = p_change_reason_code
+        and tenant_id = ores_iam_system_tenant_id_fn()
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid change_reason_code: %. Reason must exist in ores_dq_change_reasons_tbl.',

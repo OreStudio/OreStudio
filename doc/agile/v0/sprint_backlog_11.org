@@ -433,6 +433,10 @@ moving to a single schema with prefixes, we kept the organizational benefits of
 schemas without the operational debt of cross-schema management.
 #+end_quote
 
+*** Check directory structure in SQL                                   :code:
+
+- why is there a projects/ores.sql/create/change_control directory.
+
 *** Add a sample set of gravatars for profiles                         :code:
 
 We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled

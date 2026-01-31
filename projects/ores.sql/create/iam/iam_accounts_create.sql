@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
 -- =============================================================================
 -- User accounts with authentication credentials.
@@ -25,7 +24,7 @@ set schema 'production';
 -- Username and email unique for current records.
 -- =============================================================================
 
-create table if not exists "production"."iam_accounts_tbl" (
+create table if not exists ores_iam_accounts_tbl (
     "id" uuid not null,
     "version" integer not null,
     "username" text not null,
@@ -47,27 +46,27 @@ create table if not exists "production"."iam_accounts_tbl" (
     check ("change_reason_code" <> '')
 );
 
-create unique index if not exists iam_accounts_username_uniq_idx
-on "production"."iam_accounts_tbl" (username)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_iam_accounts_username_uniq_idx
+on ores_iam_accounts_tbl (username)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists iam_accounts_email_uniq_idx
-on "production"."iam_accounts_tbl" (email)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_iam_accounts_email_uniq_idx
+on ores_iam_accounts_tbl (email)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists iam_accounts_version_uniq_idx
-on "production"."iam_accounts_tbl" (id, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_iam_accounts_version_uniq_idx
+on ores_iam_accounts_tbl (id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function production.iam_accounts_insert_fn()
+create or replace function ores_iam_accounts_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "production"."iam_accounts_tbl"
+    from ores_iam_accounts_tbl
     where id = new.id
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -77,28 +76,28 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "production"."iam_accounts_tbl"
+        update ores_iam_accounts_tbl
         set valid_to = current_timestamp
         where id = new.id
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = public.utility_infinity_timestamp_fn();
+    new.valid_to = ores_utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger iam_accounts_insert_trg
-before insert on "production"."iam_accounts_tbl"
+create or replace trigger ores_iam_accounts_insert_trg
+before insert on ores_iam_accounts_tbl
 for each row
-execute function production.iam_accounts_insert_fn();
+execute function ores_iam_accounts_insert_fn();

@@ -37,6 +37,9 @@
 (defvar-local ores-db/marked-ids nil
   "List of marked database IDs in the current buffer.")
 
+(defvar-local ores-db/project-root nil
+  "The project root for this database list buffer.")
+
 (defun ores-db/database--get-credential (user host key)
   "Get a specific KEY (:secret or :port) for USER at HOST from auth-source."
   (let* ((match (auth-source-search :host host :user user :max 1))
@@ -46,11 +49,14 @@
           (t nil))))
 
 (defun ores-db/database-list-discovery ()
-  "Query all hosts in \='ores-db/hosts' for databases starting with \='ores_'."
-  (let ((script-path (expand-file-name "projects/ores.sql/utility/list_databases.sh"
-                                       (when-let ((pr (project-current)))
-                                         (project-root pr))))
-        all-dbs)
+  "Query all hosts in \='ores-db/hosts' for databases starting with \='ores_'.
+Uses `ores-db/project-root' if set (in database list buffers), otherwise
+falls back to the current project."
+  (let* ((root (or ores-db/project-root
+                   (when-let ((pr (project-current)))
+                     (project-root pr))))
+         (script-path (expand-file-name "projects/ores.sql/utility/list_databases.sh" root))
+         all-dbs)
     (dolist (host ores-db/hosts)
       (let* ((pw   (ores-db/database--get-credential "postgres" host :secret))
              (port (or (ores-db/database--get-credential "postgres" host :port) "5432"))
@@ -99,13 +105,15 @@
   "Keymap for `ores-db/mode`.")
 
 (define-derived-mode ores-db/mode tabulated-list-mode "ORES-DB"
-  "Major mode for browsing ORES databases."
+  "Major mode for browsing ORES databases.
+Each project gets its own buffer with independent state."
   (setq tabulated-list-format [("M" 1 t)
                                ("Database Name" 30 t)
                                ("Host" 15 t)
                                ("Created" 20 t)])
   (setq tabulated-list-padding 2)
   (setq ores-db/marked-ids nil)
+  (setq ores-db/project-root nil)
   (tabulated-list-init-header)
   (hl-line-mode 1))
 
@@ -127,11 +135,20 @@
     (tabulated-list-print t)))
 
 (defun ores-db/list-databases ()
-  "Switch to the ORES database browser buffer."
+  "Switch to the ORES database browser buffer.
+The buffer is project-scoped, so different projects can have their own
+database lists with independent current database selections."
   (interactive)
-  (let ((buf (get-buffer-create "*ORES Databases*")))
+  (let* ((pr (project-current))
+         (root (when pr (project-root pr)))
+         (env (ores-db/current-environment))
+         (buf-name (if env
+                       (format "*ORES Databases [%s]*" env)
+                     "*ORES Databases*"))
+         (buf (get-buffer-create buf-name)))
     (with-current-buffer buf
       (ores-db/mode)
+      (setq ores-db/project-root root)
       (ores-db/ui-refresh))
     (switch-to-buffer buf)))
 
@@ -395,9 +412,13 @@ Returns the environment label (e.g., 'local2') or nil if not in an OreStudio pro
       dir-name)))
 
 (defun ores-db/sql-scripts-directory ()
-  "Get the path to the ores.sql/projects directory."
-  (when-let ((pr (project-current)))
-    (expand-file-name "projects/ores.sql" (project-root pr))))
+  "Get the path to the ores.sql/projects directory.
+Uses `ores-db/project-root' if set (in database list buffers), otherwise
+falls back to the current project."
+  (when-let ((root (or ores-db/project-root
+                       (when-let ((pr (project-current)))
+                         (project-root pr)))))
+    (expand-file-name "projects/ores.sql" root)))
 
 (defun ores-db/run-script (script-name buffer-name &optional args)
   "Run SCRIPT-NAME from ores.sql directory in compilation mode.

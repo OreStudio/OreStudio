@@ -399,8 +399,8 @@ psql -U postgres -v db_name='ores_frosty_leaf' -f projects/ores.sql/create_insta
   :header-args+: :results raw
   :header-args+: :engine postgresql
   :header-args+: :dbhost localhost
-  :header-args+: :dbuser ores
-  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :dbuser ores_cli_user
+  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores_cli_user")
   :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/ores.sql")
   :END:
 

@@ -432,7 +432,7 @@ Database created successfully!
 Database name: dancing_lemur_42
 
 Connect with:
-  psql -U ores -d dancing_lemur_42
+  psql -U ores_cli_user -d dancing_lemur_42
 #+end_example
 
 ** Create Instance with Specific Name

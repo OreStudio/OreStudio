@@ -21,27 +21,27 @@
 -- =============================================================================
 -- 1. Utility Functions (shared utilities used by all tables)
 -- =============================================================================
-\ir ./utility/create_utility.sql
+\ir ./utility/utility_create.sql
 
 -- =============================================================================
 -- 2. Data Governance Tables (must be created before operational tables - no external deps)
 -- =============================================================================
-\ir ./dq/create_dq.sql
+\ir ./dq/dq_create.sql
 
 -- =============================================================================
 -- 3. Operational Tables (depend on data governance tables for FK validation)
 -- =============================================================================
-\ir ./refdata/create_refdata.sql
-\ir ./iam/create_iam.sql
-\ir ./variability/create_variability.sql
-\ir ./telemetry/create_telemetry.sql
-\ir ./assets/create_assets.sql
-\ir ./geo/create_geo.sql
+\ir ./refdata/refdata_create.sql
+\ir ./iam/iam_create.sql
+\ir ./variability/variability_create.sql
+\ir ./telemetry/telemetry_create.sql
+\ir ./assets/assets_create.sql
+\ir ./geo/geo_create.sql
 
 -- =============================================================================
 -- 4. Seed Functions (depend on data governance and operational tables)
 -- =============================================================================
-\ir ./seed/create_seed.sql
+\ir ./seed/seed_create.sql
 
 -- =============================================================================
 -- 5. Summary Functions (depend on all tables)

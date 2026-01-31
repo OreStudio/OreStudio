@@ -69,11 +69,8 @@ grant select on all tables in schema public to ores_owner, ores_rw, ores_ro;
 grant execute on all functions in schema public to ores_owner, ores_rw, ores_ro;
 
 -- Set default privileges for future objects
-alter default privileges in schema public grant select on tables to ores_owner;
-alter default privileges in schema public grant select on tables to ores_rw;
-alter default privileges in schema public grant select on tables to ores_ro;
-alter default privileges in schema public grant execute on functions to ores_owner;
-alter default privileges in schema public grant execute on functions to ores_rw;
+alter default privileges in schema public grant select on tables to ores_owner, ores_rw, ores_ro;
+alter default privileges in schema public grant execute on functions to ores_owner, ores_rw;
 
 \echo ''
 \echo '=========================================='

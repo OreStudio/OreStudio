@@ -30,8 +30,8 @@ namespace ores::dq::repository {
  * @brief Represents a change_reason in the database.
  */
 struct change_reason_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_change_reasons_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_change_reasons_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     int version = 0;

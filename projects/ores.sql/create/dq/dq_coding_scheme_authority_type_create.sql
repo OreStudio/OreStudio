@@ -31,7 +31,7 @@
  * - internal: Proprietary or organization-specific identifiers
  */
 
-create table if not exists "metadata"."dq_coding_scheme_authority_types_tbl" (
+create table if not exists "ores_dq_coding_scheme_authority_types_tbl" (
     "code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -50,23 +50,23 @@ create table if not exists "metadata"."dq_coding_scheme_authority_types_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists dq_coding_scheme_authority_types_version_uniq_idx
-on "metadata"."dq_coding_scheme_authority_types_tbl" (code, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_coding_scheme_authority_types_version_uniq_idx
+on "ores_dq_coding_scheme_authority_types_tbl" (code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_coding_scheme_authority_types_code_uniq_idx
-on "metadata"."dq_coding_scheme_authority_types_tbl" (code)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_coding_scheme_authority_types_code_uniq_idx
+on "ores_dq_coding_scheme_authority_types_tbl" (code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function metadata.dq_coding_scheme_authority_types_insert_fn()
+create or replace function ores_dq_coding_scheme_authority_types_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "metadata"."dq_coding_scheme_authority_types_tbl"
+    from "ores_dq_coding_scheme_authority_types_tbl"
     where code = NEW.code
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -76,35 +76,35 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "metadata"."dq_coding_scheme_authority_types_tbl"
+        update "ores_dq_coding_scheme_authority_types_tbl"
         set valid_to = current_timestamp
         where code = NEW.code
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = public.utility_infinity_timestamp_fn();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_coding_scheme_authority_types_insert_trg
-before insert on "metadata"."dq_coding_scheme_authority_types_tbl"
-for each row execute function metadata.dq_coding_scheme_authority_types_insert_fn();
+create or replace trigger ores_dq_coding_scheme_authority_types_insert_trg
+before insert on "ores_dq_coding_scheme_authority_types_tbl"
+for each row execute function ores_dq_coding_scheme_authority_types_insert_fn();
 
-create or replace rule dq_coding_scheme_authority_types_delete_rule as
-on delete to "metadata"."dq_coding_scheme_authority_types_tbl" do instead
-    update "metadata"."dq_coding_scheme_authority_types_tbl"
+create or replace rule ores_dq_coding_scheme_authority_types_delete_rule as
+on delete to "ores_dq_coding_scheme_authority_types_tbl" do instead
+    update "ores_dq_coding_scheme_authority_types_tbl"
     set valid_to = current_timestamp
     where code = OLD.code
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();

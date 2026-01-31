@@ -31,8 +31,8 @@ namespace ores::dq::repository {
  * @brief Represents a catalog in the database.
  */
 struct catalog_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_catalogs_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_catalogs_tbl";
 
     sqlgen::PrimaryKey<std::string> name;
     int version = 0;

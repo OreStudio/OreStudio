@@ -17,7 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-drop function if exists metadata.dq_business_centre_preview_fn;
-drop function if exists metadata.dq_business_centres_publish_fn;
+drop function if exists ores_dq_business_centre_preview_fn;
+drop function if exists ores_dq_business_centres_publish_fn;

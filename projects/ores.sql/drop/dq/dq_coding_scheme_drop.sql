@@ -18,9 +18,7 @@
  *
  */
 
-set schema 'metadata';
-
-drop trigger if exists dq_coding_schemes_insert_trg on "metadata"."dq_coding_schemes_tbl";
-drop rule if exists dq_coding_schemes_delete_rule on "metadata"."dq_coding_schemes_tbl";
-drop function if exists metadata.dq_coding_schemes_insert_fn();
-drop table if exists "metadata"."dq_coding_schemes_tbl";
+drop trigger if exists ores_dq_coding_schemes_insert_trg on "ores_dq_coding_schemes_tbl";
+drop rule if exists ores_dq_coding_schemes_delete_rule on "ores_dq_coding_schemes_tbl";
+drop function if exists ores_dq_coding_schemes_insert_fn();
+drop table if exists "ores_dq_coding_schemes_tbl";

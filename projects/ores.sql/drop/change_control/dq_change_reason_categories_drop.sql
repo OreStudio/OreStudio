@@ -17,11 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-drop rule if exists dq_change_reason_categories_delete_rule on "metadata"."dq_change_reason_categories_tbl";
-drop trigger if exists dq_change_reason_categories_insert_trg on "metadata"."dq_change_reason_categories_tbl";
-drop function if exists metadata.dq_change_reason_categories_insert_fn;
-drop index if exists dq_change_reason_categories_code_uniq_idx;
-drop index if exists dq_change_reason_categories_version_uniq_idx;
-drop table if exists "metadata"."dq_change_reason_categories_tbl";
+drop rule if exists ores_dq_change_reason_categories_delete_rule on ores_dq_change_reason_categories_tbl;
+drop trigger if exists ores_dq_change_reason_categories_insert_trg on ores_dq_change_reason_categories_tbl;
+drop function if exists ores_dq_change_reason_categories_insert_fn;
+drop index if exists ores_dq_change_reason_categories_code_uniq_idx;
+drop index if exists ores_dq_change_reason_categories_version_uniq_idx;
+drop table if exists ores_dq_change_reason_categories_tbl;

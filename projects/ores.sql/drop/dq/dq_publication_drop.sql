@@ -17,6 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-drop table if exists "metadata"."dq_dataset_publications_tbl";
+drop table if exists "ores_dq_dataset_publications_tbl";

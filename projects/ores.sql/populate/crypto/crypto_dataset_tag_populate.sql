@@ -26,7 +26,6 @@
  * Must be run after crypto_dataset_populate.sql.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- Cryptocurrency Dataset Tags
@@ -34,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- Cryptocurrency Dataset Tags ---'
 
-select metadata.dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(
     'Cryptocurrency Icon Images',
     'Cryptocurrencies',
     'Reference Data',
@@ -42,7 +41,7 @@ select metadata.dq_tags_upsert_fn(
     'Cryptocurrency icon images'
 );
 
-select metadata.dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(
     'Cryptocurrencies Large',
     'Cryptocurrencies',
     'Reference Data',
@@ -50,7 +49,7 @@ select metadata.dq_tags_upsert_fn(
     'Cryptocurrency reference data (~12K coins)'
 );
 
-select metadata.dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(
     'Cryptocurrencies Small',
     'Cryptocurrencies',
     'Reference Data',

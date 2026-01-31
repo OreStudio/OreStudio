@@ -26,15 +26,13 @@
  * Must be run after flags_dataset_populate.sql.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Flag Icons Dataset Tags
 -- =============================================================================
 
 \echo '--- Flag Icons Dataset Tags ---'
 
-select metadata.dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(
     'Country Flag Images',
     'Country Flags',
     'Reference Data',

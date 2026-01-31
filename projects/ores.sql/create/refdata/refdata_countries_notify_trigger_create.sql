@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function production.refdata_countries_notify_fn()
+create or replace function ores_refdata_countries_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -43,6 +43,6 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger refdata_countries_notify_trg
-after insert or update or delete on production.refdata_countries_tbl
-for each row execute function production.refdata_countries_notify_fn();
+create or replace trigger ores_refdata_countries_notify_trg
+after insert or update or delete on ores_refdata_countries_tbl
+for each row execute function ores_refdata_countries_notify_fn();

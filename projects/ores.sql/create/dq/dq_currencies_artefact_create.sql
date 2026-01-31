@@ -17,9 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-create table if not exists "metadata"."dq_currencies_artefact_tbl" (
+create table if not exists "ores_dq_currencies_artefact_tbl" (
     "dataset_id" uuid not null,
     "iso_code" text not null,
     "version" integer not null,
@@ -35,14 +33,14 @@ create table if not exists "metadata"."dq_currencies_artefact_tbl" (
     "image_id" uuid
 );
 
-create index if not exists dq_currencies_artefact_dataset_idx
-on "metadata"."dq_currencies_artefact_tbl" (dataset_id);
+create index if not exists ores_dq_currencies_artefact_dataset_idx
+on "ores_dq_currencies_artefact_tbl" (dataset_id);
 
-create index if not exists dq_currencies_artefact_iso_code_idx
-on "metadata"."dq_currencies_artefact_tbl" (iso_code);
+create index if not exists ores_dq_currencies_artefact_iso_code_idx
+on "ores_dq_currencies_artefact_tbl" (iso_code);
 
-create index if not exists dq_currencies_artefact_numeric_code_idx
-on "metadata"."dq_currencies_artefact_tbl" (numeric_code);
+create index if not exists ores_dq_currencies_artefact_numeric_code_idx
+on "ores_dq_currencies_artefact_tbl" (numeric_code);
 
-create index if not exists dq_currencies_artefact_currency_type_idx
-on "metadata"."dq_currencies_artefact_tbl" (currency_type);
+create index if not exists ores_dq_currencies_artefact_currency_type_idx
+on "ores_dq_currencies_artefact_tbl" (currency_type);

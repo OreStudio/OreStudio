@@ -26,15 +26,13 @@
  * Must be run after ip2country_dataset_populate.sql.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- IP Geolocation Dataset Tags
 -- =============================================================================
 
 \echo '--- IP Geolocation Dataset Tags ---'
 
-select metadata.dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(
     'IP to Country IPv4 Ranges',
     'IP Address to Country maps',
     'Reference Data',

@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
 -- =============================================================================
 -- Security tracking for login attempts.
@@ -25,7 +24,7 @@ set schema 'production';
 -- Tracks failed attempts and lock status.
 -- =============================================================================
 
-create table if not exists "production"."iam_login_info_tbl" (
+create table if not exists ores_iam_login_info_tbl (
     "account_id" uuid not null,
     "last_ip" inet not null,
     "last_attempt_ip" inet not null,
@@ -37,9 +36,9 @@ create table if not exists "production"."iam_login_info_tbl" (
     primary key (account_id)
 );
 
-create index if not exists iam_login_info_account_id_idx
-on "production"."iam_login_info_tbl" (account_id);
+create index if not exists ores_iam_login_info_account_id_idx
+on ores_iam_login_info_tbl (account_id);
 
-create index if not exists iam_login_info_locked_idx
-on "production"."iam_login_info_tbl" (locked)
+create index if not exists ores_iam_login_info_locked_idx
+on ores_iam_login_info_tbl (locked)
 where locked = 0;

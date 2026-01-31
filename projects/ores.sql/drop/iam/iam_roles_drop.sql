@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
-drop rule if exists iam_roles_delete_rule on "production"."iam_roles_tbl";
-drop trigger if exists iam_roles_insert_trg on "production"."iam_roles_tbl";
-drop function if exists production.iam_roles_insert_fn;
-drop index if exists iam_roles_name_uniq_idx;
-drop index if exists iam_roles_version_uniq_idx;
-drop table if exists "production"."iam_roles_tbl";
+drop rule if exists ores_iam_roles_delete_rule on ores_iam_roles_tbl;
+drop trigger if exists ores_iam_roles_insert_trg on ores_iam_roles_tbl;
+drop function if exists ores_iam_roles_insert_fn;
+drop index if exists ores_iam_roles_name_uniq_idx;
+drop index if exists ores_iam_roles_version_uniq_idx;
+drop table if exists ores_iam_roles_tbl;

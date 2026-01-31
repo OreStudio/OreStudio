@@ -86,70 +86,70 @@
 
 -- Foundation
 select 'Foundation: Change Reason Categories' as entity, count(*) as count
-from metadata.dq_change_reason_categories_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_change_reason_categories_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Change Reasons', count(*)
-from metadata.dq_change_reasons_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_change_reasons_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Rounding Types', count(*)
-from production.refdata_rounding_types_tbl
+from ores_refdata_rounding_types_tbl
 union all
 select 'Foundation: Data Domains', count(*)
-from metadata.dq_data_domains_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_data_domains_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Subject Areas', count(*)
-from metadata.dq_subject_areas_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_subject_areas_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Coding Scheme Authority Types', count(*)
-from metadata.dq_coding_scheme_authority_types_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_coding_scheme_authority_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Coding Schemes', count(*)
-from metadata.dq_coding_schemes_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_coding_schemes_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Permissions', count(*)
-from production.iam_permissions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_iam_permissions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: Roles', count(*)
-from production.iam_roles_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_iam_roles_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Foundation: System Flags', count(*)
-from production.variability_feature_flags_tbl where name like 'system.%' and valid_to = public.utility_infinity_timestamp_fn()
+from ores_variability_feature_flags_tbl where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
 -- Governance
 union all
 select 'Governance: Origin Dimensions', count(*)
-from metadata.dq_origin_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_origin_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Governance: Nature Dimensions', count(*)
-from metadata.dq_nature_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_nature_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Governance: Treatment Dimensions', count(*)
-from metadata.dq_treatment_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_treatment_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Governance: Methodologies', count(*)
-from metadata.dq_methodologies_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_methodologies_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Governance: Artefact Types', count(*)
-from metadata.dq_artefact_types_tbl
+from ores_dq_artefact_types_tbl
 -- Catalogues
 union all
 select 'Catalogues: Catalogs', count(*)
-from metadata.dq_catalogs_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_catalogs_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Catalogues: Datasets', count(*)
-from metadata.dq_datasets_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_datasets_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Catalogues: Dataset Dependencies', count(*)
-from metadata.dq_dataset_dependencies_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_dataset_dependencies_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Catalogues: Artefact Images', count(*)
-from metadata.dq_images_artefact_tbl
+from ores_dq_images_artefact_tbl
 union all
 select 'Catalogues: Artefact Countries', count(*)
-from metadata.dq_countries_artefact_tbl
+from ores_dq_countries_artefact_tbl
 union all
 select 'Catalogues: Artefact Currencies', count(*)
-from metadata.dq_currencies_artefact_tbl
+from ores_dq_currencies_artefact_tbl
 union all
 select 'Catalogues: Artefact IP Ranges', count(*)
-from metadata.dq_ip2country_artefact_tbl
+from ores_dq_ip2country_artefact_tbl
 order by entity;

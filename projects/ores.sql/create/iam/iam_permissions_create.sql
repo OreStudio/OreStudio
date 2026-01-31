@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
 -- =============================================================================
 -- Fine-grained permission codes.
@@ -25,7 +24,7 @@ set schema 'production';
 -- No change tracking (not user-editable).
 -- =============================================================================
 
-create table if not exists "production"."iam_permissions_tbl" (
+create table if not exists ores_iam_permissions_tbl (
     "id" uuid not null,
     "code" text not null,
     "description" text not null,
@@ -39,35 +38,35 @@ create table if not exists "production"."iam_permissions_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists iam_permissions_code_uniq_idx
-on "production"."iam_permissions_tbl" (code)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_iam_permissions_code_uniq_idx
+on ores_iam_permissions_tbl (code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function production.iam_permissions_insert_fn()
+create or replace function ores_iam_permissions_insert_fn()
 returns trigger as $$
 begin
-    update "production"."iam_permissions_tbl"
+    update ores_iam_permissions_tbl
     set valid_to = current_timestamp
     where id = new.id
-    and valid_to = public.utility_infinity_timestamp_fn()
+    and valid_to = ores_utility_infinity_timestamp_fn()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = public.utility_infinity_timestamp_fn();
+    new.valid_to = ores_utility_infinity_timestamp_fn();
 
     return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger iam_permissions_insert_trg
-before insert on "production"."iam_permissions_tbl"
+create or replace trigger ores_iam_permissions_insert_trg
+before insert on ores_iam_permissions_tbl
 for each row
-execute function production.iam_permissions_insert_fn();
+execute function ores_iam_permissions_insert_fn();
 
-create or replace rule iam_permissions_delete_rule as
-on delete to "production"."iam_permissions_tbl"
+create or replace rule ores_iam_permissions_delete_rule as
+on delete to ores_iam_permissions_tbl
 do instead
-  update "production"."iam_permissions_tbl"
+  update ores_iam_permissions_tbl
   set valid_to = current_timestamp
   where id = old.id
-  and valid_to = public.utility_infinity_timestamp_fn();
+  and valid_to = ores_utility_infinity_timestamp_fn();

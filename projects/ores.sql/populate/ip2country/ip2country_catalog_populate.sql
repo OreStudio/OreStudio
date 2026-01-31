@@ -25,15 +25,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- IP Geolocation Catalog
 -- =============================================================================
 
 \echo '--- IP Geolocation Catalog ---'
 
-select metadata.dq_catalogs_upsert_fn(
+select ores_dq_catalogs_upsert_fn(
     'IP Geolocation',
     'IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.',
     'Reference Data Team'

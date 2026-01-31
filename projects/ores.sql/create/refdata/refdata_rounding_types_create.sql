@@ -24,7 +24,7 @@
 -- Static configuration data - no bitemporal support required.
 -- =============================================================================
 
-create table if not exists "production"."refdata_rounding_types_tbl" (
+create table if not exists "ores_refdata_rounding_types_tbl" (
     "code" text not null primary key,
     "name" text not null,
     "description" text not null,

@@ -17,9 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-create or replace function metadata.refdata_validate_change_reason_fn(
+create or replace function ores_dq_validate_change_reason_fn(
     p_change_reason_code text
 ) returns text as $$
 begin
@@ -27,16 +25,16 @@ begin
         return 'system.new_record';
     end if;
 
-    if not exists (select 1 from metadata.dq_change_reasons_tbl limit 1) then
+    if not exists (select 1 from ores_dq_change_reasons_tbl limit 1) then
         return p_change_reason_code;
     end if;
 
     if not exists (
-        select 1 from metadata.dq_change_reasons_tbl
+        select 1 from ores_dq_change_reasons_tbl
         where code = p_change_reason_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid change_reason_code: %. Reason must exist in dq_change_reasons_tbl.',
+        raise exception 'Invalid change_reason_code: %. Reason must exist in ores_dq_change_reasons_tbl.',
             p_change_reason_code
             using errcode = '23503';
     end if;

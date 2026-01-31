@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
-drop rule if exists refdata_person_roles_delete_rule on "production"."refdata_person_roles_tbl";
-drop trigger if exists refdata_person_roles_insert_trg on "production"."refdata_person_roles_tbl";
-drop function if exists production.refdata_person_roles_insert_fn;
-drop table if exists "production"."refdata_person_roles_tbl";
+drop rule if exists ores_refdata_person_roles_delete_rule on "ores_refdata_person_roles_tbl";
+drop trigger if exists ores_refdata_person_roles_insert_trg on "ores_refdata_person_roles_tbl";
+drop function if exists ores_refdata_person_roles_insert_fn;
+drop table if exists "ores_refdata_person_roles_tbl";

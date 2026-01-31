@@ -25,13 +25,11 @@
  *
  * Usage:
  *   -- Preview what will be published
- *   SELECT * FROM metadata.dq_business_centre_preview_fn(dataset_id);
+ *   SELECT * FROM ores_dq_business_centre_preview_fn(dataset_id);
  *
  *   -- Publish to production
- *   SELECT * FROM metadata.dq_business_centres_publish_fn(dataset_id, 'upsert');
+ *   SELECT * FROM ores_dq_business_centres_publish_fn(dataset_id, 'upsert');
  */
-
-set schema 'metadata';
 
 -- =============================================================================
 -- Preview Function
@@ -40,7 +38,7 @@ set schema 'metadata';
 /**
  * Preview what business_centres would be copied from a DQ dataset.
  */
-create or replace function metadata.dq_business_centre_preview_fn(p_dataset_id uuid)
+create or replace function ores_dq_business_centre_preview_fn(p_dataset_id uuid)
 returns table (
     action text,
     code text,
@@ -64,11 +62,11 @@ begin
             when existing.code is not null then 'Record already exists'
             else 'New record'
         end as reason
-    from metadata.dq_business_centres_artefact_tbl dq
-    left join production.refdata_business_centres_tbl existing
+    from ores_dq_business_centres_artefact_tbl dq
+    left join ores_refdata_business_centres_tbl existing
         on existing.code = dq.code
         and existing.coding_scheme_code = dq.coding_scheme_code
-        and existing.valid_to = public.utility_infinity_timestamp_fn()
+        and existing.valid_to = ores_utility_infinity_timestamp_fn()
     where dq.dataset_id = p_dataset_id
     order by dq.coding_scheme_code, dq.code;
 end;
@@ -84,7 +82,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Population mode: 'upsert', 'insert_only', or 'replace_all'.
  */
-create or replace function metadata.dq_business_centres_publish_fn(
+create or replace function ores_dq_business_centres_publish_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -104,9 +102,9 @@ declare
 begin
     -- Validate dataset exists
     select name into v_dataset_name
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where id = p_dataset_id
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
@@ -119,9 +117,9 @@ begin
 
     -- Handle replace_all mode
     if p_mode = 'replace_all' then
-        update production.refdata_business_centres_tbl
+        update ores_refdata_business_centres_tbl
         set valid_to = current_timestamp
-        where valid_to = public.utility_infinity_timestamp_fn();
+        where valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -134,15 +132,15 @@ begin
             dq.source,
             dq.description,
             dq.image_id
-        from metadata.dq_business_centres_artefact_tbl dq
+        from ores_dq_business_centres_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
     loop
         -- Check if record already exists
         select exists (
-            select 1 from production.refdata_business_centres_tbl existing
+            select 1 from ores_refdata_business_centres_tbl existing
             where existing.code = r.code
               and existing.coding_scheme_code = r.coding_scheme_code
-              and existing.valid_to = public.utility_infinity_timestamp_fn()
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 
         -- In insert_only mode, skip existing records
@@ -152,7 +150,7 @@ begin
         end if;
 
         -- Insert record - trigger handles versioning automatically
-        insert into production.refdata_business_centres_tbl (
+        insert into ores_refdata_business_centres_tbl (
             code, version, coding_scheme_code, source, description, image_id,
             modified_by, change_reason_code, change_commentary
         ) values (

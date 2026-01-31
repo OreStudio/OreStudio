@@ -21,14 +21,13 @@
 /**
  * DQ Artefact FpML Account Type Population Script
  *
- * Populates the dq_account_types_artefact_tbl with reference data.
+ * Populates the ores_dq_account_types_artefact_tbl with reference data.
  * Dataset: fpml.account_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_account_types() to publish to production.
+ * Use ores_dq_populate_account_types() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Account Type
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.account_type'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.account_type not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_account_types_artefact_tbl
+    delete from ores_dq_account_types_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_account_types_artefact_tbl (
+    insert into ores_dq_account_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'Aggregate client account, as defined under ESMA MiFIR.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_account_types_artefact_tbl (
+    insert into ores_dq_account_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'The account contains trading activity or positions that belong to a client of the firm that opened the account.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_account_types_artefact_tbl (
+    insert into ores_dq_account_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -90,7 +89,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_account_types_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_account_types_artefact_tbl', v_count;
 end;
 $$;
 
@@ -102,9 +101,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_account_types_artefact' as entity, count(*) as count
-from metadata.dq_account_types_artefact_tbl;
+from ores_dq_account_types_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_account_types_artefact_tbl
+from ores_dq_account_types_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

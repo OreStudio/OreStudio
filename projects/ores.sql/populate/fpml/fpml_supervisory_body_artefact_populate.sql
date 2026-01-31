@@ -21,14 +21,13 @@
 /**
  * DQ Artefact FpML Supervisory Body Population Script
  *
- * Populates the dq_supervisory_bodies_artefact_tbl with reference data.
+ * Populates the ores_dq_supervisory_bodies_artefact_tbl with reference data.
  * Dataset: fpml.supervisory_body
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_supervisory_bodies() to publish to production.
+ * Use ores_dq_populate_supervisory_bodies() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Supervisory Body
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.supervisory_body'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.supervisory_body not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_supervisory_bodies_artefact_tbl
+    delete from ores_dq_supervisory_bodies_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'Australian Securities and Investments Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'Central Bank of the Russian Federation'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         'Alberta Securities Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'British Columbia Securities Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         'The Manitoba Securities Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'Financial and Consumer Services Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +132,7 @@ begin
         'Deputy Superintendent of Securities, Service Newfoundland and Labrador'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +143,7 @@ begin
         'Nova Scotia Securities Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +154,7 @@ begin
         'Northwest Territories Securities Office'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +165,7 @@ begin
         'Nunavut Securities Office, Government of Nunavut'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +176,7 @@ begin
         'Ontario Securities Commission'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +187,7 @@ begin
         'Office of the Superintendent of Securities'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +198,7 @@ begin
         'Autorite des marches financiers'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -210,7 +209,7 @@ begin
         'Financial and Consumer Affairs Authority of Saskatchewan'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -221,7 +220,7 @@ begin
         'Office of the Superintendent of Securities'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -232,7 +231,7 @@ begin
         'Commodity Futures Trading Commission (US)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -243,7 +242,7 @@ begin
         'European Securities and Markets Authority (European Union)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -254,7 +253,7 @@ begin
         'Financial Conduct Authority (UK)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -265,7 +264,7 @@ begin
         'Federal Reserve (US)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -276,7 +275,7 @@ begin
         'Hong Kong Monetary Authority (China)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -287,7 +286,7 @@ begin
         'Japan Financial Services Authority (Japan)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -298,7 +297,7 @@ begin
         'The Monetary Authority of Singapore'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -309,7 +308,7 @@ begin
         'OTC Derivatives Regulators Forum'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -320,7 +319,7 @@ begin
         'Securities and Exchange Commission (US)'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_supervisory_bodies_artefact_tbl (
+    insert into ores_dq_supervisory_bodies_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -332,7 +331,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_supervisory_bodies_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_supervisory_bodies_artefact_tbl', v_count;
 end;
 $$;
 
@@ -344,9 +343,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_supervisory_bodies_artefact' as entity, count(*) as count
-from metadata.dq_supervisory_bodies_artefact_tbl;
+from ores_dq_supervisory_bodies_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_supervisory_bodies_artefact_tbl
+from ores_dq_supervisory_bodies_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

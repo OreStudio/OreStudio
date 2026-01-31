@@ -33,6 +33,6 @@
 
 -- Display system flags for verification
 select name, enabled, description
-from production.variability_feature_flags_tbl
-where name like 'system.%' and valid_to = public.utility_infinity_timestamp_fn()
+from ores_variability_feature_flags_tbl
+where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
 order by name;

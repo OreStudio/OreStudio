@@ -30,25 +30,23 @@
  * - Market Data: Pricing and market information
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Data Domains
 -- =============================================================================
 
 \echo '--- Data Quality Data Domains ---'
 
-select metadata.dq_data_domains_upsert_fn(
+select ores_dq_data_domains_upsert_fn(
     'Reference Data',
     'Standardized data used across the system.'
 );
 
-select metadata.dq_data_domains_upsert_fn(
+select ores_dq_data_domains_upsert_fn(
     'Trade Data',
     'Transaction and position data.'
 );
 
-select metadata.dq_data_domains_upsert_fn(
+select ores_dq_data_domains_upsert_fn(
     'Market Data',
     'Pricing and market information.'
 );
@@ -61,5 +59,5 @@ select metadata.dq_data_domains_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Data Quality Data Domains' as entity, count(*) as count
-from metadata.dq_data_domains_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_data_domains_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

@@ -37,7 +37,6 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
 
 DO $$
 declare
@@ -48,9 +47,9 @@ declare
 begin
     -- Get the FpML Non-ISO Currencies dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.non_iso_currency'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: fpml.non_iso_currency. Run dataset population first.';
@@ -58,9 +57,9 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'assets.country_flags'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Dataset not found: assets.country_flags';
@@ -68,7 +67,7 @@ begin
 
     -- Get the placeholder image (xx.svg = "no flag available")
     select image_id into v_placeholder_image_id
-    from metadata.dq_images_artefact_tbl
+    from ores_dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = 'xx';
 
@@ -77,13 +76,13 @@ begin
     end if;
 
     -- Clear existing currencies for this dataset (idempotency)
-    delete from metadata.dq_currencies_artefact_tbl
+    delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise notice 'Populating currencies for dataset: FpML Non Iso Currency';
 
     -- Insert FpML non-ISO currencies with flag image links
-    insert into metadata.dq_currencies_artefact_tbl (
+    insert into ores_dq_currencies_artefact_tbl (
         dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
     )
@@ -113,7 +112,7 @@ begin
         ('TVD', 'Tuvalu Dollar', '', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'tv'),
         ('VAL', 'Vatican Lira', '', '₤', 'c', 100, 'Closest', 2, '₤#,##0.00', 'fiat.historical', 'va')
     ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, flag_key)
-    left join metadata.dq_images_artefact_tbl i
+    left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = c.flag_key;
 
@@ -130,28 +129,28 @@ end $$;
 \echo '--- FpML Non-ISO Currencies Summary ---'
 
 select 'Total FpML Non-ISO Currencies' as metric, count(*) as count
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
-  and d.valid_to = public.utility_infinity_timestamp_fn()
+  and d.valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Offshore (fiat.offshore)', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
-  and d.valid_to = public.utility_infinity_timestamp_fn()
+  and d.valid_to = ores_utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.offshore'
 union all
 select 'Emerging (fiat.emerging)', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
-  and d.valid_to = public.utility_infinity_timestamp_fn()
+  and d.valid_to = ores_utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.emerging'
 union all
 select 'Historical (fiat.historical)', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
-  and d.valid_to = public.utility_infinity_timestamp_fn()
+  and d.valid_to = ores_utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.historical';

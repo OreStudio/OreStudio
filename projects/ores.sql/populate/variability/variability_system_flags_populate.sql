@@ -34,34 +34,32 @@
  * - system.disable_password_validation: Disables strict password validation (dev only)
  */
 
-set schema 'production';
-
 -- Seed system flags with their default values
-select production.variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(
     'system.bootstrap_mode',
     true,
     'Indicates whether the system is in bootstrap mode (waiting for initial admin account).'
 );
 
-select production.variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(
     'system.user_signups',
     false,
     'Controls whether user self-registration is allowed.'
 );
 
-select production.variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(
     'system.signup_requires_authorization',
     false,
     'Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail.'
 );
 
-select production.variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(
     'system.disable_password_validation',
     false,
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
-select production.variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(
     'system.synthetic_data_generation',
     false,
     'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'
@@ -69,6 +67,6 @@ select production.variability_feature_flags_upsert_fn(
 
 -- Show summary
 select name, enabled, description
-from production.variability_feature_flags_tbl
-where name like 'system.%' and valid_to = public.utility_infinity_timestamp_fn()
+from ores_variability_feature_flags_tbl
+where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
 order by name;

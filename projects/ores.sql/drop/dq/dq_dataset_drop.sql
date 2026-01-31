@@ -18,9 +18,7 @@
  *
  */
 
-set schema 'metadata';
-
-drop trigger if exists dq_datasets_insert_trg on "metadata"."dq_datasets_tbl";
-drop rule if exists dq_datasets_delete_rule on "metadata"."dq_datasets_tbl";
-drop function if exists metadata.dq_datasets_insert_fn();
-drop table if exists "metadata"."dq_datasets_tbl";
+drop trigger if exists ores_dq_datasets_insert_trg on "ores_dq_datasets_tbl";
+drop rule if exists ores_dq_datasets_delete_rule on "ores_dq_datasets_tbl";
+drop function if exists ores_dq_datasets_insert_fn();
+drop table if exists "ores_dq_datasets_tbl";

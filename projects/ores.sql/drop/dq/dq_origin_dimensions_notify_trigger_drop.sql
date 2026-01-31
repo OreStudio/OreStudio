@@ -17,7 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-drop trigger if exists dq_origin_dimensions_notify_trg on "metadata"."dq_origin_dimensions_tbl";
-drop function if exists metadata.dq_origin_dimensions_notify_fn;
+drop trigger if exists ores_dq_origin_dimensions_notify_trg on "ores_dq_origin_dimensions_tbl";
+drop function if exists ores_dq_origin_dimensions_notify_fn;

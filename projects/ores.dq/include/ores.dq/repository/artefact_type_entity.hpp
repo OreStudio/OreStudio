@@ -32,8 +32,8 @@ namespace ores::dq::repository {
  * This is a simple lookup table - no bitemporal support.
  */
 struct artefact_type_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_artefact_types_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_artefact_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     std::string name;

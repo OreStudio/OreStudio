@@ -31,8 +31,8 @@ namespace ores::assets::repository {
  * @brief Represents a tag in the database.
  */
 struct tag_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "assets_tags_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_assets_tags_tbl";
 
     sqlgen::PrimaryKey<std::string> tag_id;
     int version = 0;

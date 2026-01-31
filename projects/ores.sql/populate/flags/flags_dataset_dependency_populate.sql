@@ -26,8 +26,6 @@
  * Must be run after flags_dataset_populate.sql.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Flag Icons Dataset Dependencies
 -- =============================================================================

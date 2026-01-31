@@ -10,61 +10,75 @@ Database schema and management for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][OR
 
 * Schema Mental Model
 
-The ORES database is organized into two schemas that reflect a clear separation
-of concerns between data definition/staging and operational consumption.
+The ORES database uses a single =public= schema with an =ores_= prefix on all
+table names. This flat structure simplifies queries, tooling, and debugging
+while maintaining clear table categorization through naming conventions.
 
-** The Two Schemas
+** Single Public Schema
 
 #+begin_example
 ┌─────────────────────────────────────────────────────────────────┐
-│  metadata schema                                                │
-│  ─────────────────                                              │
-│  Purpose: Define, classify, and stage data                      │
+│  public schema (all tables use ores_ prefix)                    │
+│  ─────────────────────────────────────────────────────────────  │
 │                                                                 │
+│  Data Governance (ores_dq_* prefix):                            │
 │  • Governance: dimensions, domains, change_reasons              │
 │  • Registry: datasets, catalogs, bundles, methodologies         │
 │  • Staging: *_artefact_tbl (source for publication)             │
 │  • Audit: publications, bundle_publications                     │
 │                                                                 │
-│  Template: ships with standard definitions + reference data     │
-│  Users: can extend with custom datasets, methodologies, etc.    │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ publish (controlled gate for data entry)
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  production schema                                              │
-│  ─────────────────                                              │
-│  Purpose: Operational data for application consumption          │
+│  Reference Data (ores_refdata_* prefix):                        │
+│  • Countries, currencies, coding schemes, etc.                  │
+│  • FPML financial products reference data                       │
 │                                                                 │
-│  • Reference data: countries, currencies, coding schemes, etc.  │
-│  • Market data: rates, prices, stress scenarios (future)        │
-│  • IAM: accounts, roles, permissions                            │
-│  • Assets: images, tags                                         │
+│  IAM (ores_iam_* prefix):                                       │
+│  • Accounts, roles, permissions                                 │
+│  • Login tracking and sessions                                  │
 │                                                                 │
-│  Template: empty (or minimal seed data)                         │
-│  Population: via publish from metadata, plus operational writes │
+│  Assets (ores_assets_* prefix):                                 │
+│  • Images, tags, image-tag mappings                             │
+│                                                                 │
+│  Variability (ores_variability_* prefix):                       │
+│  • Feature flags for runtime configuration                      │
+│                                                                 │
+│  Geo (ores_geo_* prefix):                                       │
+│  • IP to country mappings                                       │
 └─────────────────────────────────────────────────────────────────┘
 #+end_example
 
 ** Key Principles
 
+*** Consistent Naming Convention
+
+All ORES tables follow the pattern =ores_<category>_<name>_tbl=:
+
+- =ores_dq_*= - Data quality/governance tables
+- =ores_refdata_*= - Reference data tables
+- =ores_iam_*= - Identity and access management tables
+- =ores_assets_*= - Asset management tables
+- =ores_variability_*= - Feature flag tables
+- =ores_geo_*= - Geolocation tables
+
+This prefix-based approach provides namespace isolation within the public schema
+while enabling simple, unqualified table references in queries.
+
 *** Unidirectional Data Flow for Reference Data
 
-Reference data flows in one direction: from =metadata= to =production= via the
-publication mechanism. This ensures:
+Reference data flows in one direction: from staging artefact tables to
+production reference tables via the publication mechanism. This ensures:
 
 - Clear provenance: all reference data originates from catalogued datasets
 - Audit trail: publications are tracked with timestamps and record counts
-- Reproducibility: production state can be reconstructed from metadata
+- Reproducibility: reference data state can be reconstructed from artefacts
 
 #+begin_example
-metadata.dq_*_artefact_tbl ──[publish]──► production.refdata_*_tbl
+ores_dq_*_artefact_tbl ──[publish]──► ores_refdata_*_tbl
 #+end_example
 
-*** Metadata is Extensible
+*** Data Governance is Extensible
 
-The =metadata= schema is not read-only. Users can extend it with:
+The data governance tables (=ores_dq_*=) are not read-only. Users can extend
+them with:
 
 - Custom change reasons for domain-specific audit trails
 - New methodologies for data derivation/transformation logic
@@ -74,10 +88,10 @@ The =metadata= schema is not read-only. Users can extend it with:
 This allows the same infrastructure to support both shipped reference data and
 user-generated derived data (e.g., stress test scenarios).
 
-*** Production Has Multiple Write Sources
+*** Multiple Write Sources
 
-While reference data enters =production= exclusively via publication, the schema
-also receives writes from normal operational processes:
+While reference data enters production tables exclusively via publication, the
+database also receives writes from normal operational processes:
 
 - Trading activity writing to transaction tables
 - Market data feeds updating prices/rates
@@ -88,69 +102,72 @@ also receives writes from normal operational processes:
 
 | Question                                    | Answer                              |
 |---------------------------------------------+-------------------------------------|
-| Where do I define a new dataset?            | =metadata.dq_datasets_tbl=          |
-| Where do I stage data before publishing?    | =metadata.dq_*_artefact_tbl=        |
-| Where does my application read from?        | =production.*=                      |
+| Where do I define a new dataset?            | =ores_dq_datasets_tbl=              |
+| Where do I stage data before publishing?    | =ores_dq_*_artefact_tbl=            |
+| Where does my application read from?        | =ores_refdata_*=, =ores_iam_*=, etc.|
 | How does reference data get into production?| Only via publication                |
-| Can I extend the governance model?          | Yes, add to =metadata.dq_*=         |
+| Can I extend the governance model?          | Yes, add to =ores_dq_*=             |
 | Can I create custom derived datasets?       | Yes, same workflow as shipped data  |
-
-** Cross-Schema References
-
-Production tables maintain foreign key references to metadata tables where
-appropriate. For example:
-
-- =production.refdata_countries_tbl.coding_scheme_code= references
-  =metadata.dq_coding_schemes_tbl.code=
-- =production.refdata_*.change_reason_code= references
-  =metadata.dq_change_reasons_tbl.code=
-
-This enforces that production data references valid governance metadata.
 
 ** Schema Contents Summary
 
-*** metadata Schema (=dq_*= prefix)
+*** Data Governance Tables (=ores_dq_*= prefix)
 
-| Category           | Tables                                    | Extensible |
-|--------------------+-------------------------------------------+------------|
-| Change Control     | =dq_change_reason_categories_tbl=         | Yes        |
-|                    | =dq_change_reasons_tbl=                   | Yes        |
-| Data Domains       | =dq_data_domains_tbl=                     | Rarely     |
-|                    | =dq_subject_areas_tbl=                    | Yes        |
-| Dimensions         | =dq_origin_dimensions_tbl=                | Rarely     |
-|                    | =dq_nature_dimensions_tbl=                | Rarely     |
-|                    | =dq_treatment_dimensions_tbl=             | Rarely     |
-| Coding Schemes     | =dq_coding_scheme_authority_types_tbl=    | Rarely     |
-|                    | =dq_coding_schemes_tbl=                   | Yes        |
-| Methodologies      | =dq_methodologies_tbl=                    | Yes        |
-| Artefact Types     | =dq_artefact_types_tbl=                   | Yes        |
-| Catalogs           | =dq_catalogs_tbl=                         | Yes        |
-| Datasets           | =dq_datasets_tbl=                         | Yes        |
-|                    | =dq_dataset_bundles_tbl=                  | Yes        |
-|                    | =dq_dataset_bundle_members_tbl=           | Yes        |
-|                    | =dq_dataset_dependencies_tbl=             | Yes        |
-| Staging            | =dq_*_artefact_tbl= (20+ tables)          | Yes        |
-| Audit              | =dq_publications_tbl=                     | System     |
-|                    | =dq_bundle_publications_tbl=              | System     |
+| Category           | Tables                                        | Extensible |
+|--------------------+-----------------------------------------------+------------|
+| Change Control     | =ores_dq_change_reason_categories_tbl=        | Yes        |
+|                    | =ores_dq_change_reasons_tbl=                  | Yes        |
+| Data Domains       | =ores_dq_data_domains_tbl=                    | Rarely     |
+|                    | =ores_dq_subject_areas_tbl=                   | Yes        |
+| Dimensions         | =ores_dq_origin_dimensions_tbl=               | Rarely     |
+|                    | =ores_dq_nature_dimensions_tbl=               | Rarely     |
+|                    | =ores_dq_treatment_dimensions_tbl=            | Rarely     |
+| Coding Schemes     | =ores_dq_coding_scheme_authority_types_tbl=   | Rarely     |
+|                    | =ores_dq_coding_schemes_tbl=                  | Yes        |
+| Methodologies      | =ores_dq_methodologies_tbl=                   | Yes        |
+| Artefact Types     | =ores_dq_artefact_types_tbl=                  | Yes        |
+| Catalogs           | =ores_dq_catalogs_tbl=                        | Yes        |
+| Datasets           | =ores_dq_datasets_tbl=                        | Yes        |
+|                    | =ores_dq_dataset_bundles_tbl=                 | Yes        |
+|                    | =ores_dq_dataset_bundle_members_tbl=          | Yes        |
+|                    | =ores_dq_dataset_dependencies_tbl=            | Yes        |
+| Staging            | =ores_dq_*_artefact_tbl= (20+ tables)         | Yes        |
+| Audit              | =ores_dq_publications_tbl=                    | System     |
+|                    | =ores_dq_bundle_publications_tbl=             | System     |
 
-*** production Schema
+*** Reference Data Tables (=ores_refdata_*= prefix)
 
-| Category       | Tables                          | Write Source                    |
-|----------------+---------------------------------+---------------------------------|
-| Reference Data | =refdata_countries_tbl=         | Publication                     |
-|                | =refdata_currencies_tbl=        | Publication                     |
-|                | =refdata_*_tbl= (FPML, etc.)    | Publication                     |
-| IAM            | =iam_accounts_tbl=              | Operational + Publication       |
-|                | =iam_roles_tbl=                 | Publication                     |
-|                | =iam_permissions_tbl=           | Publication                     |
-|                | =iam_account_roles_tbl=         | Operational                     |
-|                | =iam_role_permissions_tbl=      | Operational                     |
-|                | =iam_login_info_tbl=            | Operational                     |
-| Assets         | =assets_images_tbl=             | Publication                     |
-|                | =assets_tags_tbl=               | Publication                     |
-|                | =assets_image_tags_tbl=         | Publication                     |
-| Geo            | =geo_ip2country_tbl=            | Publication                     |
-| Variability    | =variability_feature_flags_tbl= | Operational                     |
+| Category       | Tables                              | Write Source                    |
+|----------------+-------------------------------------+---------------------------------|
+| Countries      | =ores_refdata_countries_tbl=        | Publication                     |
+| Currencies     | =ores_refdata_currencies_tbl=       | Publication                     |
+| FPML Data      | =ores_refdata_*_tbl= (various)      | Publication                     |
+
+*** IAM Tables (=ores_iam_*= prefix)
+
+| Tables                          | Write Source                    |
+|---------------------------------+---------------------------------|
+| =ores_iam_accounts_tbl=         | Operational + Publication       |
+| =ores_iam_roles_tbl=            | Publication                     |
+| =ores_iam_permissions_tbl=      | Publication                     |
+| =ores_iam_account_roles_tbl=    | Operational                     |
+| =ores_iam_role_permissions_tbl= | Operational                     |
+| =ores_iam_login_info_tbl=       | Operational                     |
+
+*** Assets Tables (=ores_assets_*= prefix)
+
+| Tables                          | Write Source                    |
+|---------------------------------+---------------------------------|
+| =ores_assets_images_tbl=        | Publication                     |
+| =ores_assets_tags_tbl=          | Publication                     |
+| =ores_assets_image_tags_tbl=    | Publication                     |
+
+*** Other Tables
+
+| Category       | Tables                              | Write Source                    |
+|----------------+-------------------------------------+---------------------------------|
+| Geo            | =ores_geo_ip2country_tbl=           | Publication                     |
+| Variability    | =ores_variability_feature_flags_tbl=| Operational                     |
 
 * Schema Architecture
 
@@ -285,72 +302,68 @@ Even with Apache-only, hypertables provide:
 
 * Data Population Layers
 
-The ORES database uses a layered approach to data population, aligned with the
-two-schema model. Each layer builds upon the previous:
+The ORES database uses a layered approach to data population within the single
+public schema. Each layer builds upon the previous:
 
 #+begin_example
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           metadata schema                                   │
-│  Foundation → Data Governance → Data Catalogues                             │
-│  (prerequisites)  (rules/dimensions)   (datasets + artefacts)               │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    │ publish
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           production schema                                 │
-│  Published Reference Data + Operational Data                                │
+│                         public schema                                       │
+│                                                                             │
+│  Foundation → Data Governance → Data Catalogues → Published Reference Data  │
+│  (prerequisites)  (rules/dimensions)   (datasets + artefacts)   (live data) │
+│                                                                             │
+│  ores_dq_* tables (staging)  ────[publish]────►  ores_refdata_* tables      │
 └─────────────────────────────────────────────────────────────────────────────┘
 #+end_example
 
-All population scripts write to the =metadata= schema. The =production= schema
-is populated via the publication mechanism (and operational processes).
+All population scripts write to the =ores_dq_*= tables. The =ores_refdata_*=
+tables are populated via the publication mechanism (and operational processes).
 
-** Foundation Layer (metadata schema)
+** Foundation Layer
 
 Essential lookup and configuration data required for schema integrity. This data
-is populated in the template database and must be present before other metadata
+is populated in the template database and must be present before other data
 can be inserted.
 
 | Category                 | Tables                                           | Purpose                              |
 |--------------------------+--------------------------------------------------+--------------------------------------|
-| Change Control           | =metadata.dq_change_reason_categories_tbl=       | Audit trail categorization           |
-|                          | =metadata.dq_change_reasons_tbl=                 | Audit trail reasons                  |
-| Data Governance Framework| =metadata.dq_data_domains_tbl=                   | Data domain classification           |
-|                          | =metadata.dq_subject_areas_tbl=                  | Subject area classification          |
-|                          | =metadata.dq_coding_scheme_authority_types_tbl=  | Coding scheme authority types        |
-|                          | =metadata.dq_coding_schemes_tbl=                 | Party/entity identification schemes  |
+| Change Control           | =ores_dq_change_reason_categories_tbl=           | Audit trail categorization           |
+|                          | =ores_dq_change_reasons_tbl=                     | Audit trail reasons                  |
+| Data Governance Framework| =ores_dq_data_domains_tbl=                       | Data domain classification           |
+|                          | =ores_dq_subject_areas_tbl=                      | Subject area classification          |
+|                          | =ores_dq_coding_scheme_authority_types_tbl=      | Coding scheme authority types        |
+|                          | =ores_dq_coding_schemes_tbl=                     | Party/entity identification schemes  |
 
 Foundation layer is populated via =populate/foundation/populate_foundation.sql=.
 
-** Data Governance Layer (metadata schema)
+** Data Governance Layer
 
 Metadata that defines the rules and classifications for how data is organized.
 This layer sets out the landscape for data quality management.
 
-| Category       | Tables                                | Purpose                              |
-|----------------+---------------------------------------+--------------------------------------|
-| Dimensions     | =metadata.dq_origin_dimensions_tbl=   | Data origin classification           |
-|                | =metadata.dq_nature_dimensions_tbl=   | Data nature classification           |
-|                | =metadata.dq_treatment_dimensions_tbl=| Data treatment classification        |
-| Methodologies  | =metadata.dq_methodologies_tbl=       | Data sourcing/processing methods     |
-| Artefact Types | =metadata.dq_artefact_types_tbl=      | Types of artefacts and mappings      |
+| Category       | Tables                                    | Purpose                              |
+|----------------+-------------------------------------------+--------------------------------------|
+| Dimensions     | =ores_dq_origin_dimensions_tbl=           | Data origin classification           |
+|                | =ores_dq_nature_dimensions_tbl=           | Data nature classification           |
+|                | =ores_dq_treatment_dimensions_tbl=        | Data treatment classification        |
+| Methodologies  | =ores_dq_methodologies_tbl=               | Data sourcing/processing methods     |
+| Artefact Types | =ores_dq_artefact_types_tbl=              | Types of artefacts and mappings      |
 
 Data governance layer is populated via =populate/governance/populate_governance.sql=.
 
-** Data Catalogues Layer (metadata schema)
+** Data Catalogues Layer
 
 Catalogued reference data organized according to governance rules. This layer
-contains the actual data awaiting publication to production tables.
+contains the actual data awaiting publication to reference data tables.
 
-| Category             | Tables                                | Purpose                              |
-|----------------------+---------------------------------------+--------------------------------------|
-| Catalogs             | =metadata.dq_catalogs_tbl=            | Groupings of datasets by source      |
-| Datasets             | =metadata.dq_datasets_tbl=            | Data collection definitions          |
-| Bundles              | =metadata.dq_dataset_bundles_tbl=     | Named collections for publication    |
-|                      | =metadata.dq_dataset_bundle_members_tbl= | Bundle membership with ordering   |
-| Dependencies         | =metadata.dq_dataset_dependencies_tbl=| Relationships between datasets       |
-| Artefact Data        | =metadata.dq_*_artefact_tbl=          | Staged reference data                |
+| Category             | Tables                                    | Purpose                              |
+|----------------------+-------------------------------------------+--------------------------------------|
+| Catalogs             | =ores_dq_catalogs_tbl=                    | Groupings of datasets by source      |
+| Datasets             | =ores_dq_datasets_tbl=                    | Data collection definitions          |
+| Bundles              | =ores_dq_dataset_bundles_tbl=             | Named collections for publication    |
+|                      | =ores_dq_dataset_bundle_members_tbl=      | Bundle membership with ordering      |
+| Dependencies         | =ores_dq_dataset_dependencies_tbl=        | Relationships between datasets       |
+| Artefact Data        | =ores_dq_*_artefact_tbl=                  | Staged reference data                |
 
 Data sources include:
 - Flag Icons: Visual assets for countries
@@ -362,25 +375,25 @@ Data sources include:
 
 Data catalogues layer is populated via =populate/catalogues/populate_catalogues.sql=.
 
-** Production Layer (production schema)
+** Reference Data Layer
 
 Live reference data in production tables, published from the data catalogues
 layer via the "Publish Datasets" feature in the Data Librarian window.
 
 | Category   | Tables                             | Source Artefact Table                     |
 |------------+------------------------------------+-------------------------------------------|
-| Countries  | =production.refdata_countries_tbl= | =metadata.dq_countries_artefact_tbl=      |
-| Currencies | =production.refdata_currencies_tbl=| =metadata.dq_currencies_artefact_tbl=     |
-| Images     | =production.assets_images_tbl=     | =metadata.dq_images_artefact_tbl=         |
-| FPML Data  | =production.refdata_*_tbl=         | =metadata.dq_*_artefact_tbl=              |
+| Countries  | =ores_refdata_countries_tbl=       | =ores_dq_countries_artefact_tbl=          |
+| Currencies | =ores_refdata_currencies_tbl=      | =ores_dq_currencies_artefact_tbl=         |
+| Images     | =ores_assets_images_tbl=           | =ores_dq_images_artefact_tbl=             |
+| FPML Data  | =ores_refdata_*_tbl=               | =ores_dq_*_artefact_tbl=                  |
 
-Additional production tables populated via operational processes (not publication):
+Additional tables populated via operational processes (not publication):
 
-| Category   | Tables                             | Write Source                              |
-|------------+------------------------------------+-------------------------------------------|
-| IAM        | =production.iam_accounts_tbl=      | User registration                         |
-|            | =production.iam_login_info_tbl=    | Login tracking                            |
-| Variability| =production.variability_feature_flags_tbl= | Runtime configuration            |
+| Category   | Tables                                  | Write Source                              |
+|------------+-----------------------------------------+-------------------------------------------|
+| IAM        | =ores_iam_accounts_tbl=                 | User registration                         |
+|            | =ores_iam_login_info_tbl=               | Login tracking                            |
+| Variability| =ores_variability_feature_flags_tbl=    | Runtime configuration                     |
 
 * Multi-Environment Architecture
 
@@ -429,7 +442,7 @@ ores_test_*         # Temporary test databases (created/dropped by tests)
 * Database Roles and Users
 
 ORE Studio uses a role-based access control system for database connections.
-This is separate from the application-level RBAC stored in the =production.iam_*=
+This is separate from the application-level RBAC stored in the =ores_iam_*=
 tables.
 
 ** Role Hierarchy

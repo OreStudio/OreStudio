@@ -17,13 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
 -- =============================================================================
 -- Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table
 -- =============================================================================
 
-create table if not exists "metadata"."dq_party_relationships_artefact_tbl" (
+create table if not exists "ores_dq_party_relationships_artefact_tbl" (
     "dataset_id" uuid not null,
     "code" text not null,
     "version" integer not null,
@@ -32,11 +30,11 @@ create table if not exists "metadata"."dq_party_relationships_artefact_tbl" (
     ,"coding_scheme_code" text not null
 );
 
-create index if not exists dq_party_relationships_artefact_dataset_idx
-on "metadata"."dq_party_relationships_artefact_tbl" (dataset_id);
+create index if not exists ores_dq_party_relationships_artefact_dataset_idx
+on "ores_dq_party_relationships_artefact_tbl" (dataset_id);
 
-create index if not exists dq_party_relationships_artefact_code_idx
-on "metadata"."dq_party_relationships_artefact_tbl" (code);
+create index if not exists ores_dq_party_relationships_artefact_code_idx
+on "ores_dq_party_relationships_artefact_tbl" (code);
 
-create index if not exists dq_party_relationships_artefact_coding_scheme_idx
-on "metadata"."dq_party_relationships_artefact_tbl" (coding_scheme_code);
+create index if not exists ores_dq_party_relationships_artefact_coding_scheme_idx
+on "ores_dq_party_relationships_artefact_tbl" (coding_scheme_code);

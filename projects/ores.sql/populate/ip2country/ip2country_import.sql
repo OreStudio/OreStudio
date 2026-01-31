@@ -45,7 +45,7 @@ begin;
 
 -- Clear existing data for fresh import
 \echo 'Clearing existing data...'
-truncate table production.geo_ip2country_tbl;
+truncate table ores_geo_ip2country_tbl;
 
 -- Create temporary staging table for TSV import
 -- Columns: range_start (bigint), range_end (bigint), country_code (text)
@@ -62,7 +62,7 @@ create temp table staging_ip2country (
 -- Insert into final table, converting start/end to int8range
 -- Use '[)' bounds: inclusive start, exclusive end+1 for proper range semantics
 \echo 'Converting to int8range and inserting...'
-insert into production.geo_ip2country_tbl (ip_range, country_code)
+insert into ores_geo_ip2country_tbl (ip_range, country_code)
 select
     int8range(range_start, range_end + 1, '[)'),
     country_code
@@ -74,7 +74,7 @@ commit;
 
 -- Analyze table for query optimization
 \echo 'Analyzing table...'
-analyze production.geo_ip2country_tbl;
+analyze ores_geo_ip2country_tbl;
 
 -- Show statistics
 \echo 'Import complete. Statistics:'
@@ -82,12 +82,12 @@ select
     count(*) as total_ranges,
     count(distinct country_code) as unique_countries,
     count(*) filter (where country_code = 'None') as unrouted_ranges
-from production.geo_ip2country_tbl;
+from ores_geo_ip2country_tbl;
 
 -- Test lookup for well-known IPs
 \echo 'Testing lookups:'
 \echo '  8.8.8.8 (Google DNS, expected: US):'
-select * from production.geo_ip2country_lookup_fn('8.8.8.8'::inet);
+select * from ores_geo_ip2country_lookup_fn('8.8.8.8'::inet);
 
 \echo '  1.1.1.1 (Cloudflare, expected: US):'
-select * from production.geo_ip2country_lookup_fn('1.1.1.1'::inet);
+select * from ores_geo_ip2country_lookup_fn('1.1.1.1'::inet);

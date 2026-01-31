@@ -19,15 +19,15 @@
  */
 
 -- Drop functions (without signatures to avoid NOTICE when function doesn't exist)
-drop function if exists metadata.dq_get_bundle_publication_history_fn;
-drop function if exists metadata.dq_bundles_publish_fn;
-drop function if exists metadata.dq_bundle_preview_fn;
-drop function if exists metadata.dq_bundle_datasets_list_fn;
-drop function if exists metadata.dq_bundles_list_fn;
+drop function if exists ores_dq_get_bundle_publication_history_fn;
+drop function if exists ores_dq_bundles_publish_fn;
+drop function if exists ores_dq_bundle_preview_fn;
+drop function if exists ores_dq_bundle_datasets_list_fn;
+drop function if exists ores_dq_bundles_list_fn;
 
 -- Drop indexes
-drop index if exists metadata.dq_bundle_publications_published_at_idx;
-drop index if exists metadata.dq_bundle_publications_bundle_code_idx;
+drop index if exists ores_dq_bundle_publications_published_at_idx;
+drop index if exists ores_dq_bundle_publications_bundle_code_idx;
 
 -- Drop table
-drop table if exists metadata.dq_bundle_publications_tbl;
+drop table if exists ores_dq_bundle_publications_tbl;

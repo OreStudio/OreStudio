@@ -30,8 +30,8 @@ namespace ores::dq::repository {
  * @brief Represents a coding_scheme_authority_type in the database.
  */
 struct coding_scheme_authority_type_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_coding_scheme_authority_types_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_coding_scheme_authority_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     int version = 0;

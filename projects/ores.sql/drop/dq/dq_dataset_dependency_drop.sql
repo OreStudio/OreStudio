@@ -18,9 +18,9 @@
  *
  */
 
-drop rule if exists dq_dataset_dependencies_delete_rule on "metadata"."dq_dataset_dependencies_tbl";
-drop trigger if exists dq_dataset_dependencies_insert_trg on "metadata"."dq_dataset_dependencies_tbl";
-drop function if exists metadata.dq_dataset_dependencies_insert_fn();
-drop index if exists metadata.dq_dataset_dependencies_dependency_idx;
-drop index if exists metadata.dq_dataset_dependencies_dataset_idx;
-drop table if exists "metadata"."dq_dataset_dependencies_tbl";
+drop rule if exists ores_dq_dataset_dependencies_delete_rule on "ores_dq_dataset_dependencies_tbl";
+drop trigger if exists ores_dq_dataset_dependencies_insert_trg on "ores_dq_dataset_dependencies_tbl";
+drop function if exists ores_dq_dataset_dependencies_insert_fn();
+drop index if exists ores_dq_dataset_dependencies_dependency_idx;
+drop index if exists ores_dq_dataset_dependencies_dataset_idx;
+drop table if exists "ores_dq_dataset_dependencies_tbl";

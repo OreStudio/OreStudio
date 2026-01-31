@@ -32,7 +32,6 @@
  *   psql -d your_database -f dq_ip2country_artefact_populate.sql
  */
 
-set schema 'metadata';
 
 \echo '--- IP to Country Artefact Population ---'
 
@@ -43,11 +42,11 @@ declare
 begin
     -- Get dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'IP to Country IPv4 Ranges'
       and subject_area_name = 'IP Address to Country maps'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: IP to Country IPv4 Ranges';
@@ -56,7 +55,7 @@ begin
     raise notice 'Dataset ID: %', v_dataset_id;
 
     -- Clear existing artefact data for this dataset
-    delete from metadata.dq_ip2country_artefact_tbl where dataset_id = v_dataset_id;
+    delete from ores_dq_ip2country_artefact_tbl where dataset_id = v_dataset_id;
     raise notice 'Cleared existing artefact data';
 
     -- Create temporary staging table for TSV import
@@ -85,7 +84,7 @@ create temp table staging_ip2country_import (
 \copy staging_ip2country_import from '../../external/ip2country/ip2country-v4-u32.tsv' with (format text, delimiter E'\t')
 
 -- Insert into artefact table with dataset_id
-insert into metadata.dq_ip2country_artefact_tbl (dataset_id, range_start, range_end, country_code)
+insert into ores_dq_ip2country_artefact_tbl (dataset_id, range_start, range_end, country_code)
 select
     (current_setting('app.ip2country_dataset_id'))::uuid,
     range_start,
@@ -105,5 +104,5 @@ select
     count(*) as total_ranges,
     count(distinct country_code) as unique_countries,
     count(*) filter (where country_code = 'None') as unrouted_ranges
-from metadata.dq_ip2country_artefact_tbl
+from ores_dq_ip2country_artefact_tbl
 where dataset_id = (current_setting('app.ip2country_dataset_id'))::uuid;

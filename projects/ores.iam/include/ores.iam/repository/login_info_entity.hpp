@@ -30,8 +30,8 @@ namespace ores::iam::repository {
  * @brief Represents login tracking information in the database.
  */
 struct login_info_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "iam_login_info_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_iam_login_info_tbl";
 
     sqlgen::PrimaryKey<std::string> account_id;
     std::string last_ip;

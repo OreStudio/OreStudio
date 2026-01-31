@@ -25,15 +25,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- IP Geolocation Data Sourcing Methodologies
 -- =============================================================================
 
 \echo '--- IP Geolocation Methodologies ---'
 
-select metadata.dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(
     'iptoasn.com IP to Country Database',
     'IPv4 ranges mapped to country codes from iptoasn.com',
     'https://iptoasn.com/',

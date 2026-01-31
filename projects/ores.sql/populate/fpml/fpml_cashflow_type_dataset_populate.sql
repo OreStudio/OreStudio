@@ -26,7 +26,6 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- FpML Cashflow Type Dataset
@@ -34,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- FpML Cashflow Type Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'fpml.cashflow_type',
     'FpML Standards',
     'Trading',

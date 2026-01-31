@@ -18,6 +18,4 @@
  *
  */
 
-set schema 'metadata';
-
-drop table if exists "metadata"."dq_artefact_types_tbl";
+drop table if exists "ores_dq_artefact_types_tbl";

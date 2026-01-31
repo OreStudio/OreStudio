@@ -17,8 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-drop index if exists metadata.dq_ip2country_artefact_dataset_idx;
-drop index if exists metadata.dq_ip2country_artefact_range_idx;
-drop table if exists metadata.dq_ip2country_artefact_tbl;
+drop index if exists ores_dq_ip2country_artefact_dataset_idx;
+drop index if exists ores_dq_ip2country_artefact_range_idx;
+drop table if exists ores_dq_ip2country_artefact_tbl;

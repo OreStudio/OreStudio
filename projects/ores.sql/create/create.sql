@@ -19,18 +19,18 @@
  */
 
 -- =============================================================================
--- 1. Public Schema (shared utilities)
+-- 1. Utility Functions (shared utilities used by all tables)
 -- =============================================================================
 \ir ./utility/create_utility.sql
 
 -- =============================================================================
--- 2. Metadata Schema (must be created before production - no external deps)
+-- 2. Data Governance Tables (must be created before operational tables - no external deps)
 -- =============================================================================
 \ir ./change_control/create_change_control.sql
 \ir ./dq/create_dq.sql
 
 -- =============================================================================
--- 3. Production Schema (depends on metadata for FK validation)
+-- 3. Operational Tables (depend on data governance tables for FK validation)
 -- =============================================================================
 \ir ./refdata/create_refdata.sql
 \ir ./iam/create_iam.sql
@@ -40,11 +40,11 @@
 \ir ./geo/create_geo.sql
 
 -- =============================================================================
--- 4. Seed Functions (public schema, depends on metadata and production tables)
+-- 4. Seed Functions (depend on data governance and operational tables)
 -- =============================================================================
 \ir ./seed/create_seed.sql
 
 -- =============================================================================
--- 5. Summary Functions (public schema, depends on all tables)
+-- 5. Summary Functions (depend on all tables)
 -- =============================================================================
 \ir ./utility/utility_summary_functions_create.sql

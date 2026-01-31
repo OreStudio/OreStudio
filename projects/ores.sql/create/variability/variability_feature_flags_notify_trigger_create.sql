@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
-create or replace function production.variability_feature_flags_notify_fn()
+create or replace function ores_variability_feature_flags_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -45,6 +44,6 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger variability_feature_flags_notify_trg
-after insert or update or delete on production.variability_feature_flags_tbl
-for each row execute function production.variability_feature_flags_notify_fn();
+create or replace trigger ores_variability_feature_flags_notify_trg
+after insert or update or delete on ores_variability_feature_flags_tbl
+for each row execute function ores_variability_feature_flags_notify_fn();

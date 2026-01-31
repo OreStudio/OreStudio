@@ -51,7 +51,7 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists ores_iam_role_permissions_uniq_idx
-on ores_iam_role_permissions_tbl (role_id, permission_id)
+on ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_iam_role_permissions_insert_fn()

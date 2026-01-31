@@ -36,19 +36,19 @@
 
 \echo '--- Coding Scheme Authority Types ---'
 
-select ores_dq_coding_scheme_authority_types_upsert_fn(
+select ores_dq_coding_scheme_authority_types_upsert_fn(ores_iam_system_tenant_id_fn(),
     'official',
     'Official Standard',
     'Formal standard published by a recognized standards body such as ISO, IEEE, or a regulatory authority. These schemes have official governance, versioning, and maintenance processes.'
 );
 
-select ores_dq_coding_scheme_authority_types_upsert_fn(
+select ores_dq_coding_scheme_authority_types_upsert_fn(ores_iam_system_tenant_id_fn(),
     'industry',
     'Industry Standard',
     'De facto standard widely adopted in the financial industry but not published by a formal standards body. Typically maintained by industry consortiums, trade associations, or market infrastructure providers such as SWIFT, DTCC, or FINRA.'
 );
 
-select ores_dq_coding_scheme_authority_types_upsert_fn(
+select ores_dq_coding_scheme_authority_types_upsert_fn(ores_iam_system_tenant_id_fn(),
     'internal',
     'Internal/Proprietary',
     'Proprietary or organization-specific identifier scheme. Used for internal systems, client identifiers, or custom classifications that are not standardized outside the organization.'

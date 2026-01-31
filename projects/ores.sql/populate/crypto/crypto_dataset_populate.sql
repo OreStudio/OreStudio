@@ -34,7 +34,7 @@
 \echo '--- Cryptocurrency Datasets ---'
 
 -- Cryptocurrency Icon Images
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'assets.crypto_icons',
     'Cryptocurrency',
     'Cryptocurrencies',
@@ -54,7 +54,7 @@ select ores_dq_datasets_upsert_fn(
 );
 
 -- Cryptocurrencies Large
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'crypto.large',
     'Cryptocurrency',
     'Cryptocurrencies',
@@ -74,7 +74,7 @@ select ores_dq_datasets_upsert_fn(
 );
 
 -- Cryptocurrencies Small
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'crypto.small',
     'Cryptocurrency',
     'Cryptocurrencies',

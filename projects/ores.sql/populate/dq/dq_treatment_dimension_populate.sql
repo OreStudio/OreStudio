@@ -36,19 +36,19 @@
 
 \echo '--- Data Quality Treatment Dimensions ---'
 
-select ores_dq_treatment_dimensions_upsert_fn(
+select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Raw',
     'Raw Data',
     'Untouched, identifiable data.'
 );
 
-select ores_dq_treatment_dimensions_upsert_fn(
+select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Masked',
     'Masked Data',
     'PII has been redacted or obfuscated (replaces "Obfuscated").'
 );
 
-select ores_dq_treatment_dimensions_upsert_fn(
+select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Anonymized',
     'Anonymized Data',
     'Irreversibly altered to prevent re-identification.'

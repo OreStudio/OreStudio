@@ -32,7 +32,7 @@
 
 \echo '--- Flag Icons Dataset Tags ---'
 
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Country Flag Images',
     'Country Flags',
     'Reference Data',

@@ -32,7 +32,7 @@
 
 \echo '--- General Methodologies ---'
 
-select ores_dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Synthetic Data Generation',
     'Test data generated programmatically using the ores.synthetic library with seeded random generation',
     'https://github.com/cieslarmichal/faker-cxx',

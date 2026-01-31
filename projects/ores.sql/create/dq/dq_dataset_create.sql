@@ -207,7 +207,7 @@ begin
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     return NEW;
 end;

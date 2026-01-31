@@ -24,12 +24,12 @@
 
 \echo '--- Data Quality Slovaris Dataset Dependencies ---'
 
-select ores_dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.countries',
     'slovaris.country_flags',
     'visual_assets'
 );
-select ores_dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.currencies',
     'slovaris.country_flags',
     'visual_assets'

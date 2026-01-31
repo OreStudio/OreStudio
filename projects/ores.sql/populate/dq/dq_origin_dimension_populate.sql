@@ -49,13 +49,13 @@ where origin_code = 'Source';
 
 \echo '--- Data Quality Origin Dimensions ---'
 
-select ores_dq_origin_dimensions_upsert_fn(
+select ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Primary',
     'Primary Data',
     'Raw data ingested directly from the origin without transformations.'
 );
 
-select ores_dq_origin_dimensions_upsert_fn(
+select ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Derived',
     'Derived Data',
     'Data transformed, aggregated, or calculated via code.'

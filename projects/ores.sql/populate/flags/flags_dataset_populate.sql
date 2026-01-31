@@ -33,7 +33,7 @@
 \echo '--- Flag Icons Datasets ---'
 
 -- Country Flag Images
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'assets.country_flags',
     'Visual Assets',
     'Country Flags',

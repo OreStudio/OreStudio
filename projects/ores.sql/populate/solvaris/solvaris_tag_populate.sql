@@ -24,21 +24,21 @@
 
 \echo '--- Data Quality Slovaris Tags ---'
 
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Solvaris Countries',
     'Countries',
     'Reference Data',
     'country',
     'Country reference data'
 );
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Solvaris Currencies',
     'Currencies',
     'Reference Data',
     'currency',
     'Currency reference data'
 );
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Solvaris Country Flag Images',
     'Country Flags',
     'Reference Data',

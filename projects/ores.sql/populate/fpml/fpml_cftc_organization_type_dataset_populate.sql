@@ -33,7 +33,7 @@
 
 \echo '--- FpML Cftc Organization Type Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.cftc_organization_type',
     'FpML Standards',
     'Parties',

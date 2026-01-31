@@ -24,7 +24,7 @@
 
 \echo '--- Data Quality Slovaris Datasets ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.country_flags',
     'Slovaris',
     'Country Flags',
@@ -42,7 +42,7 @@ select ores_dq_datasets_upsert_fn(
     ' CC BY 4.0',
     'images'
 );
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.countries',
     'Slovaris',
     'Countries',
@@ -60,7 +60,7 @@ select ores_dq_datasets_upsert_fn(
     ' CC BY 4.0',
     'countries'
 );
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.currencies',
     'Slovaris',
     'Currencies',

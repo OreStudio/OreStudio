@@ -45,13 +45,6 @@
           (val (format "%s" val)) ;; Ensure port is a string
           (t nil))))
 
-(defun ores-db/database--get-password (user &optional host)
-  "Get password for USER at HOST from auth-source."
-  (let* ((host (or host "localhost"))
-         (match (auth-source-search :host host :user user :max 1))
-         (secret (plist-get (car match) :secret)))
-    (if (functionp secret) (funcall secret) secret)))
-
 (defun ores-db/database-list-discovery ()
   "Query all hosts in \='ores-db/hosts' for databases starting with \='ores_'."
   (let ((script-path (expand-file-name "projects/ores.sql/utility/list_databases.sh"

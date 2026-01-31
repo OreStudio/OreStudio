@@ -18,6 +18,13 @@
  *
  */
 
+-- Change reasons (must be created first - other tables reference these)
+\ir ./dq_change_reason_categories_create.sql
+\ir ./dq_change_reason_categories_notify_trigger_create.sql
+\ir ./dq_change_reasons_create.sql
+\ir ./dq_change_reasons_notify_trigger_create.sql
+\ir ./dq_change_reason_functions_create.sql
+
 -- Catalogs and dataset dependencies
 \ir ./dq_catalog_create.sql
 \ir ./dq_catalogs_notify_trigger_create.sql

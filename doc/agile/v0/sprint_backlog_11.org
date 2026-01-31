@@ -365,15 +365,7 @@ much more readable.
 As a quick hack we added the dev passwords to the workflows. We should really
 generate these on the fly and supply them to the tests.
 
-*** STARTED Add tenant support                                         :code:
-   :LOGBOOK:
-   CLOCK: [2026-01-29 Thu 10:35]--[2026-01-29 Thu 10:55] =>  0:20
-   :END:
-
-Do some analysis and prototyping around supporting multiple tenants on a single
-database.
-
-*** STARTED Move all database entities to public schema                :code:
+*** COMPLETED Move all database entities to public schema              :code:
     :LOGBOOK:
     CLOCK: [2026-01-31 Sat 09:40]--[2026-01-31 Sat 09:49] =>  0:09
     CLOCK: [2026-01-31 Sat 08:18]--[2026-01-31 Sat 09:31] =>  1:13
@@ -433,7 +425,18 @@ moving to a single schema with prefixes, we kept the organizational benefits of
 schemas without the operational debt of cross-schema management.
 #+end_quote
 
+*** STARTED Add tenant support                                         :code:
+   :LOGBOOK:
+   CLOCK: [2026-01-29 Thu 10:35]--[2026-01-29 Thu 10:55] =>  0:20
+   :END:
+
+Do some analysis and prototyping around supporting multiple tenants on a single
+database.
+
 *** Check directory structure in SQL                                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-31 Sat 19:28]
+    :END:
 
 - why is there a projects/ores.sql/create/change_control directory.
 - why are these dq?

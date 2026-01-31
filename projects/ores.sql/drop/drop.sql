@@ -32,7 +32,6 @@
 -- 2. Data Governance Tables (dropped after operational tables)
 -- =============================================================================
 \ir ./dq/drop_dq.sql
-\ir ./change_control/drop_change_control.sql
 
 -- =============================================================================
 -- 3. Utility Functions (dropped last)

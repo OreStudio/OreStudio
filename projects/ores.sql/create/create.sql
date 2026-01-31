@@ -26,7 +26,6 @@
 -- =============================================================================
 -- 2. Data Governance Tables (must be created before operational tables - no external deps)
 -- =============================================================================
-\ir ./change_control/create_change_control.sql
 \ir ./dq/create_dq.sql
 
 -- =============================================================================

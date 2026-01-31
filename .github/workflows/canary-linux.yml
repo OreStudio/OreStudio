@@ -67,11 +67,24 @@ jobs:
           version: '6.8.3'
           cache: true
 
+      - name: Generate DB Passwords
+        id: db_passwords
+        run: |
+          echo "ddl_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "cli_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "wt_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "comms_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "http_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "test_ddl_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "test_dml_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "ro_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "admin_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
         with:
           username: ores
-          password: ahV6aehuij6eingohsiajaiT0
+          password: ${{ steps.db_passwords.outputs.admin_password }}
           database: oresdb
           port: 5432
           postgres-version: "18"
@@ -80,14 +93,14 @@ jobs:
       - name: Setup Roles and Users
         run: |
           psql ${{ steps.postgres.outputs.connection-uri }} \
-            -v ddl_password='ahV6aehuij6eingohsiajaiT0' \
-            -v cli_password='ahV6aehuij6eingohsiajaiT0' \
-            -v wt_password='ahV6aehuij6eingohsiajaiT0' \
-            -v comms_password='ahV6aehuij6eingohsiajaiT0' \
-            -v http_password='ahV6aehuij6eingohsiajaiT0' \
-            -v test_ddl_password='ahV6aehuij6eingohsiajaiT0' \
-            -v test_dml_password='ahV6aehuij6eingohsiajaiT0' \
-            -v ro_password='ahV6aehuij6eingohsiajaiT0' \
+            -v ddl_password='${{ steps.db_passwords.outputs.ddl_password }}' \
+            -v cli_password='${{ steps.db_passwords.outputs.cli_password }}' \
+            -v wt_password='${{ steps.db_passwords.outputs.wt_password }}' \
+            -v comms_password='${{ steps.db_passwords.outputs.comms_password }}' \
+            -v http_password='${{ steps.db_passwords.outputs.http_password }}' \
+            -v test_ddl_password='${{ steps.db_passwords.outputs.test_ddl_password }}' \
+            -v test_dml_password='${{ steps.db_passwords.outputs.test_dml_password }}' \
+            -v ro_password='${{ steps.db_passwords.outputs.ro_password }}' \
             -f ./projects/ores.sql/setup_user.sql
 
       - name: Setup Template Database
@@ -114,7 +127,8 @@ jobs:
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
-          export ORES_TEST_DB_PASSWORD=ahV6aehuij6eingohsiajaiT0
+          export ORES_TEST_DB_DDL_PASSWORD=${{ steps.db_passwords.outputs.test_ddl_password }}
+          export ORES_TEST_DB_PASSWORD=${{ steps.db_passwords.outputs.test_dml_password }}
           export preset=linux-gcc-debug
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"

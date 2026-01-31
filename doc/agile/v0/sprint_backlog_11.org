@@ -17,32 +17,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-31 Sat 08:31], for Saturday, January 31, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:52* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:52   |      |      | 100.0 |
-|       | Active                                |        | 1:52 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:46 |  41.1 |
-| code  | Split "god" admin account             |        |      | 1:06 |  58.9 |
+#+CAPTION: Clock summary at [2026-01-31 Sat 20:25], for Saturday, January 31, 2026.
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *3:50* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 3:50   |      |      | 100.0 |
+|       | Active                                      |        | 3:50 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 0:46 |  20.0 |
+| code  | Split "god" admin account                   |        |      | 1:06 |  28.7 |
+| code  | Move all database entities to public schema |        |      | 1:22 |  35.7 |
+| code  | Check directory structure in SQL            |        |      | 0:36 |  15.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-31 Sat 08:31]
-|       | <75>                                  |         |       |       |       |
-| Tags  | Headline                              | Time    |       |       |     % |
-|-------+---------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                          | *14:03* |       |       | 100.0 |
-|-------+---------------------------------------+---------+-------+-------+-------|
-|       | Stories                               | 14:03   |       |       | 100.0 |
-|       | Active                                |         | 14:03 |       | 100.0 |
-| agile | Sprint and product backlog refinement |         |       |  2:24 |  17.1 |
-| code  | Address past review comments          |         |       |  1:14 |   8.8 |
-| code  | Split "god" admin account             |         |       | 10:05 |  71.8 |
-| code  | Add tenant support                    |         |       |  0:20 |   2.4 |
+#+CAPTION: Clock summary at [2026-01-31 Sat 20:25]
+|       | <75>                                        |         |       |       |       |
+| Tags  | Headline                                    | Time    |       |       |     % |
+|-------+---------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                | *16:01* |       |       | 100.0 |
+|-------+---------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                     | 16:01   |       |       | 100.0 |
+|       | Active                                      |         | 16:01 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |  15.0 |
+| code  | Address past review comments                |         |       |  1:14 |   7.7 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  63.0 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   8.5 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   3.7 |
+| code  | Add tenant support                          |         |       |  0:20 |   2.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -425,6 +429,16 @@ moving to a single schema with prefixes, we kept the organizational benefits of
 schemas without the operational debt of cross-schema management.
 #+end_quote
 
+*** COMPLETED Check directory structure in SQL                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-31 Sat 19:28]--[2026-01-31 Sat 20:04] =>  0:36
+    :END:
+
+- why is there a projects/ores.sql/create/change_control directory.
+- why are these dq?
+
+: projects/ores.sql/create/refdata/dq_account_types_artefact_create.sql
+
 *** STARTED Add tenant support                                         :code:
    :LOGBOOK:
    CLOCK: [2026-01-29 Thu 10:35]--[2026-01-29 Thu 10:55] =>  0:20
@@ -432,16 +446,6 @@ schemas without the operational debt of cross-schema management.
 
 Do some analysis and prototyping around supporting multiple tenants on a single
 database.
-
-*** Check directory structure in SQL                                   :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-31 Sat 19:28]
-    :END:
-
-- why is there a projects/ores.sql/create/change_control directory.
-- why are these dq?
-
-: projects/ores.sql/create/refdata/dq_account_types_artefact_create.sql
 
 *** Add a sample set of gravatars for profiles                         :code:
 

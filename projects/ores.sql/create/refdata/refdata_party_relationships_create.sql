@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
 -- =============================================================================
 -- Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.
 -- =============================================================================
 
-create table if not exists "production"."refdata_party_relationships_tbl" (
+create table if not exists "ores_refdata_party_relationships_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -45,34 +44,34 @@ create table if not exists "production"."refdata_party_relationships_tbl" (
     check ("change_reason_code" <> '')
 );
 
-create unique index if not exists refdata_party_relationships_version_uniq_idx
-on "production"."refdata_party_relationships_tbl" (code, coding_scheme_code, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_refdata_party_relationships_version_uniq_idx
+on "ores_refdata_party_relationships_tbl" (code, coding_scheme_code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists refdata_party_relationships_coding_scheme_idx
-on "production"."refdata_party_relationships_tbl" (coding_scheme_code)
-where valid_to = public.utility_infinity_timestamp_fn();
+create index if not exists ores_refdata_party_relationships_coding_scheme_idx
+on "ores_refdata_party_relationships_tbl" (coding_scheme_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function production.refdata_party_relationships_insert_fn()
+create or replace function ores_refdata_party_relationships_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from metadata.dq_coding_schemes_tbl
+        select 1 from ores_dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
     end if;
 
     select version into current_version
-    from "production"."refdata_party_relationships_tbl"
+    from "ores_refdata_party_relationships_tbl"
     where code = new.code
       and coding_scheme_code = new.coding_scheme_code
-    and valid_to = public.utility_infinity_timestamp_fn()
+    and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
@@ -83,38 +82,38 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "production"."refdata_party_relationships_tbl"
+        update "ores_refdata_party_relationships_tbl"
         set valid_to = current_timestamp
         where code = new.code
           and coding_scheme_code = new.coding_scheme_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = public.utility_infinity_timestamp_fn();
+    new.valid_to = ores_utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger refdata_party_relationships_insert_trg
-before insert on "production"."refdata_party_relationships_tbl"
+create or replace trigger ores_refdata_party_relationships_insert_trg
+before insert on "ores_refdata_party_relationships_tbl"
 for each row
-execute function production.refdata_party_relationships_insert_fn();
+execute function ores_refdata_party_relationships_insert_fn();
 
-create or replace rule refdata_party_relationships_delete_rule as
-on delete to "production"."refdata_party_relationships_tbl"
+create or replace rule ores_refdata_party_relationships_delete_rule as
+on delete to "ores_refdata_party_relationships_tbl"
 do instead
-  update "production"."refdata_party_relationships_tbl"
+  update "ores_refdata_party_relationships_tbl"
   set valid_to = current_timestamp
   where code = old.code
   and coding_scheme_code = old.coding_scheme_code
-  and valid_to = public.utility_infinity_timestamp_fn();
+  and valid_to = ores_utility_infinity_timestamp_fn();

@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
 -- =============================================================================
 -- ISO 4217 currency definitions.
@@ -25,7 +24,7 @@ set schema 'production';
 -- coding_scheme_code tracks data provenance.
 -- =============================================================================
 
-create table if not exists "production"."refdata_currencies_tbl" (
+create table if not exists "ores_refdata_currencies_tbl" (
     "iso_code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -54,20 +53,20 @@ create table if not exists "production"."refdata_currencies_tbl" (
     check ("change_reason_code" <> '')
 );
 
-create unique index if not exists refdata_currencies_version_uniq_idx
-on "production"."refdata_currencies_tbl" (iso_code, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_refdata_currencies_version_uniq_idx
+on "ores_refdata_currencies_tbl" (iso_code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function production.refdata_currencies_insert_fn()
+create or replace function ores_refdata_currencies_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from metadata.dq_coding_schemes_tbl
+        select 1 from ores_dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
@@ -75,19 +74,19 @@ begin
 
     -- Validate rounding_type
     if not exists (
-        select 1 from production.refdata_rounding_types_tbl
+        select 1 from ores_refdata_rounding_types_tbl
         where code = NEW.rounding_type
     ) then
         raise exception 'Invalid rounding_type: %. Must be one of: %', NEW.rounding_type, (
-            select string_agg(code, ', ' order by display_order) from production.refdata_rounding_types_tbl
+            select string_agg(code, ', ' order by display_order) from ores_refdata_rounding_types_tbl
         )
         using errcode = '23503';
     end if;
 
     select version into current_version
-    from "production"."refdata_currencies_tbl"
+    from "ores_refdata_currencies_tbl"
     where iso_code = new.iso_code
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -97,36 +96,36 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "production"."refdata_currencies_tbl"
+        update "ores_refdata_currencies_tbl"
         set valid_to = current_timestamp
         where iso_code = new.iso_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = public.utility_infinity_timestamp_fn();
+    new.valid_to = ores_utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger refdata_currencies_insert_trg
-before insert on "production"."refdata_currencies_tbl"
+create or replace trigger ores_refdata_currencies_insert_trg
+before insert on "ores_refdata_currencies_tbl"
 for each row
-execute function production.refdata_currencies_insert_fn();
+execute function ores_refdata_currencies_insert_fn();
 
-create or replace rule refdata_currencies_delete_rule as
-on delete to "production"."refdata_currencies_tbl"
+create or replace rule ores_refdata_currencies_delete_rule as
+on delete to "ores_refdata_currencies_tbl"
 do instead
-  update "production"."refdata_currencies_tbl"
+  update "ores_refdata_currencies_tbl"
   set valid_to = current_timestamp
   where iso_code = old.iso_code
-  and valid_to = public.utility_infinity_timestamp_fn();
+  and valid_to = ores_utility_infinity_timestamp_fn();

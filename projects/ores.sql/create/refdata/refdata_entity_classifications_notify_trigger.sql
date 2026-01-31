@@ -18,7 +18,7 @@
  *
  */
 
-create or replace function production.refdata_entity_classifications_notify_fn()
+create or replace function ores_refdata_entity_classifications_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -44,6 +44,6 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger refdata_entity_classifications_notify_trg
-after insert or update or delete on production.refdata_entity_classifications_tbl
-for each row execute function production.refdata_entity_classifications_notify_fn();
+create or replace trigger ores_refdata_entity_classifications_notify_trg
+after insert or update or delete on ores_refdata_entity_classifications_tbl
+for each row execute function ores_refdata_entity_classifications_notify_fn();

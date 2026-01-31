@@ -80,7 +80,7 @@ errors.
 4. Update the corresponding C++ entity file with the new table name.
 5. Update the orchestration scripts to include the new files.
 6. Test the schema creation.
-7. Run schema validation (=./projects/ores.sql/scripts/validate_schema.sh=).
+7. Run schema validation (=./projects/ores.sql/utility/validate_schemas.sh=).
 
 * Naming conventions
 
@@ -772,7 +772,7 @@ psql -U ores -d <database_name> -c "LISTEN ores_{entity_plural}; INSERT INTO ore
 Run the schema validation script to check for common issues before committing:
 
 #+begin_src sh
-./projects/ores.sql/scripts/validate_schema.sh
+./projects/ores.sql/utility/validate_schemas.sh
 #+end_src
 
 The validator checks for:

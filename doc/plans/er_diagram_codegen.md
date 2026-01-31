@@ -360,7 +360,7 @@ fi
 echo "=== Done ==="
 ```
 
-#### Validation-Only Wrapper (`projects/ores.sql/scripts/validate_schema.sh`)
+#### Validation-Only Wrapper (`projects/ores.sql/utility/validate_schemas.sh`)
 
 Thin wrapper for standalone validation without generating diagrams:
 
@@ -384,10 +384,10 @@ python3 "${CODEGEN_DIR}/src/plantuml_er_parse_sql.py" \
 Usage:
 ```bash
 # Check conventions (warnings only)
-./projects/ores.sql/scripts/validate_schema.sh
+./projects/ores.sql/utility/validate_schemas.sh
 
 # Strict mode for CI (fail on warnings)
-./projects/ores.sql/scripts/validate_schema.sh --strict
+./projects/ores.sql/utility/validate_schemas.sh --strict
 ```
 
 ## Directory Structure

@@ -32,8 +32,8 @@ namespace ores::dq::repository {
  * Junction table with composite primary key (bundle_code, dataset_code, valid_from).
  */
 struct dataset_bundle_member_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_dataset_bundle_members_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_dataset_bundle_members_tbl";
 
     sqlgen::PrimaryKey<std::string> bundle_code;
     std::string dataset_code;

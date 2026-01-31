@@ -31,8 +31,8 @@ namespace ores::dq::repository {
  * @brief Represents a methodology in the database.
  */
 struct methodology_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_methodologies_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_methodologies_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     int version = 0;

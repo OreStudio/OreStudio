@@ -30,8 +30,8 @@ namespace ores::dq::repository {
  * @brief Represents a nature_dimension in the database.
  */
 struct nature_dimension_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_nature_dimensions_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_nature_dimensions_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     int version = 0;

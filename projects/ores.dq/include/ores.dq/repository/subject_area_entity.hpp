@@ -32,8 +32,8 @@ namespace ores::dq::repository {
  * Subject areas have a composite key of (name, domain_name).
  */
 struct subject_area_entity {
-    constexpr static const char* schema = "metadata";
-    constexpr static const char* tablename = "dq_subject_areas_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_dq_subject_areas_tbl";
 
     sqlgen::PrimaryKey<std::string> name;
     sqlgen::PrimaryKey<std::string> domain_name;

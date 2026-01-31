@@ -31,8 +31,8 @@ namespace ores::refdata::repository {
  * @brief Represents a country in the database using ISO 3166-1 codes.
  */
 struct country_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "refdata_countries_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_refdata_countries_tbl";
 
     sqlgen::PrimaryKey<std::string> alpha2_code;
     int version = 0;

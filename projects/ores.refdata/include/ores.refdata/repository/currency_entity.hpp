@@ -31,8 +31,8 @@ namespace ores::refdata::repository {
  * @brief Represents a currency in the database.
  */
 struct currency_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "refdata_currencies_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_refdata_currencies_tbl";
 
     sqlgen::PrimaryKey<std::string> iso_code;
     int version = 0;

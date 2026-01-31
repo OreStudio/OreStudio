@@ -136,10 +136,10 @@ alter default privileges for role ores_owner in schema production
     grant select on tables to ores_ro;
 
 alter default privileges for role ores_owner in schema metadata
-    grant usage, select on sequences to ores_owner, ores_rw;
+    grant usage, select on sequences to ores_rw;
 
 alter default privileges for role ores_owner in schema production
-    grant usage, select on sequences to ores_owner, ores_rw;
+    grant usage, select on sequences to ores_rw;
 
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql

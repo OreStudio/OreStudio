@@ -28,7 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/utility/check_db_connections.sh"
 
 # Protected databases that cannot be dropped
-PROTECTED_DBS=("ores_admin" "ores_template" "postgres" "template0" "template1")
+PROTECTED_DBS=("postgres" "template0" "template1")
 
 usage() {
     cat <<EOF

@@ -24,14 +24,12 @@
  * Drops all helper functions used by IAM population scripts.
  * This script is safe to run even if functions don't exist (uses IF EXISTS).
  *
- * Naming convention: {schema}.{component}_{entities}_{action}_fn
+ * Naming convention: ores_{component}_{entities}_{action}_fn
  */
 
-set schema 'production';
-
 -- Permissions
-drop function if exists production.iam_permissions_upsert_fn(text, text);
+drop function if exists ores_iam_permissions_upsert_fn(text, text);
 
 -- Roles
-drop function if exists production.iam_roles_upsert_fn(text, text, text);
-drop function if exists production.iam_role_permissions_assign_fn(text, text, text);
+drop function if exists ores_iam_roles_upsert_fn(text, text, text);
+drop function if exists ores_iam_role_permissions_assign_fn(text, text, text);

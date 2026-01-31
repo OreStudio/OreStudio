@@ -17,6 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
-drop table if exists "production"."refdata_rounding_types_tbl";
+drop table if exists "ores_refdata_rounding_types_tbl";

@@ -24,10 +24,8 @@
  * Drops all helper functions used by variability population scripts.
  * This script is safe to run even if functions don't exist (uses IF EXISTS).
  *
- * Naming convention: {schema}.{component}_{entities}_{action}_fn
+ * Naming convention: ores_{component}_{entities}_{action}_fn
  */
 
-set schema 'production';
-
 -- Feature Flags
-drop function if exists production.variability_feature_flags_upsert_fn(text, boolean, text);
+drop function if exists ores_variability_feature_flags_upsert_fn(text, boolean, text);

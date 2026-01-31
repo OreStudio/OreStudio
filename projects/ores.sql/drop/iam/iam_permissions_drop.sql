@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
-drop rule if exists iam_permissions_delete_rule on "production"."iam_permissions_tbl";
-drop trigger if exists iam_permissions_insert_trg on "production"."iam_permissions_tbl";
-drop function if exists production.iam_permissions_insert_fn;
-drop table if exists "production"."iam_permissions_tbl";
+drop rule if exists ores_iam_permissions_delete_rule on ores_iam_permissions_tbl;
+drop trigger if exists ores_iam_permissions_insert_trg on ores_iam_permissions_tbl;
+drop function if exists ores_iam_permissions_insert_fn;
+drop table if exists ores_iam_permissions_tbl;

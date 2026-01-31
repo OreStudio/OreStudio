@@ -19,7 +19,7 @@
  */
 
 -- =============================================================================
--- 1. Production Schema (has FKs to metadata, must be dropped first)
+-- 1. Operational Tables (have FKs to data governance tables, must be dropped first)
 -- =============================================================================
 \ir ./geo/drop_geo.sql
 \ir ./assets/drop_assets.sql
@@ -29,13 +29,13 @@
 \ir ./refdata/drop_refdata.sql
 
 -- =============================================================================
--- 2. Metadata Schema (dropped after production)
+-- 2. Data Governance Tables (dropped after operational tables)
 -- =============================================================================
 \ir ./dq/drop_dq.sql
 \ir ./change_control/drop_change_control.sql
 
 -- =============================================================================
--- 3. Public Schema (utilities dropped last)
+-- 3. Utility Functions (dropped last)
 -- =============================================================================
 \ir ./seed/drop_seed.sql
 \ir ./utility/drop_utility.sql

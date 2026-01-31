@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'production';
 
-drop function if exists production.telemetry_logs_for_session_fn;
-drop function if exists production.telemetry_error_count_fn;
-drop function if exists production.telemetry_log_count_by_level_fn;
-drop function if exists production.telemetry_log_count_last_hours_fn;
-drop materialized view if exists "production"."telemetry_stats_aggregate_daily_vw";
-drop materialized view if exists "production"."telemetry_stats_daily_vw";
-drop materialized view if exists "production"."telemetry_stats_hourly_vw";
+drop function if exists ores_telemetry_logs_for_session_fn;
+drop function if exists ores_telemetry_error_count_fn;
+drop function if exists ores_telemetry_log_count_by_level_fn;
+drop function if exists ores_telemetry_log_count_last_hours_fn;
+drop materialized view if exists ores_telemetry_stats_aggregate_daily_vw;
+drop materialized view if exists ores_telemetry_stats_daily_vw;
+drop materialized view if exists ores_telemetry_stats_hourly_vw;

@@ -35,7 +35,7 @@
  *   2. Instance databases (from teardown_instances.sql - explicit, reviewable)
  *   3. ores_template (explicit)
  *   4. ores_admin (explicit)
- *   5. ores role (explicit)
+ *   5. ores users and roles (explicit)
  *
  * INSTANCE DATABASE WORKFLOW:
  *   For production environments, instance drops must be explicit and reviewable:
@@ -173,13 +173,31 @@ drop database if exists ores_admin;
 \echo 'ores_admin dropped.'
 
 --------------------------------------------------------------------------------
--- Step 5: Drop role
+-- Step 5: Drop users and roles
 --------------------------------------------------------------------------------
 \echo ''
-\echo '--- Step 5: Dropping ores role ---'
+\echo '--- Step 5: Dropping ores users and roles ---'
 
+-- Drop service users first (they depend on roles)
+drop role if exists ores_ddl_user;
+drop role if exists ores_cli_user;
+drop role if exists ores_wt_user;
+drop role if exists ores_comms_user;
+drop role if exists ores_http_user;
+drop role if exists ores_test_ddl_user;
+drop role if exists ores_test_dml_user;
+drop role if exists ores_readonly_user;
+\echo 'Service users dropped.'
+
+-- Drop group roles
+drop role if exists ores_owner;
+drop role if exists ores_rw;
+drop role if exists ores_ro;
+\echo 'Group roles dropped.'
+
+-- Drop legacy role if it exists (for backwards compatibility)
 drop role if exists ores;
-\echo 'ores role dropped.'
+\echo 'Legacy ores role dropped (if existed).'
 
 \echo ''
 \echo '=============================================='

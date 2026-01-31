@@ -19,40 +19,107 @@
  */
 
 /**
- * ORES User Setup
+ * ORES Role-Based User Setup
  *
- * Creates the 'ores' application user. This is the first step in setting up
- * the ORES database infrastructure.
+ * Creates the ORES database roles and users with appropriate permissions.
+ * This implements a role-based access control system with separate users for
+ * different services and operations.
  *
  * USAGE:
- *   psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f setup_user.sql
+ *   psql -U postgres \
+ *     -v ddl_password='DDL_PASSWORD' \
+ *     -v cli_password='CLI_PASSWORD' \
+ *     -v wt_password='WT_PASSWORD' \
+ *     -v comms_password='COMMS_PASSWORD' \
+ *     -v http_password='HTTP_PASSWORD' \
+ *     -v test_ddl_password='TEST_DDL_PASSWORD' \
+ *     -v test_dml_password='TEST_DML_PASSWORD' \
+ *     -v ro_password='RO_PASSWORD' \
+ *     -f setup_user.sql
  *
  * NEXT STEPS:
  *   1. admin/setup_admin.sql - Create admin database
  *   2. setup_template.sql    - Create template database
  *   3. create_instance.sql   - Create database instance
  *
- * NOTE: Generate a secure password with:
+ * NOTE: Generate secure passwords with:
  *   pwgen -c 25 1
  */
 
 \set ON_ERROR_STOP on
 
--- Validate that password was provided
-\if :{?ores_password}
+-- Validate that required passwords were provided
+\if :{?ddl_password}
 \else
-    \echo 'ERROR: ores_password variable is required.'
-    \echo 'Usage: psql -U postgres -v ores_password=''YOUR_PASSWORD'' -f setup_user.sql'
+    \echo 'ERROR: ddl_password variable is required for DDL operations.'
+    \echo 'Usage: psql -U postgres -v ddl_password=''YOUR_PASSWORD'' ... -f setup_user.sql'
     \quit
 \endif
 
--- Create the application user with the provided password
--- CREATEDB is needed for tests to create temporary databases from templates
-CREATE USER ores WITH PASSWORD :'ores_password' CREATEDB;
+\if :{?cli_password}
+\else
+    \echo 'ERROR: cli_password variable is required for CLI service.'
+    \quit
+\endif
+
+\if :{?wt_password}
+\else
+    \echo 'ERROR: wt_password variable is required for Web Toolkit service.'
+    \quit
+\endif
+
+\if :{?comms_password}
+\else
+    \echo 'ERROR: comms_password variable is required for Communications service.'
+    \quit
+\endif
+
+\if :{?http_password}
+\else
+    \echo 'ERROR: http_password variable is required for HTTP service.'
+    \quit
+\endif
+
+\if :{?test_ddl_password}
+\else
+    \echo 'ERROR: test_ddl_password variable is required for test DDL operations.'
+    \quit
+\endif
+
+\if :{?test_dml_password}
+\else
+    \echo 'ERROR: test_dml_password variable is required for test DML operations.'
+    \quit
+\endif
+
+\if :{?ro_password}
+\else
+    \echo 'ERROR: ro_password variable is required for read-only access.'
+    \quit
+\endif
+
+-- 1. Create group roles (no login)
+-- These act as permission templates
+create role ores_owner nologin;  -- for ddl/migrations
+create role ores_rw    nologin;  -- for application dml (data manipulation)
+create role ores_ro    nologin;  -- for analytics/reporting
+
+-- 2. Create service users (with login)
+-- Inherit from appropriate roles for standard operations
+create user ores_ddl_user      with password :'ddl_password'      in role ores_owner;
+create user ores_cli_user      with password :'cli_password'      in role ores_rw;
+create user ores_wt_user       with password :'wt_password'       in role ores_rw;
+create user ores_comms_user    with password :'comms_password'    in role ores_rw;
+create user ores_http_user     with password :'http_password'     in role ores_rw;
+create user ores_test_ddl_user with password :'test_ddl_password' in role ores_owner createdb;
+create user ores_test_dml_user with password :'test_dml_password' in role ores_rw;
+
+-- optional: read-only user for devs/bi
+create user ores_readonly_user with password :'ro_password' in role ores_ro;
 
 \echo ''
 \echo '=========================================='
-\echo 'ORES user created successfully!'
+\echo 'ORES role-based users created successfully!'
 \echo '=========================================='
 \echo ''
 \echo 'Next step: Create admin database'

@@ -115,27 +115,36 @@ BUILD-TYPE should be either 'debug or 'release."
   (concat (ores--get-build-output-path build-type)
           "/vcpkg_installed/x64-linux/share/Wt/resources"))
 
-(defcustom ores/database-name "ores_frosty_leaf"
+(defconst ores/database-name
+  (concat "ores_dev_" ores/checkout-label)
   "Database name for ORES services.
-This should be set to an instance database name like 'ores_autumn_sound'."
-  :type 'string
-  :group 'ores)
+Automatically derived from the checkout label (e.g., ores_dev_local2).
+Each environment gets its own isolated database.")
 
-(defcustom ores/database-user "ores"
-  "Database user for ORES services."
-  :type 'string
-  :group 'ores)
+(defconst ores/database-users
+  '(("SERVICE" . "ores_comms_user")
+    ("HTTP_SERVER" . "ores_http_user")
+    ("WT" . "ores_wt_user"))
+  "Alist mapping application prefixes to their database users.
+Each service has its own dedicated database user for fine-grained access control.")
+
+(defun ores/get-database-user (app-prefix)
+  "Get the database user for APP-PREFIX.
+Returns the service-specific user or falls back to ores_cli_user."
+  (or (cdr (assoc app-prefix ores/database-users))
+      "ores_cli_user"))
 
 (defun ores/setup-environment (app-prefix)
   "Set up environment variables for ORES services.
 APP-PREFIX is the application prefix (e.g., \"SERVICE\", \"HTTP_SERVER\", \"WT\").
-Retrieves database password from auth-source and combines with
-configured database name and user."
-  (let ((pwd (auth-source-pick-first-password
-              :host "localhost"
-              :user ores/database-user)))
+Retrieves database password from auth-source using the service-specific user
+and combines with configured database name."
+  (let* ((db-user (ores/get-database-user app-prefix))
+         (pwd (auth-source-pick-first-password
+               :host "localhost"
+               :user db-user)))
     (list
-     (list (concat "ORES_" app-prefix "_DB_USER") ores/database-user)
+     (list (concat "ORES_" app-prefix "_DB_USER") db-user)
      (list (concat "ORES_" app-prefix "_DB_PASSWORD") pwd)
      (list (concat "ORES_" app-prefix "_DB_DATABASE") ores/database-name))))
 

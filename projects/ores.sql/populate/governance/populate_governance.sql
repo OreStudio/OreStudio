@@ -33,7 +33,7 @@
  * All scripts are idempotent and can be safely re-run.
  *
  * Usage:
- *   psql -U ores -d your_database -f populate/governance/populate_governance.sql
+ *   psql -U ores_cli_user -d your_database -f populate/governance/populate_governance.sql
  */
 
 -- Suppress noisy output during population

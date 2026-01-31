@@ -382,6 +382,132 @@ Additional production tables populated via operational processes (not publicatio
 |            | =production.iam_login_info_tbl=    | Login tracking                            |
 | Variability| =production.variability_feature_flags_tbl= | Runtime configuration            |
 
+* Multi-Environment Architecture
+
+ORE Studio supports multiple isolated development environments, allowing
+concurrent work across different checkouts without database conflicts.
+
+** Database Layout
+
+#+begin_example
+ores_admin          # Admin utilities (shared across environments)
+ores_template       # Template for test databases (shared)
+ores_dev_local1     # Environment-specific database
+ores_dev_local2     # Environment-specific database
+ores_dev_local3     # etc.
+ores_test_*         # Temporary test databases (created/dropped by tests)
+#+end_example
+
+** Naming Conventions
+
+| Database Type       | Pattern              | Example            |
+|---------------------+----------------------+--------------------|
+| Environment         | =ores_dev_<env>=     | =ores_dev_local2=  |
+| Template            | =ores_template=      | (used by tests)    |
+| Admin               | =ores_admin=         | (cluster utilities)|
+| Test (temporary)    | =ores_test_<pid>_*=  | =ores_test_1234_5678= |
+| Whimsical instances | =ores_<adjective>_<noun>= | =ores_frosty_leaf= |
+
+** Environment Isolation
+
+- Environment databases are created from scratch (not from template)
+- Recreating one environment does NOT affect others
+- Tests create temporary databases from =ores_template=
+- Each checkout (local1, local2, etc.) auto-detects its database name
+
+** Management Scripts
+
+| Script                     | Purpose                                    |
+|----------------------------+--------------------------------------------|
+| =recreate_database.sh=     | Full teardown + recreate everything        |
+| =recreate_template.sh=     | Recreate just =ores_template=              |
+| =recreate_admin.sh=        | Recreate just =ores_admin=                 |
+| =recreate_env.sh -e local2= | Recreate just =ores_dev_local2=           |
+| =drop_database.sh=         | Drop a single database safely              |
+| =teardown_database.sh=     | Kill connections + drop database           |
+
+* Database Roles and Users
+
+ORE Studio uses a role-based access control system for database connections.
+This is separate from the application-level RBAC stored in the =production.iam_*=
+tables.
+
+** Role Hierarchy
+
+Group roles (no login) act as permission templates:
+
+| Role         | Purpose                              |
+|--------------+--------------------------------------|
+| =ores_owner= | DDL operations (schema changes)      |
+| =ores_rw=    | Read-write operations (application)  |
+| =ores_ro=    | Read-only operations (analytics/BI)  |
+
+** Service Users
+
+Login users inherit from appropriate group roles:
+
+| User               | Inherits From  | Purpose                        |
+|--------------------+----------------+--------------------------------|
+| =ores_ddl_user=    | =ores_owner=   | Migrations, schema changes     |
+| =ores_cli_user=    | =ores_rw=      | Command-line interface         |
+| =ores_wt_user=     | =ores_rw=      | Web toolkit service            |
+| =ores_comms_user=  | =ores_rw=      | Communications service         |
+| =ores_http_user=   | =ores_rw=      | HTTP REST service              |
+| =ores_readonly_user= | =ores_ro=    | Analytics, BI tools            |
+
+** Test Users
+
+| User                | Inherits From  | Purpose                        |
+|---------------------+----------------+--------------------------------|
+| =ores_test_ddl_user= | =ores_owner=  | Create/drop test databases     |
+| =ores_test_dml_user= | =ores_rw=     | Run tests                      |
+
+** Credential Management
+
+*** pg_service.conf (Recommended)
+
+Create =~/.pg_service.conf= for convenient access:
+
+#+begin_src conf
+[ores_cli]
+host=localhost
+port=5432
+dbname=ores_dev_local2
+user=ores_cli_user
+password=your_password
+
+[ores_ddl]
+host=localhost
+port=5432
+dbname=ores_dev_local2
+user=ores_ddl_user
+password=your_password
+#+end_src
+
+Set permissions and use:
+
+#+begin_src sh
+chmod 600 ~/.pg_service.conf
+psql service=ores_cli
+#+end_src
+
+*** Environment Variables
+
+For development and CI/CD:
+
+#+begin_src sh
+# Application-specific password variables
+export ORES_DB_CLI_PASSWORD=your_password
+export ORES_DB_DDL_PASSWORD=your_password
+export ORES_DB_WT_PASSWORD=your_password
+export ORES_DB_HTTP_PASSWORD=your_password
+export ORES_DB_COMMS_PASSWORD=your_password
+
+# Test infrastructure
+export ORES_TEST_DB_DDL_PASSWORD=your_password
+export ORES_TEST_DB_PASSWORD=your_password
+#+end_src
+
 * Database Creation
 
 The database uses a template-based approach for fast instance creation.
@@ -394,8 +520,17 @@ Run initial setup scripts as postgres superuser in order:
 # 1. Install extensions (btree_gist required, timescaledb optional)
 psql -U postgres -f setup_extensions.sql
 
-# 2. Create application user
-psql -U postgres -v ores_password='YOUR_SECRET' -f setup_user.sql
+# 2. Create roles and users (provide passwords for all users)
+psql -U postgres \
+  -v ddl_password='DDL_PASS' \
+  -v cli_password='CLI_PASS' \
+  -v wt_password='WT_PASS' \
+  -v comms_password='COMMS_PASS' \
+  -v http_password='HTTP_PASS' \
+  -v test_ddl_password='TEST_DDL_PASS' \
+  -v test_dml_password='TEST_DML_PASS' \
+  -v ro_password='RO_PASS' \
+  -f setup_user.sql
 
 # 3. Create admin database (whimsical name generation)
 psql -U postgres -f admin/setup_admin.sql
@@ -432,7 +567,7 @@ Database created successfully!
 Database name: dancing_lemur_42
 
 Connect with:
-  psql -U ores -d dancing_lemur_42
+  psql -U ores_cli_user -d dancing_lemur_42
 #+end_example
 
 ** Create Instance with Specific Name

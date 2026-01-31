@@ -19,6 +19,7 @@
  */
 #include "ores.testing/test_database_manager.hpp"
 
+#include <iostream>
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -47,8 +48,18 @@ using ores::database::context_factory;
 using ores::platform::environment::environment;
 
 context test_database_manager::make_admin_context() {
-    auto opts = make_database_options();
-    opts.database = "postgres";  // Connect to admin database
+    // Use separate credentials for DDL user (database creation/dropping)
+    database::database_options opts {
+        .user = environment::environment::get_value_or_default(
+            prefix + "DDL_USER", "ores_test_ddl_user"),
+        .password = environment::environment::get_value_or_default(
+            prefix + "DDL_PASSWORD", ""),
+        .host = environment::environment::get_value_or_default(
+            prefix + "HOST", "localhost"),
+        .database = "postgres",  // Connect to admin database for CREATE/DROP
+        .port = environment::environment::get_int_value_or_default(
+            prefix + "PORT", 5432)
+    };
 
     context_factory::configuration db_cfg{
         .database_options = opts,
@@ -77,7 +88,7 @@ context test_database_manager::make_context() {
 database::database_options test_database_manager::make_database_options() {
     return database::database_options {
         .user = environment::environment::get_value_or_default(
-            prefix + "USER", "ores"),
+            prefix + "USER", "ores_test_dml_user"),
         .password = environment::environment::get_value_or_default(
             prefix + "PASSWORD", ""),
         .host = environment::environment::get_value_or_default(

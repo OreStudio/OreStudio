@@ -14,8 +14,8 @@ Demonstrates commands available in the [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
   :header-args+: :var data_dir="../../../../../projects/ores.refdata/tests/test_data/currencies"
-  :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
-  :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database ores_frosty_leaf"
+  :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores_cli_user")
+  :header-args+: :var db_args="--db-user ores_cli_user --db-host localhost --db-port 5432 --db-database ores_frosty_leaf"
   :header-args+: :var log_args="--log-enabled --log-level debug --log-directory ../log"
   :END:
 

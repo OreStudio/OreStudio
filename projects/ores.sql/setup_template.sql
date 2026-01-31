@@ -45,7 +45,7 @@
  *
  * PREREQUISITES:
  *   - PostgreSQL superuser access
- *   - The 'ores' user must exist (run setup_user.sql first)
+ *   - The ores roles/users must exist (run setup_user.sql first)
  *
  * After running this script, create new instances using:
  *   psql -U postgres -f create_instance.sql
@@ -62,8 +62,9 @@
 -- Create template database with clean template0 as base
 create database ores_template with template = template0;
 
--- Grant permissions to ores user
-grant all privileges on database ores_template to ores;
+-- Grant permissions to appropriate roles
+grant all privileges on database ores_template to ores_owner;
+grant connect, temp on database ores_template to ores_rw, ores_ro;
 
 -- Connect to template database to create schema
 \c ores_template
@@ -77,14 +78,22 @@ create schema if not exists metadata;
 create schema if not exists production;
 create extension if not exists btree_gist;
 
--- Grant schema permissions to ores user
-grant usage on schema metadata to ores;
-grant usage on schema production to ores;
-grant create on schema metadata to ores;
-grant create on schema production to ores;
+-- Grant schema permissions to appropriate roles
+grant usage on schema metadata to ores_owner, ores_rw, ores_ro;
+grant usage on schema production to ores_owner, ores_rw, ores_ro;
+grant create on schema metadata to ores_owner;
+grant create on schema production to ores_owner;
 
--- Set search path for convenience
-alter role ores set search_path to production, metadata, public;
+-- Set default search_path for all ores users
+-- Note: search_path must be set on users, not group roles (it doesn't inherit)
+alter role ores_ddl_user set search_path to production, metadata, public;
+alter role ores_cli_user set search_path to production, metadata, public;
+alter role ores_wt_user set search_path to production, metadata, public;
+alter role ores_comms_user set search_path to production, metadata, public;
+alter role ores_http_user set search_path to production, metadata, public;
+alter role ores_test_ddl_user set search_path to production, metadata, public;
+alter role ores_test_dml_user set search_path to production, metadata, public;
+alter role ores_readonly_user set search_path to production, metadata, public;
 
 -- NOTE: Whimsical names and database management functions are now in ores_admin.
 -- See admin/setup_admin.sql for cluster-level utilities.
@@ -95,18 +104,43 @@ alter role ores set search_path to production, metadata, public;
 -- Populate foundation layer (essential lookup and configuration data)
 \ir ./populate/foundation/populate_foundation.sql
 
--- Grant table permissions to ores user
+-- Grant table permissions to appropriate roles
 -- Note: TRUNCATE is included for test database cleanup
-grant select, insert, update, delete, truncate on all tables in schema metadata to ores;
-grant select, insert, update, delete, truncate on all tables in schema production to ores;
-grant usage, select on all sequences in schema metadata to ores;
-grant usage, select on all sequences in schema production to ores;
+-- Owner role gets full access
+grant select, insert, update, delete, truncate on all tables in schema metadata to ores_owner;
+grant select, insert, update, delete, truncate on all tables in schema production to ores_owner;
+
+-- RW role gets standard DML access
+grant select, insert, update, delete, truncate on all tables in schema metadata to ores_rw;
+grant select, insert, update, delete, truncate on all tables in schema production to ores_rw;
+
+-- RO role gets read-only access
+grant select on all tables in schema metadata to ores_ro;
+grant select on all tables in schema production to ores_ro;
+
+-- Grant sequence permissions to appropriate roles
+grant usage, select on all sequences in schema metadata to ores_owner, ores_rw;
+grant usage, select on all sequences in schema production to ores_owner, ores_rw;
 
 -- Set default privileges for any future tables
-alter default privileges in schema metadata grant select, insert, update, delete, truncate on tables to ores;
-alter default privileges in schema metadata grant usage, select on sequences to ores;
-alter default privileges in schema production grant select, insert, update, delete, truncate on tables to ores;
-alter default privileges in schema production grant usage, select on sequences to ores;
+-- For DDL user (owner role) - ensure new objects are accessible by other roles
+alter default privileges for role ores_owner in schema metadata
+    grant select, insert, update, delete, truncate on tables to ores_rw;
+
+alter default privileges for role ores_owner in schema production
+    grant select, insert, update, delete, truncate on tables to ores_rw;
+
+alter default privileges for role ores_owner in schema metadata
+    grant select on tables to ores_ro;
+
+alter default privileges for role ores_owner in schema production
+    grant select on tables to ores_ro;
+
+alter default privileges for role ores_owner in schema metadata
+    grant usage, select on sequences to ores_rw;
+
+alter default privileges for role ores_owner in schema production
+    grant usage, select on sequences to ores_rw;
 
 -- NOTE: Instance-specific initialization (feature flags) is NOT included here.
 -- Each instance created from this template should run instance/init_instance.sql

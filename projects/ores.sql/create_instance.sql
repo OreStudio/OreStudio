@@ -34,7 +34,7 @@
  * PREREQUISITES:
  *   - The ores_admin database must exist (run admin/setup_admin.sql first)
  *   - The ores_template database must exist (run setup_template.sql first)
- *   - The 'ores' user must exist (run setup_user.sql first)
+ *   - The ores roles/users must exist (run setup_user.sql first)
  *
  * OUTPUT:
  *   Creates a fully-configured database with all tables, functions, and
@@ -73,8 +73,8 @@
 \echo 'Creating database:' :db_name
 \echo ''
 
--- Create the database from template, owned by ores
-create database :db_name with template = ores_template owner = ores;
+-- Create the database from template, owned by the DDL user
+create database :db_name with template = ores_template owner = ores_ddl_user;
 
 -- Connect to new database and initialize instance-specific data
 \c :db_name
@@ -92,5 +92,5 @@ select :'db_name' as database_created;
 \echo 'Database name:' :db_name
 \echo ''
 \echo 'Connect with:'
-\echo '  psql -U ores -d' :db_name
+\echo '  psql -U ores_cli_user -d' :db_name
 \echo ''

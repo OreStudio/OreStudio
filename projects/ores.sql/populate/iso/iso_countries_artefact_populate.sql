@@ -26,7 +26,6 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
 
 DO $$
 declare
@@ -37,11 +36,11 @@ declare
 begin
     -- Get the countries dataset ID
     select id into v_countries_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'ISO 3166 Country Codes'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_countries_dataset_id is null then
         raise exception 'Dataset not found: ISO 3166 Country Codes';
@@ -49,11 +48,11 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Dataset not found: Country Flag Images';
@@ -61,7 +60,7 @@ begin
 
     -- Get the placeholder image (xx.svg = "no flag available")
     select image_id into v_placeholder_image_id
-    from metadata.dq_images_artefact_tbl
+    from ores_dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = 'xx';
 
@@ -70,7 +69,7 @@ begin
     end if;
 
     -- Clear existing countries for this dataset (idempotency)
-    delete from metadata.dq_countries_artefact_tbl
+    delete from ores_dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id;
 
     raise notice 'Populating countries for dataset: ISO 3166 Country Codes';
@@ -78,7 +77,7 @@ begin
     -- Insert countries with flag image links
     -- The flag images have keys matching lowercase alpha2 codes (e.g., 'us', 'gb')
     -- Countries without matching flags fall back to the placeholder (xx.svg)
-    insert into metadata.dq_countries_artefact_tbl (
+    insert into ores_dq_countries_artefact_tbl (
         dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
     select
@@ -366,7 +365,7 @@ begin
         ('ZM', 'ZMB', '894', 'Zambia', 'Republic of Zambia'),
         ('ZW', 'ZWE', '716', 'Zimbabwe', 'Republic of Zimbabwe')
     ) as c(alpha2_code, alpha3_code, numeric_code, name, official_name)
-    left join metadata.dq_images_artefact_tbl i
+    left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = lower(c.alpha2_code);
 
@@ -377,7 +376,7 @@ begin
     -- Report countries using placeholder flag
     raise notice 'Countries using placeholder flag (xx):';
     perform alpha2_code
-    from metadata.dq_countries_artefact_tbl
+    from ores_dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id
       and image_id = v_placeholder_image_id;
 end $$;
@@ -390,9 +389,9 @@ end $$;
 \echo '--- DQ Countries Summary ---'
 
 select 'Total DQ Countries' as metric, count(*) as count
-from metadata.dq_countries_artefact_tbl
+from ores_dq_countries_artefact_tbl
 union all
 select 'Countries with Placeholder Flag', count(*)
-from metadata.dq_countries_artefact_tbl c
-join metadata.dq_images_artefact_tbl i on c.image_id = i.image_id
+from ores_dq_countries_artefact_tbl c
+join ores_dq_images_artefact_tbl i on c.image_id = i.image_id
 where i.key = 'xx';

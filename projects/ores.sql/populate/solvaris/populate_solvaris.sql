@@ -6,8 +6,6 @@
  * Includes all solvaris SQL files in the correct dependency order.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Catalogs data for Slovaris
 -- =============================================================================

@@ -25,15 +25,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- ISO Standards Catalog
 -- =============================================================================
 
 \echo '--- ISO Standards Catalog ---'
 
-select metadata.dq_catalogs_upsert_fn(
+select ores_dq_catalogs_upsert_fn(
     'ISO Standards',
     'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
     'Reference Data Team'

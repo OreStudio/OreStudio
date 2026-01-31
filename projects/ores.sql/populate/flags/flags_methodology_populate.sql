@@ -25,15 +25,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Flag Icons Data Sourcing Methodologies
 -- =============================================================================
 
 \echo '--- Flag Icons Methodologies ---'
 
-select metadata.dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(
     'GitHub Flag Icons Download',
     'SVG images downloaded from lipis/flag-icons GitHub repository',
     'https://github.com/lipis/flag-icons',

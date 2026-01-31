@@ -41,25 +41,23 @@
  * Reason code format: "category.reason_name"
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Change Reason Categories
 -- =============================================================================
 
 \echo '--- Change Reason Categories ---'
 
-select metadata.dq_change_reason_categories_upsert_fn(
+select ores_dq_change_reason_categories_upsert_fn(
     'system',
     'System-generated reasons for automatic operations (not user-selectable)'
 );
 
-select metadata.dq_change_reason_categories_upsert_fn(
+select ores_dq_change_reason_categories_upsert_fn(
     'common',
     'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
 );
 
-select metadata.dq_change_reason_categories_upsert_fn(
+select ores_dq_change_reason_categories_upsert_fn(
     'trade',
     'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
 );
@@ -72,7 +70,7 @@ select metadata.dq_change_reason_categories_upsert_fn(
 \echo '--- Change Reasons: System ---'
 
 -- System reasons (auto-assigned, not user-selectable)
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'system.initial_load',
     'Initial system bootstrap or migration',
     'system',
@@ -82,7 +80,7 @@ select metadata.dq_change_reasons_upsert_fn(
     0       -- display order
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'system.new_record',
     'New record created during normal operations',
     'system',
@@ -92,7 +90,7 @@ select metadata.dq_change_reasons_upsert_fn(
     10      -- display order
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'system.external_data_import',
     'External data import (requires data lineage)',
     'system',
@@ -102,7 +100,7 @@ select metadata.dq_change_reasons_upsert_fn(
     20      -- display order
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'system.test',
     'Test data for automated testing',
     'system',
@@ -112,7 +110,7 @@ select metadata.dq_change_reasons_upsert_fn(
     30      -- display order
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'system.import',
     'Data imported via CLI import command',
     'system',
@@ -129,7 +127,7 @@ select metadata.dq_change_reasons_upsert_fn(
 \echo ''
 \echo '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.non_material_update',
     'Non-material update (Touch)',
     'common',
@@ -139,7 +137,7 @@ select metadata.dq_change_reasons_upsert_fn(
     10
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.rectification',
     'User/Booking Error',
     'common',
@@ -149,7 +147,7 @@ select metadata.dq_change_reasons_upsert_fn(
     20
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.duplicate',
     'Duplicate Record',
     'common',
@@ -159,7 +157,7 @@ select metadata.dq_change_reasons_upsert_fn(
     30
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.stale_data',
     'Data not updated within required liquidity horizon',
     'common',
@@ -169,7 +167,7 @@ select metadata.dq_change_reasons_upsert_fn(
     40
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.outlier_correction',
     'Manual override after plausibility check failure',
     'common',
@@ -179,7 +177,7 @@ select metadata.dq_change_reasons_upsert_fn(
     50
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.feed_failure',
     'Upstream vendor/API data issue',
     'common',
@@ -189,7 +187,7 @@ select metadata.dq_change_reasons_upsert_fn(
     60
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.mapping_error',
     'Incorrect ID translation (e.g., ISIN to FIGI)',
     'common',
@@ -199,7 +197,7 @@ select metadata.dq_change_reasons_upsert_fn(
     70
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.judgmental_override',
     'Expert judgment when market prices unavailable',
     'common',
@@ -209,7 +207,7 @@ select metadata.dq_change_reasons_upsert_fn(
     80
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.regulatory',
     'Mandatory compliance adjustment',
     'common',
@@ -219,7 +217,7 @@ select metadata.dq_change_reasons_upsert_fn(
     90
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'common.other',
     'Exceptional (requires audit note)',
     'common',
@@ -236,7 +234,7 @@ select metadata.dq_change_reasons_upsert_fn(
 \echo ''
 \echo '--- Change Reasons: Trade (FINRA / MiFID II) ---'
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'trade.fat_finger',
     'Erroneous execution (wrong quantity/price)',
     'trade',
@@ -246,7 +244,7 @@ select metadata.dq_change_reasons_upsert_fn(
     10
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'trade.system_malfunction',
     'Technical glitch or algorithm issue',
     'trade',
@@ -256,7 +254,7 @@ select metadata.dq_change_reasons_upsert_fn(
     20
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'trade.corporate_action',
     'Stock split, dividend, or merger adjustment',
     'trade',
@@ -266,7 +264,7 @@ select metadata.dq_change_reasons_upsert_fn(
     30
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'trade.allocation_swap',
     'House to client sub-account reallocation',
     'trade',
@@ -276,7 +274,7 @@ select metadata.dq_change_reasons_upsert_fn(
     40
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'trade.re_booking',
     'Wrong legal entity correction',
     'trade',
@@ -286,7 +284,7 @@ select metadata.dq_change_reasons_upsert_fn(
     50
 );
 
-select metadata.dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(
     'trade.other',
     'Exceptional (requires audit note)',
     'trade',
@@ -304,14 +302,14 @@ select metadata.dq_change_reasons_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Change Reason Categories' as entity, count(*) as count
-from metadata.dq_change_reason_categories_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_change_reason_categories_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons (system)', count(*)
-from metadata.dq_change_reasons_tbl where category_code = 'system' and valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_change_reasons_tbl where category_code = 'system' and valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons (common)', count(*)
-from metadata.dq_change_reasons_tbl where category_code = 'common' and valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_change_reasons_tbl where category_code = 'common' and valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons (trade)', count(*)
-from metadata.dq_change_reasons_tbl where category_code = 'trade' and valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_change_reasons_tbl where category_code = 'trade' and valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

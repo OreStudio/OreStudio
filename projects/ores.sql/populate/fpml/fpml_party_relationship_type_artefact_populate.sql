@@ -28,7 +28,6 @@
  * Use dq_populate_party_relationships() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Party Relationship Type
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.party_relationship_type'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.party_relationship_type not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_party_relationships_artefact_tbl
+    delete from ores_dq_party_relationships_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_party_relationships_artefact_tbl (
+    insert into ores_dq_party_relationships_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'Indicates whether the transaction is between two affiliated entities. It is referred to as Inter-affiliate under the Canadian CSA reporting regime.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_party_relationships_artefact_tbl (
+    insert into ores_dq_party_relationships_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'Indicates the transaction is between two dealers.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_party_relationships_artefact_tbl (
+    insert into ores_dq_party_relationships_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -102,9 +101,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_party_relationships_artefact' as entity, count(*) as count
-from metadata.dq_party_relationships_artefact_tbl;
+from ores_dq_party_relationships_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_party_relationships_artefact_tbl
+from ores_dq_party_relationships_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

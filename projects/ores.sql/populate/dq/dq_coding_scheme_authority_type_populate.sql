@@ -30,27 +30,25 @@
  * - internal: Proprietary/organization-specific
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Coding Scheme Authority Types
 -- =============================================================================
 
 \echo '--- Coding Scheme Authority Types ---'
 
-select metadata.dq_coding_scheme_authority_types_upsert_fn(
+select ores_dq_coding_scheme_authority_types_upsert_fn(
     'official',
     'Official Standard',
     'Formal standard published by a recognized standards body such as ISO, IEEE, or a regulatory authority. These schemes have official governance, versioning, and maintenance processes.'
 );
 
-select metadata.dq_coding_scheme_authority_types_upsert_fn(
+select ores_dq_coding_scheme_authority_types_upsert_fn(
     'industry',
     'Industry Standard',
     'De facto standard widely adopted in the financial industry but not published by a formal standards body. Typically maintained by industry consortiums, trade associations, or market infrastructure providers such as SWIFT, DTCC, or FINRA.'
 );
 
-select metadata.dq_coding_scheme_authority_types_upsert_fn(
+select ores_dq_coding_scheme_authority_types_upsert_fn(
     'internal',
     'Internal/Proprietary',
     'Proprietary or organization-specific identifier scheme. Used for internal systems, client identifiers, or custom classifications that are not standardized outside the organization.'
@@ -64,5 +62,5 @@ select metadata.dq_coding_scheme_authority_types_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Coding Scheme Authority Types' as entity, count(*) as count
-from metadata.dq_coding_scheme_authority_types_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_coding_scheme_authority_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

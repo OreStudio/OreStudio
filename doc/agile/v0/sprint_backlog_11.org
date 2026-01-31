@@ -436,6 +436,9 @@ schemas without the operational debt of cross-schema management.
 *** Check directory structure in SQL                                   :code:
 
 - why is there a projects/ores.sql/create/change_control directory.
+- why are these dq?
+
+: projects/ores.sql/create/refdata/dq_account_types_artefact_create.sql
 
 *** Add a sample set of gravatars for profiles                         :code:
 

@@ -29,19 +29,17 @@
  * - Derived: Data transformed, aggregated, or calculated via code
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Migration: Rename Source to Primary
 -- =============================================================================
 
 -- Update existing 'Source' records to 'Primary'
-update metadata.dq_origin_dimensions_tbl
+update ores_dq_origin_dimensions_tbl
 set code = 'Primary', name = 'Primary Data'
 where code = 'Source';
 
 -- Update any datasets referencing 'Source' to use 'Primary'
-update metadata.dq_datasets_tbl
+update ores_dq_datasets_tbl
 set origin_code = 'Primary'
 where origin_code = 'Source';
 
@@ -51,13 +49,13 @@ where origin_code = 'Source';
 
 \echo '--- Data Quality Origin Dimensions ---'
 
-select metadata.dq_origin_dimensions_upsert_fn(
+select ores_dq_origin_dimensions_upsert_fn(
     'Primary',
     'Primary Data',
     'Raw data ingested directly from the origin without transformations.'
 );
 
-select metadata.dq_origin_dimensions_upsert_fn(
+select ores_dq_origin_dimensions_upsert_fn(
     'Derived',
     'Derived Data',
     'Data transformed, aggregated, or calculated via code.'
@@ -71,5 +69,5 @@ select metadata.dq_origin_dimensions_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Data Quality Origin Dimensions' as entity, count(*) as count
-from metadata.dq_origin_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_origin_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

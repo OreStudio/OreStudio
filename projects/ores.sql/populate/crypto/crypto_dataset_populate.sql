@@ -26,7 +26,6 @@
  * This must be run before populating the artefact tables.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- Cryptocurrency Datasets
@@ -35,7 +34,7 @@ set schema 'metadata';
 \echo '--- Cryptocurrency Datasets ---'
 
 -- Cryptocurrency Icon Images
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'assets.crypto_icons',
     'Cryptocurrency',
     'Cryptocurrencies',
@@ -55,7 +54,7 @@ select metadata.dq_datasets_upsert_fn(
 );
 
 -- Cryptocurrencies Large
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'crypto.large',
     'Cryptocurrency',
     'Cryptocurrencies',
@@ -75,7 +74,7 @@ select metadata.dq_datasets_upsert_fn(
 );
 
 -- Cryptocurrencies Small
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'crypto.small',
     'Cryptocurrency',
     'Cryptocurrencies',

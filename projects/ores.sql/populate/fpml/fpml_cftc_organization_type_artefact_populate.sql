@@ -21,14 +21,13 @@
 /**
  * DQ Artefact FpML Cftc Organization Type Population Script
  *
- * Populates the dq_entity_classifications_artefact_tbl with reference data.
+ * Populates the ores_dq_entity_classifications_artefact_tbl with reference data.
  * Dataset: fpml.cftc_organization_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_entity_classifications() to publish to production.
+ * Use ores_dq_populate_entity_classifications() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Cftc Organization Type
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.cftc_organization_type'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.cftc_organization_type not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_entity_classifications_artefact_tbl
+    delete from ores_dq_entity_classifications_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'An agency as defined in 5 U.S.C. 551(1), a federal instrumentality, or a federal authority.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'An entity chartered pursuant to federal law after formation (example: an organization listed in title 36 of the U.S. Code).'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         'An entity that was established by, or at the direction of, one or more of the entities listed in clause (1), or has an ultimate parent listed in its LEI reference data that is an entity listed in clause (1) or in the first part of this clause (2).'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'A federally funded research and development center on the master list referenced in 48 CFR 35.017-6.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         'A government corporation (examples: as such term is defined in 5 U.S.C. 103(1) or in 31 U.S.C. 9101).'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'A government-sponsored enterprise (example: as such term is defined in 2 U.S.C. 622(8)).'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_entity_classifications_artefact_tbl (
+    insert into ores_dq_entity_classifications_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -134,7 +133,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_entity_classifications_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_entity_classifications_artefact_tbl', v_count;
 end;
 $$;
 
@@ -146,9 +145,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_entity_classifications_artefact' as entity, count(*) as count
-from metadata.dq_entity_classifications_artefact_tbl;
+from ores_dq_entity_classifications_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_entity_classifications_artefact_tbl
+from ores_dq_entity_classifications_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

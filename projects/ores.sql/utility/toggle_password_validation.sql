@@ -33,8 +33,6 @@
  *   \i projects/ores.sql/toggle_password_validation.sql
  */
 
-set schema 'production';
-
 -- Default to enabled (0) if not specified
 \if :{?new_value}
     -- Variable is set, use it
@@ -43,7 +41,7 @@ set schema 'production';
 \endif
 
 -- Update the flag using the upsert function
-select production.variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(
     'system.disable_password_validation',
     :new_value::boolean,
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
@@ -51,9 +49,9 @@ select production.variability_feature_flags_upsert_fn(
 
 -- Show the updated state
 select name, enabled, description, modified_by, valid_from
-from production.variability_feature_flags_tbl
+from ores_variability_feature_flags_tbl
 where name = 'system.disable_password_validation'
-  and valid_to = public.utility_infinity_timestamp_fn();
+  and valid_to = ores_utility_infinity_timestamp_fn();
 
 \if :new_value
     \echo 'Password validation is now DISABLED (weak passwords allowed)'

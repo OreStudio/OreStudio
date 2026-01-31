@@ -28,7 +28,6 @@
  * Source: external/crypto/cryptocurrencies/cryptocurrencies.json
  */
 
-set schema 'metadata';
 
 DO $$
 declare
@@ -39,11 +38,11 @@ declare
 begin
     -- Get the cryptocurrencies dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'Cryptocurrencies Large'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: Cryptocurrencies Large';
@@ -51,11 +50,11 @@ begin
 
     -- Get the cryptocurrency icons dataset ID (for linking images)
     select id into v_icons_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'Cryptocurrency Icon Images'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_icons_dataset_id is null then
         raise exception 'Dataset not found: Cryptocurrency Icon Images';
@@ -63,7 +62,7 @@ begin
 
     -- Get a placeholder image (use 'xx' flag from the flags dataset)
     select image_id into v_placeholder_image_id
-    from metadata.dq_images_artefact_tbl
+    from ores_dq_images_artefact_tbl
     where key = 'xx'
     limit 1;
 
@@ -72,13 +71,13 @@ begin
     end if;
 
     -- Clear existing cryptocurrencies for this dataset (idempotency)
-    delete from metadata.dq_currencies_artefact_tbl
+    delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise notice 'Populating cryptocurrencies for dataset: Cryptocurrencies Large';
 
     -- Insert cryptocurrencies with icon links
-    insert into metadata.dq_currencies_artefact_tbl (
+    insert into ores_dq_currencies_artefact_tbl (
         dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
     )
@@ -12341,7 +12340,7 @@ begin
         ('wsOHM', 'Wrapped Staked Olympus', '', 'wsOHM', '', 100000000, 'Closest', 8, '#,##0.00000000', 'crypto.minor'),
         ('xGOx', 'Go!', '', 'xGOx', '', 100000000, 'Closest', 8, '#,##0.00000000', 'crypto.minor')
     ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type)
-    left join metadata.dq_images_artefact_tbl i
+    left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_icons_dataset_id
         and i.key = lower(c.iso_code);
 
@@ -12351,7 +12350,7 @@ begin
     -- Report count of cryptocurrencies with icons
     raise notice 'Cryptocurrencies with matching icons: %', (
         select count(*)
-        from metadata.dq_currencies_artefact_tbl
+        from ores_dq_currencies_artefact_tbl
         where dataset_id = v_dataset_id
           and image_id is not null
     );
@@ -12361,24 +12360,24 @@ end $$;
 \echo '--- Cryptocurrency Summary (Cryptocurrencies Large) ---'
 
 select 'Total Cryptocurrencies' as metric, count(*) as count
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Large'
 union all
 select 'Major (crypto.major)', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Large'
   and c.currency_type = 'crypto.major'
 union all
 select 'Minor (crypto.minor)', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Large'
   and c.currency_type = 'crypto.minor'
 union all
 select 'With Icons', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Large'
   and c.image_id is not null;

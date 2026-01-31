@@ -26,7 +26,6 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
 
 DO $$
 declare
@@ -37,11 +36,11 @@ declare
 begin
     -- Get the currencies dataset ID
     select id into v_currencies_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'ISO 4217 Currency Codes'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_currencies_dataset_id is null then
         raise exception 'Dataset not found: ISO 4217 Currency Codes';
@@ -49,11 +48,11 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Dataset not found: Country Flag Images';
@@ -61,7 +60,7 @@ begin
 
     -- Get the placeholder image (xx.svg = "no flag available")
     select image_id into v_placeholder_image_id
-    from metadata.dq_images_artefact_tbl
+    from ores_dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = 'xx';
 
@@ -70,7 +69,7 @@ begin
     end if;
 
     -- Clear existing currencies for this dataset (idempotency)
-    delete from metadata.dq_currencies_artefact_tbl
+    delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_currencies_dataset_id;
 
     raise notice 'Populating currencies for dataset: ISO 4217 Currency Codes';
@@ -78,7 +77,7 @@ begin
     -- Insert currencies with flag image links
     -- Currency-to-flag mapping: each currency maps to its issuing country's flag
     -- Special cases: EUR -> 'eu', XAU -> 'xau', XDR -> 'xdr', etc.
-    insert into metadata.dq_currencies_artefact_tbl (
+    insert into ores_dq_currencies_artefact_tbl (
         dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
     )
@@ -263,7 +262,7 @@ begin
         -- Supranational
         ('XDR', 'Special Drawing Rights', '960', 'SDR', '', 0, 'Closest', 6, 'SDR #,##0.000000', 'supranational', 'xdr')
     ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, flag_key)
-    left join metadata.dq_images_artefact_tbl i
+    left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = c.flag_key;
 
@@ -274,7 +273,7 @@ begin
     -- Report currencies using placeholder flag
     raise notice 'Currencies using placeholder flag (xx):';
     perform iso_code
-    from metadata.dq_currencies_artefact_tbl
+    from ores_dq_currencies_artefact_tbl
     where dataset_id = v_currencies_dataset_id
       and image_id = v_placeholder_image_id;
 end $$;
@@ -287,25 +286,25 @@ end $$;
 \echo '--- DQ Currencies Summary ---'
 
 select 'Total DQ Currencies' as metric, count(*) as count
-from metadata.dq_currencies_artefact_tbl
+from ores_dq_currencies_artefact_tbl
 union all
 select 'Major Fiat Currencies (fiat.major)', count(*)
-from metadata.dq_currencies_artefact_tbl
+from ores_dq_currencies_artefact_tbl
 where currency_type = 'fiat.major'
 union all
 select 'Emerging Fiat Currencies (fiat.emerging)', count(*)
-from metadata.dq_currencies_artefact_tbl
+from ores_dq_currencies_artefact_tbl
 where currency_type = 'fiat.emerging'
 union all
 select 'Commodity Currencies (commodity)', count(*)
-from metadata.dq_currencies_artefact_tbl
+from ores_dq_currencies_artefact_tbl
 where currency_type = 'commodity'
 union all
 select 'Supranational Currencies (supranational)', count(*)
-from metadata.dq_currencies_artefact_tbl
+from ores_dq_currencies_artefact_tbl
 where currency_type = 'supranational'
 union all
 select 'Currencies with Placeholder Flag', count(*)
-from metadata.dq_currencies_artefact_tbl c
-join metadata.dq_images_artefact_tbl i on c.image_id = i.image_id
+from ores_dq_currencies_artefact_tbl c
+join ores_dq_images_artefact_tbl i on c.image_id = i.image_id
 where i.key = 'xx';

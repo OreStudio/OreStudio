@@ -21,14 +21,13 @@
 /**
  * DQ Artefact FpML Regulatory Corporate Sector Population Script
  *
- * Populates the dq_regulatory_corporate_sectors_artefact_tbl with reference data.
+ * Populates the ores_dq_regulatory_corporate_sectors_artefact_tbl with reference data.
  * Dataset: fpml.regulatory_corporate_sector
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_regulatory_corporate_sectors() to publish to production.
+ * Use ores_dq_populate_regulatory_corporate_sectors() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Regulatory Corporate Sector
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.regulatory_corporate_sector'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.regulatory_corporate_sector not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_regulatory_corporate_sectors_artefact_tbl
+    delete from ores_dq_regulatory_corporate_sectors_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         '(Non Financial) - 9 = Accommodation and food service activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         '(Non Financial) - 14 = Administrative and support service activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         '(Non Financial) - 1 = Agriculture, forestry and fishing. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'L=Alternative investment fund managed by AIFMs authorised or registered in accordance with Directive 2011/61/EU;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         '(Non Financial) - 18 = Arts, entertainment and recreation. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'A=Assurance undertaking authorised in accordance with Directive 2002/83/EC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +132,7 @@ begin
         '(Non Financial) - 6 = Construction. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +143,7 @@ begin
         'Corporate, as defined by HKMA.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +154,7 @@ begin
         'C=Credit institution authorised in accordance with Directive 2006/48/EC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +165,7 @@ begin
         '(Non Financial) - 16 = Education. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +176,7 @@ begin
         '(Non Financial) - 4 = Electricity, gas, steam and air conditioning supply. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +187,7 @@ begin
         '(Non Financial) - 21 = Activities of extraterritorial organisations and bodies. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +198,7 @@ begin
         '(Non Financial) - 11 = Financial and insurance activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -210,7 +209,7 @@ begin
         'The identification of Financial Entity can be determined by the entityClassification Coding scheme under reportingRegime/entityClassification'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -221,7 +220,7 @@ begin
         '(Non Financial) - 17 = Human health and social work activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -232,7 +231,7 @@ begin
         '(Non Financial) - 20 = Activities of households as employers; undifferentiated goods – and services –producing activities of households for own use. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -243,7 +242,7 @@ begin
         'Individual, as defined by HKMA.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -254,7 +253,7 @@ begin
         '(Non Financial) - 10 = Information and communication. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -265,7 +264,7 @@ begin
         'O=Institution for occupational retirement provision within the meaning of Article 6(a) of Directive 2003/41/EC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -276,7 +275,7 @@ begin
         'I=Insurance undertaking authorised in accordance with Directive 73/239/EEC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -287,7 +286,7 @@ begin
         'F=Investment firm in accordance with Directive 2004/39/EC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -298,7 +297,7 @@ begin
         '(Non Financial) - 3 =Manufacturing. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -309,7 +308,7 @@ begin
         '(Non Financial) - 2 = Mining and quarrying. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -320,7 +319,7 @@ begin
         'The identification of Non Financial Entity can be determined by the entityClassification Coding scheme under reportingRegime/entityClassification'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -331,7 +330,7 @@ begin
         '(Non Financial) - 19 = Other service activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -342,7 +341,7 @@ begin
         '(Non Financial) - 13 = Professional, scientific and technical activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -353,7 +352,7 @@ begin
         '(Non Financial) - 15 = Public administration and defence; compulsory social security. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -364,7 +363,7 @@ begin
         '(Non Financial) - 12 = Real estate activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -375,7 +374,7 @@ begin
         'R=Reinsurance undertaking authorised in accordance with Directive 2005/68/EC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -386,7 +385,7 @@ begin
         '(Non Financial) - 8 = Transportation and storage. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -397,7 +396,7 @@ begin
         'U=UCITS and its management company, authorised in accordance with Directive 2009/65/EC;'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -408,7 +407,7 @@ begin
         '(Non Financial) - 5 = Water supply, sewerage, waste management and remediation activities. Classification as defined in Regulation (EC) No 1893/2006 and ESMA/2015/1645.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_regulatory_corporate_sectors_artefact_tbl (
+    insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -420,7 +419,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_regulatory_corporate_sectors_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_regulatory_corporate_sectors_artefact_tbl', v_count;
 end;
 $$;
 
@@ -432,9 +431,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_regulatory_corporate_sectors_artefact' as entity, count(*) as count
-from metadata.dq_regulatory_corporate_sectors_artefact_tbl;
+from ores_dq_regulatory_corporate_sectors_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_regulatory_corporate_sectors_artefact_tbl
+from ores_dq_regulatory_corporate_sectors_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

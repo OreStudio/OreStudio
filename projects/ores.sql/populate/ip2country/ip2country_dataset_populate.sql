@@ -26,8 +26,6 @@
  * This must be run before populating the artefact tables.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- IP Geolocation Datasets
 -- =============================================================================
@@ -35,7 +33,7 @@ set schema 'metadata';
 \echo '--- IP Geolocation Datasets ---'
 
 -- IP to Country IPv4 Ranges
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'geo.ip2country',
     'IP Geolocation',
     'IP Address to Country maps',

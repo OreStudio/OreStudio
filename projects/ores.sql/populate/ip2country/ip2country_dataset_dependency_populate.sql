@@ -26,8 +26,6 @@
  * Must be run after ip2country_dataset_populate.sql.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- IP Geolocation Dataset Dependencies
 -- =============================================================================

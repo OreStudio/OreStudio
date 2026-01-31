@@ -87,23 +87,23 @@
 \echo '--- Data Governance Layer Summary ---'
 
 select 'Origin Dimensions' as entity, count(*) as count
-from metadata.dq_origin_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_origin_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Nature Dimensions', count(*)
-from metadata.dq_nature_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_nature_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Treatment Dimensions', count(*)
-from metadata.dq_treatment_dimensions_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_treatment_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Methodologies', count(*)
-from metadata.dq_methodologies_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_methodologies_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Artefact Types', count(*)
-from metadata.dq_artefact_types_tbl
+from ores_dq_artefact_types_tbl
 union all
 select 'Dataset Bundles', count(*)
-from metadata.dq_dataset_bundles_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_dataset_bundles_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Dataset Bundle Members', count(*)
-from metadata.dq_dataset_bundle_members_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_dataset_bundle_members_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

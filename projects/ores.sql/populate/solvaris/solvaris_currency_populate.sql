@@ -27,7 +27,6 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
 
 DO $$
 declare
@@ -38,11 +37,11 @@ declare
 begin
     -- Get the currencies dataset ID from the datasets model
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'Solvaris Currencies'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found for currencies';
@@ -50,11 +49,11 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = 'Solvaris Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Dataset not found for flag images';
@@ -62,7 +61,7 @@ begin
 
     -- Get the placeholder image (xx.svg = "no flag available")
     select image_id into v_placeholder_image_id
-    from metadata.dq_images_artefact_tbl
+    from ores_dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = 'xx';
 
@@ -71,13 +70,13 @@ begin
     end if;
 
     -- Clear existing currencies for this dataset (idempotency)
-    delete from metadata.dq_currencies_artefact_tbl
+    delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating currencies for dataset: %', (select name from metadata.dq_datasets_tbl where id = v_dataset_id);
+    raise notice 'Populating currencies for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 
     -- Insert Solvaris currencies with flag image links
-    insert into metadata.dq_currencies_artefact_tbl (
+    insert into ores_dq_currencies_artefact_tbl (
         dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
     )
@@ -197,13 +196,13 @@ begin
         ('EZE', 'Ezorian Eze', 10099, 'د.إ', 'ف', 100, 'Closest', 2, 'د.إ#,##0.00', 'fiat.emerging', 'ez'),
         ('FAF', 'Faelandian Fae', 10100, 'R', 'c', 100, 'Closest', 2, 'R#,##0.00', 'fiat.emerging', 'fa')
     ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, flag_key)
-    left join metadata.dq_images_artefact_tbl i
+    left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = c.flag_key;
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % currencies for dataset: %', v_count, (select name from metadata.dq_datasets_tbl where id = v_dataset_id);
+    raise notice 'Successfully populated % currencies for dataset: %', v_count, (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 end $$;
 
 -- =============================================================================
@@ -215,11 +214,11 @@ end $$;
 
 with currencies as (
     select c.currency_type
-    from metadata.dq_currencies_artefact_tbl c
-    join metadata.dq_datasets_tbl d on c.dataset_id = d.id
+    from ores_dq_currencies_artefact_tbl c
+    join ores_dq_datasets_tbl d on c.dataset_id = d.id
     where d.subject_area_name = 'Currencies'
       and d.domain_name = 'Reference Data'
-      and d.valid_to = public.utility_infinity_timestamp_fn()
+      and d.valid_to = ores_utility_infinity_timestamp_fn()
 )
 select 'Total Solvaris Currencies' as metric, count(*) as count from currencies
 union all

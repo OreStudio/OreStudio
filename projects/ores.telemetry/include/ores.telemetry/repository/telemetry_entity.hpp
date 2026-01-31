@@ -35,8 +35,8 @@ namespace ores::telemetry::repository {
  * partitioned by timestamp.
  */
 struct telemetry_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "telemetry_logs_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_telemetry_logs_tbl";
 
     /**
      * @brief Log entry UUID - part of composite primary key.
@@ -105,8 +105,8 @@ std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
  * @brief Entity for hourly telemetry statistics from continuous aggregates.
  */
 struct telemetry_stats_hourly_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "telemetry_stats_hourly_vw";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_telemetry_stats_hourly_vw";
 
     std::string hour;
     std::string source;
@@ -123,8 +123,8 @@ std::ostream& operator<<(std::ostream& s, const telemetry_stats_hourly_entity& v
  * @brief Entity for daily telemetry statistics from continuous aggregates.
  */
 struct telemetry_stats_daily_entity {
-    constexpr static const char* schema = "production";
-    constexpr static const char* tablename = "telemetry_stats_daily_vw";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_telemetry_stats_daily_vw";
 
     std::string day;
     std::string source;

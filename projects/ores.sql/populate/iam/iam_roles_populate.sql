@@ -37,52 +37,50 @@
  * - permissions_populate.sql must be run first
  */
 
-set schema 'production';
-
 -- Create roles
-select production.iam_roles_upsert_fn('Admin', 'Full administrative access to all system functions');
-select production.iam_roles_upsert_fn('Trading', 'Trading operations - currency read access');
-select production.iam_roles_upsert_fn('Sales', 'Sales operations - read-only currency access');
-select production.iam_roles_upsert_fn('Operations', 'Operations - currency management and account viewing');
-select production.iam_roles_upsert_fn('Support', 'Support - read-only access to all resources and admin screens');
-select production.iam_roles_upsert_fn('Viewer', 'Viewer - basic read-only access to domain data');
+select ores_iam_roles_upsert_fn('Admin', 'Full administrative access to all system functions');
+select ores_iam_roles_upsert_fn('Trading', 'Trading operations - currency read access');
+select ores_iam_roles_upsert_fn('Sales', 'Sales operations - read-only currency access');
+select ores_iam_roles_upsert_fn('Operations', 'Operations - currency management and account viewing');
+select ores_iam_roles_upsert_fn('Support', 'Support - read-only access to all resources and admin screens');
+select ores_iam_roles_upsert_fn('Viewer', 'Viewer - basic read-only access to domain data');
 
 -- Assign permissions to Admin role (wildcard)
-select production.iam_role_permissions_assign_fn('Admin', '*');
+select ores_iam_role_permissions_assign_fn('Admin', '*');
 
 -- Assign permissions to Trading role
-select production.iam_role_permissions_assign_fn('Trading', 'currencies:read');
-select production.iam_role_permissions_assign_fn('Trading', 'currencies:history');
-select production.iam_role_permissions_assign_fn('Trading', 'flags:read');
+select ores_iam_role_permissions_assign_fn('Trading', 'currencies:read');
+select ores_iam_role_permissions_assign_fn('Trading', 'currencies:history');
+select ores_iam_role_permissions_assign_fn('Trading', 'flags:read');
 
 -- Assign permissions to Sales role
-select production.iam_role_permissions_assign_fn('Sales', 'currencies:read');
-select production.iam_role_permissions_assign_fn('Sales', 'flags:read');
+select ores_iam_role_permissions_assign_fn('Sales', 'currencies:read');
+select ores_iam_role_permissions_assign_fn('Sales', 'flags:read');
 
 -- Assign permissions to Operations role
-select production.iam_role_permissions_assign_fn('Operations', 'currencies:create');
-select production.iam_role_permissions_assign_fn('Operations', 'currencies:read');
-select production.iam_role_permissions_assign_fn('Operations', 'currencies:update');
-select production.iam_role_permissions_assign_fn('Operations', 'currencies:delete');
-select production.iam_role_permissions_assign_fn('Operations', 'currencies:history');
-select production.iam_role_permissions_assign_fn('Operations', 'flags:read');
-select production.iam_role_permissions_assign_fn('Operations', 'accounts:read');
+select ores_iam_role_permissions_assign_fn('Operations', 'currencies:create');
+select ores_iam_role_permissions_assign_fn('Operations', 'currencies:read');
+select ores_iam_role_permissions_assign_fn('Operations', 'currencies:update');
+select ores_iam_role_permissions_assign_fn('Operations', 'currencies:delete');
+select ores_iam_role_permissions_assign_fn('Operations', 'currencies:history');
+select ores_iam_role_permissions_assign_fn('Operations', 'flags:read');
+select ores_iam_role_permissions_assign_fn('Operations', 'accounts:read');
 
 -- Assign permissions to Support role
-select production.iam_role_permissions_assign_fn('Support', 'accounts:read');
-select production.iam_role_permissions_assign_fn('Support', 'currencies:read');
-select production.iam_role_permissions_assign_fn('Support', 'currencies:history');
-select production.iam_role_permissions_assign_fn('Support', 'flags:read');
-select production.iam_role_permissions_assign_fn('Support', 'login_info:read');
-select production.iam_role_permissions_assign_fn('Support', 'roles:read');
+select ores_iam_role_permissions_assign_fn('Support', 'accounts:read');
+select ores_iam_role_permissions_assign_fn('Support', 'currencies:read');
+select ores_iam_role_permissions_assign_fn('Support', 'currencies:history');
+select ores_iam_role_permissions_assign_fn('Support', 'flags:read');
+select ores_iam_role_permissions_assign_fn('Support', 'login_info:read');
+select ores_iam_role_permissions_assign_fn('Support', 'roles:read');
 
 -- Assign permissions to Viewer role (default for new accounts)
-select production.iam_role_permissions_assign_fn('Viewer', 'currencies:read');
-select production.iam_role_permissions_assign_fn('Viewer', 'flags:read');
+select ores_iam_role_permissions_assign_fn('Viewer', 'currencies:read');
+select ores_iam_role_permissions_assign_fn('Viewer', 'flags:read');
 
 -- Show summary
-select 'Roles:' as summary, count(*) as count from production.iam_roles_tbl
-where valid_to = public.utility_infinity_timestamp_fn()
+select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
 union all
-select 'Role-Permission assignments:', count(*) from production.iam_role_permissions_tbl
-where valid_to = public.utility_infinity_timestamp_fn();
+select 'Role-Permission assignments:', count(*) from ores_iam_role_permissions_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();

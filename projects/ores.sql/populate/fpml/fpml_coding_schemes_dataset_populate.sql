@@ -6,8 +6,6 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- FPML Coding Schemes Dataset
 -- =============================================================================
@@ -15,7 +13,7 @@ set schema 'metadata';
 \echo '--- FPML Coding Schemes Dataset ---'
 
 -- FpML Coding Schemes
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'fpml.coding_schemes',
     'FpML Standards',
     'General',

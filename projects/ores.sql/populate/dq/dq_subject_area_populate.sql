@@ -37,69 +37,67 @@
  * - General: Cross-cutting reference data
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Subject Areas
 -- =============================================================================
 
 \echo '--- Data Quality Subject Areas ---'
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Currencies',
     'Currency reference data.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Countries',
     'Country reference data.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Country Flags',
     'Flag image data associated with countries.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'IP Address to Country maps',
     'IP geolocation mapping data.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Cryptocurrencies',
     'Cryptocurrency reference data including icons and metadata.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Parties',
     'Party identification schemes and reference data for legal entities and financial institutions.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'General',
     'Cross-cutting reference data not specific to a particular domain.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Trading',
     'Trading infrastructure reference data including account types, business centres, and cashflow types.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Market Data',
     'Market data reference including asset classes, asset measures, and benchmark rates.'
 );
 
-select metadata.dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(
     'Reference Data',
     'Regulatory',
     'Regulatory reference data including supervisory bodies, reporting regimes, and jurisdictions.'
@@ -113,5 +111,5 @@ select metadata.dq_subject_areas_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Data Quality Subject Areas' as entity, count(*) as count
-from metadata.dq_subject_areas_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_subject_areas_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

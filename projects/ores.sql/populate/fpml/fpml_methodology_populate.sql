@@ -6,15 +6,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- FPML Data Sourcing Methodology
 -- =============================================================================
 
 \echo '--- FPML Methodology ---'
 
-select metadata.dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(
     'FpML Genericode Download',
     'Data downloaded from FpML coding scheme repository in Genericode XML format',
     'https://www.fpml.org/the_standard/current/',

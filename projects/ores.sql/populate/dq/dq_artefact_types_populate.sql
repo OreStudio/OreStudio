@@ -25,15 +25,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- DQ Artefact Types
 -- =============================================================================
 
 \echo '--- DQ Artefact Types ---'
 
-insert into metadata.dq_artefact_types_tbl (code, name, description, artefact_table, target_table, populate_function, display_order)
+insert into ores_dq_artefact_types_tbl (code, name, description, artefact_table, target_table, populate_function, display_order)
 values
     ('none', 'None', 'Dataset with no artefacts (metadata only)', null, null, null, 0),
     ('images', 'Images', 'Image assets for visual elements', 'dq_images_artefact_tbl', 'assets_images_tbl', 'dq_images_publish_fn', 1),
@@ -66,5 +64,5 @@ on conflict (code) do nothing;
 \echo '--- Summary ---'
 
 select 'DQ Artefact Types' as entity, count(*) as count
-from metadata.dq_artefact_types_tbl
+from ores_dq_artefact_types_tbl
 order by entity;

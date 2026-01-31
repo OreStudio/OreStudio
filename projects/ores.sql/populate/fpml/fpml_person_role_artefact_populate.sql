@@ -28,7 +28,6 @@
  * Use dq_populate_person_roles() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Person Role
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.person_role'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.person_role not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_person_roles_artefact_tbl
+    delete from ores_dq_person_roles_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'The person who arranged with a client to execute the trade.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'Acquirer of the legal title to the financial instrument.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         'The operational contact at the custodian.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'The party or person with legal responsibility for authorization of the execution of the transaction.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         'Person within the firm who is responsible for execution of the transaction.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'Person who is responsible for making the investment decision.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +132,7 @@ begin
         'Individual responsible for managing the closing-related operational servicing of an asset.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +143,7 @@ begin
         'Individual responsible for ongoing operational servicing of the asset. E.g. managing principal draws and repayments, interest and fee payments, etc.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +154,7 @@ begin
         'Seller of the legal title to the financial instrument.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_person_roles_artefact_tbl (
+    insert into ores_dq_person_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -179,9 +178,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_person_roles_artefact' as entity, count(*) as count
-from metadata.dq_person_roles_artefact_tbl;
+from ores_dq_person_roles_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_person_roles_artefact_tbl
+from ores_dq_person_roles_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

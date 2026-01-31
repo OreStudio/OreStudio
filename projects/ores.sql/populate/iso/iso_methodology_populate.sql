@@ -25,15 +25,13 @@
  * This script is idempotent.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- ISO Standards Methodologies
 -- =============================================================================
 
 \echo '--- ISO Standards Methodologies ---'
 
-select metadata.dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(
     'Wikipedia ISO 3166 Extraction',
     'Data extracted from Wikipedia page listing ISO 3166 country codes',
     'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
@@ -42,7 +40,7 @@ select metadata.dq_methodologies_upsert_fn(
 See methodology documentation for detailed steps.'
 );
 
-select metadata.dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(
     'Wikipedia ISO 4217 Extraction',
     'Data extracted from Wikipedia page listing ISO 4217 currency codes',
     'https://en.wikipedia.org/wiki/ISO_4217',

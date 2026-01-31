@@ -35,8 +35,6 @@
  * - internal: Proprietary identifiers
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Coding Schemes
 -- =============================================================================
@@ -44,7 +42,7 @@ set schema 'metadata';
 \echo '--- Data Quality Coding Schemes ---'
 
 -- Party identification schemes (official - ISO standards)
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'LEI',
     'Legal Entity Identifier',
     'official',
@@ -54,7 +52,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'BIC',
     'Business Identifier Code',
     'official',
@@ -64,7 +62,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'MIC',
     'Market Identifier Code',
     'official',
@@ -74,7 +72,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party context in trade reports.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'NATIONAL_ID',
     'National Identifier',
     'official',
@@ -85,7 +83,7 @@ select metadata.dq_coding_schemes_upsert_fn(
 );
 
 -- Party identification schemes (industry - regulatory/consortium standards)
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'CEDB',
     'CFTC Entity Directory',
     'industry',
@@ -95,7 +93,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'ACER',
     'EU Agency for Energy Regulation',
     'industry',
@@ -105,7 +103,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'DTCC_PARTICIPANT_ID',
     'Depository Trust & Clearing Corporation Participant ID',
     'industry',
@@ -115,7 +113,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade reporting, and regulatory submissions in U.S. capital markets.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'MPID',
     'Market Participant Identifier',
     'industry',
@@ -126,7 +124,7 @@ select metadata.dq_coding_schemes_upsert_fn(
 );
 
 -- Party identification schemes (internal - proprietary)
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'NATURAL_PERSON',
     'Natural Person',
     'internal',
@@ -136,7 +134,7 @@ select metadata.dq_coding_schemes_upsert_fn(
     'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
 );
 
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'INTERNAL',
     'Internal',
     'internal',
@@ -147,7 +145,7 @@ select metadata.dq_coding_schemes_upsert_fn(
 );
 
 -- General schemes (internal - placeholder)
-select metadata.dq_coding_schemes_upsert_fn(
+select ores_dq_coding_schemes_upsert_fn(
     'NONE',
     'No Coding Scheme',
     'internal',
@@ -165,5 +163,5 @@ select metadata.dq_coding_schemes_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Coding Schemes' as entity, count(*) as count
-from metadata.dq_coding_schemes_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_coding_schemes_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

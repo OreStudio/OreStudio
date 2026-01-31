@@ -26,7 +26,6 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- FpML Cftc Organization Type Dataset
@@ -34,7 +33,7 @@ set schema 'metadata';
 
 \echo '--- FpML Cftc Organization Type Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'fpml.cftc_organization_type',
     'FpML Standards',
     'Parties',

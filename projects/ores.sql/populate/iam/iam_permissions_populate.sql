@@ -29,44 +29,42 @@
  * Special permission: "*" grants all permissions (superuser)
  */
 
-set schema 'production';
-
 -- Account management permissions
-select production.iam_permissions_upsert_fn('accounts:create', 'Create new user accounts');
-select production.iam_permissions_upsert_fn('accounts:read', 'View user account details');
-select production.iam_permissions_upsert_fn('accounts:update', 'Modify user account settings');
-select production.iam_permissions_upsert_fn('accounts:delete', 'Delete user accounts');
-select production.iam_permissions_upsert_fn('accounts:lock', 'Lock user accounts');
-select production.iam_permissions_upsert_fn('accounts:unlock', 'Unlock user accounts');
-select production.iam_permissions_upsert_fn('accounts:reset_password', 'Force password reset on user accounts');
+select ores_iam_permissions_upsert_fn('accounts:create', 'Create new user accounts');
+select ores_iam_permissions_upsert_fn('accounts:read', 'View user account details');
+select ores_iam_permissions_upsert_fn('accounts:update', 'Modify user account settings');
+select ores_iam_permissions_upsert_fn('accounts:delete', 'Delete user accounts');
+select ores_iam_permissions_upsert_fn('accounts:lock', 'Lock user accounts');
+select ores_iam_permissions_upsert_fn('accounts:unlock', 'Unlock user accounts');
+select ores_iam_permissions_upsert_fn('accounts:reset_password', 'Force password reset on user accounts');
 
 -- Currency management permissions
-select production.iam_permissions_upsert_fn('currencies:create', 'Create new currencies');
-select production.iam_permissions_upsert_fn('currencies:read', 'View currency details');
-select production.iam_permissions_upsert_fn('currencies:update', 'Modify currency settings');
-select production.iam_permissions_upsert_fn('currencies:delete', 'Delete currencies');
-select production.iam_permissions_upsert_fn('currencies:history', 'View currency version history');
+select ores_iam_permissions_upsert_fn('currencies:create', 'Create new currencies');
+select ores_iam_permissions_upsert_fn('currencies:read', 'View currency details');
+select ores_iam_permissions_upsert_fn('currencies:update', 'Modify currency settings');
+select ores_iam_permissions_upsert_fn('currencies:delete', 'Delete currencies');
+select ores_iam_permissions_upsert_fn('currencies:history', 'View currency version history');
 
 -- Feature flags permissions
-select production.iam_permissions_upsert_fn('flags:create', 'Create new feature flags');
-select production.iam_permissions_upsert_fn('flags:read', 'View feature flag status');
-select production.iam_permissions_upsert_fn('flags:update', 'Modify feature flag settings');
-select production.iam_permissions_upsert_fn('flags:delete', 'Delete feature flags');
+select ores_iam_permissions_upsert_fn('flags:create', 'Create new feature flags');
+select ores_iam_permissions_upsert_fn('flags:read', 'View feature flag status');
+select ores_iam_permissions_upsert_fn('flags:update', 'Modify feature flag settings');
+select ores_iam_permissions_upsert_fn('flags:delete', 'Delete feature flags');
 
 -- Login info permissions (read-only audit data)
-select production.iam_permissions_upsert_fn('login_info:read', 'View login history and info');
+select ores_iam_permissions_upsert_fn('login_info:read', 'View login history and info');
 
 -- Role management permissions
-select production.iam_permissions_upsert_fn('roles:create', 'Create new roles');
-select production.iam_permissions_upsert_fn('roles:read', 'View role details');
-select production.iam_permissions_upsert_fn('roles:update', 'Modify role permissions');
-select production.iam_permissions_upsert_fn('roles:delete', 'Delete roles');
-select production.iam_permissions_upsert_fn('roles:assign', 'Assign roles to accounts');
-select production.iam_permissions_upsert_fn('roles:revoke', 'Revoke roles from accounts');
+select ores_iam_permissions_upsert_fn('roles:create', 'Create new roles');
+select ores_iam_permissions_upsert_fn('roles:read', 'View role details');
+select ores_iam_permissions_upsert_fn('roles:update', 'Modify role permissions');
+select ores_iam_permissions_upsert_fn('roles:delete', 'Delete roles');
+select ores_iam_permissions_upsert_fn('roles:assign', 'Assign roles to accounts');
+select ores_iam_permissions_upsert_fn('roles:revoke', 'Revoke roles from accounts');
 
 -- Wildcard permission (superuser)
-select production.iam_permissions_upsert_fn('*', 'Full access to all operations');
+select ores_iam_permissions_upsert_fn('*', 'Full access to all operations');
 
 -- Show summary
-select count(*) as total_permissions from production.iam_permissions_tbl
-where valid_to = public.utility_infinity_timestamp_fn();
+select count(*) as total_permissions from ores_iam_permissions_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();

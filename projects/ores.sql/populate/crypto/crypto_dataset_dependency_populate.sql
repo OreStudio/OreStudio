@@ -26,7 +26,6 @@
  * Must be run after crypto_dataset_populate.sql.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- Cryptocurrency Dataset Dependencies
@@ -34,13 +33,13 @@ set schema 'metadata';
 
 \echo '--- Cryptocurrency Dataset Dependencies ---'
 
-select metadata.dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(
     'crypto.large',
     'assets.crypto_icons',
     'visual_assets'
 );
 
-select metadata.dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(
     'crypto.small',
     'assets.crypto_icons',
     'visual_assets'

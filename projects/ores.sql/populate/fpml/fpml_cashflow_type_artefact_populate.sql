@@ -28,7 +28,6 @@
  * Use dq_populate_cashflow_types() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Cashflow Type
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.cashflow_type'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.cashflow_type not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_cashflow_types_artefact_tbl
+    delete from ores_dq_cashflow_types_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'A cash flow associated with an amendment lifecycle event.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'A cash flow resulting from the assignment of a contract to a new counterparty.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         'A cash flow corresponding to the periodic accrued interests.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'A cashflow resulting from a credit event.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         'A cash flow corresponding to the synthetic dividend of an equity underlyer asset traded through a derivative instrument.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'A cash flow associated with an exercise lifecycle event.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +132,7 @@ begin
         'A generic term for describing a non-scheduled cashflow that can be associated either with the initial contract, with some later corrections to it (e.g. a correction to the day count fraction that has a cashflow impact) or with some lifecycle events. Fees that are specifically associated with termination and partial termination, increase, amendment, and exercise events are qualified accordingly.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +143,7 @@ begin
         'A cash flow associated with an increase lifecycle event.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +154,7 @@ begin
         'A cash flow corresponding to the return of the interest rate portion of a derivative instrument that has different types of underlying assets, such as a total return swap.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +165,7 @@ begin
         'A cash flow associated with a partial termination lifecycle event.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +176,7 @@ begin
         'The premium associated with an OTC contract such as an option or a cap/floor.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +187,7 @@ begin
         'A cash flow corresponding to the return of the price portion of a derivative instrument that has different types of underlying assets, such as a total return swap.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +198,7 @@ begin
         'A cash flow which amount typically corresponds to the notional of the contract and that is exchanged between the parties on trade inception and reverted back when the contract is terminated.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_cashflow_types_artefact_tbl (
+    insert into ores_dq_cashflow_types_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -223,9 +222,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_cashflow_types_artefact' as entity, count(*) as count
-from metadata.dq_cashflow_types_artefact_tbl;
+from ores_dq_cashflow_types_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_cashflow_types_artefact_tbl
+from ores_dq_cashflow_types_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

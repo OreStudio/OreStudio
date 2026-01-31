@@ -18,15 +18,13 @@
  *
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Slovaris Datasets
 -- =============================================================================
 
 \echo '--- Data Quality Slovaris Datasets ---'
 
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'slovaris.country_flags',
     'Slovaris',
     'Country Flags',
@@ -44,7 +42,7 @@ select metadata.dq_datasets_upsert_fn(
     ' CC BY 4.0',
     'images'
 );
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'slovaris.countries',
     'Slovaris',
     'Countries',
@@ -62,7 +60,7 @@ select metadata.dq_datasets_upsert_fn(
     ' CC BY 4.0',
     'countries'
 );
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     'slovaris.currencies',
     'Slovaris',
     'Currencies',
@@ -89,5 +87,5 @@ select metadata.dq_datasets_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Data Quality Total Datasets' as entity, count(*) as count
-from metadata.dq_datasets_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_datasets_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

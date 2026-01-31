@@ -21,14 +21,13 @@
 /**
  * DQ Artefact FpML Local Jurisdiction Population Script
  *
- * Populates the dq_local_jurisdictions_artefact_tbl with reference data.
+ * Populates the ores_dq_local_jurisdictions_artefact_tbl with reference data.
  * Dataset: fpml.local_jurisdiction
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_local_jurisdictions() to publish to production.
+ * Use ores_dq_populate_local_jurisdictions() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Local Jurisdiction
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.local_jurisdiction'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.local_jurisdiction not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_local_jurisdictions_artefact_tbl
+    delete from ores_dq_local_jurisdictions_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'Afghan Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'Follows Local Jurisdiction as per MCA to this Transaction.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         'Australian Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'Chinese Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         'Hong Kong Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'Indian Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +132,7 @@ begin
         'Indonesian Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +143,7 @@ begin
         'Japanese Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +154,7 @@ begin
         'Korean Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +165,7 @@ begin
         'Malaysian Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +176,7 @@ begin
         'New Zealand Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +187,7 @@ begin
         'No Local Jurisdiction applies to this Transaction.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +198,7 @@ begin
         'Pakistani Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -210,7 +209,7 @@ begin
         'Philippine Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -221,7 +220,7 @@ begin
         'Singaporean Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -232,7 +231,7 @@ begin
         'Taiwanese Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -243,7 +242,7 @@ begin
         'Thai Local Jurisdiction applies.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_local_jurisdictions_artefact_tbl (
+    insert into ores_dq_local_jurisdictions_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -255,7 +254,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_local_jurisdictions_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_local_jurisdictions_artefact_tbl', v_count;
 end;
 $$;
 
@@ -267,9 +266,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_local_jurisdictions_artefact' as entity, count(*) as count
-from metadata.dq_local_jurisdictions_artefact_tbl;
+from ores_dq_local_jurisdictions_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_local_jurisdictions_artefact_tbl
+from ores_dq_local_jurisdictions_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

@@ -21,14 +21,13 @@
 /**
  * DQ Artefact FpML Benchmark Rate Population Script
  *
- * Populates the dq_benchmark_rates_artefact_tbl with reference data.
+ * Populates the ores_dq_benchmark_rates_artefact_tbl with reference data.
  * Dataset: fpml.benchmark_rate
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_benchmark_rates() to publish to production.
+ * Use ores_dq_populate_benchmark_rates() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Benchmark Rate
@@ -43,20 +42,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = 'fpml.benchmark_rate'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.benchmark_rate not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_benchmark_rates_artefact_tbl
+    delete from ores_dq_benchmark_rates_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +66,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +77,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +88,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +99,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +110,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +121,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +132,7 @@ begin
         '"EFFR" or "Fed Funds" per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +143,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +154,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +165,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +176,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +187,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +198,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -210,7 +209,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -221,7 +220,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -232,7 +231,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -243,7 +242,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -254,7 +253,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -265,7 +264,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -276,7 +275,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -287,7 +286,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -298,7 +297,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -309,7 +308,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -320,7 +319,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -331,7 +330,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -342,7 +341,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -353,7 +352,7 @@ begin
         'Per 2021 ISDA Definition up to V3, Section 10.3 Overnight Rate Benchmarks. What is defined as "SEK OIS" in the 2006 ISDA Collateral Cash Price Matrix up to November 10, 2021 publication.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -364,7 +363,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -375,7 +374,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -386,7 +385,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -397,7 +396,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -408,7 +407,7 @@ begin
         'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks. What is defined as "TONAR" in the 2006 ISDA Collateral Cash Price Matrix.'
     );
     v_count := v_count + 1;
-    insert into metadata.dq_benchmark_rates_artefact_tbl (
+    insert into ores_dq_benchmark_rates_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -420,7 +419,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_benchmark_rates_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_benchmark_rates_artefact_tbl', v_count;
 end;
 $$;
 
@@ -432,9 +431,9 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_benchmark_rates_artefact' as entity, count(*) as count
-from metadata.dq_benchmark_rates_artefact_tbl;
+from ores_dq_benchmark_rates_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_benchmark_rates_artefact_tbl
+from ores_dq_benchmark_rates_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

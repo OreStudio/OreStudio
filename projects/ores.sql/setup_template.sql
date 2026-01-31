@@ -96,7 +96,7 @@ alter role ores_readonly_user set search_path to public;
 \ir ./create/create.sql
 
 -- Populate foundation layer (essential lookup and configuration data)
-\ir ./populate/foundation/populate_foundation.sql
+\ir ./populate/foundation/foundation_populate.sql
 
 -- Grant table permissions to appropriate roles
 -- Note: TRUNCATE is included for test database cleanup

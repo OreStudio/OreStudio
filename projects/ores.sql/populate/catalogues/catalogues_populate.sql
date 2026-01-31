@@ -58,7 +58,7 @@
 -- =============================================================================
 
 \echo '--- Flag Icons ---'
-\ir ../flags/populate_flags.sql
+\ir ../flags/flags_populate.sql
 
 -- =============================================================================
 -- ISO Standards (catalog, datasets, countries, currencies)
@@ -66,7 +66,7 @@
 
 \echo ''
 \echo '--- ISO Standards ---'
-\ir ../iso/populate_iso.sql
+\ir ../iso/iso_populate.sql
 
 -- =============================================================================
 -- Solvaris (extended currency metadata)
@@ -74,7 +74,7 @@
 
 \echo ''
 \echo '--- Solvaris ---'
-\ir ../solvaris/populate_solvaris.sql
+\ir ../solvaris/solvaris_populate.sql
 
 -- =============================================================================
 -- IP to Country (IP geolocation mappings)
@@ -82,7 +82,7 @@
 
 \echo ''
 \echo '--- IP to Country ---'
-\ir ../ip2country/populate_ip2country.sql
+\ir ../ip2country/ip2country_populate.sql
 
 -- =============================================================================
 -- FPML (Financial Products Markup Language reference data)
@@ -90,7 +90,7 @@
 
 \echo ''
 \echo '--- FPML ---'
-\ir ../fpml/populate_fpml.sql
+\ir ../fpml/fpml_populate.sql
 
 -- =============================================================================
 -- Cryptocurrency (digital currency reference data)
@@ -98,7 +98,7 @@
 
 \echo ''
 \echo '--- Cryptocurrency ---'
-\ir ../crypto/populate_crypto.sql
+\ir ../crypto/crypto_populate.sql
 
 \echo ''
 \echo '=== Data Catalogues Layer Population Complete ==='

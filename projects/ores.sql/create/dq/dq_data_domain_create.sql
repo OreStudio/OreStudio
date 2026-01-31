@@ -23,7 +23,7 @@
 -- Examples: reference_data, market_data, trade_data.
 -- =============================================================================
 
-create table if not exists "metadata"."dq_data_domains_tbl" (
+create table if not exists "ores_dq_data_domains_tbl" (
     "name" text not null,
     "version" integer not null,
     "description" text not null,
@@ -41,23 +41,23 @@ create table if not exists "metadata"."dq_data_domains_tbl" (
     check ("name" <> '')
 );
 
-create unique index if not exists dq_data_domains_version_uniq_idx
-on "metadata"."dq_data_domains_tbl" (name, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_data_domains_version_uniq_idx
+on "ores_dq_data_domains_tbl" (name, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_data_domains_name_uniq_idx
-on "metadata"."dq_data_domains_tbl" (name)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_data_domains_name_uniq_idx
+on "ores_dq_data_domains_tbl" (name)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function metadata.dq_data_domains_insert_fn()
+create or replace function ores_dq_data_domains_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "metadata"."dq_data_domains_tbl"
+    from "ores_dq_data_domains_tbl"
     where name = NEW.name
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -67,35 +67,35 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "metadata"."dq_data_domains_tbl"
+        update "ores_dq_data_domains_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = public.utility_infinity_timestamp_fn();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_data_domains_insert_trg
-before insert on "metadata"."dq_data_domains_tbl"
-for each row execute function metadata.dq_data_domains_insert_fn();
+create or replace trigger ores_dq_data_domains_insert_trg
+before insert on "ores_dq_data_domains_tbl"
+for each row execute function ores_dq_data_domains_insert_fn();
 
-create or replace rule dq_data_domains_delete_rule as
-on delete to "metadata"."dq_data_domains_tbl" do instead
-    update "metadata"."dq_data_domains_tbl"
+create or replace rule ores_dq_data_domains_delete_rule as
+on delete to "ores_dq_data_domains_tbl" do instead
+    update "ores_dq_data_domains_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();

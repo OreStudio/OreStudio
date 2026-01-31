@@ -18,14 +18,12 @@
  *
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Helper Functions
 -- =============================================================================
 
 -- Upsert Methodology
-create or replace function metadata.dq_methodology_upsert_fn(
+create or replace function ores_dq_methodology_upsert_fn(
     p_name text,
     p_description text,
     p_logic_reference text default null,
@@ -35,11 +33,11 @@ declare
     v_id uuid;
 begin
     if not exists (
-        select 1 from metadata.dq_methodologies_tbl
+        select 1 from ores_dq_methodologies_tbl
         where name = p_name
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        insert into metadata.dq_methodologies_tbl (
+        insert into ores_dq_methodologies_tbl (
             id, version, name, description, logic_reference, implementation_details,
             modified_by, change_reason_code, change_commentary,
             valid_from, valid_to
@@ -47,7 +45,7 @@ begin
         values (
             gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
             'system', 'system.new_record', 'System seed data',
-            current_timestamp, public.utility_infinity_timestamp_fn()
+            current_timestamp, ores_utility_infinity_timestamp_fn()
         );
         raise notice 'Created dq_methodology: %', p_name;
     else
@@ -57,7 +55,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Dataset
-create or replace function metadata.dq_dataset_upsert_fn(
+create or replace function ores_dq_dataset_upsert_fn(
     p_subject_area_name text,
     p_domain_name text,
     p_origin_code text,
@@ -75,18 +73,18 @@ declare
     v_methodology_id uuid;
 begin
     -- Get methodology ID (only table that still uses UUID PK)
-    select id into v_methodology_id from metadata.dq_methodologies_tbl where name = p_methodology_name and valid_to = public.utility_infinity_timestamp_fn();
+    select id into v_methodology_id from ores_dq_methodologies_tbl where name = p_methodology_name and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
     if not exists (
-        select 1 from metadata.dq_datasets_tbl
+        select 1 from ores_dq_datasets_tbl
         where name = p_name
           and subject_area_name = p_subject_area_name
           and domain_name = p_domain_name
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        insert into metadata.dq_datasets_tbl (
+        insert into ores_dq_datasets_tbl (
             id, version, subject_area_name, domain_name, origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
@@ -98,7 +96,7 @@ begin
             p_name, p_description, p_source_system_id, p_business_context,
             null, 0, p_as_of_date, current_timestamp, p_license_info,
             'system', 'system.new_record', 'System seed data',
-            current_timestamp, public.utility_infinity_timestamp_fn()
+            current_timestamp, ores_utility_infinity_timestamp_fn()
         );
         raise notice 'Created dq_dataset: %', p_name;
     else
@@ -108,7 +106,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Images Artefact (Snapshot)
-create or replace function metadata.dq_images_artefact_upsert_fn(
+create or replace function ores_dq_images_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
 declare
@@ -117,20 +115,20 @@ declare
 begin
     -- 1. Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = p_dataset_name
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset "%" not found.', p_dataset_name;
     end if;
 
     -- 2. Clear existing data for this dataset
-    delete from metadata.dq_images_artefact_tbl
+    delete from ores_dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- 3. Insert data from assets_images_tbl
-    insert into metadata.dq_images_artefact_tbl (
+    insert into ores_dq_images_artefact_tbl (
         dataset_id,
         image_id,
         version,
@@ -145,8 +143,8 @@ begin
         key,
         description,
         svg_data
-    from production.assets_images_tbl
-    where valid_to = public.utility_infinity_timestamp_fn();
+    from ores_assets_images_tbl
+    where valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
     raise notice 'Inserted % records into dq_images_artefact_tbl for dataset %', v_count, p_dataset_name;
@@ -154,7 +152,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Tags Artefact (Snapshot)
-create or replace function metadata.dq_tags_artefact_upsert_fn(
+create or replace function ores_dq_tags_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
 declare
@@ -163,20 +161,20 @@ declare
 begin
     -- 1. Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = p_dataset_name
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset "%" not found.', p_dataset_name;
     end if;
 
     -- 2. Clear existing data for this dataset
-    delete from metadata.dq_tags_artefact_tbl
+    delete from ores_dq_tags_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- 3. Insert data from assets_tags_tbl
-    insert into metadata.dq_tags_artefact_tbl (
+    insert into ores_dq_tags_artefact_tbl (
         dataset_id,
         tag_id,
         version,
@@ -189,8 +187,8 @@ begin
         version,
         name,
         description
-    from production.assets_tags_tbl
-    where valid_to = public.utility_infinity_timestamp_fn();
+    from ores_assets_tags_tbl
+    where valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
     raise notice 'Inserted % records into dq_tags_artefact_tbl for dataset %', v_count, p_dataset_name;
@@ -198,7 +196,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Image Tags Artefact (Snapshot)
-create or replace function metadata.dq_image_tags_artefact_upsert_fn(
+create or replace function ores_dq_image_tags_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
 declare
@@ -207,20 +205,20 @@ declare
 begin
     -- 1. Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = p_dataset_name
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset "%" not found.', p_dataset_name;
     end if;
 
     -- 2. Clear existing data for this dataset
-    delete from metadata.dq_image_tags_artefact_tbl
+    delete from ores_dq_image_tags_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- 3. Insert data from assets_image_tags_tbl
-    insert into metadata.dq_image_tags_artefact_tbl (
+    insert into ores_dq_image_tags_artefact_tbl (
         dataset_id,
         image_id,
         tag_id
@@ -229,8 +227,8 @@ begin
         v_dataset_id,
         it.image_id,
         it.tag_id
-    from production.assets_image_tags_tbl it
-    where it.valid_to = public.utility_infinity_timestamp_fn();
+    from ores_assets_image_tags_tbl it
+    where it.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
     raise notice 'Inserted % records into dq_image_tags_artefact_tbl for dataset %', v_count, p_dataset_name;

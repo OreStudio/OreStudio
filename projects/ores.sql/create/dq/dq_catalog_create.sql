@@ -30,7 +30,7 @@
  * - "Cryptocurrency" - Contains crypto reference data and icons
  */
 
-create table if not exists "metadata"."dq_catalogs_tbl" (
+create table if not exists "ores_dq_catalogs_tbl" (
     "name" text not null,
     "version" integer not null,
     "description" text not null,
@@ -49,23 +49,23 @@ create table if not exists "metadata"."dq_catalogs_tbl" (
     check ("name" <> '')
 );
 
-create unique index if not exists dq_catalogs_version_uniq_idx
-on "metadata"."dq_catalogs_tbl" (name, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_catalogs_version_uniq_idx
+on "ores_dq_catalogs_tbl" (name, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_catalogs_name_uniq_idx
-on "metadata"."dq_catalogs_tbl" (name)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_catalogs_name_uniq_idx
+on "ores_dq_catalogs_tbl" (name)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function metadata.dq_catalogs_insert_fn()
+create or replace function ores_dq_catalogs_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "metadata"."dq_catalogs_tbl"
+    from "ores_dq_catalogs_tbl"
     where name = NEW.name
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         -- This insert is an update. Check version and increment.
@@ -77,10 +77,10 @@ begin
         NEW.version = current_version + 1;
 
         -- Close the old record.
-        update "metadata"."dq_catalogs_tbl"
+        update "ores_dq_catalogs_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         -- This is a new record.
@@ -88,25 +88,25 @@ begin
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = public.utility_infinity_timestamp_fn();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_catalogs_insert_trg
-before insert on "metadata"."dq_catalogs_tbl"
-for each row execute function metadata.dq_catalogs_insert_fn();
+create or replace trigger ores_dq_catalogs_insert_trg
+before insert on "ores_dq_catalogs_tbl"
+for each row execute function ores_dq_catalogs_insert_fn();
 
-create or replace rule dq_catalogs_delete_rule as
-on delete to "metadata"."dq_catalogs_tbl" do instead
-    update "metadata"."dq_catalogs_tbl"
+create or replace rule ores_dq_catalogs_delete_rule as
+on delete to "ores_dq_catalogs_tbl" do instead
+    update "ores_dq_catalogs_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();

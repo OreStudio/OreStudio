@@ -23,7 +23,7 @@
 -- Examples: currencies, countries, images.
 -- =============================================================================
 
-create table if not exists "metadata"."dq_subject_areas_tbl" (
+create table if not exists "ores_dq_subject_areas_tbl" (
     "name" text not null,
     "version" integer not null,
     "domain_name" text not null,
@@ -44,34 +44,34 @@ create table if not exists "metadata"."dq_subject_areas_tbl" (
     check ("domain_name" <> '')
 );
 
-create unique index if not exists dq_subject_areas_version_uniq_idx
-on "metadata"."dq_subject_areas_tbl" (name, domain_name, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_subject_areas_version_uniq_idx
+on "ores_dq_subject_areas_tbl" (name, domain_name, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_subject_areas_name_uniq_idx
-on "metadata"."dq_subject_areas_tbl" (name, domain_name)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_subject_areas_name_uniq_idx
+on "ores_dq_subject_areas_tbl" (name, domain_name)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function metadata.dq_subject_areas_insert_fn()
+create or replace function ores_dq_subject_areas_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key reference
     if not exists (
-        select 1 from metadata.dq_data_domains_tbl
+        select 1 from ores_dq_data_domains_tbl
         where name = NEW.domain_name
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid domain_name: %. Domain must exist.', NEW.domain_name
         using errcode = '23503';
     end if;
 
     select version into current_version
-    from "metadata"."dq_subject_areas_tbl"
+    from "ores_dq_subject_areas_tbl"
     where name = NEW.name
       and domain_name = NEW.domain_name
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -81,37 +81,37 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "metadata"."dq_subject_areas_tbl"
+        update "ores_dq_subject_areas_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
           and domain_name = NEW.domain_name
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = public.utility_infinity_timestamp_fn();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_subject_areas_insert_trg
-before insert on "metadata"."dq_subject_areas_tbl"
-for each row execute function metadata.dq_subject_areas_insert_fn();
+create or replace trigger ores_dq_subject_areas_insert_trg
+before insert on "ores_dq_subject_areas_tbl"
+for each row execute function ores_dq_subject_areas_insert_fn();
 
-create or replace rule dq_subject_areas_delete_rule as
-on delete to "metadata"."dq_subject_areas_tbl" do instead
-    update "metadata"."dq_subject_areas_tbl"
+create or replace rule ores_dq_subject_areas_delete_rule as
+on delete to "ores_dq_subject_areas_tbl" do instead
+    update "ores_dq_subject_areas_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
       and domain_name = OLD.domain_name
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();

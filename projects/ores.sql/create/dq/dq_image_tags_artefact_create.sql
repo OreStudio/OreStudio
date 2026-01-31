@@ -17,31 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'metadata';
-
-create table if not exists "metadata"."dq_image_tags_artefact_tbl" (
+create table if not exists "ores_dq_image_tags_artefact_tbl" (
     "dataset_id" uuid not null,
     "image_id" uuid not null,
     "tag_id" uuid not null
 );
 
-create index if not exists dq_image_tags_artefact_dataset_idx
-on "metadata"."dq_image_tags_artefact_tbl" (dataset_id);
+create index if not exists ores_dq_image_tags_artefact_dataset_idx
+on "ores_dq_image_tags_artefact_tbl" (dataset_id);
 
-create index if not exists dq_image_tags_artefact_image_idx
-on "metadata"."dq_image_tags_artefact_tbl" (image_id);
+create index if not exists ores_dq_image_tags_artefact_image_idx
+on "ores_dq_image_tags_artefact_tbl" (image_id);
 
-create index if not exists dq_image_tags_artefact_tag_idx
-on "metadata"."dq_image_tags_artefact_tbl" (tag_id);
+create index if not exists ores_dq_image_tags_artefact_tag_idx
+on "ores_dq_image_tags_artefact_tbl" (tag_id);
 
 -- Function to insert image tags into the artifact table
-create or replace function metadata.dq_image_tags_artefact_insert_fn(
+create or replace function ores_dq_image_tags_artefact_insert_fn(
     p_dataset_id uuid,
     p_image_id uuid,
     p_tag_id uuid
 ) returns void as $$
 begin
-    insert into metadata.dq_image_tags_artefact_tbl (
+    insert into ores_dq_image_tags_artefact_tbl (
         dataset_id, image_id, tag_id
     )
     values (

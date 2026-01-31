@@ -24,7 +24,7 @@
 -- lineage_depth auto-calculated from hierarchy.
 -- =============================================================================
 
-create table if not exists "metadata"."dq_datasets_tbl" (
+create table if not exists "ores_dq_datasets_tbl" (
     "id" uuid not null,
     "version" integer not null,
     "code" text not null,
@@ -60,99 +60,99 @@ create table if not exists "metadata"."dq_datasets_tbl" (
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
-create unique index if not exists dq_datasets_name_uniq_idx
-on "metadata"."dq_datasets_tbl" (name, subject_area_name, domain_name)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_datasets_name_uniq_idx
+on "ores_dq_datasets_tbl" (name, subject_area_name, domain_name)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_datasets_code_uniq_idx
-on "metadata"."dq_datasets_tbl" (code)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_datasets_code_uniq_idx
+on "ores_dq_datasets_tbl" (code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_datasets_version_uniq_idx
-on "metadata"."dq_datasets_tbl" (id, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists ores_dq_datasets_version_uniq_idx
+on "ores_dq_datasets_tbl" (id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function metadata.dq_datasets_insert_fn()
+create or replace function ores_dq_datasets_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key references
     if NEW.catalog_name is not null and not exists (
-        select 1 from metadata.dq_catalogs_tbl
+        select 1 from ores_dq_catalogs_tbl
         where name = NEW.catalog_name
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid catalog_name: %. Catalog must exist.', NEW.catalog_name
         using errcode = '23503';
     end if;
 
     if not exists (
-        select 1 from metadata.dq_subject_areas_tbl
+        select 1 from ores_dq_subject_areas_tbl
         where name = NEW.subject_area_name
         and domain_name = NEW.domain_name
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid subject_area_name/domain_name: %/%. Subject area must exist.', NEW.subject_area_name, NEW.domain_name
         using errcode = '23503';
     end if;
 
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from metadata.dq_coding_schemes_tbl
+        select 1 from ores_dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
     end if;
 
     if not exists (
-        select 1 from metadata.dq_origin_dimensions_tbl
+        select 1 from ores_dq_origin_dimensions_tbl
         where code = NEW.origin_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid origin_code: %. Origin dimension must exist.', NEW.origin_code
         using errcode = '23503';
     end if;
 
     if not exists (
-        select 1 from metadata.dq_nature_dimensions_tbl
+        select 1 from ores_dq_nature_dimensions_tbl
         where code = NEW.nature_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid nature_code: %. Nature dimension must exist.', NEW.nature_code
         using errcode = '23503';
     end if;
 
     if not exists (
-        select 1 from metadata.dq_treatment_dimensions_tbl
+        select 1 from ores_dq_treatment_dimensions_tbl
         where code = NEW.treatment_code
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid treatment_code: %. Treatment dimension must exist.', NEW.treatment_code
         using errcode = '23503';
     end if;
 
     if NEW.methodology_id is not null and not exists (
-        select 1 from metadata.dq_methodologies_tbl
+        select 1 from ores_dq_methodologies_tbl
         where id = NEW.methodology_id
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid methodology_id: %. Methodology must exist.', NEW.methodology_id
         using errcode = '23503';
     end if;
 
     if NEW.upstream_derivation_id is not null and not exists (
-        select 1 from metadata.dq_datasets_tbl
+        select 1 from ores_dq_datasets_tbl
         where id = NEW.upstream_derivation_id
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid upstream_derivation_id: %. Upstream dataset must exist.', NEW.upstream_derivation_id
         using errcode = '23503';
     end if;
 
     if not exists (
-        select 1 from metadata.dq_artefact_types_tbl
+        select 1 from ores_dq_artefact_types_tbl
         where code = NEW.artefact_type
     ) then
         raise exception 'Invalid artefact_type: %. Artefact type must exist.', NEW.artefact_type
@@ -163,17 +163,17 @@ begin
     if NEW.upstream_derivation_id is null then
         NEW.lineage_depth := 0;
     else
-        select COALESCE((select lineage_depth from metadata.dq_datasets_tbl
+        select COALESCE((select lineage_depth from ores_dq_datasets_tbl
                          where id = NEW.upstream_derivation_id
-                         and valid_to = public.utility_infinity_timestamp_fn()), 0) + 1
+                         and valid_to = ores_utility_infinity_timestamp_fn()), 0) + 1
         into NEW.lineage_depth;
     end if;
 
     -- Version management
     select version into current_version
-    from "metadata"."dq_datasets_tbl"
+    from "ores_dq_datasets_tbl"
     where id = NEW.id
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -183,35 +183,35 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "metadata"."dq_datasets_tbl"
+        update "ores_dq_datasets_tbl"
         set valid_to = current_timestamp
         where id = NEW.id
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = public.utility_infinity_timestamp_fn();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_datasets_insert_trg
-before insert on "metadata"."dq_datasets_tbl"
-for each row execute function metadata.dq_datasets_insert_fn();
+create or replace trigger ores_dq_datasets_insert_trg
+before insert on "ores_dq_datasets_tbl"
+for each row execute function ores_dq_datasets_insert_fn();
 
-create or replace rule dq_datasets_delete_rule as
-on delete to "metadata"."dq_datasets_tbl" do instead
-    update "metadata"."dq_datasets_tbl"
+create or replace rule ores_dq_datasets_delete_rule as
+on delete to "ores_dq_datasets_tbl" do instead
+    update "ores_dq_datasets_tbl"
     set valid_to = current_timestamp
     where id = OLD.id
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();

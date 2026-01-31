@@ -398,6 +398,41 @@ Returns the environment label (e.g., 'local2') or nil if not in an OreStudio pro
   (when-let ((pr (project-current)))
     (expand-file-name "projects/ores.sql" (project-root pr))))
 
+(defun ores-db/run-script (script-name buffer-name &optional args)
+  "Run SCRIPT-NAME from ores.sql directory in compilation mode.
+BUFFER-NAME is the compilation buffer name.
+ARGS is an optional list of arguments to pass to the script."
+  (let* ((sql-dir (ores-db/sql-scripts-directory))
+         (script-path (expand-file-name script-name sql-dir))
+         (postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
+         (default-directory sql-dir)
+         (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                    process-environment)))
+    (if (not (file-executable-p script-path))
+        (user-error "Script not found or not executable: %s" script-path)
+      (compilation-start
+       (if args
+           (format "%s %s" script-path (string-join args " "))
+         script-path)
+       nil
+       (lambda (_) buffer-name)))))
+
+(defun ores-db/run-sql (sql-file buffer-name)
+  "Run SQL-FILE from ores.sql directory via psql in compilation mode.
+BUFFER-NAME is the compilation buffer name."
+  (let* ((sql-dir (ores-db/sql-scripts-directory))
+         (sql-path (expand-file-name sql-file sql-dir))
+         (postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
+         (default-directory sql-dir)
+         (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                    process-environment)))
+    (if (not (file-exists-p sql-path))
+        (user-error "SQL file not found: %s" sql-path)
+      (compilation-start
+       (format "psql -h localhost -U postgres -f %s" sql-path)
+       nil
+       (lambda (_) buffer-name)))))
+
 (defun ores-db/recreate-env-database (environment &optional skip-validation)
   "Recreate the database for ENVIRONMENT.
 If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
@@ -410,22 +445,12 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
      (list env current-prefix-arg)))
   (unless (yes-or-no-p (format "This will DROP and recreate ores_dev_%s. Are you sure? " environment))
     (user-error "Aborted"))
-  (let ((sql-dir (ores-db/sql-scripts-directory)))
-    ;; Set PGPASSWORD and run the script
-    (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
-           (script-path (expand-file-name "recreate_env.sh" sql-dir))
-           (default-directory sql-dir)
-           (args (list "-e" environment "-y"))
-           (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                       process-environment)))
-      (when skip-validation
-        (setq args (append args '("--no-sql-validation"))))
-      (if (not (file-executable-p script-path))
-          (user-error "Script not found or not executable: %s" script-path)
-        (compilation-start
-         (format "%s %s" script-path (string-join args " "))
-         nil
-         (lambda (_) (format "*ores-db-recreate-%s*" environment)))))))
+  (let ((args (list "-e" environment "-y")))
+    (when skip-validation
+      (setq args (append args '("--no-sql-validation"))))
+    (ores-db/run-script "recreate_env.sh"
+                        (format "*ores-db-recreate-%s*" environment)
+                        args)))
 
 (defun ores-db/recreate-template (&optional skip-validation)
   "Recreate the ores_template database.
@@ -433,22 +458,10 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
   (interactive "P")
   (unless (yes-or-no-p "Recreate ores_template? This affects ALL instance databases! ")
     (user-error "Aborted"))
-  (let ((sql-dir (ores-db/sql-scripts-directory)))
-    ;; Set PGPASSWORD and run the script
-    (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
-           (script-path (expand-file-name "recreate_template.sh" sql-dir))
-           (default-directory sql-dir)
-           (args '("-y"))
-           (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                       process-environment)))
-      (when skip-validation
-        (setq args (append args '("--no-sql-validation"))))
-      (if (not (file-executable-p script-path))
-          (user-error "Script not found or not executable: %s" script-path)
-        (compilation-start
-         (format "%s %s" script-path (string-join args " "))
-         nil
-         (lambda (_) "*ores-db-recreate-template*"))))))
+  (let ((args '("-y")))
+    (when skip-validation
+      (setq args (append args '("--no-sql-validation"))))
+    (ores-db/run-script "recreate_template.sh" "*ores-db-recreate-template*" args)))
 
 (defun ores-db/recreate-admin (&optional skip-validation)
   "Recreate the ores_admin database.
@@ -456,21 +469,10 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
   (interactive "P")
   (unless (yes-or-no-p "Recreate ores_admin? ")
     (user-error "Aborted"))
-  (let ((sql-dir (ores-db/sql-scripts-directory)))
-    (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
-           (script-path (expand-file-name "recreate_admin.sh" sql-dir))
-           (default-directory sql-dir)
-           (args '("-y"))
-           (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                       process-environment)))
-      (when skip-validation
-        (setq args (append args '("--no-sql-validation"))))
-      (if (not (file-executable-p script-path))
-          (user-error "Script not found or not executable: %s" script-path)
-        (compilation-start
-         (format "%s %s" script-path (string-join args " "))
-         nil
-         (lambda (_) "*ores-db-recreate-admin*"))))))
+  (let ((args '("-y")))
+    (when skip-validation
+      (setq args (append args '("--no-sql-validation"))))
+    (ores-db/run-script "recreate_admin.sh" "*ores-db-recreate-admin*" args)))
 
 (defun ores-db/recreate-current-env (&optional skip-validation)
   "Recreate the database for the current environment.
@@ -507,35 +509,13 @@ This runs recreate_database.sh which drops everything and recreates from scratch
   (interactive)
   (unless (yes-or-no-p "This will DROP ALL ORES databases and recreate from scratch. Are you SURE? ")
     (user-error "Aborted"))
-  (let ((sql-dir (ores-db/sql-scripts-directory)))
-    (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
-           (script-path (expand-file-name "recreate_database.sh" sql-dir))
-           (default-directory sql-dir)
-           (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                       process-environment)))
-      (if (not (file-executable-p script-path))
-          (user-error "Script not found or not executable: %s" script-path)
-        (compilation-start
-         (format "%s -y" script-path)
-         nil
-         (lambda (_) "*ores-db-recreate-all*"))))))
+  (ores-db/run-script "recreate_database.sh" "*ores-db-recreate-all*" '("-y")))
 
 (defun ores-db/create-whimsical ()
   "Create a new database instance with a whimsical name.
 Uses create_instance.sql to create from ores_template."
   (interactive)
-  (let ((sql-dir (ores-db/sql-scripts-directory)))
-    (let* ((postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
-           (sql-path (expand-file-name "create_instance.sql" sql-dir))
-           (default-directory sql-dir)
-           (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                       process-environment)))
-      (if (not (file-exists-p sql-path))
-          (user-error "Script not found: %s" sql-path)
-        (compilation-start
-         (format "psql -h localhost -U postgres -f %s" sql-path)
-         nil
-         (lambda (_) "*ores-db-create-whimsical*"))))))
+  (ores-db/run-sql "create_instance.sql" "*ores-db-create-whimsical*"))
 
 ;;; ==========================================================================
 ;;; Transient Menu

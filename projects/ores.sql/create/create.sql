@@ -39,11 +39,16 @@
 \ir ./geo/geo_create.sql
 
 -- =============================================================================
--- 4. Seed Functions (depend on data governance and operational tables)
+-- 4. Row-Level Security Policies (depend on all tables and IAM functions)
+-- =============================================================================
+\ir ./rls/rls_create.sql
+
+-- =============================================================================
+-- 5. Seed Functions (depend on data governance and operational tables)
 -- =============================================================================
 \ir ./seed/seed_create.sql
 
 -- =============================================================================
--- 5. Summary Functions (depend on all tables)
+-- 6. Summary Functions (depend on all tables)
 -- =============================================================================
 \ir ./utility/utility_summary_functions_create.sql

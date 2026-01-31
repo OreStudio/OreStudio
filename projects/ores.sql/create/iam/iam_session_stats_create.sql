@@ -147,7 +147,10 @@ returns bigint
 language sql
 stable
 as $$
-    select count(*) from ores_iam_sessions_tbl where end_time = '';
+    select count(*)
+    from ores_iam_sessions_tbl
+    where end_time = ''
+    and tenant_id = ores_iam_current_tenant_id_fn();
 $$;
 
 create or replace function ores_iam_active_session_count_for_account_fn(p_account_id uuid)
@@ -157,5 +160,18 @@ stable
 as $$
     select count(*)
     from ores_iam_sessions_tbl
-    where account_id = p_account_id and end_time = '';
+    where account_id = p_account_id
+    and end_time = ''
+    and tenant_id = ores_iam_current_tenant_id_fn();
+$$;
+
+-- Tenant-aware active session count (for cross-tenant admin queries)
+create or replace function ores_iam_active_session_count_for_tenant_fn(p_tenant_id uuid)
+returns bigint
+language sql
+stable
+as $$
+    select count(*)
+    from ores_iam_sessions_tbl
+    where tenant_id = p_tenant_id and end_time = '';
 $$;

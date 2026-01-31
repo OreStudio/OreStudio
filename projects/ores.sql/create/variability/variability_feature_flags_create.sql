@@ -25,6 +25,7 @@
 
 create table if not exists "ores_variability_feature_flags_tbl" (
     "name" text not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "enabled" integer not null default 0,
     "description" text,
@@ -49,7 +50,11 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists ores_variability_feature_flags_name_uniq_idx
-on "ores_variability_feature_flags_tbl" (name)
+on "ores_variability_feature_flags_tbl" (tenant_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_variability_feature_flags_tenant_idx
+on "ores_variability_feature_flags_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_variability_feature_flags_insert_fn()
@@ -57,6 +62,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     select version into current_version
     from "ores_variability_feature_flags_tbl"
     where name = new.name
@@ -85,7 +93,7 @@ begin
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

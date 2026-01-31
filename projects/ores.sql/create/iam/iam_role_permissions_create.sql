@@ -23,6 +23,7 @@
 -- =============================================================================
 
 create table if not exists ores_iam_role_permissions_tbl (
+    "tenant_id" uuid not null,
     "role_id" uuid not null,
     "permission_id" uuid not null,
     "valid_from" timestamp with time zone not null,
@@ -35,6 +36,10 @@ create table if not exists ores_iam_role_permissions_tbl (
     ),
     check ("valid_from" < "valid_to")
 );
+
+create index if not exists ores_iam_role_permissions_tenant_idx
+on ores_iam_role_permissions_tbl (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_iam_role_permissions_role_idx
 on ores_iam_role_permissions_tbl (role_id)
@@ -52,6 +57,9 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create or replace function ores_iam_role_permissions_insert_fn()
 returns trigger as $$
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     update ores_iam_role_permissions_tbl
     set valid_to = current_timestamp
     where role_id = new.role_id

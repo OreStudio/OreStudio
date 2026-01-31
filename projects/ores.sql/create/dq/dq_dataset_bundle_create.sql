@@ -33,6 +33,7 @@
 
 create table if not exists "ores_dq_dataset_bundles_tbl" (
     "id" uuid not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "code" text not null,
     "name" text not null,
@@ -53,12 +54,12 @@ create table if not exists "ores_dq_dataset_bundles_tbl" (
 
 -- Unique code for active records
 create unique index if not exists ores_dq_dataset_bundles_code_uniq_idx
-on "ores_dq_dataset_bundles_tbl" (code)
+on "ores_dq_dataset_bundles_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique name for active records
 create unique index if not exists ores_dq_dataset_bundles_name_uniq_idx
-on "ores_dq_dataset_bundles_tbl" (name)
+on "ores_dq_dataset_bundles_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -66,11 +67,18 @@ create unique index if not exists ores_dq_dataset_bundles_version_uniq_idx
 on "ores_dq_dataset_bundles_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists ores_dq_dataset_bundles_tenant_idx
+on "ores_dq_dataset_bundles_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_dq_dataset_bundles_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     -- Version management
     select version into current_version
     from "ores_dq_dataset_bundles_tbl"

@@ -19,6 +19,7 @@
  */
 create table if not exists "ores_dq_currencies_artefact_tbl" (
     "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
     "iso_code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -35,6 +36,9 @@ create table if not exists "ores_dq_currencies_artefact_tbl" (
 
 create index if not exists ores_dq_currencies_artefact_dataset_idx
 on "ores_dq_currencies_artefact_tbl" (dataset_id);
+
+create index if not exists ores_dq_currencies_artefact_tenant_idx
+on "ores_dq_currencies_artefact_tbl" (tenant_id);
 
 create index if not exists ores_dq_currencies_artefact_iso_code_idx
 on "ores_dq_currencies_artefact_tbl" (iso_code);

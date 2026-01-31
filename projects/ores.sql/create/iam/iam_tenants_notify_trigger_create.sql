@@ -19,30 +19,35 @@
  */
 
 -- =============================================================================
--- Security tracking for login attempts.
--- Current-state table (no temporal versioning).
--- Tracks failed attempts and lock status.
+-- Tenants Notification Trigger
+-- Sends notifications on tenant changes for real-time UI updates.
 -- =============================================================================
 
-create table if not exists ores_iam_login_info_tbl (
-    "tenant_id" uuid not null,
-    "account_id" uuid not null,
-    "last_ip" inet not null,
-    "last_attempt_ip" inet not null,
-    "failed_logins" integer not null,
-    "locked" integer not null,
-    "last_login" timestamp with time zone not null,
-    "online" integer not null,
-    "password_reset_required" integer not null default 0,
-    primary key (account_id)
-);
+create or replace function ores_iam_tenants_notify_fn()
+returns trigger as $$
+declare
+    notification_payload jsonb;
+    entity_name text := 'production.iam.tenant';
+    change_timestamp timestamptz := now();
+    changed_id text;
+begin
+    if TG_OP = 'DELETE' then
+        changed_id := old.tenant_id::text;
+    else
+        changed_id := new.tenant_id::text;
+    end if;
 
-create index if not exists ores_iam_login_info_tenant_idx
-on ores_iam_login_info_tbl (tenant_id);
+    notification_payload := jsonb_build_object(
+        'entity', entity_name,
+        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
+        'entity_ids', jsonb_build_array(changed_id)
+    );
 
-create index if not exists ores_iam_login_info_account_id_idx
-on ores_iam_login_info_tbl (account_id);
+    perform pg_notify('ores_tenants', notification_payload::text);
+    return null;
+end;
+$$ language plpgsql;
 
-create index if not exists ores_iam_login_info_locked_idx
-on ores_iam_login_info_tbl (locked)
-where locked = 0;
+create or replace trigger ores_iam_tenants_notify_trg
+after insert or update or delete on ores_iam_tenants_tbl
+for each row execute function ores_iam_tenants_notify_fn();

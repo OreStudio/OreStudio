@@ -19,6 +19,7 @@
  */
 create table if not exists "ores_dq_images_artefact_tbl" (
     "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
     "image_id" uuid not null,
     "version" integer not null,
     "key" text not null,
@@ -29,6 +30,9 @@ create table if not exists "ores_dq_images_artefact_tbl" (
 create index if not exists ores_dq_images_artefact_dataset_idx
 on "ores_dq_images_artefact_tbl" (dataset_id);
 
+create index if not exists ores_dq_images_artefact_tenant_idx
+on "ores_dq_images_artefact_tbl" (tenant_id);
+
 create index if not exists ores_dq_images_artefact_image_idx
 on "ores_dq_images_artefact_tbl" (image_id);
 
@@ -38,6 +42,7 @@ on "ores_dq_images_artefact_tbl" (key);
 -- Function to insert images into the artifact table
 create or replace function ores_dq_images_artefact_insert_fn(
     p_dataset_id uuid,
+    p_tenant_id uuid,
     p_image_id uuid,
     p_version integer,
     p_key text,
@@ -46,10 +51,10 @@ create or replace function ores_dq_images_artefact_insert_fn(
 ) returns void as $$
 begin
     insert into ores_dq_images_artefact_tbl (
-        dataset_id, image_id, version, key, description, svg_data
+        dataset_id, tenant_id, image_id, version, key, description, svg_data
     )
     values (
-        p_dataset_id, p_image_id, p_version, p_key, p_description, p_svg_data
+        p_dataset_id, p_tenant_id, p_image_id, p_version, p_key, p_description, p_svg_data
     );
 end;
 $$ language plpgsql;

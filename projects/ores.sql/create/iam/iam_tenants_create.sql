@@ -19,98 +19,94 @@
  */
 
 -- =============================================================================
--- ISO 4217 currency definitions.
--- Includes formatting rules and optional flag image reference.
--- coding_scheme_code tracks data provenance.
+-- Tenants Table
+-- Core table for multi-tenancy support. Each tenant represents an isolated
+-- organisation or the system platform tenant.
 -- =============================================================================
 
-create table if not exists "ores_refdata_currencies_tbl" (
-    "iso_code" text not null,
+create table if not exists "ores_iam_tenants_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
+    "type" text not null,
+    "code" text not null,
     "name" text not null,
-    "numeric_code" text not null,
-    "symbol" text not null,
-    "fraction_symbol" text not null,
-    "fractions_per_unit" integer not null,
-    "rounding_type" text not null,
-    "rounding_precision" integer not null,
-    "format" text not null,
-    "currency_type" text not null,
-    "coding_scheme_code" text,
-    "image_id" uuid,
+    "description" text,
+    "hostname" text not null,
+    "status" text not null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (iso_code, valid_from, valid_to),
+    primary key (tenant_id, valid_from, valid_to),
     exclude using gist (
-        iso_code WITH =,
+        tenant_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("iso_code" <> ''),
-    check ("change_reason_code" <> '')
+    check ("tenant_id" <> '00000000-0000-0000-0000-000000000000'::uuid or "code" = 'system'),
+    check ("change_reason_code" <> ''),
+    check ("code" <> ''),
+    check ("hostname" <> '')
 );
 
-create unique index if not exists ores_refdata_currencies_version_uniq_idx
-on "ores_refdata_currencies_tbl" (iso_code, version)
+-- Unique indexes for active records
+create unique index if not exists ores_iam_tenants_code_uniq_idx
+on ores_iam_tenants_tbl (code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_currencies_code_uniq_idx
-on "ores_refdata_currencies_tbl" (tenant_id, iso_code)
+create unique index if not exists ores_iam_tenants_hostname_uniq_idx
+on ores_iam_tenants_tbl (hostname)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_currencies_tenant_idx
-on "ores_refdata_currencies_tbl" (tenant_id)
+create unique index if not exists ores_iam_tenants_version_uniq_idx
+on ores_iam_tenants_tbl (tenant_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_refdata_currencies_insert_fn()
+-- =============================================================================
+-- Insert Trigger Function
+-- Handles version management, temporal fields, and FK validation.
+-- =============================================================================
+
+create or replace function ores_iam_tenants_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
-
-    -- Validate foreign key references
-    if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores_dq_coding_schemes_tbl
-        where code = NEW.coding_scheme_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
-        using errcode = '23503';
-    end if;
-
-    -- Validate rounding_type
+    -- Validate type FK
     if not exists (
-        select 1 from ores_refdata_rounding_types_tbl
-        where code = NEW.rounding_type
+        select 1 from ores_iam_tenant_types_tbl
+        where type = new.type
     ) then
-        raise exception 'Invalid rounding_type: %. Must be one of: %', NEW.rounding_type, (
-            select string_agg(code, ', ' order by display_order) from ores_refdata_rounding_types_tbl
-        )
-        using errcode = '23503';
+        raise exception 'Invalid tenant type: %. Must exist in ores_iam_tenant_types_tbl.',
+            new.type using errcode = '23503';
     end if;
 
+    -- Validate status FK
+    if not exists (
+        select 1 from ores_iam_tenant_statuses_tbl
+        where status = new.status
+    ) then
+        raise exception 'Invalid tenant status: %. Must exist in ores_iam_tenant_statuses_tbl.',
+            new.status using errcode = '23503';
+    end if;
+
+    -- Version management
     select version into current_version
-    from "ores_refdata_currencies_tbl"
-    where iso_code = new.iso_code
+    from ores_iam_tenants_tbl
+    where tenant_id = new.tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
-                using errcode = 'P0002';
+                new.version, current_version using errcode = 'P0002';
         end if;
         new.version = current_version + 1;
 
-        update "ores_refdata_currencies_tbl"
+        update ores_iam_tenants_tbl
         set valid_to = current_timestamp
-        where iso_code = new.iso_code
+        where tenant_id = new.tenant_id
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
@@ -119,6 +115,7 @@ begin
 
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
+
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
@@ -129,15 +126,19 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_refdata_currencies_insert_trg
-before insert on "ores_refdata_currencies_tbl"
+create or replace trigger ores_iam_tenants_insert_trg
+before insert on ores_iam_tenants_tbl
 for each row
-execute function ores_refdata_currencies_insert_fn();
+execute function ores_iam_tenants_insert_fn();
 
-create or replace rule ores_refdata_currencies_delete_rule as
-on delete to "ores_refdata_currencies_tbl"
+-- =============================================================================
+-- Delete Rule (Soft Delete)
+-- =============================================================================
+
+create or replace rule ores_iam_tenants_delete_rule as
+on delete to ores_iam_tenants_tbl
 do instead
-  update "ores_refdata_currencies_tbl"
-  set valid_to = current_timestamp
-  where iso_code = old.iso_code
-  and valid_to = ores_utility_infinity_timestamp_fn();
+    update ores_iam_tenants_tbl
+    set valid_to = current_timestamp
+    where tenant_id = old.tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();

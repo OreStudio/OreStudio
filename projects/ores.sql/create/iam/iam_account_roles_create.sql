@@ -24,6 +24,7 @@
 -- =============================================================================
 
 create table if not exists ores_iam_account_roles_tbl (
+    "tenant_id" uuid not null,
     "account_id" uuid not null,
     "role_id" uuid not null,
     "assigned_by" text not null,
@@ -42,6 +43,10 @@ create table if not exists ores_iam_account_roles_tbl (
     check ("change_reason_code" <> '')
 );
 
+create index if not exists ores_iam_account_roles_tenant_idx
+on ores_iam_account_roles_tbl (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create index if not exists ores_iam_account_roles_account_idx
 on ores_iam_account_roles_tbl (account_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -53,6 +58,9 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create or replace function ores_iam_account_roles_insert_fn()
 returns trigger as $$
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     update ores_iam_account_roles_tbl
     set valid_to = current_timestamp
     where account_id = new.account_id
@@ -67,7 +75,7 @@ begin
         new.assigned_by = current_user;
     end if;
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

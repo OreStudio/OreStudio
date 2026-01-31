@@ -24,6 +24,7 @@
 
 create table if not exists "ores_refdata_cashflow_types_tbl" (
     "code" text not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "source" text null,
     "description" text null,
@@ -48,6 +49,14 @@ create unique index if not exists ores_refdata_cashflow_types_version_uniq_idx
 on "ores_refdata_cashflow_types_tbl" (code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists ores_refdata_cashflow_types_code_uniq_idx
+on "ores_refdata_cashflow_types_tbl" (tenant_id, code, coding_scheme_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_refdata_cashflow_types_tenant_idx
+on "ores_refdata_cashflow_types_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create index if not exists ores_refdata_cashflow_types_coding_scheme_idx
 on "ores_refdata_cashflow_types_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -57,6 +66,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
         select 1 from ores_dq_coding_schemes_tbl
@@ -98,7 +110,7 @@ begin
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

@@ -24,6 +24,7 @@
 
 create table if not exists "ores_assets_image_tags_tbl" (
     "image_id" uuid not null,
+    "tenant_id" uuid not null,
     "tag_id" uuid not null,
     "assigned_by" text not null,
     "assigned_at" timestamp with time zone not null default current_timestamp,
@@ -46,9 +47,16 @@ create index if not exists ores_assets_image_tags_tag_idx
 on "ores_assets_image_tags_tbl" (tag_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists ores_assets_image_tags_tenant_idx
+on "ores_assets_image_tags_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_assets_image_tags_insert_fn()
 returns trigger as $$
 begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
     update "ores_assets_image_tags_tbl"
     set valid_to = current_timestamp
     where image_id = new.image_id and tag_id = new.tag_id

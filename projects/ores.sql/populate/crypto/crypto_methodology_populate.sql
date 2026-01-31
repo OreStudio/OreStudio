@@ -32,7 +32,7 @@
 
 \echo '--- Cryptocurrency Methodologies ---'
 
-select ores_dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'GitHub Cryptocurrency Icons Download',
     'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
     'https://github.com/spothq/cryptocurrency-icons',
@@ -118,7 +118,7 @@ Some cryptocurrencies have special Unicode symbols:
   XRP: ✕ (Ripple)'
 );
 
-select ores_dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'GitHub Cryptocurrencies JSON Download',
     'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
     'https://github.com/crypti/cryptocurrencies',

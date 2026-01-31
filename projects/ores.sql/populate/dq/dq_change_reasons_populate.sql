@@ -47,17 +47,17 @@
 
 \echo '--- Change Reason Categories ---'
 
-select ores_dq_change_reason_categories_upsert_fn(
+select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system',
     'System-generated reasons for automatic operations (not user-selectable)'
 );
 
-select ores_dq_change_reason_categories_upsert_fn(
+select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common',
     'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
 );
 
-select ores_dq_change_reason_categories_upsert_fn(
+select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade',
     'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
 );
@@ -70,7 +70,7 @@ select ores_dq_change_reason_categories_upsert_fn(
 \echo '--- Change Reasons: System ---'
 
 -- System reasons (auto-assigned, not user-selectable)
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.initial_load',
     'Initial system bootstrap or migration',
     'system',
@@ -80,7 +80,7 @@ select ores_dq_change_reasons_upsert_fn(
     0       -- display order
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.new_record',
     'New record created during normal operations',
     'system',
@@ -90,7 +90,7 @@ select ores_dq_change_reasons_upsert_fn(
     10      -- display order
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.external_data_import',
     'External data import (requires data lineage)',
     'system',
@@ -100,7 +100,7 @@ select ores_dq_change_reasons_upsert_fn(
     20      -- display order
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.test',
     'Test data for automated testing',
     'system',
@@ -110,7 +110,7 @@ select ores_dq_change_reasons_upsert_fn(
     30      -- display order
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.import',
     'Data imported via CLI import command',
     'system',
@@ -127,7 +127,7 @@ select ores_dq_change_reasons_upsert_fn(
 \echo ''
 \echo '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.non_material_update',
     'Non-material update (Touch)',
     'common',
@@ -137,7 +137,7 @@ select ores_dq_change_reasons_upsert_fn(
     10
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.rectification',
     'User/Booking Error',
     'common',
@@ -147,7 +147,7 @@ select ores_dq_change_reasons_upsert_fn(
     20
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.duplicate',
     'Duplicate Record',
     'common',
@@ -157,7 +157,7 @@ select ores_dq_change_reasons_upsert_fn(
     30
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.stale_data',
     'Data not updated within required liquidity horizon',
     'common',
@@ -167,7 +167,7 @@ select ores_dq_change_reasons_upsert_fn(
     40
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.outlier_correction',
     'Manual override after plausibility check failure',
     'common',
@@ -177,7 +177,7 @@ select ores_dq_change_reasons_upsert_fn(
     50
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.feed_failure',
     'Upstream vendor/API data issue',
     'common',
@@ -187,7 +187,7 @@ select ores_dq_change_reasons_upsert_fn(
     60
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.mapping_error',
     'Incorrect ID translation (e.g., ISIN to FIGI)',
     'common',
@@ -197,7 +197,7 @@ select ores_dq_change_reasons_upsert_fn(
     70
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.judgmental_override',
     'Expert judgment when market prices unavailable',
     'common',
@@ -207,7 +207,7 @@ select ores_dq_change_reasons_upsert_fn(
     80
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.regulatory',
     'Mandatory compliance adjustment',
     'common',
@@ -217,7 +217,7 @@ select ores_dq_change_reasons_upsert_fn(
     90
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.other',
     'Exceptional (requires audit note)',
     'common',
@@ -234,7 +234,7 @@ select ores_dq_change_reasons_upsert_fn(
 \echo ''
 \echo '--- Change Reasons: Trade (FINRA / MiFID II) ---'
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.fat_finger',
     'Erroneous execution (wrong quantity/price)',
     'trade',
@@ -244,7 +244,7 @@ select ores_dq_change_reasons_upsert_fn(
     10
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.system_malfunction',
     'Technical glitch or algorithm issue',
     'trade',
@@ -254,7 +254,7 @@ select ores_dq_change_reasons_upsert_fn(
     20
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.corporate_action',
     'Stock split, dividend, or merger adjustment',
     'trade',
@@ -264,7 +264,7 @@ select ores_dq_change_reasons_upsert_fn(
     30
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.allocation_swap',
     'House to client sub-account reallocation',
     'trade',
@@ -274,7 +274,7 @@ select ores_dq_change_reasons_upsert_fn(
     40
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.re_booking',
     'Wrong legal entity correction',
     'trade',
@@ -284,7 +284,7 @@ select ores_dq_change_reasons_upsert_fn(
     50
 );
 
-select ores_dq_change_reasons_upsert_fn(
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.other',
     'Exceptional (requires audit note)',
     'trade',

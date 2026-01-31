@@ -35,31 +35,31 @@
  */
 
 -- Seed system flags with their default values
-select ores_variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.bootstrap_mode',
     true,
     'Indicates whether the system is in bootstrap mode (waiting for initial admin account).'
 );
 
-select ores_variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.user_signups',
     false,
     'Controls whether user self-registration is allowed.'
 );
 
-select ores_variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.signup_requires_authorization',
     false,
     'Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail.'
 );
 
-select ores_variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.disable_password_validation',
     false,
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
-select ores_variability_feature_flags_upsert_fn(
+select ores_variability_feature_flags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.synthetic_data_generation',
     false,
     'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'

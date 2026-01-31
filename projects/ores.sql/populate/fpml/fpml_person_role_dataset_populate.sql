@@ -33,7 +33,7 @@
 
 \echo '--- FpML Person Role Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.person_role',
     'FpML Standards',
     'Parties',

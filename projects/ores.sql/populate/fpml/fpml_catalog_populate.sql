@@ -12,7 +12,7 @@
 
 \echo '--- FpML Standards Catalog ---'
 
-select ores_dq_catalogs_upsert_fn(
+select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Standards',
     'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
     'Reference Data Team'

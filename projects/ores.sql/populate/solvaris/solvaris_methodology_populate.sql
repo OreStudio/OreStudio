@@ -24,7 +24,7 @@
 
 \echo '--- Data Quality Slovaris Methodologies ---'
 
-select ores_dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'OreStudio Code Generation Methodology',
     'Methodology for generating artefact files using the OreStudio code generator',
     'https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen',

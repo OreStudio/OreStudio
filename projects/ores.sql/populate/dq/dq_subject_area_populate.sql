@@ -43,61 +43,61 @@
 
 \echo '--- Data Quality Subject Areas ---'
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Currencies',
     'Currency reference data.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Countries',
     'Country reference data.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Country Flags',
     'Flag image data associated with countries.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'IP Address to Country maps',
     'IP geolocation mapping data.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Cryptocurrencies',
     'Cryptocurrency reference data including icons and metadata.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Parties',
     'Party identification schemes and reference data for legal entities and financial institutions.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'General',
     'Cross-cutting reference data not specific to a particular domain.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Trading',
     'Trading infrastructure reference data including account types, business centres, and cashflow types.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Market Data',
     'Market data reference including asset classes, asset measures, and benchmark rates.'
 );
 
-select ores_dq_subject_areas_upsert_fn(
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Regulatory',
     'Regulatory reference data including supervisory bodies, reporting regimes, and jurisdictions.'

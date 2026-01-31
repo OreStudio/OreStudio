@@ -36,19 +36,19 @@
 
 \echo '--- Data Quality Nature Dimensions ---'
 
-select ores_dq_nature_dimensions_upsert_fn(
+select ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Actual',
     'Actual Data',
     'Real-world data (replaces "Real").'
 );
 
-select ores_dq_nature_dimensions_upsert_fn(
+select ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Synthetic',
     'Synthetic Data',
     'Artificially generated data for testing/modeling.'
 );
 
-select ores_dq_nature_dimensions_upsert_fn(
+select ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Mock',
     'Mock Data',
     'Static, hand-written data for unit tests.'

@@ -36,17 +36,17 @@
 
 \echo '--- Data Quality Data Domains ---'
 
-select ores_dq_data_domains_upsert_fn(
+select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Standardized data used across the system.'
 );
 
-select ores_dq_data_domains_upsert_fn(
+select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Trade Data',
     'Transaction and position data.'
 );
 
-select ores_dq_data_domains_upsert_fn(
+select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Market Data',
     'Pricing and market information.'
 );

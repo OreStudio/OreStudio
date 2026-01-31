@@ -31,7 +31,7 @@
 
 \echo '--- Flag Icons Methodologies ---'
 
-select ores_dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'GitHub Flag Icons Download',
     'SVG images downloaded from lipis/flag-icons GitHub repository',
     'https://github.com/lipis/flag-icons',

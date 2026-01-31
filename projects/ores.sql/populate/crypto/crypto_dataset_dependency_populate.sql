@@ -33,13 +33,13 @@
 
 \echo '--- Cryptocurrency Dataset Dependencies ---'
 
-select ores_dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'crypto.large',
     'assets.crypto_icons',
     'visual_assets'
 );
 
-select ores_dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'crypto.small',
     'assets.crypto_icons',
     'visual_assets'

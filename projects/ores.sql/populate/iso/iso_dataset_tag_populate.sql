@@ -31,7 +31,7 @@
 
 \echo '--- ISO Standards Dataset Tags ---'
 
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ISO Coding Schemes',
     'General',
     'Reference Data',
@@ -39,7 +39,7 @@ select ores_dq_tags_upsert_fn(
     'ISO coding scheme definitions'
 );
 
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ISO 3166 Country Codes',
     'Countries',
     'Reference Data',
@@ -47,7 +47,7 @@ select ores_dq_tags_upsert_fn(
     'Country reference data'
 );
 
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ISO 4217 Currency Codes',
     'Currencies',
     'Reference Data',

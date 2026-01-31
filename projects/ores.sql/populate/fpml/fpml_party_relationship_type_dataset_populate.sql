@@ -33,7 +33,7 @@
 
 \echo '--- FpML Party Relationship Type Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.party_relationship_type',
     'FpML Standards',
     'Parties',

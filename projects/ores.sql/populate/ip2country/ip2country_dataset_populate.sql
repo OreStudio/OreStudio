@@ -33,7 +33,7 @@
 \echo '--- IP Geolocation Datasets ---'
 
 -- IP to Country IPv4 Ranges
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'geo.ip2country',
     'IP Geolocation',
     'IP Address to Country maps',

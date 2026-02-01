@@ -62,6 +62,14 @@ public:
     void seed_rbac();
 
     /**
+     * @brief Sets the tenant context to system tenant.
+     *
+     * Sets app.current_tenant_id session variable to the system tenant UUID.
+     * This enables multi-tenancy operations in tests.
+     */
+    void set_system_tenant_context();
+
+    /**
      * @brief Gets the database context.
      */
     database::context& context() { return context_; }

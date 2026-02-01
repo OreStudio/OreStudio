@@ -87,6 +87,11 @@ alter role ores_comms_user set search_path to public;
 alter role ores_http_user set search_path to public;
 alter role ores_test_ddl_user set search_path to public;
 alter role ores_test_dml_user set search_path to public;
+
+-- Set default tenant context to system tenant for test users.
+-- This is essential for test operations that don't explicitly set tenant context.
+alter role ores_test_ddl_user set app.current_tenant_id = '00000000-0000-0000-0000-000000000000';
+alter role ores_test_dml_user set app.current_tenant_id = '00000000-0000-0000-0000-000000000000';
 alter role ores_readonly_user set search_path to public;
 
 -- NOTE: Whimsical names and database management functions are now in ores_admin.

@@ -17,35 +17,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 19:52], for Sunday, February 01, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *6:00* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 6:00   |      |      | 100.0 |
-|      | Active                       |        | 6:00 |      | 100.0 |
-| code | Add tenancy support          |        |      | 1:20 |  22.2 |
-| code | Use tenancy to isolate tests |        |      | 4:40 |  77.8 |
+#+CAPTION: Clock summary at [2026-02-01 Sun 21:45], for Sunday, February 01, 2026.
+|      | <75>                                 |        |      |      |       |
+| Tags | Headline                             | Time   |      |      |     % |
+|------+--------------------------------------+--------+------+------+-------|
+|      | *Total time*                         | *6:50* |      |      | 100.0 |
+|------+--------------------------------------+--------+------+------+-------|
+|      | Stories                              | 6:50   |      |      | 100.0 |
+|      | Active                               |        | 6:50 |      | 100.0 |
+| code | Add tenancy support                  |        |      | 1:20 |  19.5 |
+| code | Use tenancy to isolate tests         |        |      | 5:00 |  73.2 |
+| code | Add NOTICE logging support to sqlgen |        |      | 0:30 |   7.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 19:52]
+#+CAPTION: Clock summary at [2026-02-01 Sun 21:45]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *24:16* |       |       | 100.0 |
+|       | *Total time*                                | *25:06* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 24:16   |       |       | 100.0 |
-|       | Active                                      |         | 24:16 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |   9.9 |
-| code  | Address past review comments                |         |       |  1:14 |   5.1 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  41.6 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   5.6 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   2.5 |
-| code  | Add tenancy support                         |         |       |  3:55 |  16.1 |
-| code  | Use tenancy to isolate tests                |         |       |  4:40 |  19.2 |
+|       | Stories                                     | 25:06   |       |       | 100.0 |
+|       | Active                                      |         | 25:06 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |   9.6 |
+| code  | Address past review comments                |         |       |  1:14 |   4.9 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  40.2 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   5.4 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   2.4 |
+| code  | Add tenancy support                         |         |       |  3:55 |  15.6 |
+| code  | Use tenancy to isolate tests                |         |       |  5:00 |  19.9 |
+| code  | Add NOTICE logging support to sqlgen        |         |       |  0:30 |   2.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -576,6 +578,7 @@ Highlights:
 
 *** COMPLETED Use tenancy to isolate tests                             :code:
     :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 21:10]--[2026-02-01 Sun 21:30] =>  0:20
     CLOCK: [2026-02-01 Sun 19:35]--[2026-02-01 Sun 19:51] =>  0:16
     CLOCK: [2026-02-01 Sun 18:12]--[2026-02-01 Sun 19:13] =>  1:01
     CLOCK: [2026-02-01 Sun 15:40]--[2026-02-01 Sun 16:57] =>  1:17
@@ -654,6 +657,15 @@ Notes:
 
 All code has been moved into ores.database. Tickets have been raised in sqlgen.
 
+*** STARTED Add NOTICE logging support to sqlgen                       :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 20:40]--[2026-02-01 Sun 21:10] =>  0:30
+    :END:
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/118][#118: Proposal: Add Notice Processor Support to sqlgen]]
+
 *** Add bound parameters to sqlgen                                     :code:
 
 At present we are using libpq for assorted queries to avoid issues with SQL
@@ -662,12 +674,6 @@ injection. We should extend sqlgen to support this.
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
-
-*** Add NOTICE logging support to sqlgen                               :code:
-
-Links:
-
-- [[https://github.com/getml/sqlgen/issues/118][#118: Proposal: Add Notice Processor Support to sqlgen]]
 
 *** Consider adding telemetry to tests                                 :code:
 

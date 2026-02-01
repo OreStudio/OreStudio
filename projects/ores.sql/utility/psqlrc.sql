@@ -62,8 +62,8 @@
 -- Search Path
 --------------------------------------------------------------------------------
 
--- Set ORES schemas on the search path
-SET search_path TO production, metadata, public;
+-- Set ORES schema on the search path (all tables are in public schema)
+SET search_path TO public;
 
 --------------------------------------------------------------------------------
 -- Tenant Context
@@ -81,7 +81,7 @@ SET app.current_tenant_id = :'ores_tenant_id';
 --------------------------------------------------------------------------------
 
 -- Table sizes (human readable)
-\set tsize 'SELECT table_schema, table_name, pg_size_pretty(pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS size, pg_size_pretty(pg_total_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS total_size FROM information_schema.tables WHERE table_type = \'BASE TABLE\' AND table_schema IN (\'production\', \'metadata\') ORDER BY pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name)) DESC;'
+\set tsize 'SELECT table_schema, table_name, pg_size_pretty(pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS size, pg_size_pretty(pg_total_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS total_size FROM information_schema.tables WHERE table_type = \'BASE TABLE\' AND table_schema = \'public\' AND table_name LIKE \'ores_%\' ORDER BY pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name)) DESC;'
 
 -- List ORES databases
 \set ores_dbs 'SELECT datname AS database, pg_size_pretty(pg_database_size(datname)) AS size FROM pg_database WHERE datname LIKE \'ores_%\' ORDER BY datname;'
@@ -109,7 +109,7 @@ SET app.current_tenant_id = :'ores_tenant_id';
 \set system_tenant 'SELECT code AS ores_tenant FROM st(\'system\') \\gset'
 
 -- Count rows in all ORES tables
-\set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname IN (\'production\', \'metadata\') ORDER BY n_live_tup DESC;'
+\set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname = \'public\' AND relname LIKE \'ores_%\' ORDER BY n_live_tup DESC;'
 
 -- Show active connections
 \set connections 'SELECT pid, usename, datname, client_addr, state, query_start, left(query, 60) AS query FROM pg_stat_activity WHERE datname LIKE \'ores_%\' ORDER BY query_start;'

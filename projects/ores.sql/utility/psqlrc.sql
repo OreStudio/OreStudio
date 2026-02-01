@@ -95,8 +95,11 @@ SET app.current_tenant_id = :'ores_tenant_id';
 -- Show current tenant context
 \set tenant 'SELECT current_setting(\'app.current_tenant_id\', true) AS current_tenant_id;'
 
--- List all tenants (requires SELECT on ores_iam_tenants_tbl)
-\set tenants 'SELECT tenant_id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
+-- List all tenants including terminated (requires SELECT on ores_iam_tenants_tbl)
+\set tenants 'SELECT tenant_id, code, name, status, valid_to FROM ores_iam_tenants_tbl ORDER BY valid_to DESC, code;'
+
+-- List only active tenants
+\set active_tenants 'SELECT tenant_id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
 
 -- Count rows in all ORES tables
 \set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname IN (\'production\', \'metadata\') ORDER BY n_live_tup DESC;'
@@ -128,7 +131,8 @@ SET app.current_tenant_id = :'ores_tenant_id';
 \echo '  :ores_roles       - List ORES roles'
 \echo '  :conninfo         - Current connection info'
 \echo '  :tenant           - Show current tenant context'
-\echo '  :tenants          - List all tenants'
+\echo '  :tenants          - List all tenants (including terminated)'
+\echo '  :active_tenants   - List only active tenants'
 \echo '  :row_counts       - Row counts per table'
 \echo '  :connections      - Active connections'
 \echo '  :locks            - Show blocked queries'

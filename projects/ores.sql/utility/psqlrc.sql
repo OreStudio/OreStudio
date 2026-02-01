@@ -35,8 +35,8 @@
 -- Display null values clearly
 \pset null '[null]'
 
--- Informative prompt: [user@host:port (time) database transaction_status]$
-\set PROMPT1 '[%n@%M:%> (%`date +%H:%M:%S`) %/ %x]$ '
+-- Informative prompt: [user@host:port (time) database:tenant transaction_status]$
+\set PROMPT1 '[%n@%M:%> (%`date +%H:%M:%S`) %/:%:ores_tenant:%x]$ '
 \set PROMPT2 '    -> '
 
 -- Disable pager for easier scripting
@@ -72,7 +72,9 @@ SET search_path TO production, metadata, public;
 -- Set system tenant context for full visibility across all tenants.
 -- RLS policies restrict access based on app.current_tenant_id; setting it to
 -- the system tenant (all zeros) grants read access to all tenant data.
-SET app.current_tenant_id = '00000000-0000-0000-0000-000000000000';
+\set ores_tenant_id '00000000-0000-0000-0000-000000000000'
+\set ores_tenant 'system'
+SET app.current_tenant_id = :'ores_tenant_id';
 
 --------------------------------------------------------------------------------
 -- Useful Macros (invoke with :macroname)
@@ -89,6 +91,12 @@ SET app.current_tenant_id = '00000000-0000-0000-0000-000000000000';
 
 -- Show current connection info
 \set conninfo 'SELECT current_user, session_user, current_database(), inet_server_addr() AS server, inet_server_port() AS port;'
+
+-- Show current tenant context
+\set tenant 'SELECT current_setting(\'app.current_tenant_id\', true) AS current_tenant_id;'
+
+-- List all tenants (requires SELECT on ores_iam_tenants_tbl)
+\set tenants 'SELECT tenant_id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
 
 -- Count rows in all ORES tables
 \set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname IN (\'production\', \'metadata\') ORDER BY n_live_tup DESC;'
@@ -112,11 +120,15 @@ SET app.current_tenant_id = '00000000-0000-0000-0000-000000000000';
 \unset QUIET
 
 \echo ''
+\echo 'Tenant context set to:' :ores_tenant '(' :ores_tenant_id ')'
+\echo ''
 \echo 'ORES psqlrc loaded. Available macros:'
 \echo '  :tsize            - Table sizes (human readable)'
 \echo '  :ores_dbs         - List ORES databases'
 \echo '  :ores_roles       - List ORES roles'
 \echo '  :conninfo         - Current connection info'
+\echo '  :tenant           - Show current tenant context'
+\echo '  :tenants          - List all tenants'
 \echo '  :row_counts       - Row counts per table'
 \echo '  :connections      - Active connections'
 \echo '  :locks            - Show blocked queries'

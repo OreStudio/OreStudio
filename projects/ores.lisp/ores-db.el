@@ -26,6 +26,9 @@
 (require 'transient)
 (require 'project)
 
+;; Disable sql-postgres login prompts - we provide connection URI directly
+(setq sql-postgres-login-params nil)
+
 (defconst ores-db/hosts '("localhost" "192.168.1.22")
   "List of hosts to scan for ORES databases.")
 

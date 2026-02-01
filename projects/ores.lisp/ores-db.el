@@ -326,9 +326,10 @@ Uses ORES_DB_<APP>_PASSWORD convention for service users to avoid
 conflicting with application CLI environment variable mappers.
 Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
   (interactive (list (completing-read "Host: " ores-db/hosts nil t)))
-  (let ((count 0))
-    ;; Set test database connection info
-    (setenv "ORES_TEST_DB_DATABASE" "ores_template")
+  (let ((count 0)
+        (env (ores-db/current-environment)))
+    ;; Set test database connection info (use current environment's database)
+    (setenv "ORES_TEST_DB_DATABASE" (if env (concat "ores_dev_" env) "ores_template"))
     (setenv "ORES_TEST_DB_HOST" host)
     (setq count (+ count 2))
 

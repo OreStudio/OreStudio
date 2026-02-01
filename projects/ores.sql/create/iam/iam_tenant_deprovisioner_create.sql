@@ -271,10 +271,11 @@ begin
 
     -- =========================================================================
     -- Finally, terminate the tenant itself
+    -- Note: We only update status, not valid_to, so the tenant record remains
+    -- visible for auditing and debugging purposes.
     -- =========================================================================
     update ores_iam_tenants_tbl
-    set status = 'terminated',
-        valid_to = current_timestamp
+    set status = 'terminated'
     where tenant_id = p_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 

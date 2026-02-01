@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Afghanistan',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Applicable',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Australia',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -89,9 +92,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'China',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -100,9 +104,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'HongKong',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -111,9 +116,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'India',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -122,9 +128,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Indonesia',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -133,9 +140,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Japan',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -144,9 +152,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Korea',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -155,9 +164,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Malaysia',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -166,9 +176,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'NewZealand',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -177,9 +188,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'NotApplicable',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -188,9 +200,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Pakistan',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -199,9 +212,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Philippines',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -210,9 +224,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Singapore',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -221,9 +236,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Taiwan',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -232,9 +248,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Thailand',
         1,
         'FPML_LOCAL_JURISDICTION',
@@ -243,9 +260,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_local_jurisdictions_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Vietnam',
         1,
         'FPML_LOCAL_JURISDICTION',

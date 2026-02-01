@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'ASIC',
         1,
         'FPML_REPORTING_REGIME',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CA.Rule.91-507',
         1,
         'FPML_REPORTING_REGIME',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'DoddFrankAct',
         1,
         'FPML_REPORTING_REGIME',
@@ -89,9 +92,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'EMIR',
         1,
         'FPML_REPORTING_REGIME',
@@ -100,9 +104,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'HKMA',
         1,
         'FPML_REPORTING_REGIME',
@@ -111,9 +116,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'JFSA',
         1,
         'FPML_REPORTING_REGIME',
@@ -122,9 +128,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'MAS',
         1,
         'FPML_REPORTING_REGIME',
@@ -133,9 +140,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'MiFID',
         1,
         'FPML_REPORTING_REGIME',
@@ -144,9 +152,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'MiFIDII',
         1,
         'FPML_REPORTING_REGIME',
@@ -155,9 +164,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'MiFIR',
         1,
         'FPML_REPORTING_REGIME',
@@ -166,9 +176,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'ODRF',
         1,
         'FPML_REPORTING_REGIME',
@@ -177,9 +188,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'RussianFederation',
         1,
         'FPML_REPORTING_REGIME',
@@ -188,9 +200,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SFTR',
         1,
         'FPML_REPORTING_REGIME',
@@ -199,9 +212,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_reporting_regimes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'UKEMIR',
         1,
         'FPML_REPORTING_REGIME',

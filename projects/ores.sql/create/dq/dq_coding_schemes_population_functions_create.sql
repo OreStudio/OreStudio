@@ -152,10 +152,12 @@ begin
 
         -- Insert record - trigger handles versioning automatically
         insert into ores_dq_coding_schemes_tbl (
+            tenant_id,
             code, version, name, authority_type, subject_area_name, domain_name,
             uri, description,
             modified_by, change_reason_code, change_commentary
         ) values (
+            ores_iam_system_tenant_id_fn(),
             r.code, 0, r.name, r.authority_type, r.subject_area_name, r.domain_name,
             r.uri, r.description,
             'data_importer', 'system.external_data_import',

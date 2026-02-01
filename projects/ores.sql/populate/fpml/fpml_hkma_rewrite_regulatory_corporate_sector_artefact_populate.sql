@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'AIFD',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'ASSU',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CCPS',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -89,9 +92,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CDTI',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -100,9 +104,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CSDS',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -111,9 +116,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'INUN',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -122,9 +128,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'INVF',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -133,9 +140,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'ORPI',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -144,9 +152,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'OTHR',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -155,9 +164,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'REIN',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
@@ -166,9 +176,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'UCIT',
         1,
         'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',

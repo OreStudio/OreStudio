@@ -274,9 +274,11 @@ begin
         -- Use existing image_id if updating to preserve referential integrity,
         -- otherwise use the DQ image_id for new images
         insert into ores_assets_images_tbl (
+            tenant_id,
             image_id, version, key, description, svg_data,
             modified_by, change_reason_code, change_commentary
         ) values (
+            ores_iam_system_tenant_id_fn(),
             coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
@@ -442,10 +444,12 @@ begin
         -- Insert country - trigger handles versioning automatically
         -- version=0 tells trigger to auto-increment from current version
         insert into ores_refdata_countries_tbl (
+            tenant_id,
             alpha2_code, version, alpha3_code, numeric_code, name, official_name,
             coding_scheme_code, image_id,
             modified_by, change_reason_code, change_commentary
         ) values (
+            ores_iam_system_tenant_id_fn(),
             r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name,
             v_coding_scheme_code, v_resolved_image_id,
             'data_importer', 'system.external_data_import',
@@ -627,11 +631,13 @@ begin
         -- Insert currency - trigger handles versioning automatically
         -- version=0 tells trigger to auto-increment from current version
         insert into ores_refdata_currencies_tbl (
+            tenant_id,
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision, format, currency_type,
             coding_scheme_code, image_id,
             modified_by, change_reason_code, change_commentary
         ) values (
+            ores_iam_system_tenant_id_fn(),
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type,
             v_coding_scheme_code, v_resolved_image_id,
@@ -733,8 +739,9 @@ begin
     truncate table ores_geo_ip2country_tbl;
 
     -- Insert from DQ artefact table, converting to int8range
-    insert into ores_geo_ip2country_tbl (ip_range, country_code)
+    insert into ores_geo_ip2country_tbl (tenant_id, ip_range, country_code)
     select
+        ores_iam_system_tenant_id_fn(),
         int8range(range_start, range_end + 1, '[)'),
         country_code
     from ores_dq_ip2country_artefact_tbl

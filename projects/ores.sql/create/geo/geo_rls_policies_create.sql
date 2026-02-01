@@ -40,12 +40,7 @@ for select using (
     or tenant_id = ores_iam_system_tenant_id_fn()
 );
 
-create policy ores_geo_ip2country_tbl_write_policy on ores_geo_ip2country_tbl
-for insert with check (tenant_id = ores_iam_current_tenant_id_fn());
-
-create policy ores_geo_ip2country_tbl_update_policy on ores_geo_ip2country_tbl
-for update using (tenant_id = ores_iam_current_tenant_id_fn())
+create policy ores_geo_ip2country_tbl_modification_policy on ores_geo_ip2country_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
-
-create policy ores_geo_ip2country_tbl_delete_policy on ores_geo_ip2country_tbl
-for delete using (tenant_id = ores_iam_current_tenant_id_fn());

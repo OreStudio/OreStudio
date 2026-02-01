@@ -17,35 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 16:57], for Sunday, February 01, 2026.
+#+CAPTION: Clock summary at [2026-02-01 Sun 19:52], for Sunday, February 01, 2026.
 |      | <75>                         |        |      |      |       |
 | Tags | Headline                     | Time   |      |      |     % |
 |------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *4:43* |      |      | 100.0 |
+|      | *Total time*                 | *6:00* |      |      | 100.0 |
 |------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 4:43   |      |      | 100.0 |
-|      | Active                       |        | 4:43 |      | 100.0 |
-| code | Add tenancy support          |        |      | 1:20 |  28.3 |
-| code | Use tenancy to isolate tests |        |      | 3:23 |  71.7 |
+|      | Stories                      | 6:00   |      |      | 100.0 |
+|      | Active                       |        | 6:00 |      | 100.0 |
+| code | Add tenancy support          |        |      | 1:20 |  22.2 |
+| code | Use tenancy to isolate tests |        |      | 4:40 |  77.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 16:57]
+#+CAPTION: Clock summary at [2026-02-01 Sun 19:52]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *22:59* |       |       | 100.0 |
+|       | *Total time*                                | *24:16* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 22:59   |       |       | 100.0 |
-|       | Active                                      |         | 22:59 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |  10.4 |
-| code  | Address past review comments                |         |       |  1:14 |   5.4 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  43.9 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   5.9 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   2.6 |
-| code  | Add tenancy support                         |         |       |  3:55 |  17.0 |
-| code  | Use tenancy to isolate tests                |         |       |  3:23 |  14.7 |
+|       | Stories                                     | 24:16   |       |       | 100.0 |
+|       | Active                                      |         | 24:16 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |   9.9 |
+| code  | Address past review comments                |         |       |  1:14 |   5.1 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  41.6 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   5.6 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   2.5 |
+| code  | Add tenancy support                         |         |       |  3:55 |  16.1 |
+| code  | Use tenancy to isolate tests                |         |       |  4:40 |  19.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -574,8 +574,10 @@ Highlights:
   streamlining multi-tenancy setup for tests
 #+end_quote
 
-*** STARTED Use tenancy to isolate tests                               :code:
+*** COMPLETED Use tenancy to isolate tests                             :code:
     :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 19:35]--[2026-02-01 Sun 19:51] =>  0:16
+    CLOCK: [2026-02-01 Sun 18:12]--[2026-02-01 Sun 19:13] =>  1:01
     CLOCK: [2026-02-01 Sun 15:40]--[2026-02-01 Sun 16:57] =>  1:17
     CLOCK: [2026-02-01 Sun 14:28]--[2026-02-01 Sun 15:33] =>  1:05
     CLOCK: [2026-02-01 Sun 12:27]--[2026-02-01 Sun 13:28] =>  1:01
@@ -641,11 +643,31 @@ Highlights:
   ores_variability_feature_flags_tbl to properly incorporate tenant_id.
 #+end_quote
 
+*** COMPLETED Check for uses of raw libpq                              :code:
+
+Claude has the habit of sneaking in uses of raw libpq. We need to do a review of
+the code to make sure we are using sqlgen.
+
+Notes:
+
+- check for raw libpq in bitemporal operations.
+
+All code has been moved into ores.database. Tickets have been raised in sqlgen.
+
+*** Add bound parameters to sqlgen                                     :code:
+
+At present we are using libpq for assorted queries to avoid issues with SQL
+injection. We should extend sqlgen to support this.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
+
 *** Add NOTICE logging support to sqlgen                               :code:
 
 Links:
 
-- [[https://github.com/getml/sqlgen/issues/118][Proposal: Add Notice Processor Support to sqlgen]]
+- [[https://github.com/getml/sqlgen/issues/118][#118: Proposal: Add Notice Processor Support to sqlgen]]
 
 *** Consider adding telemetry to tests                                 :code:
 
@@ -1003,15 +1025,6 @@ Problems observed:
   file.
 - since datasets refer to data in subdirectories, we should add the directory to
   the manifest. Not needed in DB.
-
-*** Check for uses of raw libpq                                        :code:
-
-Claude has the habit of sneaking in uses of raw libpq. We need to do a review of
-the code to make sure we are using sqlgen.
-
-Notes:
-
-- check for raw libpq in bitemporal operations.
 
 *** Make the icon theme "configurable"                                 :code:
 

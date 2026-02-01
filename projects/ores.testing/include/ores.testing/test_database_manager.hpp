@@ -109,12 +109,13 @@ private:
     /**
      * @brief Generates a unique tenant code for this test run.
      *
-     * The tenant code includes a timestamp for comparing test runs:
-     * test_{YYYYMMDD}_{HHMMSS}_{pid}_{random}
+     * The tenant code includes the test suite name and timestamp:
+     * {test_suite}_{YYYYMMDD}_{HHMMSS}_{pid}_{random}
      *
+     * @param test_suite_name Name of the test suite (e.g., "ores.cli.tests")
      * @return A unique tenant code string
      */
-    static std::string generate_test_tenant_code();
+    static std::string generate_test_tenant_code(const std::string& test_suite_name);
 
     /**
      * @brief Provisions a test tenant using the SQL provisioner function.
@@ -125,11 +126,13 @@ private:
      *
      * @param ctx The database context to use
      * @param tenant_code The unique tenant code
+     * @param description Human-readable description (e.g., test suite name + version)
      * @return The UUID of the created tenant as a string
      * @throws std::runtime_error if provisioning fails
      */
     static std::string provision_test_tenant(database::context& ctx,
-                                             const std::string& tenant_code);
+                                             const std::string& tenant_code,
+                                             const std::string& description);
 
     /**
      * @brief Deprovisions a test tenant using the SQL deprovisioner function.

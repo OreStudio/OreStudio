@@ -231,7 +231,8 @@ void test_database_manager::set_test_database_env(const std::string& db_name) {
     BOOST_LOG_SEV(lg(), info) << "Environment variable set successfully";
 }
 
-std::string test_database_manager::generate_test_tenant_code() {
+std::string test_database_manager::generate_test_tenant_code(
+    const std::string& test_suite_name) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     // Get current timestamp
@@ -254,7 +255,7 @@ std::string test_database_manager::generate_test_tenant_code() {
     const auto random_suffix = dis(gen);
 
     std::ostringstream oss;
-    oss << "test_"
+    oss << test_suite_name << "_"
         << std::put_time(&tm_now, "%Y%m%d_%H%M%S")
         << "_" << pid << "_" << random_suffix;
 
@@ -265,23 +266,35 @@ std::string test_database_manager::generate_test_tenant_code() {
 }
 
 std::string test_database_manager::provision_test_tenant(
-    database::context& ctx, const std::string& tenant_code) {
+    database::context& ctx, const std::string& tenant_code,
+    const std::string& description) {
     using database::service::tenant_context;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code;
+    BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code
+                              << " (" << description << ")";
 
     // First set system tenant context
     tenant_context::set_system_tenant(ctx);
+
+    // Escape single quotes in description for SQL
+    std::string escaped_description;
+    for (char c : description) {
+        if (c == '\'') {
+            escaped_description += "''";
+        } else {
+            escaped_description += c;
+        }
+    }
 
     // Call the provisioner function (we use SELECT but don't need the result here)
     const std::string provision_sql =
         "SELECT ores_iam_provision_tenant_fn("
         "'organisation', "
         "'" + tenant_code + "', "
-        "'Test Tenant " + tenant_code + "', "
+        "'" + tenant_code + "', "
         "'" + tenant_code + ".localhost', "
-        "'Auto-provisioned test tenant')";
+        "'" + escaped_description + "')";
 
     const auto execute_provision = [&](auto&& session) {
         return session->execute(provision_sql);

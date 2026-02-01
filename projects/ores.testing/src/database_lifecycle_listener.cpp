@@ -19,7 +19,9 @@
  */
 #include "ores.testing/database_lifecycle_listener.hpp"
 
+#include <sstream>
 #include <boost/log/attributes/scoped_attribute.hpp>
+#include "ores.utility/version/version.hpp"
 #include "ores.testing/test_database_manager.hpp"
 
 namespace ores::testing {
@@ -27,7 +29,7 @@ namespace ores::testing {
 using namespace ores::logging;
 
 void database_lifecycle_listener::
-testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {
+testRunStarting(Catch::TestRunInfo const& testRunInfo) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     BOOST_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
@@ -36,12 +38,22 @@ testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {
         // Create database context
         auto ctx = test_database_manager::make_context();
 
+        // Get test suite name from Catch2
+        const std::string test_suite_name(testRunInfo.name.data(),
+                                          testRunInfo.name.size());
+
         // Generate unique test tenant code for this process
-        const auto tenant_code = test_database_manager::generate_test_tenant_code();
+        const auto tenant_code =
+            test_database_manager::generate_test_tenant_code(test_suite_name);
+
+        // Build human-readable description with version info
+        std::ostringstream desc;
+        desc << "v" << ORES_VERSION << " (" << ORES_BUILD_INFO << ")";
+        const auto description = desc.str();
 
         // Provision the test tenant (copies refdata from system tenant)
         test_tenant_id_ = test_database_manager::provision_test_tenant(
-            ctx, tenant_code);
+            ctx, tenant_code, description);
 
         // Set environment variable so tests use this tenant
         test_database_manager::set_test_tenant_id_env(test_tenant_id_);

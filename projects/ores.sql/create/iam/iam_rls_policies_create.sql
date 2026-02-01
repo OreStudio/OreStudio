@@ -23,6 +23,7 @@
 -- =============================================================================
 -- These policies enforce tenant isolation for IAM data.
 -- Each tenant can only see and modify their own accounts, roles, permissions, etc.
+-- The system tenant (tenant 0) can access all tenant data for administration.
 
 -- -----------------------------------------------------------------------------
 -- Accounts
@@ -30,8 +31,14 @@
 alter table ores_iam_accounts_tbl enable row level security;
 
 create policy ores_iam_accounts_tenant_isolation_policy on ores_iam_accounts_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Roles
@@ -39,8 +46,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_iam_roles_tbl enable row level security;
 
 create policy ores_iam_roles_tenant_isolation_policy on ores_iam_roles_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Permissions
@@ -48,8 +61,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_iam_permissions_tbl enable row level security;
 
 create policy ores_iam_permissions_tenant_isolation_policy on ores_iam_permissions_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Account Roles (many-to-many)
@@ -57,8 +76,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_iam_account_roles_tbl enable row level security;
 
 create policy ores_iam_account_roles_tenant_isolation_policy on ores_iam_account_roles_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Role Permissions (many-to-many)
@@ -66,8 +91,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_iam_role_permissions_tbl enable row level security;
 
 create policy ores_iam_role_permissions_tenant_isolation_policy on ores_iam_role_permissions_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Sessions
@@ -75,8 +106,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_iam_sessions_tbl enable row level security;
 
 create policy ores_iam_sessions_tenant_isolation_policy on ores_iam_sessions_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Login Info
@@ -84,8 +121,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_iam_login_info_tbl enable row level security;
 
 create policy ores_iam_login_info_tenant_isolation_policy on ores_iam_login_info_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Tenants Table - Special Case

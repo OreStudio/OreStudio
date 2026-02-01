@@ -35,25 +35,22 @@ from typing import Optional
 
 # Known component prefixes and their descriptions
 # Order determines package display order in diagram
-# Schema indicates which PostgreSQL schema the component belongs to:
-#   - metadata: Data governance, classification, staging (dq_*)
-#   - production: Operational data (refdata_*, iam_*, assets_*, etc.)
-#   - public: Shared utility functions
+# All tables are in the public schema with ores_ prefix
 COMPONENT_PREFIXES = {
-    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'production', 'color': '#E8F4FD', 'order': 1},
-    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'production', 'color': '#F3E5F5', 'order': 2},
-    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'production', 'color': '#FFF3E0', 'order': 3},
-    'dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'metadata', 'color': '#E1F5FE', 'order': 4},
-    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'production', 'color': '#E8F5E9', 'order': 5},
-    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'production', 'color': '#FCE4EC', 'order': 6},
-    'geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'production', 'color': '#FFF9C4', 'order': 7},
+    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'public', 'color': '#E8F4FD', 'order': 1},
+    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'public', 'color': '#F3E5F5', 'order': 2},
+    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'public', 'color': '#FFF3E0', 'order': 3},
+    'dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'public', 'color': '#E1F5FE', 'order': 4},
+    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'public', 'color': '#E8F5E9', 'order': 5},
+    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'public', 'color': '#FCE4EC', 'order': 6},
+    'geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
     'utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
     'seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
     'admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
 }
 
 # Valid schema names for pattern matching
-SCHEMA_PATTERN = r'(?:metadata|production|public)'
+SCHEMA_PATTERN = r'(?:public)'
 
 # Columns that are known FK references by name
 FK_COLUMNS = {

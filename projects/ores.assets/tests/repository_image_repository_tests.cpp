@@ -19,6 +19,7 @@
  */
 #include "ores.assets/repository/image_repository.hpp"
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
@@ -33,7 +34,6 @@
 namespace {
 
 const std::string_view test_suite("ores.assets.tests");
-const std::string database_table("ores_assets_images_tbl");
 const std::string tags("[repository]");
 
 }
@@ -47,7 +47,7 @@ using namespace ores::logging;
 TEST_CASE("write_single_image", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto img = generate_synthetic_image();
     BOOST_LOG_SEV(lg, debug) << "Image: " << img;
 
@@ -58,7 +58,7 @@ TEST_CASE("write_single_image", tags) {
 TEST_CASE("write_multiple_images", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto images = generate_unique_synthetic_images(3);
     BOOST_LOG_SEV(lg, debug) << "Images: " << images;
 
@@ -69,7 +69,7 @@ TEST_CASE("write_multiple_images", tags) {
 TEST_CASE("read_latest_images", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_images = generate_unique_synthetic_images(3);
     BOOST_LOG_SEV(lg, debug) << "Written images: " << written_images;
 
@@ -79,14 +79,19 @@ TEST_CASE("read_latest_images", tags) {
     auto read_images = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
-    CHECK(!read_images.empty());
-    CHECK(read_images.size() == written_images.size());
+    // Verify all written images can be found (other tests may have added more)
+    CHECK(read_images.size() >= written_images.size());
+    for (const auto& written : written_images) {
+        auto it = std::ranges::find_if(read_images,
+            [&written](const image& i) { return i.image_id == written.image_id; });
+        CHECK(it != read_images.end());
+    }
 }
 
 TEST_CASE("read_latest_image_by_id", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto img = generate_synthetic_image();
     const auto original_description = img.description;
     BOOST_LOG_SEV(lg, debug) << "Image: " << img;
@@ -108,7 +113,7 @@ TEST_CASE("read_latest_image_by_id", tags) {
 TEST_CASE("read_latest_image_by_key", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto img = generate_synthetic_image();
     BOOST_LOG_SEV(lg, debug) << "Image: " << img;
 
@@ -125,7 +130,7 @@ TEST_CASE("read_latest_image_by_key", tags) {
 TEST_CASE("read_all_images", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_images = generate_unique_synthetic_images(3);
     BOOST_LOG_SEV(lg, debug) << "Written images: " << written_images;
 
@@ -142,7 +147,7 @@ TEST_CASE("read_all_images", tags) {
 TEST_CASE("read_nonexistent_image_id", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     image_repository repo;
 
     const std::string nonexistent_id = "00000000-0000-0000-0000-000000000000";

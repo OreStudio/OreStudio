@@ -28,7 +28,6 @@ namespace {
 
 const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[service]");
-const std::string table_name("ores_variability_feature_flags_tbl");
 
 }
 
@@ -38,7 +37,7 @@ using namespace ores::variability::domain;
 
 TEST_CASE("feature_flags_service_get_returns_nullopt_for_non_existent_flag", tags) {
     auto lg(make_logger(test_suite));
-    ores::testing::scoped_database_helper db_helper(table_name);
+    ores::testing::scoped_database_helper db_helper;
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
     // Database has pre-seeded flags from template
@@ -48,7 +47,7 @@ TEST_CASE("feature_flags_service_get_returns_nullopt_for_non_existent_flag", tag
 
 TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     auto lg(make_logger(test_suite));
-    ores::testing::scoped_database_helper db_helper(table_name);
+    ores::testing::scoped_database_helper db_helper;
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
     // Database has pre-seeded flags from template
@@ -74,7 +73,7 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
 
 TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     auto lg(make_logger(test_suite));
-    ores::testing::scoped_database_helper db_helper(table_name);
+    ores::testing::scoped_database_helper db_helper;
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
     // Database has pre-seeded flags from template
@@ -106,7 +105,7 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
 
 TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
     auto lg(make_logger(test_suite));
-    ores::testing::scoped_database_helper db_helper(table_name);
+    ores::testing::scoped_database_helper db_helper;
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
     // Database has pre-seeded flags from template
@@ -128,7 +127,7 @@ TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
 
 TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     auto lg(make_logger(test_suite));
-    ores::testing::scoped_database_helper db_helper(table_name);
+    ores::testing::scoped_database_helper db_helper;
     feature_flags_service sut(db_helper.context());
     const auto initial_count = sut.get_all_feature_flags().size();
     INFO("Initial feature flags count: " << initial_count);

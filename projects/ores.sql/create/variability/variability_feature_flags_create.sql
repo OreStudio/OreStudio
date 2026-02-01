@@ -36,6 +36,7 @@ create table if not exists "ores_variability_feature_flags_tbl" (
     "valid_to" timestamp with time zone not null,
     primary key (name, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         name WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -45,7 +46,7 @@ create table if not exists "ores_variability_feature_flags_tbl" (
 );
 
 create unique index if not exists ores_variability_feature_flags_version_uniq_idx
-on "ores_variability_feature_flags_tbl" (name, version)
+on "ores_variability_feature_flags_tbl" (tenant_id, name, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
@@ -67,7 +68,8 @@ begin
 
     select version into current_version
     from "ores_variability_feature_flags_tbl"
-    where name = new.name
+    where tenant_id = new.tenant_id
+    and name = new.name
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -80,7 +82,8 @@ begin
 
         update "ores_variability_feature_flags_tbl"
         set valid_to = current_timestamp
-        where name = new.name
+        where tenant_id = new.tenant_id
+        and name = new.name
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else

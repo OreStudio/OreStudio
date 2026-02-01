@@ -81,16 +81,16 @@ TEST_CASE("generate_unicode_currencies", tags) {
 
     CHECK(currencies.size() == 7);
 
-    // Check for known currencies
-    std::set<std::string> codes;
+    // Check for expected unicode symbols
+    std::set<std::string> symbols;
     for (const auto& c : currencies)
-        codes.insert(c.iso_code);
+        symbols.insert(c.symbol);
 
-    CHECK(codes.count("USD") == 1);
-    CHECK(codes.count("EUR") == 1);
-    CHECK(codes.count("GBP") == 1);
-    CHECK(codes.count("JPY") == 1);
-    CHECK(codes.count("BTC") == 1);
+    CHECK(symbols.count("$") == 1);   // USD-like
+    CHECK(symbols.count("€") == 1);   // EUR-like
+    CHECK(symbols.count("£") == 1);   // GBP-like
+    CHECK(symbols.count("¥") == 1);   // JPY-like
+    CHECK(symbols.count("₿") == 1);   // BTC-like
 }
 
 TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {

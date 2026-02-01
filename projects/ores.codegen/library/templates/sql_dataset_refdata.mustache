@@ -9,15 +9,13 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'metadata';
-
 -- =============================================================================
 -- {{dataset.name}} Dataset
 -- =============================================================================
 
 \echo '--- {{dataset.name}} Dataset ---'
 
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     '{{dataset.code}}',
     'FpML Standards',
     '{{entity.subject_area}}',

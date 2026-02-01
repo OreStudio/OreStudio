@@ -948,6 +948,80 @@ Junction template produces:
 5. Update orchestration scripts (see Step 6)
 6. Test and validate (see Steps 7-8)
 
+* Table categories for multi-tenancy
+
+Tables are categorized by how they are populated for new tenants. This affects
+tenant provisioning and determines which tables contain "true system data" vs
+"dataset data".
+
+** System IAM tables (copied during provisioning)
+
+These tables are *copied from tenant 0 (system tenant)* when provisioning a new
+tenant. They contain essential IAM configuration that every tenant needs:
+
+| Table                          | Description                              |
+|--------------------------------+------------------------------------------|
+| =ores_iam_permissions_tbl=     | Permission definitions                   |
+| =ores_iam_roles_tbl=           | Role definitions                         |
+| =ores_iam_role_permissions_tbl= | Role-permission assignments             |
+
+These are "system IAM tables" - their data is defined in the database template
+(=setup_template.sql=) and copied verbatim to each new tenant. Other IAM tables
+(accounts, sessions, login_info) are tenant-specific and start empty.
+
+** Dataset tables (populated via Data Librarian)
+
+These tables are *NOT copied* during tenant provisioning. Instead, they are
+populated via the dataset library using the "Publish Datasets" feature in the
+Data Librarian window:
+
+| Table                                        | Description                    |
+|----------------------------------------------+--------------------------------|
+| =ores_refdata_currencies_tbl=                | ISO currencies                 |
+| =ores_refdata_countries_tbl=                 | ISO countries                  |
+| =ores_refdata_business_centres_tbl=          | Business/trading centres       |
+| =ores_refdata_account_types_tbl=             | Account type codes             |
+| =ores_refdata_asset_classes_tbl=             | Asset class codes              |
+| =ores_refdata_asset_measures_tbl=            | Asset measure codes            |
+| =ores_refdata_benchmark_rates_tbl=           | Benchmark rate codes           |
+| =ores_refdata_business_processes_tbl=        | Business process codes         |
+| =ores_refdata_cashflow_types_tbl=            | Cashflow type codes            |
+| =ores_refdata_entity_classifications_tbl=    | Entity classification codes    |
+| =ores_refdata_local_jurisdictions_tbl=       | Local jurisdiction codes       |
+| =ores_refdata_party_relationships_tbl=       | Party relationship codes       |
+| =ores_refdata_party_roles_tbl=               | Party role codes               |
+| =ores_refdata_person_roles_tbl=              | Person role codes              |
+| =ores_refdata_regulatory_corporate_sectors_tbl= | Regulatory sector codes     |
+| =ores_refdata_reporting_regimes_tbl=         | Reporting regime codes         |
+| =ores_refdata_supervisory_bodies_tbl=        | Supervisory body codes         |
+| =ores_assets_images_tbl=                     | Image assets (flags, icons)    |
+
+Dataset tables flow: DQ artefact tables → Publish → Production (refdata) tables.
+
+** Tenant-specific tables (empty for new tenants)
+
+These tables start empty for new tenants and are populated by user actions:
+
+| Table                          | Description                              |
+|--------------------------------+------------------------------------------|
+| =ores_iam_accounts_tbl=        | User accounts                            |
+| =ores_iam_account_roles_tbl=   | User-role assignments                    |
+| =ores_iam_sessions_tbl=        | User sessions                            |
+| =ores_iam_login_info_tbl=      | Login tracking                           |
+| All =ores_dq_*_tbl= tables     | Data quality/governance metadata         |
+
+** Implications for provisioning
+
+When implementing tenant provisioning:
+1. Copy only *system IAM tables* (permissions, roles, role_permissions)
+2. Do NOT copy refdata tables - tenants publish their own datasets
+3. Tenant-specific tables start empty
+
+When implementing tenant deprovisioning:
+1. Use dynamic table discovery to clean up ALL tenant data
+2. Soft-delete temporal tables (set =valid_to= to current timestamp)
+3. Hard-delete non-temporal tables
+
 * Integration with Domain Type Creator
 
 When creating a new domain type using the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill, the SQL

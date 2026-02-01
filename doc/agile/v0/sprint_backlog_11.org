@@ -17,36 +17,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-31 Sat 20:25], for Saturday, January 31, 2026.
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *3:50* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 3:50   |      |      | 100.0 |
-|       | Active                                      |        | 3:50 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 0:46 |  20.0 |
-| code  | Split "god" admin account                   |        |      | 1:06 |  28.7 |
-| code  | Move all database entities to public schema |        |      | 1:22 |  35.7 |
-| code  | Check directory structure in SQL            |        |      | 0:36 |  15.7 |
+#+CAPTION: Clock summary at [2026-02-01 Sun 21:45], for Sunday, February 01, 2026.
+|      | <75>                                 |        |      |      |       |
+| Tags | Headline                             | Time   |      |      |     % |
+|------+--------------------------------------+--------+------+------+-------|
+|      | *Total time*                         | *6:50* |      |      | 100.0 |
+|------+--------------------------------------+--------+------+------+-------|
+|      | Stories                              | 6:50   |      |      | 100.0 |
+|      | Active                               |        | 6:50 |      | 100.0 |
+| code | Add tenancy support                  |        |      | 1:20 |  19.5 |
+| code | Use tenancy to isolate tests         |        |      | 5:00 |  73.2 |
+| code | Add NOTICE logging support to sqlgen |        |      | 0:30 |   7.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-31 Sat 20:25]
+#+CAPTION: Clock summary at [2026-02-01 Sun 21:45]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *16:01* |       |       | 100.0 |
+|       | *Total time*                                | *25:06* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 16:01   |       |       | 100.0 |
-|       | Active                                      |         | 16:01 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |  15.0 |
-| code  | Address past review comments                |         |       |  1:14 |   7.7 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  63.0 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   8.5 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   3.7 |
-| code  | Add tenant support                          |         |       |  0:20 |   2.1 |
+|       | Stories                                     | 25:06   |       |       | 100.0 |
+|       | Active                                      |         | 25:06 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |   9.6 |
+| code  | Address past review comments                |         |       |  1:14 |   4.9 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  40.2 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   5.4 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   2.4 |
+| code  | Add tenancy support                         |         |       |  3:55 |  15.6 |
+| code  | Use tenancy to isolate tests                |         |       |  5:00 |  19.9 |
+| code  | Add NOTICE logging support to sqlgen        |         |       |  0:30 |   2.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -439,13 +440,284 @@ schemas without the operational debt of cross-schema management.
 
 : projects/ores.sql/create/refdata/dq_account_types_artefact_create.sql
 
-*** STARTED Add tenant support                                         :code:
+#+begin_quote
+This pull request significantly refactors the ores.sql project's file structure
+and naming conventions. The primary goal is to enhance clarity, consistency, and
+maintainability by standardizing SQL file names, consolidating data governance
+scripts into a single dq directory, and removing numerous orphaned reference
+data files. These changes improve the overall organization and reduce redundancy
+within the SQL codebase.
+
+Highlights:
+
+- Standardized SQL File Naming: All SQL files now consistently use a
+  [name]_[purpose].sql suffix pattern (e.g., iam_create.sql instead of
+  create_iam.sql) for improved clarity and consistency.
+- Consolidated Data Governance: The change_control/ directory has been merged
+  into the dq/ directory, centralizing data quality and governance-related SQL
+  scripts.
+- Removed Orphaned Reference Data Files: Approximately 45 duplicate or unused
+  SQL files related to reference data (refdata/) have been removed, streamlining
+  the codebase.
+- Sprint Backlog Updates: The sprint backlog was updated, marking 'Move all
+  database entities to public schema' and 'Check directory structure in SQL' as
+  completed.
+#+end_quote
+
+*** COMPLETED Add tenancy support                                      :code:
    :LOGBOOK:
+   CLOCK: [2026-02-01 Sun 10:10]--[2026-02-01 Sun 11:30] =>  1:20
+   CLOCK: [2026-01-31 Sat 23:00]--[2026-01-31 Sat 23:50] =>  0:50
+   CLOCK: [2026-01-31 Sat 20:30]--[2026-01-31 Sat 21:55] =>  1:25
    CLOCK: [2026-01-29 Thu 10:35]--[2026-01-29 Thu 10:55] =>  0:20
    :END:
 
 Do some analysis and prototyping around supporting multiple tenants on a single
 database.
+
+**** Initial tenant setup
+
+#+begin_quote
+This pull request lays the foundational groundwork for multi-tenancy within the
+SQL schema. It systematically integrates tenant identification into the database
+structure, ensuring that data is logically separated and managed on a per-tenant
+basis. The changes span across table definitions, indexing strategies, data
+validation logic, and data population scripts, providing a robust and scalable
+solution for supporting multiple isolated client environments.
+
+Highlights:
+
+- Multi-Tenancy Core Infrastructure: Introduced new tables:
+  'ores_iam_tenant_types_tbl' for tenant classifications,
+  'ores_iam_tenant_statuses_tbl' for lifecycle states, and
+  'ores_iam_tenants_tbl' as the central tenant management table, complete with
+  bitemporal support.
+- Tenant-Aware Schema Modifications: Added a 'tenant_id' column to approximately
+  70 existing entity tables across various modules (assets, data quality, geo,
+  IAM, refdata, telemetry, variability) to enable tenant-specific data
+  partitioning.
+- Enhanced Data Integrity and Uniqueness: Updated unique indexes and constraints
+  on numerous tables to include 'tenant_id', ensuring uniqueness of records
+  within each tenant rather than globally. New 'tenant_id' indexes were also
+  added for improved query performance.
+- Automated Tenant Validation: Modified all relevant insert triggers to
+  automatically validate the 'tenant_id' using a new
+  'ores_iam_validate_tenant_fn' function, preventing data insertion for invalid
+  or inactive tenants.
+- Updated Upsert Functions: Adjusted all upsert functions to accept 'tenant_id'
+  as the first parameter, ensuring that seed data and new records are correctly
+  associated with a specific tenant.
+- System Tenant and Administrative Roles: Implemented a special 'system' tenant
+  (with a well-known UUID) for platform-level governance data and
+  administration. New 'SuperAdmin' and 'TenantAdmin' roles were introduced with
+  appropriate tenant management permissions.
+- Tenant-Specific Session Management: Added functions to retrieve the current
+  session's 'tenant_id' and to look up tenants by hostname, facilitating tenant
+  context management during user sessions.
+#+end_quote
+
+**** Tenancy and seeding
+
+#+begin_quote
+This pull request systematically modifies all database population scripts to
+enforce multi-tenancy at the data seeding level. By introducing a system tenant
+ID to every upsert operation, it guarantees that foundational data, such as
+reference data, configurations, and metadata, is correctly scoped to the system
+tenant. This is a fundamental architectural adjustment that supports the ongoing
+development of a robust multi-tenant environment, ensuring data integrity and
+isolation from the ground up.
+
+Highlights:
+
+- Multi-tenancy Support: All populate scripts have been updated to include
+  ores_iam_system_tenant_id_fn() as the first parameter in upsert function
+  calls, ensuring seeded data is associated with the system tenant.
+- Data Association: This change is crucial for correctly scoping foundational
+  data (reference data, configurations, metadata) to the system tenant,
+  supporting a robust multi-tenant environment.
+- Project Continuity: This pull request represents the second phase of a broader
+  multi-tenancy implementation, building upon previous work in PR [sql] Add
+  tenant infrastructure and tenant_id to all tables #395.
+#+end_quote
+
+**** Tenancy, login and tests
+
+#+begin_quote
+This pull request significantly enhances multi-tenancy support by automating the
+assignment of tenant_id for login and session information based on the current
+session context. It refines the tenant validation logic to be more robust when a
+tenant ID is not explicitly provided, ensuring data integrity across tenants.
+Additionally, it establishes a foundational testing framework by setting default
+tenant contexts for test users and providing a C++ utility to manage this
+context, which is crucial for transparently integrating existing C++ code with
+the new multi-tenancy architecture.
+
+Highlights:
+
+- Automatic Tenant ID Population: Added BEFORE INSERT triggers to
+  iam_login_info_tbl and iam_sessions_tbl to automatically populate the
+  tenant_id from the session variable (app.current_tenant_id) if it's not
+  explicitly provided during an insert operation. This ensures multi-tenancy
+  context is maintained for these critical tables.
+- Enhanced Tenant Validation Function: Modified the ores_iam_validate_tenant_fn
+  to use coalesce(p_tenant_id, ores_iam_current_tenant_id_fn()). This change
+  allows the function to accept a NULL p_tenant_id and gracefully fall back to
+  using the tenant_id set in the current session, improving flexibility and
+  reducing explicit tenant_id passing.
+- Default Tenant Context for Test Users: Configured the ores_test_ddl_user and
+  ores_test_dml_user roles in setup_template.sql to have a default
+  app.current_tenant_id set to the system tenant UUID
+  (00000000-0000-0000-0000-000000000000). This simplifies testing by providing a
+  consistent tenant context for these roles.
+- Test Infrastructure for Tenant Context: Introduced a new public method
+  set_system_tenant_context() in the database_helper C++ class. This method
+  programmatically sets the app.current_tenant_id session variable to the system
+  tenant UUID, and is now called in the database_helper constructor,
+  streamlining multi-tenancy setup for tests
+#+end_quote
+
+*** COMPLETED Use tenancy to isolate tests                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 21:10]--[2026-02-01 Sun 21:30] =>  0:20
+    CLOCK: [2026-02-01 Sun 19:35]--[2026-02-01 Sun 19:51] =>  0:16
+    CLOCK: [2026-02-01 Sun 18:12]--[2026-02-01 Sun 19:13] =>  1:01
+    CLOCK: [2026-02-01 Sun 15:40]--[2026-02-01 Sun 16:57] =>  1:17
+    CLOCK: [2026-02-01 Sun 14:28]--[2026-02-01 Sun 15:33] =>  1:05
+    CLOCK: [2026-02-01 Sun 12:27]--[2026-02-01 Sun 13:28] =>  1:01
+    :END:
+
+Now that we have tenancy support, a good way to isolate tests is to create
+tenants. This has many advantages:
+
+- we can use the same database for multiple test suites.
+- we can check the results of the tests after running them to validate
+  expectations
+- it is faster than destroying databases.
+- it is a more realistic test.
+
+Notes:
+
+- we need to ensure we destroy the tenant for a test suite to make sure the test
+  starts with a clean slate.
+
+**** Use tenancy in tests
+
+#+begin_quote
+This pull request introduces comprehensive multi-tenancy support across the
+application's database and testing infrastructure. It establishes a centralized
+C++ service for managing tenant context, integrates tenant-aware logic into the
+CLI, and significantly enhances test isolation by provisioning unique tenants
+for each test run. Furthermore, it refines database RLS policies to accommodate
+system-level administrative access and provides SQL functions for tenant
+lifecycle management, ensuring data separation and operational flexibility in a
+multi-tenant environment.
+
+Highlights:
+
+- Centralized Tenant Context Service: Introduced a new tenant_context C++
+  service in ores.database to centralize the management of multi-tenant context
+  across all application components. This service allows setting the current
+  tenant via code or UUID and provides utilities for tenant lookup.
+- Multi-Tenant Test Isolation: Implemented robust multi-tenant test isolation
+  within the C++ test infrastructure. Each test run now provisions a unique,
+  isolated tenant, including copies of necessary reference data, and
+  deprovisions it upon completion, ensuring clean and independent test
+  environments.
+- Enhanced Row-Level Security (RLS) Policies: Updated all existing RLS policies
+  across assets, dq, iam, refdata, telemetry, and variability schemas to
+  explicitly allow the 'system' tenant (UUID
+  00000000-0000-0000-0000-000000000000) to access all tenant data for
+  administrative and provisioning operations.
+- CLI and Environment Variable Tenant Support: Added a --tenant command-line
+  option to the ores.cli application and support for the ORES_TENANT environment
+  variable, allowing users to specify the desired tenant context for CLI
+  operations.
+- psqlrc Enhancements for Tenant Management: Modified the psqlrc.sql
+  configuration to automatically set the system tenant context on load, display
+  the current tenant in the psql prompt, and introduced new macros (:tenant,
+  :tenants) for convenient tenant inspection and listing.
+- SQL Tenant Provisioning and Deprovisioning Functions: Added SQL functions
+  ores_iam_provision_tenant_fn and ores_iam_deprovision_tenant_fn to
+  programmatically create new tenants (copying base data from the system tenant)
+  and soft-delete existing tenants and their associated data, respectively.
+- Database Schema and Script Refinements: Removed obsolete metadata and
+  production schema references from create_database_direct.sql, updated grants
+  to the public schema, and adjusted unique constraints and triggers for
+  ores_variability_feature_flags_tbl to properly incorporate tenant_id.
+#+end_quote
+
+*** COMPLETED Check for uses of raw libpq                              :code:
+
+Claude has the habit of sneaking in uses of raw libpq. We need to do a review of
+the code to make sure we are using sqlgen.
+
+Notes:
+
+- check for raw libpq in bitemporal operations.
+
+All code has been moved into ores.database. Tickets have been raised in sqlgen.
+
+*** STARTED Add NOTICE logging support to sqlgen                       :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 20:40]--[2026-02-01 Sun 21:10] =>  0:30
+    :END:
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/118][#118: Proposal: Add Notice Processor Support to sqlgen]]
+
+*** Add bound parameters to sqlgen                                     :code:
+
+At present we are using libpq for assorted queries to avoid issues with SQL
+injection. We should extend sqlgen to support this.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
+
+*** Consider adding telemetry to tests                                 :code:
+
+Now that tests will use tenants and we can get a picture of tests evolving over
+time, it would be nice to be able to keep the logs for the tests as well. The
+complicated way of doing this would be to add telemetry support to unit tests.
+The simple way of doing this is to have a python script that just parses all the
+log files in one go and upload them to the telemetry tables for the tenants.
+With this we could also do reporting such as compare runs. Or maybe even better:
+create a new sink which connects to database and uploads logs. We could create a
+schema for this as well:
+
+- test suite, test case. contain the names of test suites and test cases.
+- test suite run, test case run. specific runs. useful to get details of timing.
+  Is logging enabled, etc. Tenant ID. Debug or release.
+- time series for test duration, test suite duration.
+- we could add a simple UI to ores.qt to see what the tests are doing over time.
+- test count charts.
+
+Notes:
+
+- if we keep destroying the environment to test scripts we will lose valuable
+  historical test data. Maybe we should have a "test database" which we destroy
+  infrequently. In truth we just care about the test tables. So we use the test
+  database for telemetry etc but the environment database to exercise the tests.
+  For example =ores_test_local1=.
+- however, we want the service to be able to connect to the test database, so
+  that we can display test related information in the UI.
+- test database should link back to tenant ID in case we want to inspect data.
+- test failures are much easier to investigate, we can just browse the UI for
+  failed test and see it's log.
+- also upload information from Catch2 XML including exceptions etc.
+- group tests by component.
+- ideally we want all environments to write to the same test database. We want
+  to compare data across environments. But we need to know which run is which.
+- log the git commit version and if it's dirty or not.
+- we probably need a separate story for this but we should look into adding code
+  coverage as well.
+- Claude can then plug into all of this information. For a given test run, we
+  could generate a summary report and then have Claude analyse it.
+
+*** Add tenant CRUD commands to CLI                                    :code:
+
+We need to be able to add new tenants, list tenants, etc.
 
 *** Add a sample set of gravatars for profiles                         :code:
 
@@ -759,15 +1031,6 @@ Problems observed:
   file.
 - since datasets refer to data in subdirectories, we should add the directory to
   the manifest. Not needed in DB.
-
-*** Check for uses of raw libpq                                        :code:
-
-Claude has the habit of sneaking in uses of raw libpq. We need to do a review of
-the code to make sure we are using sqlgen.
-
-Notes:
-
-- check for raw libpq in bitemporal operations.
 
 *** Make the icon theme "configurable"                                 :code:
 

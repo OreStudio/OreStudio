@@ -23,6 +23,7 @@
 -- =============================================================================
 -- These policies enforce per-tenant isolation for variability data.
 -- Each tenant can only see and modify their own feature flags.
+-- The system tenant (tenant 0) can access all tenant data for administration.
 
 -- -----------------------------------------------------------------------------
 -- Feature Flags
@@ -30,5 +31,11 @@
 alter table ores_variability_feature_flags_tbl enable row level security;
 
 create policy ores_variability_feature_flags_tbl_tenant_isolation_policy on ores_variability_feature_flags_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);

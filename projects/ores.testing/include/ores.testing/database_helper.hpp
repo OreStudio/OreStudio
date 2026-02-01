@@ -20,7 +20,6 @@
 #ifndef ORES_TESTING_DATABASE_HELPER_HPP
 #define ORES_TESTING_DATABASE_HELPER_HPP
 
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
@@ -44,13 +43,6 @@ public:
     database_helper();
 
     /**
-     * @brief Truncates the specified table.
-     *
-     * @param table_name Fully qualified table name (e.g., "ores.accounts")
-     */
-    void truncate_table(const std::string& table_name);
-
-    /**
      * @brief Seeds minimal RBAC data for tests.
      *
      * Creates the essential permissions and roles needed for IAM tests:
@@ -62,12 +54,13 @@ public:
     void seed_rbac();
 
     /**
-     * @brief Sets the tenant context to system tenant.
+     * @brief Sets the tenant context for tests.
      *
-     * Sets app.current_tenant_id session variable to the system tenant UUID.
-     * This enables multi-tenancy operations in tests.
+     * Uses the test tenant ID from the environment variable if set
+     * (set by database_lifecycle_listener), otherwise falls back to the
+     * system tenant.
      */
-    void set_system_tenant_context();
+    void set_tenant_context();
 
     /**
      * @brief Gets the database context.

@@ -1,6 +1,6 @@
 {
   "junction": {
-    "schema": "metadata",
+    "schema": "public",
     "component": "dq",
     "name": "dataset_bundle_members",
     "name_singular": "dataset_bundle_member",
@@ -47,7 +47,7 @@
     ],
 
     "sql": {
-      "tablename": "dq_dataset_bundle_members_tbl"
+      "tablename": "ores_dq_dataset_bundle_members_tbl"
     },
 
     "repository": {

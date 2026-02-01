@@ -19,6 +19,7 @@
  */
 #include "ores.refdata/generators/currency_generator.hpp"
 
+#include <atomic>
 #include <unordered_set>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <faker-cxx/finance.h>
@@ -29,14 +30,14 @@ namespace ores::refdata::generators {
 domain::currency generate_synthetic_currency() {
     domain::currency r;
 
-    auto fakerCurrency = faker::finance::currency();
-    r.iso_code = fakerCurrency.code;
-    r.name = std::string(fakerCurrency.name);
-    r.numeric_code = std::to_string(faker::number::integer(1, 999));
-    // Some faker currencies don't have symbols; provide fallback using code
-    r.symbol = std::string(fakerCurrency.symbol.empty()
-        ? fakerCurrency.code
-        : fakerCurrency.symbol);
+    // Use fictional currency with unique code to avoid conflicts across tests
+    static std::atomic<std::size_t> counter{0};
+    const auto suffix = ++counter;
+    r.iso_code = "X" + std::to_string(suffix % 100).substr(0, 2) +
+        std::to_string(suffix);
+    r.name = "Test Currency " + std::to_string(suffix);
+    r.numeric_code = std::to_string(10000 + suffix);
+    r.symbol = "T" + std::to_string(suffix % 10);
     r.fraction_symbol = "";
     r.fractions_per_unit = 100;
     r.rounding_type = "Closest";
@@ -52,11 +53,18 @@ domain::currency generate_synthetic_currency() {
 }
 
 std::vector<domain::currency> generate_synthetic_unicode_currencies() {
+    // Use fictional ISO codes with unique suffix to avoid conflicts across tests
+    static std::atomic<std::size_t> batch{0};
+    const auto b = ++batch;
+    const auto suffix = "_" + std::to_string(b);
+    const auto user = std::string(faker::internet::username());
+    const auto now = utility::faker::datetime::past_timepoint();
+
     std::vector<domain::currency> r;
     r.push_back({
-        .iso_code = "USD",
-        .name = "United States Dollar",
-        .numeric_code = "840",
+        .iso_code = "XU" + std::to_string(b),  // Fictional USD-like
+        .name = "Test Dollar" + suffix,
+        .numeric_code = "90001",
         .symbol = "$",
         .fraction_symbol = "¢",
         .fractions_per_unit = 100,
@@ -64,16 +72,16 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
 
     r.push_back({
-        .iso_code = "EUR",
-        .name = "Euro",
-        .numeric_code = "110",
+        .iso_code = "XE" + std::to_string(b),  // Fictional EUR-like
+        .name = "Test Euro" + suffix,
+        .numeric_code = "90002",
         .symbol = "€",
         .fraction_symbol = "¢",
         .fractions_per_unit = 100,
@@ -81,16 +89,16 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
 
     r.push_back({
-        .iso_code = "GBP",
-        .name = "British Pound Sterling",
-        .numeric_code = "110",
+        .iso_code = "XG" + std::to_string(b),  // Fictional GBP-like
+        .name = "Test Pound" + suffix,
+        .numeric_code = "90003",
         .symbol = "£",
         .fraction_symbol = "p",
         .fractions_per_unit = 100,
@@ -98,32 +106,32 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
 
     r.push_back({
-        .iso_code = "JPY",
-        .name = "Japanese Yen",
-        .numeric_code = "110",
+        .iso_code = "XJ" + std::to_string(b),  // Fictional JPY-like (no fractions)
+        .name = "Test Yen" + suffix,
+        .numeric_code = "90004",
         .symbol = "¥",
         .fractions_per_unit = 0,
         .rounding_type = "Closest",
         .rounding_precision = 0,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
 
     r.push_back({
-        .iso_code = "INR",
-        .name = "Indian Rupee",
-        .numeric_code = "110",
+        .iso_code = "XI" + std::to_string(b),  // Fictional INR-like
+        .name = "Test Rupee" + suffix,
+        .numeric_code = "90005",
         .symbol = "₹",
         .fraction_symbol = "प",
         .fractions_per_unit = 100,
@@ -131,16 +139,16 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
 
     r.push_back({
-        .iso_code = "BTC",
-        .name = "Bitcoin",
-        .numeric_code = "110",
+        .iso_code = "XB" + std::to_string(b),  // Fictional BTC-like
+        .name = "Test Crypto" + suffix,
+        .numeric_code = "90006",
         .symbol = "₿",
         .fraction_symbol = "s",
         .fractions_per_unit = 100000000,
@@ -148,16 +156,16 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
 
     r.push_back({
-        .iso_code = "RUB",
-        .name = "Russian Rubble",
-        .numeric_code = "110",
+        .iso_code = "XR" + std::to_string(b),  // Fictional RUB-like
+        .name = "Test Ruble" + suffix,
+        .numeric_code = "90007",
         .symbol = "₽",
         .fraction_symbol = "к",
         .fractions_per_unit = 100,
@@ -165,10 +173,10 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .recorded_by = std::string(faker::internet::username()),
+        .recorded_by = user,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
-        .recorded_at = utility::faker::datetime::past_timepoint()
+        .recorded_at = now
     });
     return r;
 }

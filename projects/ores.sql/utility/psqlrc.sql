@@ -35,8 +35,8 @@
 -- Display null values clearly
 \pset null '[null]'
 
--- Informative prompt: [user@host:port (time) database transaction_status]$
-\set PROMPT1 '[%n@%M:%> (%`date +%H:%M:%S`) %/ %x]$ '
+-- Informative prompt: [user@host:port (time) database:tenant transaction_status]$
+\set PROMPT1 '[%n@%M:%> (%`date +%H:%M:%S`) %/:%:ores_tenant:%x]$ '
 \set PROMPT2 '    -> '
 
 -- Disable pager for easier scripting
@@ -62,15 +62,26 @@
 -- Search Path
 --------------------------------------------------------------------------------
 
--- Set ORES schemas on the search path
-SET search_path TO production, metadata, public;
+-- Set ORES schema on the search path (all tables are in public schema)
+SET search_path TO public;
+
+--------------------------------------------------------------------------------
+-- Tenant Context
+--------------------------------------------------------------------------------
+
+-- Set system tenant context for full visibility across all tenants.
+-- RLS policies restrict access based on app.current_tenant_id; setting it to
+-- the system tenant (all zeros) grants read access to all tenant data.
+\set ores_tenant_id '00000000-0000-0000-0000-000000000000'
+\set ores_tenant 'system'
+SET app.current_tenant_id = :'ores_tenant_id';
 
 --------------------------------------------------------------------------------
 -- Useful Macros (invoke with :macroname)
 --------------------------------------------------------------------------------
 
 -- Table sizes (human readable)
-\set tsize 'SELECT table_schema, table_name, pg_size_pretty(pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS size, pg_size_pretty(pg_total_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS total_size FROM information_schema.tables WHERE table_type = \'BASE TABLE\' AND table_schema IN (\'production\', \'metadata\') ORDER BY pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name)) DESC;'
+\set tsize 'SELECT table_schema, table_name, pg_size_pretty(pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS size, pg_size_pretty(pg_total_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name))) AS total_size FROM information_schema.tables WHERE table_type = \'BASE TABLE\' AND table_schema = \'public\' AND table_name LIKE \'ores_%\' ORDER BY pg_relation_size(quote_ident(table_schema) || \'.\' || quote_ident(table_name)) DESC;'
 
 -- List ORES databases
 \set ores_dbs 'SELECT datname AS database, pg_size_pretty(pg_database_size(datname)) AS size FROM pg_database WHERE datname LIKE \'ores_%\' ORDER BY datname;'
@@ -81,8 +92,24 @@ SET search_path TO production, metadata, public;
 -- Show current connection info
 \set conninfo 'SELECT current_user, session_user, current_database(), inet_server_addr() AS server, inet_server_port() AS port;'
 
+-- Show current tenant context
+\set tenant 'SELECT current_setting(\'app.current_tenant_id\', true) AS current_tenant_id;'
+
+-- List all tenants including terminated (requires SELECT on ores_iam_tenants_tbl)
+\set tenants 'SELECT tenant_id, code, name, status, valid_to FROM ores_iam_tenants_tbl ORDER BY valid_to DESC, code;'
+
+-- List only active tenants
+\set active_tenants 'SELECT tenant_id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
+
+-- Switch tenant (set :t first, then run :st)
+-- Example: \set t 'system'   then   :st
+\set st 'SELECT code AS ores_tenant FROM st(:\'t\') \\gset'
+
+-- Quick switch to system tenant
+\set system_tenant 'SELECT code AS ores_tenant FROM st(\'system\') \\gset'
+
 -- Count rows in all ORES tables
-\set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname IN (\'production\', \'metadata\') ORDER BY n_live_tup DESC;'
+\set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname = \'public\' AND relname LIKE \'ores_%\' ORDER BY n_live_tup DESC;'
 
 -- Show active connections
 \set connections 'SELECT pid, usename, datname, client_addr, state, query_start, left(query, 60) AS query FROM pg_stat_activity WHERE datname LIKE \'ores_%\' ORDER BY query_start;'
@@ -103,14 +130,21 @@ SET search_path TO production, metadata, public;
 \unset QUIET
 
 \echo ''
+\echo 'Tenant context set to:' :ores_tenant '(' :ores_tenant_id ')'
+\echo ''
 \echo 'ORES psqlrc loaded. Available macros:'
 \echo '  :tsize            - Table sizes (human readable)'
 \echo '  :ores_dbs         - List ORES databases'
 \echo '  :ores_roles       - List ORES roles'
 \echo '  :conninfo         - Current connection info'
+\echo '  :tenant           - Show current tenant context'
+\echo '  :tenants          - List all tenants (including terminated)'
+\echo '  :active_tenants   - List only active tenants'
 \echo '  :row_counts       - Row counts per table'
 \echo '  :connections      - Active connections'
 \echo '  :locks            - Show blocked queries'
 \echo '  :kill_connections - Terminate other connections to current DB'
 \echo '  :reload           - Reload psqlrc (from ores.sql dir)'
+\echo ''
+\echo 'To switch tenant: \\set t ''pattern%''  then  :st'
 \echo ''

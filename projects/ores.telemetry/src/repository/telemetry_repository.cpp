@@ -20,7 +20,6 @@
 #include "ores.telemetry/repository/telemetry_repository.hpp"
 
 #include <format>
-#include <libpq-fe.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/helpers.hpp"

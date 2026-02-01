@@ -28,14 +28,14 @@
 namespace ores::testing {
 
 /**
- * @brief Manages isolated test databases for parallel test execution.
+ * @brief Manages test tenant isolation for parallel test execution.
  *
- * This class provides utilities for creating and destroying unique test
- * databases for each test process. This allows multiple test processes
- * to run concurrently without interference.
+ * This class provides utilities for provisioning and deprovisioning test
+ * tenants. Each test suite gets its own isolated tenant, allowing multiple
+ * test processes to run concurrently without interference.
  *
- * Each test database is created from the ores_template database, which
- * must be pre-configured with the full schema.
+ * Tenant isolation uses PostgreSQL Row Level Security (RLS) to ensure
+ * complete data separation between test suites.
  */
 class test_database_manager {
 private:
@@ -46,13 +46,6 @@ private:
         static auto instance = ores::logging::make_logger(logger_name);
         return instance;
     }
-
-    /**
-     * @brief Creates a database context connected to the postgres database.
-     *
-     * This is needed for admin operations like CREATE/DROP DATABASE.
-     */
-    static database::context make_admin_context();
 
   public:
     /**
@@ -66,45 +59,66 @@ private:
     static database::database_options make_database_options();
 
     /**
-     * @brief Generates a unique database name for this test process.
+     * @brief Generates a unique tenant code for this test run.
      *
-     * The database name is based on the process ID and a random suffix
-     * to ensure uniqueness: ores_test_{pid}_{random}
+     * The tenant code includes the test suite name and timestamp:
+     * {test_suite}_{YYYYMMDD}_{HHMMSS}_{pid}_{random}
      *
-     * @return A unique database name string
+     * @param test_suite_name Name of the test suite (e.g., "ores.cli.tests")
+     * @return A unique tenant code string
      */
-    static std::string generate_test_database_name();
+    static std::string generate_test_tenant_code(const std::string& test_suite_name);
 
     /**
-     * @brief Creates a test database from the ores_template.
+     * @brief Provisions a test tenant using the SQL provisioner function.
      *
-     * This method connects to the postgres database (admin database) and
-     * executes CREATE DATABASE with the template parameter.
+     * Creates a new tenant with all required base data (permissions, roles,
+     * refdata) copied from the system tenant. The caller must have a valid
+     * database context with system tenant access.
      *
-     * @param db_name The name of the database to create
-     * @throws std::runtime_error if database creation fails
+     * @param ctx The database context to use
+     * @param tenant_code The unique tenant code
+     * @param description Human-readable description (e.g., test suite name + version)
+     * @return The UUID of the created tenant as a string
+     * @throws std::runtime_error if provisioning fails
      */
-    static void create_test_database(const std::string& db_name);
+    static std::string provision_test_tenant(database::context& ctx,
+                                             const std::string& tenant_code,
+                                             const std::string& description);
 
     /**
-     * @brief Drops the test database.
+     * @brief Deprovisions a test tenant using the SQL deprovisioner function.
      *
-     * This method connects to the postgres database and executes
-     * DROP DATABASE. It terminates any active connections first.
+     * Soft-deletes the tenant and all its data. The caller must have system
+     * tenant context.
      *
-     * @param db_name The name of the database to drop
+     * @param ctx The database context to use
+     * @param tenant_id The UUID of the tenant to deprovision
      */
-    static void drop_test_database(const std::string& db_name);
+    static void deprovision_test_tenant(database::context& ctx,
+                                        const std::string& tenant_id);
 
     /**
-     * @brief Sets the TEST_ORES_DB_DATABASE environment variable.
+     * @brief Sets the ORES_TEST_DB_TENANT_ID environment variable.
      *
-     * This ensures that database_fixture and all tests use the
-     * isolated test database.
+     * This allows tests to retrieve the test tenant ID.
      *
-     * @param db_name The database name to set
+     * @param tenant_id The tenant ID to set
      */
-    static void set_test_database_env(const std::string& db_name);
+    static void set_test_tenant_id_env(const std::string& tenant_id);
+
+    /**
+     * @brief Gets the test tenant ID from environment variable.
+     *
+     * @return The tenant ID, or empty string if not set
+     */
+    static std::string get_test_tenant_id_env();
+
+    /**
+     * @brief System tenant ID constant.
+     */
+    static constexpr auto system_tenant_id =
+        "00000000-0000-0000-0000-000000000000";
 };
 
 }

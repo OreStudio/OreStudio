@@ -32,6 +32,7 @@
 #include <rfl/json.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp"  // IWYU pragma: keep.
 #include "ores.database/service/context_factory.hpp"
@@ -117,6 +118,19 @@ application::application(std::ostream& output_stream,
     const std::optional<database::database_options>& db_opts)
     : output_stream_(output_stream), context_(make_context(db_opts)) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
+
+    // Set tenant context if provided
+    if (db_opts.has_value() && !db_opts->tenant.empty()) {
+        set_tenant_context(db_opts->tenant);
+    }
+}
+
+void application::set_tenant_context(const std::string& tenant) {
+    try {
+        database::service::tenant_context::set(context_, tenant);
+    } catch (const std::exception& e) {
+        BOOST_THROW_EXCEPTION(application_exception(e.what()));
+    }
 }
 
 void application::

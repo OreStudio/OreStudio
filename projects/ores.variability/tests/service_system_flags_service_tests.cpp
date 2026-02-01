@@ -27,7 +27,6 @@ namespace {
 
 const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[service][system_flags]");
-const std::string table_name("ores_variability_feature_flags_tbl");
 
 }
 
@@ -39,7 +38,7 @@ TEST_CASE("system_flags_service_default_values", tags) {
     auto lg(make_logger(test_suite));
 
     SECTION("bootstrap_mode returns default true when flag not in database") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Flag doesn't exist, should return default from definition (true)
@@ -50,7 +49,7 @@ TEST_CASE("system_flags_service_default_values", tags) {
     }
 
     SECTION("user_signups returns default false when flag not in database") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Flag doesn't exist, should return default from definition (false)
@@ -61,7 +60,7 @@ TEST_CASE("system_flags_service_default_values", tags) {
     }
 
     SECTION("is_enabled returns default for any system flag not in database") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Test generic is_enabled method
@@ -74,7 +73,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
     auto lg(make_logger(test_suite));
 
     SECTION("set_bootstrap_mode persists value") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Set to false (opposite of default)
@@ -87,7 +86,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
     }
 
     SECTION("set_user_signups persists value") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Set to true (opposite of default)
@@ -100,7 +99,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
     }
 
     SECTION("set_enabled with generic method persists value") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         sut.set_enabled(system_flag::bootstrap_mode, false, "system", "system.new_record", "Test");
@@ -115,7 +114,7 @@ TEST_CASE("system_flags_service_update_existing", tags) {
     auto lg(make_logger(test_suite));
 
     SECTION("updating bootstrap_mode toggles value") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Set initial value
@@ -132,7 +131,7 @@ TEST_CASE("system_flags_service_update_existing", tags) {
     }
 
     SECTION("updating user_signups toggles value") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Set initial value
@@ -153,7 +152,7 @@ TEST_CASE("system_flags_service_multiple_flags_independent", tags) {
     auto lg(make_logger(test_suite));
 
     SECTION("setting one flag does not affect others") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Set bootstrap_mode to false
@@ -176,7 +175,7 @@ TEST_CASE("system_flags_service_refresh", tags) {
     auto lg(make_logger(test_suite));
 
     SECTION("refresh loads flags from database") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
 
         // First service writes to database
         {
@@ -203,7 +202,7 @@ TEST_CASE("system_flags_service_cache_accessor", tags) {
     auto lg(make_logger(test_suite));
 
     SECTION("cache returns current flag values") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
         system_flags_service sut(db_helper.context());
 
         // Set some values
@@ -217,7 +216,7 @@ TEST_CASE("system_flags_service_cache_accessor", tags) {
     }
 
     SECTION("cache reflects refresh") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+        ores::testing::scoped_database_helper db_helper;
 
         // Write values with one service
         {

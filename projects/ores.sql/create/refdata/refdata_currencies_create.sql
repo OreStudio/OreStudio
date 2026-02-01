@@ -46,6 +46,7 @@ create table if not exists "ores_refdata_currencies_tbl" (
     "valid_to" timestamp with time zone not null,
     primary key (iso_code, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         iso_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -97,7 +98,8 @@ begin
 
     select version into current_version
     from "ores_refdata_currencies_tbl"
-    where iso_code = new.iso_code
+    where tenant_id = new.tenant_id
+    and iso_code = new.iso_code
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -110,7 +112,8 @@ begin
 
         update "ores_refdata_currencies_tbl"
         set valid_to = current_timestamp
-        where iso_code = new.iso_code
+        where tenant_id = new.tenant_id
+        and iso_code = new.iso_code
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else

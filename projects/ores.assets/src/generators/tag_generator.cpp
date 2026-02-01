@@ -35,8 +35,9 @@ domain::tag generate_synthetic_tag() {
 
     static boost::uuids::random_generator gen;
     r.tag_id = boost::uuids::to_string(gen());
-    // Use prefix to avoid collision with seeded country code tags (like "CD", "US", etc.)
-    r.name = "test_" + std::string(faker::word::noun());
+    // Use UUID suffix to ensure global uniqueness across tests
+    const auto uuid = boost::uuids::to_string(gen());
+    r.name = "test_" + std::string(faker::word::noun()) + "_" + uuid.substr(0, 8);
     r.description = std::string(faker::lorem::sentence());
     r.recorded_by = std::string(faker::internet::username());
     r.change_reason_code = "system.test";

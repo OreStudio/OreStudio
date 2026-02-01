@@ -98,6 +98,28 @@ begin
 end;
 $$ language plpgsql;
 
+-- Lookup tenant by code (used by CLI and other tools)
+create or replace function ores_iam_tenant_by_code_fn(
+    p_code text
+) returns uuid as $$
+declare
+    v_tenant_id uuid;
+begin
+    select tenant_id into v_tenant_id
+    from ores_iam_tenants_tbl
+    where code = p_code
+    and status = 'active'
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        raise exception 'No active tenant found for code: %', p_code
+            using errcode = '23503';
+    end if;
+
+    return v_tenant_id;
+end;
+$$ language plpgsql;
+
 -- Check if current session is in system tenant
 create or replace function ores_iam_is_system_tenant_fn()
 returns boolean as $$

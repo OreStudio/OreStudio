@@ -67,6 +67,16 @@ public:
 private:
     static database::context
     make_context(const std::optional<database::database_options>& db_opts);
+
+    /**
+     * @brief Sets the tenant context on the database connection.
+     *
+     * Looks up tenant_id by code if a code is provided, or uses the
+     * UUID directly if a UUID string is given.
+     *
+     * @param tenant Tenant code (e.g., "system") or tenant UUID.
+     */
+    void set_tenant_context(const std::string& tenant);
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 

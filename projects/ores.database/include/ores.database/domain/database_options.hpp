@@ -51,6 +51,13 @@ struct database_options final {
      * @brief Port the database is listening on.
      */
     int port = 5432;
+    /**
+     * @brief Tenant code or ID for multi-tenant isolation.
+     *
+     * Can be either a tenant code (e.g., "system", "acme") or a tenant UUID.
+     * Required for all operations in a multi-tenant environment.
+     */
+    std::string tenant;
 };
 
 std::ostream& operator<<(std::ostream& s, const database_options& v);

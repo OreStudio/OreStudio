@@ -29,6 +29,7 @@
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.platform/environment/environment.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 
 #ifdef _WIN32
 #include <process.h>
@@ -89,6 +90,12 @@ context test_database_manager::make_context() {
 }
 
 database::database_options test_database_manager::make_database_options() {
+    // Get test tenant ID, fall back to system tenant if not set
+    auto tenant_id = get_test_tenant_id_env();
+    if (tenant_id.empty()) {
+        tenant_id = system_tenant_id;
+    }
+
     return database::database_options {
         .user = environment::environment::get_value_or_default(
             prefix + "USER", "ores_test_dml_user"),
@@ -99,7 +106,8 @@ database::database_options test_database_manager::make_database_options() {
         .database = environment::environment::get_value_or_default(
             prefix + "DATABASE", "ores_default"),
         .port = environment::environment::get_int_value_or_default(
-            prefix + "PORT", 5432)
+            prefix + "PORT", 5432),
+        .tenant = tenant_id
     };
 }
 
@@ -258,27 +266,13 @@ std::string test_database_manager::generate_test_tenant_code() {
 
 std::string test_database_manager::provision_test_tenant(
     database::context& ctx, const std::string& tenant_code) {
+    using database::service::tenant_context;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code;
 
     // First set system tenant context
-    const std::string set_context_sql =
-        std::string("SET app.current_tenant_id = '") + system_tenant_id + "'";
-
-    const auto execute_set_context = [&](auto&& session) {
-        return session->execute(set_context_sql);
-    };
-
-    auto ctx_result = sqlgen::session(ctx.connection_pool())
-        .and_then(execute_set_context);
-
-    if (!ctx_result) {
-        const auto error_msg = "Failed to set system tenant context: " +
-                               ctx_result.error().what();
-        BOOST_LOG_SEV(lg(), error) << error_msg;
-        throw std::runtime_error(error_msg);
-    }
+    tenant_context::set_system_tenant(ctx);
 
     // Call the provisioner function (we use SELECT but don't need the result here)
     const std::string provision_sql =
@@ -343,24 +337,17 @@ std::string test_database_manager::provision_test_tenant(
 
 void test_database_manager::deprovision_test_tenant(
     database::context& ctx, const std::string& tenant_id) {
+    using database::service::tenant_context;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     BOOST_LOG_SEV(lg(), info) << "Deprovisioning test tenant: " << tenant_id;
 
     // Set system tenant context
-    const std::string set_context_sql =
-        std::string("SET app.current_tenant_id = '") + system_tenant_id + "'";
-
-    const auto execute_set_context = [&](auto&& session) {
-        return session->execute(set_context_sql);
-    };
-
-    auto ctx_result = sqlgen::session(ctx.connection_pool())
-        .and_then(execute_set_context);
-
-    if (!ctx_result) {
+    try {
+        tenant_context::set_system_tenant(ctx);
+    } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
-                                  << "deprovisioning: " << ctx_result.error().what();
+                                  << "deprovisioning: " << e.what();
         // Don't throw - cleanup should be best-effort
         return;
     }

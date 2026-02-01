@@ -23,11 +23,13 @@
 #include <string>
 #include <vector>
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.database/service/tenant_context.hpp"
 
 namespace ores::testing {
 
 using namespace ores::logging;
 using ores::testing::test_database_manager;
+using ores::database::service::tenant_context;
 
 database_helper::database_helper()
     : context_(test_database_manager::make_context()) {
@@ -46,21 +48,7 @@ void database_helper::set_tenant_context() {
         BOOST_LOG_SEV(lg(), info) << "Using test tenant: " << tenant_id;
     }
 
-    const std::string set_tenant_sql =
-        "SET app.current_tenant_id = '" + tenant_id + "'";
-
-    const auto execute_set = [&](auto&& session) {
-        return session->execute(set_tenant_sql);
-    };
-
-    const auto r = sqlgen::session(context_.connection_pool())
-        .and_then(execute_set);
-
-    if (!r) {
-        const auto error_msg = "Failed to set tenant context: " + r.error().what();
-        BOOST_LOG_SEV(lg(), error) << error_msg;
-        throw std::runtime_error(error_msg);
-    }
+    tenant_context::set(context_, tenant_id);
     BOOST_LOG_SEV(lg(), info) << "Successfully set tenant context";
 }
 

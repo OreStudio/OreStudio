@@ -66,6 +66,15 @@
 SET search_path TO production, metadata, public;
 
 --------------------------------------------------------------------------------
+-- Tenant Context
+--------------------------------------------------------------------------------
+
+-- Set system tenant context for full visibility across all tenants.
+-- RLS policies restrict access based on app.current_tenant_id; setting it to
+-- the system tenant (all zeros) grants read access to all tenant data.
+SET app.current_tenant_id = '00000000-0000-0000-0000-000000000000';
+
+--------------------------------------------------------------------------------
 -- Useful Macros (invoke with :macroname)
 --------------------------------------------------------------------------------
 

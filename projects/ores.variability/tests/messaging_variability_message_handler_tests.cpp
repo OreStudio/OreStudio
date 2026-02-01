@@ -38,7 +38,6 @@ using ores::testing::run_coroutine_test;
 namespace {
 
 const std::string_view test_suite("ores.variability.tests");
-const std::string database_table("ores_variability_feature_flags_tbl");
 const std::string tags("[messaging][handler]");
 
 ores::variability::domain::feature_flags generate_feature_flag() {
@@ -75,7 +74,7 @@ using ores::variability::repository::feature_flags_repository;
 TEST_CASE("handle_get_feature_flags_request_empty_database", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     variability_message_handler sut(h.context());
 
     // Database template contains schema only, no seeded data
@@ -106,7 +105,7 @@ TEST_CASE("handle_get_feature_flags_request_empty_database", tags) {
 TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
 
     // Get initial count of pre-seeded flags from template
     feature_flags_repository repo(h.context());
@@ -147,7 +146,7 @@ TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
 TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
 
     // Get initial count of pre-seeded flags and add more
     feature_flags_repository repo(h.context());
@@ -190,7 +189,7 @@ TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
 TEST_CASE("handle_invalid_message_type", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     variability_message_handler sut(h.context());
 
     std::vector<std::byte> empty_payload;
@@ -209,7 +208,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
 TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
 
     // Create flags with specific known values
     feature_flags_repository repo(h.context());
@@ -276,7 +275,7 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
 TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
 
     // Get initial count of pre-seeded flags
     feature_flags_repository repo(h.context());
@@ -316,7 +315,7 @@ TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
 TEST_CASE("handle_get_feature_flags_request_from_different_endpoints", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
 
     // Get initial count and add flags
     feature_flags_repository repo(h.context());

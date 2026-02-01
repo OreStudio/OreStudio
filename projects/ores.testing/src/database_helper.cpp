@@ -19,8 +19,6 @@
  */
 #include "ores.testing/database_helper.hpp"
 
-#include <stdexcept>
-#include <string>
 #include <vector>
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -50,27 +48,6 @@ void database_helper::set_tenant_context() {
 
     tenant_context::set(context_, tenant_id);
     BOOST_LOG_SEV(lg(), info) << "Successfully set tenant context";
-}
-
-void database_helper::truncate_table(const std::string& table_name) {
-    BOOST_LOG_SEV(lg(), info) << "Truncating table: " << table_name;
-
-    const auto truncate_sql = "TRUNCATE TABLE " + table_name;
-    const auto execute_truncate = [&](auto&& session) {
-        return session->execute(truncate_sql);
-    };
-
-    const auto r = sqlgen::session(context_.connection_pool())
-        .and_then(execute_truncate);
-
-    if (!r) {
-        const auto error_msg = "Failed to truncate table " + table_name +
-            ": " + r.error().what();
-        BOOST_LOG_SEV(lg(), error) << error_msg;
-        throw std::runtime_error(error_msg);
-    }
-    BOOST_LOG_SEV(lg(), info)
-        << "Successfully truncated table: " << table_name;
 }
 
 void database_helper::seed_rbac() {

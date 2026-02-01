@@ -33,7 +33,6 @@
 namespace {
 
 const std::string_view test_suite("ores.assets.tests");
-const std::string database_table("ores_assets_image_tags_tbl");
 const std::string tags("[repository]");
 
 }
@@ -47,7 +46,7 @@ using namespace ores::logging;
 TEST_CASE("write_single_image_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto it = generate_synthetic_image_tag();
     BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
@@ -58,7 +57,7 @@ TEST_CASE("write_single_image_tag", tags) {
 TEST_CASE("write_multiple_image_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto image_tags = generate_synthetic_image_tags(3);
     BOOST_LOG_SEV(lg, debug) << "Image-tags: " << image_tags;
 
@@ -69,7 +68,7 @@ TEST_CASE("write_multiple_image_tags", tags) {
 TEST_CASE("read_latest_image_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_image_tags = generate_synthetic_image_tags(3);
     BOOST_LOG_SEV(lg, debug) << "Written image-tags: " << written_image_tags;
 
@@ -86,7 +85,7 @@ TEST_CASE("read_latest_image_tags", tags) {
 TEST_CASE("read_latest_image_tags_by_image", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto it = generate_synthetic_image_tag();
     BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
@@ -105,7 +104,7 @@ TEST_CASE("read_latest_image_tags_by_image", tags) {
 TEST_CASE("read_latest_image_tags_by_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto it = generate_synthetic_image_tag();
     BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
@@ -124,7 +123,7 @@ TEST_CASE("read_latest_image_tags_by_tag", tags) {
 TEST_CASE("read_nonexistent_image_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     image_tag_repository repo;
 
     const std::string nonexistent_id = "00000000-0000-0000-0000-000000000000";
@@ -139,7 +138,7 @@ TEST_CASE("read_nonexistent_image_tag", tags) {
 TEST_CASE("update_image_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto it = generate_synthetic_image_tag();
     BOOST_LOG_SEV(lg, debug) << "Original image-tag: " << it;
 

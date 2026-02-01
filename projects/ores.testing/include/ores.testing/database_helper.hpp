@@ -20,7 +20,6 @@
 #ifndef ORES_TESTING_DATABASE_HELPER_HPP
 #define ORES_TESTING_DATABASE_HELPER_HPP
 
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
@@ -42,13 +41,6 @@ private:
 
 public:
     database_helper();
-
-    /**
-     * @brief Truncates the specified table.
-     *
-     * @param table_name Fully qualified table name (e.g., "ores.accounts")
-     */
-    void truncate_table(const std::string& table_name);
 
     /**
      * @brief Seeds minimal RBAC data for tests.

@@ -37,7 +37,6 @@
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
-const std::string database_table("ores_refdata_currencies_tbl");
 const std::string tags("[messaging][handler]");
 
 std::shared_ptr<ores::variability::service::system_flags_service>
@@ -76,7 +75,7 @@ using ores::testing::scoped_database_helper;
 TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto system_flags = make_system_flags(h.context());
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
@@ -111,7 +110,7 @@ TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
 TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto ccy = generate_synthetic_currency();
     refdata::repository::currency_repository repo;
     repo.write(h.context(), {ccy});
@@ -154,7 +153,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
 TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     // Create multiple test currencies
     refdata::repository::currency_repository repo;
 
@@ -203,7 +202,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
 TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     refdata::repository::currency_repository repo;
 
     // Create random currencies
@@ -247,7 +246,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
 TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     // Create a currency with specific values
     refdata::domain::currency original_ccy;
     original_ccy.iso_code = "BTC";
@@ -321,7 +320,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
 TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     // Create currencies with special Unicode symbols
     std::vector<std::pair<std::string, std::string>> currency_data = {
         {"EUR", "€"},
@@ -384,7 +383,7 @@ TEST_CASE("handle_invalid_message_type",
     tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto system_flags = make_system_flags(h.context());
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 

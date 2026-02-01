@@ -45,7 +45,6 @@ using ores::utility::faker::internet;
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
-const std::string database_table("ores_iam_accounts_tbl");
 const std::string tags("[messaging][handler][lock]");
 
 save_account_request to_save_account_request(const domain::account& a) {
@@ -122,7 +121,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -223,7 +222,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -304,7 +303,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
 TEST_CASE("handle_lock_account_request", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -398,7 +397,7 @@ TEST_CASE("handle_lock_account_request", tags) {
 TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -449,7 +448,7 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
 TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());

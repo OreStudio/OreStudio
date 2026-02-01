@@ -32,7 +32,6 @@
 namespace {
 
 const std::string_view test_suite("ores.assets.tests");
-const std::string database_table("ores_assets_tags_tbl");
 const std::string tags("[repository]");
 
 }
@@ -46,7 +45,7 @@ using namespace ores::logging;
 TEST_CASE("write_single_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto t = generate_synthetic_tag();
     BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
 
@@ -57,7 +56,7 @@ TEST_CASE("write_single_tag", tags) {
 TEST_CASE("write_multiple_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto tag_list = generate_unique_synthetic_tags(3);
     BOOST_LOG_SEV(lg, debug) << "Tags: " << tag_list;
 
@@ -68,7 +67,7 @@ TEST_CASE("write_multiple_tags", tags) {
 TEST_CASE("read_latest_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_tags = generate_unique_synthetic_tags(3);
     BOOST_LOG_SEV(lg, debug) << "Written tags: " << written_tags;
 
@@ -85,7 +84,7 @@ TEST_CASE("read_latest_tags", tags) {
 TEST_CASE("read_latest_tag_by_id", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto t = generate_synthetic_tag();
     const auto original_description = t.description;
     BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
@@ -107,7 +106,7 @@ TEST_CASE("read_latest_tag_by_id", tags) {
 TEST_CASE("read_latest_tag_by_name", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto t = generate_synthetic_tag();
     BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
 
@@ -124,7 +123,7 @@ TEST_CASE("read_latest_tag_by_name", tags) {
 TEST_CASE("read_all_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_tags = generate_unique_synthetic_tags(3);
     BOOST_LOG_SEV(lg, debug) << "Written tags: " << written_tags;
 
@@ -141,7 +140,7 @@ TEST_CASE("read_all_tags", tags) {
 TEST_CASE("read_nonexistent_tag_id", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     tag_repository repo;
 
     const std::string nonexistent_id = "00000000-0000-0000-0000-000000000000";

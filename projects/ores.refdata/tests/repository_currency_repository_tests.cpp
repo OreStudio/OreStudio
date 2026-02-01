@@ -33,7 +33,6 @@
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
-const std::string database_table("ores_refdata_currencies_tbl");
 const std::string tags("[repository]");
 
 }
@@ -47,7 +46,7 @@ using namespace ores::logging;
 TEST_CASE("write_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto currency = generate_synthetic_currency();
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
@@ -58,7 +57,7 @@ TEST_CASE("write_single_currency", tags) {
 TEST_CASE("write_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
@@ -69,7 +68,7 @@ TEST_CASE("write_multiple_currencies", tags) {
 TEST_CASE("read_latest_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
@@ -86,7 +85,7 @@ TEST_CASE("read_latest_currencies", tags) {
 TEST_CASE("read_latest_currency_by_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto currency = generate_synthetic_currency();
     const auto original_name = currency.name;
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
@@ -108,7 +107,7 @@ TEST_CASE("read_latest_currency_by_iso_code", tags) {
 TEST_CASE("read_all_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
@@ -125,7 +124,7 @@ TEST_CASE("read_all_currencies", tags) {
 TEST_CASE("read_all_currencies_multiple_versions", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     currency_repository repo;
 
     // Write multiple versions of the same currency
@@ -171,7 +170,7 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
 TEST_CASE("read_nonexistent_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     currency_repository repo;
 
     const std::string nonexistent_iso = "XXX";
@@ -186,7 +185,7 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
 TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     auto currencies = generate_synthetic_unicode_currencies();
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
@@ -224,7 +223,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
 TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     const auto currencies = generate_synthetic_unicode_currencies();
     const auto& jpy = *
         std::ranges::find_if(currencies, [](const auto& c) {

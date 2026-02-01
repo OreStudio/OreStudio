@@ -45,7 +45,6 @@ using ores::utility::faker::internet;
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
-const std::string database_table("ores_iam_accounts_tbl");
 const std::string tags("[messaging][handler][auth]");
 
 save_account_request to_save_account_request(const domain::account& a) {
@@ -121,7 +120,7 @@ using ores::testing::scoped_database_helper;
 TEST_CASE("handle_login_request_with_valid_password", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -176,7 +175,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -229,7 +228,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
 TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -265,7 +264,7 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
 TEST_CASE("handle_login_request_locked_account", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -379,7 +378,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 TEST_CASE("handle_change_password_request_success", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -463,7 +462,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -495,7 +494,7 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
 TEST_CASE("handle_change_password_request_weak_password", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table, true);
+    scoped_database_helper h(true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());

@@ -35,7 +35,6 @@
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
-const std::string database_table("ores_iam_accounts_tbl");
 const std::string tags("[service]");
 
 }
@@ -49,7 +48,7 @@ using namespace ores::iam::generators;
 TEST_CASE("create_account_with_valid_data", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     const auto e = generate_synthetic_account();
@@ -71,7 +70,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
 TEST_CASE("create_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     for (int i = 0; i < 5; ++i) {
@@ -95,7 +94,7 @@ TEST_CASE("create_multiple_accounts", tags) {
 TEST_CASE("create_account_with_empty_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     auto e = generate_synthetic_account();
@@ -110,7 +109,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
 TEST_CASE("create_account_with_empty_email_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     auto e = generate_synthetic_account();
@@ -125,7 +124,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
 TEST_CASE("create_account_with_empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     const auto e = generate_synthetic_account();
@@ -139,7 +138,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
 TEST_CASE("list_accounts_returns_existing_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
     const auto a = sut.list_accounts();
     BOOST_LOG_SEV(lg, info) << "Current accounts in database: " << a.size();
@@ -151,7 +150,7 @@ TEST_CASE("list_accounts_returns_existing_accounts", tags) {
 TEST_CASE("list_accounts_returns_created_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     // Count existing accounts from previous test runs
@@ -176,7 +175,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
 TEST_CASE("login_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     auto e = generate_synthetic_account();
@@ -196,7 +195,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
 TEST_CASE("login_with_invalid_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     auto e = generate_synthetic_account();
@@ -214,7 +213,7 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
 TEST_CASE("login_with_nonexistent_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with nonexistent username";
@@ -231,7 +230,7 @@ TEST_CASE("login_with_nonexistent_username_throws", tags) {
 TEST_CASE("login_with_empty_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty username";
@@ -248,7 +247,7 @@ TEST_CASE("login_with_empty_username_throws", tags) {
 TEST_CASE("login_with_empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
@@ -269,7 +268,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
 TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     auto account = generate_synthetic_account();
@@ -304,7 +303,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
 TEST_CASE("lock_account_successful", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     const auto account = generate_synthetic_account();
@@ -327,7 +326,7 @@ TEST_CASE("lock_account_successful", tags) {
 TEST_CASE("lock_nonexistent_account_returns_false", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     boost::uuids::random_generator gen;
@@ -341,7 +340,7 @@ TEST_CASE("lock_nonexistent_account_returns_false", tags) {
 TEST_CASE("unlock_account_successful", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     const auto account = generate_synthetic_account();
@@ -376,7 +375,7 @@ TEST_CASE("unlock_account_successful", tags) {
 TEST_CASE("unlock_nonexistent_account_returns_false", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     boost::uuids::random_generator gen;
@@ -391,7 +390,7 @@ TEST_CASE("delete_nonexistent_account_throws",
     tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     boost::uuids::random_generator gen;
@@ -406,7 +405,7 @@ TEST_CASE("delete_nonexistent_account_throws",
 TEST_CASE("login_with_different_ip_addresses", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h;
     service::account_service sut(h.context());
 
     auto account = generate_synthetic_account();

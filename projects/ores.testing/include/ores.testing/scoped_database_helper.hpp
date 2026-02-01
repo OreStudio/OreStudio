@@ -20,25 +20,23 @@
 #ifndef ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 #define ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 
-#include <string>
 #include "ores.testing/database_helper.hpp"
 
 namespace ores::testing {
 
 /**
- * @brief Provides database setup and cleanup utilities for tests.
+ * @brief Provides database context for tests with optional RBAC seeding.
+ *
+ * Each test run uses an isolated tenant, so no table truncation is needed.
  */
 class scoped_database_helper {
 public:
     /**
      * @brief Constructs a scoped database helper.
      *
-     * @param table_name Fully qualified table name to truncate (e.g., "ores.accounts")
      * @param seed_rbac If true, seeds minimal RBAC data (Admin role with wildcard permission)
      */
-    explicit scoped_database_helper(const std::string& table_name,
-                                    bool seed_rbac = false) {
-        helper_.truncate_table(table_name);
+    explicit scoped_database_helper(bool seed_rbac = false) {
         if (seed_rbac) {
             helper_.seed_rbac();
         }

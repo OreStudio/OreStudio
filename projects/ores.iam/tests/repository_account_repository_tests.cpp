@@ -50,7 +50,6 @@ TEST_CASE("write_single_account", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
     auto account = generate_synthetic_account();
@@ -63,7 +62,6 @@ TEST_CASE("write_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
     auto accounts = generate_synthetic_accounts(5);
@@ -76,7 +74,6 @@ TEST_CASE("read_latest_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
     auto written_accounts = generate_synthetic_accounts(3);
@@ -95,7 +92,6 @@ TEST_CASE("read_latest_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
     auto accounts = generate_synthetic_accounts(5);
@@ -119,7 +115,6 @@ TEST_CASE("read_all_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
     auto written_accounts = generate_synthetic_accounts(5);
@@ -138,7 +133,6 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
 
@@ -176,7 +170,6 @@ TEST_CASE("read_latest_by_username", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
     auto accounts = generate_synthetic_accounts(5);
@@ -200,7 +193,6 @@ TEST_CASE("read_nonexistent_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
 
@@ -218,7 +210,6 @@ TEST_CASE("read_nonexistent_username", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
 
@@ -235,7 +226,6 @@ TEST_CASE("write_and_read_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     account_repository repo(h.context());
 

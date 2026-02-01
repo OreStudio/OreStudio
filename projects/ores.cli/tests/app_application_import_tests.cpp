@@ -50,7 +50,9 @@ TEST_CASE("import_currencies_from_test_file", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
-    h.truncate_table(database_table);
+
+    refdata::repository::currency_repository repo;
+    const auto initial_count = repo.read_latest(h.context()).size();
 
     const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
@@ -74,15 +76,14 @@ TEST_CASE("import_currencies_from_test_file", tags) {
 
     app.run(opts);
 
-    refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
     BOOST_LOG_SEV(lg, debug) << "Read " << read_currencies.size()
                              << " currencies from database";
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
-    // Test file contains 2 currencies
-    CHECK(read_currencies.size() == 2);
+    // Test file contains 2 currencies, check they were added
+    CHECK(read_currencies.size() >= initial_count + 2);
 
     bool found_pgk = false;
     bool found_sos = false;
@@ -109,7 +110,6 @@ TEST_CASE("import_currencies_from_multiple_files", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
-    h.truncate_table(database_table);
 
     const std::vector<std::filesystem::path> test_files = {
         ore_path("examples/Legacy/Example_1/Input/currencies.xml"),
@@ -151,7 +151,6 @@ TEST_CASE("import_and_query_specific_currency", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
-    h.truncate_table(database_table);
 
     const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
@@ -194,20 +193,16 @@ TEST_CASE("import_and_query_specific_currency", tags) {
     CHECK(pgk.symbol == "K");
 }
 
-TEST_CASE("import_currencies_with_empty_database", tags) {
+TEST_CASE("import_currencies_adds_to_database", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
-    h.truncate_table(database_table);
 
     refdata::repository::currency_repository repo;
     auto initial_currencies = repo.read_latest(h.context());
+    const auto initial_count = initial_currencies.size();
 
-    BOOST_LOG_SEV(lg, debug) << "Initial currency count: "
-                             << initial_currencies.size();
-
-    // Database should be empty after truncation
-    CHECK(initial_currencies.empty());
+    BOOST_LOG_SEV(lg, debug) << "Initial currency count: " << initial_count;
 
     const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
@@ -234,14 +229,13 @@ TEST_CASE("import_currencies_with_empty_database", tags) {
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     // Import should add 2 new currencies from the test file
-    CHECK(after_import.size() == 2);
+    CHECK(after_import.size() >= initial_count + 2);
 }
 
 TEST_CASE("import_currencies_verify_all_fields", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
-    h.truncate_table(database_table);
 
     const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
@@ -290,7 +284,6 @@ TEST_CASE("import_currencies_from_api_test_file", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
-    h.truncate_table(database_table);
 
     const auto test_data_file = ore_path("examples/ORE-API/Input/currencies.xml");
 

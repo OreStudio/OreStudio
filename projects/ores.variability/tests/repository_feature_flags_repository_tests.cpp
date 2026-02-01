@@ -66,7 +66,6 @@ TEST_CASE("write_single_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
     auto flag = generate_feature_flag();
@@ -86,7 +85,6 @@ TEST_CASE("write_multiple_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
     auto flags = generate_feature_flags(5);
@@ -105,7 +103,6 @@ TEST_CASE("read_latest_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
     const auto initial_count = repo.read_latest().size();
@@ -127,7 +124,6 @@ TEST_CASE("read_latest_feature_flag_by_name", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
     auto flags = generate_feature_flags(5);
@@ -151,7 +147,6 @@ TEST_CASE("read_all_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
     const auto initial_count = repo.read_all().size();
@@ -173,7 +168,6 @@ TEST_CASE("read_all_feature_flags_by_name", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
 
@@ -212,7 +206,6 @@ TEST_CASE("read_nonexistent_feature_flag_by_name", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
 
@@ -230,7 +223,6 @@ TEST_CASE("remove_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
 
@@ -256,7 +248,6 @@ TEST_CASE("write_and_read_enabled_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
 
@@ -280,7 +271,6 @@ TEST_CASE("write_and_read_disabled_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
 
@@ -304,7 +294,6 @@ TEST_CASE("feature_flag_version_increment", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
 

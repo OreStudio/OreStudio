@@ -1,6 +1,6 @@
 {
   "domain_entity": {
-    "schema": "metadata",
+    "schema": "public",
     "component": "dq",
     "entity_singular": "dataset_bundle",
     "entity_plural": "dataset_bundles",
@@ -46,7 +46,7 @@
     ],
 
     "sql": {
-      "tablename": "dq_dataset_bundles_tbl"
+      "tablename": "ores_dq_dataset_bundles_tbl"
     },
 
     "repository": {

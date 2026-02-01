@@ -1,8 +1,6 @@
 {{! Template to generate SQL with enhanced GPL v3 license and dataset data }}
 {{{sql_license}}}
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Slovaris Datasets
 -- =============================================================================
@@ -10,7 +8,7 @@ set schema 'metadata';
 \echo '--- Data Quality Slovaris Datasets ---'
 
 {{#datasets}}
-select metadata.dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(
     '{{code}}',
     '{{catalog_name}}',
     '{{subject_area_name}}',
@@ -38,5 +36,5 @@ select metadata.dq_datasets_upsert_fn(
 \echo '--- Summary ---'
 
 select 'Data Quality Total Datasets' as entity, count(*) as count
-from metadata.dq_datasets_tbl where valid_to = public.utility_infinity_timestamp_fn()
+from ores_dq_datasets_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

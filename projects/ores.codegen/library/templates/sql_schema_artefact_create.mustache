@@ -1,12 +1,11 @@
 {{! Template to generate SQL schema for entity artefact/staging table }}
 {{{sql_license}}}
-set schema 'metadata';
 
 -- =============================================================================
 -- {{entity.description}} - Artefact Table
 -- =============================================================================
 
-create table if not exists "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" (
+create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
     "dataset_id" uuid not null,
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
@@ -22,19 +21,19 @@ create table if not exists "metadata"."dq_{{entity.entity_plural}}_artefact_tbl"
 );
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_dataset_idx
-on "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" (dataset_id);
+on ores_dq_{{entity.entity_plural}}_artefact_tbl (dataset_id);
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.primary_key.column}}_idx
-on "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" ({{entity.primary_key.column}});
+on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{entity.primary_key.column}});
 {{#entity.artefact_indexes}}
 
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx
-on "metadata"."dq_{{entity.entity_plural}}_artefact_tbl" ({{columns}});
+on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{columns}});
 {{/entity.artefact_indexes}}
 {{#entity.has_artefact_insert_fn}}
 
 -- Function to insert {{entity.entity_plural}} into the artefact table
-create or replace function metadata.dq_{{entity.entity_plural}}_artefact_insert_fn(
+create or replace function ores_dq_{{entity.entity_plural}}_artefact_insert_fn(
     p_dataset_id uuid,
     p_{{entity.primary_key.column}} {{entity.primary_key.type}},
     p_version integer,
@@ -46,7 +45,7 @@ create or replace function metadata.dq_{{entity.entity_plural}}_artefact_insert_
 {{/entity.has_image_id}}
 ) returns void as $$
 begin
-    insert into metadata.dq_{{entity.entity_plural}}_artefact_tbl (
+    insert into ores_dq_{{entity.entity_plural}}_artefact_tbl (
         dataset_id, {{entity.primary_key.column}}, version,
 {{#entity.columns}}
         {{name}}{{^last}},{{/last}}

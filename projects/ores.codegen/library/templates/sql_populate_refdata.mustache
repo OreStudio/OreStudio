@@ -11,7 +11,6 @@
  * Use dq_populate_{{entity.entity_plural}}() to publish to production.
  */
 
-set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact {{dataset.name}}
@@ -26,21 +25,21 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = '{{dataset.code}}'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset {{dataset.code}} not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from metadata.dq_{{entity.entity_plural}}_artefact_tbl
+    delete from ores_dq_{{entity.entity_plural}}_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
 {{#items}}
-    insert into metadata.dq_{{entity.entity_plural}}_artefact_tbl (
+    insert into ores_dq_{{entity.entity_plural}}_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -73,15 +72,15 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = '{{dataset.code}}'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- Get the flags dataset ID
     select id into v_flags_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where code = '{{flags_dataset_code}}'
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Flags dataset {{flags_dataset_code}} not found. Check dataset dependencies.';
@@ -89,14 +88,14 @@ begin
 
     -- Get the placeholder image
     select image_id into v_placeholder_image_id
-    from metadata.dq_images_artefact_tbl
+    from ores_dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = '{{placeholder_key}}';
 
     -- Update records with their flag image_id
-    update metadata.dq_{{entity.entity_plural}}_artefact_tbl bc
+    update ores_dq_{{entity.entity_plural}}_artefact_tbl bc
     set image_id = coalesce(i.image_id, v_placeholder_image_id)
-    from metadata.dq_images_artefact_tbl i
+    from ores_dq_images_artefact_tbl i
     where bc.dataset_id = v_dataset_id
       and i.dataset_id = v_flags_dataset_id
       and i.key = {{{key_expression}}};
@@ -105,7 +104,7 @@ begin
     raise notice 'Updated % records with flag images', v_updated;
 
     -- Set placeholder for any without matching flags
-    update metadata.dq_{{entity.entity_plural}}_artefact_tbl
+    update ores_dq_{{entity.entity_plural}}_artefact_tbl
     set image_id = v_placeholder_image_id
     where dataset_id = v_dataset_id
       and image_id is null
@@ -127,19 +126,19 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_{{entity.entity_plural}}_artefact' as entity, count(*) as count
-from metadata.dq_{{entity.entity_plural}}_artefact_tbl;
+from ores_dq_{{entity.entity_plural}}_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from metadata.dq_{{entity.entity_plural}}_artefact_tbl
+from ores_dq_{{entity.entity_plural}}_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;
 {{#image_linking}}
 
 select 'With flag images' as status, count(*) as count
-from metadata.dq_{{entity.entity_plural}}_artefact_tbl
+from ores_dq_{{entity.entity_plural}}_artefact_tbl
 where image_id is not null
 union all
 select 'Without flag images', count(*)
-from metadata.dq_{{entity.entity_plural}}_artefact_tbl
+from ores_dq_{{entity.entity_plural}}_artefact_tbl
 where image_id is null;
 {{/image_linking}}

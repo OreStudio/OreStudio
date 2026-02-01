@@ -1,8 +1,6 @@
 {{! Template to generate SQL with enhanced GPL v3 license and tag data }}
 {{{sql_license}}}
 
-set schema 'metadata';
-
 -- =============================================================================
 -- Data Quality Slovaris Tags
 -- =============================================================================
@@ -10,7 +8,7 @@ set schema 'metadata';
 \echo '--- Data Quality Slovaris Tags ---'
 
 {{#tags}}
-select metadata.dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(
     '{{dataset_name}}',
     '{{subject_area_name}}',
     '{{domain_name}}',
@@ -26,9 +24,9 @@ select metadata.dq_tags_upsert_fn(
 \echo ''
 \echo '--- Summary ---'
 
-select 'dq_datasets' as entity, count(*) as count
-from metadata.dq_datasets_tbl
-where valid_to = public.utility_infinity_timestamp_fn()
+select 'ores_dq_datasets' as entity, count(*) as count
+from ores_dq_datasets_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
 union all
-select 'dq_tags_artefact', count(*)
-from metadata.dq_tags_artefact_tbl;
+select 'ores_dq_tags_artefact', count(*)
+from ores_dq_tags_artefact_tbl;

@@ -43,3 +43,7 @@
 \ir ./iam_account_roles_create.sql
 \ir ./iam_rbac_functions_create.sql
 
+-- Tenant lifecycle (must come after all tables it references)
+\ir ./iam_tenant_provisioner_create.sql
+\ir ./iam_tenant_deprovisioner_create.sql
+

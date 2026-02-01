@@ -42,6 +42,7 @@ create table if not exists "ores_refdata_countries_tbl" (
     "valid_to" timestamp with time zone not null,
     primary key (alpha2_code, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         alpha2_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -90,7 +91,8 @@ begin
 
     select version into current_version
     from "ores_refdata_countries_tbl"
-    where alpha2_code = new.alpha2_code
+    where tenant_id = new.tenant_id
+    and alpha2_code = new.alpha2_code
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -103,7 +105,8 @@ begin
 
         update "ores_refdata_countries_tbl"
         set valid_to = current_timestamp
-        where alpha2_code = new.alpha2_code
+        where tenant_id = new.tenant_id
+        and alpha2_code = new.alpha2_code
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else

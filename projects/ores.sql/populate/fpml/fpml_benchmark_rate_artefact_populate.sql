@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'AMERIBOR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'AONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CORRA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -89,9 +92,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CZEONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -100,9 +104,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'DESTR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -111,9 +116,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'DKK OIS',
         1,
         'FPML_BENCHMARK_RATE',
@@ -122,9 +128,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'EFFR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -133,9 +140,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'EONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -144,9 +152,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'EuroSTR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -155,9 +164,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'HONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -166,9 +176,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'HUFONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -177,9 +188,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'KOFR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -188,9 +200,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'MIBOR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -199,9 +212,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'MYOR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -210,9 +224,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'NOWA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -221,9 +236,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'NZIONA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -232,9 +248,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'POLONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -243,9 +260,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'POLSTR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -254,9 +272,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'RUONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -265,9 +284,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SARON',
         1,
         'FPML_BENCHMARK_RATE',
@@ -276,9 +296,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SFXROD',
         1,
         'FPML_BENCHMARK_RATE',
@@ -287,9 +308,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SHIR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -298,9 +320,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SOFR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -309,9 +332,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SONIA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -320,9 +344,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SORA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -331,9 +356,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SORR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -342,9 +368,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'STIBOR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -353,9 +380,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SWESTR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -364,9 +392,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'TELBOR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -375,9 +404,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'THOR',
         1,
         'FPML_BENCHMARK_RATE',
@@ -386,9 +416,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'TLREF',
         1,
         'FPML_BENCHMARK_RATE',
@@ -397,9 +428,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'TONA',
         1,
         'FPML_BENCHMARK_RATE',
@@ -408,9 +440,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_benchmark_rates_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'WIRON',
         1,
         'FPML_BENCHMARK_RATE',

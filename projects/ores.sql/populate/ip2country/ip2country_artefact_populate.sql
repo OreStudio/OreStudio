@@ -84,9 +84,10 @@ create temp table staging_ip2country_import (
 \copy staging_ip2country_import from '../../external/ip2country/ip2country-v4-u32.tsv' with (format text, delimiter E'\t')
 
 -- Insert into artefact table with dataset_id
-insert into ores_dq_ip2country_artefact_tbl (dataset_id, range_start, range_end, country_code)
+insert into ores_dq_ip2country_artefact_tbl (dataset_id, tenant_id, range_start, range_end, country_code)
 select
     (current_setting('app.ip2country_dataset_id'))::uuid,
+    ores_iam_system_tenant_id_fn(),
     range_start,
     range_end,
     country_code

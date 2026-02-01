@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_account_types_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'AggregateClient',
         1,
         'FPML_ACCOUNT_TYPE',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_account_types_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Client',
         1,
         'FPML_ACCOUNT_TYPE',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_account_types_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'House',
         1,
         'FPML_ACCOUNT_TYPE',

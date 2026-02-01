@@ -78,10 +78,11 @@ begin
     -- The flag images have keys matching lowercase alpha2 codes (e.g., 'us', 'gb')
     -- Countries without matching flags fall back to the placeholder (xx.svg)
     insert into ores_dq_countries_artefact_tbl (
-        dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
+        dataset_id, tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
     select
         v_countries_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         c.alpha2_code,
         0,
         c.alpha3_code,

@@ -38,9 +38,10 @@ database_helper::database_helper()
 void database_helper::set_system_tenant_context() {
     BOOST_LOG_SEV(lg(), info) << "Setting system tenant context for tests";
 
-    // System tenant ID: 00000000-0000-0000-0000-000000000000
+    static constexpr auto system_tenant_id =
+        "00000000-0000-0000-0000-000000000000";
     const std::string set_tenant_sql =
-        "SET app.current_tenant_id = '00000000-0000-0000-0000-000000000000'";
+        std::string("SET app.current_tenant_id = '") + system_tenant_id + "'";
 
     const auto execute_set = [&](auto&& session) {
         return session->execute(set_tenant_sql);

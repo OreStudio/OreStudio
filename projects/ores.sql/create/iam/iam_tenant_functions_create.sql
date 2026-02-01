@@ -74,7 +74,7 @@ begin
 
     return v_tenant_id;
 end;
-$$ language plpgsql;
+$$ language plpgsql stable;
 
 -- Lookup tenant by hostname (used during login)
 create or replace function ores_iam_tenant_by_hostname_fn(
@@ -105,3 +105,13 @@ begin
     return ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn();
 end;
 $$ language plpgsql stable;
+
+-- Generic trigger function to set tenant_id from session variable on insert.
+-- Used by tables that don't have their own complex insert triggers.
+create or replace function ores_iam_set_tenant_id_on_insert_fn()
+returns trigger as $$
+begin
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    return new;
+end;
+$$ language plpgsql;

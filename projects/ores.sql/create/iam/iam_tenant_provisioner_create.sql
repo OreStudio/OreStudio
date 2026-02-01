@@ -89,8 +89,9 @@ begin
 
     raise notice 'Created tenant: % (id: %)', p_code, v_new_tenant_id;
 
-    -- Temporarily set context to new tenant for data copying
-    perform set_config('app.current_tenant_id', v_new_tenant_id::text, true);
+    -- NOTE: We keep system tenant context during data copying.
+    -- The SELECTs need system tenant context to read source data (due to RLS).
+    -- The INSERTs explicitly specify v_new_tenant_id, which the trigger validates.
 
     -- =========================================================================
     -- Copy IAM data from system tenant
@@ -412,9 +413,6 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % supervisory bodies', v_copied_count;
-
-    -- Restore system tenant context
-    perform set_config('app.current_tenant_id', v_system_tenant_id::text, true);
 
     raise notice 'Tenant provisioning complete: % (id: %)', p_code, v_new_tenant_id;
 

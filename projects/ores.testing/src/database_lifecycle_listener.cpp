@@ -30,29 +30,49 @@ void database_lifecycle_listener::
 testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), debug) << "Test run starting, creating test database";
+    BOOST_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
 
-    // Generate unique test database name for this process
-    test_db_name_ = test_database_manager::generate_test_database_name();
+    try {
+        // Create database context
+        auto ctx = test_database_manager::make_context();
 
-    // Create test database from template
-    test_database_manager::create_test_database(test_db_name_);
+        // Generate unique test tenant code for this process
+        const auto tenant_code = test_database_manager::generate_test_tenant_code();
 
-    // Set environment variable so tests use the isolated database
-    test_database_manager::set_test_database_env(test_db_name_);
+        // Provision the test tenant (copies refdata from system tenant)
+        test_tenant_id_ = test_database_manager::provision_test_tenant(
+            ctx, tenant_code);
 
-    BOOST_LOG_SEV(lg(), debug) << "Test database ready: " << test_db_name_;
+        // Set environment variable so tests use this tenant
+        test_database_manager::set_test_tenant_id_env(test_tenant_id_);
+
+        BOOST_LOG_SEV(lg(), info) << "Test tenant ready: " << test_tenant_id_;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to provision test tenant: " << e.what();
+        throw;
+    }
 }
 
 void database_lifecycle_listener::testRunEnded(
     Catch::TestRunStats const& /*testRunStats*/) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
-    BOOST_LOG_SEV(lg(), debug) << "Test run ended, dropping test database: "
-                               << test_db_name_;
 
-    if (!test_db_name_.empty()) {
-        test_database_manager::drop_test_database(test_db_name_);
-        test_db_name_.clear();
+    if (test_tenant_id_.empty()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Test run ended, deprovisioning test tenant: "
+                              << test_tenant_id_;
+
+    try {
+        auto ctx = test_database_manager::make_context();
+        test_database_manager::deprovision_test_tenant(ctx, test_tenant_id_);
+        test_tenant_id_.clear();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to deprovision test tenant: " << e.what();
+        // Don't throw - cleanup should be best-effort
     }
 }
 

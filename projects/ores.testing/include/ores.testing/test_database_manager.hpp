@@ -105,6 +105,65 @@ private:
      * @param db_name The database name to set
      */
     static void set_test_database_env(const std::string& db_name);
+
+    /**
+     * @brief Generates a unique tenant code for this test run.
+     *
+     * The tenant code includes a timestamp for comparing test runs:
+     * test_{YYYYMMDD}_{HHMMSS}_{pid}_{random}
+     *
+     * @return A unique tenant code string
+     */
+    static std::string generate_test_tenant_code();
+
+    /**
+     * @brief Provisions a test tenant using the SQL provisioner function.
+     *
+     * Creates a new tenant with all required base data (permissions, roles,
+     * refdata) copied from the system tenant. The caller must have a valid
+     * database context with system tenant access.
+     *
+     * @param ctx The database context to use
+     * @param tenant_code The unique tenant code
+     * @return The UUID of the created tenant as a string
+     * @throws std::runtime_error if provisioning fails
+     */
+    static std::string provision_test_tenant(database::context& ctx,
+                                             const std::string& tenant_code);
+
+    /**
+     * @brief Deprovisions a test tenant using the SQL deprovisioner function.
+     *
+     * Soft-deletes the tenant and all its data. The caller must have system
+     * tenant context.
+     *
+     * @param ctx The database context to use
+     * @param tenant_id The UUID of the tenant to deprovision
+     */
+    static void deprovision_test_tenant(database::context& ctx,
+                                        const std::string& tenant_id);
+
+    /**
+     * @brief Sets the ORES_TEST_DB_TENANT_ID environment variable.
+     *
+     * This allows tests to retrieve the test tenant ID.
+     *
+     * @param tenant_id The tenant ID to set
+     */
+    static void set_test_tenant_id_env(const std::string& tenant_id);
+
+    /**
+     * @brief Gets the test tenant ID from environment variable.
+     *
+     * @return The tenant ID, or empty string if not set
+     */
+    static std::string get_test_tenant_id_env();
+
+    /**
+     * @brief System tenant ID constant.
+     */
+    static constexpr auto system_tenant_id =
+        "00000000-0000-0000-0000-000000000000";
 };
 
 }

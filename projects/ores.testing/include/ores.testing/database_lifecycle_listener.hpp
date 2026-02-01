@@ -27,11 +27,12 @@
 namespace ores::testing {
 
 /**
- * @brief Catch2 listener that manages database lifecycle for tests.
+ * @brief Catch2 listener that manages tenant lifecycle for tests.
  *
- * This listener creates a unique test database when tests start running and
- * cleans it up when tests complete. It only creates databases when tests are
- * actually executed, not during test discovery.
+ * This listener creates a unique test tenant when tests start running and
+ * deprovisions it when tests complete. Each test run gets its own isolated
+ * tenant within the shared database. The tenant includes copies of all
+ * required reference data from the system tenant.
  */
 class database_lifecycle_listener : public Catch::EventListenerBase {
 private:
@@ -48,17 +49,17 @@ public:
     using Catch::EventListenerBase::EventListenerBase;
 
     /**
-     * @brief Called when test run starts - creates the test database.
+     * @brief Called when test run starts - provisions a test tenant.
      */
     void testRunStarting(Catch::TestRunInfo const& testRunInfo) override;
 
     /**
-     * @brief Called when test run ends - drops the test database.
+     * @brief Called when test run ends - deprovisions the test tenant.
      */
     void testRunEnded(Catch::TestRunStats const& testRunStats) override;
 
 private:
-    std::string test_db_name_;
+    std::string test_tenant_id_;
 };
 
 }

@@ -62,12 +62,13 @@ public:
     void seed_rbac();
 
     /**
-     * @brief Sets the tenant context to system tenant.
+     * @brief Sets the tenant context for tests.
      *
-     * Sets app.current_tenant_id session variable to the system tenant UUID.
-     * This enables multi-tenancy operations in tests.
+     * Uses the test tenant ID from the environment variable if set
+     * (set by database_lifecycle_listener), otherwise falls back to the
+     * system tenant.
      */
-    void set_system_tenant_context();
+    void set_tenant_context();
 
     /**
      * @brief Gets the database context.

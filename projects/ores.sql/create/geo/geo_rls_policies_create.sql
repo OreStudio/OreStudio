@@ -24,10 +24,11 @@
 -- Geo data (IP-to-country mappings) is owned by the system tenant but readable
 -- by all tenants. This enables shared reference data while maintaining write
 -- control at the system level.
+-- The system tenant (tenant 0) can access all tenant data for administration.
 --
 -- Pattern:
 -- - SELECT: Own tenant OR system tenant data (shared read access)
--- - INSERT/UPDATE/DELETE: Only own tenant (system tenant for geo data)
+-- - INSERT/UPDATE/DELETE: Own tenant OR system tenant (for provisioning)
 
 -- -----------------------------------------------------------------------------
 -- IP to Country
@@ -38,9 +39,16 @@ create policy ores_geo_ip2country_tbl_read_policy on ores_geo_ip2country_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_geo_ip2country_tbl_modification_policy on ores_geo_ip2country_tbl
 for all
-using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);

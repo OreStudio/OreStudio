@@ -31,17 +31,23 @@ using ores::testing::test_database_manager;
 
 database_helper::database_helper()
     : context_(test_database_manager::make_context()) {
-    // Set tenant context to system tenant for tests
-    set_system_tenant_context();
+    // Set tenant context for tests (use test tenant if provisioned)
+    set_tenant_context();
 }
 
-void database_helper::set_system_tenant_context() {
-    BOOST_LOG_SEV(lg(), info) << "Setting system tenant context for tests";
+void database_helper::set_tenant_context() {
+    // Get the test tenant ID from environment (set by lifecycle listener)
+    auto tenant_id = test_database_manager::get_test_tenant_id_env();
+    if (tenant_id.empty()) {
+        // Fall back to system tenant if no test tenant is provisioned
+        tenant_id = test_database_manager::system_tenant_id;
+        BOOST_LOG_SEV(lg(), debug) << "No test tenant found, using system tenant";
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Using test tenant: " << tenant_id;
+    }
 
-    static constexpr auto system_tenant_id =
-        "00000000-0000-0000-0000-000000000000";
     const std::string set_tenant_sql =
-        std::string("SET app.current_tenant_id = '") + system_tenant_id + "'";
+        "SET app.current_tenant_id = '" + tenant_id + "'";
 
     const auto execute_set = [&](auto&& session) {
         return session->execute(set_tenant_sql);
@@ -55,7 +61,7 @@ void database_helper::set_system_tenant_context() {
         BOOST_LOG_SEV(lg(), error) << error_msg;
         throw std::runtime_error(error_msg);
     }
-    BOOST_LOG_SEV(lg(), info) << "Successfully set system tenant context";
+    BOOST_LOG_SEV(lg(), info) << "Successfully set tenant context";
 }
 
 void database_helper::truncate_table(const std::string& table_name) {

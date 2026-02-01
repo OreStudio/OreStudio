@@ -24,6 +24,7 @@
 -- These policies enforce per-tenant isolation for asset data.
 -- Each tenant can only see and modify their own images, tags, and image-tag
 -- associations.
+-- The system tenant (tenant 0) can access all tenant data for administration.
 
 -- -----------------------------------------------------------------------------
 -- Images
@@ -31,8 +32,14 @@
 alter table ores_assets_images_tbl enable row level security;
 
 create policy ores_assets_images_tbl_tenant_isolation_policy on ores_assets_images_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Tags
@@ -40,8 +47,14 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_assets_tags_tbl enable row level security;
 
 create policy ores_assets_tags_tbl_tenant_isolation_policy on ores_assets_tags_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);
 
 -- -----------------------------------------------------------------------------
 -- Image Tags (many-to-many)
@@ -49,5 +62,11 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 alter table ores_assets_image_tags_tbl enable row level security;
 
 create policy ores_assets_image_tags_tbl_tenant_isolation_policy on ores_assets_image_tags_tbl
-for all using (tenant_id = ores_iam_current_tenant_id_fn())
-with check (tenant_id = ores_iam_current_tenant_id_fn());
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_is_system_tenant_fn()
+);

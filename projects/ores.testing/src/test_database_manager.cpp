@@ -19,10 +19,13 @@
  */
 #include "ores.testing/test_database_manager.hpp"
 
+#include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <sstream>
 #include <stdexcept>
+#include <libpq-fe.h>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.platform/environment/environment.hpp"
 #include "ores.database/service/context_factory.hpp"
@@ -218,6 +221,182 @@ void test_database_manager::set_test_database_env(const std::string& db_name) {
     environment::set_value(variable, db_name);
 
     BOOST_LOG_SEV(lg(), info) << "Environment variable set successfully";
+}
+
+std::string test_database_manager::generate_test_tenant_code() {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
+    // Get current timestamp
+    const auto now = std::chrono::system_clock::now();
+    const auto time_t_now = std::chrono::system_clock::to_time_t(now);
+    std::tm tm_now{};
+#ifdef _WIN32
+    localtime_s(&tm_now, &time_t_now);
+#else
+    localtime_r(&time_t_now, &tm_now);
+#endif
+
+    // Use process ID for uniqueness across parallel processes
+    const auto pid = getpid();
+
+    // Add random suffix for additional uniqueness
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(1000, 9999);
+    const auto random_suffix = dis(gen);
+
+    std::ostringstream oss;
+    oss << "test_"
+        << std::put_time(&tm_now, "%Y%m%d_%H%M%S")
+        << "_" << pid << "_" << random_suffix;
+
+    const auto tenant_code = oss.str();
+    BOOST_LOG_SEV(lg(), info) << "Generated test tenant code: " << tenant_code;
+
+    return tenant_code;
+}
+
+std::string test_database_manager::provision_test_tenant(
+    database::context& ctx, const std::string& tenant_code) {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
+    BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code;
+
+    // First set system tenant context
+    const std::string set_context_sql =
+        std::string("SET app.current_tenant_id = '") + system_tenant_id + "'";
+
+    const auto execute_set_context = [&](auto&& session) {
+        return session->execute(set_context_sql);
+    };
+
+    auto ctx_result = sqlgen::session(ctx.connection_pool())
+        .and_then(execute_set_context);
+
+    if (!ctx_result) {
+        const auto error_msg = "Failed to set system tenant context: " +
+                               ctx_result.error().what();
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw std::runtime_error(error_msg);
+    }
+
+    // Call the provisioner function (we use SELECT but don't need the result here)
+    const std::string provision_sql =
+        "SELECT ores_iam_provision_tenant_fn("
+        "'organisation', "
+        "'" + tenant_code + "', "
+        "'Test Tenant " + tenant_code + "', "
+        "'" + tenant_code + ".localhost', "
+        "'Auto-provisioned test tenant')";
+
+    const auto execute_provision = [&](auto&& session) {
+        return session->execute(provision_sql);
+    };
+
+    auto prov_result = sqlgen::session(ctx.connection_pool())
+        .and_then(execute_provision);
+
+    if (!prov_result) {
+        const auto error_msg = "Failed to provision test tenant " + tenant_code +
+                               ": " + prov_result.error().what();
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw std::runtime_error(error_msg);
+    }
+
+    // Query for the tenant_id by code (since provisioner just created it)
+    const std::string query_tenant_sql =
+        "SELECT tenant_id::text FROM ores_iam_tenants_tbl "
+        "WHERE code = '" + tenant_code + "' "
+        "AND valid_to = '9999-12-31 23:59:59'::timestamptz";
+
+    // Use raw libpq connection to get the result
+    const auto& creds = ctx.credentials();
+    PGconn* pg_conn = PQconnectdb(creds.to_str().c_str());
+    if (PQstatus(pg_conn) != CONNECTION_OK) {
+        const auto error_msg = std::string("Failed to connect to database: ") +
+                               PQerrorMessage(pg_conn);
+        PQfinish(pg_conn);
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw std::runtime_error(error_msg);
+    }
+
+    PGresult* pg_result = PQexec(pg_conn, query_tenant_sql.c_str());
+
+    std::string tenant_id;
+    if (PQresultStatus(pg_result) == PGRES_TUPLES_OK && PQntuples(pg_result) > 0) {
+        tenant_id = PQgetvalue(pg_result, 0, 0);
+    }
+    PQclear(pg_result);
+    PQfinish(pg_conn);
+
+    if (tenant_id.empty()) {
+        const auto error_msg = "Failed to retrieve tenant_id for " + tenant_code;
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw std::runtime_error(error_msg);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully provisioned test tenant: "
+                              << tenant_code << " (id: " << tenant_id << ")";
+
+    return tenant_id;
+}
+
+void test_database_manager::deprovision_test_tenant(
+    database::context& ctx, const std::string& tenant_id) {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
+    BOOST_LOG_SEV(lg(), info) << "Deprovisioning test tenant: " << tenant_id;
+
+    // Set system tenant context
+    const std::string set_context_sql =
+        std::string("SET app.current_tenant_id = '") + system_tenant_id + "'";
+
+    const auto execute_set_context = [&](auto&& session) {
+        return session->execute(set_context_sql);
+    };
+
+    auto ctx_result = sqlgen::session(ctx.connection_pool())
+        .and_then(execute_set_context);
+
+    if (!ctx_result) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
+                                  << "deprovisioning: " << ctx_result.error().what();
+        // Don't throw - cleanup should be best-effort
+        return;
+    }
+
+    // Call deprovisioner
+    const std::string deprovision_sql =
+        "SELECT ores_iam_deprovision_tenant_fn('" + tenant_id + "'::uuid)";
+
+    const auto execute_deprovision = [&](auto&& session) {
+        return session->execute(deprovision_sql);
+    };
+
+    auto deprov_result = sqlgen::session(ctx.connection_pool())
+        .and_then(execute_deprovision);
+
+    if (!deprov_result) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to deprovision test tenant "
+                                  << tenant_id << ": " << deprov_result.error().what();
+        // Don't throw - cleanup should be best-effort
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deprovisioned test tenant: "
+                                  << tenant_id;
+    }
+}
+
+void test_database_manager::set_test_tenant_id_env(const std::string& tenant_id) {
+    const std::string variable = prefix + "TENANT_ID";
+    BOOST_LOG_SEV(lg(), info) << "Setting " << variable
+                              << " environment variable to: "
+                              << tenant_id;
+
+    environment::set_value(variable, tenant_id);
+}
+
+std::string test_database_manager::get_test_tenant_id_env() {
+    return environment::get_value_or_default(prefix + "TENANT_ID", "");
 }
 
 }

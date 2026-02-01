@@ -320,9 +320,15 @@ The session's working directory is set to ores.sql for easy script access."
 (defun ores-db/set-env-vars (host)
   "Export all ORES passwords for HOST to environment variables.
 Uses ORES_DB_<APP>_PASSWORD convention for service users to avoid
-conflicting with application CLI environment variable mappers."
+conflicting with application CLI environment variable mappers.
+Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
   (interactive (list (completing-read "Host: " ores-db/hosts nil t)))
   (let ((count 0))
+    ;; Set test database connection info
+    (setenv "ORES_TEST_DB_DATABASE" "ores_template")
+    (setenv "ORES_TEST_DB_HOST" host)
+    (setq count (+ count 2))
+
     (dolist (role ores-db/database-roles)
       (let ((pw (ores-db/database--get-credential role host :secret)))
         (when pw
@@ -344,7 +350,7 @@ conflicting with application CLI environment variable mappers."
            (t
             (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD")
                     pw))))))
-    (message "[ORES] Exported %d passwords for %s to environment." count host)))
+    (message "[ORES] Exported %d environment variables for %s." count host)))
 
 (defun ores-db/show-env-vars ()
   "Display all ORES_ environment variables in a buffer."
@@ -370,9 +376,14 @@ conflicting with application CLI environment variable mappers."
     (display-buffer buf)))
 
 (defun ores-db/unset-env-vars ()
-  "Unset all ORES password environment variables."
+  "Unset all ORES environment variables."
   (interactive)
   (let ((count 0))
+    ;; Unset test database connection info
+    (setenv "ORES_TEST_DB_DATABASE" nil)
+    (setenv "ORES_TEST_DB_HOST" nil)
+    (setq count (+ count 2))
+
     (dolist (role ores-db/database-roles)
       (cond
        ((string= role "postgres")
@@ -391,7 +402,7 @@ conflicting with application CLI environment variable mappers."
        (t
         (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD") nil)
         (setq count (1+ count)))))
-    (message "[ORES] Unset %d password environment variables." count)))
+    (message "[ORES] Unset %d environment variables." count)))
 
 ;;; ==========================================================================
 ;;; Environment Management

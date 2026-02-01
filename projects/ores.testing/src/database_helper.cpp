@@ -50,11 +50,11 @@ void database_helper::set_system_tenant_context() {
         .and_then(execute_set);
 
     if (!r) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to set tenant context: " << r.error().what();
-    } else {
-        BOOST_LOG_SEV(lg(), info) << "Successfully set system tenant context";
+        const auto error_msg = "Failed to set tenant context: " + r.error().what();
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw std::runtime_error(error_msg);
     }
+    BOOST_LOG_SEV(lg(), info) << "Successfully set system tenant context";
 }
 
 void database_helper::truncate_table(const std::string& table_name) {

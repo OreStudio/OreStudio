@@ -17,33 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 11:56], for Sunday, February 01, 2026.
-|      | <75>                |        |      |      |       |
-| Tags | Headline            | Time   |      |      |     % |
-|------+---------------------+--------+------+------+-------|
-|      | *Total time*        | *1:20* |      |      | 100.0 |
-|------+---------------------+--------+------+------+-------|
-|      | Stories             | 1:20   |      |      | 100.0 |
-|      | Active              |        | 1:20 |      | 100.0 |
-| code | Add tenancy support |        |      | 1:20 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-01 Sun 15:34], for Sunday, February 01, 2026.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *3:26* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 3:26   |      |      | 100.0 |
+|      | Active                       |        | 3:26 |      | 100.0 |
+| code | Add tenancy support          |        |      | 1:20 |  38.8 |
+| code | Use tenancy to isolate tests |        |      | 2:06 |  61.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 11:56]
+#+CAPTION: Clock summary at [2026-02-01 Sun 15:34]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *19:36* |       |       | 100.0 |
+|       | *Total time*                                | *21:42* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 19:36   |       |       | 100.0 |
-|       | Active                                      |         | 19:36 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |  12.2 |
-| code  | Address past review comments                |         |       |  1:14 |   6.3 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  51.4 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   7.0 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   3.1 |
-| code  | Add tenancy support                         |         |       |  3:55 |  20.0 |
+|       | Stories                                     | 21:42   |       |       | 100.0 |
+|       | Active                                      |         | 21:42 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |  11.1 |
+| code  | Address past review comments                |         |       |  1:14 |   5.7 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  46.5 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   6.3 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   2.8 |
+| code  | Add tenancy support                         |         |       |  3:55 |  18.0 |
+| code  | Use tenancy to isolate tests                |         |       |  2:06 |   9.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -574,7 +576,7 @@ Highlights:
 
 *** STARTED Use tenancy to isolate tests                               :code:
     :LOGBOOK:
-    CLOCK: [2026-02-01 Sun 14:28]
+    CLOCK: [2026-02-01 Sun 14:28]--[2026-02-01 Sun 15:33] =>  1:05
     CLOCK: [2026-02-01 Sun 12:27]--[2026-02-01 Sun 13:28] =>  1:01
     :END:
 

@@ -97,7 +97,7 @@ alter role ores_readonly_user set search_path to production, metadata, public;
 -- Populate foundation layer (essential lookup and configuration data)
 -- This is normally included in the template, but since we're creating
 -- directly without a template, we need to include it here.
-\ir ./populate/foundation/populate_foundation.sql
+\ir ./populate/foundation/foundation_populate.sql
 
 -- Populate governance and catalogues layers (dimensions, methodologies,
 -- catalogs, datasets, dataset bundles, etc.)
@@ -106,18 +106,22 @@ alter role ores_readonly_user set search_path to production, metadata, public;
 -- Grant table permissions to appropriate roles
 -- Note: TRUNCATE is included for test database cleanup
 -- Owner role gets full access
+grant select, insert, update, delete, truncate on all tables in schema public to ores_owner;
 grant select, insert, update, delete, truncate on all tables in schema metadata to ores_owner;
 grant select, insert, update, delete, truncate on all tables in schema production to ores_owner;
 
 -- RW role gets standard DML access
+grant select, insert, update, delete, truncate on all tables in schema public to ores_rw;
 grant select, insert, update, delete, truncate on all tables in schema metadata to ores_rw;
 grant select, insert, update, delete, truncate on all tables in schema production to ores_rw;
 
 -- RO role gets read-only access
+grant select on all tables in schema public to ores_ro;
 grant select on all tables in schema metadata to ores_ro;
 grant select on all tables in schema production to ores_ro;
 
 -- Grant sequence permissions to appropriate roles
+grant usage, select on all sequences in schema public to ores_owner, ores_rw;
 grant usage, select on all sequences in schema metadata to ores_owner, ores_rw;
 grant usage, select on all sequences in schema production to ores_owner, ores_rw;
 

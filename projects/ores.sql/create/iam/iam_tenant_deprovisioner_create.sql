@@ -34,6 +34,10 @@
 -- The system tenant cannot be deprovisioned.
 -- Caller must have system tenant context set.
 --
+-- Uses dynamic SQL to automatically discover all tenant-aware tables:
+--   - Tables with tenant_id + valid_to: soft-delete (UPDATE valid_to)
+--   - Tables with tenant_id only: hard-delete (DELETE)
+--
 -- Parameters:
 --   p_tenant_id: The tenant ID to deprovision
 --
@@ -43,7 +47,11 @@ create or replace function ores_iam_deprovision_tenant_fn(
 declare
     v_system_tenant_id uuid;
     v_tenant_code text;
-    v_deleted_count integer;
+    v_table_name text;
+    v_affected_count integer;
+    v_total_soft_deleted integer := 0;
+    v_total_hard_deleted integer := 0;
+    v_sql text;
 begin
     v_system_tenant_id := ores_iam_system_tenant_id_fn();
 
@@ -72,328 +80,102 @@ begin
     raise notice 'Deprovisioning tenant: % (id: %)', v_tenant_code, p_tenant_id;
 
     -- =========================================================================
-    -- Soft-delete all tenant data
-    -- Order matters for foreign key relationships (delete children first)
+    -- Handle special cases first
     -- =========================================================================
 
-    -- IAM: Sessions (no FK constraints, can be deleted first)
+    -- Sessions: end active sessions (uses end_time, not valid_to)
     update ores_iam_sessions_tbl
     set end_time = to_char(current_timestamp, 'YYYY-MM-DD HH24:MI:SS.US')
     where tenant_id = p_tenant_id
     and end_time = '';
 
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Ended % active sessions', v_deleted_count;
+    get diagnostics v_affected_count = row_count;
+    if v_affected_count > 0 then
+        raise notice 'Ended % active sessions', v_affected_count;
     end if;
 
-    -- IAM: Login info (delete, no temporal)
+    -- Login info: hard delete (non-temporal table)
     delete from ores_iam_login_info_tbl where tenant_id = p_tenant_id;
 
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Deleted % login info records', v_deleted_count;
-    end if;
-
-    -- IAM: Account roles (FK to accounts and roles)
-    update ores_iam_account_roles_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Soft-deleted % account-role assignments', v_deleted_count;
-    end if;
-
-    -- IAM: Role permissions (FK to roles and permissions)
-    update ores_iam_role_permissions_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Soft-deleted % role-permission assignments', v_deleted_count;
-    end if;
-
-    -- IAM: Accounts
-    update ores_iam_accounts_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Soft-deleted % accounts', v_deleted_count;
-    end if;
-
-    -- IAM: Roles
-    update ores_iam_roles_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Soft-deleted % roles', v_deleted_count;
-    end if;
-
-    -- IAM: Permissions
-    update ores_iam_permissions_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_deleted_count = row_count;
-    if v_deleted_count > 0 then
-        raise notice 'Soft-deleted % permissions', v_deleted_count;
+    get diagnostics v_affected_count = row_count;
+    if v_affected_count > 0 then
+        raise notice 'Deleted % login info records', v_affected_count;
     end if;
 
     -- =========================================================================
-    -- Soft-delete refdata
+    -- Dynamically soft-delete all temporal tables with tenant_id + valid_to
     -- =========================================================================
+    for v_table_name in
+        select distinct c1.table_name
+        from information_schema.columns c1
+        join information_schema.columns c2
+            on c1.table_schema = c2.table_schema
+            and c1.table_name = c2.table_name
+        where c1.table_schema = 'public'
+        and c1.column_name = 'tenant_id'
+        and c2.column_name = 'valid_to'
+        and c1.table_name like 'ores_%_tbl'
+        -- Exclude tables handled specially
+        and c1.table_name not in (
+            'ores_iam_tenants_tbl',      -- handled at the end
+            'ores_iam_sessions_tbl',     -- uses end_time, not valid_to
+            'ores_iam_login_info_tbl'    -- non-temporal, handled above
+        )
+        order by c1.table_name
+    loop
+        v_sql := format(
+            'UPDATE %I SET valid_to = current_timestamp ' ||
+            'WHERE tenant_id = $1 AND valid_to = ores_utility_infinity_timestamp_fn()',
+            v_table_name
+        );
 
-    update ores_refdata_currencies_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+        execute v_sql using p_tenant_id;
+        get diagnostics v_affected_count = row_count;
 
-    update ores_refdata_countries_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+        if v_affected_count > 0 then
+            raise notice 'Soft-deleted % rows from %', v_affected_count, v_table_name;
+            v_total_soft_deleted := v_total_soft_deleted + v_affected_count;
+        end if;
+    end loop;
 
-    update ores_refdata_account_types_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_asset_classes_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_asset_measures_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_benchmark_rates_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_business_centres_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_business_processes_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_cashflow_types_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_entity_classifications_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_local_jurisdictions_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_party_relationships_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_party_roles_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_person_roles_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_regulatory_corporate_sectors_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_reporting_regimes_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_refdata_supervisory_bodies_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    raise notice 'Soft-deleted all refdata for tenant';
+    raise notice 'Total soft-deleted: % rows', v_total_soft_deleted;
 
     -- =========================================================================
-    -- Soft-delete other tenant data
+    -- Dynamically hard-delete all non-temporal tables with tenant_id only
     -- =========================================================================
+    for v_table_name in
+        select distinct c.table_name
+        from information_schema.columns c
+        where c.table_schema = 'public'
+        and c.column_name = 'tenant_id'
+        and c.table_name like 'ores_%_tbl'
+        -- Only tables without valid_to column
+        and not exists (
+            select 1 from information_schema.columns c2
+            where c2.table_schema = c.table_schema
+            and c2.table_name = c.table_name
+            and c2.column_name = 'valid_to'
+        )
+        -- Exclude tables handled specially
+        and c.table_name not in (
+            'ores_iam_tenants_tbl',
+            'ores_iam_sessions_tbl',
+            'ores_iam_login_info_tbl'
+        )
+        order by c.table_name
+    loop
+        v_sql := format('DELETE FROM %I WHERE tenant_id = $1', v_table_name);
 
-    -- Assets: Image tags (FK to images and tags)
-    update ores_assets_image_tags_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+        execute v_sql using p_tenant_id;
+        get diagnostics v_affected_count = row_count;
 
-    -- Assets: Tags
-    update ores_assets_tags_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+        if v_affected_count > 0 then
+            raise notice 'Hard-deleted % rows from %', v_affected_count, v_table_name;
+            v_total_hard_deleted := v_total_hard_deleted + v_affected_count;
+        end if;
+    end loop;
 
-    -- Assets: Images
-    update ores_assets_images_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- Variability: Feature flags
-    update ores_variability_feature_flags_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- =========================================================================
-    -- Soft-delete DQ metadata tables (temporal)
-    -- Order: dependencies first, then parents
-    -- =========================================================================
-
-    -- DQ: Dataset bundle members (FK to bundles and datasets)
-    update ores_dq_dataset_bundle_members_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Dataset bundles
-    update ores_dq_dataset_bundles_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Dataset dependencies (FK to datasets)
-    update ores_dq_dataset_dependencies_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Datasets (FK to catalogs, methodologies, subject areas)
-    update ores_dq_datasets_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Coding schemes (FK to authority types, subject areas)
-    update ores_dq_coding_schemes_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Subject areas (FK to data domains)
-    update ores_dq_subject_areas_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Data domains
-    update ores_dq_data_domains_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Methodologies
-    update ores_dq_methodologies_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Catalogs
-    update ores_dq_catalogs_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Coding scheme authority types
-    update ores_dq_coding_scheme_authority_types_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Change reasons (FK to categories)
-    update ores_dq_change_reasons_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Change reason categories
-    update ores_dq_change_reason_categories_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- DQ: Dimensions
-    update ores_dq_origin_dimensions_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_dq_nature_dimensions_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    update ores_dq_treatment_dimensions_tbl
-    set valid_to = current_timestamp
-    where tenant_id = p_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
-
-    raise notice 'Soft-deleted all DQ metadata for tenant';
-
-    -- =========================================================================
-    -- Delete DQ artefact tables (non-temporal staging data)
-    -- These are staging tables that don't use soft-delete
-    -- =========================================================================
-
-    delete from ores_dq_currencies_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_countries_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_account_types_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_asset_classes_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_asset_measures_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_benchmark_rates_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_business_centres_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_business_processes_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_cashflow_types_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_entity_classifications_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_local_jurisdictions_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_party_relationships_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_party_roles_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_person_roles_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_regulatory_corporate_sectors_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_reporting_regimes_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_supervisory_bodies_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_coding_schemes_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_images_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_tags_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_image_tags_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_ip2country_artefact_tbl where tenant_id = p_tenant_id;
-    delete from ores_dq_artefact_types_tbl where tenant_id = p_tenant_id;
-
-    raise notice 'Deleted all DQ artefact data for tenant';
+    raise notice 'Total hard-deleted: % rows', v_total_hard_deleted;
 
     -- =========================================================================
     -- Finally, terminate the tenant itself

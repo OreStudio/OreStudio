@@ -43,30 +43,36 @@ $$ language plpgsql stable;
 
 -- Validate that a tenant_id exists and is active
 -- Returns the tenant_id if valid, raises exception otherwise
+-- If p_tenant_id is NULL, uses the current session tenant_id
 create or replace function ores_iam_validate_tenant_fn(
     p_tenant_id uuid
 ) returns uuid as $$
+declare
+    v_tenant_id uuid;
 begin
-    if p_tenant_id is null then
-        raise exception 'tenant_id cannot be null' using errcode = '23502';
+    -- Use provided tenant_id or fall back to session tenant
+    v_tenant_id := coalesce(p_tenant_id, ores_iam_current_tenant_id_fn());
+
+    if v_tenant_id is null then
+        raise exception 'tenant_id cannot be null and no session tenant set. Set app.current_tenant_id session variable.' using errcode = '23502';
     end if;
 
     -- Allow during initial bootstrap when tenants table might be empty
     if not exists (select 1 from ores_iam_tenants_tbl limit 1) then
-        return p_tenant_id;
+        return v_tenant_id;
     end if;
 
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id = v_tenant_id
         and status = 'active'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid or inactive tenant_id: %. Tenant must exist and be active.',
-            p_tenant_id using errcode = '23503';
+            v_tenant_id using errcode = '23503';
     end if;
 
-    return p_tenant_id;
+    return v_tenant_id;
 end;
 $$ language plpgsql;
 

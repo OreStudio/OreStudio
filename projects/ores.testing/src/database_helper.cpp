@@ -30,7 +30,32 @@ using namespace ores::logging;
 using ores::testing::test_database_manager;
 
 database_helper::database_helper()
-    : context_(test_database_manager::make_context()) {}
+    : context_(test_database_manager::make_context()) {
+    // Set tenant context to system tenant for tests
+    set_system_tenant_context();
+}
+
+void database_helper::set_system_tenant_context() {
+    BOOST_LOG_SEV(lg(), info) << "Setting system tenant context for tests";
+
+    // System tenant ID: 00000000-0000-0000-0000-000000000000
+    const std::string set_tenant_sql =
+        "SET app.current_tenant_id = '00000000-0000-0000-0000-000000000000'";
+
+    const auto execute_set = [&](auto&& session) {
+        return session->execute(set_tenant_sql);
+    };
+
+    const auto r = sqlgen::session(context_.connection_pool())
+        .and_then(execute_set);
+
+    if (!r) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to set tenant context: " << r.error().what();
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Successfully set system tenant context";
+    }
+}
 
 void database_helper::truncate_table(const std::string& table_name) {
     BOOST_LOG_SEV(lg(), info) << "Truncating table: " << table_name;

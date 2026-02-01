@@ -118,3 +118,19 @@ begin
         raise notice 'Note: Manual cleanup of old session data will be required';
     end if;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Trigger: Set tenant_id from session variable if not provided
+-- -----------------------------------------------------------------------------
+create or replace function ores_iam_sessions_before_insert_fn()
+returns trigger as $$
+begin
+    -- Set tenant_id from session variable if not provided
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    return new;
+end;
+$$ language plpgsql;
+
+create trigger ores_iam_sessions_before_insert_trigger
+before insert on ores_iam_sessions_tbl
+for each row execute function ores_iam_sessions_before_insert_fn();

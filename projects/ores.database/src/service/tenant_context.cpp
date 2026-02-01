@@ -20,7 +20,6 @@
 #include "ores.database/service/tenant_context.hpp"
 
 #include <stdexcept>
-#include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 
@@ -47,14 +46,13 @@ bool tenant_context::is_uuid(const std::string& str) {
 
 std::string tenant_context::lookup_by_code(context& ctx, const std::string& code) {
     using namespace ores::logging;
-    using ores::database::repository::execute_raw_string_query;
+    using ores::database::repository::execute_parameterized_string_query;
 
     BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by code: " << code;
 
-    const std::string lookup_sql =
-        "SELECT ores_iam_tenant_by_code_fn('" + code + "')::text";
-
-    const auto results = execute_raw_string_query(ctx, lookup_sql,
+    const auto results = execute_parameterized_string_query(ctx,
+        "SELECT ores_iam_tenant_by_code_fn($1)::text",
+        {code},
         lg(), "Looking up tenant by code");
 
     if (results.empty()) {
@@ -68,6 +66,7 @@ std::string tenant_context::lookup_by_code(context& ctx, const std::string& code
 
 void tenant_context::set(context& ctx, const std::string& tenant) {
     using namespace ores::logging;
+    using ores::database::repository::execute_parameterized_command;
 
     BOOST_LOG_SEV(lg(), debug) << "Setting tenant context: " << tenant;
 
@@ -80,21 +79,19 @@ void tenant_context::set(context& ctx, const std::string& tenant) {
         tenant_id = lookup_by_code(ctx, tenant);
     }
 
-    // Set the tenant context on the connection pool
-    const std::string set_context_sql =
-        "SET app.current_tenant_id = '" + tenant_id + "'";
-
-    const auto execute_set = [&](auto&& session) {
-        return session->execute(set_context_sql);
-    };
-
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(execute_set);
-
-    if (!r) {
+    // Validate tenant_id is a proper UUID format to prevent injection
+    // (is_uuid check ensures 36 chars with hyphens at correct positions)
+    if (!is_uuid(tenant_id)) {
         throw std::runtime_error(
-            "Failed to set tenant context: " + r.error().what());
+            "Invalid tenant ID format (must be UUID): " + tenant_id);
     }
+
+    // Use set_config function which supports parameterized queries
+    // This is safer than SET command which doesn't support parameters
+    execute_parameterized_command(ctx,
+        "SELECT set_config('app.current_tenant_id', $1, false)",
+        {tenant_id},
+        lg(), "Setting tenant context");
 
     BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id;
 }

@@ -250,4 +250,126 @@ void execute_raw_command(context ctx, const std::string& sql,
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
+std::vector<std::string> execute_parameterized_string_query(context ctx,
+    const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc) {
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
+                             << " with " << params.size() << " parameters";
+
+    std::vector<std::string> result;
+
+    // Create direct libpq connection using credentials from context
+    const auto conn_str = build_connection_string(ctx.credentials());
+    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+
+    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
+        throw std::runtime_error("Database connection failed: " + err_msg);
+    }
+
+    // Build parameter arrays for PQexecParams
+    std::vector<const char*> param_values;
+    param_values.reserve(params.size());
+    for (const auto& p : params) {
+        param_values.push_back(p.c_str());
+    }
+
+    // Execute the parameterized query
+    pg_result_guard result_guard(PQexecParams(
+        conn_guard.conn,
+        sql.c_str(),
+        static_cast<int>(params.size()),
+        nullptr,  // Let the server infer parameter types
+        param_values.data(),
+        nullptr,  // Parameter lengths (null-terminated strings)
+        nullptr,  // Parameter formats (text)
+        0         // Result format (text)
+    ));
+
+    if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
+        throw std::runtime_error("Query execution failed: " + err_msg);
+    }
+
+    // Extract results
+    const int num_rows = PQntuples(result_guard.result);
+    result.reserve(num_rows);
+
+    for (int i = 0; i < num_rows; ++i) {
+        if (!PQgetisnull(result_guard.result, i, 0)) {
+            result.push_back(PQgetvalue(result_guard.result, i, 0));
+        }
+    }
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << result.size();
+    return result;
+}
+
+void execute_parameterized_command(context ctx, const std::string& sql,
+    const std::vector<std::string>& params, logging::logger_t& lg,
+    const std::string& operation_desc) {
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
+                             << " with " << params.size() << " parameters";
+
+    // Create direct libpq connection using credentials from context
+    const auto conn_str = build_connection_string(ctx.credentials());
+    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+
+    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
+        throw std::runtime_error("Database connection failed: " + err_msg);
+    }
+
+    // Build parameter arrays for PQexecParams
+    std::vector<const char*> param_values;
+    param_values.reserve(params.size());
+    for (const auto& p : params) {
+        param_values.push_back(p.c_str());
+    }
+
+    // Begin transaction
+    pg_result_guard begin_guard(PQexec(conn_guard.conn, "BEGIN"));
+    if (PQresultStatus(begin_guard.result) != PGRES_COMMAND_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "BEGIN failed: " << err_msg;
+        throw std::runtime_error("Transaction begin failed: " + err_msg);
+    }
+
+    // Execute the parameterized command
+    pg_result_guard result_guard(PQexecParams(
+        conn_guard.conn,
+        sql.c_str(),
+        static_cast<int>(params.size()),
+        nullptr,  // Let the server infer parameter types
+        param_values.data(),
+        nullptr,  // Parameter lengths (null-terminated strings)
+        nullptr,  // Parameter formats (text)
+        0         // Result format (text)
+    ));
+
+    if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
+        PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
+        // Rollback on error
+        PQexec(conn_guard.conn, "ROLLBACK");
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
+        throw std::runtime_error("Command execution failed: " + err_msg);
+    }
+
+    // Commit transaction
+    pg_result_guard commit_guard(PQexec(conn_guard.conn, "COMMIT"));
+    if (PQresultStatus(commit_guard.result) != PGRES_COMMAND_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "COMMIT failed: " << err_msg;
+        throw std::runtime_error("Transaction commit failed: " + err_msg);
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
+}
+
 }

@@ -241,6 +241,52 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
 void execute_raw_command(context ctx, const std::string& sql,
     logging::logger_t& lg, const std::string& operation_desc);
 
+/**
+ * @brief Executes a parameterized SQL query that returns a single column of strings.
+ *
+ * This helper uses PQexecParams for proper SQL parameter binding, preventing
+ * SQL injection. Parameters are passed separately from the query template.
+ *
+ * @param ctx The repository context
+ * @param sql The SQL query with $1, $2, etc. placeholders
+ * @param params Vector of parameter values
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of strings from the first column of the result
+ *
+ * @example
+ * auto results = execute_parameterized_string_query(ctx_,
+ *     "SELECT ores_iam_tenant_by_code_fn($1)::text",
+ *     {"system"},
+ *     lg(), "Looking up tenant by code");
+ */
+std::vector<std::string> execute_parameterized_string_query(context ctx,
+    const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc);
+
+/**
+ * @brief Executes a parameterized SQL command that doesn't return results.
+ *
+ * This helper uses PQexecParams for proper SQL parameter binding, preventing
+ * SQL injection. Parameters are passed separately from the query template.
+ * Uses a transaction for atomicity.
+ *
+ * @param ctx The repository context
+ * @param sql The SQL command with $1, $2, etc. placeholders
+ * @param params Vector of parameter values
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ *
+ * @example
+ * execute_parameterized_command(ctx_,
+ *     "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)",
+ *     {"organisation", "tenant_code", "tenant_name", "domain", "description"},
+ *     lg(), "Provisioning tenant");
+ */
+void execute_parameterized_command(context ctx, const std::string& sql,
+    const std::vector<std::string>& params, logging::logger_t& lg,
+    const std::string& operation_desc);
+
 }
 
 #endif

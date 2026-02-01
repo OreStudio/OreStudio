@@ -270,6 +270,132 @@ begin
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- =========================================================================
+    -- Soft-delete DQ metadata tables (temporal)
+    -- Order: dependencies first, then parents
+    -- =========================================================================
+
+    -- DQ: Dataset bundle members (FK to bundles and datasets)
+    update ores_dq_dataset_bundle_members_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Dataset bundles
+    update ores_dq_dataset_bundles_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Dataset dependencies (FK to datasets)
+    update ores_dq_dataset_dependencies_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Datasets (FK to catalogs, methodologies, subject areas)
+    update ores_dq_datasets_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Coding schemes (FK to authority types, subject areas)
+    update ores_dq_coding_schemes_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Subject areas (FK to data domains)
+    update ores_dq_subject_areas_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Data domains
+    update ores_dq_data_domains_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Methodologies
+    update ores_dq_methodologies_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Catalogs
+    update ores_dq_catalogs_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Coding scheme authority types
+    update ores_dq_coding_scheme_authority_types_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Change reasons (FK to categories)
+    update ores_dq_change_reasons_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Change reason categories
+    update ores_dq_change_reason_categories_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- DQ: Dimensions
+    update ores_dq_origin_dimensions_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    update ores_dq_nature_dimensions_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    update ores_dq_treatment_dimensions_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    raise notice 'Soft-deleted all DQ metadata for tenant';
+
+    -- =========================================================================
+    -- Delete DQ artefact tables (non-temporal staging data)
+    -- These are staging tables that don't use soft-delete
+    -- =========================================================================
+
+    delete from ores_dq_currencies_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_countries_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_account_types_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_asset_classes_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_asset_measures_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_benchmark_rates_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_business_centres_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_business_processes_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_cashflow_types_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_entity_classifications_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_local_jurisdictions_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_party_relationships_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_party_roles_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_person_roles_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_regulatory_corporate_sectors_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_reporting_regimes_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_supervisory_bodies_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_coding_schemes_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_images_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_tags_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_image_tags_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_ip2country_artefact_tbl where tenant_id = p_tenant_id;
+    delete from ores_dq_artefact_types_tbl where tenant_id = p_tenant_id;
+
+    raise notice 'Deleted all DQ artefact data for tenant';
+
+    -- =========================================================================
     -- Finally, terminate the tenant itself
     -- =========================================================================
     update ores_iam_tenants_tbl

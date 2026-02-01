@@ -20,6 +20,7 @@
 #include "ores.database/service/tenant_context.hpp"
 
 #include <stdexcept>
+#include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 
@@ -66,7 +67,6 @@ std::string tenant_context::lookup_by_code(context& ctx, const std::string& code
 
 void tenant_context::set(context& ctx, const std::string& tenant) {
     using namespace ores::logging;
-    using ores::database::repository::execute_parameterized_command;
 
     BOOST_LOG_SEV(lg(), debug) << "Setting tenant context: " << tenant;
 
@@ -86,12 +86,22 @@ void tenant_context::set(context& ctx, const std::string& tenant) {
             "Invalid tenant ID format (must be UUID): " + tenant_id);
     }
 
-    // Use set_config function which supports parameterized queries
-    // This is safer than SET command which doesn't support parameters
-    execute_parameterized_command(ctx,
-        "SELECT set_config('app.current_tenant_id', $1, false)",
-        {tenant_id},
-        lg(), "Setting tenant context");
+    // Use connection pool to set tenant context on pool connections.
+    // UUID validation above ensures this is safe from SQL injection.
+    const std::string sql = "SELECT set_config('app.current_tenant_id', '" +
+        tenant_id + "', false)";
+
+    const auto execute_stmt = [&sql](auto&& session) {
+        return session->execute(sql);
+    };
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(execute_stmt);
+    if (!r) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to set tenant context: "
+                                   << r.error().what();
+        throw std::runtime_error("Failed to set tenant context: " +
+            std::string(r.error().what()));
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id;
 }

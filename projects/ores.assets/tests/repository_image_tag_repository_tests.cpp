@@ -19,6 +19,7 @@
  */
 #include "ores.assets/repository/image_tag_repository.hpp"
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
@@ -78,8 +79,15 @@ TEST_CASE("read_latest_image_tags", tags) {
     auto read_image_tags = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
-    CHECK(!read_image_tags.empty());
-    CHECK(read_image_tags.size() == written_image_tags.size());
+    // Verify all written image-tags can be found (other tests may have added more)
+    CHECK(read_image_tags.size() >= written_image_tags.size());
+    for (const auto& written : written_image_tags) {
+        auto it = std::ranges::find_if(read_image_tags,
+            [&written](const image_tag& it) {
+                return it.image_id == written.image_id && it.tag_id == written.tag_id;
+            });
+        CHECK(it != read_image_tags.end());
+    }
 }
 
 TEST_CASE("read_latest_image_tags_by_image", tags) {

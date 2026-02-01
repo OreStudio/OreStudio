@@ -78,8 +78,13 @@ TEST_CASE("read_latest_currencies", tags) {
     auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(!read_currencies.empty());
-    CHECK(read_currencies.size() == written_currencies.size());
+    // Verify all written currencies can be found (other tests may have added more)
+    CHECK(read_currencies.size() >= written_currencies.size());
+    for (const auto& written : written_currencies) {
+        auto it = std::ranges::find_if(read_currencies,
+            [&written](const currency& c) { return c.iso_code == written.iso_code; });
+        CHECK(it != read_currencies.end());
+    }
 }
 
 TEST_CASE("read_latest_currency_by_iso_code", tags) {
@@ -192,31 +197,25 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     currency_repository repo;
     repo.write(h.context(), currencies);
 
-    std::vector<std::pair<std::string, std::string>> currency_data = {
-        {"EUR", "€"},
-        {"GBP", "£"},
-        {"JPY", "¥"},
-        {"INR", "₹"},
-        {"BTC", "₿"},
-        {"RUB", "₽"}
-    };
-    BOOST_LOG_SEV(lg, debug) << "Currency data: " << currency_data;
+    // Expected symbols from the generated currencies
+    std::vector<std::string> expected_symbols = {"$", "€", "£", "¥", "₹", "₿", "₽"};
 
-    // Read back and verify symbols - database may have currencies from previous runs
+    // Read back and verify
     auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
+    // Verify all written currencies can be found (other tests may have added more)
     CHECK(read_currencies.size() >= currencies.size());
 
-    for (const auto& [iso, expected_symbol] : currency_data) {
-        BOOST_LOG_SEV(lg, debug) << "Checking: " << iso
-                                 << " = " << expected_symbol;
+    // Verify each written currency can be found by its ISO code
+    for (const auto& written : currencies) {
         auto it = std::ranges::find_if(read_currencies,
-            [&iso](const currency& c) { return c.iso_code == iso; });
+            [&written](const currency& c) { return c.iso_code == written.iso_code; });
 
         REQUIRE(it != read_currencies.end());
-        CHECK(it->symbol == expected_symbol);
-        BOOST_LOG_SEV(lg, debug) << "Verified: " << iso << " = " << it->symbol;
+        CHECK(it->symbol == written.symbol);
+        BOOST_LOG_SEV(lg, debug) << "Verified: " << written.iso_code
+                                 << " = " << it->symbol;
     }
 }
 
@@ -225,22 +224,24 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
 
     scoped_database_helper h;
     const auto currencies = generate_synthetic_unicode_currencies();
-    const auto& jpy = *
-        std::ranges::find_if(currencies, [](const auto& c) {
-            return c.iso_code == "JPY";
+    // Find the currency with no fractions (Yen-like)
+    const auto it = std::ranges::find_if(currencies, [](const auto& c) {
+        return c.fractions_per_unit == 0;
     });
+    REQUIRE(it != currencies.end());
+    const auto& no_fractions_currency = *it;
 
-    BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << jpy;
+    BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << no_fractions_currency;
 
     currency_repository repo;
-    repo.write(h.context(), {jpy});
+    repo.write(h.context(), {no_fractions_currency});
 
     // Read back and verify
-    auto read_currencies = repo.read_latest(h.context(), "JPY");
+    auto read_currencies = repo.read_latest(h.context(), no_fractions_currency.iso_code);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     REQUIRE(read_currencies.size() == 1);
-    CHECK(read_currencies[0].iso_code == "JPY");
+    CHECK(read_currencies[0].iso_code == no_fractions_currency.iso_code);
     CHECK(read_currencies[0].fractions_per_unit == 0);
     CHECK(read_currencies[0].rounding_precision == 0);
 }

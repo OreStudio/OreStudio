@@ -19,6 +19,7 @@
  */
 #include "ores.assets/repository/tag_repository.hpp"
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -77,8 +78,13 @@ TEST_CASE("read_latest_tags", tags) {
     auto read_tags = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read tags: " << read_tags;
 
-    CHECK(!read_tags.empty());
-    CHECK(read_tags.size() == written_tags.size());
+    // Verify all written tags can be found (other tests may have added more)
+    CHECK(read_tags.size() >= written_tags.size());
+    for (const auto& written : written_tags) {
+        auto it = std::ranges::find_if(read_tags,
+            [&written](const tag& t) { return t.tag_id == written.tag_id; });
+        CHECK(it != read_tags.end());
+    }
 }
 
 TEST_CASE("read_latest_tag_by_id", tags) {

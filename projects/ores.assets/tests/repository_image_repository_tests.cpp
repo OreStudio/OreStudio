@@ -19,6 +19,7 @@
  */
 #include "ores.assets/repository/image_repository.hpp"
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
@@ -78,8 +79,13 @@ TEST_CASE("read_latest_images", tags) {
     auto read_images = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
-    CHECK(!read_images.empty());
-    CHECK(read_images.size() == written_images.size());
+    // Verify all written images can be found (other tests may have added more)
+    CHECK(read_images.size() >= written_images.size());
+    for (const auto& written : written_images) {
+        auto it = std::ranges::find_if(read_images,
+            [&written](const image& i) { return i.image_id == written.image_id; });
+        CHECK(it != read_images.end());
+    }
 }
 
 TEST_CASE("read_latest_image_by_id", tags) {

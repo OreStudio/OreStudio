@@ -17,35 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 15:34], for Sunday, February 01, 2026.
+#+CAPTION: Clock summary at [2026-02-01 Sun 16:57], for Sunday, February 01, 2026.
 |      | <75>                         |        |      |      |       |
 | Tags | Headline                     | Time   |      |      |     % |
 |------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *3:26* |      |      | 100.0 |
+|      | *Total time*                 | *4:43* |      |      | 100.0 |
 |------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 3:26   |      |      | 100.0 |
-|      | Active                       |        | 3:26 |      | 100.0 |
-| code | Add tenancy support          |        |      | 1:20 |  38.8 |
-| code | Use tenancy to isolate tests |        |      | 2:06 |  61.2 |
+|      | Stories                      | 4:43   |      |      | 100.0 |
+|      | Active                       |        | 4:43 |      | 100.0 |
+| code | Add tenancy support          |        |      | 1:20 |  28.3 |
+| code | Use tenancy to isolate tests |        |      | 3:23 |  71.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 15:34]
+#+CAPTION: Clock summary at [2026-02-01 Sun 16:57]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *21:42* |       |       | 100.0 |
+|       | *Total time*                                | *22:59* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 21:42   |       |       | 100.0 |
-|       | Active                                      |         | 21:42 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |  11.1 |
-| code  | Address past review comments                |         |       |  1:14 |   5.7 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  46.5 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   6.3 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   2.8 |
-| code  | Add tenancy support                         |         |       |  3:55 |  18.0 |
-| code  | Use tenancy to isolate tests                |         |       |  2:06 |   9.7 |
+|       | Stories                                     | 22:59   |       |       | 100.0 |
+|       | Active                                      |         | 22:59 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |  10.4 |
+| code  | Address past review comments                |         |       |  1:14 |   5.4 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  43.9 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   5.9 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   2.6 |
+| code  | Add tenancy support                         |         |       |  3:55 |  17.0 |
+| code  | Use tenancy to isolate tests                |         |       |  3:23 |  14.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -576,6 +576,7 @@ Highlights:
 
 *** STARTED Use tenancy to isolate tests                               :code:
     :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 15:40]--[2026-02-01 Sun 16:57] =>  1:17
     CLOCK: [2026-02-01 Sun 14:28]--[2026-02-01 Sun 15:33] =>  1:05
     CLOCK: [2026-02-01 Sun 12:27]--[2026-02-01 Sun 13:28] =>  1:01
     :END:
@@ -593,6 +594,52 @@ Notes:
 
 - we need to ensure we destroy the tenant for a test suite to make sure the test
   starts with a clean slate.
+
+**** Use tenancy in tests
+
+#+begin_quote
+This pull request introduces comprehensive multi-tenancy support across the
+application's database and testing infrastructure. It establishes a centralized
+C++ service for managing tenant context, integrates tenant-aware logic into the
+CLI, and significantly enhances test isolation by provisioning unique tenants
+for each test run. Furthermore, it refines database RLS policies to accommodate
+system-level administrative access and provides SQL functions for tenant
+lifecycle management, ensuring data separation and operational flexibility in a
+multi-tenant environment.
+
+Highlights:
+
+- Centralized Tenant Context Service: Introduced a new tenant_context C++
+  service in ores.database to centralize the management of multi-tenant context
+  across all application components. This service allows setting the current
+  tenant via code or UUID and provides utilities for tenant lookup.
+- Multi-Tenant Test Isolation: Implemented robust multi-tenant test isolation
+  within the C++ test infrastructure. Each test run now provisions a unique,
+  isolated tenant, including copies of necessary reference data, and
+  deprovisions it upon completion, ensuring clean and independent test
+  environments.
+- Enhanced Row-Level Security (RLS) Policies: Updated all existing RLS policies
+  across assets, dq, iam, refdata, telemetry, and variability schemas to
+  explicitly allow the 'system' tenant (UUID
+  00000000-0000-0000-0000-000000000000) to access all tenant data for
+  administrative and provisioning operations.
+- CLI and Environment Variable Tenant Support: Added a --tenant command-line
+  option to the ores.cli application and support for the ORES_TENANT environment
+  variable, allowing users to specify the desired tenant context for CLI
+  operations.
+- psqlrc Enhancements for Tenant Management: Modified the psqlrc.sql
+  configuration to automatically set the system tenant context on load, display
+  the current tenant in the psql prompt, and introduced new macros (:tenant,
+  :tenants) for convenient tenant inspection and listing.
+- SQL Tenant Provisioning and Deprovisioning Functions: Added SQL functions
+  ores_iam_provision_tenant_fn and ores_iam_deprovision_tenant_fn to
+  programmatically create new tenants (copying base data from the system tenant)
+  and soft-delete existing tenants and their associated data, respectively.
+- Database Schema and Script Refinements: Removed obsolete metadata and
+  production schema references from create_database_direct.sql, updated grants
+  to the public schema, and adjusted unique constraints and triggers for
+  ores_variability_feature_flags_tbl to properly incorporate tenant_id.
+#+end_quote
 
 *** Add NOTICE logging support to sqlgen                               :code:
 

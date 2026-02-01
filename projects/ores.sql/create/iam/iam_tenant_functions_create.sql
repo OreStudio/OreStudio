@@ -128,6 +128,66 @@ begin
 end;
 $$ language plpgsql stable;
 
+-- Set tenant context by code pattern (for interactive psql sessions)
+-- Usage: SELECT * FROM ores_iam_set_tenant_fn('ores.cli%');
+-- Short alias: SELECT * FROM st('ores.cli%');
+-- Returns the tenant that was set, or raises an error if no match or multiple matches
+create or replace function ores_iam_set_tenant_fn(
+    p_code_pattern text
+) returns table (
+    tenant_id uuid,
+    code text,
+    name text,
+    description text,
+    status text
+) as $$
+declare
+    v_count integer;
+    v_tenant_id uuid;
+begin
+    -- Count matching active tenants
+    select count(*) into v_count
+    from ores_iam_tenants_tbl t
+    where t.code like p_code_pattern
+    and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_count = 0 then
+        raise exception 'No tenant found matching pattern: %', p_code_pattern;
+    elsif v_count > 1 then
+        raise exception 'Multiple tenants (%) match pattern: %. Be more specific.',
+            v_count, p_code_pattern;
+    end if;
+
+    -- Get the tenant_id and set it
+    select t.tenant_id into v_tenant_id
+    from ores_iam_tenants_tbl t
+    where t.code like p_code_pattern
+    and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    perform set_config('app.current_tenant_id', v_tenant_id::text, false);
+
+    -- Return the tenant info
+    return query
+    select t.tenant_id, t.code, t.name, t.description, t.status
+    from ores_iam_tenants_tbl t
+    where t.tenant_id = v_tenant_id
+    and t.valid_to = ores_utility_infinity_timestamp_fn();
+end;
+$$ language plpgsql;
+
+-- Short alias for ores_iam_set_tenant_fn (convenience for interactive use)
+-- Usage: SELECT * FROM st('ores.cli%');
+create or replace function st(p_code_pattern text)
+returns table (
+    tenant_id uuid,
+    code text,
+    name text,
+    description text,
+    status text
+) as $$
+    select * from ores_iam_set_tenant_fn(p_code_pattern);
+$$ language sql;
+
 -- Generic trigger function to set tenant_id from session variable on insert.
 -- Used by tables that don't have their own complex insert triggers.
 create or replace function ores_iam_set_tenant_id_on_insert_fn()

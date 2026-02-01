@@ -101,6 +101,13 @@ SET app.current_tenant_id = :'ores_tenant_id';
 -- List only active tenants
 \set active_tenants 'SELECT tenant_id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
 
+-- Switch tenant (set :t first, then run :st)
+-- Example: \set t 'system'   then   :st
+\set st 'SELECT code AS ores_tenant FROM st(:\'t\') \\gset'
+
+-- Quick switch to system tenant
+\set system_tenant 'SELECT code AS ores_tenant FROM st(\'system\') \\gset'
+
 -- Count rows in all ORES tables
 \set row_counts 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables WHERE schemaname IN (\'production\', \'metadata\') ORDER BY n_live_tup DESC;'
 
@@ -138,4 +145,6 @@ SET app.current_tenant_id = :'ores_tenant_id';
 \echo '  :locks            - Show blocked queries'
 \echo '  :kill_connections - Terminate other connections to current DB'
 \echo '  :reload           - Reload psqlrc (from ores.sql dir)'
+\echo ''
+\echo 'To switch tenant: \\set t ''pattern%''  then  :st'
 \echo ''

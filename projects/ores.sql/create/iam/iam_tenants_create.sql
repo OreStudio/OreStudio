@@ -22,9 +22,14 @@
 -- Tenants Table
 -- Core table for multi-tenancy support. Each tenant represents an isolated
 -- organisation or the system platform tenant.
+--
+-- Note: This table has both 'id' (standard UUID PK) and 'tenant_id' (self-reference).
+-- For tenant records, tenant_id = id. This maintains consistency with the standard
+-- pattern where all tables have tenant_id for isolation.
 -- =============================================================================
 
 create table if not exists "ores_iam_tenants_tbl" (
+    "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "type" text not null,
@@ -38,13 +43,15 @@ create table if not exists "ores_iam_tenants_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
+        id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("tenant_id" <> '00000000-0000-0000-0000-000000000000'::uuid or "code" = 'system'),
+    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid or "code" = 'system'),
+    check ("tenant_id" = "id"),  -- Self-referential constraint
     check ("change_reason_code" <> ''),
     check ("code" <> ''),
     check ("hostname" <> '')
@@ -52,15 +59,19 @@ create table if not exists "ores_iam_tenants_tbl" (
 
 -- Unique indexes for active records
 create unique index if not exists ores_iam_tenants_code_uniq_idx
-on ores_iam_tenants_tbl (code)
+on ores_iam_tenants_tbl (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_iam_tenants_hostname_uniq_idx
-on ores_iam_tenants_tbl (hostname)
+on ores_iam_tenants_tbl (tenant_id, hostname)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_iam_tenants_version_uniq_idx
-on ores_iam_tenants_tbl (tenant_id, version)
+on ores_iam_tenants_tbl (tenant_id, id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_iam_tenants_tenant_idx
+on ores_iam_tenants_tbl (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
@@ -73,10 +84,14 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Ensure tenant_id equals id (self-reference)
+    new.tenant_id := new.id;
+
     -- Validate type FK
     if not exists (
         select 1 from ores_iam_tenant_types_tbl
         where type = new.type
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid tenant type: %. Must exist in ores_iam_tenant_types_tbl.',
             new.type using errcode = '23503';
@@ -86,6 +101,7 @@ begin
     if not exists (
         select 1 from ores_iam_tenant_statuses_tbl
         where status = new.status
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid tenant status: %. Must exist in ores_iam_tenant_statuses_tbl.',
             new.status using errcode = '23503';
@@ -95,7 +111,8 @@ begin
     select version into current_version
     from ores_iam_tenants_tbl
     where tenant_id = new.tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+      and id = new.id
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -107,8 +124,9 @@ begin
         update ores_iam_tenants_tbl
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+          and id = new.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
@@ -120,7 +138,8 @@ begin
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    -- Validate change_reason_code (use id as tenant_id since this is the tenant itself)
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.id, new.change_reason_code);
 
     return new;
 end;
@@ -141,4 +160,5 @@ do instead
     update ores_iam_tenants_tbl
     set valid_to = current_timestamp
     where tenant_id = old.tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+      and id = old.id
+      and valid_to = ores_utility_infinity_timestamp_fn();

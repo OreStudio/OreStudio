@@ -84,8 +84,9 @@ begin
     v_new_tenant_id := gen_random_uuid();
 
     -- Create the tenant record
+    -- Note: We insert into 'id' column; the trigger sets tenant_id = id
     insert into ores_iam_tenants_tbl (
-        tenant_id, type, code, name, description, hostname, status,
+        id, type, code, name, description, hostname, status,
         modified_by, change_reason_code, change_commentary
     ) values (
         v_new_tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',

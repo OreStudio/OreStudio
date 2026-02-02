@@ -1,7 +1,9 @@
 {
   "junction": {
     "schema": "public",
+    "product": "ores",
     "component": "dq",
+    "has_tenant_id": true,
     "name": "dataset_bundle_members",
     "name_singular": "dataset_bundle_member",
     "name_title": "Dataset Bundle Member",

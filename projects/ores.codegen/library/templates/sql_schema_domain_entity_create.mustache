@@ -10,9 +10,7 @@
  * {{{domain_entity.description_formatted}}}
  */
 
-set schema '{{domain_entity.schema}}';
-
-create table if not exists "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (
+create table if not exists "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (
     "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
 {{#domain_entity.has_tenant_id}}
     "tenant_id" uuid not null,
@@ -51,38 +49,38 @@ create table if not exists "{{domain_entity.schema}}"."{{domain_entity.component
 
 -- Unique {{column}} for active records
 {{#domain_entity.has_tenant_id}}
-create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_{{column}}_uniq_idx
-on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{column}})
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_{{column}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
-create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_{{column}}_uniq_idx
-on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{column}})
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_{{column}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 {{/domain_entity.natural_keys}}
 
 -- Version uniqueness for optimistic concurrency
 {{#domain_entity.has_tenant_id}}
-create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_version_uniq_idx
-on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}}, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_version_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_id_uniq_idx
-on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}})
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_id_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_tenant_idx
-on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id)
-where valid_to = public.utility_infinity_timestamp_fn();
+create index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tenant_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
-create unique index if not exists {{domain_entity.component}}_{{domain_entity.entity_plural}}_version_uniq_idx
-on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
-where valid_to = public.utility_infinity_timestamp_fn();
+create unique index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_version_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 
-create or replace function {{domain_entity.schema}}.{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -94,10 +92,10 @@ begin
 {{/domain_entity.has_tenant_id}}
     -- Version management
     select version into current_version
-    from "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     where {{#domain_entity.has_tenant_id}}tenant_id = NEW.tenant_id
       and {{/domain_entity.has_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -107,42 +105,42 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+        update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
         set valid_to = current_timestamp
         where {{#domain_entity.has_tenant_id}}tenant_id = NEW.tenant_id
           and {{/domain_entity.has_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
-          and valid_to = public.utility_infinity_timestamp_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = public.utility_infinity_timestamp_fn();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
 {{#domain_entity.has_tenant_id}}
-    NEW.change_reason_code := {{domain_entity.schema}}.refdata_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
-    NEW.change_reason_code := {{domain_entity.schema}}.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 {{/domain_entity.has_tenant_id}}
 
     return NEW;
 end;
 $$ language plpgsql;
 
-create or replace trigger {{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
-before insert on "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-for each row execute function {{domain_entity.schema}}.{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
+create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
+before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
 
-create or replace rule {{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_rule as
-on delete to "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead
-    update "{{domain_entity.schema}}"."{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+create or replace rule {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_rule as
+on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead
+    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     set valid_to = current_timestamp
     where {{#domain_entity.has_tenant_id}}tenant_id = OLD.tenant_id
       and {{/domain_entity.has_tenant_id}}{{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();

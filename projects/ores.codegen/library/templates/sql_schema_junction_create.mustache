@@ -10,10 +10,11 @@
  * {{{junction.description_formatted}}}
  */
 
-set schema '{{junction.schema}}';
-
-create table if not exists "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" (
+create table if not exists "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (
     "{{junction.left.column}}" {{junction.left.type}} not null,
+{{#junction.has_tenant_id}}
+    "tenant_id" uuid not null,
+{{/junction.has_tenant_id}}
     "{{junction.right.column}}" {{junction.right.type}} not null,
     "version" integer not null,
 {{#junction.columns}}
@@ -24,42 +25,70 @@ create table if not exists "{{junction.schema}}"."{{junction.component}}_{{junct
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+{{#junction.has_tenant_id}}
+    primary key (tenant_id, {{junction.left.column}}, {{junction.right.column}}, valid_from),
+    exclude using gist (
+        tenant_id WITH =,
+        {{junction.left.column}} WITH =,
+        {{junction.right.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/junction.has_tenant_id}}
+{{^junction.has_tenant_id}}
     primary key ({{junction.left.column}}, {{junction.right.column}}, valid_from),
     exclude using gist (
         {{junction.left.column}} WITH =,
         {{junction.right.column}} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
+{{/junction.has_tenant_id}}
     check ("valid_from" < "valid_to"),
     check ("change_reason_code" <> '')
 );
 
 -- {{junction.left.index_comment}}
-create index if not exists {{junction.component}}_{{junction.name}}_{{junction.left.column_short}}_idx
-on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}})
-where valid_to = public.utility_infinity_timestamp_fn();
+create index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_{{junction.left.column_short}}_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- {{junction.right.index_comment}}
-create index if not exists {{junction.component}}_{{junction.name}}_{{junction.right.column_short}}_idx
-on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" ({{junction.right.column}})
-where valid_to = public.utility_infinity_timestamp_fn();
+create index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_{{junction.right.column_short}}_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.right.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists {{junction.component}}_{{junction.name}}_uniq_idx
-on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}}, {{junction.right.column}})
-where valid_to = public.utility_infinity_timestamp_fn();
+{{#junction.has_tenant_id}}
+create unique index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_uniq_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (tenant_id, {{junction.left.column}}, {{junction.right.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function {{junction.schema}}.{{junction.component}}_{{junction.name}}_insert_fn()
+create index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_tenant_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/junction.has_tenant_id}}
+{{^junction.has_tenant_id}}
+create unique index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_uniq_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}}, {{junction.right.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/junction.has_tenant_id}}
+
+create or replace function {{junction.product}}_{{junction.component}}_{{junction.name}}_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
+{{#junction.has_tenant_id}}
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+{{/junction.has_tenant_id}}
     -- Version management
     select version into current_version
-    from "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl"
-    where {{junction.left.column}} = new.{{junction.left.column}}
+    from "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+    where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
+    and {{/junction.has_tenant_id}}{{junction.left.column}} = new.{{junction.left.column}}
     and {{junction.right.column}} = new.{{junction.right.column}}
-    and valid_to = public.utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -70,39 +99,41 @@ begin
         new.version = current_version + 1;
 
         -- Close existing record
-        update "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl"
+        update "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
         set valid_to = current_timestamp
-        where {{junction.left.column}} = new.{{junction.left.column}}
+        where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
+        and {{/junction.has_tenant_id}}{{junction.left.column}} = new.{{junction.left.column}}
         and {{junction.right.column}} = new.{{junction.right.column}}
-        and valid_to = public.utility_infinity_timestamp_fn()
+        and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = public.utility_infinity_timestamp_fn();
+    new.valid_to = ores_utility_infinity_timestamp_fn();
 
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := {{junction.schema}}.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn({{#junction.has_tenant_id}}new.tenant_id, {{/junction.has_tenant_id}}new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger {{junction.component}}_{{junction.name}}_insert_trg
-before insert on "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl"
+create or replace trigger {{junction.product}}_{{junction.component}}_{{junction.name}}_insert_trg
+before insert on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
 for each row
-execute function {{junction.schema}}.{{junction.component}}_{{junction.name}}_insert_fn();
+execute function {{junction.product}}_{{junction.component}}_{{junction.name}}_insert_fn();
 
-create or replace rule {{junction.component}}_{{junction.name}}_delete_rule as
-on delete to "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl"
+create or replace rule {{junction.product}}_{{junction.component}}_{{junction.name}}_delete_rule as
+on delete to "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
 do instead
-  update "{{junction.schema}}"."{{junction.component}}_{{junction.name}}_tbl"
+  update "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
   set valid_to = current_timestamp
-  where {{junction.left.column}} = old.{{junction.left.column}}
+  where {{#junction.has_tenant_id}}tenant_id = old.tenant_id
+  and {{/junction.has_tenant_id}}{{junction.left.column}} = old.{{junction.left.column}}
   and {{junction.right.column}} = old.{{junction.right.column}}
-  and valid_to = public.utility_infinity_timestamp_fn();
+  and valid_to = ores_utility_infinity_timestamp_fn();

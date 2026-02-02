@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
  *  Table
  *
  * Installing a bundle gets the system into a ready state with a coherent set
@@ -65,7 +68,11 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists ores_dq_dataset_bundles_version_uniq_idx
-on "ores_dq_dataset_bundles_tbl" (id, version)
+on "ores_dq_dataset_bundles_tbl" (tenant_id, id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists ores_dq_dataset_bundles_id_uniq_idx
+on "ores_dq_dataset_bundles_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_dq_dataset_bundles_tenant_idx
@@ -78,7 +85,7 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Version management
     select version into current_version

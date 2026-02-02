@@ -29,9 +29,9 @@ begin
     -- Insert images
 {{#country_currency}}
     insert into ores_dq_images_artefact_tbl (
-        dataset_id, image_id, version, key, description, svg_data
+        dataset_id, tenant_id, image_id, version, key, description, svg_data
     ) values (
-        v_dataset_id, gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
+        v_dataset_id, ores_iam_system_tenant_id_fn(), gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
     );
 {{/country_currency}}
 

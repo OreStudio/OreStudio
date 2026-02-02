@@ -122,7 +122,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_asset_classes_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_asset_classes_artefact_tbl', v_count;
 end;
 $$;
 

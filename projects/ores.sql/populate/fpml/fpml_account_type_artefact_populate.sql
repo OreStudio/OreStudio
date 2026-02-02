@@ -89,7 +89,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_account_types_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_account_types_artefact_tbl', v_count;
 end;
 $$;
 

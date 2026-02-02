@@ -122,7 +122,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_business_processes_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_business_processes_artefact_tbl', v_count;
 end;
 $$;
 

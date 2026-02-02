@@ -362,6 +362,39 @@ Example domain entity model with full C++ support:
 - Easy to update all instances when patterns change
 - Supports both domain entity and junction table patterns
 
+** Type mappings
+
+The following table shows the standard type mappings between database types and
+C++ types. These MUST be used consistently across all domain types.
+
+| Database Type | C++ Type                              | Include Required               |
+|---------------+---------------------------------------+--------------------------------|
+| uuid          | boost::uuids::uuid                    | <boost/uuid/uuid.hpp>          |
+| text          | std::string                           | <string>                       |
+| integer       | int                                   | (built-in)                     |
+| bigint        | std::int64_t                          | <cstdint>                      |
+| boolean       | bool                                  | (built-in)                     |
+| timestamp     | std::chrono::system_clock::time_point | <chrono>                       |
+| real          | double                                | (built-in)                     |
+| bytea         | std::vector<std::byte>                | <vector>, <cstddef>            |
+| uuid (FK)     | boost::uuids::uuid                    | <boost/uuid/uuid.hpp>          |
+| uuid (opt)    | std::optional<boost::uuids::uuid>     | <optional>, <boost/uuid/...>   |
+
+*** Primary key types
+
+Domain entities can use either UUID or text primary keys:
+
+- *UUID primary keys*: Used for entities like =tenant=, =account=, =role=. The
+  primary key column is typically named =id= with type =uuid=.
+
+- *Text primary keys*: Used for reference data entities like =tenant_type=,
+  =tenant_status=, =currency=. The primary key column uses a domain-specific
+  name (e.g., =type=, =status=, =iso_code=) with type =text=.
+
+The code generator automatically detects the primary key type from the model and
+generates appropriate serialization code (=write_uuid=/=read_uuid= for UUIDs,
+=write_string=/=read_string= for text).
+
 * Common patterns and conventions
 
 ** Naming conventions

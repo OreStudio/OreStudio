@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Broker',
         1,
         'FPML_PERSON_ROLE',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Buyer',
         1,
         'FPML_PERSON_ROLE',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Custodian',
         1,
         'FPML_PERSON_ROLE',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'DecisionMaker',
         1,
         'FPML_PERSON_ROLE',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ExecutionWithinFirm',
         1,
         'FPML_PERSON_ROLE',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'InvestmentDecisionMaker',
         1,
         'FPML_PERSON_ROLE',
@@ -128,10 +122,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'LoanCloser',
         1,
         'FPML_PERSON_ROLE',
@@ -140,10 +133,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'LoanServicer',
         1,
         'FPML_PERSON_ROLE',
@@ -152,10 +144,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Seller',
         1,
         'FPML_PERSON_ROLE',
@@ -164,10 +155,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_person_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Trader',
         1,
         'FPML_PERSON_ROLE',

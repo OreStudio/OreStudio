@@ -21,11 +21,11 @@
 /**
  * DQ Artefact FpML Regulatory Corporate Sector Population Script
  *
- * Populates the ores_dq_regulatory_corporate_sectors_artefact_tbl with reference data.
+ * Populates the dq_regulatory_corporate_sectors_artefact_tbl with reference data.
  * Dataset: fpml.regulatory_corporate_sector
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use ores_dq_populate_regulatory_corporate_sectors() to publish to production.
+ * Use dq_populate_regulatory_corporate_sectors() to publish to production.
  */
 
 
@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AccommodationFoodService',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AdministrationSupport',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AgricultureForestryFishing',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AlternativeInvestmentFund',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ArtsEntertainmentRecreation',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AssuranceUndertaking',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -128,10 +122,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Construction',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -140,10 +133,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Corporate',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -152,10 +144,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CreditInstitution',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -164,10 +155,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Education',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -176,10 +166,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'EletricityGas',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -188,10 +177,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ExtraterritorialOrganizations',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -200,10 +188,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'FinanceInsurance',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -212,10 +199,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'FinancialEntity',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -224,10 +210,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'HealthSocialWork',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -236,10 +221,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Household',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -248,10 +232,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Individual',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -260,10 +243,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'InformationCommunication',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -272,10 +254,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'InstitutionForOccupationalRetirementProvision',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -284,10 +265,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'InsuranceUndertaking',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -296,10 +276,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'InvestmentFirm',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -308,10 +287,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Manufacturing',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -320,10 +298,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Mining',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -332,10 +309,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'NonFinancial',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -344,10 +320,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'OtherServices',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -356,10 +331,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ProfessionalScientificTechnical',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -368,10 +342,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PublicAdminDefenceSocialSecurity',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -380,10 +353,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'RealEstate',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -392,10 +364,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ReinsuranceUndertaking',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -404,10 +375,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'TransportationStorage',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -416,10 +386,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'UCITS',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -428,10 +397,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'WaterSewerWasteManagement',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -440,10 +408,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_regulatory_corporate_sectors_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'WholesaleRetailTradeMotorRepair',
         1,
         'FPML_REGULATORY_CORPORATE_SECTOR',
@@ -452,7 +419,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into ores_dq_regulatory_corporate_sectors_artefact_tbl', v_count;
+    raise notice 'Populated % records into dq_regulatory_corporate_sectors_artefact_tbl', v_count;
 end;
 $$;
 

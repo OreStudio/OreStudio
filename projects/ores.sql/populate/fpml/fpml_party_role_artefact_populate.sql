@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Accountant',
         1,
         'FPML_PARTY_ROLE',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AllocationAgent',
         1,
         'FPML_PARTY_ROLE',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ArrangingBroker',
         1,
         'FPML_PARTY_ROLE',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Beneficiary',
         1,
         'FPML_PARTY_ROLE',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'BookingParty',
         1,
         'FPML_PARTY_ROLE',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Buyer',
         1,
         'FPML_PARTY_ROLE',
@@ -128,10 +122,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'BuyerDecisionMaker',
         1,
         'FPML_PARTY_ROLE',
@@ -140,10 +133,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ClearingClient',
         1,
         'FPML_PARTY_ROLE',
@@ -152,10 +144,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ClearingExceptionParty',
         1,
         'FPML_PARTY_ROLE',
@@ -164,10 +155,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ClearingFirm',
         1,
         'FPML_PARTY_ROLE',
@@ -176,10 +166,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ClearingOrganization',
         1,
         'FPML_PARTY_ROLE',
@@ -188,10 +177,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Client',
         1,
         'FPML_PARTY_ROLE',
@@ -200,10 +188,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ClientDecisionMaker',
         1,
         'FPML_PARTY_ROLE',
@@ -212,10 +199,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ConfirmationPlatform',
         1,
         'FPML_PARTY_ROLE',
@@ -224,10 +210,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ContractualParty',
         1,
         'FPML_PARTY_ROLE',
@@ -236,10 +221,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Counterparty',
         1,
         'FPML_PARTY_ROLE',
@@ -248,10 +232,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CounterPartyAffiliate',
         1,
         'FPML_PARTY_ROLE',
@@ -260,10 +243,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CounterPartyUltimateParent',
         1,
         'FPML_PARTY_ROLE',
@@ -272,10 +254,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CreditSupportProvider',
         1,
         'FPML_PARTY_ROLE',
@@ -284,10 +265,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Custodian',
         1,
         'FPML_PARTY_ROLE',
@@ -296,10 +276,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'DataSubmitter',
         1,
         'FPML_PARTY_ROLE',
@@ -308,10 +287,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'DisputingParty',
         1,
         'FPML_PARTY_ROLE',
@@ -320,10 +298,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'DocumentRepository',
         1,
         'FPML_PARTY_ROLE',
@@ -332,10 +309,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ExecutingBroker',
         1,
         'FPML_PARTY_ROLE',
@@ -344,10 +320,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ExecutingEntity',
         1,
         'FPML_PARTY_ROLE',
@@ -356,10 +331,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ExecutionAgent',
         1,
         'FPML_PARTY_ROLE',
@@ -368,10 +342,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ExecutionFacility',
         1,
         'FPML_PARTY_ROLE',
@@ -380,10 +353,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Guarantor',
         1,
         'FPML_PARTY_ROLE',
@@ -392,10 +364,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'MarginAffiliate',
         1,
         'FPML_PARTY_ROLE',
@@ -404,10 +375,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'OrderTransmitter',
         1,
         'FPML_PARTY_ROLE',
@@ -416,10 +386,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PrimeBroker',
         1,
         'FPML_PARTY_ROLE',
@@ -428,10 +397,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PriorTradeRepository',
         1,
         'FPML_PARTY_ROLE',
@@ -440,10 +408,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PTRRCompressionProvider',
         1,
         'FPML_PARTY_ROLE',
@@ -452,10 +419,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PTRRRebalancingProvider',
         1,
         'FPML_PARTY_ROLE',
@@ -464,10 +430,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PublicationVenue',
         1,
         'FPML_PARTY_ROLE',
@@ -476,10 +441,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ReportingParty',
         1,
         'FPML_PARTY_ROLE',
@@ -488,10 +452,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ReportingPartyAffiliate',
         1,
         'FPML_PARTY_ROLE',
@@ -500,10 +463,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ReportingPartyUltimateParent',
         1,
         'FPML_PARTY_ROLE',
@@ -512,10 +474,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Seller',
         1,
         'FPML_PARTY_ROLE',
@@ -524,10 +485,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'SellerDecisionMaker',
         1,
         'FPML_PARTY_ROLE',
@@ -536,10 +496,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'SettlementAgent',
         1,
         'FPML_PARTY_ROLE',
@@ -548,10 +507,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'TradeRepository',
         1,
         'FPML_PARTY_ROLE',
@@ -560,10 +518,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'TradeSource',
         1,
         'FPML_PARTY_ROLE',
@@ -572,10 +529,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'TradingManager',
         1,
         'FPML_PARTY_ROLE',
@@ -584,10 +540,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_roles_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'TradingPartner',
         1,
         'FPML_PARTY_ROLE',

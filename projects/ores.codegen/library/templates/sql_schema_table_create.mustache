@@ -95,10 +95,18 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_tenant_id}}
 {{/entity.has_coding_scheme}}
 {{#entity.has_tenant_id}}
+{{#entity.has_coding_scheme}}
+
+create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}}, coding_scheme_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_coding_scheme}}
+{{^entity.has_coding_scheme}}
 
 create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
 on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_coding_scheme}}
 
 create index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tenant_idx
 on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id)

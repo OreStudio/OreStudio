@@ -270,14 +270,17 @@ class MergedEntity:
         return {
             "entity": {
                 "schema": "public",
+                "product": "ores",
                 "component": "refdata",
                 "entity_singular": self.entity_name,
                 "entity_plural": self.entity_plural,
                 "description": self.description,
                 "subject_area": self.subject_area,
+                "has_tenant_id": True,
                 "primary_key": {
                     "column": "code",
-                    "type": "text"
+                    "type": "text",
+                    "is_text": True
                 },
                 "composite_key": True,
                 "composite_key_columns": ["code", "coding_scheme_code"],
@@ -294,6 +297,9 @@ class MergedEntity:
                     {"name": "coding_scheme", "columns": "coding_scheme_code"}
                 ],
                 "has_artefact_insert_fn": False,
+                "validations": [
+                    {"column": "change_reason_code", "validation_function": "ores_dq_validate_change_reason_fn"}
+                ],
                 **({"image_linking": {
                     "flags_dataset_code": "assets.country_flags",
                     "key_expression": "lower(substring(bc.code, 1, 2))",

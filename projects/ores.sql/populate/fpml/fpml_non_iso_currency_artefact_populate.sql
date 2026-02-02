@@ -83,12 +83,11 @@ begin
 
     -- Insert FpML non-ISO currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
-        dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
+        dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
     )
     select
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         c.iso_code,
         0,
         c.name,

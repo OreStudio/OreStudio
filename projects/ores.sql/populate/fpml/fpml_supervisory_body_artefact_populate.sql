@@ -21,11 +21,11 @@
 /**
  * DQ Artefact FpML Supervisory Body Population Script
  *
- * Populates the ores_dq_supervisory_bodies_artefact_tbl with reference data.
+ * Populates the dq_supervisory_bodies_artefact_tbl with reference data.
  * Dataset: fpml.supervisory_body
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use ores_dq_populate_supervisory_bodies() to publish to production.
+ * Use dq_populate_supervisory_bodies() to publish to production.
  */
 
 
@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ASIC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'BankOfRussia',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.AB.ASC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.BC.BCSC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.MB.MSC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.NB.FCSC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -128,10 +122,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.NL.DSS',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -140,10 +133,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.NS.NSSC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -152,10 +144,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.NT.NTSO',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -164,10 +155,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.NU.NSO',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -176,10 +166,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.ON.OSC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -188,10 +177,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.PEI.OSS',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -200,10 +188,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.QC.AMF',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -212,10 +199,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.SK.FCAA',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -224,10 +210,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CA.YT.OSS',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -236,10 +221,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CFTC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -248,10 +232,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ESMA',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -260,10 +243,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'FCA',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -272,10 +254,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Fed',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -284,10 +265,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'HKMA',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -296,10 +276,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'JFSA',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -308,10 +287,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'MAS',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -320,10 +298,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'ODRF',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -332,10 +309,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'SEC',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -344,10 +320,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_supervisory_bodies_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'UKFSA',
         1,
         'FPML_SUPERVISORY_BODY',
@@ -356,7 +331,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into ores_dq_supervisory_bodies_artefact_tbl', v_count;
+    raise notice 'Populated % records into dq_supervisory_bodies_artefact_tbl', v_count;
 end;
 $$;
 

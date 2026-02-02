@@ -21,11 +21,11 @@
 /**
  * DQ Artefact FpML Account Type Population Script
  *
- * Populates the ores_dq_account_types_artefact_tbl with reference data.
+ * Populates the dq_account_types_artefact_tbl with reference data.
  * Dataset: fpml.account_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use ores_dq_populate_account_types() to publish to production.
+ * Use dq_populate_account_types() to publish to production.
  */
 
 
@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_account_types_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AggregateClient',
         1,
         'FPML_ACCOUNT_TYPE',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_account_types_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Client',
         1,
         'FPML_ACCOUNT_TYPE',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_account_types_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'House',
         1,
         'FPML_ACCOUNT_TYPE',
@@ -92,7 +89,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into ores_dq_account_types_artefact_tbl', v_count;
+    raise notice 'Populated % records into dq_account_types_artefact_tbl', v_count;
 end;
 $$;
 

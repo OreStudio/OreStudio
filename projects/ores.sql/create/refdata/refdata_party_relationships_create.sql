@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+set schema 'public';
 
 -- =============================================================================
 -- Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.
@@ -34,8 +35,9 @@ create table if not exists "ores_refdata_party_relationships_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (code, coding_scheme_code, valid_from, valid_to),
+    primary key (tenant_id, code, coding_scheme_code, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         code WITH =,
         coding_scheme_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
@@ -46,22 +48,22 @@ create table if not exists "ores_refdata_party_relationships_tbl" (
 );
 
 create unique index if not exists ores_refdata_party_relationships_version_uniq_idx
-on "ores_refdata_party_relationships_tbl" (code, coding_scheme_code, version)
+on "public"."ores_refdata_party_relationships_tbl" (tenant_id, code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_refdata_party_relationships_code_uniq_idx
-on "ores_refdata_party_relationships_tbl" (tenant_id, code, coding_scheme_code)
+on "public"."ores_refdata_party_relationships_tbl" (tenant_id, code, coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_refdata_party_relationships_tenant_idx
-on "ores_refdata_party_relationships_tbl" (tenant_id)
+on "public"."ores_refdata_party_relationships_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_refdata_party_relationships_coding_scheme_idx
-on "ores_refdata_party_relationships_tbl" (coding_scheme_code)
+on "public"."ores_refdata_party_relationships_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_refdata_party_relationships_insert_fn()
+create or replace function public.ores_refdata_party_relationships_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -79,11 +81,15 @@ begin
         using errcode = '23503';
     end if;
 
+    -- Validate change_reason_code
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
     select version into current_version
-    from "ores_refdata_party_relationships_tbl"
-    where code = new.code
+    from "public"."ores_refdata_party_relationships_tbl"
+    where tenant_id = new.tenant_id
+      and code = new.code
       and coding_scheme_code = new.coding_scheme_code
-    and valid_to = ores_utility_infinity_timestamp_fn()
+      and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
@@ -94,12 +100,13 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores_refdata_party_relationships_tbl"
+        update "public"."ores_refdata_party_relationships_tbl"
         set valid_to = current_timestamp
-        where code = new.code
+        where tenant_id = new.tenant_id
+          and code = new.code
           and coding_scheme_code = new.coding_scheme_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
@@ -110,22 +117,62 @@ begin
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger ores_refdata_party_relationships_insert_trg
-before insert on "ores_refdata_party_relationships_tbl"
+before insert on "public"."ores_refdata_party_relationships_tbl"
 for each row
-execute function ores_refdata_party_relationships_insert_fn();
+execute function public.ores_refdata_party_relationships_insert_fn();
 
 create or replace rule ores_refdata_party_relationships_delete_rule as
-on delete to "ores_refdata_party_relationships_tbl"
+on delete to "public"."ores_refdata_party_relationships_tbl"
 do instead
-  update "ores_refdata_party_relationships_tbl"
+  update "public"."ores_refdata_party_relationships_tbl"
   set valid_to = current_timestamp
-  where code = old.code
+  where tenant_id = old.tenant_id
+  and code = old.code
   and coding_scheme_code = old.coding_scheme_code
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Validation function for party_relationship
+-- Validates that a code exists in the party_relationships table.
+-- Returns the validated value, or default if null/empty.
+-- Uses current tenant data.
+-- =============================================================================
+create or replace function ores_refdata_validate_party_relationship_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns text as $$
+begin
+    -- Return default if null or empty
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid party_relationship: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+    -- Allow pass-through during bootstrap (empty table)
+    if not exists (select 1 from ores_refdata_party_relationships_tbl limit 1) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
+    if not exists (
+        select 1 from ores_refdata_party_relationships_tbl
+        where tenant_id = p_tenant_id
+          and code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_relationship: %. Must be one of: %', p_value, (
+            select string_agg(code::text, ', ' order by code)
+            from ores_refdata_party_relationships_tbl
+            where tenant_id = p_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+
+    return p_value;
+end;
+$$ language plpgsql;

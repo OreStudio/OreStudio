@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_business_processes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Allocation',
         1,
         'FPML_BUSINESS_PROCESS',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_business_processes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Clearing',
         1,
         'FPML_BUSINESS_PROCESS',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_business_processes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Confirmation',
         1,
         'FPML_BUSINESS_PROCESS',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_business_processes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Execution',
         1,
         'FPML_BUSINESS_PROCESS',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_business_processes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Reconciliation',
         1,
         'FPML_BUSINESS_PROCESS',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_business_processes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Settlement',
         1,
         'FPML_BUSINESS_PROCESS',

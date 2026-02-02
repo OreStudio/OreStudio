@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,17 +17,133 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+set schema 'public';
 
 -- =============================================================================
--- Rounding Types Lookup Table
--- Defines valid rounding methods per ORE XML schema (roundingType).
--- Static configuration data - no bitemporal support required.
+-- Rounding Types - Valid rounding methods per ORE XML schema (roundingType)
 -- =============================================================================
 
 create table if not exists "ores_refdata_rounding_types_tbl" (
-    "code" text not null primary key,
+    "code" text not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
     "name" text not null,
     "description" text not null,
     "display_order" integer not null default 0,
-    check ("code" <> '')
+    "modified_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key (tenant_id, code, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        code WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to"),
+    check ("code" <> ''),
+    check ("change_reason_code" <> '')
 );
+
+create unique index if not exists ores_refdata_rounding_types_version_uniq_idx
+on "public"."ores_refdata_rounding_types_tbl" (tenant_id, code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists ores_refdata_rounding_types_code_uniq_idx
+on "public"."ores_refdata_rounding_types_tbl" (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_refdata_rounding_types_tenant_idx
+on "public"."ores_refdata_rounding_types_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create or replace function public.ores_refdata_rounding_types_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+    select version into current_version
+    from "public"."ores_refdata_rounding_types_tbl"
+    where tenant_id = new.tenant_id
+      and code = new.code
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if new.version != 0 and new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        new.version = current_version + 1;
+
+        update "public"."ores_refdata_rounding_types_tbl"
+        set valid_to = current_timestamp
+        where tenant_id = new.tenant_id
+          and code = new.code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        new.version = 1;
+    end if;
+
+    new.valid_from = current_timestamp;
+    new.valid_to = ores_utility_infinity_timestamp_fn();
+    if new.modified_by is null or new.modified_by = '' then
+        new.modified_by = current_user;
+    end if;
+
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    return new;
+end;
+$$ language plpgsql;
+
+create or replace trigger ores_refdata_rounding_types_insert_trg
+before insert on "public"."ores_refdata_rounding_types_tbl"
+for each row
+execute function public.ores_refdata_rounding_types_insert_fn();
+
+create or replace rule ores_refdata_rounding_types_delete_rule as
+on delete to "public"."ores_refdata_rounding_types_tbl"
+do instead
+  update "public"."ores_refdata_rounding_types_tbl"
+  set valid_to = current_timestamp
+  where tenant_id = old.tenant_id
+  and code = old.code
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Validation function for rounding_type
+-- Validates that a code exists in the rounding_types table.
+-- Uses system tenant data (shared reference data).
+-- =============================================================================
+create or replace function ores_refdata_validate_rounding_type_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns void as $$
+begin
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid rounding_type: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+    if not exists (
+        select 1 from ores_refdata_rounding_types_tbl
+        where tenant_id = ores_iam_system_tenant_id_fn()
+          and code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid rounding_type: %. Must be one of: %', p_value, (
+            select string_agg(code::text, ', ' order by display_order)
+            from ores_refdata_rounding_types_tbl
+            where tenant_id = ores_iam_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+end;
+$$ language plpgsql;

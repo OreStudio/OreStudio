@@ -27,10 +27,19 @@
 
 \echo '--- Tenant Types ---'
 
-insert into ores_iam_tenant_types_tbl (type, name, description, display_order) values
-    ('platform', 'Platform', 'System-level tenant for platform administration and shared governance data', 0),
-    ('organisation', 'Organisation', 'Customer organisation tenant for isolated business operations', 10)
-on conflict (type) do nothing;
+insert into ores_iam_tenant_types_tbl (
+    tenant_id, type, version, name, description, display_order,
+    modified_by, change_reason_code, change_commentary
+) values
+    (ores_iam_system_tenant_id_fn(), 'platform', 0, 'Platform',
+     'System-level tenant for platform administration and shared governance data', 0,
+     current_user, 'system.initial_load', 'Initial population of tenant types'),
+    (ores_iam_system_tenant_id_fn(), 'organisation', 0, 'Organisation',
+     'Customer organisation tenant for isolated business operations', 10,
+     current_user, 'system.initial_load', 'Initial population of tenant types')
+on conflict (tenant_id, type)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
 
 -- Summary
 select 'Tenant Types' as entity, count(*) as count

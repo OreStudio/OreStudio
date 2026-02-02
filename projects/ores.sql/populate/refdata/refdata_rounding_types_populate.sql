@@ -29,27 +29,29 @@
 
 \echo '--- Rounding Types ---'
 
-insert into ores_refdata_rounding_types_tbl (code, name, description, display_order)
+insert into ores_refdata_rounding_types_tbl (
+    tenant_id, code, version, name, description, display_order,
+    modified_by, change_reason_code, change_commentary
+)
 values
-    ('Up', 'Round Up',
+    (ores_iam_system_tenant_id_fn(), 'Up', 0, 'Round Up',
      'Rounds away from zero toward positive infinity. Positive values round up, negative values round to larger absolute value.',
-     1),
-    ('Down', 'Round Down',
+     1, current_user, 'system.initial_load', 'Initial population of rounding types'),
+    (ores_iam_system_tenant_id_fn(), 'Down', 0, 'Round Down',
      'Rounds toward zero (truncation). Drops fractional digits without rounding, always reducing absolute value.',
-     2),
-    ('Closest', 'Round to Nearest',
+     2, current_user, 'system.initial_load', 'Initial population of rounding types'),
+    (ores_iam_system_tenant_id_fn(), 'Closest', 0, 'Round to Nearest',
      'Rounds to the nearest value. When equidistant, uses default tie-breaking (typically banker''s rounding or round half up).',
-     3),
-    ('Floor', 'Floor',
+     3, current_user, 'system.initial_load', 'Initial population of rounding types'),
+    (ores_iam_system_tenant_id_fn(), 'Floor', 0, 'Floor',
      'Rounds toward negative infinity. Always rounds to the next lower value regardless of sign.',
-     4),
-    ('Ceiling', 'Ceiling',
+     4, current_user, 'system.initial_load', 'Initial population of rounding types'),
+    (ores_iam_system_tenant_id_fn(), 'Ceiling', 0, 'Ceiling',
      'Rounds toward positive infinity. Always rounds to the next higher value regardless of sign.',
-     5)
-on conflict (code) do update set
-    name = excluded.name,
-    description = excluded.description,
-    display_order = excluded.display_order;
+     5, current_user, 'system.initial_load', 'Initial population of rounding types')
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
 
 -- Summary
 select 'refdata_rounding_types' as entity, count(*) as count

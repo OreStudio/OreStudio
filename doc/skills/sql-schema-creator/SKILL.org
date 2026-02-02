@@ -1137,14 +1137,35 @@ select is(
 
 ** Running tests
 
+Use the =run_tests.sh= script which reads connection details from environment
+variables:
+
 #+begin_src sh
-# Run a single test file
+# Run all tests using environment variables
+ORES_TEST_DB_DATABASE=ores_dev_local1 ./run_tests.sh
+
+# Run a specific test file
+ORES_TEST_DB_DATABASE=ores_dev_local1 ./run_tests.sh refdata_validation_test.sql
+#+end_src
+
+Environment variables:
+
+| Variable              | Description              | Default     |
+|-----------------------+--------------------------+-------------|
+| =ORES_TEST_DB_DATABASE= | Database name (required) | -           |
+| =ORES_TEST_DB_HOST=     | Database host            | =localhost= |
+| =ORES_TEST_DB_PORT=     | Database port            | =5432=      |
+| =ORES_TEST_DB_USER=     | Database user            | =postgres=  |
+
+*** Manual execution
+
+For debugging or running individual tests without the script:
+
+#+begin_src sh
+# Run a single test file with pg_prove
 pg_prove -d ores_dev_local1 test/refdata_validation_test.sql
 
-# Run all tests in the test directory
-pg_prove -d ores_dev_local1 test/*.sql
-
-# Alternative: run directly with psql
+# Run directly with psql (shows detailed output)
 psql -U postgres -d ores_dev_local1 -f test/refdata_validation_test.sql
 #+end_src
 

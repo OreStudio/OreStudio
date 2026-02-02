@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-02-02T09:16:51.838896Z
+' Generated: 2026-02-02T09:48:25.057318Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -25,26 +25,21 @@ title ORES Database Schema
 hide circle
 skinparam linetype ortho
 
-' Layout settings for a more compact diagram
-' left to right direction stacks packages vertically
+' Layout: left-to-right stacks packages vertically
 left to right direction
 skinparam packageStyle rectangle
-skinparam nodesep 10
-skinparam ranksep 30
+skinparam nodesep 8
+skinparam ranksep 20
 
 note as SchemaNote
 ORES Database Schema
 
-Schemas:
-- metadata: Data governance, classification, staging (dq_*)
-- production: Operational data (refdata_*, iam_*, assets_*, etc.)
-
-All temporal tables use valid_from/valid_to
-for bitemporal data management. Junction tables enable
-soft deletes via validity period closure.
-
-Change tracking: Most entities include change_reason_code
-and change_commentary for audit trail support.
+Packages grouped by domain:
+- iam: Identity & Access Management
+- assets: Digital Assets
+- refdata: Reference Data
+- dq_*: Data Quality (staging, datasets, methodology, metadata)
+- variability, telemetry, geo: Supporting services
 
 Table naming: <component>_<entity>_tbl
 end note
@@ -671,9 +666,9 @@ package "refdata" #FFF3E0 {
 }
 
 '
-' ==================== dq (Data Quality) ====================
+' ==================== dq_staging (Data Staging) ====================
 '
-package "dq" #E1F5FE {
+package "dq_staging" #F3E5F5 {
     entity ores_dq_account_types_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -686,28 +681,6 @@ package "dq" #E1F5FE {
 
     note right of ores_dq_account_types_artefact_tbl
     Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table
-    end note
-
-    entity ores_dq_artefact_types_tbl  #F7E5FF {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer <<unique>>
-        * name : text
-          description : text
-          artefact_table : text
-          target_table : text
-          populate_function : text
-        * display_order : integer
-        * modified_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_dq_artefact_types_tbl
-    Artefact Types - Maps artefact type codes to their population functions and tables
     end note
 
     entity ores_dq_asset_classes_artefact_tbl  #F7E5FF {
@@ -752,30 +725,6 @@ package "dq" #E1F5FE {
     FpML Benchmark rates - Artefact Table
     end note
 
-    entity ores_dq_bundle_publications_tbl  #F7E5FF {
-        * id : uuid <<PK>>
-        --
-        * bundle_code : text
-        * bundle_name : text
-        * mode : text
-        * atomic : boolean
-        * datasets_processed : integer
-        * datasets_succeeded : integer
-        * datasets_failed : integer
-        * datasets_skipped : integer
-        * total_records_inserted : bigint
-        * total_records_updated : bigint
-        * total_records_skipped : bigint
-        * total_records_deleted : bigint
-        * published_by : text
-        * published_at : timestamptz
-          completed_at : timestamptz
-    }
-
-    note right of ores_dq_bundle_publications_tbl
-    Bundle Publication Audit Table
-    end note
-
     entity ores_dq_business_centres_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -818,82 +767,6 @@ package "dq" #E1F5FE {
     The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table
     end note
 
-    entity ores_dq_catalogs_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * name : text <<PK>>
-        --
-        * version : integer
-        * description : text
-          owner : text
-        * modified_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_dq_catalogs_tbl
-    A catalog is a named collection of related datasets. It provides a
-    high-level grouping mechanism for datasets that share a common theme,
-    source, or purpose.
-    Examples:
-    - "ISO Standards" - Contains ISO 3166 countries, ISO 4217 currencies
-    - "Cryptocurrency" - Contains crypto reference data and icons
-    end note
-
-    entity ores_dq_change_reason_categories_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-        * description : text
-        * modified_by : text
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    entity ores_dq_change_reasons_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-        * description : text
-        * category_code : text <<FK>>
-        * applies_to_amend : boolean
-        * applies_to_delete : boolean
-        * requires_commentary : boolean
-        * display_order : integer
-        * modified_by : text
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    entity ores_dq_coding_scheme_authority_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-        * name : text
-        * description : text
-        * modified_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_dq_coding_scheme_authority_types_tbl
-    Classifies coding schemes by the authority or governance level behind them.
-    This helps distinguish between formal standards, industry conventions, and
-    proprietary identifiers.
-    Values:
-    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)
-    - industry: De facto standards widely adopted in the market but not formally standardized
-    - internal: Proprietary or organization-specific identifiers
-    end note
-
     entity ores_dq_coding_schemes_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -907,37 +780,6 @@ package "dq" #E1F5FE {
           uri : text
         * description : text
     }
-
-    entity ores_dq_coding_schemes_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-        * name : text
-        * authority_type : text <<FK>>
-        * subject_area_name : text
-        * domain_name : text
-          uri : text
-        * description : text
-        * modified_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_dq_coding_schemes_tbl
-    A scheme defines a coding or identification standard used to identify
-    entities such as parties, currencies, or other domain objects. Based on
-    the FPML coding-scheme concept.
-    Each scheme belongs to a subject area within the DQ hierarchy, establishing
-    what type of entity the scheme identifies.
-    Examples:
-    - LEI (Legal Entity Identifier, ISO 17442) for party identification
-    - BIC (Business Identifier Code, ISO 9362) for financial institutions
-    - ISO 4217 for currency codes
-    - ISO 3166 for country codes
-    end note
 
     entity ores_dq_countries_artefact_tbl  #F7E5FF {
         --
@@ -970,22 +812,189 @@ package "dq" #E1F5FE {
           image_id : uuid <<FK>>
     }
 
-    entity ores_dq_data_domains_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * name : text <<PK>>
+    entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
         --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
         * version : integer
-        * description : text
-        * modified_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
+          source : text
+          description : text
     }
 
-    note right of ores_dq_data_domains_tbl
-    High-level data classification.
-    Examples: reference_data, market_data, trade_data.
+    note right of ores_dq_entity_classifications_artefact_tbl
+    Financial Entity Indicator as defined by the CFTC. - Artefact Table
+    end note
+
+    entity ores_dq_image_tags_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * image_id : uuid <<FK>>
+        * tag_id : uuid <<FK>>
+    }
+
+    entity ores_dq_images_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * image_id : uuid <<FK>>
+        * version : integer
+        * key : text
+        * description : text
+        * svg_data : text
+    }
+
+    entity ores_dq_ip2country_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * range_start : bigint
+        * range_end : bigint
+        * country_code : text <<FK>>
+    }
+
+    note right of ores_dq_ip2country_artefact_tbl
+    Staging table for IPv4 to country mapping data from iptoasn.com.
+    Data is imported here first, then promoted to geo_ip2country_tbl.
+    end note
+
+    entity ores_dq_local_jurisdictions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_local_jurisdictions_artefact_tbl
+    This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table
+    end note
+
+    entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_party_relationships_artefact_tbl
+    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table
+    end note
+
+    entity ores_dq_party_roles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_party_roles_artefact_tbl
+    Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table
+    end note
+
+    entity ores_dq_person_roles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_person_roles_artefact_tbl
+    Indicates the role of a person in a transaction. - Artefact Table
+    end note
+
+    entity ores_dq_regulatory_corporate_sectors_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_regulatory_corporate_sectors_artefact_tbl
+    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
+    end note
+
+    entity ores_dq_reporting_regimes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_reporting_regimes_artefact_tbl
+    Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table
+    end note
+
+    entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_supervisory_bodies_artefact_tbl
+    Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table
+    end note
+
+    entity ores_dq_tags_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * tag_id : uuid <<FK>>
+        * version : integer
+        * name : text
+        * description : text
+    }
+
+}
+
+'
+' ==================== dq_datasets (Dataset Management) ====================
+'
+package "dq_datasets" #E3F2FD {
+    entity ores_dq_bundle_publications_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * bundle_code : text
+        * bundle_name : text
+        * mode : text
+        * atomic : boolean
+        * datasets_processed : integer
+        * datasets_succeeded : integer
+        * datasets_failed : integer
+        * datasets_skipped : integer
+        * total_records_inserted : bigint
+        * total_records_updated : bigint
+        * total_records_skipped : bigint
+        * total_records_deleted : bigint
+        * published_by : text
+        * published_at : timestamptz
+          completed_at : timestamptz
+    }
+
+    note right of ores_dq_bundle_publications_tbl
+    Bundle Publication Audit Table
     end note
 
     entity ores_dq_dataset_bundle_members_tbl <<temporal>> #C6F0D8 {
@@ -1120,67 +1129,12 @@ package "dq" #E1F5FE {
     lineage_depth auto-calculated from hierarchy.
     end note
 
-    entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
-        * version : integer
-          source : text
-          description : text
-    }
+}
 
-    note right of ores_dq_entity_classifications_artefact_tbl
-    Financial Entity Indicator as defined by the CFTC. - Artefact Table
-    end note
-
-    entity ores_dq_image_tags_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * image_id : uuid <<FK>>
-        * tag_id : uuid <<FK>>
-    }
-
-    entity ores_dq_images_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * image_id : uuid <<FK>>
-        * version : integer
-        * key : text
-        * description : text
-        * svg_data : text
-    }
-
-    entity ores_dq_ip2country_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * range_start : bigint
-        * range_end : bigint
-        * country_code : text <<FK>>
-    }
-
-    note right of ores_dq_ip2country_artefact_tbl
-    Staging table for IPv4 to country mapping data from iptoasn.com.
-    Data is imported here first, then promoted to geo_ip2country_tbl.
-    end note
-
-    entity ores_dq_local_jurisdictions_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
-        * version : integer
-          source : text
-          description : text
-    }
-
-    note right of ores_dq_local_jurisdictions_artefact_tbl
-    This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table
-    end note
-
+'
+' ==================== dq_methodology (Methodology) ====================
+'
+package "dq_methodology" #E8F5E9 {
     entity ores_dq_methodologies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -1240,74 +1194,176 @@ package "dq" #E1F5FE {
     Examples: vendor, internal, regulatory.
     end note
 
-    entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {
+    entity ores_dq_treatment_dimensions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
         --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
         * version : integer
-          source : text
-          description : text
+        * name : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
-    note right of ores_dq_party_relationships_artefact_tbl
-    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table
+    note right of ores_dq_treatment_dimensions_tbl
+    Describes how data should be treated.
+    Examples: golden, provisional, deprecated.
     end note
 
-    entity ores_dq_party_roles_artefact_tbl  #F7E5FF {
+}
+
+'
+' ==================== dq_metadata (Data Catalog) ====================
+'
+package "dq_metadata" #E1F5FE {
+    entity ores_dq_artefact_types_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
         --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
-        * version : integer
-          source : text
+        * version : integer <<unique>>
+        * name : text
           description : text
+          artefact_table : text
+          target_table : text
+          populate_function : text
+        * display_order : integer
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
-    note right of ores_dq_party_roles_artefact_tbl
-    Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table
+    note right of ores_dq_artefact_types_tbl
+    Artefact Types - Maps artefact type codes to their population functions and tables
     end note
 
-    entity ores_dq_person_roles_artefact_tbl  #F7E5FF {
+    entity ores_dq_catalogs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * name : text <<PK>>
         --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
         * version : integer
-          source : text
-          description : text
+        * description : text
+          owner : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
-    note right of ores_dq_person_roles_artefact_tbl
-    Indicates the role of a person in a transaction. - Artefact Table
+    note right of ores_dq_catalogs_tbl
+    A catalog is a named collection of related datasets. It provides a
+    high-level grouping mechanism for datasets that share a common theme,
+    source, or purpose.
+    Examples:
+    - "ISO Standards" - Contains ISO 3166 countries, ISO 4217 currencies
+    - "Cryptocurrency" - Contains crypto reference data and icons
     end note
 
-    entity ores_dq_regulatory_corporate_sectors_artefact_tbl  #F7E5FF {
+    entity ores_dq_change_reason_categories_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
         --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
         * version : integer
-          source : text
-          description : text
+        * description : text
+        * modified_by : text
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
-    note right of ores_dq_regulatory_corporate_sectors_artefact_tbl
-    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
+    entity ores_dq_change_reasons_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * description : text
+        * category_code : text <<FK>>
+        * applies_to_amend : boolean
+        * applies_to_delete : boolean
+        * requires_commentary : boolean
+        * display_order : integer
+        * modified_by : text
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    entity ores_dq_coding_scheme_authority_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_dq_coding_scheme_authority_types_tbl
+    Classifies coding schemes by the authority or governance level behind them.
+    This helps distinguish between formal standards, industry conventions, and
+    proprietary identifiers.
+    Values:
+    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)
+    - industry: De facto standards widely adopted in the market but not formally standardized
+    - internal: Proprietary or organization-specific identifiers
     end note
 
-    entity ores_dq_reporting_regimes_artefact_tbl  #F7E5FF {
+    entity ores_dq_coding_schemes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
         --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
         * version : integer
-          source : text
-          description : text
+        * name : text
+        * authority_type : text <<FK>>
+        * subject_area_name : text
+        * domain_name : text
+          uri : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
-    note right of ores_dq_reporting_regimes_artefact_tbl
-    Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table
+    note right of ores_dq_coding_schemes_tbl
+    A scheme defines a coding or identification standard used to identify
+    entities such as parties, currencies, or other domain objects. Based on
+    the FPML coding-scheme concept.
+    Each scheme belongs to a subject area within the DQ hierarchy, establishing
+    what type of entity the scheme identifies.
+    Examples:
+    - LEI (Legal Entity Identifier, ISO 17442) for party identification
+    - BIC (Business Identifier Code, ISO 9362) for financial institutions
+    - ISO 4217 for currency codes
+    - ISO 3166 for country codes
+    end note
+
+    entity ores_dq_data_domains_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * name : text <<PK>>
+        --
+        * version : integer
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_dq_data_domains_tbl
+    High-level data classification.
+    Examples: reference_data, market_data, trade_data.
     end note
 
     entity ores_dq_subject_areas_tbl <<temporal>> #C6F0D8 {
@@ -1327,49 +1383,6 @@ package "dq" #E1F5FE {
     note right of ores_dq_subject_areas_tbl
     Sub-classification within a data domain.
     Examples: currencies, countries, images.
-    end note
-
-    entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * code : text
-        * version : integer
-          source : text
-          description : text
-    }
-
-    note right of ores_dq_supervisory_bodies_artefact_tbl
-    Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table
-    end note
-
-    entity ores_dq_tags_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * tag_id : uuid <<FK>>
-        * version : integer
-        * name : text
-        * description : text
-    }
-
-    entity ores_dq_treatment_dimensions_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-        * name : text
-        * description : text
-        * modified_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_dq_treatment_dimensions_tbl
-    Describes how data should be treated.
-    Examples: golden, provisional, deprecated.
     end note
 
 }

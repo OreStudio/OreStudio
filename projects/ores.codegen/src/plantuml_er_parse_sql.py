@@ -1031,6 +1031,34 @@ class SQLParser:
         # Default
         return 'has'
 
+    def _get_dq_subpackage(self, table_name: str) -> tuple:
+        """Determine the DQ sub-package for a table based on naming patterns.
+
+        Returns (package_name, description, color, order) tuple.
+        """
+        # Artefact/staging tables - import tables for data ingestion
+        if table_name.endswith('_artefact_tbl'):
+            return ('dq_staging', 'Data Staging', '#F3E5F5', 4.1)
+
+        # Dataset management tables
+        dataset_tables = [
+            'datasets_tbl', 'dataset_bundles_tbl', 'dataset_bundle_members_tbl',
+            'dataset_dependencies_tbl', 'dataset_publications_tbl', 'bundle_publications_tbl'
+        ]
+        if any(table_name.endswith(t) for t in dataset_tables):
+            return ('dq_datasets', 'Dataset Management', '#E3F2FD', 4.2)
+
+        # Methodology and dimension tables
+        methodology_tables = [
+            'methodologies_tbl', 'nature_dimensions_tbl', 'origin_dimensions_tbl',
+            'treatment_dimensions_tbl'
+        ]
+        if any(table_name.endswith(t) for t in methodology_tables):
+            return ('dq_methodology', 'Methodology', '#E8F5E9', 4.3)
+
+        # Core metadata tables (default for remaining dq tables)
+        return ('dq_metadata', 'Data Catalog', '#E1F5FE', 4.4)
+
     def get_model(self) -> dict:
         """Generate the JSON model."""
         # Apply column markings (unique, FK) before generating model
@@ -1039,11 +1067,24 @@ class SQLParser:
         # Detect relationships between tables
         self.detect_relationships()
 
-        # Group tables by component
+        # Group tables by component, with special handling for dq sub-packages
         packages = {}
         for table in self.tables.values():
             comp = table.component
-            if comp not in packages:
+
+            # Split dq package into sub-packages for better diagram layout
+            if comp == 'dq':
+                pkg_name, pkg_desc, pkg_color, pkg_order = self._get_dq_subpackage(table.name)
+                if pkg_name not in packages:
+                    packages[pkg_name] = {
+                        'name': pkg_name,
+                        'description': pkg_desc,
+                        'color': pkg_color,
+                        'order': pkg_order,
+                        'tables': []
+                    }
+                comp = pkg_name
+            elif comp not in packages:
                 comp_info = next(
                     (info for prefix, info in COMPONENT_PREFIXES.items()
                      if info['name'] == comp),

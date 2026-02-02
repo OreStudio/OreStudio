@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-02T08:40:57.120362Z",
+  "generated_at": "2026-02-02T09:48:25.057318Z",
   "packages": [
     {
       "name": "iam",
@@ -3542,10 +3542,10 @@
       ]
     },
     {
-      "name": "dq",
-      "description": "Data Quality",
-      "color": "#E1F5FE",
-      "order": 4,
+      "name": "dq_staging",
+      "description": "Data Staging",
+      "color": "#F3E5F5",
+      "order": 4.1,
       "tables": [
         {
           "name": "ores_dq_account_types_artefact_tbl",
@@ -3623,153 +3623,6 @@
           "indexes": [],
           "source_file": "create/dq/dq_account_types_artefact_create.sql",
           "description": "Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_artefact_types_tbl",
-          "component": "dq",
-          "entity": "artefact_types",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "code",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": true,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "artefact_table",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "target_table",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "populate_function",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "display_order",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_reason_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_artefact_types_create.sql",
-          "description": "Artefact Types - Maps artefact type codes to their population functions and tables"
         },
         {
           "name": "ores_dq_asset_classes_artefact_tbl",
@@ -4003,178 +3856,6 @@
           "description": "FpML Benchmark rates - Artefact Table"
         },
         {
-          "name": "ores_dq_bundle_publications_tbl",
-          "component": "dq",
-          "entity": "bundle_publications",
-          "classification": "current_state",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "id",
-                "type": "uuid"
-              }
-            ],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "bundle_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "bundle_name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "mode",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "atomic",
-              "type": "boolean",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "false",
-              "references": null
-            },
-            {
-              "name": "datasets_processed",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "datasets_succeeded",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "datasets_failed",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "datasets_skipped",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "total_records_inserted",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "total_records_updated",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "total_records_skipped",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "total_records_deleted",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "published_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "published_at",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "current_timestamp",
-              "references": null
-            },
-            {
-              "name": "completed_at",
-              "type": "timestamptz",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_bundle_publication_create.sql",
-          "description": "Bundle Publication Audit Table"
-        },
-        {
           "name": "ores_dq_business_centres_artefact_tbl",
           "component": "dq",
           "entity": "business_centres_artefact",
@@ -4406,444 +4087,6 @@
           "description": "The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table"
         },
         {
-          "name": "ores_dq_catalogs_tbl",
-          "component": "dq",
-          "entity": "catalogs",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "name",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "owner",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_reason_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_catalog_create.sql",
-          "description": "A catalog is a named collection of related datasets. It provides a\n    high-level grouping mechanism for datasets that share a common theme,\n    source, or purpose.\n    Examples:\n    - \"ISO Standards\" - Contains ISO 3166 countries, ISO 4217 currencies\n    - \"Cryptocurrency\" - Contains crypto reference data and icons"
-        },
-        {
-          "name": "ores_dq_change_reason_categories_tbl",
-          "component": "dq",
-          "entity": "change_reason_categories",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "code",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_change_reason_categories_create.sql",
-          "description": ""
-        },
-        {
-          "name": "ores_dq_change_reasons_tbl",
-          "component": "dq",
-          "entity": "change_reasons",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "code",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "category_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "applies_to_amend",
-              "type": "boolean",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "true",
-              "references": null
-            },
-            {
-              "name": "applies_to_delete",
-              "type": "boolean",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "true",
-              "references": null
-            },
-            {
-              "name": "requires_commentary",
-              "type": "boolean",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "false",
-              "references": null
-            },
-            {
-              "name": "display_order",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_change_reasons_create.sql",
-          "description": ""
-        },
-        {
-          "name": "ores_dq_coding_scheme_authority_types_tbl",
-          "component": "dq",
-          "entity": "coding_scheme_authority_types",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "code",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_reason_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_coding_scheme_authority_type_create.sql",
-          "description": "Classifies coding schemes by the authority or governance level behind them.\n    This helps distinguish between formal standards, industry conventions, and\n    proprietary identifiers.\n    Values:\n    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)\n    - industry: De facto standards widely adopted in the market but not formally standardized\n    - internal: Proprietary or organization-specific identifiers"
-        },
-        {
           "name": "ores_dq_coding_schemes_artefact_tbl",
           "component": "dq",
           "entity": "coding_schemes_artefact",
@@ -4959,153 +4202,6 @@
           "indexes": [],
           "source_file": "create/dq/dq_coding_schemes_artefact_create.sql",
           "description": ""
-        },
-        {
-          "name": "ores_dq_coding_schemes_tbl",
-          "component": "dq",
-          "entity": "coding_schemes",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "code",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "authority_type",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "subject_area_name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "domain_name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "uri",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_reason_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_coding_scheme_create.sql",
-          "description": "A scheme defines a coding or identification standard used to identify\n    entities such as parties, currencies, or other domain objects. Based on\n    the FPML coding-scheme concept.\n    Each scheme belongs to a subject area within the DQ hierarchy, establishing\n    what type of entity the scheme identifies.\n    Examples:\n    - LEI (Legal Entity Identifier, ISO 17442) for party identification\n    - BIC (Business Identifier Code, ISO 9362) for financial institutions\n    - ISO 4217 for currency codes\n    - ISO 3166 for country codes"
         },
         {
           "name": "ores_dq_countries_artefact_tbl",
@@ -5372,30 +4468,194 @@
           "description": ""
         },
         {
-          "name": "ores_dq_data_domains_tbl",
+          "name": "ores_dq_entity_classifications_artefact_tbl",
           "component": "dq",
-          "entity": "data_domains",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
+          "entity": "entity_classifications_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
           "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "name",
-                "type": "text"
-              }
-            ],
-            "composite": true
+            "columns": [],
+            "composite": false
           },
           "columns": [
             {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
               "name": "version",
               "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_entity_classifications_artefact_create.sql",
+          "description": "Financial Entity Indicator as defined by the CFTC. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_image_tags_artefact_tbl",
+          "component": "dq",
+          "entity": "image_tags_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "image_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tag_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_image_tags_artefact_create.sql",
+          "description": ""
+        },
+        {
+          "name": "ores_dq_images_artefact_tbl",
+          "component": "dq",
+          "entity": "images_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "image_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "key",
+              "type": "text",
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
@@ -5414,48 +4674,8 @@
               "references": null
             },
             {
-              "name": "modified_by",
+              "name": "svg_data",
               "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_reason_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
@@ -5465,8 +4685,871 @@
             }
           ],
           "indexes": [],
-          "source_file": "create/dq/dq_data_domain_create.sql",
-          "description": "High-level data classification.\n    Examples: reference_data, market_data, trade_data."
+          "source_file": "create/dq/dq_images_artefact_create.sql",
+          "description": ""
+        },
+        {
+          "name": "ores_dq_ip2country_artefact_tbl",
+          "component": "dq",
+          "entity": "ip2country_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "range_start",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "range_end",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "country_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_ip2country_artefact_create.sql",
+          "description": "Staging table for IPv4 to country mapping data from iptoasn.com.\n    Data is imported here first, then promoted to geo_ip2country_tbl."
+        },
+        {
+          "name": "ores_dq_local_jurisdictions_artefact_tbl",
+          "component": "dq",
+          "entity": "local_jurisdictions_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_local_jurisdictions_artefact_create.sql",
+          "description": "This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_party_relationships_artefact_tbl",
+          "component": "dq",
+          "entity": "party_relationships_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_party_relationships_artefact_create.sql",
+          "description": "Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_party_roles_artefact_tbl",
+          "component": "dq",
+          "entity": "party_roles_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_party_roles_artefact_create.sql",
+          "description": "Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_person_roles_artefact_tbl",
+          "component": "dq",
+          "entity": "person_roles_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_person_roles_artefact_create.sql",
+          "description": "Indicates the role of a person in a transaction. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_regulatory_corporate_sectors_artefact_tbl",
+          "component": "dq",
+          "entity": "regulatory_corporate_sectors_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_regulatory_corporate_sectors_artefact_create.sql",
+          "description": "Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_reporting_regimes_artefact_tbl",
+          "component": "dq",
+          "entity": "reporting_regimes_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_reporting_regimes_artefact_create.sql",
+          "description": "Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_supervisory_bodies_artefact_tbl",
+          "component": "dq",
+          "entity": "supervisory_bodies_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_supervisory_bodies_artefact_create.sql",
+          "description": "Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table"
+        },
+        {
+          "name": "ores_dq_tags_artefact_tbl",
+          "component": "dq",
+          "entity": "tags_artefact",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tag_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_tags_artefact_create.sql",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "dq_datasets",
+      "description": "Dataset Management",
+      "color": "#E3F2FD",
+      "order": 4.2,
+      "tables": [
+        {
+          "name": "ores_dq_bundle_publications_tbl",
+          "component": "dq",
+          "entity": "bundle_publications",
+          "classification": "current_state",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              }
+            ],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "bundle_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "bundle_name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "mode",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "atomic",
+              "type": "boolean",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "false",
+              "references": null
+            },
+            {
+              "name": "datasets_processed",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "datasets_succeeded",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "datasets_failed",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "datasets_skipped",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_inserted",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_updated",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_skipped",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "total_records_deleted",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "published_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "published_at",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "current_timestamp",
+              "references": null
+            },
+            {
+              "name": "completed_at",
+              "type": "timestamptz",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_bundle_publication_create.sql",
+          "description": "Bundle Publication Audit Table"
         },
         {
           "name": "ores_dq_dataset_bundle_members_tbl",
@@ -6185,372 +6268,15 @@
           "indexes": [],
           "source_file": "create/dq/dq_dataset_create.sql",
           "description": "Central dataset registry with full lineage.\n    Tracks provenance via upstream_derivation_id.\n    lineage_depth auto-calculated from hierarchy."
-        },
-        {
-          "name": "ores_dq_entity_classifications_artefact_tbl",
-          "component": "dq",
-          "entity": "entity_classifications_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_entity_classifications_artefact_create.sql",
-          "description": "Financial Entity Indicator as defined by the CFTC. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_image_tags_artefact_tbl",
-          "component": "dq",
-          "entity": "image_tags_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "image_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tag_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_image_tags_artefact_create.sql",
-          "description": ""
-        },
-        {
-          "name": "ores_dq_images_artefact_tbl",
-          "component": "dq",
-          "entity": "images_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "image_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "key",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "svg_data",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_images_artefact_create.sql",
-          "description": ""
-        },
-        {
-          "name": "ores_dq_ip2country_artefact_tbl",
-          "component": "dq",
-          "entity": "ip2country_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "range_start",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "range_end",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "country_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_ip2country_artefact_create.sql",
-          "description": "Staging table for IPv4 to country mapping data from iptoasn.com.\n    Data is imported here first, then promoted to geo_ip2country_tbl."
-        },
-        {
-          "name": "ores_dq_local_jurisdictions_artefact_tbl",
-          "component": "dq",
-          "entity": "local_jurisdictions_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_local_jurisdictions_artefact_create.sql",
-          "description": "This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table"
-        },
+        }
+      ]
+    },
+    {
+      "name": "dq_methodology",
+      "description": "Methodology",
+      "color": "#E8F5E9",
+      "order": 4.3,
+      "tables": [
         {
           "name": "ores_dq_methodologies_tbl",
           "component": "dq",
@@ -6893,646 +6619,6 @@
           "description": "Describes the origin of data.\n    Examples: vendor, internal, regulatory."
         },
         {
-          "name": "ores_dq_party_relationships_artefact_tbl",
-          "component": "dq",
-          "entity": "party_relationships_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_party_relationships_artefact_create.sql",
-          "description": "Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_party_roles_artefact_tbl",
-          "component": "dq",
-          "entity": "party_roles_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_party_roles_artefact_create.sql",
-          "description": "Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_person_roles_artefact_tbl",
-          "component": "dq",
-          "entity": "person_roles_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_person_roles_artefact_create.sql",
-          "description": "Indicates the role of a person in a transaction. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_regulatory_corporate_sectors_artefact_tbl",
-          "component": "dq",
-          "entity": "regulatory_corporate_sectors_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_regulatory_corporate_sectors_artefact_create.sql",
-          "description": "Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_reporting_regimes_artefact_tbl",
-          "component": "dq",
-          "entity": "reporting_regimes_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_reporting_regimes_artefact_create.sql",
-          "description": "Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_subject_areas_tbl",
-          "component": "dq",
-          "entity": "subject_areas",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
-          "primary_key": {
-            "columns": [
-              {
-                "name": "tenant_id",
-                "type": "uuid",
-                "is_fk": true
-              },
-              {
-                "name": "name",
-                "type": "text"
-              },
-              {
-                "name": "domain_name",
-                "type": "text"
-              }
-            ],
-            "composite": true
-          },
-          "columns": [
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "modified_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_reason_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "change_commentary",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "valid_to",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_subject_area_create.sql",
-          "description": "Sub-classification within a data domain.\n    Examples: currencies, countries, images."
-        },
-        {
-          "name": "ores_dq_supervisory_bodies_artefact_tbl",
-          "component": "dq",
-          "entity": "supervisory_bodies_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "source",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_supervisory_bodies_artefact_create.sql",
-          "description": "Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table"
-        },
-        {
-          "name": "ores_dq_tags_artefact_tbl",
-          "component": "dq",
-          "entity": "tags_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tenant_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "tag_id",
-              "type": "uuid",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "version",
-              "type": "integer",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "name",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "description",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_tags_artefact_create.sql",
-          "description": ""
-        },
-        {
           "name": "ores_dq_treatment_dimensions_tbl",
           "component": "dq",
           "entity": "treatment_dimensions",
@@ -7638,6 +6724,944 @@
           "indexes": [],
           "source_file": "create/dq/dq_treatment_dimension_create.sql",
           "description": "Describes how data should be treated.\n    Examples: golden, provisional, deprecated."
+        }
+      ]
+    },
+    {
+      "name": "dq_metadata",
+      "description": "Data Catalog",
+      "color": "#E1F5FE",
+      "order": 4.4,
+      "tables": [
+        {
+          "name": "ores_dq_artefact_types_tbl",
+          "component": "dq",
+          "entity": "artefact_types",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": true,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "artefact_table",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "target_table",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "populate_function",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_artefact_types_create.sql",
+          "description": "Artefact Types - Maps artefact type codes to their population functions and tables"
+        },
+        {
+          "name": "ores_dq_catalogs_tbl",
+          "component": "dq",
+          "entity": "catalogs",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "name",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "owner",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_catalog_create.sql",
+          "description": "A catalog is a named collection of related datasets. It provides a\n    high-level grouping mechanism for datasets that share a common theme,\n    source, or purpose.\n    Examples:\n    - \"ISO Standards\" - Contains ISO 3166 countries, ISO 4217 currencies\n    - \"Cryptocurrency\" - Contains crypto reference data and icons"
+        },
+        {
+          "name": "ores_dq_change_reason_categories_tbl",
+          "component": "dq",
+          "entity": "change_reason_categories",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_change_reason_categories_create.sql",
+          "description": ""
+        },
+        {
+          "name": "ores_dq_change_reasons_tbl",
+          "component": "dq",
+          "entity": "change_reasons",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "category_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "applies_to_amend",
+              "type": "boolean",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "true",
+              "references": null
+            },
+            {
+              "name": "applies_to_delete",
+              "type": "boolean",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "true",
+              "references": null
+            },
+            {
+              "name": "requires_commentary",
+              "type": "boolean",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "false",
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_change_reasons_create.sql",
+          "description": ""
+        },
+        {
+          "name": "ores_dq_coding_scheme_authority_types_tbl",
+          "component": "dq",
+          "entity": "coding_scheme_authority_types",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_coding_scheme_authority_type_create.sql",
+          "description": "Classifies coding schemes by the authority or governance level behind them.\n    This helps distinguish between formal standards, industry conventions, and\n    proprietary identifiers.\n    Values:\n    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)\n    - industry: De facto standards widely adopted in the market but not formally standardized\n    - internal: Proprietary or organization-specific identifiers"
+        },
+        {
+          "name": "ores_dq_coding_schemes_tbl",
+          "component": "dq",
+          "entity": "coding_schemes",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "authority_type",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "subject_area_name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "domain_name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "uri",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_coding_scheme_create.sql",
+          "description": "A scheme defines a coding or identification standard used to identify\n    entities such as parties, currencies, or other domain objects. Based on\n    the FPML coding-scheme concept.\n    Each scheme belongs to a subject area within the DQ hierarchy, establishing\n    what type of entity the scheme identifies.\n    Examples:\n    - LEI (Legal Entity Identifier, ISO 17442) for party identification\n    - BIC (Business Identifier Code, ISO 9362) for financial institutions\n    - ISO 4217 for currency codes\n    - ISO 3166 for country codes"
+        },
+        {
+          "name": "ores_dq_data_domains_tbl",
+          "component": "dq",
+          "entity": "data_domains",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "name",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_data_domain_create.sql",
+          "description": "High-level data classification.\n    Examples: reference_data, market_data, trade_data."
+        },
+        {
+          "name": "ores_dq_subject_areas_tbl",
+          "component": "dq",
+          "entity": "subject_areas",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "name",
+                "type": "text"
+              },
+              {
+                "name": "domain_name",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_subject_area_create.sql",
+          "description": "Sub-classification within a data domain.\n    Examples: currencies, countries, images."
         }
       ]
     },

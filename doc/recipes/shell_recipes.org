@@ -305,7 +305,7 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c1fd6-328d-7044-abf6-90524fec4a64
+  Account ID: 019c201e-923e-7e49-8de0-8fd5f796c183
   Tenant: System (00000000-0000-0000-0000-000000000000)
   You can now login with the credentials provided.
 ores-shell> Bye!
@@ -799,6 +799,231 @@ ores-shell> +---------+-----------+-----------------------+-------------+-------
 | 1       | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | Version 1      |
 +---------+-----------+-----------------------+-------------+-------------------------------+----------------+
 
+ores-shell> Bye!
+#+end_example
+
+
+** Tenants
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
+   :END:
+
+Tenant management functionality for multi-tenancy support in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM
+Component]].
+
+*** Help Menu
+
+#+name: help-tenants-exit
+#+begin_src ores-shell :exports none
+tenants
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<help-tenants-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> tenants> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all tenants from the server
+ - add <string> <string> <string> <string> <string>
+	Add a tenant (code name type hostname description)
+ - history <string>
+	Show history for a tenant (tenant_id)
+ - delete <string>
+	Delete a tenant (tenant_id)
+ - ores-shell
+	(menu)
+tenants> Bye!
+#+end_example
+
+*** Get Tenants
+
+Retrieve all tenants from the server.
+
+#+name: tenants-get
+#+begin_src ores-shell :exports none
+tenants get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-get>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| Code                                          | Name                                          | Type         | Hostname                                                | Status | Recorded By        | Version |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| ores.assets.tests_20260202_205009_969425_8799 | ores.assets.tests_20260202_205009_969425_8799 | organisation | ores.assets.tests_20260202_205009_969425_8799.localhost | active | ores_test_dml_user | 1       |
+| system                                        | System                                        | platform     | localhost                                               | active | system             | 1       |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+*** Get All Tenants
+
+Retrieve all tenants from the server.
+
+#+name: tenants-get
+#+begin_src ores-shell :exports none
+tenants get-all
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-get>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| Code                                          | Name                                          | Type         | Hostname                                                | Status | Recorded By        | Version |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| ores.assets.tests_20260202_205009_969425_8799 | ores.assets.tests_20260202_205009_969425_8799 | organisation | ores.assets.tests_20260202_205009_969425_8799.localhost | active | ores_test_dml_user | 1       |
+| system                                        | System                                        | platform     | localhost                                               | active | system             | 1       |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+
+*** Add Tenant
+
+Create a new tenant with the specified parameters.
+
+#+name: tenants-add
+#+begin_src ores-shell :exports none
+tenants add acme "ACME Corp" enterprise acme.example.com "ACME Corporation tenant"
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Tenant added successfully!
+  ID: 019c1234-5678-90ab-cdef-1234567890ab
+ores-shell> Bye!
+#+end_example
+
+*** Tenant History
+
+Get version history for a specific tenant.
+
+#+name: tenants-history
+#+begin_src ores-shell :exports none
+tenants history 00000000-0000-0000-0000-000000000000
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> History for tenant 00000000-0000-0000-0000-000000000000 (1 versions):
+--------------------------------------------------------------------------------
+  Version 1
+    Code: system
+    Name: System
+    Type: system_tenant
+    Hostname: localhost
+    Status: active
+    Recorded: 2026-02-02 19:24:23 by system
+    Reason: system.new_record - System tenant created during database initialization
+
+ores-shell> Bye!
+#+end_example
+
+*** Delete Tenant
+
+Delete a tenant by ID. Note: The system tenant cannot be deleted.
+
+#+name: tenants-delete
+#+begin_src ores-shell :exports none
+tenants delete 019c1234-5678-90ab-cdef-1234567890ab
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Tenant deleted successfully!
 ores-shell> Bye!
 #+end_example
 
@@ -2449,192 +2674,6 @@ ores-shell>
 
 ores-shell> Bye!
 #+end_example
-
-** Tenants
-   :PROPERTIES:
-   :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
-
-Tenant management functionality for multi-tenancy support in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM
-Component]].
-
-*** Help Menu
-
-#+name: help-tenants-exit
-#+begin_src ores-shell :exports none
-tenants
-help
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
-<<help-tenants-exit>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-ORE Studio Shell REPL v0.0.11
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> tenants> Commands available:
- - help
-	This help message
- - exit
-	Quit the session
- - history
-	Show the history
- - ! <history entry index>
-	Exec a command by index in the history
- - get
-	Retrieve all tenants from the server
- - add <string> <string> <string> <string> <string>
-	Add a tenant (code name type hostname description)
- - history <string>
-	Show history for a tenant (tenant_id)
- - delete <string>
-	Delete a tenant (tenant_id)
- - ores-shell
-	(menu)
-tenants> Bye!
-#+end_example
-
-*** Get Tenants
-
-Retrieve all tenants from the server.
-
-#+name: tenants-get
-#+begin_src ores-shell :exports none
-tenants get
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<tenants-get>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
-ORE Studio Shell REPL v0.0.11
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell>
-+--------------------------------------+--------+--------+---------------+-----------+--------+------------------------+-------------+---------+
-| ID (UUID)                            | Code   | Name   | Type          | Hostname  | Status | Description            | Recorded By | Version |
-+--------------------------------------+--------+--------+---------------+-----------+--------+------------------------+-------------+---------+
-| 00000000-0000-0000-0000-000000000000 | system | System | system_tenant | localhost | active | System tenant for ORE. | system      | 1       |
-+--------------------------------------+--------+--------+---------------+-----------+--------+------------------------+-------------+---------+
-
-
-ores-shell> Bye!
-#+end_example
-
-*** Add Tenant
-
-Create a new tenant with the specified parameters.
-
-#+name: tenants-add
-#+begin_src ores-shell :exports none
-tenants add acme "ACME Corp" enterprise acme.example.com "ACME Corporation tenant"
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<tenants-add>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
-ORE Studio Shell REPL v0.0.11
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> ✓ Tenant added successfully!
-  ID: 019c1234-5678-90ab-cdef-1234567890ab
-ores-shell> Bye!
-#+end_example
-
-*** Tenant History
-
-Get version history for a specific tenant.
-
-#+name: tenants-history
-#+begin_src ores-shell :exports none
-tenants history 00000000-0000-0000-0000-000000000000
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<tenants-history>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
-ORE Studio Shell REPL v0.0.11
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> History for tenant 00000000-0000-0000-0000-000000000000 (1 versions):
---------------------------------------------------------------------------------
-  Version 1
-    Code: system
-    Name: System
-    Type: system_tenant
-    Hostname: localhost
-    Status: active
-    Recorded: 2026-02-02 19:24:23 by system
-    Reason: system.new_record - System tenant created during database initialization
-
-ores-shell> Bye!
-#+end_example
-
-*** Delete Tenant
-
-Delete a tenant by ID. Note: The system tenant cannot be deleted.
-
-#+name: tenants-delete
-#+begin_src ores-shell :exports none
-tenants delete 019c1234-5678-90ab-cdef-1234567890ab
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<tenants-delete>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
-ORE Studio Shell REPL v0.0.11
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> ✓ Tenant deleted successfully!
-ores-shell> Bye!
-#+end_example
-
 
 * Footer
 

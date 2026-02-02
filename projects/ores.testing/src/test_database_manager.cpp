@@ -137,7 +137,7 @@ std::string test_database_manager::provision_test_tenant(
     // Call the provisioner function with parameterized query
     execute_parameterized_command(ctx,
         "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)",
-        {"organisation", tenant_code, tenant_code,
+        {"test", tenant_code, tenant_code,
          tenant_code + ".localhost", description},
         lg(), "Provisioning test tenant");
 

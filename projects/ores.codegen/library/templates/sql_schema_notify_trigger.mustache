@@ -1,5 +1,10 @@
 {{! Template to generate SQL notification trigger for entity changes }}
 {{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
 
 create or replace function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_notify_fn()
 returns trigger as $$

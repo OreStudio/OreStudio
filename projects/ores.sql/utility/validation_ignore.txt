@@ -11,6 +11,9 @@
 # - TEMPORAL_004: Missing version column
 # - TEMPORAL_005: Missing modified_by column
 # - TEMPORAL_006: Missing change_reason_code column
+# - TENANT_001: Missing tenant_id column
+# - TENANT_002: Missing tenant_id in primary key
+# - TENANT_003: Missing tenant_id in EXCLUDE constraint
 
 # =============================================================================
 # Change reason tables - intentionally missing change_reason_code
@@ -30,3 +33,10 @@ TEMPORAL_005 ores_dq_dataset_dependencies_tbl
 # System-managed tables - no user audit trail needed
 # =============================================================================
 TEMPORAL_004 ores_iam_permissions_tbl
+
+# =============================================================================
+# Artefact/staging tables - tenant_id not in PK by design
+# These are temporary import tables where dataset_id is the primary identifier.
+# tenant_id is carried for data flow to target tables, not for uniqueness.
+# =============================================================================
+TENANT_002 ores_dq_*_artefact_tbl

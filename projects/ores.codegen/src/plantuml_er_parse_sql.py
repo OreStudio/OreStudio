@@ -458,6 +458,10 @@ class SQLParser:
         if classification == 'temporal':
             self._validate_temporal_table(name, columns, body, file_path, line_num)
 
+        # Validate tenant-aware requirements (all temporal and artefact tables should be tenant-aware)
+        if classification in ('temporal', 'artefact'):
+            self._validate_tenant_aware_table(name, columns, body, pk, file_path, line_num)
+
         # Get description from extracted comments
         description = self.table_descriptions.get(name, '')
 
@@ -669,6 +673,38 @@ class SQLParser:
             if 'change_reason_code' not in col_names:
                 self._add_warning(file_path, line_num, 'TEMPORAL_006',
                                   f"Temporal table '{name}' missing 'change_reason_code' column",
+                                  entity_name=name)
+
+    def _validate_tenant_aware_table(self, name: str, columns: list, body: str,
+                                      pk: dict, file_path: str, line_num: int) -> None:
+        """Validate tenant-aware table requirements.
+
+        Multi-tenant tables must have:
+        - tenant_id column
+        - tenant_id in primary key
+        - tenant_id in EXCLUDE constraint (for temporal tables)
+        """
+        col_names = {c.name for c in columns}
+
+        # Check tenant_id column exists
+        if 'tenant_id' not in col_names:
+            self._add_warning(file_path, line_num, 'TENANT_001',
+                              f"Table '{name}' missing 'tenant_id' column for multi-tenancy",
+                              entity_name=name)
+            return  # Can't check other tenant requirements without tenant_id
+
+        # Check tenant_id is in primary key
+        pk_cols = {c['name'] for c in pk.get('columns', [])}
+        if 'tenant_id' not in pk_cols:
+            self._add_warning(file_path, line_num, 'TENANT_002',
+                              f"Table '{name}' missing 'tenant_id' in primary key",
+                              entity_name=name)
+
+        # Check tenant_id is in EXCLUDE constraint (for temporal tables with EXCLUDE)
+        if 'exclude using gist' in body.lower():
+            if 'tenant_id with =' not in body.lower():
+                self._add_warning(file_path, line_num, 'TENANT_003',
+                                  f"Table '{name}' missing 'tenant_id WITH =' in EXCLUDE constraint",
                                   entity_name=name)
 
     def _extract_functions(self, content: str, lines: list, file_path: str) -> None:

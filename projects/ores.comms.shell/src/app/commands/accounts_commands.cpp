@@ -424,6 +424,7 @@ process_bootstrap(std::ostream& out, client_session& session,
                                   << response.account_id;
         out << "✓ Initial admin account created successfully!" << std::endl;
         out << "  Account ID: " << response.account_id << std::endl;
+        out << "  Tenant: System (ID 0)" << std::endl;
         out << "  You can now login with the credentials provided." << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << response.error_message;

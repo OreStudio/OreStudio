@@ -59,13 +59,15 @@ public:
     /**
      * @brief Process a get tenants request.
      *
-     * Retrieves all tenants from the server and displays them.
+     * Retrieves tenants from the server and displays them.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
+     * @param include_deleted When true, includes soft-deleted tenants.
      */
     static void process_get_tenants(std::ostream& out,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        bool include_deleted);
 
     /**
      * @brief Process an add tenant request.

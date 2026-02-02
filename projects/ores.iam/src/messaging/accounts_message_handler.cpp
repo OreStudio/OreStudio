@@ -1735,9 +1735,18 @@ handle_get_tenants_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    const auto& request = *request_result;
+
     try {
-        auto tenants = tenant_repo_.read_latest();
-        BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size() << " tenants";
+        std::vector<domain::tenant> tenants;
+        if (request.include_deleted) {
+            tenants = tenant_repo_.read_all_latest();
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size()
+                                      << " tenants (including deleted)";
+        } else {
+            tenants = tenant_repo_.read_latest();
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size() << " tenants";
+        }
 
         get_tenants_response response{
             .tenants = std::move(tenants)

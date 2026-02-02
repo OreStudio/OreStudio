@@ -122,15 +122,23 @@ read_tenant(std::span<const std::byte>& data) {
 // ============================================================================
 
 std::vector<std::byte> get_tenants_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, include_deleted);
+    return buffer;
 }
 
 std::expected<get_tenants_request, error_code>
 get_tenants_request::deserialize(std::span<const std::byte> data) {
+    get_tenants_request request;
+
+    // Handle both old (empty) and new (with flag) formats for backward compatibility
     if (!data.empty()) {
-        return std::unexpected(error_code::payload_too_large);
+        auto include_deleted_result = reader::read_bool(data);
+        if (!include_deleted_result) return std::unexpected(include_deleted_result.error());
+        request.include_deleted = *include_deleted_result;
     }
-    return get_tenants_request{};
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const get_tenants_request& v) {

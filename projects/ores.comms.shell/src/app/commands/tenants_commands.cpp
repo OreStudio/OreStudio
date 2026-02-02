@@ -50,8 +50,12 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         std::make_unique<cli::Menu>("tenants");
 
     tenants_menu->Insert("get", [&session](std::ostream& out) {
-        process_get_tenants(std::ref(out), std::ref(session));
-    }, "Retrieve all tenants from the server");
+        process_get_tenants(std::ref(out), std::ref(session), false);
+    }, "Retrieve active tenants from the server");
+
+    tenants_menu->Insert("get-all", [&session](std::ostream& out) {
+        process_get_tenants(std::ref(out), std::ref(session), true);
+    }, "Retrieve all tenants including deleted");
 
     tenants_menu->Insert("add", [&session](std::ostream& out,
             std::string code, std::string name, std::string type,
@@ -77,15 +81,17 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void tenants_commands::
-process_get_tenants(std::ostream& out, client_session& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request.";
+process_get_tenants(std::ostream& out, client_session& session,
+    bool include_deleted) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request. "
+                               << "include_deleted=" << include_deleted;
 
     using iam::messaging::get_tenants_request;
     using iam::messaging::get_tenants_response;
     auto result = session.process_authenticated_request<get_tenants_request,
                                                         get_tenants_response,
                                                         message_type::get_tenants_request>
-        (get_tenants_request{});
+        (get_tenants_request{.include_deleted = include_deleted});
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;

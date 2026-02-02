@@ -63,9 +63,19 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads all latest tenants.
+     * @brief Reads all latest active tenants.
+     *
+     * Returns only tenants where valid_to = infinity (not deleted).
      */
     std::vector<domain::tenant> read_latest();
+
+    /**
+     * @brief Reads the latest version of all tenants including deleted.
+     *
+     * Returns the most recent version of each tenant, regardless of whether
+     * it has been soft-deleted (valid_to != infinity).
+     */
+    std::vector<domain::tenant> read_all_latest();
 
     /**
      * @brief Reads a specific tenant by ID.

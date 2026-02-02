@@ -237,8 +237,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Tenant type messages (0x2058-0x205F) and tenant status messages (0x2060-0x2067).
 // Also adds hostname field to login_request for tenant identification during
 // authentication. This is a breaking change due to the new field in login_request.
+//
+// Version 26.1 adds include_deleted optional field to get_tenants_request.
+// When true, returns the latest version of all tenants including soft-deleted.
+// Backward compatible: old clients sending empty payload get default (false).
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 26;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

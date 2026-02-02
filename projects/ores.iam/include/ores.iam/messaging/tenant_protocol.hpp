@@ -39,7 +39,28 @@ namespace ores::iam::messaging {
  * @brief Request to retrieve all tenants.
  */
 struct get_tenants_request final {
+    /**
+     * @brief Include soft-deleted tenants in response.
+     *
+     * When true, returns the latest version of all tenants including deleted.
+     * When false (default), returns only active tenants (valid_to = infinity).
+     */
+    bool include_deleted = false;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 1 byte: include_deleted (boolean)
+     */
     std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     *
+     * Handles both old (empty) and new (with flag) formats for backward
+     * compatibility.
+     */
     static std::expected<get_tenants_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);

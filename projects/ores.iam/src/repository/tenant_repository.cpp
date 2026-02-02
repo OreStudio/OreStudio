@@ -19,6 +19,9 @@
  */
 #include "ores.iam/repository/tenant_repository.hpp"
 
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sqlgen/postgres.hpp>
@@ -66,6 +69,58 @@ std::vector<domain::tenant> tenant_repository::read_latest() {
     return execute_read_query<tenant_entity, domain::tenant>(ctx_, query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(), "Reading latest tenants");
+}
+
+std::vector<domain::tenant> tenant_repository::read_all_latest() {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all latest tenants including deleted";
+
+    // Use DISTINCT ON to get the latest version of each tenant
+    const std::string sql =
+        "SELECT DISTINCT ON (id) "
+        "id, tenant_id, version, type, code, name, description, hostname, "
+        "status, modified_by, change_reason_code, change_commentary, "
+        "valid_from, valid_to "
+        "FROM ores_iam_tenants_tbl "
+        "ORDER BY id, valid_from DESC";
+
+    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
+        "Reading all latest tenants including deleted");
+
+    std::vector<domain::tenant> result;
+    result.reserve(rows.size());
+
+    for (const auto& row : rows) {
+        if (row.size() >= 14 && row[0] && row[2] && row[3] && row[4] &&
+            row[5] && row[7] && row[8] && row[9] && row[10] && row[11] && row[12]) {
+            domain::tenant t;
+            t.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            t.version = std::stoi(*row[2]);
+            t.type = *row[3];
+            t.code = *row[4];
+            t.name = *row[5];
+            t.description = row[6].value_or("");
+            t.hostname = *row[7];
+            t.status = *row[8];
+            t.recorded_by = *row[9];
+            t.change_reason_code = *row[10];
+            t.change_commentary = *row[11];
+            // Parse timestamp from valid_from
+            const auto& timestamp_str = *row[12];
+            std::tm tm = {};
+            std::istringstream ss(timestamp_str);
+            ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+            t.recorded_at = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+            result.push_back(std::move(t));
+        }
+    }
+
+    // Sort by name for consistent ordering
+    std::ranges::sort(result, [](const auto& a, const auto& b) {
+        return a.name < b.name;
+    });
+
+    BOOST_LOG_SEV(lg(), debug) << "Read all latest tenants. Total: " << result.size();
+    return result;
 }
 
 std::vector<domain::tenant>

@@ -6,8 +6,11 @@ set schema '{{entity.schema}}';
 -- {{entity.description}}
 -- =============================================================================
 
-create table if not exists "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" (
+create table if not exists "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
+{{#entity.has_tenant_id}}
+    "tenant_id" uuid not null,
+{{/entity.has_tenant_id}}
     "version" integer not null,
 {{#entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
@@ -15,6 +18,9 @@ create table if not exists "{{entity.schema}}"."{{entity.component}}_{{entity.en
 {{#entity.has_coding_scheme}}
     "coding_scheme_code" text not null,
 {{/entity.has_coding_scheme}}
+{{#entity.has_nullable_coding_scheme}}
+    "coding_scheme_code" text,
+{{/entity.has_nullable_coding_scheme}}
 {{#entity.has_image_id}}
     "image_id" uuid,
 {{/entity.has_image_id}}
@@ -24,19 +30,40 @@ create table if not exists "{{entity.schema}}"."{{entity.component}}_{{entity.en
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
 {{#entity.has_coding_scheme}}
+{{#entity.has_tenant_id}}
+    primary key (tenant_id, {{entity.primary_key.column}}, coding_scheme_code, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        {{entity.primary_key.column}} WITH =,
+        coding_scheme_code WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/entity.has_tenant_id}}
+{{^entity.has_tenant_id}}
     primary key ({{entity.primary_key.column}}, coding_scheme_code, valid_from, valid_to),
     exclude using gist (
         {{entity.primary_key.column}} WITH =,
         coding_scheme_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
+{{/entity.has_tenant_id}}
 {{/entity.has_coding_scheme}}
 {{^entity.has_coding_scheme}}
+{{#entity.has_tenant_id}}
+    primary key (tenant_id, {{entity.primary_key.column}}, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        {{entity.primary_key.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/entity.has_tenant_id}}
+{{^entity.has_tenant_id}}
     primary key ({{entity.primary_key.column}}, valid_from, valid_to),
     exclude using gist (
         {{entity.primary_key.column}} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
+{{/entity.has_tenant_id}}
 {{/entity.has_coding_scheme}}
     check ("valid_from" < "valid_to"),
     check ("{{entity.primary_key.column}}" <> ''),
@@ -44,27 +71,56 @@ create table if not exists "{{entity.schema}}"."{{entity.component}}_{{entity.en
 );
 
 {{#entity.has_coding_scheme}}
-create unique index if not exists {{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
-on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, coding_scheme_code, version)
+{{#entity.has_tenant_id}}
+create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}}, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_tenant_id}}
+{{^entity.has_tenant_id}}
+create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, coding_scheme_code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_tenant_id}}
 {{/entity.has_coding_scheme}}
 {{^entity.has_coding_scheme}}
-create unique index if not exists {{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
-on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, version)
+{{#entity.has_tenant_id}}
+create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_tenant_id}}
+{{^entity.has_tenant_id}}
+create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_tenant_id}}
 {{/entity.has_coding_scheme}}
+{{#entity.has_tenant_id}}
+
+create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tenant_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/entity.has_tenant_id}}
 {{#entity.indexes}}
 
-create{{#unique}} unique{{/unique}} index if not exists {{entity.component}}_{{entity.entity_plural}}_{{name}}_idx
-on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
+create{{#unique}} unique{{/unique}} index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{name}}_idx
+on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
 where valid_to = ores_utility_infinity_timestamp_fn(){{/current_only}};
 {{/entity.indexes}}
 
-create or replace function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_insert_fn()
+create or replace function {{entity.schema}}.{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
+{{#entity.has_tenant_id}}
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+{{/entity.has_tenant_id}}
 {{#entity.has_coding_scheme}}
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
@@ -77,13 +133,26 @@ begin
     end if;
 
 {{/entity.has_coding_scheme}}
+{{#entity.has_nullable_coding_scheme}}
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
+
+{{/entity.has_nullable_coding_scheme}}
     select version into current_version
-    from "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
-    where {{entity.primary_key.column}} = new.{{entity.primary_key.column}}
+    from "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl"
+    where {{#entity.has_tenant_id}}tenant_id = new.tenant_id
+      and {{/entity.has_tenant_id}}{{entity.primary_key.column}} = new.{{entity.primary_key.column}}
 {{#entity.has_coding_scheme}}
       and coding_scheme_code = new.coding_scheme_code
 {{/entity.has_coding_scheme}}
-    and valid_to = ores_utility_infinity_timestamp_fn()
+      and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
@@ -94,14 +163,15 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+        update "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl"
         set valid_to = current_timestamp
-        where {{entity.primary_key.column}} = new.{{entity.primary_key.column}}
+        where {{#entity.has_tenant_id}}tenant_id = new.tenant_id
+          and {{/entity.has_tenant_id}}{{entity.primary_key.column}} = new.{{entity.primary_key.column}}
 {{#entity.has_coding_scheme}}
           and coding_scheme_code = new.coding_scheme_code
 {{/entity.has_coding_scheme}}
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
@@ -112,23 +182,29 @@ begin
         new.modified_by = current_user;
     end if;
 
+{{#entity.has_tenant_id}}
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+{{/entity.has_tenant_id}}
+{{^entity.has_tenant_id}}
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
+{{/entity.has_tenant_id}}
 
     return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger {{entity.component}}_{{entity.entity_plural}}_insert_trg
-before insert on "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+create or replace trigger {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_insert_trg
+before insert on "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl"
 for each row
-execute function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_insert_fn();
+execute function {{entity.schema}}.{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_insert_fn();
 
-create or replace rule {{entity.component}}_{{entity.entity_plural}}_delete_rule as
-on delete to "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+create or replace rule {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_delete_rule as
+on delete to "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl"
 do instead
-  update "{{entity.schema}}"."{{entity.component}}_{{entity.entity_plural}}_tbl"
+  update "{{entity.schema}}"."{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl"
   set valid_to = current_timestamp
-  where {{entity.primary_key.column}} = old.{{entity.primary_key.column}}
+  where {{#entity.has_tenant_id}}tenant_id = old.tenant_id
+  and {{/entity.has_tenant_id}}{{entity.primary_key.column}} = old.{{entity.primary_key.column}}
 {{#entity.has_coding_scheme}}
   and coding_scheme_code = old.coding_scheme_code
 {{/entity.has_coding_scheme}}

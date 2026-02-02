@@ -18,6 +18,7 @@
  *
  */
 
+-- SECURITY DEFINER to bypass RLS - authorization must work before tenant context is set
 create or replace function ores_iam_get_effective_permissions_fn(p_account_id uuid)
 returns table(code text) as $$
 begin
@@ -34,8 +35,9 @@ begin
     and ar.valid_to = ores_utility_infinity_timestamp_fn()
     order by p.code;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;
 
+-- SECURITY DEFINER to bypass RLS - used for loading role permissions cache
 create or replace function ores_iam_get_all_role_permission_codes_fn()
 returns table(role_id text, code text) as $$
 begin
@@ -48,8 +50,9 @@ begin
     and p.valid_to = ores_utility_infinity_timestamp_fn()
     order by rp.role_id, p.code;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;
 
+-- SECURITY DEFINER to bypass RLS - used for loading role permissions
 create or replace function ores_iam_get_role_permission_codes_fn(p_role_ids uuid[])
 returns table(role_id text, code text) as $$
 begin
@@ -63,8 +66,9 @@ begin
     and p.valid_to = ores_utility_infinity_timestamp_fn()
     order by rp.role_id, p.code;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;
 
+-- SECURITY DEFINER to bypass RLS - used for loading roles
 create or replace function ores_iam_get_roles_by_ids_fn(p_role_ids uuid[])
 returns table(
     id uuid,
@@ -81,8 +85,9 @@ begin
     and r.valid_to = ores_utility_infinity_timestamp_fn()
     order by r.name;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;
 
+-- SECURITY DEFINER to bypass RLS - used for listing account roles
 create or replace function ores_iam_get_account_roles_with_permissions_fn(p_account_id uuid)
 returns table(
     role_id uuid,
@@ -116,8 +121,9 @@ begin
     group by r.id, r.version, r.name, r.description, r.modified_by
     order by r.name;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;
 
+-- SECURITY DEFINER to bypass RLS - permission check by username
 create or replace function ores_iam_account_has_permission_fn(p_username text, p_permission_code text)
 returns boolean as $$
 declare
@@ -146,8 +152,9 @@ begin
         and p.valid_to = ores_utility_infinity_timestamp_fn()
     );
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;
 
+-- SECURITY DEFINER to bypass RLS - permission check by account ID
 create or replace function ores_iam_account_has_permission_by_id_fn(p_account_id uuid, p_permission_code text)
 returns boolean as $$
 begin
@@ -165,4 +172,4 @@ begin
         and p.valid_to = ores_utility_infinity_timestamp_fn()
     );
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;

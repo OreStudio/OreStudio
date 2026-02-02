@@ -35,7 +35,7 @@ namespace ores::iam::domain {
  * is a special tenant used for shared reference data and system administration.
  * 
  * Tenants are identified by:
- * - tenant_id: UUID primary key
+ * - id: UUID primary key (SQL also has tenant_id = id for self-reference)
  * - code: Unique text code for stable referencing (e.g., 'system', 'acme')
  * - hostname: Unique hostname for tenant routing during login
  */
@@ -49,8 +49,9 @@ struct tenant final {
      * @brief UUID uniquely identifying this tenant.
      *
      * The system tenant has UUID 00000000-0000-0000-0000-000000000000.
+     * In SQL, tenant_id = id for tenant records.
      */
-    boost::uuids::uuid tenant_id;
+    boost::uuids::uuid id;
 
     /**
      * @brief Unique code for stable referencing.

@@ -6,14 +6,14 @@
     "entity_plural": "tenants",
     "entity_title": "Tenant",
     "brief": "A tenant representing an isolated organisation or the system platform.",
-    "description": "Core entity for multi-tenancy support. Each tenant represents an isolated\norganisation with its own users, roles, and data. The system tenant (UUID all zeros)\nis a special tenant used for shared reference data and system administration.\n\nTenants are identified by:\n- tenant_id: UUID primary key\n- code: Unique text code for stable referencing (e.g., 'system', 'acme')\n- hostname: Unique hostname for tenant routing during login",
+    "description": "Core entity for multi-tenancy support. Each tenant represents an isolated\norganisation with its own users, roles, and data. The system tenant (UUID all zeros)\nis a special tenant used for shared reference data and system administration.\n\nTenants are identified by:\n- id: UUID primary key (SQL also has tenant_id = id for self-reference)\n- code: Unique text code for stable referencing (e.g., 'system', 'acme')\n- hostname: Unique hostname for tenant routing during login",
 
     "primary_key": {
-      "column": "tenant_id",
+      "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID uniquely identifying this tenant.",
-      "detail": "The system tenant has UUID 00000000-0000-0000-0000-000000000000."
+      "detail": "The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records."
     },
 
     "natural_keys": [

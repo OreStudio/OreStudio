@@ -155,7 +155,7 @@ begin
 {{/entity.has_nullable_coding_scheme}}
 {{#entity.validations}}
     -- Validate {{column}}
-    new.{{column}} := {{validation_function}}(new.tenant_id, new.{{column}});
+    new.{{column}} := {{validation_function}}({{#entity.has_tenant_id}}new.tenant_id, {{/entity.has_tenant_id}}new.{{column}});
 
 {{/entity.validations}}
     select version into current_version

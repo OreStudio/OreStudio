@@ -1,0 +1,158 @@
+#+TITLE: Enum Table Tenancy Consolidation Plan
+#+AUTHOR: Claude
+#+DATE: 2026-02-02
+
+* Overview
+
+Consolidate all enum/lookup tables to use tenant 0 (system tenant) for consistency.
+Currently some tables have no tenant_id column while others do. This creates confusion
+about when to use tenant 0 vs tenant-less tables.
+
+** Decision
+All shared data lives in tenant 0. No more tenant-less tables.
+
+** Benefits
+- Consistent model everywhere
+- All shared data is auditable/versioned
+- Future flexibility if an enum ever needs to become tenant-specific
+- Simpler mental model: "everything has a tenant"
+
+* Phase 1: Inventory
+
+** Tables WITHOUT tenant_id (need migration)
+
+| Table | Component | Description |
+|-------|-----------|-------------|
+| ores_refdata_rounding_types_tbl | refdata | Rounding methods (Up, Down, Closest, etc.) |
+| ores_iam_tenant_statuses_tbl | iam | Tenant lifecycle statuses |
+| ores_iam_tenant_types_tbl | iam | Tenant type classifications |
+| ores_dq_artefact_types_tbl | dq | Artefact type registry |
+
+** Tables WITH tenant_id but missing tenant in PK/EXCLUDE (bugs to fix)
+
+| Table | Component |
+|-------|-----------|
+| ores_refdata_currencies_tbl | refdata |
+| ores_refdata_countries_tbl | refdata |
+| ores_iam_roles_tbl | iam |
+| ores_iam_permissions_tbl | iam |
+| ores_dq_change_reasons_tbl | dq |
+| ... (all other refdata tables) | refdata |
+
+* Phase 2: Create Enum Table Template
+
+** New template: sql_schema_enum_create.mustache
+
+For simple enum tables that will now be tenant-aware and bi-temporal.
+
+** Model structure
+#+BEGIN_SRC json
+{
+  "enum": {
+    "product": "ores",
+    "component": "refdata",
+    "name": "rounding_type",
+    "name_plural": "rounding_types",
+    "description": "Valid rounding methods per ORE XML schema",
+    "has_tenant_id": true,
+    "generate_validation_function": true,
+    "columns": [
+      {"name": "code", "type": "text", "primary_key": true},
+      {"name": "name", "type": "text"},
+      {"name": "description", "type": "text"},
+      {"name": "display_order", "type": "integer", "default": 0}
+    ]
+  }
+}
+#+END_SRC
+
+** Generated validation function
+#+BEGIN_SRC sql
+create or replace function ores_refdata_validate_rounding_type_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns void as $$
+begin
+    if not exists (
+        select 1 from ores_refdata_rounding_types_tbl
+        where tenant_id = ores_iam_system_tenant_id_fn()
+        and code = p_value
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid rounding_type: %. Must be one of: %', p_value, (
+            select string_agg(code, ', ' order by display_order)
+            from ores_refdata_rounding_types_tbl
+            where tenant_id = ores_iam_system_tenant_id_fn()
+            and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+end;
+$$ language plpgsql;
+#+END_SRC
+
+* Phase 3: Create Models for Existing Enums
+
+** refdata enums
+- models/refdata/rounding_type_enum.json
+
+** iam enums
+- models/iam/tenant_status_enum.json
+- models/iam/tenant_type_enum.json
+
+** dq enums
+- models/dq/artefact_type_enum.json
+
+* Phase 4: Generate and Diff
+
+For each enum:
+1. Generate new SQL with template
+2. Diff against existing SQL
+3. Verify only expected changes:
+   - Added tenant_id column
+   - Added bi-temporal columns (valid_from, valid_to, version, etc.)
+   - Updated primary key to include tenant_id
+   - Added EXCLUDE constraint with tenant_id
+   - Added validation function
+4. Update populate scripts to use system tenant
+
+* Phase 5: Update Entity Templates
+
+** Add validations array to entity model
+#+BEGIN_SRC json
+{
+  "entity": {
+    ...
+    "validations": [
+      {
+        "function": "ores_refdata_validate_rounding_type_fn",
+        "column": "rounding_type"
+      }
+    ]
+  }
+}
+#+END_SRC
+
+** Template generates
+#+BEGIN_SRC sql
+perform ores_refdata_validate_rounding_type_fn(NEW.tenant_id, NEW.rounding_type);
+#+END_SRC
+
+* Phase 6: Resume Currency Work
+
+Once enum tables are properly tenant-aware with validation functions:
+1. Update currency_entity.json with validations
+2. Regenerate refdata_currencies_create.sql
+3. Diff and verify
+4. Apply to database
+
+* Tasks
+
+** TODO Inventory all enum tables needing migration
+** TODO Create sql_schema_enum_create.mustache template
+** TODO Create model for rounding_types as prototype
+** TODO Generate and diff rounding_types
+** TODO Create models for remaining enums
+** TODO Generate and diff all enums
+** TODO Update populate scripts for system tenant
+** TODO Add validations support to entity templates
+** TODO Resume currency generation with validations

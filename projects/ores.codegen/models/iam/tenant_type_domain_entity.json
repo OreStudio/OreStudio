@@ -1,0 +1,112 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "iam",
+    "entity_singular": "tenant_type",
+    "entity_plural": "tenant_types",
+    "entity_title": "Tenant Type",
+    "brief": "Classification of tenant types.",
+    "description": "Reference data table defining valid tenant type classifications.\nExamples: 'organisation', 'platform', 'sandbox'.\n\nTenant types are managed by the system tenant and are used to\ncategorise tenants for different purposes.",
+
+    "primary_key": {
+      "column": "type",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique type code.",
+      "detail": "Examples: 'organisation', 'platform'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the type.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" Tenant\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the tenant type.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_iam_tenant_types_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "type",
+      "entity_plural_short": "types",
+      "entity_singular_words": "tenant type",
+      "entity_plural_words": "tenant types"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "tt",
+      "table_display": [
+        {"column": "type", "header": "Type"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.iam/domain/tenant_type.hpp",
+      "domain_class": "iam::domain::tenant_type",
+      "protocol_include": "ores.iam/messaging/tenant_type_protocol.hpp",
+      "collection_name": "tenant_types",
+      "item_var": "tenant_type",
+      "key_field": "type",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "iam::messaging::get_tenant_types_request",
+      "get_response_class": "iam::messaging::get_tenant_types_response",
+      "get_message_type": "get_tenant_types_request",
+      "save_request_class": "iam::messaging::save_tenant_type_request",
+      "save_response_class": "iam::messaging::save_tenant_type_response",
+      "save_message_type": "save_tenant_type_request",
+      "delete_request_class": "iam::messaging::delete_tenant_type_request",
+      "delete_response_class": "iam::messaging::delete_tenant_type_response",
+      "delete_message_type": "delete_tenant_type_request",
+      "history_request_class": "iam::messaging::get_tenant_type_history_request",
+      "history_response_class": "iam::messaging::get_tenant_type_history_response",
+      "history_message_type": "get_tenant_type_history_request",
+
+      "columns": [
+        {"enum_name": "Type", "field": "type", "header": "Type", "is_string": true, "width": 120},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "TenantTypeListWindow",
+      "window_title": "Tenant Types",
+      "icon": "Tag"
+    }
+  }
+}

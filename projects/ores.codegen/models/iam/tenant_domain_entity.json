@@ -1,0 +1,138 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "iam",
+    "entity_singular": "tenant",
+    "entity_plural": "tenants",
+    "entity_title": "Tenant",
+    "brief": "A tenant representing an isolated organisation or the system platform.",
+    "description": "Core entity for multi-tenancy support. Each tenant represents an isolated\norganisation with its own users, roles, and data. The system tenant (UUID all zeros)\nis a special tenant used for shared reference data and system administration.\n\nTenants are identified by:\n- tenant_id: UUID primary key\n- code: Unique text code for stable referencing (e.g., 'system', 'acme')\n- hostname: Unique hostname for tenant routing during login",
+
+    "primary_key": {
+      "column": "tenant_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this tenant.",
+      "detail": "The system tenant has UUID 00000000-0000-0000-0000-000000000000."
+    },
+
+    "natural_keys": [
+      {
+        "column": "code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique code for stable referencing.",
+        "detail": "Examples: 'system', 'acme', 'demo'.",
+        "generator_expr": "std::string(faker::word::noun()) + \"_tenant\""
+      },
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the tenant.",
+        "generator_expr": "std::string(faker::company::name())"
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Tenant type classification (FK to tenant_types).",
+        "generator_expr": "\"organisation\""
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Detailed description of the tenant.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "hostname",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Unique hostname for tenant routing.",
+        "generator_expr": "std::string(faker::word::noun()) + \".example.com\""
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Tenant lifecycle status (FK to tenant_statuses).",
+        "generator_expr": "\"active\""
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_iam_tenants_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "tenant",
+      "entity_plural_short": "tenants",
+      "entity_singular_words": "tenant",
+      "entity_plural_words": "tenants"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<optional>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "t",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "type", "header": "Type"},
+        {"column": "hostname", "header": "Hostname"},
+        {"column": "status", "header": "Status"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.iam/domain/tenant.hpp",
+      "domain_class": "iam::domain::tenant",
+      "protocol_include": "ores.iam/messaging/tenant_protocol.hpp",
+      "collection_name": "tenants",
+      "item_var": "tenant",
+      "key_field": "code",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "iam::messaging::get_tenants_request",
+      "get_response_class": "iam::messaging::get_tenants_response",
+      "get_message_type": "get_tenants_request",
+      "save_request_class": "iam::messaging::save_tenant_request",
+      "save_response_class": "iam::messaging::save_tenant_response",
+      "save_message_type": "save_tenant_request",
+      "delete_request_class": "iam::messaging::delete_tenant_request",
+      "delete_response_class": "iam::messaging::delete_tenant_response",
+      "delete_message_type": "delete_tenant_request",
+      "history_request_class": "iam::messaging::get_tenant_history_request",
+      "history_response_class": "iam::messaging::get_tenant_history_response",
+      "history_message_type": "get_tenant_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 120},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Type", "field": "type", "header": "Type", "is_string": true, "width": 100},
+        {"enum_name": "Hostname", "field": "hostname", "header": "Hostname", "is_string": true, "width": 180},
+        {"enum_name": "Status", "field": "status", "header": "Status", "is_string": true, "width": 100},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "TenantListWindow",
+      "window_title": "Tenants",
+      "icon": "Building"
+    }
+  }
+}

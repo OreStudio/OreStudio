@@ -1,0 +1,24 @@
+{
+  "entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "iam",
+    "entity_singular": "tenant_status",
+    "entity_plural": "tenant_statuses",
+    "description": "Tenant Statuses - Valid tenant lifecycle statuses",
+    "has_tenant_id": true,
+    "system_tenant_validation": true,
+    "has_display_order": true,
+    "primary_key": {
+      "column": "status",
+      "type": "text",
+      "is_text": true
+    },
+    "columns": [
+      {"name": "name", "type": "text", "nullable": false},
+      {"name": "description", "type": "text", "nullable": false},
+      {"name": "display_order", "type": "integer", "nullable": false, "default": "0"}
+    ],
+    "indexes": []
+  }
+}

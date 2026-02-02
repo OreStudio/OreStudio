@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-27T00:08:16.543741Z",
+  "generated_at": "2026-02-02T08:40:57.120362Z",
   "packages": [
     {
       "name": "iam",
@@ -8,7 +8,7 @@
       "order": 1,
       "tables": [
         {
-          "name": "iam_account_roles_tbl",
+          "name": "ores_iam_account_roles_tbl",
           "component": "iam",
           "entity": "account_roles",
           "classification": "junction",
@@ -34,6 +34,16 @@
             "composite": true
           },
           "columns": [
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
             {
               "name": "assigned_by",
               "type": "text",
@@ -90,7 +100,7 @@
           "description": "Many-to-many: accounts to roles.\n    Tracks who assigned the role."
         },
         {
-          "name": "iam_accounts_tbl",
+          "name": "ores_iam_accounts_tbl",
           "component": "iam",
           "entity": "accounts",
           "classification": "temporal",
@@ -98,6 +108,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "id",
                 "type": "uuid"
@@ -112,7 +127,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -122,7 +137,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -162,7 +177,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -222,7 +237,7 @@
           "description": "User accounts with authentication credentials.\n    Supports optimistic locking via version field.\n    Username and email unique for current records."
         },
         {
-          "name": "iam_login_info_tbl",
+          "name": "ores_iam_login_info_tbl",
           "component": "iam",
           "entity": "login_info",
           "classification": "current_state",
@@ -239,6 +254,16 @@
             "composite": false
           },
           "columns": [
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
             {
               "name": "last_ip",
               "type": "inet",
@@ -315,7 +340,7 @@
           "description": "Security tracking for login attempts.\n    Current-state table (no temporal versioning).\n    Tracks failed attempts and lock status."
         },
         {
-          "name": "iam_permissions_tbl",
+          "name": "ores_iam_permissions_tbl",
           "component": "iam",
           "entity": "permissions",
           "classification": "temporal",
@@ -323,6 +348,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "id",
                 "type": "uuid"
@@ -337,7 +367,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -377,7 +407,7 @@
           "description": "Fine-grained permission codes.\n    System-defined constants from bootstrap data.\n    No change tracking (not user-editable)."
         },
         {
-          "name": "iam_role_permissions_tbl",
+          "name": "ores_iam_role_permissions_tbl",
           "component": "iam",
           "entity": "role_permissions",
           "classification": "junction",
@@ -404,6 +434,16 @@
           },
           "columns": [
             {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
               "name": "valid_to",
               "type": "timestamptz",
               "nullable": false,
@@ -419,7 +459,7 @@
           "description": "Many-to-many: roles to permissions."
         },
         {
-          "name": "iam_roles_tbl",
+          "name": "ores_iam_roles_tbl",
           "component": "iam",
           "entity": "roles",
           "classification": "temporal",
@@ -427,6 +467,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "id",
                 "type": "uuid"
@@ -441,7 +486,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -451,7 +496,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -521,7 +566,7 @@
           "description": "Named roles for grouping permissions.\n    Examples: admin, viewer, editor."
         },
         {
-          "name": "iam_sessions_tbl",
+          "name": "ores_iam_sessions_tbl",
           "component": "iam",
           "entity": "sessions",
           "classification": "current_state",
@@ -541,6 +586,16 @@
             "composite": true
           },
           "columns": [
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
             {
               "name": "account_id",
               "type": "uuid",
@@ -645,6 +700,382 @@
           "indexes": [],
           "source_file": "create/iam/iam_sessions_create.sql",
           "description": "User session tracking with country-level geolocation.\n    Designed for TimescaleDB hypertable.\n    Partitioned by start_time."
+        },
+        {
+          "name": "ores_iam_tenant_statuses_tbl",
+          "component": "iam",
+          "entity": "tenant_statuses",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "status",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": true,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/iam/iam_tenant_statuses_create.sql",
+          "description": "Tenant Statuses - Valid tenant lifecycle statuses"
+        },
+        {
+          "name": "ores_iam_tenant_types_tbl",
+          "component": "iam",
+          "entity": "tenant_types",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "type",
+                "type": "text"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": true,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/iam/iam_tenant_types_create.sql",
+          "description": "Tenant Types - Valid tenant type classifications"
+        },
+        {
+          "name": "ores_iam_tenants_tbl",
+          "component": "iam",
+          "entity": "tenants",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid"
+              }
+            ],
+            "composite": true
+          },
+          "columns": [
+            {
+              "name": "version",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "type",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "hostname",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/iam/iam_tenants_create.sql",
+          "description": "Tenants Table\n    Core table for multi-tenancy support. Each tenant represents an isolated\n    organisation or the system platform tenant."
         }
       ]
     },
@@ -655,7 +1086,7 @@
       "order": 2,
       "tables": [
         {
-          "name": "assets_image_tags_tbl",
+          "name": "ores_assets_image_tags_tbl",
           "component": "assets",
           "entity": "image_tags",
           "classification": "junction",
@@ -681,6 +1112,16 @@
             "composite": true
           },
           "columns": [
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
             {
               "name": "assigned_by",
               "type": "text",
@@ -717,7 +1158,7 @@
           "description": "Many-to-many: images to tags."
         },
         {
-          "name": "assets_images_tbl",
+          "name": "ores_assets_images_tbl",
           "component": "assets",
           "entity": "images",
           "classification": "temporal",
@@ -725,6 +1166,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "image_id",
                 "type": "uuid"
@@ -739,7 +1185,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -749,7 +1195,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -829,29 +1275,43 @@
           "description": "SVG image storage.\n    Key provides human-readable lookup."
         },
         {
-          "name": "assets_tags_tbl",
+          "name": "ores_assets_tags_tbl",
           "component": "assets",
           "entity": "tags",
-          "classification": "temporal",
-          "stereotype": "<<temporal>>",
-          "color": "#C6F0D8",
+          "classification": "junction",
+          "stereotype": "<<junction>>",
+          "color": "#ECECEC",
           "primary_key": {
             "columns": [
               {
                 "name": "tag_id",
                 "type": "uuid"
+              },
+              {
+                "name": "valid_from",
+                "type": "timestamptz"
               }
             ],
             "composite": true
           },
           "columns": [
             {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
               "name": "version",
               "type": "integer",
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -861,7 +1321,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -906,16 +1366,6 @@
               "references": null
             },
             {
-              "name": "valid_from",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
               "name": "valid_to",
               "type": "timestamptz",
               "nullable": false,
@@ -939,7 +1389,7 @@
       "order": 3,
       "tables": [
         {
-          "name": "refdata_account_types_tbl",
+          "name": "ores_refdata_account_types_tbl",
           "component": "refdata",
           "entity": "account_types",
           "classification": "temporal",
@@ -948,8 +1398,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -981,16 +1441,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1051,7 +1501,7 @@
           "description": "Contains a code representing the type of an account, for example in a clearing or exchange model."
         },
         {
-          "name": "refdata_asset_classes_tbl",
+          "name": "ores_refdata_asset_classes_tbl",
           "component": "refdata",
           "entity": "asset_classes",
           "classification": "temporal",
@@ -1060,8 +1510,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -1093,16 +1553,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1163,7 +1613,7 @@
           "description": "Defines a simple asset class categorization. Used for classification of the risk class of the trade."
         },
         {
-          "name": "refdata_asset_measures_tbl",
+          "name": "ores_refdata_asset_measures_tbl",
           "component": "refdata",
           "entity": "asset_measures",
           "classification": "temporal",
@@ -1172,8 +1622,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -1205,16 +1665,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1275,7 +1725,7 @@
           "description": "The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures."
         },
         {
-          "name": "refdata_benchmark_rates_tbl",
+          "name": "ores_refdata_benchmark_rates_tbl",
           "component": "refdata",
           "entity": "benchmark_rates",
           "classification": "temporal",
@@ -1284,8 +1734,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -1317,16 +1777,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1387,7 +1837,7 @@
           "description": "FpML Benchmark rates"
         },
         {
-          "name": "refdata_business_centres_tbl",
+          "name": "ores_refdata_business_centres_tbl",
           "component": "refdata",
           "entity": "business_centres",
           "classification": "temporal",
@@ -1396,8 +1846,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -1429,16 +1889,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1509,7 +1959,7 @@
           "description": "The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets."
         },
         {
-          "name": "refdata_business_processes_tbl",
+          "name": "ores_refdata_business_processes_tbl",
           "component": "refdata",
           "entity": "business_processes",
           "classification": "temporal",
@@ -1518,8 +1968,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -1551,16 +2011,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1621,7 +2071,7 @@
           "description": "Contains a code representing the type of business process a message (e.g. a status request) applies to."
         },
         {
-          "name": "refdata_cashflow_types_tbl",
+          "name": "ores_refdata_cashflow_types_tbl",
           "component": "refdata",
           "entity": "cashflow_types",
           "classification": "temporal",
@@ -1630,8 +2080,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -1663,16 +2123,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -1733,7 +2183,7 @@
           "description": "The type of cash flows associated with OTC derivatives contracts and their lifecycle events."
         },
         {
-          "name": "refdata_countries_tbl",
+          "name": "ores_refdata_countries_tbl",
           "component": "refdata",
           "entity": "countries",
           "classification": "temporal",
@@ -1741,6 +2191,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "alpha2_code",
                 "type": "text"
@@ -1755,7 +2210,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -1875,7 +2330,7 @@
           "description": "ISO 3166-1 country definitions.\n    Includes alpha-2, alpha-3, and numeric codes.\n    Optional flag image reference.\n    coding_scheme_code tracks data provenance."
         },
         {
-          "name": "refdata_currencies_tbl",
+          "name": "ores_refdata_currencies_tbl",
           "component": "refdata",
           "entity": "currencies",
           "classification": "temporal",
@@ -1883,6 +2338,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "iso_code",
                 "type": "text"
@@ -2064,10 +2524,10 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_currencies_create.sql",
-          "description": "ISO 4217 currency definitions.\n    Includes formatting rules and optional flag image reference.\n    coding_scheme_code tracks data provenance."
+          "description": "ISO 4217 currency definitions"
         },
         {
-          "name": "refdata_entity_classifications_tbl",
+          "name": "ores_refdata_entity_classifications_tbl",
           "component": "refdata",
           "entity": "entity_classifications",
           "classification": "temporal",
@@ -2076,8 +2536,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2109,16 +2579,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2179,7 +2639,7 @@
           "description": "Financial Entity Indicator as defined by the CFTC."
         },
         {
-          "name": "refdata_local_jurisdictions_tbl",
+          "name": "ores_refdata_local_jurisdictions_tbl",
           "component": "refdata",
           "entity": "local_jurisdictions",
           "classification": "temporal",
@@ -2188,8 +2648,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2221,16 +2691,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2291,7 +2751,7 @@
           "description": "This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply."
         },
         {
-          "name": "refdata_party_relationships_tbl",
+          "name": "ores_refdata_party_relationships_tbl",
           "component": "refdata",
           "entity": "party_relationships",
           "classification": "temporal",
@@ -2300,8 +2760,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2333,16 +2803,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2403,7 +2863,7 @@
           "description": "Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup."
         },
         {
-          "name": "refdata_party_roles_tbl",
+          "name": "ores_refdata_party_roles_tbl",
           "component": "refdata",
           "entity": "party_roles",
           "classification": "temporal",
@@ -2412,8 +2872,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2445,16 +2915,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2515,7 +2975,7 @@
           "description": "Contains a code representing a related party role. This can be extended to provide custom roles."
         },
         {
-          "name": "refdata_person_roles_tbl",
+          "name": "ores_refdata_person_roles_tbl",
           "component": "refdata",
           "entity": "person_roles",
           "classification": "temporal",
@@ -2524,8 +2984,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2557,16 +3027,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2627,7 +3087,7 @@
           "description": "Indicates the role of a person in a transaction."
         },
         {
-          "name": "refdata_regulatory_corporate_sectors_tbl",
+          "name": "ores_refdata_regulatory_corporate_sectors_tbl",
           "component": "refdata",
           "entity": "regulatory_corporate_sectors",
           "classification": "temporal",
@@ -2636,8 +3096,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2669,16 +3139,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2739,7 +3199,7 @@
           "description": "Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2."
         },
         {
-          "name": "refdata_reporting_regimes_tbl",
+          "name": "ores_refdata_reporting_regimes_tbl",
           "component": "refdata",
           "entity": "reporting_regimes",
           "classification": "temporal",
@@ -2748,8 +3208,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2781,16 +3251,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -2851,24 +3311,34 @@
           "description": "Contains a code representing a reporting regime under which this transaction may be reported."
         },
         {
-          "name": "refdata_rounding_types_tbl",
+          "name": "ores_refdata_rounding_types_tbl",
           "component": "refdata",
           "entity": "rounding_types",
-          "classification": "current_state",
-          "stereotype": "",
-          "color": "#F7E5FF",
+          "classification": "temporal",
+          "stereotype": "<<temporal>>",
+          "color": "#C6F0D8",
           "primary_key": {
-            "columns": [],
-            "composite": false
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
           },
           "columns": [
             {
-              "name": "code",
-              "type": "text",
+              "name": "version",
+              "type": "integer",
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
+              "is_unique": true,
               "default": null,
               "references": null
             },
@@ -2901,14 +3371,64 @@
               "is_unique": false,
               "default": "0",
               "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
             }
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_rounding_types_create.sql",
-          "description": "Rounding Types Lookup Table\n    Defines valid rounding methods per ORE XML schema (roundingType).\n    Static configuration data - no bitemporal support required."
+          "description": "Rounding Types - Valid rounding methods per ORE XML schema (roundingType)"
         },
         {
-          "name": "refdata_supervisory_bodies_tbl",
+          "name": "ores_refdata_supervisory_bodies_tbl",
           "component": "refdata",
           "entity": "supervisory_bodies",
           "classification": "temporal",
@@ -2917,8 +3437,18 @@
           "primary_key": {
             "columns": [
               {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
                 "name": "code",
                 "type": "text"
+              },
+              {
+                "name": "coding_scheme_code",
+                "type": "text",
+                "is_fk": true
               }
             ],
             "composite": true
@@ -2950,16 +3480,6 @@
               "nullable": true,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "coding_scheme_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -3028,7 +3548,7 @@
       "order": 4,
       "tables": [
         {
-          "name": "dq_account_types_artefact_tbl",
+          "name": "ores_dq_account_types_artefact_tbl",
           "component": "dq",
           "entity": "account_types_artefact",
           "classification": "artefact",
@@ -3041,6 +3561,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3095,24 +3625,34 @@
           "description": "Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table"
         },
         {
-          "name": "dq_artefact_types_tbl",
+          "name": "ores_dq_artefact_types_tbl",
           "component": "dq",
           "entity": "artefact_types",
           "classification": "artefact",
           "stereotype": "",
           "color": "#F7E5FF",
           "primary_key": {
-            "columns": [],
-            "composite": false
+            "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
+              {
+                "name": "code",
+                "type": "text"
+              }
+            ],
+            "composite": true
           },
           "columns": [
             {
-              "name": "code",
-              "type": "text",
+              "name": "version",
+              "type": "integer",
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": false,
+              "is_unique": true,
               "default": null,
               "references": null
             },
@@ -3175,14 +3715,64 @@
               "is_unique": false,
               "default": "0",
               "references": null
+            },
+            {
+              "name": "modified_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_reason_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "change_commentary",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_from",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "valid_to",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
             }
           ],
           "indexes": [],
           "source_file": "create/dq/dq_artefact_types_create.sql",
-          "description": "Artefact Types Lookup Table\n    Maps artefact type codes to their population functions and tables.\n    Static configuration data - no bitemporal support required."
+          "description": "Artefact Types - Maps artefact type codes to their population functions and tables"
         },
         {
-          "name": "dq_asset_classes_artefact_tbl",
+          "name": "ores_dq_asset_classes_artefact_tbl",
           "component": "dq",
           "entity": "asset_classes_artefact",
           "classification": "artefact",
@@ -3195,6 +3785,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3249,7 +3849,7 @@
           "description": "Defines a simple asset class categorization. Used for classification of the risk class of the trade. - Artefact Table"
         },
         {
-          "name": "dq_asset_measures_artefact_tbl",
+          "name": "ores_dq_asset_measures_artefact_tbl",
           "component": "dq",
           "entity": "asset_measures_artefact",
           "classification": "artefact",
@@ -3262,6 +3862,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3316,7 +3926,7 @@
           "description": "The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table"
         },
         {
-          "name": "dq_benchmark_rates_artefact_tbl",
+          "name": "ores_dq_benchmark_rates_artefact_tbl",
           "component": "dq",
           "entity": "benchmark_rates_artefact",
           "classification": "artefact",
@@ -3329,6 +3939,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3383,7 +4003,7 @@
           "description": "FpML Benchmark rates - Artefact Table"
         },
         {
-          "name": "dq_bundle_publications_tbl",
+          "name": "ores_dq_bundle_publications_tbl",
           "component": "dq",
           "entity": "bundle_publications",
           "classification": "current_state",
@@ -3427,6 +4047,16 @@
               "is_fk": false,
               "is_unique": false,
               "default": null,
+              "references": null
+            },
+            {
+              "name": "atomic",
+              "type": "boolean",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "false",
               "references": null
             },
             {
@@ -3545,7 +4175,7 @@
           "description": "Bundle Publication Audit Table"
         },
         {
-          "name": "dq_business_centres_artefact_tbl",
+          "name": "ores_dq_business_centres_artefact_tbl",
           "component": "dq",
           "entity": "business_centres_artefact",
           "classification": "artefact",
@@ -3558,6 +4188,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3612,7 +4252,7 @@
           "description": "The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets. - Artefact Table"
         },
         {
-          "name": "dq_business_processes_artefact_tbl",
+          "name": "ores_dq_business_processes_artefact_tbl",
           "component": "dq",
           "entity": "business_processes_artefact",
           "classification": "artefact",
@@ -3625,6 +4265,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3679,7 +4329,7 @@
           "description": "Contains a code representing the type of business process a message (e.g. a status request) applies to. - Artefact Table"
         },
         {
-          "name": "dq_cashflow_types_artefact_tbl",
+          "name": "ores_dq_cashflow_types_artefact_tbl",
           "component": "dq",
           "entity": "cashflow_types_artefact",
           "classification": "artefact",
@@ -3692,6 +4342,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -3746,7 +4406,7 @@
           "description": "The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table"
         },
         {
-          "name": "dq_catalogs_tbl",
+          "name": "ores_dq_catalogs_tbl",
           "component": "dq",
           "entity": "catalogs",
           "classification": "temporal",
@@ -3754,6 +4414,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "name",
                 "type": "text"
@@ -3768,7 +4433,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -3848,7 +4513,7 @@
           "description": "A catalog is a named collection of related datasets. It provides a\n    high-level grouping mechanism for datasets that share a common theme,\n    source, or purpose.\n    Examples:\n    - \"ISO Standards\" - Contains ISO 3166 countries, ISO 4217 currencies\n    - \"Cryptocurrency\" - Contains crypto reference data and icons"
         },
         {
-          "name": "dq_change_reason_categories_tbl",
+          "name": "ores_dq_change_reason_categories_tbl",
           "component": "dq",
           "entity": "change_reason_categories",
           "classification": "temporal",
@@ -3856,6 +4521,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -3870,7 +4540,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -3926,11 +4596,11 @@
             }
           ],
           "indexes": [],
-          "source_file": "create/change_control/dq_change_reason_categories_create.sql",
+          "source_file": "create/dq/dq_change_reason_categories_create.sql",
           "description": ""
         },
         {
-          "name": "dq_change_reasons_tbl",
+          "name": "ores_dq_change_reasons_tbl",
           "component": "dq",
           "entity": "change_reasons",
           "classification": "temporal",
@@ -3938,6 +4608,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -3952,7 +4627,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4058,11 +4733,11 @@
             }
           ],
           "indexes": [],
-          "source_file": "create/change_control/dq_change_reasons_create.sql",
+          "source_file": "create/dq/dq_change_reasons_create.sql",
           "description": ""
         },
         {
-          "name": "dq_coding_scheme_authority_types_tbl",
+          "name": "ores_dq_coding_scheme_authority_types_tbl",
           "component": "dq",
           "entity": "coding_scheme_authority_types",
           "classification": "temporal",
@@ -4070,6 +4745,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -4084,7 +4764,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4164,7 +4844,7 @@
           "description": "Classifies coding schemes by the authority or governance level behind them.\n    This helps distinguish between formal standards, industry conventions, and\n    proprietary identifiers.\n    Values:\n    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)\n    - industry: De facto standards widely adopted in the market but not formally standardized\n    - internal: Proprietary or organization-specific identifiers"
         },
         {
-          "name": "dq_coding_schemes_artefact_tbl",
+          "name": "ores_dq_coding_schemes_artefact_tbl",
           "component": "dq",
           "entity": "coding_schemes_artefact",
           "classification": "artefact",
@@ -4177,6 +4857,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -4271,7 +4961,7 @@
           "description": ""
         },
         {
-          "name": "dq_coding_schemes_tbl",
+          "name": "ores_dq_coding_schemes_tbl",
           "component": "dq",
           "entity": "coding_schemes",
           "classification": "temporal",
@@ -4279,6 +4969,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -4293,7 +4988,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4413,7 +5108,7 @@
           "description": "A scheme defines a coding or identification standard used to identify\n    entities such as parties, currencies, or other domain objects. Based on\n    the FPML coding-scheme concept.\n    Each scheme belongs to a subject area within the DQ hierarchy, establishing\n    what type of entity the scheme identifies.\n    Examples:\n    - LEI (Legal Entity Identifier, ISO 17442) for party identification\n    - BIC (Business Identifier Code, ISO 9362) for financial institutions\n    - ISO 4217 for currency codes\n    - ISO 3166 for country codes"
         },
         {
-          "name": "dq_countries_artefact_tbl",
+          "name": "ores_dq_countries_artefact_tbl",
           "component": "dq",
           "entity": "countries_artefact",
           "classification": "artefact",
@@ -4426,6 +5121,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -4510,7 +5215,7 @@
           "description": ""
         },
         {
-          "name": "dq_currencies_artefact_tbl",
+          "name": "ores_dq_currencies_artefact_tbl",
           "component": "dq",
           "entity": "currencies_artefact",
           "classification": "artefact",
@@ -4523,6 +5228,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -4657,7 +5372,7 @@
           "description": ""
         },
         {
-          "name": "dq_data_domains_tbl",
+          "name": "ores_dq_data_domains_tbl",
           "component": "dq",
           "entity": "data_domains",
           "classification": "temporal",
@@ -4665,6 +5380,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "name",
                 "type": "text"
@@ -4679,7 +5399,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4749,7 +5469,7 @@
           "description": "High-level data classification.\n    Examples: reference_data, market_data, trade_data."
         },
         {
-          "name": "dq_dataset_bundle_members_tbl",
+          "name": "ores_dq_dataset_bundle_members_tbl",
           "component": "dq",
           "entity": "dataset_bundle_members",
           "classification": "temporal",
@@ -4757,6 +5477,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "bundle_code",
                 "type": "text"
@@ -4842,10 +5567,10 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_dataset_bundle_member_create.sql",
-          "description": "Junction table linking bundles to their constituent datasets.\n    Uses codes for loose coupling - allows declaring membership for datasets\n    that may not yet exist in the system.\n    Examples:\n    - Bundle \"solvaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n    - Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets"
+          "description": "Junction table linking bundles to their constituent datasets. Uses codes\n    for loose coupling - allows declaring membership for datasets that may not\n    yet exist in the system.\n    Examples:\n    - Bundle \"slovaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n    - Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets"
         },
         {
-          "name": "dq_dataset_bundles_tbl",
+          "name": "ores_dq_dataset_bundles_tbl",
           "component": "dq",
           "entity": "dataset_bundles",
           "classification": "temporal",
@@ -4853,6 +5578,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "id",
                 "type": "uuid"
@@ -4867,7 +5597,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4877,7 +5607,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4887,7 +5617,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -4954,10 +5684,10 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_dataset_bundle_create.sql",
-          "description": "A named collection of datasets designed to work together. Installing a bundle\n    gets the system into a ready state with a coherent set of reference data.\n    Examples:\n    - \"solvaris\": Synthetic reference data for development and testing\n    - \"base\": Industry-standard reference data (ISO + FpML) for production\n    - \"crypto\": Base system plus cryptocurrency reference data"
+          "description": "Installing a bundle gets the system into a ready state with a coherent set\n    of reference data. Bundles provide a way to group related datasets that\n    should be installed together.\n    Examples:\n    - \"slovaris\": Synthetic reference data for development and testing\n    - \"base\": Industry-standard reference data (ISO + FpML) for production\n    - \"crypto\": Base system plus cryptocurrency reference data"
         },
         {
-          "name": "dq_dataset_dependencies_tbl",
+          "name": "ores_dq_dataset_dependencies_tbl",
           "component": "dq",
           "entity": "dataset_dependencies",
           "classification": "temporal",
@@ -4965,6 +5695,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "dataset_code",
                 "type": "text"
@@ -5043,7 +5778,139 @@
           "description": "Declares dependencies between datasets using stable dataset codes.\n    When a dataset is injected into the system, all its dependencies must\n    be satisfied first. Dependencies are resolved by code at injection time.\n    Note: dependency_code is intentionally NOT a foreign key to allow:\n    - Declaring dependencies on datasets that may not exist yet\n    - Referencing datasets in external systems\n    - Loose coupling with validation at injection time\n    Examples:\n    - \"iso.countries\" depends on \"assets.country_flags\" for visual display\n    - \"crypto.large\" and \"crypto.small\" depend on \"assets.crypto_icons\" for icon display"
         },
         {
-          "name": "dq_datasets_tbl",
+          "name": "ores_dq_dataset_publications_tbl",
+          "component": "dq",
+          "entity": "dataset_publications",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid"
+              }
+            ],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "dataset_code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "mode",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "target_table",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "records_inserted",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "records_updated",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "records_skipped",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "records_deleted",
+              "type": "bigint",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            },
+            {
+              "name": "published_by",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "published_at",
+              "type": "timestamptz",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "current_timestamp",
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_publication_create.sql",
+          "description": "Audit table for tracking dataset publication history.\n    Records each time a dataset is published to production tables."
+        },
+        {
+          "name": "ores_dq_datasets_tbl",
           "component": "dq",
           "entity": "datasets",
           "classification": "temporal",
@@ -5051,6 +5918,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "id",
                 "type": "uuid"
@@ -5065,7 +5937,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5075,7 +5947,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5095,7 +5967,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5105,7 +5977,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5165,7 +6037,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5315,7 +6187,7 @@
           "description": "Central dataset registry with full lineage.\n    Tracks provenance via upstream_derivation_id.\n    lineage_depth auto-calculated from hierarchy."
         },
         {
-          "name": "dq_entity_classifications_artefact_tbl",
+          "name": "ores_dq_entity_classifications_artefact_tbl",
           "component": "dq",
           "entity": "entity_classifications_artefact",
           "classification": "artefact",
@@ -5328,6 +6200,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -5382,7 +6264,7 @@
           "description": "Financial Entity Indicator as defined by the CFTC. - Artefact Table"
         },
         {
-          "name": "dq_image_tags_artefact_tbl",
+          "name": "ores_dq_image_tags_artefact_tbl",
           "component": "dq",
           "entity": "image_tags_artefact",
           "classification": "artefact",
@@ -5395,6 +6277,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -5429,7 +6321,7 @@
           "description": ""
         },
         {
-          "name": "dq_images_artefact_tbl",
+          "name": "ores_dq_images_artefact_tbl",
           "component": "dq",
           "entity": "images_artefact",
           "classification": "artefact",
@@ -5442,6 +6334,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -5506,7 +6408,7 @@
           "description": ""
         },
         {
-          "name": "dq_ip2country_artefact_tbl",
+          "name": "ores_dq_ip2country_artefact_tbl",
           "component": "dq",
           "entity": "ip2country_artefact",
           "classification": "artefact",
@@ -5519,6 +6421,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -5563,7 +6475,7 @@
           "description": "Staging table for IPv4 to country mapping data from iptoasn.com.\n    Data is imported here first, then promoted to geo_ip2country_tbl."
         },
         {
-          "name": "dq_local_jurisdictions_artefact_tbl",
+          "name": "ores_dq_local_jurisdictions_artefact_tbl",
           "component": "dq",
           "entity": "local_jurisdictions_artefact",
           "classification": "artefact",
@@ -5576,6 +6488,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -5630,7 +6552,7 @@
           "description": "This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table"
         },
         {
-          "name": "dq_methodologies_tbl",
+          "name": "ores_dq_methodologies_tbl",
           "component": "dq",
           "entity": "methodologies",
           "classification": "temporal",
@@ -5638,6 +6560,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "id",
                 "type": "uuid"
@@ -5652,7 +6579,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5662,7 +6589,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5752,7 +6679,7 @@
           "description": "Describes transformation/derivation logic.\n    Links to documentation and implementation."
         },
         {
-          "name": "dq_nature_dimensions_tbl",
+          "name": "ores_dq_nature_dimensions_tbl",
           "component": "dq",
           "entity": "nature_dimensions",
           "classification": "temporal",
@@ -5760,6 +6687,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -5774,7 +6706,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5854,7 +6786,7 @@
           "description": "Describes the nature of data.\n    Examples: raw, cleansed, derived."
         },
         {
-          "name": "dq_origin_dimensions_tbl",
+          "name": "ores_dq_origin_dimensions_tbl",
           "component": "dq",
           "entity": "origin_dimensions",
           "classification": "temporal",
@@ -5862,6 +6794,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -5876,7 +6813,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -5956,7 +6893,7 @@
           "description": "Describes the origin of data.\n    Examples: vendor, internal, regulatory."
         },
         {
-          "name": "dq_party_relationships_artefact_tbl",
+          "name": "ores_dq_party_relationships_artefact_tbl",
           "component": "dq",
           "entity": "party_relationships_artefact",
           "classification": "artefact",
@@ -5969,6 +6906,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6023,7 +6970,7 @@
           "description": "Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table"
         },
         {
-          "name": "dq_party_roles_artefact_tbl",
+          "name": "ores_dq_party_roles_artefact_tbl",
           "component": "dq",
           "entity": "party_roles_artefact",
           "classification": "artefact",
@@ -6036,6 +6983,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6090,7 +7047,7 @@
           "description": "Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table"
         },
         {
-          "name": "dq_person_roles_artefact_tbl",
+          "name": "ores_dq_person_roles_artefact_tbl",
           "component": "dq",
           "entity": "person_roles_artefact",
           "classification": "artefact",
@@ -6103,6 +7060,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6157,19 +7124,14 @@
           "description": "Indicates the role of a person in a transaction. - Artefact Table"
         },
         {
-          "name": "dq_publications_tbl",
+          "name": "ores_dq_regulatory_corporate_sectors_artefact_tbl",
           "component": "dq",
-          "entity": "publications",
+          "entity": "regulatory_corporate_sectors_artefact",
           "classification": "artefact",
           "stereotype": "",
           "color": "#F7E5FF",
           "primary_key": {
-            "columns": [
-              {
-                "name": "id",
-                "type": "uuid"
-              }
-            ],
+            "columns": [],
             "composite": false
           },
           "columns": [
@@ -6184,114 +7146,7 @@
               "references": null
             },
             {
-              "name": "dataset_code",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "mode",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "target_table",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "records_inserted",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "records_updated",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "records_skipped",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "records_deleted",
-              "type": "bigint",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "0",
-              "references": null
-            },
-            {
-              "name": "published_by",
-              "type": "text",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "published_at",
-              "type": "timestamptz",
-              "nullable": false,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": "current_timestamp",
-              "references": null
-            }
-          ],
-          "indexes": [],
-          "source_file": "create/dq/dq_publication_create.sql",
-          "description": "Audit table for tracking dataset publication history.\n    Records each time a dataset is published to production tables."
-        },
-        {
-          "name": "dq_regulatory_corporate_sectors_artefact_tbl",
-          "component": "dq",
-          "entity": "regulatory_corporate_sectors_artefact",
-          "classification": "artefact",
-          "stereotype": "",
-          "color": "#F7E5FF",
-          "primary_key": {
-            "columns": [],
-            "composite": false
-          },
-          "columns": [
-            {
-              "name": "dataset_id",
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6346,7 +7201,7 @@
           "description": "Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table"
         },
         {
-          "name": "dq_reporting_regimes_artefact_tbl",
+          "name": "ores_dq_reporting_regimes_artefact_tbl",
           "component": "dq",
           "entity": "reporting_regimes_artefact",
           "classification": "artefact",
@@ -6359,6 +7214,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6413,7 +7278,7 @@
           "description": "Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table"
         },
         {
-          "name": "dq_subject_areas_tbl",
+          "name": "ores_dq_subject_areas_tbl",
           "component": "dq",
           "entity": "subject_areas",
           "classification": "temporal",
@@ -6421,6 +7286,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "name",
                 "type": "text"
@@ -6439,7 +7309,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -6509,7 +7379,7 @@
           "description": "Sub-classification within a data domain.\n    Examples: currencies, countries, images."
         },
         {
-          "name": "dq_supervisory_bodies_artefact_tbl",
+          "name": "ores_dq_supervisory_bodies_artefact_tbl",
           "component": "dq",
           "entity": "supervisory_bodies_artefact",
           "classification": "artefact",
@@ -6522,6 +7392,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6576,7 +7456,7 @@
           "description": "Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table"
         },
         {
-          "name": "dq_tags_artefact_tbl",
+          "name": "ores_dq_tags_artefact_tbl",
           "component": "dq",
           "entity": "tags_artefact",
           "classification": "artefact",
@@ -6589,6 +7469,16 @@
           "columns": [
             {
               "name": "dataset_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
               "type": "uuid",
               "nullable": false,
               "is_pk": false,
@@ -6643,7 +7533,7 @@
           "description": ""
         },
         {
-          "name": "dq_treatment_dimensions_tbl",
+          "name": "ores_dq_treatment_dimensions_tbl",
           "component": "dq",
           "entity": "treatment_dimensions",
           "classification": "temporal",
@@ -6651,6 +7541,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "code",
                 "type": "text"
@@ -6665,7 +7560,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -6753,7 +7648,7 @@
       "order": 5,
       "tables": [
         {
-          "name": "variability_feature_flags_tbl",
+          "name": "ores_variability_feature_flags_tbl",
           "component": "variability",
           "entity": "feature_flags",
           "classification": "temporal",
@@ -6761,6 +7656,11 @@
           "color": "#C6F0D8",
           "primary_key": {
             "columns": [
+              {
+                "name": "tenant_id",
+                "type": "uuid",
+                "is_fk": true
+              },
               {
                 "name": "name",
                 "type": "text"
@@ -6775,7 +7675,7 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
-              "is_unique": true,
+              "is_unique": false,
               "default": null,
               "references": null
             },
@@ -6863,7 +7763,7 @@
       "order": 6,
       "tables": [
         {
-          "name": "telemetry_logs_tbl",
+          "name": "ores_telemetry_logs_tbl",
           "component": "telemetry",
           "entity": "logs",
           "classification": "current_state",
@@ -6883,6 +7783,16 @@
             "composite": true
           },
           "columns": [
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
             {
               "name": "source",
               "type": "text",
@@ -6987,7 +7897,7 @@
       "order": 7,
       "tables": [
         {
-          "name": "geo_ip2country_tbl",
+          "name": "ores_geo_ip2country_tbl",
           "component": "geo",
           "entity": "ip2country",
           "classification": "current_state",
@@ -7004,6 +7914,16 @@
               "nullable": false,
               "is_pk": false,
               "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "tenant_id",
+              "type": "uuid",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -7026,728 +7946,6 @@
       ]
     }
   ],
-  "relationships": [
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "assets_image_tags_tbl",
-      "cardinality": "||--o{",
-      "label": "tagged with"
-    },
-    {
-      "from_table": "assets_tags_tbl",
-      "to_table": "assets_image_tags_tbl",
-      "cardinality": "||--o{",
-      "label": "applied to"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "assets_images_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "assets_tags_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reason_categories_tbl",
-      "to_table": "dq_change_reasons_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_account_types_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_asset_classes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_asset_measures_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_benchmark_rates_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_business_centres_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_business_processes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_cashflow_types_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_catalogs_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_coding_scheme_authority_types_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_scheme_authority_types_tbl",
-      "to_table": "dq_coding_schemes_tbl",
-      "cardinality": "||--o{",
-      "label": "classifies"
-    },
-    {
-      "from_table": "dq_subject_areas_tbl",
-      "to_table": "dq_coding_schemes_tbl",
-      "cardinality": "||--o{",
-      "label": "defines"
-    },
-    {
-      "from_table": "dq_data_domains_tbl",
-      "to_table": "dq_coding_schemes_tbl",
-      "cardinality": "||--o{",
-      "label": "groups"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_coding_schemes_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_coding_schemes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_coding_scheme_authority_types_tbl",
-      "to_table": "dq_coding_schemes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "classifies"
-    },
-    {
-      "from_table": "dq_subject_areas_tbl",
-      "to_table": "dq_coding_schemes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "defines"
-    },
-    {
-      "from_table": "dq_data_domains_tbl",
-      "to_table": "dq_coding_schemes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "groups"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_countries_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "dq_countries_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_currencies_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "dq_currencies_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_data_domains_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_dataset_bundles_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_dataset_bundle_members_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_catalogs_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "groups"
-    },
-    {
-      "from_table": "dq_subject_areas_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "classifies"
-    },
-    {
-      "from_table": "dq_data_domains_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "groups"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_origin_dimensions_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "describes origin"
-    },
-    {
-      "from_table": "dq_nature_dimensions_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "describes nature"
-    },
-    {
-      "from_table": "dq_treatment_dimensions_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "describes treatment"
-    },
-    {
-      "from_table": "dq_methodologies_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "applied to"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "derives from"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_datasets_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_dataset_dependencies_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_entity_classifications_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_image_tags_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "dq_image_tags_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "tagged with"
-    },
-    {
-      "from_table": "assets_tags_tbl",
-      "to_table": "dq_image_tags_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "applied to"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_images_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "dq_images_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_ip2country_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "refdata_countries_tbl",
-      "to_table": "dq_ip2country_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_local_jurisdictions_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_methodologies_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_nature_dimensions_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_origin_dimensions_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_party_relationships_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_party_roles_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_person_roles_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_publications_tbl",
-      "cardinality": "||--o{",
-      "label": "published as"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_regulatory_corporate_sectors_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_reporting_regimes_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_data_domains_tbl",
-      "to_table": "dq_subject_areas_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_subject_areas_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_supervisory_bodies_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "dq_datasets_tbl",
-      "to_table": "dq_tags_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "contains"
-    },
-    {
-      "from_table": "assets_tags_tbl",
-      "to_table": "dq_tags_artefact_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "dq_treatment_dimensions_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "refdata_countries_tbl",
-      "to_table": "geo_ip2country_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "iam_accounts_tbl",
-      "to_table": "iam_account_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "assigned"
-    },
-    {
-      "from_table": "iam_roles_tbl",
-      "to_table": "iam_account_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "granted to"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "iam_account_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "iam_accounts_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "iam_accounts_tbl",
-      "to_table": "iam_login_info_tbl",
-      "cardinality": "||--o|",
-      "label": "has"
-    },
-    {
-      "from_table": "iam_roles_tbl",
-      "to_table": "iam_role_permissions_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "iam_permissions_tbl",
-      "to_table": "iam_role_permissions_tbl",
-      "cardinality": "||--o{",
-      "label": "included in"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "iam_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "iam_accounts_tbl",
-      "to_table": "iam_sessions_tbl",
-      "cardinality": "||--o{",
-      "label": "creates"
-    },
-    {
-      "from_table": "refdata_countries_tbl",
-      "to_table": "iam_sessions_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_account_types_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_account_types_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_asset_classes_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_asset_classes_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_asset_measures_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_asset_measures_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_benchmark_rates_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_benchmark_rates_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_business_centres_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "refdata_business_centres_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_business_centres_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_business_processes_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_business_processes_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_cashflow_types_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_cashflow_types_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_countries_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "refdata_countries_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_countries_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_currencies_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "assets_images_tbl",
-      "to_table": "refdata_currencies_tbl",
-      "cardinality": "||--o{",
-      "label": "has"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_currencies_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_entity_classifications_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_entity_classifications_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_local_jurisdictions_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_local_jurisdictions_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_party_relationships_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_party_relationships_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_party_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_party_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_person_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_person_roles_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_regulatory_corporate_sectors_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_regulatory_corporate_sectors_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_reporting_regimes_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_reporting_regimes_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "dq_coding_schemes_tbl",
-      "to_table": "refdata_supervisory_bodies_tbl",
-      "cardinality": "||--o{",
-      "label": "identifies"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "refdata_supervisory_bodies_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    },
-    {
-      "from_table": "iam_sessions_tbl",
-      "to_table": "telemetry_logs_tbl",
-      "cardinality": "||--o{",
-      "label": "generates"
-    },
-    {
-      "from_table": "iam_accounts_tbl",
-      "to_table": "telemetry_logs_tbl",
-      "cardinality": "||--o{",
-      "label": "generates"
-    },
-    {
-      "from_table": "dq_change_reasons_tbl",
-      "to_table": "variability_feature_flags_tbl",
-      "cardinality": "||--o{",
-      "label": "reason for"
-    }
-  ],
-  "warnings": [
-    {
-      "file": "create/change_control/dq_change_reason_categories_create.sql",
-      "line": 22,
-      "code": "TEMPORAL_006",
-      "message": "Temporal table 'dq_change_reason_categories_tbl' missing 'change_reason_code' column"
-    },
-    {
-      "file": "create/change_control/dq_change_reasons_create.sql",
-      "line": 22,
-      "code": "TEMPORAL_006",
-      "message": "Temporal table 'dq_change_reasons_tbl' missing 'change_reason_code' column"
-    },
-    {
-      "file": "create/dq/dq_dataset_dependency_create.sql",
-      "line": 40,
-      "code": "TEMPORAL_004",
-      "message": "Temporal table 'dq_dataset_dependencies_tbl' missing 'version' column"
-    },
-    {
-      "file": "create/dq/dq_dataset_dependency_create.sql",
-      "line": 40,
-      "code": "TEMPORAL_005",
-      "message": "Temporal table 'dq_dataset_dependencies_tbl' missing 'modified_by' column"
-    },
-    {
-      "file": "create/iam/iam_permissions_create.sql",
-      "line": 28,
-      "code": "TEMPORAL_004",
-      "message": "Temporal table 'iam_permissions_tbl' missing 'version' column"
-    }
-  ]
+  "relationships": [],
+  "warnings": []
 }

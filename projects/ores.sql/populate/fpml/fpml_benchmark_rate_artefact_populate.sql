@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_populate_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * DQ Artefact FpML Benchmark Rate Population Script
  *
  * Populates the dq_benchmark_rates_artefact_tbl with reference data.

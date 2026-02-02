@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_populate_function_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * FPML regulatory_corporate_sectors Population Functions
  *
  * Functions to publish regulatory_corporate_sectors from DQ artefact table to production.

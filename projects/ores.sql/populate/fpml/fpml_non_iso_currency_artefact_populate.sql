@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_non_iso_currency_populate.mustache
+ * To modify, update the template and regenerate.
+ *
  * FpML Non-ISO Currencies Artefact Population Script
  *
  * Populates the dq_currencies_artefact_tbl with FpML non-ISO currency data.

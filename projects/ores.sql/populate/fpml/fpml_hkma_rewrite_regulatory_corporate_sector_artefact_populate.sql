@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_populate_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * DQ Artefact FpML Hkma Rewrite Regulatory Corporate Sector Population Script
  *
  * Populates the dq_regulatory_corporate_sectors_artefact_tbl with reference data.

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
 -- The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table

@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_country_populate.mustache
+ * To modify, update the template and regenerate.
+ *
  * Data Quality Solvaris Countries Artefact Population Script
  *
  * Populates the dq_countries_artefact_tbl with Solvaris country data.

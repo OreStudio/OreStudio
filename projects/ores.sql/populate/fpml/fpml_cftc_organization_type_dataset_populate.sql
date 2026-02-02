@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_dataset_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * FpML Cftc Organization Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.cftc_organization_type.

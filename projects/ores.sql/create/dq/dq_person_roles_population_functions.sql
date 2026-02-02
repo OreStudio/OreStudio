@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_populate_function_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * FPML person_roles Population Functions
  *
  * Functions to publish person_roles from DQ artefact table to production.

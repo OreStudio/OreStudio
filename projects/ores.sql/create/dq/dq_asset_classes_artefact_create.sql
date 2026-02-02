@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
 -- Defines a simple asset class categorization. Used for classification of the risk class of the trade. - Artefact Table

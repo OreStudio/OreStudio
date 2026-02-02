@@ -165,7 +165,7 @@ jobs:
           psql ${{ steps.postgres.outputs.connection-uri }} -v db_name=ores_ci -f ./projects/ores.sql/create_instance.sql
 
       - name: Get latest CMake
-        uses: lukka/get-cmake@v4.2.2
+        uses: lukka/get-cmake@v4.2.3
 
       - name: Run vcpkg
         uses: lukka/run-vcpkg@v11

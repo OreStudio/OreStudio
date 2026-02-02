@@ -25,7 +25,9 @@ begin
     select distinct p.code
     from ores_iam_permissions_tbl p
     join ores_iam_role_permissions_tbl rp on p.id = rp.permission_id
+        and p.tenant_id = rp.tenant_id
     join ores_iam_account_roles_tbl ar on rp.role_id = ar.role_id
+        and rp.tenant_id = ar.tenant_id
     where ar.account_id = p_account_id
     and p.valid_to = ores_utility_infinity_timestamp_fn()
     and rp.valid_to = ores_utility_infinity_timestamp_fn()
@@ -41,6 +43,7 @@ begin
     select rp.role_id::text, p.code
     from ores_iam_role_permissions_tbl rp
     join ores_iam_permissions_tbl p on rp.permission_id = p.id
+        and rp.tenant_id = p.tenant_id
     where rp.valid_to = ores_utility_infinity_timestamp_fn()
     and p.valid_to = ores_utility_infinity_timestamp_fn()
     order by rp.role_id, p.code;
@@ -54,6 +57,7 @@ begin
     select rp.role_id::text, p.code
     from ores_iam_role_permissions_tbl rp
     join ores_iam_permissions_tbl p on rp.permission_id = p.id
+        and rp.tenant_id = p.tenant_id
     where rp.role_id = any(p_role_ids)
     and rp.valid_to = ores_utility_infinity_timestamp_fn()
     and p.valid_to = ores_utility_infinity_timestamp_fn()
@@ -99,9 +103,12 @@ begin
         coalesce(string_agg(p.code, ',' order by p.code), '') as permission_codes
     from ores_iam_account_roles_tbl ar
     join ores_iam_roles_tbl r on ar.role_id = r.id
+        and ar.tenant_id = r.tenant_id
     left join ores_iam_role_permissions_tbl rp on r.id = rp.role_id
+        and r.tenant_id = rp.tenant_id
         and rp.valid_to = ores_utility_infinity_timestamp_fn()
     left join ores_iam_permissions_tbl p on rp.permission_id = p.id
+        and rp.tenant_id = p.tenant_id
         and p.valid_to = ores_utility_infinity_timestamp_fn()
     where ar.account_id = p_account_id
     and ar.valid_to = ores_utility_infinity_timestamp_fn()
@@ -129,7 +136,9 @@ begin
         select 1
         from ores_iam_account_roles_tbl ar
         join ores_iam_role_permissions_tbl rp on ar.role_id = rp.role_id
+            and ar.tenant_id = rp.tenant_id
         join ores_iam_permissions_tbl p on rp.permission_id = p.id
+            and rp.tenant_id = p.tenant_id
         where ar.account_id = v_account_id
         and p.code = p_permission_code
         and ar.valid_to = ores_utility_infinity_timestamp_fn()
@@ -146,7 +155,9 @@ begin
         select 1
         from ores_iam_account_roles_tbl ar
         join ores_iam_role_permissions_tbl rp on ar.role_id = rp.role_id
+            and ar.tenant_id = rp.tenant_id
         join ores_iam_permissions_tbl p on rp.permission_id = p.id
+            and rp.tenant_id = p.tenant_id
         where ar.account_id = p_account_id
         and p.code = p_permission_code
         and ar.valid_to = ores_utility_infinity_timestamp_fn()

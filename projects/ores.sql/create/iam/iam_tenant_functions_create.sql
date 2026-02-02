@@ -120,6 +120,33 @@ begin
 end;
 $$ language plpgsql;
 
+-- Lookup tenant name by ID (used for display in login responses)
+-- Returns 'System' for the system tenant, otherwise looks up the tenant name.
+create or replace function ores_iam_tenant_name_by_id_fn(
+    p_tenant_id uuid
+) returns text as $$
+declare
+    v_name text;
+begin
+    -- Return 'System' for the system tenant
+    if p_tenant_id = ores_iam_system_tenant_id_fn() then
+        return 'System';
+    end if;
+
+    select name into v_name
+    from ores_iam_tenants_tbl
+    where tenant_id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        raise exception 'No active tenant found for ID: %', p_tenant_id
+            using errcode = '23503';
+    end if;
+
+    return v_name;
+end;
+$$ language plpgsql;
+
 -- Check if current session is in system tenant
 create or replace function ores_iam_is_system_tenant_fn()
 returns boolean as $$

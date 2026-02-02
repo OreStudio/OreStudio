@@ -466,11 +466,17 @@ handle_login_request(std::span<const std::byte> payload,
         sessions_->store_session_data(remote_address,
             service::session_converter::to_session_data(*sess));
 
+        // Look up tenant name
+        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
+        const auto tenant_name =
+            database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
+
         login_response response{
             .success = true,
             .error_message = "",
             .account_id = account.id,
             .tenant_id = tenant_id,
+            .tenant_name = tenant_name,
             .username = account.username,
             .email = account.email,
             .password_reset_required = password_reset_required
@@ -487,6 +493,7 @@ handle_login_request(std::span<const std::byte> payload,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
             .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = "",
             .username = username,
             .email = "",
             .password_reset_required = false

@@ -86,6 +86,27 @@ std::string tenant_context::lookup_by_hostname(context& ctx,
     return results[0];
 }
 
+std::string tenant_context::lookup_name(context& ctx,
+    const std::string& tenant_id) {
+    using namespace ores::logging;
+    using ores::database::repository::execute_parameterized_string_query;
+
+    BOOST_LOG_SEV(lg(), debug) << "Looking up tenant name by ID: " << tenant_id;
+
+    const auto results = execute_parameterized_string_query(ctx,
+        "SELECT ores_iam_tenant_name_by_id_fn($1::uuid)",
+        {tenant_id},
+        lg(), "Looking up tenant name by ID");
+
+    if (results.empty()) {
+        throw std::runtime_error("No active tenant found with ID: " + tenant_id);
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Resolved tenant ID '" << tenant_id
+                               << "' to name: " << results[0];
+    return results[0];
+}
+
 void tenant_context::set(context& ctx, const std::string& tenant) {
     using namespace ores::logging;
 

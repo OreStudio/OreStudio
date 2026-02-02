@@ -89,6 +89,7 @@ struct login_response final {
     std::string error_message;
     boost::uuids::uuid account_id;
     boost::uuids::uuid tenant_id;  ///< ID of authenticated tenant
+    std::string tenant_name;       ///< Name of authenticated tenant
     std::string username;
     std::string email;
     bool password_reset_required = false;
@@ -102,6 +103,8 @@ struct login_response final {
      * - N bytes: error_message (UTF-8)
      * - 16 bytes: account_id (UUID)
      * - 16 bytes: tenant_id (UUID)
+     * - 2 bytes: tenant_name length
+     * - N bytes: tenant_name (UTF-8)
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
      * - 2 bytes: email length

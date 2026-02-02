@@ -210,15 +210,13 @@ process_login(std::ostream& out, client_session& session,
     }
 
     BOOST_LOG_SEV(lg(), info) << "Login successful for user: " << response.username
-                              << ", tenant: " << response.tenant_id;
+                              << ", tenant: " << response.tenant_name
+                              << " (" << response.tenant_id << ")";
 
     out << "✓ Login successful!" << std::endl;
     out << "  User: " << response.username << std::endl;
-    if (response.tenant_id.is_nil()) {
-        out << "  Tenant: System" << std::endl;
-    } else {
-        out << "  Tenant: " << response.tenant_id << std::endl;
-    }
+    out << "  Tenant: " << response.tenant_name
+        << " (" << response.tenant_id << ")" << std::endl;
 
     // Update session state
     // Note: Permission checks are now handled server-side via RBAC

@@ -94,7 +94,7 @@ std::ostream& operator<<(std::ostream& s, const save_tenant_type_response& v);
  * @brief Result for a single tenant type deletion.
  */
 struct delete_tenant_type_result final {
-    boost::uuids::uuid id;
+    std::string type;  ///< Text primary key
     bool success;
     std::string message;
 };
@@ -105,7 +105,7 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_type_result& v);
  * @brief Request to delete one or more tenant types.
  */
 struct delete_tenant_type_request final {
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> types;  ///< Text primary keys
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_tenant_type_request,
@@ -133,7 +133,7 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_type_response& v);
  * @brief Request to retrieve version history for a tenant type.
  */
 struct get_tenant_type_history_request final {
-    boost::uuids::uuid id;
+    std::string type;  ///< Text primary key
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_tenant_type_history_request,

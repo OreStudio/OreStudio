@@ -42,7 +42,7 @@ namespace {
 void write_tenant_status(std::vector<std::byte>& buffer,
     const domain::tenant_status& ts) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(ts.version));
-    writer::write_uuid(buffer, ts.id);
+    writer::write_string(buffer, ts.status);
     writer::write_string(buffer, ts.name);
     writer::write_string(buffer, ts.description);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(ts.display_order));
@@ -61,9 +61,9 @@ read_tenant_status(std::span<const std::byte>& data) {
     if (!version_result) return std::unexpected(version_result.error());
     ts.version = static_cast<int>(*version_result);
 
-    auto id_result = reader::read_uuid(data);
-    if (!id_result) return std::unexpected(id_result.error());
-    ts.id = *id_result;
+    auto status_result = reader::read_string(data);
+    if (!status_result) return std::unexpected(status_result.error());
+    ts.status = *status_result;
 
     auto name_result = reader::read_string(data);
     if (!name_result) return std::unexpected(name_result.error());
@@ -211,9 +211,9 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_status_result& v) 
 
 std::vector<std::byte> delete_tenant_status_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(ids.size()));
-    for (const auto& id : ids) {
-        writer::write_uuid(buffer, id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(statuses.size()));
+    for (const auto& status : statuses) {
+        writer::write_string(buffer, status);
     }
     return buffer;
 }
@@ -226,11 +226,11 @@ delete_tenant_status_request::deserialize(std::span<const std::byte> data) {
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
-    request.ids.reserve(count);
+    request.statuses.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        request.ids.push_back(*id_result);
+        auto status_result = reader::read_string(data);
+        if (!status_result) return std::unexpected(status_result.error());
+        request.statuses.push_back(*status_result);
     }
 
     return request;
@@ -245,7 +245,7 @@ std::vector<std::byte> delete_tenant_status_response::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
     for (const auto& r : results) {
-        writer::write_uuid(buffer, r.id);
+        writer::write_string(buffer, r.status);
         writer::write_bool(buffer, r.success);
         writer::write_string(buffer, r.message);
     }
@@ -264,9 +264,9 @@ delete_tenant_status_response::deserialize(std::span<const std::byte> data) {
     for (std::uint32_t i = 0; i < count; ++i) {
         delete_tenant_status_result r;
 
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        r.id = *id_result;
+        auto status_result = reader::read_string(data);
+        if (!status_result) return std::unexpected(status_result.error());
+        r.status = *status_result;
 
         auto success_result = reader::read_bool(data);
         if (!success_result) return std::unexpected(success_result.error());
@@ -289,7 +289,7 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_status_response& v
 
 std::vector<std::byte> get_tenant_status_history_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, id);
+    writer::write_string(buffer, status);
     return buffer;
 }
 
@@ -297,9 +297,9 @@ std::expected<get_tenant_status_history_request, error_code>
 get_tenant_status_history_request::deserialize(std::span<const std::byte> data) {
     get_tenant_status_history_request request;
 
-    auto id_result = reader::read_uuid(data);
-    if (!id_result) return std::unexpected(id_result.error());
-    request.id = *id_result;
+    auto status_result = reader::read_string(data);
+    if (!status_result) return std::unexpected(status_result.error());
+    request.status = *status_result;
 
     return request;
 }

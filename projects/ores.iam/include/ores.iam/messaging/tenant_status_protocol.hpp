@@ -94,7 +94,7 @@ std::ostream& operator<<(std::ostream& s, const save_tenant_status_response& v);
  * @brief Result for a single tenant status deletion.
  */
 struct delete_tenant_status_result final {
-    boost::uuids::uuid id;
+    std::string status;  ///< Text primary key
     bool success;
     std::string message;
 };
@@ -105,7 +105,7 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_status_result& v);
  * @brief Request to delete one or more tenant statuses.
  */
 struct delete_tenant_status_request final {
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> statuses;  ///< Text primary keys
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_tenant_status_request,
@@ -133,7 +133,7 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_status_response& v
  * @brief Request to retrieve version history for a tenant status.
  */
 struct get_tenant_status_history_request final {
-    boost::uuids::uuid id;
+    std::string status;  ///< Text primary key
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_tenant_status_history_request,

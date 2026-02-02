@@ -42,7 +42,7 @@ namespace {
 void write_tenant_type(std::vector<std::byte>& buffer,
     const domain::tenant_type& tt) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(tt.version));
-    writer::write_uuid(buffer, tt.id);
+    writer::write_string(buffer, tt.type);
     writer::write_string(buffer, tt.name);
     writer::write_string(buffer, tt.description);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(tt.display_order));
@@ -61,9 +61,9 @@ read_tenant_type(std::span<const std::byte>& data) {
     if (!version_result) return std::unexpected(version_result.error());
     tt.version = static_cast<int>(*version_result);
 
-    auto id_result = reader::read_uuid(data);
-    if (!id_result) return std::unexpected(id_result.error());
-    tt.id = *id_result;
+    auto type_result = reader::read_string(data);
+    if (!type_result) return std::unexpected(type_result.error());
+    tt.type = *type_result;
 
     auto name_result = reader::read_string(data);
     if (!name_result) return std::unexpected(name_result.error());
@@ -211,9 +211,9 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_type_result& v) {
 
 std::vector<std::byte> delete_tenant_type_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(ids.size()));
-    for (const auto& id : ids) {
-        writer::write_uuid(buffer, id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(types.size()));
+    for (const auto& type : types) {
+        writer::write_string(buffer, type);
     }
     return buffer;
 }
@@ -226,11 +226,11 @@ delete_tenant_type_request::deserialize(std::span<const std::byte> data) {
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
-    request.ids.reserve(count);
+    request.types.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        request.ids.push_back(*id_result);
+        auto type_result = reader::read_string(data);
+        if (!type_result) return std::unexpected(type_result.error());
+        request.types.push_back(*type_result);
     }
 
     return request;
@@ -245,7 +245,7 @@ std::vector<std::byte> delete_tenant_type_response::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
     for (const auto& r : results) {
-        writer::write_uuid(buffer, r.id);
+        writer::write_string(buffer, r.type);
         writer::write_bool(buffer, r.success);
         writer::write_string(buffer, r.message);
     }
@@ -264,9 +264,9 @@ delete_tenant_type_response::deserialize(std::span<const std::byte> data) {
     for (std::uint32_t i = 0; i < count; ++i) {
         delete_tenant_type_result r;
 
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        r.id = *id_result;
+        auto type_result = reader::read_string(data);
+        if (!type_result) return std::unexpected(type_result.error());
+        r.type = *type_result;
 
         auto success_result = reader::read_bool(data);
         if (!success_result) return std::unexpected(success_result.error());
@@ -289,7 +289,7 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_type_response& v) 
 
 std::vector<std::byte> get_tenant_type_history_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, id);
+    writer::write_string(buffer, type);
     return buffer;
 }
 
@@ -297,9 +297,9 @@ std::expected<get_tenant_type_history_request, error_code>
 get_tenant_type_history_request::deserialize(std::span<const std::byte> data) {
     get_tenant_type_history_request request;
 
-    auto id_result = reader::read_uuid(data);
-    if (!id_result) return std::unexpected(id_result.error());
-    request.id = *id_result;
+    auto type_result = reader::read_string(data);
+    if (!type_result) return std::unexpected(type_result.error());
+    request.type = *type_result;
 
     return request;
 }

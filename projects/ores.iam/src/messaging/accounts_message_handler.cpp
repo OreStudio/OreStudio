@@ -29,6 +29,9 @@
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.iam/messaging/tenant_type_protocol.hpp"
+#include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
 
@@ -127,6 +130,31 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_roles_request(payload, remote_address);
     case message_type::get_account_permissions_request:
         co_return co_await handle_get_account_permissions_request(payload, remote_address);
+    // Tenant management messages
+    case message_type::get_tenants_request:
+        co_return co_await handle_get_tenants_request(payload, remote_address);
+    case message_type::save_tenant_request:
+        co_return co_await handle_save_tenant_request(payload, remote_address);
+    case message_type::delete_tenant_request:
+        co_return co_await handle_delete_tenant_request(payload, remote_address);
+    case message_type::get_tenant_history_request:
+        co_return co_await handle_get_tenant_history_request(payload, remote_address);
+    case message_type::get_tenant_types_request:
+        co_return co_await handle_get_tenant_types_request(payload, remote_address);
+    case message_type::save_tenant_type_request:
+        co_return co_await handle_save_tenant_type_request(payload, remote_address);
+    case message_type::delete_tenant_type_request:
+        co_return co_await handle_delete_tenant_type_request(payload, remote_address);
+    case message_type::get_tenant_type_history_request:
+        co_return co_await handle_get_tenant_type_history_request(payload, remote_address);
+    case message_type::get_tenant_statuses_request:
+        co_return co_await handle_get_tenant_statuses_request(payload, remote_address);
+    case message_type::save_tenant_status_request:
+        co_return co_await handle_save_tenant_status_request(payload, remote_address);
+    case message_type::delete_tenant_status_request:
+        co_return co_await handle_delete_tenant_status_request(payload, remote_address);
+    case message_type::get_tenant_status_history_request:
+        co_return co_await handle_get_tenant_status_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
@@ -1583,6 +1611,331 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
 
     get_active_sessions_response response{
         .sessions = std::move(active_sessions)
+    };
+    co_return response.serialize();
+}
+
+// =============================================================================
+// Tenant Management Handlers
+// =============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenants_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenants_request from "
+                               << remote_address;
+
+    auto request_result = get_tenants_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenants_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenants");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenants_request not yet implemented";
+    get_tenants_response response{
+        .tenants = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_tenant_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_tenant_request from "
+                               << remote_address;
+
+    auto request_result = save_tenant_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_tenant_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and tenants:write permission
+    auto auth_result = get_authenticated_session(remote_address, "Save tenant");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant repository is available
+    BOOST_LOG_SEV(lg(), warn) << "save_tenant_request not yet implemented";
+    save_tenant_response response{
+        .success = false,
+        .message = "Tenant management not yet implemented"
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_tenant_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_tenant_request from "
+                               << remote_address;
+
+    auto request_result = delete_tenant_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_tenant_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and tenants:delete permission
+    auto auth_result = get_authenticated_session(remote_address, "Delete tenant");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant repository is available
+    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_request not yet implemented";
+    delete_tenant_response response{
+        .results = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_history_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_history_request not yet implemented";
+    get_tenant_history_response response{
+        .success = false,
+        .message = "Tenant management not yet implemented",
+        .versions = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_types_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_types_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_types_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_types_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant types");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_types_request not yet implemented";
+    get_tenant_types_response response{
+        .types = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_tenant_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_tenant_type_request from "
+                               << remote_address;
+
+    auto request_result = save_tenant_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_tenant_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Save tenant type");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "save_tenant_type_request not yet implemented";
+    save_tenant_type_response response{
+        .success = false,
+        .message = "Tenant type management not yet implemented"
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_tenant_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_tenant_type_request from "
+                               << remote_address;
+
+    auto request_result = delete_tenant_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_tenant_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Delete tenant type");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_type_request not yet implemented";
+    delete_tenant_type_response response{
+        .results = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_type_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_type_history_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_type_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_type_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant type history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_type_history_request not yet implemented";
+    get_tenant_type_history_response response{
+        .success = false,
+        .message = "Tenant type management not yet implemented",
+        .versions = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_statuses_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_statuses_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_statuses_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_statuses_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant statuses");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_statuses_request not yet implemented";
+    get_tenant_statuses_response response{
+        .statuses = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_tenant_status_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_tenant_status_request from "
+                               << remote_address;
+
+    auto request_result = save_tenant_status_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_tenant_status_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Save tenant status");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "save_tenant_status_request not yet implemented";
+    save_tenant_status_response response{
+        .success = false,
+        .message = "Tenant status management not yet implemented"
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_tenant_status_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_tenant_status_request from "
+                               << remote_address;
+
+    auto request_result = delete_tenant_status_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_tenant_status_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Delete tenant status");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_status_request not yet implemented";
+    delete_tenant_status_response response{
+        .results = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_status_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_status_history_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_status_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_status_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant status history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_status_history_request not yet implemented";
+    get_tenant_status_history_response response{
+        .success = false,
+        .message = "Tenant status management not yet implemented",
+        .versions = {}
     };
     co_return response.serialize();
 }

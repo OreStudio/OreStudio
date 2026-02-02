@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Commodity',
         1,
         'FPML_ASSET_CLASS',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Credit',
         1,
         'FPML_ASSET_CLASS',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Equity',
         1,
         'FPML_ASSET_CLASS',
@@ -89,9 +92,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'ForeignExchange',
         1,
         'FPML_ASSET_CLASS',
@@ -100,9 +104,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'InterestRate',
         1,
         'FPML_ASSET_CLASS',
@@ -111,9 +116,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'SecuritiesFinancing',
         1,
         'FPML_ASSET_CLASS',

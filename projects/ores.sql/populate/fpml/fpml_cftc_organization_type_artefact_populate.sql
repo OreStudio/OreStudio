@@ -56,9 +56,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Agency',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',
@@ -67,9 +68,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'CharteredPursuantToFederalLaw',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',
@@ -78,9 +80,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'EstablishedByFederalEntity',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',
@@ -89,9 +92,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'FederallyFundedResearchAndDevelopmentCenter',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',
@@ -100,9 +104,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'GovernmentCorporation',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',
@@ -111,9 +116,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'GovernmentSponsoredEnterprise',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',
@@ -122,9 +128,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'USCListedExecutiveDepartment',
         1,
         'FPML_CFTC_ORGANIZATION_TYPE',

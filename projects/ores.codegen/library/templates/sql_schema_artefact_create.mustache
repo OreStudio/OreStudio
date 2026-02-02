@@ -7,6 +7,7 @@
 
 create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
     "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
     "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
     "version" integer not null,
 {{#entity.columns}}
@@ -23,6 +24,9 @@ create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
 create index if not exists dq_{{entity.entity_plural}}_artefact_dataset_idx
 on ores_dq_{{entity.entity_plural}}_artefact_tbl (dataset_id);
 
+create index if not exists dq_{{entity.entity_plural}}_artefact_tenant_idx
+on ores_dq_{{entity.entity_plural}}_artefact_tbl (tenant_id);
+
 create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.primary_key.column}}_idx
 on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{entity.primary_key.column}});
 {{#entity.artefact_indexes}}
@@ -35,6 +39,7 @@ on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{columns}});
 -- Function to insert {{entity.entity_plural}} into the artefact table
 create or replace function ores_dq_{{entity.entity_plural}}_artefact_insert_fn(
     p_dataset_id uuid,
+    p_tenant_id uuid,
     p_{{entity.primary_key.column}} {{entity.primary_key.type}},
     p_version integer,
 {{#entity.columns}}
@@ -46,7 +51,7 @@ create or replace function ores_dq_{{entity.entity_plural}}_artefact_insert_fn(
 ) returns void as $$
 begin
     insert into ores_dq_{{entity.entity_plural}}_artefact_tbl (
-        dataset_id, {{entity.primary_key.column}}, version,
+        dataset_id, tenant_id, {{entity.primary_key.column}}, version,
 {{#entity.columns}}
         {{name}}{{^last}},{{/last}}
 {{/entity.columns}}
@@ -55,7 +60,7 @@ begin
 {{/entity.has_image_id}}
     )
     values (
-        p_dataset_id, p_{{entity.primary_key.column}}, p_version,
+        p_dataset_id, p_tenant_id, p_{{entity.primary_key.column}}, p_version,
 {{#entity.columns}}
         p_{{name}}{{^last}},{{/last}}
 {{/entity.columns}}

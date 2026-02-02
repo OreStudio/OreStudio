@@ -40,9 +40,10 @@ begin
     -- Insert reference data
 {{#items}}
     insert into ores_dq_{{entity.entity_plural}}_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         '{{code}}',
         1,
         '{{coding_scheme_code}}',

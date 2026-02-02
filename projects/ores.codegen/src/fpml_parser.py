@@ -223,10 +223,10 @@ class CodingScheme:
         uri = self.canonical_uri.replace("'", "''")
 
         return f"""insert into ores_dq_coding_schemes_artefact_tbl (
-    dataset_id, code, version, name, authority_type,
+    dataset_id, tenant_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
-    :'v_dataset_id',
+    :'v_dataset_id', ores_iam_system_tenant_id_fn(),
     '{code}', 0, '{name}', 'industry',
     '{subject_area}', 'Reference Data', '{uri}', '{definition}'
 );"""

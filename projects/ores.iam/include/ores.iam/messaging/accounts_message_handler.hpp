@@ -29,6 +29,7 @@
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
+#include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -532,6 +533,7 @@ private:
     std::shared_ptr<service::authorization_service> auth_service_;
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
+    repository::tenant_repository tenant_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
     bundle_provider_fn bundle_provider_;
 };

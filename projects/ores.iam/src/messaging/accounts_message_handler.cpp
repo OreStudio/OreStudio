@@ -86,7 +86,7 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
-      session_repo_(ctx), geo_service_(std::move(geo_service)),
+      session_repo_(ctx), tenant_repo_(ctx), geo_service_(std::move(geo_service)),
       bundle_provider_(std::move(bundle_provider)) {}
 
 accounts_message_handler::handler_result
@@ -1729,18 +1729,27 @@ handle_get_tenants_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication
-    auto auth_result = get_authenticated_session(remote_address, "Get tenants");
+    // Requires authentication and tenants:read permission
+    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenants");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant repository is available
-    BOOST_LOG_SEV(lg(), warn) << "get_tenants_request not yet implemented";
-    get_tenants_response response{
-        .tenants = {}
-    };
-    co_return response.serialize();
+    try {
+        auto tenants = tenant_repo_.read_latest();
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size() << " tenants";
+
+        get_tenants_response response{
+            .tenants = std::move(tenants)
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get tenants: " << e.what();
+        get_tenants_response response{
+            .tenants = {}
+        };
+        co_return response.serialize();
+    }
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
@@ -1756,18 +1765,33 @@ handle_save_tenant_request(std::span<const std::byte> payload,
     }
 
     // Requires authentication and tenants:write permission
-    auto auth_result = get_authenticated_session(remote_address, "Save tenant");
+    auto auth_result = check_authorization(remote_address, "tenants:write", "Save tenant");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant repository is available
-    BOOST_LOG_SEV(lg(), warn) << "save_tenant_request not yet implemented";
-    save_tenant_response response{
-        .success = false,
-        .message = "Tenant management not yet implemented"
-    };
-    co_return response.serialize();
+    const auto& request = *request_result;
+    auto tenant = request.tenant;
+    // recorded_by comes from the request; if empty, the database trigger sets it
+
+    try {
+        tenant_repo_.write(tenant);
+        BOOST_LOG_SEV(lg(), info) << "Saved tenant: " << tenant.name
+                                  << " (code: " << tenant.code << ")";
+
+        save_tenant_response response{
+            .success = true,
+            .message = "Tenant saved successfully"
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save tenant: " << e.what();
+        save_tenant_response response{
+            .success = false,
+            .message = std::string("Failed to save tenant: ") + e.what()
+        };
+        co_return response.serialize();
+    }
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
@@ -1783,15 +1807,60 @@ handle_delete_tenant_request(std::span<const std::byte> payload,
     }
 
     // Requires authentication and tenants:delete permission
-    auto auth_result = get_authenticated_session(remote_address, "Delete tenant");
+    auto auth_result = check_authorization(remote_address, "tenants:delete", "Delete tenant");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant repository is available
-    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_request not yet implemented";
+    const auto& request = *request_result;
+    std::vector<delete_tenant_result> results;
+    results.reserve(request.ids.size());
+
+    for (const auto& id : request.ids) {
+        try {
+            // Check if tenant exists
+            auto existing = tenant_repo_.read_latest(id);
+            if (existing.empty()) {
+                results.push_back({
+                    .id = id,
+                    .success = false,
+                    .message = "Tenant not found"
+                });
+                continue;
+            }
+
+            // Prevent deletion of system tenant
+            static const auto system_tenant_id = boost::uuids::uuid{};
+            if (id == system_tenant_id) {
+                results.push_back({
+                    .id = id,
+                    .success = false,
+                    .message = "Cannot delete the system tenant"
+                });
+                continue;
+            }
+
+            tenant_repo_.remove(id);
+            BOOST_LOG_SEV(lg(), info) << "Deleted tenant: " << id;
+
+            results.push_back({
+                .id = id,
+                .success = true,
+                .message = "Tenant deleted successfully"
+            });
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete tenant " << id
+                                       << ": " << e.what();
+            results.push_back({
+                .id = id,
+                .success = false,
+                .message = std::string("Failed to delete tenant: ") + e.what()
+            });
+        }
+    }
+
     delete_tenant_response response{
-        .results = {}
+        .results = std::move(results)
     };
     co_return response.serialize();
 }
@@ -1808,20 +1877,34 @@ handle_get_tenant_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication
-    auto auth_result = get_authenticated_session(remote_address, "Get tenant history");
+    // Requires authentication and tenants:read permission
+    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenant history");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant repository is available
-    BOOST_LOG_SEV(lg(), warn) << "get_tenant_history_request not yet implemented";
-    get_tenant_history_response response{
-        .success = false,
-        .message = "Tenant management not yet implemented",
-        .versions = {}
-    };
-    co_return response.serialize();
+    const auto& request = *request_result;
+
+    try {
+        auto versions = tenant_repo_.read_history(request.id);
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << versions.size()
+                                  << " versions for tenant " << request.id;
+
+        get_tenant_history_response response{
+            .success = true,
+            .message = "",
+            .versions = std::move(versions)
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get tenant history: " << e.what();
+        get_tenant_history_response response{
+            .success = false,
+            .message = std::string("Failed to get tenant history: ") + e.what(),
+            .versions = {}
+        };
+        co_return response.serialize();
+    }
 }
 
 accounts_message_handler::handler_result accounts_message_handler::

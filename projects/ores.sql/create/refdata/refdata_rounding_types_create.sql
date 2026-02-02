@@ -66,6 +66,9 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- Validate change_reason_code
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
     select version into current_version
     from "public"."ores_refdata_rounding_types_tbl"
     where tenant_id = new.tenant_id
@@ -96,8 +99,6 @@ begin
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
-
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

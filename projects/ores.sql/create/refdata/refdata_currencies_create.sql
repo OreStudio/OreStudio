@@ -87,6 +87,9 @@ begin
     -- Validate rounding_type
     new.rounding_type := ores_refdata_validate_rounding_type_fn(new.tenant_id, new.rounding_type);
 
+    -- Validate change_reason_code
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
     select version into current_version
     from "public"."ores_refdata_currencies_tbl"
     where tenant_id = new.tenant_id
@@ -117,8 +120,6 @@ begin
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
-
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

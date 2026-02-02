@@ -69,6 +69,9 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- Validate change_reason_code
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
     select version into current_version
     from "public"."ores_dq_artefact_types_tbl"
     where tenant_id = new.tenant_id
@@ -100,8 +103,6 @@ begin
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
     return new;
 end;
 $$ language plpgsql;
@@ -123,18 +124,26 @@ do instead
 -- =============================================================================
 -- Validation function for artefact_type
 -- Validates that a code exists in the artefact_types table.
+-- Returns the validated value, or default if null/empty.
 -- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_dq_validate_artefact_type_fn(
     p_tenant_id uuid,
     p_value text
-) returns void as $$
+) returns text as $$
 begin
+    -- Return default if null or empty
     if p_value is null or p_value = '' then
         raise exception 'Invalid artefact_type: value cannot be null or empty'
             using errcode = '23502';
     end if;
 
+    -- Allow pass-through during bootstrap (empty table)
+    if not exists (select 1 from ores_dq_artefact_types_tbl limit 1) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
     if not exists (
         select 1 from ores_dq_artefact_types_tbl
         where tenant_id = ores_iam_system_tenant_id_fn()
@@ -148,5 +157,7 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
+
+    return p_value;
 end;
 $$ language plpgsql;

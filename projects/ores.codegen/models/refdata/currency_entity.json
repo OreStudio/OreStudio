@@ -31,6 +31,10 @@
       {
         "column": "rounding_type",
         "validation_function": "ores_refdata_validate_rounding_type_fn"
+      },
+      {
+        "column": "change_reason_code",
+        "validation_function": "ores_dq_validate_change_reason_fn"
       }
     ],
     "indexes": []

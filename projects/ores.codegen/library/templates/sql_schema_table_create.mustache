@@ -187,13 +187,6 @@ begin
         new.modified_by = current_user;
     end if;
 
-{{#entity.has_tenant_id}}
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-{{/entity.has_tenant_id}}
-{{^entity.has_tenant_id}}
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
-{{/entity.has_tenant_id}}
-
     return new;
 end;
 $$ language plpgsql;

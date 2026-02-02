@@ -20,6 +20,12 @@
       {"name": "description", "type": "text", "nullable": false},
       {"name": "display_order", "type": "integer", "nullable": false, "default": "0"}
     ],
+    "validations": [
+      {
+        "column": "change_reason_code",
+        "validation_function": "ores_dq_validate_change_reason_fn"
+      }
+    ],
     "indexes": []
   }
 }

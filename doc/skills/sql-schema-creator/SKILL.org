@@ -1034,6 +1034,128 @@ and mapper). Use this skill to:
 4. Add any reference data population
 5. Ensure the C++ entity =tablename= matches the SQL table name
 
+* Testing with pgTAP
+
+pgTAP is used for database unit testing. Tests verify trigger behavior,
+validation functions, and constraint enforcement.
+
+** Test file organization
+
+Test files are located in =projects/ores.sql/test/= and follow the naming
+pattern ={component}_{entity}_test.sql=:
+
+#+begin_example
+projects/ores.sql/test/
+├── test.sql                           # Extension setup (create extension pgtap)
+├── refdata_validation_test.sql        # Validation function tests
+├── refdata_currencies_test.sql        # Currency trigger behavior tests
+└── ...
+#+end_example
+
+** Test file structure
+
+Each test file follows this pattern:
+
+#+begin_src sql
+/* License header */
+
+/**
+ * pgTAP tests for {entity} behavior.
+ *
+ * Tests cover:
+ * - Feature 1
+ * - Feature 2
+ *
+ * Run with: pg_prove -d {database} test/{testfile}.sql
+ */
+
+begin;
+
+select plan({number_of_tests});
+
+-- Test 1: Description
+select is(
+    (actual_value),
+    expected_value,
+    'test description'
+);
+
+-- Test 2: Exception testing
+select throws_ok(
+    $$sql statement that should fail$$,
+    'SQLSTATE',  -- e.g., '23503' for FK violation
+    NULL,        -- message pattern (NULL to ignore)
+    'test description'
+);
+
+select * from finish();
+
+rollback;
+#+end_src
+
+** Common test patterns
+
+*** Testing validation functions
+
+#+begin_src sql
+-- Test null returns default
+select is(
+    ores_refdata_validate_rounding_type_fn(ores_iam_system_tenant_id_fn(), NULL),
+    'Closest',
+    'rounding_type: NULL returns default Closest'
+);
+
+-- Test valid value passes through
+select is(
+    ores_refdata_validate_rounding_type_fn(ores_iam_system_tenant_id_fn(), 'Up'),
+    'Up',
+    'rounding_type: valid value Up returns itself'
+);
+
+-- Test invalid value raises exception
+select throws_ok(
+    $$select ores_refdata_validate_rounding_type_fn(ores_iam_system_tenant_id_fn(), 'INVALID')$$,
+    '23503',
+    NULL,
+    'rounding_type: invalid value raises 23503 exception'
+);
+#+end_src
+
+*** Testing trigger defaults
+
+#+begin_src sql
+-- Insert with NULL value
+insert into ores_refdata_currencies_tbl (..., rounding_type, ...) values (..., NULL, ...);
+
+-- Verify default was applied
+select is(
+    (select rounding_type from ores_refdata_currencies_tbl where iso_code = 'TST' ...),
+    'Closest',
+    'currency insert: NULL rounding_type defaults to Closest'
+);
+#+end_src
+
+** Running tests
+
+#+begin_src sh
+# Run a single test file
+pg_prove -d ores_dev_local1 test/refdata_validation_test.sql
+
+# Run all tests in the test directory
+pg_prove -d ores_dev_local1 test/*.sql
+
+# Alternative: run directly with psql
+psql -U postgres -d ores_dev_local1 -f test/refdata_validation_test.sql
+#+end_src
+
+** Test limitations
+
+Tests run in a single transaction with rollback, which means:
+
+- Multiple updates to the same entity within one test may fail due to
+  =current_timestamp= returning the same value (transaction frozen)
+- For version increment tests, use separate transactions or integration tests
+
 * Artefacts                                                        :noexport:
 
 ** Licence

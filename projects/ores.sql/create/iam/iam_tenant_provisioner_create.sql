@@ -40,7 +40,7 @@
 -- Caller must have system tenant context set.
 --
 -- Parameters:
---   p_type: Tenant type ('organisation' or 'platform')
+--   p_type: Tenant type ('organisation', 'platform', or 'test')
 --   p_code: Unique tenant code (e.g., 'acme', 'test_20260201_143052_abc')
 --   p_name: Display name for the tenant
 --   p_hostname: Unique hostname (e.g., 'acme.example.com', 'test_123.localhost')

@@ -36,6 +36,9 @@ insert into ores_iam_tenant_types_tbl (
      current_user, 'system.initial_load', 'Initial population of tenant types'),
     (ores_iam_system_tenant_id_fn(), 'organisation', 0, 'Organisation',
      'Customer organisation tenant for isolated business operations', 10,
+     current_user, 'system.initial_load', 'Initial population of tenant types'),
+    (ores_iam_system_tenant_id_fn(), 'test', 0, 'Test',
+     'Tenant for automated testing scenarios including unit, integration, and load tests', 20,
      current_user, 'system.initial_load', 'Initial population of tenant types')
 on conflict (tenant_id, type)
 where valid_to = ores_utility_infinity_timestamp_fn()

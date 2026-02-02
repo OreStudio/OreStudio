@@ -45,8 +45,9 @@ create table if not exists "ores_dq_dataset_dependencies_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (dataset_code, dependency_code, valid_from),
+    primary key (tenant_id, dataset_code, dependency_code, valid_from),
     exclude using gist (
+        tenant_id WITH =,
         dataset_code WITH =,
         dependency_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
@@ -84,7 +85,8 @@ begin
     -- Close any existing record for this dependency
     update "ores_dq_dataset_dependencies_tbl"
     set valid_to = current_timestamp
-    where dataset_code = new.dataset_code
+    where tenant_id = new.tenant_id
+    and dataset_code = new.dataset_code
     and dependency_code = new.dependency_code
     and valid_to = ores_utility_infinity_timestamp_fn()
     and valid_from < current_timestamp;
@@ -112,6 +114,7 @@ on delete to "ores_dq_dataset_dependencies_tbl"
 do instead
   update "ores_dq_dataset_dependencies_tbl"
   set valid_to = current_timestamp
-  where dataset_code = old.dataset_code
+  where tenant_id = old.tenant_id
+  and dataset_code = old.dataset_code
   and dependency_code = old.dependency_code
   and valid_to = ores_utility_infinity_timestamp_fn();

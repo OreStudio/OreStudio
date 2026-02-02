@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_party_relationships_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Intragroup',
         1,
         'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_relationships_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'NotIntragroup',
         1,
         'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
@@ -80,7 +78,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_party_relationships_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_party_relationships_artefact_tbl', v_count;
 end;
 $$;
 

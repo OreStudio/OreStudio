@@ -319,6 +319,7 @@ Schema file: =ores_utility_functions_create.sql=
 |-------------------+--------------------------------+-----------------------------|
 | Primary key (UUID)| =id= or ={entity}_id=          | =id=, =image_id=, =tag_id=  |
 | Natural key       | descriptive name               | =iso_code=, =alpha2_code=   |
+| Tenant ID         | =tenant_id=                    | =tenant_id=                 |
 | Foreign key       | ={referenced_entity}_id=       | =account_id=, =role_id=     |
 | Version           | =version=                      | =version=                   |
 | Temporal start    | =valid_from=                   | =valid_from=                |
@@ -328,6 +329,12 @@ Schema file: =ores_utility_functions_create.sql=
 | Change tracking   | =change_commentary=            | =change_commentary=         |
 | Boolean (as int)  | descriptive name               | =enabled=, =locked=         |
 | Timestamp         | =*_at= suffix                  | =assigned_at=, =created_at= |
+
+The =tenant_id= column is required for all temporal and artefact tables to ensure
+proper multi-tenant isolation. It must be included in:
+- The primary key
+- EXCLUDE constraints
+- All queries (version lookup, updates, deletes)
 
 ** Notification channel naming
 
@@ -398,6 +405,7 @@ The file must include:
 -- All tables use the public schema with ores_ prefix
 create table if not exists "ores_{component}_{entity}_tbl" (
     "{pk_column}" uuid not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     -- domain-specific columns here
     "modified_by" text not null,
@@ -405,8 +413,9 @@ create table if not exists "ores_{component}_{entity}_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key ({pk_column}, valid_from, valid_to),
+    primary key (tenant_id, {pk_column}, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         {pk_column} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -467,12 +476,17 @@ keys.
 #+begin_src sql
 -- Version uniqueness index (required for optimistic concurrency)
 create unique index if not exists ores_{component}_{entity}_version_uniq_idx
-on "ores_{component}_{entity}_tbl" ({pk_column}, version)
+on "ores_{component}_{entity}_tbl" (tenant_id, {pk_column}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Natural key uniqueness index (if applicable)
 create unique index if not exists ores_{component}_{entity}_{column}_uniq_idx
-on "ores_{component}_{entity}_tbl" ({column})
+on "ores_{component}_{entity}_tbl" (tenant_id, {column})
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Tenant index (required for all tenant-aware tables)
+create index if not exists ores_{component}_{entity}_tenant_idx
+on "ores_{component}_{entity}_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 #+end_src
 
@@ -491,9 +505,13 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
     select version into current_version
     from "ores_{component}_{entity}_tbl"
-    where {pk_column} = NEW.{pk_column}
+    where tenant_id = NEW.tenant_id
+      and {pk_column} = NEW.{pk_column}
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -508,7 +526,8 @@ begin
         -- Close the old record
         update "ores_{component}_{entity}_tbl"
         set valid_to = current_timestamp
-        where {pk_column} = NEW.{pk_column}
+        where tenant_id = NEW.tenant_id
+          and {pk_column} = NEW.{pk_column}
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -523,8 +542,8 @@ begin
         NEW.modified_by = current_user;
     end if;
 
-    -- Validate change_reason_code
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
+    -- Validate change_reason_code (tenant-aware)
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     return NEW;
 end;
@@ -546,7 +565,8 @@ create or replace rule ores_{component}_{entity}_delete_rule as
 on delete to "ores_{component}_{entity}_tbl" do instead
     update "ores_{component}_{entity}_tbl"
     set valid_to = current_timestamp
-    where {pk_column} = OLD.{pk_column}
+    where tenant_id = OLD.tenant_id
+      and {pk_column} = OLD.{pk_column}
       and valid_to = ores_utility_infinity_timestamp_fn();
 #+end_src
 
@@ -777,12 +797,14 @@ validation also runs in CI and will fail the build if there are warnings.
 
 All entity tables use bitemporal support with:
 
+- =tenant_id=: UUID reference to the tenant (required, part of primary key)
 - =valid_from= / =valid_to=: Validity period for the record
 - =version=: Incrementing version number for optimistic concurrency
 - =modified_by=: Username or system identifier that made the change
 - =change_reason_code=: Reference to =dq_change_reasons_tbl=
 - =change_commentary=: Free-text explanation of the change
-- GiST exclusion constraint to prevent overlapping validity periods
+- GiST exclusion constraint including =tenant_id WITH == to prevent overlapping
+  validity periods within the same tenant
 
 ** Querying current records
 
@@ -810,15 +832,16 @@ the ID without temporal constraints (the application layer manages consistency):
 ** Change reason validation
 
 All tables with =change_reason_code= validate the code via the insert trigger function.
-The trigger calls =ores_dq_validate_change_reason_fn()= to ensure the code exists:
+The trigger calls =ores_dq_validate_change_reason_fn()= with the tenant_id to ensure
+the code exists for that tenant:
 
 #+begin_src sql
 -- Inside the insert trigger function:
-new.change_reason_code := ores_dq_validate_change_reason_fn(new.change_reason_code);
+new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 #+end_src
 
 This validates that the change reason code exists in =ores_dq_change_reasons_tbl=
-and raises an exception with SQLSTATE 23503 if invalid.
+for the specified tenant and raises an exception with SQLSTATE 23503 if invalid.
 
 * Using the Code Generator
 
@@ -1033,6 +1056,152 @@ and mapper). Use this skill to:
 3. Update orchestration scripts
 4. Add any reference data population
 5. Ensure the C++ entity =tablename= matches the SQL table name
+
+* Testing with pgTAP
+
+pgTAP is used for database unit testing. Tests verify trigger behavior,
+validation functions, and constraint enforcement.
+
+** Test file organization
+
+Test files are located in =projects/ores.sql/test/= and follow the naming
+pattern ={component}_{entity}_test.sql=:
+
+#+begin_example
+projects/ores.sql/test/
+├── test.sql                           # Extension setup (create extension pgtap)
+├── refdata_validation_test.sql        # Validation function tests
+├── refdata_currencies_test.sql        # Currency trigger behavior tests
+└── ...
+#+end_example
+
+** Test file structure
+
+Each test file follows this pattern:
+
+#+begin_src sql
+/* License header */
+
+/**
+ * pgTAP tests for {entity} behavior.
+ *
+ * Tests cover:
+ * - Feature 1
+ * - Feature 2
+ *
+ * Run with: pg_prove -d {database} test/{testfile}.sql
+ */
+
+begin;
+
+select plan({number_of_tests});
+
+-- Test 1: Description
+select is(
+    (actual_value),
+    expected_value,
+    'test description'
+);
+
+-- Test 2: Exception testing
+select throws_ok(
+    $$sql statement that should fail$$,
+    'SQLSTATE',  -- e.g., '23503' for FK violation
+    NULL,        -- message pattern (NULL to ignore)
+    'test description'
+);
+
+select * from finish();
+
+rollback;
+#+end_src
+
+** Common test patterns
+
+*** Testing validation functions
+
+All validation functions are tenant-aware and take =tenant_id= as the first parameter.
+Use =ores_iam_system_tenant_id_fn()= for system tenant data in tests:
+
+#+begin_src sql
+-- Test null returns default
+select is(
+    ores_refdata_validate_rounding_type_fn(ores_iam_system_tenant_id_fn(), NULL),
+    'Closest',
+    'rounding_type: NULL returns default Closest'
+);
+
+-- Test valid value passes through
+select is(
+    ores_refdata_validate_rounding_type_fn(ores_iam_system_tenant_id_fn(), 'Up'),
+    'Up',
+    'rounding_type: valid value Up returns itself'
+);
+
+-- Test invalid value raises exception
+select throws_ok(
+    $$select ores_refdata_validate_rounding_type_fn(ores_iam_system_tenant_id_fn(), 'INVALID')$$,
+    '23503',
+    NULL,
+    'rounding_type: invalid value raises 23503 exception'
+);
+#+end_src
+
+*** Testing trigger defaults
+
+#+begin_src sql
+-- Insert with NULL value
+insert into ores_refdata_currencies_tbl (..., rounding_type, ...) values (..., NULL, ...);
+
+-- Verify default was applied
+select is(
+    (select rounding_type from ores_refdata_currencies_tbl where iso_code = 'TST' ...),
+    'Closest',
+    'currency insert: NULL rounding_type defaults to Closest'
+);
+#+end_src
+
+** Running tests
+
+Use the =run_tests.sh= script which reads connection details from environment
+variables:
+
+#+begin_src sh
+# Run all tests using environment variables
+ORES_TEST_DB_DATABASE=ores_dev_local1 ./run_tests.sh
+
+# Run a specific test file
+ORES_TEST_DB_DATABASE=ores_dev_local1 ./run_tests.sh refdata_validation_test.sql
+#+end_src
+
+Environment variables:
+
+| Variable                | Description              | Default     |
+|-------------------------+--------------------------+-------------|
+| =ORES_TEST_DB_DATABASE= | Database name (required) | -           |
+| =ORES_TEST_DB_HOST=     | Database host            | =localhost= |
+| =ORES_TEST_DB_PORT=     | Database port            | =5432=      |
+| =ORES_TEST_DB_USER=     | Database user            | =postgres=  |
+
+*** Manual execution
+
+For debugging or running individual tests without the script:
+
+#+begin_src sh
+# Run a single test file with pg_prove
+pg_prove -d ores_dev_local1 test/refdata_validation_test.sql
+
+# Run directly with psql (shows detailed output)
+psql -U postgres -d ores_dev_local1 -f test/refdata_validation_test.sql
+#+end_src
+
+** Test limitations
+
+Tests run in a single transaction with rollback, which means:
+
+- Multiple updates to the same entity within one test may fail due to
+  =current_timestamp= returning the same value (transaction frozen)
+- For version increment tests, use separate transactions or integration tests
 
 * Artefacts                                                        :noexport:
 

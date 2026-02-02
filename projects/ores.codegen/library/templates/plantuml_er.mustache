@@ -25,19 +25,21 @@ title ORES Database Schema
 hide circle
 skinparam linetype ortho
 
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
 note as SchemaNote
 ORES Database Schema
 
-Schemas:
-- metadata: Data governance, classification, staging (dq_*)
-- production: Operational data (refdata_*, iam_*, assets_*, etc.)
-
-All temporal tables use valid_from/valid_to
-for bitemporal data management. Junction tables enable
-soft deletes via validity period closure.
-
-Change tracking: Most entities include change_reason_code
-and change_commentary for audit trail support.
+Packages grouped by domain:
+- iam: Identity & Access Management
+- assets: Digital Assets
+- refdata: Reference Data
+- dq_*: Data Quality (staging, datasets, methodology, metadata)
+- variability, telemetry, geo: Supporting services
 
 Table naming: <component>_<entity>_tbl
 end note

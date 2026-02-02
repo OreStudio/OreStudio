@@ -33,8 +33,9 @@ create table if not exists "ores_dq_data_domains_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (name, valid_from, valid_to),
+    primary key (tenant_id, name, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         name WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -64,7 +65,8 @@ begin
 
     select version into current_version
     from "ores_dq_data_domains_tbl"
-    where name = NEW.name
+    where tenant_id = NEW.tenant_id
+      and name = NEW.name
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -77,7 +79,8 @@ begin
 
         update "ores_dq_data_domains_tbl"
         set valid_to = current_timestamp
-        where name = NEW.name
+        where tenant_id = NEW.tenant_id
+          and name = NEW.name
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -105,5 +108,6 @@ create or replace rule ores_dq_data_domains_delete_rule as
 on delete to "ores_dq_data_domains_tbl" do instead
     update "ores_dq_data_domains_tbl"
     set valid_to = current_timestamp
-    where name = OLD.name
+    where tenant_id = OLD.tenant_id
+      and name = OLD.name
       and valid_to = ores_utility_infinity_timestamp_fn();

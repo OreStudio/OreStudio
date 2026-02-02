@@ -35,18 +35,18 @@ from typing import Optional
 
 # Known component prefixes and their descriptions
 # Order determines package display order in diagram
-# All tables are in the public schema with ores_ prefix
+# All tables/functions are in the public schema with ores_ product prefix
 COMPONENT_PREFIXES = {
-    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'public', 'color': '#E8F4FD', 'order': 1},
-    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'public', 'color': '#F3E5F5', 'order': 2},
-    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'public', 'color': '#FFF3E0', 'order': 3},
-    'dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'public', 'color': '#E1F5FE', 'order': 4},
-    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'public', 'color': '#E8F5E9', 'order': 5},
-    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'public', 'color': '#FCE4EC', 'order': 6},
-    'geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
-    'utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
-    'seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
-    'admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
+    'ores_iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'public', 'color': '#E8F4FD', 'order': 1},
+    'ores_assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'public', 'color': '#F3E5F5', 'order': 2},
+    'ores_refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'public', 'color': '#FFF3E0', 'order': 3},
+    'ores_dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'public', 'color': '#E1F5FE', 'order': 4},
+    'ores_variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'public', 'color': '#E8F5E9', 'order': 5},
+    'ores_telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'public', 'color': '#FCE4EC', 'order': 6},
+    'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
+    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
+    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
+    'ores_admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
 }
 
 # Valid schema names for pattern matching
@@ -287,16 +287,16 @@ class SQLParser:
         """Parse a single DROP SQL file to track what should be dropped."""
         content = file_path.read_text()
 
-        # Track dropped tables (matches metadata, production, or public schemas)
-        for match in re.finditer(rf'drop\s+table\s+if\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?', content, re.IGNORECASE):
+        # Track dropped tables (with or without schema prefix)
+        for match in re.finditer(rf'drop\s+table\s+if\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?', content, re.IGNORECASE):
             self.drop_tables.add(match.group(1))
 
-        # Track dropped functions (matches metadata, production, or public schemas)
-        for match in re.finditer(rf'drop\s+function\s+if\s+exists\s+{SCHEMA_PATTERN}\.(\w+)', content, re.IGNORECASE):
+        # Track dropped functions (with or without schema prefix)
+        for match in re.finditer(rf'drop\s+function\s+if\s+exists\s+(?:{SCHEMA_PATTERN}\.)?(\w+)', content, re.IGNORECASE):
             self.drop_functions.add(match.group(1))
 
-        # Track dropped views (regular and materialized)
-        for match in re.finditer(rf'drop\s+(?:materialized\s+)?view\s+if\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?', content, re.IGNORECASE):
+        # Track dropped views (with or without schema prefix)
+        for match in re.finditer(rf'drop\s+(?:materialized\s+)?view\s+if\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?', content, re.IGNORECASE):
             self.drop_views.add(match.group(1))
 
     def _extract_table_descriptions(self, content: str) -> None:
@@ -313,7 +313,7 @@ class SQLParser:
             r'((?:-- [^\n]*\n)+)'                  # Content lines (captured)
             r'-- =+\s*\n'                          # Closing delimiter
             r'\s*'                                  # Optional whitespace
-            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?',  # Table name
+            rf'create\s+table\s+if\s+not\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?',  # Table name
             re.IGNORECASE
         )
 
@@ -345,7 +345,7 @@ class SQLParser:
             r'\s*'                                  # Optional whitespace
             r'(?:-- [^\n]*\n)*'                    # Optional comment lines
             r'\s*'                                  # Optional whitespace
-            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?',  # Table name
+            rf'create\s+table\s+if\s+not\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?',  # Table name
             re.IGNORECASE
         )
 
@@ -378,9 +378,9 @@ class SQLParser:
 
     def _extract_tables(self, content: str, lines: list, file_path: str) -> None:
         """Extract table definitions from SQL content."""
-        # Pattern for CREATE TABLE (matches metadata, production, or public schemas)
+        # Pattern for CREATE TABLE (with or without schema prefix)
         table_pattern = re.compile(
-            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?\s*\((.*?)\);',
+            rf'create\s+table\s+if\s+not\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?\s*\((.*?)\);',
             re.IGNORECASE | re.DOTALL
         )
 
@@ -457,6 +457,10 @@ class SQLParser:
         # Validate temporal requirements
         if classification == 'temporal':
             self._validate_temporal_table(name, columns, body, file_path, line_num)
+
+        # Validate tenant-aware requirements (all temporal and artefact tables should be tenant-aware)
+        if classification in ('temporal', 'artefact'):
+            self._validate_tenant_aware_table(name, columns, body, pk, file_path, line_num)
 
         # Get description from extracted comments
         description = self.table_descriptions.get(name, '')
@@ -671,6 +675,38 @@ class SQLParser:
                                   f"Temporal table '{name}' missing 'change_reason_code' column",
                                   entity_name=name)
 
+    def _validate_tenant_aware_table(self, name: str, columns: list, body: str,
+                                      pk: dict, file_path: str, line_num: int) -> None:
+        """Validate tenant-aware table requirements.
+
+        Multi-tenant tables must have:
+        - tenant_id column
+        - tenant_id in primary key
+        - tenant_id in EXCLUDE constraint (for temporal tables)
+        """
+        col_names = {c.name for c in columns}
+
+        # Check tenant_id column exists
+        if 'tenant_id' not in col_names:
+            self._add_warning(file_path, line_num, 'TENANT_001',
+                              f"Table '{name}' missing 'tenant_id' column for multi-tenancy",
+                              entity_name=name)
+            return  # Can't check other tenant requirements without tenant_id
+
+        # Check tenant_id is in primary key
+        pk_cols = {c['name'] for c in pk.get('columns', [])}
+        if 'tenant_id' not in pk_cols:
+            self._add_warning(file_path, line_num, 'TENANT_002',
+                              f"Table '{name}' missing 'tenant_id' in primary key",
+                              entity_name=name)
+
+        # Check tenant_id is in EXCLUDE constraint (for temporal tables with EXCLUDE)
+        if 'exclude using gist' in body.lower():
+            if 'tenant_id with =' not in body.lower():
+                self._add_warning(file_path, line_num, 'TENANT_003',
+                                  f"Table '{name}' missing 'tenant_id WITH =' in EXCLUDE constraint",
+                                  entity_name=name)
+
     def _extract_functions(self, content: str, lines: list, file_path: str) -> None:
         """Extract function definitions from SQL content."""
         # Match functions in metadata, production, or public schemas
@@ -781,7 +817,7 @@ class SQLParser:
         Valid actions: insert, notify, upsert, assign, validate, lookup, populate
         """
         # Functions that don't need to follow component prefix pattern
-        exempt_prefixes = ['utility_', 'seed_', 'admin_', 'refdata_validate_']
+        exempt_prefixes = ['ores_utility_', 'ores_seed_', 'ores_admin_', 'ores_refdata_validate_']
 
         # Known valid function name patterns (regex)
         valid_action_suffixes = [
@@ -995,6 +1031,34 @@ class SQLParser:
         # Default
         return 'has'
 
+    def _get_dq_subpackage(self, table_name: str) -> tuple:
+        """Determine the DQ sub-package for a table based on naming patterns.
+
+        Returns (package_name, description, color, order) tuple.
+        """
+        # Artefact/staging tables - import tables for data ingestion
+        if table_name.endswith('_artefact_tbl'):
+            return ('dq_staging', 'Data Staging', '#F3E5F5', 4.1)
+
+        # Dataset management tables
+        dataset_tables = [
+            'datasets_tbl', 'dataset_bundles_tbl', 'dataset_bundle_members_tbl',
+            'dataset_dependencies_tbl', 'dataset_publications_tbl', 'bundle_publications_tbl'
+        ]
+        if any(table_name.endswith(t) for t in dataset_tables):
+            return ('dq_datasets', 'Dataset Management', '#E3F2FD', 4.2)
+
+        # Methodology and dimension tables
+        methodology_tables = [
+            'methodologies_tbl', 'nature_dimensions_tbl', 'origin_dimensions_tbl',
+            'treatment_dimensions_tbl'
+        ]
+        if any(table_name.endswith(t) for t in methodology_tables):
+            return ('dq_methodology', 'Methodology', '#E8F5E9', 4.3)
+
+        # Core metadata tables (default for remaining dq tables)
+        return ('dq_metadata', 'Data Catalog', '#E1F5FE', 4.4)
+
     def get_model(self) -> dict:
         """Generate the JSON model."""
         # Apply column markings (unique, FK) before generating model
@@ -1003,11 +1067,24 @@ class SQLParser:
         # Detect relationships between tables
         self.detect_relationships()
 
-        # Group tables by component
+        # Group tables by component, with special handling for dq sub-packages
         packages = {}
         for table in self.tables.values():
             comp = table.component
-            if comp not in packages:
+
+            # Split dq package into sub-packages for better diagram layout
+            if comp == 'dq':
+                pkg_name, pkg_desc, pkg_color, pkg_order = self._get_dq_subpackage(table.name)
+                if pkg_name not in packages:
+                    packages[pkg_name] = {
+                        'name': pkg_name,
+                        'description': pkg_desc,
+                        'color': pkg_color,
+                        'order': pkg_order,
+                        'tables': []
+                    }
+                comp = pkg_name
+            elif comp not in packages:
                 comp_info = next(
                     (info for prefix, info in COMPONENT_PREFIXES.items()
                      if info['name'] == comp),

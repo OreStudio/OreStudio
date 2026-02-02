@@ -1,0 +1,42 @@
+{
+  "entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "entity_singular": "currency",
+    "entity_plural": "currencies",
+    "description": "ISO 4217 currency definitions",
+    "has_tenant_id": true,
+    "system_tenant_validation": true,
+    "has_coding_scheme": false,
+    "has_image_id": true,
+    "has_nullable_coding_scheme": true,
+    "primary_key": {
+      "column": "iso_code",
+      "type": "text",
+      "is_text": true
+    },
+    "columns": [
+      {"name": "name", "type": "text", "nullable": false},
+      {"name": "numeric_code", "type": "text", "nullable": false},
+      {"name": "symbol", "type": "text", "nullable": false},
+      {"name": "fraction_symbol", "type": "text", "nullable": false},
+      {"name": "fractions_per_unit", "type": "integer", "nullable": false},
+      {"name": "rounding_type", "type": "text", "nullable": false},
+      {"name": "rounding_precision", "type": "integer", "nullable": false},
+      {"name": "format", "type": "text", "nullable": false},
+      {"name": "currency_type", "type": "text", "nullable": false}
+    ],
+    "validations": [
+      {
+        "column": "rounding_type",
+        "validation_function": "ores_refdata_validate_rounding_type_fn"
+      },
+      {
+        "column": "change_reason_code",
+        "validation_function": "ores_dq_validate_change_reason_fn"
+      }
+    ],
+    "indexes": []
+  }
+}

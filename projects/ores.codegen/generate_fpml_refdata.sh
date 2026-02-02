@@ -27,7 +27,9 @@ cd "$SCRIPT_DIR"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FPML_DATA_DIR="$PROJECT_ROOT/external/fpml/codelist"
 OUTPUT_DIR="$SCRIPT_DIR/output"
-SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/create/refdata"
+SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/create"
+REFDATA_DIR="$SCHEMA_DIR/refdata"
+DQ_DIR="$SCHEMA_DIR/dq"
 POPULATE_DIR="$SCRIPT_DIR/../ores.sql/populate/fpml"
 
 # Hard-coded list of FPML entities to generate
@@ -138,13 +140,28 @@ echo ""
 # Step 3: Generate schema files for each entity
 echo "Step 3: Generating schema files..."
 echo "----------------------------------------------"
+SCHEMA_TEMP="$OUTPUT_DIR/schema_temp"
+mkdir -p "$SCHEMA_TEMP"
 for model_file in "$OUTPUT_DIR/models/"*_entity.json; do
     if [ -f "$model_file" ]; then
         entity_name=$(basename "$model_file" _entity.json)
         echo "  Processing: $entity_name"
-        python "$SCRIPT_DIR/src/generator.py" "$model_file" "$SCHEMA_DIR/"
+        python "$SCRIPT_DIR/src/generator.py" "$model_file" "$SCHEMA_TEMP/"
     fi
 done
+# Move generated files to correct directories
+echo "  Moving files to correct directories..."
+for sql_file in "$SCHEMA_TEMP"/*.sql; do
+    if [ -f "$sql_file" ]; then
+        filename=$(basename "$sql_file")
+        if [[ "$filename" == dq_* ]]; then
+            cp "$sql_file" "$DQ_DIR/"
+        else
+            cp "$sql_file" "$REFDATA_DIR/"
+        fi
+    fi
+done
+rm -rf "$SCHEMA_TEMP"
 echo ""
 
 # Step 4: Generate populate files for each entity

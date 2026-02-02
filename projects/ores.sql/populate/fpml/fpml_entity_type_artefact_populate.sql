@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Asian',
         1,
         'FPML_ENTITY_TYPE',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'AustralianAndNewZealand',
         1,
         'FPML_ENTITY_TYPE',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'EuropeanEmergingMarkets',
         1,
         'FPML_ENTITY_TYPE',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Japanese',
         1,
         'FPML_ENTITY_TYPE',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'NorthAmericanHighYield',
         1,
         'FPML_ENTITY_TYPE',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'NorthAmericanInsurance',
         1,
         'FPML_ENTITY_TYPE',
@@ -128,10 +122,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'NorthAmericanInvestmentGrade',
         1,
         'FPML_ENTITY_TYPE',
@@ -140,10 +133,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'Singaporean',
         1,
         'FPML_ENTITY_TYPE',
@@ -152,10 +144,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'WesternEuropean',
         1,
         'FPML_ENTITY_TYPE',
@@ -164,10 +155,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'WesternEuropeanInsurance',
         1,
         'FPML_ENTITY_TYPE',
@@ -176,7 +166,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_entity_classifications_artefact_tbl', v_count;
+    raise notice 'Populated % records into ores_dq_entity_classifications_artefact_tbl', v_count;
 end;
 $$;
 

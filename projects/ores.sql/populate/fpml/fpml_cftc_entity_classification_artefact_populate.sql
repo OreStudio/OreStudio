@@ -21,11 +21,11 @@
 /**
  * DQ Artefact FpML Cftc Entity Classification Population Script
  *
- * Populates the ores_dq_entity_classifications_artefact_tbl with reference data.
+ * Populates the dq_entity_classifications_artefact_tbl with reference data.
  * Dataset: fpml.cftc_entity_classification
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use ores_dq_populate_entity_classifications() to publish to production.
+ * Use dq_populate_entity_classifications() to publish to production.
  */
 
 
@@ -56,10 +56,9 @@ begin
 
     -- Insert reference data
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'CommodityPool',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -68,10 +67,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'EmployeeBenefitPlan',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -80,10 +78,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'FinancialSectorPerson',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -92,10 +89,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'MSBSP',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -104,10 +100,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'MSP',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -116,10 +111,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'None',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -128,10 +122,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'PrivateFund',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -140,10 +133,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'SBSD',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
@@ -152,10 +144,9 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_entity_classifications_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+        dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         'SD',
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',

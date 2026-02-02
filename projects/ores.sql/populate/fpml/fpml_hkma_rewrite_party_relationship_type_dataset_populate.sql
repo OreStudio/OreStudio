@@ -26,14 +26,13 @@
  * This must be run before populating the artefact table.
  */
 
-
 -- =============================================================================
 -- FpML Hkma Rewrite Party Relationship Type Dataset
 -- =============================================================================
 
 \echo '--- FpML Hkma Rewrite Party Relationship Type Dataset ---'
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+select ores_dq_datasets_upsert_fn(
     'fpml.hkma_rewrite_party_relationship_type',
     'FpML Standards',
     'Parties',

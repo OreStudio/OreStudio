@@ -26,6 +26,7 @@
 
 create table if not exists "ores_dq_dataset_publications_tbl" (
     "id" uuid not null default gen_random_uuid(),
+    "tenant_id" uuid not null,
     "dataset_id" uuid not null,
     "dataset_code" text not null,
     "mode" text not null,
@@ -96,3 +97,7 @@ create index if not exists ores_dq_dataset_publications_published_at_idx
 -- Index for querying publication history by user
 create index if not exists ores_dq_dataset_publications_published_by_idx
     on ores_dq_dataset_publications_tbl(published_by);
+
+-- Index for querying publication history by tenant
+create index if not exists ores_dq_dataset_publications_tenant_idx
+    on ores_dq_dataset_publications_tbl(tenant_id);

@@ -26,14 +26,13 @@
  * This must be run before populating the artefact table.
  */
 
-
 -- =============================================================================
 -- FpML Business Process Dataset
 -- =============================================================================
 
 \echo '--- FpML Business Process Dataset ---'
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+select ores_dq_datasets_upsert_fn(
     'fpml.business_process',
     'FpML Standards',
     'Trading',

@@ -18,4 +18,8 @@
  *
  */
 
+drop rule if exists ores_iam_tenant_statuses_delete_rule on "ores_iam_tenant_statuses_tbl";
+drop trigger if exists ores_iam_tenant_statuses_insert_trg on "ores_iam_tenant_statuses_tbl";
+drop function if exists ores_iam_tenant_statuses_insert_fn;
+drop function if exists ores_iam_validate_tenant_status_fn;
 drop table if exists ores_iam_tenant_statuses_tbl cascade;

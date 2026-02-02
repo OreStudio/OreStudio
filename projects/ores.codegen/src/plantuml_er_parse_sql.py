@@ -35,18 +35,18 @@ from typing import Optional
 
 # Known component prefixes and their descriptions
 # Order determines package display order in diagram
-# All tables are in the public schema with ores_ prefix
+# All tables/functions are in the public schema with ores_ product prefix
 COMPONENT_PREFIXES = {
-    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'public', 'color': '#E8F4FD', 'order': 1},
-    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'public', 'color': '#F3E5F5', 'order': 2},
-    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'public', 'color': '#FFF3E0', 'order': 3},
-    'dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'public', 'color': '#E1F5FE', 'order': 4},
-    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'public', 'color': '#E8F5E9', 'order': 5},
-    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'public', 'color': '#FCE4EC', 'order': 6},
-    'geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
-    'utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
-    'seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
-    'admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
+    'ores_iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'schema': 'public', 'color': '#E8F4FD', 'order': 1},
+    'ores_assets_': {'name': 'assets', 'description': 'Digital Assets', 'schema': 'public', 'color': '#F3E5F5', 'order': 2},
+    'ores_refdata_': {'name': 'refdata', 'description': 'Reference Data', 'schema': 'public', 'color': '#FFF3E0', 'order': 3},
+    'ores_dq_': {'name': 'dq', 'description': 'Data Quality', 'schema': 'public', 'color': '#E1F5FE', 'order': 4},
+    'ores_variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'public', 'color': '#E8F5E9', 'order': 5},
+    'ores_telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'public', 'color': '#FCE4EC', 'order': 6},
+    'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
+    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
+    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
+    'ores_admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
 }
 
 # Valid schema names for pattern matching
@@ -287,16 +287,16 @@ class SQLParser:
         """Parse a single DROP SQL file to track what should be dropped."""
         content = file_path.read_text()
 
-        # Track dropped tables (matches metadata, production, or public schemas)
-        for match in re.finditer(rf'drop\s+table\s+if\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?', content, re.IGNORECASE):
+        # Track dropped tables (with or without schema prefix)
+        for match in re.finditer(rf'drop\s+table\s+if\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?', content, re.IGNORECASE):
             self.drop_tables.add(match.group(1))
 
-        # Track dropped functions (matches metadata, production, or public schemas)
-        for match in re.finditer(rf'drop\s+function\s+if\s+exists\s+{SCHEMA_PATTERN}\.(\w+)', content, re.IGNORECASE):
+        # Track dropped functions (with or without schema prefix)
+        for match in re.finditer(rf'drop\s+function\s+if\s+exists\s+(?:{SCHEMA_PATTERN}\.)?(\w+)', content, re.IGNORECASE):
             self.drop_functions.add(match.group(1))
 
-        # Track dropped views (regular and materialized)
-        for match in re.finditer(rf'drop\s+(?:materialized\s+)?view\s+if\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?', content, re.IGNORECASE):
+        # Track dropped views (with or without schema prefix)
+        for match in re.finditer(rf'drop\s+(?:materialized\s+)?view\s+if\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?', content, re.IGNORECASE):
             self.drop_views.add(match.group(1))
 
     def _extract_table_descriptions(self, content: str) -> None:
@@ -313,7 +313,7 @@ class SQLParser:
             r'((?:-- [^\n]*\n)+)'                  # Content lines (captured)
             r'-- =+\s*\n'                          # Closing delimiter
             r'\s*'                                  # Optional whitespace
-            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?',  # Table name
+            rf'create\s+table\s+if\s+not\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?',  # Table name
             re.IGNORECASE
         )
 
@@ -345,7 +345,7 @@ class SQLParser:
             r'\s*'                                  # Optional whitespace
             r'(?:-- [^\n]*\n)*'                    # Optional comment lines
             r'\s*'                                  # Optional whitespace
-            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?',  # Table name
+            rf'create\s+table\s+if\s+not\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?',  # Table name
             re.IGNORECASE
         )
 
@@ -378,9 +378,9 @@ class SQLParser:
 
     def _extract_tables(self, content: str, lines: list, file_path: str) -> None:
         """Extract table definitions from SQL content."""
-        # Pattern for CREATE TABLE (matches metadata, production, or public schemas)
+        # Pattern for CREATE TABLE (with or without schema prefix)
         table_pattern = re.compile(
-            rf'create\s+table\s+if\s+not\s+exists\s+"?{SCHEMA_PATTERN}"?\."?(\w+)"?\s*\((.*?)\);',
+            rf'create\s+table\s+if\s+not\s+exists\s+(?:"?{SCHEMA_PATTERN}"?\.)?"?(\w+)"?\s*\((.*?)\);',
             re.IGNORECASE | re.DOTALL
         )
 
@@ -781,7 +781,7 @@ class SQLParser:
         Valid actions: insert, notify, upsert, assign, validate, lookup, populate
         """
         # Functions that don't need to follow component prefix pattern
-        exempt_prefixes = ['utility_', 'seed_', 'admin_', 'refdata_validate_']
+        exempt_prefixes = ['ores_utility_', 'ores_seed_', 'ores_admin_', 'ores_refdata_validate_']
 
         # Known valid function name patterns (regex)
         valid_action_suffixes = [

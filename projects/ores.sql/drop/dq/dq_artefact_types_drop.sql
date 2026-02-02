@@ -18,4 +18,7 @@
  *
  */
 
+drop rule if exists ores_dq_artefact_types_delete_rule on "ores_dq_artefact_types_tbl";
+drop trigger if exists ores_dq_artefact_types_insert_trg on "ores_dq_artefact_types_tbl";
+drop function if exists ores_dq_artefact_types_insert_fn;
 drop table if exists "ores_dq_artefact_types_tbl";

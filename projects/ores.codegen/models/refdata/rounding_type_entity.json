@@ -9,6 +9,7 @@
     "has_tenant_id": true,
     "system_tenant_validation": true,
     "has_display_order": true,
+    "default_value": "Closest",
     "primary_key": {
       "column": "code",
       "type": "text",

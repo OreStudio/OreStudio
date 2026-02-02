@@ -147,7 +147,7 @@ begin
 {{/entity.has_nullable_coding_scheme}}
 {{#entity.validations}}
     -- Validate {{column}}
-    perform {{validation_function}}(new.tenant_id, new.{{column}});
+    new.{{column}} := {{validation_function}}(new.tenant_id, new.{{column}});
 
 {{/entity.validations}}
     select version into current_version
@@ -219,6 +219,7 @@ do instead
 -- =============================================================================
 -- Validation function for {{entity.entity_singular}}
 -- Validates that a {{entity.primary_key.column}} exists in the {{entity.entity_plural}} table.
+-- Returns the validated value, or default if null/empty.
 {{#entity.system_tenant_validation}}
 -- Uses system tenant data (shared reference data).
 {{/entity.system_tenant_validation}}
@@ -229,13 +230,25 @@ do instead
 create or replace function {{entity.product}}_{{entity.component}}_validate_{{entity.entity_singular}}_fn(
     p_tenant_id uuid,
     p_value {{entity.primary_key.type}}
-) returns void as $$
+) returns {{entity.primary_key.type}} as $$
 begin
+    -- Return default if null or empty
     if p_value is null{{#entity.primary_key.is_text}} or p_value = ''{{/entity.primary_key.is_text}} then
+{{#entity.default_value}}
+        return '{{entity.default_value}}';
+{{/entity.default_value}}
+{{^entity.default_value}}
         raise exception 'Invalid {{entity.entity_singular}}: value cannot be null{{#entity.primary_key.is_text}} or empty{{/entity.primary_key.is_text}}'
             using errcode = '23502';
+{{/entity.default_value}}
     end if;
 
+    -- Allow pass-through during bootstrap (empty table)
+    if not exists (select 1 from {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl limit 1) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
     if not exists (
         select 1 from {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
 {{#entity.system_tenant_validation}}
@@ -259,6 +272,8 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
+
+    return p_value;
 end;
 $$ language plpgsql;
 {{/entity.has_tenant_id}}

@@ -85,7 +85,7 @@ begin
     end if;
 
     -- Validate rounding_type
-    perform ores_refdata_validate_rounding_type_fn(new.tenant_id, new.rounding_type);
+    new.rounding_type := ores_refdata_validate_rounding_type_fn(new.tenant_id, new.rounding_type);
 
     select version into current_version
     from "public"."ores_refdata_currencies_tbl"
@@ -141,18 +141,26 @@ do instead
 -- =============================================================================
 -- Validation function for currency
 -- Validates that a iso_code exists in the currencies table.
+-- Returns the validated value, or default if null/empty.
 -- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_refdata_validate_currency_fn(
     p_tenant_id uuid,
     p_value text
-) returns void as $$
+) returns text as $$
 begin
+    -- Return default if null or empty
     if p_value is null or p_value = '' then
         raise exception 'Invalid currency: value cannot be null or empty'
             using errcode = '23502';
     end if;
 
+    -- Allow pass-through during bootstrap (empty table)
+    if not exists (select 1 from ores_refdata_currencies_tbl limit 1) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
     if not exists (
         select 1 from ores_refdata_currencies_tbl
         where tenant_id = ores_iam_system_tenant_id_fn()
@@ -166,5 +174,7 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
+
+    return p_value;
 end;
 $$ language plpgsql;

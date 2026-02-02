@@ -749,7 +749,9 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         create_initial_admin_response response{
             .success = false,
             .error_message = "Bootstrap endpoint only accessible from localhost",
-            .account_id = boost::uuids::nil_uuid()
+            .account_id = boost::uuids::nil_uuid(),
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = ""
         };
         co_return response.serialize();
     }
@@ -760,7 +762,9 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         create_initial_admin_response response{
             .success = false,
             .error_message = "System not in bootstrap mode - admin account already exists",
-            .account_id = boost::uuids::nil_uuid()
+            .account_id = boost::uuids::nil_uuid(),
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = ""
         };
         co_return response.serialize();
     }
@@ -783,14 +787,17 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
     try {
         // Set tenant context based on hostname
         // If hostname is empty, use system tenant
+        boost::uuids::uuid tenant_id;
         if (hostname.empty()) {
             BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
             database::service::tenant_context::set_system_tenant(ctx_);
+            tenant_id = boost::uuids::nil_uuid();  // System tenant
         } else {
             BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-            const auto tenant_id =
+            const auto tenant_id_str =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-            database::service::tenant_context::set(ctx_, tenant_id);
+            database::service::tenant_context::set(ctx_, tenant_id_str);
+            tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
         }
 
         // Create the initial admin account with Admin role
@@ -808,15 +815,23 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         system_flags_->set_bootstrap_mode(false, "system",
             std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
+        // Look up tenant name
+        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
+        const auto tenant_name =
+            database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
+
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
-            << " for username: " << account.username;
+            << " for username: " << account.username
+            << " in tenant: " << tenant_name << " (" << tenant_id << ")";
         BOOST_LOG_SEV(lg(), info) << "System transitioned to SECURE MODE";
 
         create_initial_admin_response response{
             .success = true,
             .error_message = "",
-            .account_id = account.id
+            .account_id = account.id,
+            .tenant_id = tenant_id,
+            .tenant_name = tenant_name
         };
         co_return response.serialize();
 
@@ -827,7 +842,9 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         create_initial_admin_response response{
             .success = false,
             .error_message = std::string("Failed to create admin account: ") + e.what(),
-            .account_id = boost::uuids::nil_uuid()
+            .account_id = boost::uuids::nil_uuid(),
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = ""
         };
         co_return response.serialize();
     }

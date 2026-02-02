@@ -70,6 +70,8 @@ std::vector<std::byte> create_initial_admin_response::serialize() const {
     writer::write_bool(buffer, success);
     writer::write_string(buffer, error_message);
     writer::write_uuid(buffer, account_id);
+    writer::write_uuid(buffer, tenant_id);
+    writer::write_string(buffer, tenant_name);
     return buffer;
 }
 
@@ -88,6 +90,14 @@ create_initial_admin_response::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     response.account_id = *account_id_result;
+
+    auto tenant_id_result = reader::read_uuid(data);
+    if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+    response.tenant_id = *tenant_id_result;
+
+    auto tenant_name_result = reader::read_string(data);
+    if (!tenant_name_result) return std::unexpected(tenant_name_result.error());
+    response.tenant_name = *tenant_name_result;
 
     return response;
 }

@@ -100,6 +100,8 @@ struct create_initial_admin_response final {
     bool success;
     std::string error_message;
     boost::uuids::uuid account_id;
+    boost::uuids::uuid tenant_id;      ///< ID of the tenant the account was created in
+    std::string tenant_name;           ///< Name of the tenant the account was created in
 
     /**
      * @brief Serialize response to bytes.
@@ -109,6 +111,9 @@ struct create_initial_admin_response final {
      * - 2 bytes: error_message length
      * - N bytes: error_message (UTF-8)
      * - 16 bytes: account_id (UUID)
+     * - 16 bytes: tenant_id (UUID)
+     * - 2 bytes: tenant_name length
+     * - N bytes: tenant_name (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

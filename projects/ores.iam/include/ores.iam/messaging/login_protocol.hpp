@@ -34,10 +34,14 @@ namespace ores::iam::messaging {
 
 /**
  * @brief Request to authenticate a user.
+ *
+ * The hostname field identifies the tenant for multi-tenancy support.
+ * The server uses this to determine which tenant the user is logging into.
  */
 struct login_request final {
     std::string username;
     std::string password;
+    std::string hostname;  ///< Tenant hostname for multi-tenancy
 
     /**
      * @brief Serialize request to bytes.
@@ -47,6 +51,8 @@ struct login_request final {
      * - N bytes: username (UTF-8)
      * - 2 bytes: password length
      * - N bytes: password (UTF-8)
+     * - 2 bytes: hostname length
+     * - N bytes: hostname (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 
@@ -69,6 +75,7 @@ struct login_response final {
     bool success = false;
     std::string error_message;
     boost::uuids::uuid account_id;
+    boost::uuids::uuid tenant_id;  ///< ID of authenticated tenant
     std::string username;
     std::string email;
     bool password_reset_required = false;
@@ -81,6 +88,7 @@ struct login_response final {
      * - 2 bytes: error_message length
      * - N bytes: error_message (UTF-8)
      * - 16 bytes: account_id (UUID)
+     * - 16 bytes: tenant_id (UUID)
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
      * - 2 bytes: email length

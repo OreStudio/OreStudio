@@ -230,7 +230,14 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 24.0 adds available_bundles field to bootstrap_status_response to
 // provide bundle choices during system provisioning without requiring auth.
 // This is a breaking change due to the new field in bootstrap_status_response.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 24;
+//
+// Version 25.0 adds multi-tenancy support. New messages for tenant management:
+// get_tenants_request/response, save_tenant_request/response,
+// delete_tenant_request/response, get_tenant_history_request/response (0x2050-0x2057).
+// Tenant type messages (0x2058-0x205F) and tenant status messages (0x2060-0x2067).
+// Also adds hostname field to login_request for tenant identification during
+// authentication. This is a breaking change due to the new field in login_request.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 25;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -363,6 +370,34 @@ enum class message_type {
     get_session_statistics_response = 0x2043,
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
+
+    // Tenant management messages (0x2050 - 0x206F)
+    get_tenants_request = 0x2050,
+    get_tenants_response = 0x2051,
+    save_tenant_request = 0x2052,
+    save_tenant_response = 0x2053,
+    delete_tenant_request = 0x2054,
+    delete_tenant_response = 0x2055,
+    get_tenant_history_request = 0x2056,
+    get_tenant_history_response = 0x2057,
+
+    get_tenant_types_request = 0x2058,
+    get_tenant_types_response = 0x2059,
+    save_tenant_type_request = 0x205A,
+    save_tenant_type_response = 0x205B,
+    delete_tenant_type_request = 0x205C,
+    delete_tenant_type_response = 0x205D,
+    get_tenant_type_history_request = 0x205E,
+    get_tenant_type_history_response = 0x205F,
+
+    get_tenant_statuses_request = 0x2060,
+    get_tenant_statuses_response = 0x2061,
+    save_tenant_status_request = 0x2062,
+    save_tenant_status_response = 0x2063,
+    delete_tenant_status_request = 0x2064,
+    delete_tenant_status_response = 0x2065,
+    get_tenant_status_history_request = 0x2066,
+    get_tenant_status_history_response = 0x2067,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     get_feature_flags_request = 0x3000,  // Renamed from list_feature_flags in v21.0

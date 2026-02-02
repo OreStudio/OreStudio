@@ -237,7 +237,7 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Tenant type messages (0x2058-0x205F) and tenant status messages (0x2060-0x2067).
 // Also adds hostname field to login_request for tenant identification during
 // authentication. This is a breaking change due to the new field in login_request.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 25;
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 26;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

@@ -35,7 +35,7 @@ using ores::utility::serialization::writer;
 
 std::vector<std::byte> create_initial_admin_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_string(buffer, username);
+    writer::write_string(buffer, principal);
     writer::write_string(buffer, password);
     writer::write_string(buffer, email);
     return buffer;
@@ -45,9 +45,9 @@ std::expected<create_initial_admin_request, ores::utility::serialization::error_
 create_initial_admin_request::deserialize(std::span<const std::byte> data) {
     create_initial_admin_request request;
 
-    auto username_result = reader::read_string(data);
-    if (!username_result) return std::unexpected(username_result.error());
-    request.username = *username_result;
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
 
     auto password_result = reader::read_string(data);
     if (!password_result) return std::unexpected(password_result.error());

@@ -78,6 +78,16 @@ public:
     static std::string lookup_by_code(context& ctx, const std::string& code);
 
     /**
+     * @brief Looks up a tenant ID by its hostname.
+     *
+     * @param ctx The database context to query.
+     * @param hostname The tenant hostname (e.g., "localhost", "acme.example.com").
+     * @return The tenant UUID as a string.
+     * @throws std::runtime_error if tenant not found.
+     */
+    static std::string lookup_by_hostname(context& ctx, const std::string& hostname);
+
+    /**
      * @brief Checks if a string is a valid UUID format.
      *
      * @param str The string to check.

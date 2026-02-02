@@ -35,24 +35,37 @@ namespace ores::iam::messaging {
 /**
  * @brief Request to authenticate a user.
  *
- * The hostname field identifies the tenant for multi-tenancy support.
- * The server uses this to determine which tenant the user is logging into.
+ * The principal field identifies both the user and the tenant for multi-tenancy
+ * support. The format follows the Kerberos principal convention.
  */
 struct login_request final {
-    std::string username;
+    /**
+     * @brief User principal identifying the account and tenant.
+     *
+     * Format: `username@hostname` or just `username`
+     *
+     * The principal is parsed server-side to extract the username and tenant:
+     * - If the principal contains `@`, everything before the last `@` is the
+     *   username and everything after is the hostname used to resolve the tenant.
+     * - If no `@` is present, the entire string is treated as the username and
+     *   the system tenant (00000000-0000-0000-0000-000000000000) is used.
+     *
+     * Examples:
+     * - `admin@localhost` - User "admin" in tenant with hostname "localhost"
+     * - `admin@acme.example.com` - User "admin" in tenant "acme.example.com"
+     * - `admin` - User "admin" in the system tenant
+     */
+    std::string principal;
     std::string password;
-    std::string hostname;  ///< Tenant hostname for multi-tenancy
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
-     * - 2 bytes: username length
-     * - N bytes: username (UTF-8)
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
      * - 2 bytes: password length
      * - N bytes: password (UTF-8)
-     * - 2 bytes: hostname length
-     * - N bytes: hostname (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

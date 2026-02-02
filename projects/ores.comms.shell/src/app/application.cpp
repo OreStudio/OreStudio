@@ -84,8 +84,9 @@ bool auto_login(client_session& session, std::ostream& out,
     const config::login_options& login_config) {
     using iam::messaging::login_request;
 
+    // username from config acts as principal (can be "user" or "user@hostname")
     auto result = session.process_request(login_request{
-        .username = login_config.username,
+        .principal = login_config.username,
         .password = login_config.password
     });
 

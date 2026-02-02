@@ -35,9 +35,8 @@ using ores::utility::serialization::writer;
 
 std::vector<std::byte> login_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_string(buffer, username);
+    writer::write_string(buffer, principal);
     writer::write_string(buffer, password);
-    writer::write_string(buffer, hostname);
     return buffer;
 }
 
@@ -45,17 +44,13 @@ std::expected<login_request, ores::utility::serialization::error_code>
 login_request::deserialize(std::span<const std::byte> data) {
     login_request request;
 
-    auto username_result = reader::read_string(data);
-    if (!username_result) return std::unexpected(username_result.error());
-    request.username = *username_result;
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
 
     auto password_result = reader::read_string(data);
     if (!password_result) return std::unexpected(password_result.error());
     request.password = *password_result;
-
-    auto hostname_result = reader::read_string(data);
-    if (!hostname_result) return std::unexpected(hostname_result.error());
-    request.hostname = *hostname_result;
 
     return request;
 }

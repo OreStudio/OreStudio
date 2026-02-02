@@ -200,11 +200,11 @@ TEST_CASE("login_request_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
     login_request rq;
-    rq.username = "testuser";
+    rq.principal = "testuser";
     rq.password = "test_password";
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
-    CHECK(rq.username == "testuser");
+    CHECK(rq.principal == "testuser");
     CHECK(rq.password == "test_password");
 }
 
@@ -212,11 +212,11 @@ TEST_CASE("login_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     login_request rq;
-    rq.username = std::string(faker::internet::username());
+    rq.principal = std::string(faker::internet::username());
     rq.password = std::string(faker::internet::password());
     BOOST_LOG_SEV(lg, info) << "login_request: " << rq;
 
-    CHECK(!rq.username.empty());
+    CHECK(!rq.principal.empty());
     CHECK(!rq.password.empty());
 }
 
@@ -224,7 +224,7 @@ TEST_CASE("login_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     login_request e;
-    e.username = std::string(faker::internet::username());
+    e.principal = std::string(faker::internet::username());
     e.password = std::string(faker::internet::password());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -235,7 +235,7 @@ TEST_CASE("login_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.username == e.username);
+    CHECK(a.principal == e.principal);
     CHECK(a.password == e.password);
 }
 
@@ -457,11 +457,11 @@ TEST_CASE("create_multiple_random_login_requests", tags) {
 
     for (int i = 0; i < 3; ++i) {
         login_request rq;
-        rq.username = std::string(faker::internet::username());
+        rq.principal = std::string(faker::internet::username());
         rq.password = std::string(faker::internet::password());
         BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;
 
-        CHECK(!rq.username.empty());
+        CHECK(!rq.principal.empty());
         CHECK(!rq.password.empty());
     }
 }

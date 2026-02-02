@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/messaging/protocol.hpp"
@@ -40,6 +41,41 @@ namespace ores::iam::messaging {
 using namespace ores::logging;
 using comms::messaging::message_type;
 namespace reason = database::domain::change_reason_constants;
+
+namespace {
+
+/**
+ * @brief Parsed components of a user principal.
+ */
+struct parsed_principal {
+    std::string username;
+    std::string hostname;  ///< Empty if no hostname specified (system tenant)
+};
+
+/**
+ * @brief Parse a principal string into username and hostname components.
+ *
+ * The principal format is `username@hostname` or just `username`.
+ * If the principal contains `@`, the last `@` is used as the delimiter
+ * (allowing usernames that contain `@` if needed in the future).
+ *
+ * @param principal The principal string to parse.
+ * @return Parsed username and hostname. Hostname is empty if not specified.
+ */
+parsed_principal parse_principal(const std::string& principal) {
+    const auto at_pos = principal.rfind('@');
+    if (at_pos == std::string::npos) {
+        // No @ found - entire string is username, use system tenant
+        return {.username = principal, .hostname = ""};
+    }
+    // Split at last @
+    return {
+        .username = principal.substr(0, at_pos),
+        .hostname = principal.substr(at_pos + 1)
+    };
+}
+
+}  // anonymous namespace
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
@@ -338,7 +374,26 @@ handle_login_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Parse principal into username and hostname
+    const auto [username, hostname] = parse_principal(request.principal);
+    BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                               << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
     try {
+        // Set tenant context based on hostname
+        boost::uuids::uuid tenant_id;
+        if (hostname.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+            database::service::tenant_context::set_system_tenant(ctx_);
+            tenant_id = boost::uuids::nil_uuid();  // System tenant
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+            const auto tenant_id_str =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            database::service::tenant_context::set(ctx_, tenant_id_str);
+            tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
+        }
+
         // Extract the IP address.
         std::string_view ip_view(remote_address);
         auto colon_pos = ip_view.find(':');
@@ -348,7 +403,7 @@ handle_login_request(std::span<const std::byte> payload,
         using namespace boost::asio::ip;
         const address ip_address = make_address(std::string(ip_view));
 
-        domain::account account = service_.login(request.username,
+        domain::account account = service_.login(username,
             request.password, ip_address);
 
         // Get login_info to check password_reset_required flag
@@ -415,6 +470,7 @@ handle_login_request(std::span<const std::byte> payload,
             .success = true,
             .error_message = "",
             .account_id = account.id,
+            .tenant_id = tenant_id,
             .username = account.username,
             .email = account.email,
             .password_reset_required = password_reset_required
@@ -422,15 +478,16 @@ handle_login_request(std::span<const std::byte> payload,
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Authentication failed for username '"
-                                  << request.username << "' from " << remote_address
+        BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Authentication failed for principal '"
+                                  << request.principal << "' from " << remote_address
                                   << ", reason: " << e.what();
 
         login_response response{
             .success = false,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
-            .username = request.username,
+            .tenant_id = boost::uuids::nil_uuid(),
+            .username = username,
             .email = "",
             .password_reset_required = false
         };
@@ -711,11 +768,28 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Parse principal into username and hostname
+    const auto [username, hostname] = parse_principal(request.principal);
+    BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                               << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
     try {
+        // Set tenant context based on hostname
+        // If hostname is empty, use system tenant
+        if (hostname.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+            database::service::tenant_context::set_system_tenant(ctx_);
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+            const auto tenant_id =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            database::service::tenant_context::set(ctx_, tenant_id);
+        }
+
         // Create the initial admin account with Admin role
         // This checks role exists BEFORE creating account to avoid orphaned accounts
         domain::account account = setup_service_.create_account_with_role(
-            request.username,
+            username,
             request.email,
             request.password,
             "bootstrap",

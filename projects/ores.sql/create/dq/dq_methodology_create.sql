@@ -36,8 +36,9 @@ create table if not exists "ores_dq_methodologies_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -67,7 +68,8 @@ begin
 
     select version into current_version
     from "ores_dq_methodologies_tbl"
-    where id = NEW.id
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -80,7 +82,8 @@ begin
 
         update "ores_dq_methodologies_tbl"
         set valid_to = current_timestamp
-        where id = NEW.id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -108,5 +111,6 @@ create or replace rule ores_dq_methodologies_delete_rule as
 on delete to "ores_dq_methodologies_tbl" do instead
     update "ores_dq_methodologies_tbl"
     set valid_to = current_timestamp
-    where id = OLD.id
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();

@@ -50,8 +50,9 @@ create table if not exists "ores_dq_coding_schemes_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (code, valid_from, valid_to),
+    primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -118,7 +119,8 @@ begin
 
     select version into current_version
     from "ores_dq_coding_schemes_tbl"
-    where code = NEW.code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -133,7 +135,8 @@ begin
         -- Close the old record.
         update "ores_dq_coding_schemes_tbl"
         set valid_to = current_timestamp
-        where code = NEW.code
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -162,5 +165,6 @@ create or replace rule ores_dq_coding_schemes_delete_rule as
 on delete to "ores_dq_coding_schemes_tbl" do instead
     update "ores_dq_coding_schemes_tbl"
     set valid_to = current_timestamp
-    where code = OLD.code
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();

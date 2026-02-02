@@ -35,8 +35,9 @@ create table if not exists "ores_assets_images_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (image_id, valid_from, valid_to),
+    primary key (tenant_id, image_id, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         image_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -66,7 +67,8 @@ begin
 
     select version into current_version
     from "ores_assets_images_tbl"
-    where image_id = new.image_id
+    where tenant_id = new.tenant_id
+    and image_id = new.image_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -79,7 +81,8 @@ begin
 
         update "ores_assets_images_tbl"
         set valid_to = current_timestamp
-        where image_id = new.image_id
+        where tenant_id = new.tenant_id
+        and image_id = new.image_id
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
@@ -108,5 +111,6 @@ on delete to "ores_assets_images_tbl"
 do instead
   update "ores_assets_images_tbl"
   set valid_to = current_timestamp
-  where image_id = old.image_id
+  where tenant_id = old.tenant_id
+  and image_id = old.image_id
   and valid_to = ores_utility_infinity_timestamp_fn();

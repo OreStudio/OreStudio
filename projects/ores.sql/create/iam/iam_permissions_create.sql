@@ -31,8 +31,9 @@ create table if not exists ores_iam_permissions_tbl (
     "description" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -55,7 +56,8 @@ begin
 
     update ores_iam_permissions_tbl
     set valid_to = current_timestamp
-    where id = new.id
+    where tenant_id = new.tenant_id
+    and id = new.id
     and valid_to = ores_utility_infinity_timestamp_fn()
     and valid_from < current_timestamp;
 
@@ -76,5 +78,6 @@ on delete to ores_iam_permissions_tbl
 do instead
   update ores_iam_permissions_tbl
   set valid_to = current_timestamp
-  where id = old.id
+  where tenant_id = old.tenant_id
+  and id = old.id
   and valid_to = ores_utility_infinity_timestamp_fn();

@@ -40,7 +40,7 @@ create table if not exists "ores_refdata_countries_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (alpha2_code, valid_from, valid_to),
+    primary key (tenant_id, alpha2_code, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         alpha2_code WITH =,
@@ -135,5 +135,6 @@ on delete to "ores_refdata_countries_tbl"
 do instead
   update "ores_refdata_countries_tbl"
   set valid_to = current_timestamp
-  where alpha2_code = old.alpha2_code
+  where tenant_id = old.tenant_id
+  and alpha2_code = old.alpha2_code
   and valid_to = ores_utility_infinity_timestamp_fn();

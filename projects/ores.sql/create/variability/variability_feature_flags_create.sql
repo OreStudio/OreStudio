@@ -34,7 +34,7 @@ create table if not exists "ores_variability_feature_flags_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (name, valid_from, valid_to),
+    primary key (tenant_id, name, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         name WITH =,

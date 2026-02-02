@@ -40,3 +40,10 @@ TEMPORAL_004 ores_iam_permissions_tbl
 # tenant_id is carried for data flow to target tables, not for uniqueness.
 # =============================================================================
 TENANT_002 ores_dq_*_artefact_tbl
+
+# =============================================================================
+# Audit tables - tenant_id not in PK by design
+# These are append-only logs with UUID primary keys.
+# tenant_id is present for filtering but not for uniqueness.
+# =============================================================================
+TENANT_002 ores_dq_dataset_publications_tbl

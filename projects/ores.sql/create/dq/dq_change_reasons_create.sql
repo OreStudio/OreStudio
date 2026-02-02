@@ -31,8 +31,9 @@ create table if not exists ores_dq_change_reasons_tbl (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (code, valid_from, valid_to),
+    primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -77,7 +78,8 @@ begin
 
     select version into current_version
     from ores_dq_change_reasons_tbl
-    where code = new.code
+    where tenant_id = new.tenant_id
+    and code = new.code
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
@@ -90,7 +92,8 @@ begin
 
         update ores_dq_change_reasons_tbl
         set valid_to = current_timestamp
-        where code = new.code
+        where tenant_id = new.tenant_id
+        and code = new.code
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
@@ -117,5 +120,6 @@ on delete to ores_dq_change_reasons_tbl
 do instead
   update ores_dq_change_reasons_tbl
   set valid_to = current_timestamp
-  where code = old.code
+  where tenant_id = old.tenant_id
+  and code = old.code
   and valid_to = ores_utility_infinity_timestamp_fn();

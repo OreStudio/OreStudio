@@ -9,7 +9,7 @@
 
 {{#datasets}}
 {{#dataset_dependencies}}
-select ores_dq_dataset_dependencies_upsert_fn(
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{parent_code}}',
     '{{dependency_code}}',
     '{{role}}'

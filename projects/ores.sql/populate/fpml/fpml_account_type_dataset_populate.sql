@@ -32,7 +32,7 @@
 
 \echo '--- FpML Account Type Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.account_type',
     'FpML Standards',
     'Trading',

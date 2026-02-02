@@ -8,7 +8,7 @@
 \echo '--- Data Quality Slovaris Tags ---'
 
 {{#tags}}
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{dataset_name}}',
     '{{subject_area_name}}',
     '{{domain_name}}',

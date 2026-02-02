@@ -8,7 +8,7 @@
 \echo '--- Data Quality Slovaris Methodologies ---'
 
 {{#methodologies}}
-select ores_dq_methodologies_upsert_fn(
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{name}}',
     '{{description}}',
     '{{url}}',

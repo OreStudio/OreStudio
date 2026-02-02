@@ -8,7 +8,7 @@
 \echo '--- Data Quality Slovaris Datasets ---'
 
 {{#datasets}}
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{code}}',
     '{{catalog_name}}',
     '{{subject_area_name}}',

@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
 -- =============================================================================
 -- FpML Benchmark rates - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_benchmark_rates_artefact_tbl" (
     "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -31,14 +31,11 @@ create table if not exists "ores_dq_benchmark_rates_artefact_tbl" (
     ,"coding_scheme_code" text not null
 );
 
-create index if not exists ores_dq_benchmark_rates_artefact_dataset_idx
-on "ores_dq_benchmark_rates_artefact_tbl" (dataset_id);
+create index if not exists dq_benchmark_rates_artefact_dataset_idx
+on ores_dq_benchmark_rates_artefact_tbl (dataset_id);
 
-create index if not exists ores_dq_benchmark_rates_artefact_tenant_idx
-on "ores_dq_benchmark_rates_artefact_tbl" (tenant_id);
+create index if not exists dq_benchmark_rates_artefact_code_idx
+on ores_dq_benchmark_rates_artefact_tbl (code);
 
-create index if not exists ores_dq_benchmark_rates_artefact_code_idx
-on "ores_dq_benchmark_rates_artefact_tbl" (code);
-
-create index if not exists ores_dq_benchmark_rates_artefact_coding_scheme_idx
-on "ores_dq_benchmark_rates_artefact_tbl" (coding_scheme_code);
+create index if not exists dq_benchmark_rates_artefact_coding_scheme_idx
+on ores_dq_benchmark_rates_artefact_tbl (coding_scheme_code);

@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
 -- =============================================================================
 -- Defines a simple asset class categorization. Used for classification of the risk class of the trade. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_asset_classes_artefact_tbl" (
     "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -31,14 +31,11 @@ create table if not exists "ores_dq_asset_classes_artefact_tbl" (
     ,"coding_scheme_code" text not null
 );
 
-create index if not exists ores_dq_asset_classes_artefact_dataset_idx
-on "ores_dq_asset_classes_artefact_tbl" (dataset_id);
+create index if not exists dq_asset_classes_artefact_dataset_idx
+on ores_dq_asset_classes_artefact_tbl (dataset_id);
 
-create index if not exists ores_dq_asset_classes_artefact_tenant_idx
-on "ores_dq_asset_classes_artefact_tbl" (tenant_id);
+create index if not exists dq_asset_classes_artefact_code_idx
+on ores_dq_asset_classes_artefact_tbl (code);
 
-create index if not exists ores_dq_asset_classes_artefact_code_idx
-on "ores_dq_asset_classes_artefact_tbl" (code);
-
-create index if not exists ores_dq_asset_classes_artefact_coding_scheme_idx
-on "ores_dq_asset_classes_artefact_tbl" (coding_scheme_code);
+create index if not exists dq_asset_classes_artefact_coding_scheme_idx
+on ores_dq_asset_classes_artefact_tbl (coding_scheme_code);

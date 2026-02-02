@@ -200,7 +200,7 @@ class CodingScheme:
         definition = self.definition.replace("'", "''") if self.definition else ''
         uri = self.canonical_uri.replace("'", "''")
 
-        return f"""select ores_dq_coding_schemes_upsert_fn(
+        return f"""select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{code}',
     '{name}',
     'industry',
@@ -667,7 +667,7 @@ def generate_catalog_sql(manifest: dict, output_path: Path):
         "",
         "\\echo '--- FpML Standards Catalog ---'",
         "",
-        f"select ores_dq_catalogs_upsert_fn(",
+        f"select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{owner_escaped}'",
@@ -722,7 +722,7 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
         "",
         "\\echo '--- FPML Methodology ---'",
         "",
-        f"select ores_dq_methodologies_upsert_fn(",
+        f"select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),",
         f"    '{name_escaped}',",
         f"    '{description_escaped}',",
         f"    '{source_url_escaped}',",
@@ -778,7 +778,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         artefact_type = dataset['artefact_type']
 
         lines.append(f"-- {name}")
-        lines.append("select ores_dq_datasets_upsert_fn(")
+        lines.append("select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),")
         lines.append(f"    '{code}',")
         lines.append(f"    '{catalog}',")
         lines.append(f"    '{subject_area}',")
@@ -830,7 +830,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
         dependency_code = dep['dependency_code']
         role = dep['role']
 
-        lines.append(f"select ores_dq_dataset_dependencies_upsert_fn(")
+        lines.append(f"select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),")
         lines.append(f"    '{dataset_code}',")
         lines.append(f"    '{dependency_code}',")
         lines.append(f"    '{role}'")

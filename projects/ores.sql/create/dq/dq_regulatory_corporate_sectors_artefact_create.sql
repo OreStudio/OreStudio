@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
 -- =============================================================================
 -- Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_regulatory_corporate_sectors_artefact_tbl" (
     "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -31,14 +31,11 @@ create table if not exists "ores_dq_regulatory_corporate_sectors_artefact_tbl" (
     ,"coding_scheme_code" text not null
 );
 
-create index if not exists ores_dq_regulatory_corporate_sectors_artefact_dataset_idx
-on "ores_dq_regulatory_corporate_sectors_artefact_tbl" (dataset_id);
+create index if not exists dq_regulatory_corporate_sectors_artefact_dataset_idx
+on ores_dq_regulatory_corporate_sectors_artefact_tbl (dataset_id);
 
-create index if not exists ores_dq_regulatory_corporate_sectors_artefact_tenant_idx
-on "ores_dq_regulatory_corporate_sectors_artefact_tbl" (tenant_id);
+create index if not exists dq_regulatory_corporate_sectors_artefact_code_idx
+on ores_dq_regulatory_corporate_sectors_artefact_tbl (code);
 
-create index if not exists ores_dq_regulatory_corporate_sectors_artefact_code_idx
-on "ores_dq_regulatory_corporate_sectors_artefact_tbl" (code);
-
-create index if not exists ores_dq_regulatory_corporate_sectors_artefact_coding_scheme_idx
-on "ores_dq_regulatory_corporate_sectors_artefact_tbl" (coding_scheme_code);
+create index if not exists dq_regulatory_corporate_sectors_artefact_coding_scheme_idx
+on ores_dq_regulatory_corporate_sectors_artefact_tbl (coding_scheme_code);

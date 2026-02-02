@@ -78,7 +78,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into ores_dq_party_roles_artefact_tbl', v_count;
+    raise notice 'Populated % records into dq_party_roles_artefact_tbl', v_count;
 end;
 $$;
 

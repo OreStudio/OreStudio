@@ -77,11 +77,10 @@ begin
 
     -- Insert Solvaris countries with flag image links
     insert into ores_dq_countries_artefact_tbl (
-        dataset_id, tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
+        dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
     select
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
         c.alpha2_code,
         0,
         c.alpha3_code,

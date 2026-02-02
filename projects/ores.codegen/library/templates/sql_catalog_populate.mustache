@@ -8,7 +8,7 @@
 \echo '--- Data Quality Slovaris Catalogs ---'
 
 {{#catalogs}}
-select ores_dq_catalogs_upsert_fn(
+select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{name}}',
     '{{description}}',
     '{{owner}}'

@@ -40,8 +40,9 @@ begin
         where tenant_id = '00000000-0000-0000-0000-000000000000'::uuid
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
+        -- Note: tenant_id is set automatically by the trigger from id
         insert into ores_iam_tenants_tbl (
-            tenant_id,
+            id,
             version,
             type,
             code,

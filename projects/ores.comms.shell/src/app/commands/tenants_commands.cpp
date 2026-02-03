@@ -27,6 +27,7 @@
 #include <cli/cli.h>
 #include "ores.platform/time/datetime.hpp"
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.iam/domain/tenant_table_io.hpp" // IWYU pragma: keep.
 
@@ -35,6 +36,7 @@ namespace ores::comms::shell::app::commands {
 using namespace logging;
 using comms::messaging::message_type;
 using comms::net::client_session;
+namespace reason = database::domain::change_reason_constants;
 
 namespace {
 
@@ -138,7 +140,7 @@ process_add_tenant(std::ostream& out, client_session& session,
                 .hostname = std::move(hostname),
                 .status = "active",
                 .recorded_by = recorded_by,
-                .change_reason_code = "initial_setup",
+                .change_reason_code = std::string{reason::codes::new_record},
                 .change_commentary = "Created via shell",
                 .recorded_at = std::chrono::system_clock::now()
             }

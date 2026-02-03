@@ -86,15 +86,6 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
         return;
     }
 
-    // Thread-local guard to prevent recursive logging.
-    // When the handler is executing, it may call code that logs (e.g., repository).
-    // Without this guard, those logs would be processed by this sink, causing
-    // a deadlock on the async sink's mutex.
-    static thread_local bool in_handler = false;
-    if (in_handler) {
-        return; // Skip recursive calls
-    }
-
     // Create a telemetry log entry from the Boost.Log record
     domain::telemetry_log_entry entry;
 
@@ -168,16 +159,8 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     entry.recorded_at = std::chrono::system_clock::now();
 
     // Call the handler to store the log entry (could be to database, file, etc.)
-    // Set the guard to prevent recursive logging from within the handler.
     if (handler_) {
-        in_handler = true;
-        try {
-            handler_(entry);
-        } catch (...) {
-            in_handler = false;
-            throw;
-        }
-        in_handler = false;
+        handler_(entry);
     }
 }
 

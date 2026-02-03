@@ -27,11 +27,17 @@ namespace ores::telemetry::log {
 lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
     : ores::logging::lifecycle_manager(std::move(ocfg)) {
     // Base class handles console and file sinks.
-    // Telemetry sink is added via add_telemetry_sink() if needed.
+    // Telemetry and database sinks are added via their respective methods if needed.
 }
 
 lifecycle_manager::~lifecycle_manager() {
-    // Stop and flush the telemetry sink first (it's async)
+    // Stop and flush the database sink first
+    if (database_sink_) {
+        // Database sink is synchronous, so no need to stop it
+        // but we might want to ensure any pending operations are completed
+    }
+
+    // Stop and flush the telemetry sink (it's async)
     if (telemetry_sink_) {
         telemetry_sink_->stop();
         telemetry_sink_->flush();
@@ -52,6 +58,20 @@ void lifecycle_manager::add_telemetry_sink(
     // The telemetry sink receives all log records (no filtering by severity)
     // Filtering can be done in the handler if needed
     boost::log::core::get()->add_sink(telemetry_sink_);
+}
+
+void lifecycle_manager::add_database_sink(
+    std::shared_ptr<domain::resource> resource,
+    database_log_handler handler,
+    const std::string& source_type,
+    const std::string& source_name) {
+
+    database_sink_ = boost::make_shared<database_sink_backend>(
+        std::move(resource), std::move(handler), source_type, source_name);
+
+    // The database sink receives all log records (no filtering by severity)
+    // Filtering can be done in the handler if needed
+    boost::log::core::get()->add_sink(database_sink_);
 }
 
 }

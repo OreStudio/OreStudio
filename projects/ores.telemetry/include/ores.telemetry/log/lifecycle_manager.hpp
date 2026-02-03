@@ -27,6 +27,7 @@
 #include "ores.logging/lifecycle_manager.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
+#include "ores.telemetry/log/database_sink_backend.hpp"  // Added for database sink
 #include "ores.telemetry/domain/resource.hpp"
 
 namespace ores::telemetry::log {
@@ -97,8 +98,38 @@ public:
         std::shared_ptr<domain::resource> resource,
         telemetry_sink_backend::log_record_handler handler);
 
+    /**
+     * @brief Adds a database sink for direct database logging.
+     *
+     * The database sink converts log records to the telemetry domain model
+     * and stores them in the database. This is primarily intended for
+     * unit testing scenarios where logs need to be captured in the database
+     * for inspection and validation.
+     *
+     * @param resource The resource describing the entity producing logs.
+     * @param handler Function called for each converted log entry.
+     * @param source_type Type of source ('client', 'server', 'test', etc.).
+     * @param source_name Name of the source application.
+     *
+     * Example:
+     * @code
+     * auto resource = domain::resource::from_environment("test-app", "1.0");
+     * auto repo = std::make_shared<telemetry_repository>(db_context);
+     * lifecycle_manager lm(logging_options);
+     * lm.add_database_sink(resource, [repo](const auto& entry) {
+     *     repo->create(entry);  // Store to database
+     * }, "test", "unit-test-suite");
+     * @endcode
+     */
+    void add_database_sink(
+        std::shared_ptr<domain::resource> resource,
+        database_log_handler handler,
+        const std::string& source_type = "test",
+        const std::string& source_name = "unit-test");
+
 private:
     boost::shared_ptr<telemetry_sink_type> telemetry_sink_;
+    boost::shared_ptr<database_sink_backend> database_sink_; // Added for database sink
 };
 
 }

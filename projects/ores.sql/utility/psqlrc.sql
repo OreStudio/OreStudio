@@ -96,10 +96,10 @@ SET app.current_tenant_id = :'ores_tenant_id';
 \set tenant 'SELECT current_setting(\'app.current_tenant_id\', true) AS current_tenant_id;'
 
 -- List all tenants including terminated (requires SELECT on ores_iam_tenants_tbl)
-\set tenants 'SELECT tenant_id, code, name, status, valid_to FROM ores_iam_tenants_tbl ORDER BY valid_to DESC, code;'
+\set tenants 'SELECT id, code, name, status, valid_to FROM ores_iam_tenants_tbl ORDER BY valid_to DESC, code;'
 
 -- List only active tenants
-\set active_tenants 'SELECT tenant_id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
+\set active_tenants 'SELECT id, code, name, status, hostname FROM ores_iam_tenants_tbl WHERE valid_to = \'9999-12-31 23:59:59\'::timestamptz ORDER BY code;'
 
 -- Switch tenant (set :t first, then run :st)
 -- Example: \set t 'system'   then   :st

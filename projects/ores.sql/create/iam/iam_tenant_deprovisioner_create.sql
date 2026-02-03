@@ -69,7 +69,7 @@ begin
     -- Get tenant code for logging
     select code into v_tenant_code
     from ores_iam_tenants_tbl
-    where tenant_id = p_tenant_id
+    where id = p_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if not found then
@@ -183,7 +183,7 @@ begin
     update ores_iam_tenants_tbl
     set status = 'terminated',
         valid_to = current_timestamp
-    where tenant_id = p_tenant_id
+    where id = p_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     raise notice 'Tenant deprovisioning complete: % (id: %)', v_tenant_code, p_tenant_id;

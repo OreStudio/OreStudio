@@ -37,10 +37,10 @@ returns void as $$
 begin
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where tenant_id = '00000000-0000-0000-0000-000000000000'::uuid
+        where id = ores_iam_system_tenant_id_fn()
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        -- Note: tenant_id is set automatically by the trigger from id
+        -- Note: tenant_id is set automatically by the trigger to system_tenant_id
         insert into ores_iam_tenants_tbl (
             id,
             version,

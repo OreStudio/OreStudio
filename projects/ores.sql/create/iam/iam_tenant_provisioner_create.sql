@@ -72,7 +72,7 @@ begin
     -- Verify system tenant exists and is active
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where tenant_id = v_system_tenant_id
+        where id = v_system_tenant_id
         and status = 'active'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -84,7 +84,7 @@ begin
     v_new_tenant_id := gen_random_uuid();
 
     -- Create the tenant record
-    -- Note: We insert into 'id' column; the trigger sets tenant_id = id
+    -- Note: The trigger sets tenant_id = system_tenant_id (all tenants owned by system)
     insert into ores_iam_tenants_tbl (
         id, type, code, name, description, hostname, status,
         modified_by, change_reason_code, change_commentary

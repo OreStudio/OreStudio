@@ -29,7 +29,8 @@ namespace ores::iam::repository {
 /**
  * @brief Represents a tenant in the database.
  *
- * Note: For tenant records, tenant_id = id (self-referential).
+ * Note: All tenant records have tenant_id = system_tenant_id.
+ * Tenants are managed by the system tenant.
  */
 struct tenant_entity {
     constexpr static const char* schema = "public";

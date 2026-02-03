@@ -72,7 +72,7 @@ begin
 
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where tenant_id = v_tenant_id
+        where id = v_tenant_id
         and status = 'active'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -91,7 +91,7 @@ create or replace function ores_iam_tenant_by_hostname_fn(
 declare
     v_tenant_id uuid;
 begin
-    select tenant_id into v_tenant_id
+    select id into v_tenant_id
     from ores_iam_tenants_tbl
     where hostname = p_hostname
     and status = 'active'
@@ -113,7 +113,7 @@ create or replace function ores_iam_tenant_by_code_fn(
 declare
     v_tenant_id uuid;
 begin
-    select tenant_id into v_tenant_id
+    select id into v_tenant_id
     from ores_iam_tenants_tbl
     where code = p_code
     and status = 'active'
@@ -143,7 +143,7 @@ begin
 
     select name into v_name
     from ores_iam_tenants_tbl
-    where tenant_id = p_tenant_id
+    where id = p_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if not found then
@@ -193,8 +193,8 @@ begin
             v_count, p_code_pattern;
     end if;
 
-    -- Get the tenant_id and set it
-    select t.tenant_id into v_tenant_id
+    -- Get the tenant id and set it
+    select t.id into v_tenant_id
     from ores_iam_tenants_tbl t
     where t.code like p_code_pattern
     and t.valid_to = ores_utility_infinity_timestamp_fn();
@@ -203,9 +203,9 @@ begin
 
     -- Return the tenant info
     return query
-    select t.tenant_id, t.code, t.name, t.description, t.status
+    select t.id, t.code, t.name, t.description, t.status
     from ores_iam_tenants_tbl t
-    where t.tenant_id = v_tenant_id
+    where t.id = v_tenant_id
     and t.valid_to = ores_utility_infinity_timestamp_fn();
 end;
 $$ language plpgsql;

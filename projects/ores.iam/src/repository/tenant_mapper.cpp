@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::iam::repository {
@@ -56,7 +57,8 @@ tenant_entity tenant_mapper::map(const domain::tenant& v) {
     tenant_entity r;
     const auto id_str = boost::lexical_cast<std::string>(v.id);
     r.id = id_str;
-    r.tenant_id = id_str; // Self-referential: tenant_id = id
+    // All tenants are owned by the system tenant
+    r.tenant_id = database::service::tenant_context::system_tenant_id;
     r.version = v.version;
     r.code = v.code;
     r.name = v.name;

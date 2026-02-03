@@ -73,15 +73,7 @@ std::vector<domain::tenant> tenant_repository::read_latest() {
 std::vector<domain::tenant> tenant_repository::read_all_latest() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all latest tenants including deleted";
 
-    // Use DISTINCT ON to get the latest version of each tenant
-    const std::string sql =
-        "SELECT DISTINCT ON (id) "
-        "id, tenant_id, version, type, code, name, description, hostname, "
-        "status, modified_by, change_reason_code, change_commentary, "
-        "valid_from, valid_to "
-        "FROM ores_iam_tenants_tbl "
-        "ORDER BY id, valid_from DESC";
-
+    const std::string sql = "SELECT * FROM ores_iam_read_all_latest_tenants_fn()";
     const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
         "Reading all latest tenants including deleted");
 

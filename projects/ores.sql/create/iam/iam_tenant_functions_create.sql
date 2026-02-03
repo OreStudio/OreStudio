@@ -229,3 +229,45 @@ begin
     return new;
 end;
 $$ language plpgsql;
+
+-- Read all latest tenants including soft-deleted ones.
+-- Returns the most recent version of each tenant ordered by name.
+-- Used by admin interfaces that need to see all tenants regardless of deletion status.
+create or replace function ores_iam_read_all_latest_tenants_fn()
+returns table (
+    id uuid,
+    tenant_id uuid,
+    version integer,
+    type text,
+    code text,
+    name text,
+    description text,
+    hostname text,
+    status text,
+    modified_by text,
+    change_reason_code text,
+    change_commentary text,
+    valid_from timestamp without time zone,
+    valid_to timestamp without time zone
+) as $$
+begin
+    return query
+    select distinct on (t.id)
+        t.id,
+        t.tenant_id,
+        t.version,
+        t.type,
+        t.code,
+        t.name,
+        t.description,
+        t.hostname,
+        t.status,
+        t.modified_by,
+        t.change_reason_code,
+        t.change_commentary,
+        t.valid_from,
+        t.valid_to
+    from ores_iam_tenants_tbl t
+    order by t.id, t.valid_from desc;
+end;
+$$ language plpgsql security definer;

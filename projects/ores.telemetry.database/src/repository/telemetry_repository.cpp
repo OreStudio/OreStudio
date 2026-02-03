@@ -431,19 +431,13 @@ telemetry_repository::get_summary(std::uint32_t hours) {
     const auto start_ts = timepoint_to_timestamp(summary.start_time, lg());
     const auto end_ts = timepoint_to_timestamp(summary.end_time, lg());
 
-    // Get tenant_id from context for filtering (RLS requires session variable
-    // which isn't reliably set on pooled connections)
-    const auto& tenant_id = ctx_.tenant_id();
-
-    // Count total logs in time range
     struct count_result {
         long long count;
     };
 
     auto total_query = sqlgen::select_from<telemetry_entity>(
         sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tenant_id &&
-              "timestamp"_c >= start_ts && "timestamp"_c < end_ts) |
+        where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts) |
         sqlgen::to<count_result>;
 
     auto total_r = sqlgen::session(ctx_.connection_pool()).and_then(total_query);
@@ -463,8 +457,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
     for (const auto& [level, target] : level_targets) {
         auto level_query = sqlgen::select_from<telemetry_entity>(
             sqlgen::count().as<"count">()) |
-            where("tenant_id"_c == tenant_id &&
-                  "timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
+            where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts &&
                   "level"_c == level) |
             sqlgen::to<count_result>;
 
@@ -486,7 +479,6 @@ std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
     BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name
                                << " in last " << hours << " hours";
 
-    const auto& tenant_id = ctx_.tenant_id();
     const auto end_time = std::chrono::system_clock::now();
     const auto start_time = end_time - std::chrono::hours(hours);
     const auto start_ts = timepoint_to_timestamp(start_time, lg());
@@ -498,8 +490,7 @@ std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
 
     auto query = sqlgen::select_from<telemetry_entity>(
         sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tenant_id &&
-              "timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
+        where("timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
               "source_name"_c == source_name && "level"_c == "error") |
         sqlgen::to<count_result>;
 
@@ -516,10 +507,9 @@ std::uint64_t telemetry_repository::delete_old_logs(
 
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 
-    const auto& tenant_id = ctx_.tenant_id();
     const auto older_ts = timepoint_to_timestamp(older_than, lg());
     const auto query = sqlgen::delete_from<telemetry_entity> |
-        where("tenant_id"_c == tenant_id && "timestamp"_c < older_ts);
+        where("timestamp"_c < older_ts);
 
     execute_delete_query(ctx_, query, lg(), "deleting old telemetry logs");
 

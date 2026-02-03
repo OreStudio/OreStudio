@@ -21,8 +21,8 @@
 #define ORES_DATABASE_TENANT_AWARE_POOL_HPP
 
 #include <string>
-#include <functional>
 #include <sqlgen/ConnectionPool.hpp>
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::database {
 
@@ -39,6 +39,16 @@ namespace ores::database {
  */
 template <class Connection>
 class tenant_aware_pool {
+private:
+    inline static std::string_view logger_name =
+        "ores.database.domain.tenant_aware_pool";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     /**
      * @brief Constructs a tenant-aware pool wrapper.
@@ -59,23 +69,28 @@ public:
      * @return A session with tenant context set, or an error
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
+        using namespace ores::logging;
+
         auto session_result = pool_.acquire();
         if (!session_result) {
             return session_result;
         }
 
-        // Set tenant context on this connection
-        if (!tenant_id_.empty()) {
-            const std::string sql =
-                "SELECT set_config('app.current_tenant_id', '" +
-                tenant_id_ + "', false)";
-
-            auto exec_result = (*session_result)->execute(sql);
-            if (!exec_result) {
-                return sqlgen::error("Failed to set tenant context: " +
-                    std::string(exec_result.error().what()));
-            }
+        if (tenant_id_.empty()) {
+            return sqlgen::error("tenant_aware_pool::acquire() called with empty tenant_id");
         }
+
+        const std::string sql =
+            "SELECT set_config('app.current_tenant_id', '" +
+            tenant_id_ + "', false)";
+
+        auto exec_result = (*session_result)->execute(sql);
+        if (!exec_result) {
+            return sqlgen::error("Failed to set tenant context: " +
+                std::string(exec_result.error().what()));
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_;
 
         return session_result;
     }
@@ -113,12 +128,6 @@ private:
 
 namespace sqlgen {
 
-/**
- * @brief Acquires a session from a tenant-aware pool.
- *
- * This overload in the sqlgen namespace allows tenant_aware_pool to be used
- * with the same sqlgen::session() pattern as regular ConnectionPool.
- */
 template <class Connection>
 Result<Ref<Session<Connection>>> session(
     ores::database::tenant_aware_pool<Connection>& pool) noexcept {

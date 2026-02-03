@@ -35,6 +35,11 @@ struct feature_flags final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Flag indicating whether the feature is enabled or disabled.
      */
     bool enabled = false;

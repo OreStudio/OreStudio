@@ -17,37 +17,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-03 Tue 12:12], for Tuesday, February 03, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *4:03* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 4:03   |      |      | 100.0 |
-|      | Active                       |        | 4:03 |      | 100.0 |
-| code | Add entity types for tenants |        |      | 4:03 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-03 Tue 15:36], for Tuesday, February 03, 2026.
+|      | <75>                                 |        |      |      |       |
+| Tags | Headline                             | Time   |      |      |     % |
+|------+--------------------------------------+--------+------+------+-------|
+|      | *Total time*                         | *6:27* |      |      | 100.0 |
+|------+--------------------------------------+--------+------+------+-------|
+|      | Stories                              | 6:27   |      |      | 100.0 |
+|      | Active                               |        | 6:27 |      | 100.0 |
+| code | Add entity types for tenants         |        |      | 4:03 |  62.8 |
+| code | Add sink to log to database directly |        |      | 2:24 |  37.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-03 Tue 12:13]
+#+CAPTION: Clock summary at [2026-02-03 Tue 15:36]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *38:44* |       |       | 100.0 |
+|       | *Total time*                                | *41:08* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 38:44   |       |       | 100.0 |
-|       | Active                                      |         | 38:44 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |   6.2 |
-| code  | Address past review comments                |         |       |  1:14 |   3.2 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  26.0 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   3.5 |
+|       | Stories                                     | 41:08   |       |       | 100.0 |
+|       | Active                                      |         | 41:08 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |   5.8 |
+| code  | Address past review comments                |         |       |  1:14 |   3.0 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  24.5 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   3.3 |
 | code  | Check directory structure in SQL            |         |       |  0:36 |   1.5 |
-| code  | Add tenancy support                         |         |       |  3:55 |  10.1 |
-| code  | Use tenancy to isolate tests                |         |       |  5:00 |  12.9 |
-| code  | Add NOTICE logging support to sqlgen        |         |       |  0:53 |   2.3 |
-| code  | Update codegen for tenancy                  |         |       |  3:32 |   9.1 |
-| code  | Add entity types for tenants                |         |       |  9:43 |  25.1 |
+| code  | Add tenancy support                         |         |       |  3:55 |   9.5 |
+| code  | Use tenancy to isolate tests                |         |       |  5:00 |  12.2 |
+| code  | Add NOTICE logging support to sqlgen        |         |       |  0:53 |   2.1 |
+| code  | Update codegen for tenancy                  |         |       |  3:32 |   8.6 |
+| code  | Add entity types for tenants                |         |       |  9:43 |  23.6 |
+| code  | Add sink to log to database directly        |         |       |  2:24 |   5.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -793,7 +795,11 @@ Highlights:
   improving multi-tenant authentication flow.
 #+end_quote
 
-*** Consider adding telemetry to tests                                 :code:
+*** COMPLETED Add sink to log to database directly                     :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-03 Tue 13:50]--[2026-02-03 Tue 15:34] =>  1:44
+    CLOCK: [2026-02-03 Tue 12:20]--[2026-02-03 Tue 13:00] =>  0:40
+    :END:
 
 Now that tests will use tenants and we can get a picture of tests evolving over
 time, it would be nice to be able to keep the logs for the tests as well. The
@@ -801,8 +807,45 @@ complicated way of doing this would be to add telemetry support to unit tests.
 The simple way of doing this is to have a python script that just parses all the
 log files in one go and upload them to the telemetry tables for the tenants.
 With this we could also do reporting such as compare runs. Or maybe even better:
-create a new sink which connects to database and uploads logs. We could create a
-schema for this as well:
+create a new sink which connects to database and uploads logs.
+
+This feature useful for unit testing and for CLI tool as well.
+
+#+begin_quote
+This pull request refactors the telemetry system by introducing a dedicated
+ores.telemetry.database library. This change aims to resolve existing circular
+dependencies between the core telemetry and database components, thereby
+enhancing the modularity and testability of the system. A key outcome is the
+ability to directly log telemetry data to the database, which is particularly
+beneficial for unit testing and validation workflows.
+
+Highlights:
+
+- New Library Creation: A new library, ores.telemetry.database, has been
+  introduced to encapsulate database-specific functionality related to
+  telemetry, effectively separating concerns from the core ores.telemetry
+  library.
+- Repository File Relocation: All telemetry repository-related files (entity,
+  mapper, and repository implementations) have been moved from ores.telemetry to
+  the newly created ores.telemetry.database library. This includes corresponding
+  header and source files.
+- Circular Dependency Resolution: The architectural split eliminates circular
+  dependencies between the ores.telemetry and ores.database components,
+  improving modularity and maintainability.
+- Database Logging Sink: A new Boost.Log sink backend (database_sink_backend)
+  has been implemented within ores.telemetry to allow direct logging of
+  telemetry data to the database. This is particularly useful for unit testing
+  scenarios where logs need to be captured and validated against a database.
+- Messaging Component Updates: Messaging components within ores.comms.service
+  have been updated to correctly reference the new ores.telemetry.database.lib
+  and adjust namespace usage for database contexts.
+- Build System and Examples: CMake build configurations have been updated to
+  include the new library and manage its dependencies. New example files
+  demonstrate how to integrate and use the database logging sink.
+#+end_quote
+*** Add database support for tests                                     :code:
+
+We could create a schema for logging:
 
 - test suite, test case. contain the names of test suites and test cases.
 - test suite run, test case run. specific runs. useful to get details of timing.
@@ -817,6 +860,7 @@ Notes:
   historical test data. Maybe we should have a "test database" which we destroy
   infrequently. In truth we just care about the test tables. So we use the test
   database for telemetry etc but the environment database to exercise the tests.
+  Or perhaps we just need to capture some data into a time series DB.
   For example =ores_test_local1=.
 - however, we want the service to be able to connect to the test database, so
   that we can display test related information in the UI.
@@ -832,6 +876,43 @@ Notes:
   coverage as well.
 - Claude can then plug into all of this information. For a given test run, we
   could generate a summary report and then have Claude analyse it.
+
+*** Add system accounts for services                                   :code:
+
+Services should also "login" and start sessions. This is needed so we can
+associate their log files with the session. Use the same account as we use for
+database.
+
+Notes:
+
+- unit tests should also "log in" and create sessions so we can see stats.
+
+*** Instrument components with telemetry context                       :code:
+
+Now that logging has been integrated with telemetry, the next step is to
+instrument key components with the =TLOG_SEV= macro to enable trace correlation.
+
+Tasks:
+
+- Instrument =server_session= with root span on connection, child spans per
+  request.
+- Instrument =client_session= with spans for outgoing requests.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
+- Add spans for database operations in ores.database.
+
+*** Create span collection and export infrastructure                    :code:
+
+The telemetry component has span types defined but no infrastructure to collect
+and export completed spans.
+
+Tasks:
+
+- Create =span_collector= interface for accumulating completed spans.
+- Implement =span_exporter= interface (similar to =log_exporter=).
+- Create =file_span_exporter= that writes spans as JSON Lines.
+- Integrate span export with =lifecycle_manager= or create =telemetry_provider=.
+
+
 
 *** Add tenant CRUD commands to CLI                                    :code:
 

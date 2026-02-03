@@ -483,22 +483,6 @@ Break these down into their own stories:
 - add a detach current window that just detaches that window.
 - disabled menu options are not properly greyed out. Done.
 
-*** Instrument components with telemetry context                       :code:
-
-Now that logging has been integrated with telemetry, the next step is to
-instrument key components with the =TLOG_SEV= macro to enable trace correlation.
-
-Tasks:
-
-- Instrument =server_session= with root span on connection, child spans per
-  request.
-- Instrument =client_session= with spans for outgoing requests.
-- Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
-- Add spans for database operations in ores.database.
-
-
-
-
 *** Add modified since for all entities                                :code:
 
 We added support for this only for images. We need to update all types such as
@@ -2222,18 +2206,6 @@ Tasks:
 - Client includes trace context in outgoing request frames.
 - Server extracts trace context and creates child spans linked to client's
   trace.
-
-*** Create span collection and export infrastructure                    :code:
-
-The telemetry component has span types defined but no infrastructure to collect
-and export completed spans.
-
-Tasks:
-
-- Create =span_collector= interface for accumulating completed spans.
-- Implement =span_exporter= interface (similar to =log_exporter=).
-- Create =file_span_exporter= that writes spans as JSON Lines.
-- Integrate span export with =lifecycle_manager= or create =telemetry_provider=.
 
 *** Add OTLP exporter for OpenTelemetry collector                       :code:
 

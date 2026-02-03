@@ -31,6 +31,7 @@ domain::tag tag_mapper::map(const tag_entity& v) {
 
     domain::tag r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.tag_id = v.tag_id.value();
     r.name = v.name;
     r.description = v.description;
@@ -48,6 +49,7 @@ tag_entity tag_mapper::map(const domain::tag& v) {
 
     tag_entity r;
     r.tag_id = v.tag_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

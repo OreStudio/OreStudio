@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <functional>
+#include <iostream>
 #include "ores.telemetry/log/database_sink_backend.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
@@ -42,9 +43,9 @@ inline ores::telemetry::log::database_log_handler make_database_handler(
         try {
             repo->create(entry);
         } catch (const std::exception& ex) {
-            // In a real implementation, we might want to log this error somewhere
-            // but we shouldn't throw from a logging sink as it could cause issues
-            // Just silently fail to avoid disrupting the application
+            // Log to stderr as a last resort, as we are inside a logging sink.
+            std::cerr << "[Logging Sink Error] Failed to store log entry: "
+                      << ex.what() << std::endl;
         }
     };
 }

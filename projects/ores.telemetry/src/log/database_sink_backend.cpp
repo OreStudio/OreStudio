@@ -125,7 +125,7 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
             // Convert hex string to trace_id and then to string for the database
             auto trace_id = domain::trace_id::from_hex(trace_id_val.get());
             entry.tag = trace_id.to_hex(); // Using tag field to store trace_id for now
-        } catch (...) {
+        } catch (const std::exception& /* e */) {
             // Invalid trace_id format - skip
         }
     }

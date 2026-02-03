@@ -52,7 +52,7 @@ int main() {
         std::cout << "  Level: " << entry.level << std::endl;
         std::cout << "  Component: " << entry.component << std::endl;
         std::cout << "  Message: " << entry.message << std::endl;
-        std::cout << "  Source: " << entry.source << std::endl;
+        std::cout << "  Source: " << to_string(entry.source) << std::endl;
         std::cout << "  Source Name: " << entry.source_name << std::endl;
         
         // In a real implementation, this would store to the actual database

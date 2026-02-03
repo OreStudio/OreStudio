@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry.database/log/database_sink_utils.hpp"
+#include "ores.telemetry/log/database_sink_utils.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -47,7 +47,7 @@ int main() {
     // 4. In a real scenario, you would create a database repository
     // For this example, we'll simulate it
     /*
-    auto db_context = ores::database::context(/* connection params *);
+    auto db_context = ores::database::context; // connection params
     auto repo = std::make_shared<ores::telemetry::database::repository::telemetry_repository>(db_context);
     
     // 5. Create a database handler using the repository
@@ -69,7 +69,7 @@ int main() {
         std::cout << "  Level: " << entry.level << std::endl;
         std::cout << "  Component: " << entry.component << std::endl;
         std::cout << "  Message: " << entry.message << std::endl;
-        std::cout << "  Source: " << entry.source << std::endl;
+        std::cout << "  Source: " << to_string(entry.source) << std::endl;
         std::cout << "  Source Name: " << entry.source_name << std::endl;
     };
     

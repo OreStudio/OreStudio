@@ -115,7 +115,7 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     }
 
     // Set source information
-    entry.source = source_type_;
+    entry.source = domain::telemetry_source_from_string(source_type_);
     entry.source_name = source_name_;
 
     // Extract trace context if present (for log correlation)
@@ -132,15 +132,15 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
 
     // Set session and account IDs if available
     if (has_session_id_) {
-        entry.session_id = boost::lexical_cast<std::string>(session_id_);
+        entry.session_id = session_id_;
     } else {
-        entry.session_id = ""; // Empty string for no session
+        entry.session_id = std::nullopt; // No session
     }
 
     if (has_account_id_) {
-        entry.account_id = boost::lexical_cast<std::string>(account_id_);
+        entry.account_id = account_id_;
     } else {
-        entry.account_id = ""; // Empty string for no account
+        entry.account_id = std::nullopt; // No account
     }
 
     // Call the handler to store the log entry (could be to database, file, etc.)

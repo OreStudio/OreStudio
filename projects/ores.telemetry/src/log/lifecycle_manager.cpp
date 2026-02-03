@@ -31,10 +31,11 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
 }
 
 lifecycle_manager::~lifecycle_manager() {
-    // Stop and flush the database sink first
+    // Stop and flush the database sink first (it's async like telemetry sink)
     if (database_sink_) {
-        // Database sink is synchronous, so no need to stop it
-        // but we might want to ensure any pending operations are completed
+        database_sink_->stop();
+        database_sink_->flush();
+        boost::log::core::get()->remove_sink(database_sink_);
     }
 
     // Stop and flush the telemetry sink (it's async)
@@ -66,8 +67,10 @@ void lifecycle_manager::add_database_sink(
     const std::string& source_type,
     const std::string& source_name) {
 
-    database_sink_ = boost::make_shared<database_sink_backend>(
+    auto backend = boost::make_shared<database_sink_backend>(
         std::move(resource), std::move(handler), source_type, source_name);
+
+    database_sink_ = boost::make_shared<database_sink_type>(backend);
 
     // The database sink receives all log records (no filtering by severity)
     // Filtering can be done in the handler if needed

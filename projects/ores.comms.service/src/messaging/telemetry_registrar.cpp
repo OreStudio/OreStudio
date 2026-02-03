@@ -26,7 +26,7 @@ namespace ores::telemetry::messaging {
 using namespace ores::logging;
 
 void registrar::register_handlers(comms::net::server& server,
-    database::context ctx,
+    ::ores::database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions) {
 
     BOOST_LOG_SEV(lg(), info) << "Registering telemetry subsystem message handlers.";

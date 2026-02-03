@@ -28,7 +28,6 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
-#include "ores.database/domain/context.hpp"
 
 namespace ores::telemetry::log {
 
@@ -95,7 +94,7 @@ public:
      *
      * @param rec The Boost.Log record view to process.
      */
-    void consume(const boost::log::record_view& rec) override;
+    void consume(const boost::log::record_view& rec);
 
     /**
      * @brief Sets the session ID for logs produced by this sink.

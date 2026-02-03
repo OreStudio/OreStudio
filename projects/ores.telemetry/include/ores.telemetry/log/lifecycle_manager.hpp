@@ -129,7 +129,9 @@ public:
 
 private:
     boost::shared_ptr<telemetry_sink_type> telemetry_sink_;
-    boost::shared_ptr<database_sink_backend> database_sink_; // Added for database sink
+    using database_sink_type = boost::log::sinks::asynchronous_sink<
+        database_sink_backend>;
+    boost::shared_ptr<database_sink_type> database_sink_; // Added for database sink
 };
 
 }

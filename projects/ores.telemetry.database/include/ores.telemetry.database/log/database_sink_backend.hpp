@@ -45,14 +45,14 @@ using database_log_handler = std::function<void(const domain::telemetry_log_entr
  * @brief Boost.Log sink backend that prepares logs for database storage.
  *
  * This sink extracts log information from Boost.Log records and converts them
- * to the telemetry domain model for storage in the database. It's designed to 
- * be used primarily for unit testing scenarios where logs need to be captured 
+ * to the telemetry domain model for storage in the database. It's designed to
+ * be used primarily for unit testing scenarios where logs need to be captured
  * in the database for inspection and validation.
  *
  * The sink can be enabled/disabled via configuration and operates independently
- * of other logging sinks (console, file, telemetry export). It accepts a handler
- * function that performs the actual database storage, allowing for flexibility
- * in how the data is persisted.
+ * of other logging sinks (console, file, telemetry export). It accepts a
+ * handler function that performs the actual database storage, allowing for
+ * flexibility in how the data is persisted.
  *
  * Usage:
  * @code
@@ -95,7 +95,7 @@ public:
      *
      * @param rec The Boost.Log record view to process.
      */
-    void consume(const boost::log::record_view& rec) override;
+    void consume(const boost::log::record_view& rec);
 
     /**
      * @brief Sets the session ID for logs produced by this sink.

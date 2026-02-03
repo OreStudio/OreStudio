@@ -36,7 +36,7 @@ namespace ores::telemetry::database::log {
  * @param repo Shared pointer to the telemetry repository.
  * @return A handler function that stores log entries to the database.
  */
-inline log::database_log_handler make_database_handler(
+inline ores::telemetry::log::database_log_handler make_database_handler(
     std::shared_ptr<repository::telemetry_repository> repo) {
     return [repo](const domain::telemetry_log_entry& entry) {
         try {
@@ -50,17 +50,19 @@ inline log::database_log_handler make_database_handler(
 }
 
 /**
- * @brief Creates a database log handler that stores entries to the telemetry repository with error callback.
+ * @brief Creates a database log handler that stores entries to the telemetry
+ * repository with error callback.
  *
  * This utility function creates a handler function that can be used with the
- * database sink backend to store log entries directly to the database, with
- * an optional error callback for handling exceptions.
+ * database sink backend to store log entries directly to the database, with an
+ * optional error callback for handling exceptions.
  *
  * @param repo Shared pointer to the telemetry repository.
- * @param error_callback Optional callback function to handle exceptions during database storage.
+ * @param error_callback Optional callback function to handle exceptions during
+ * database storage.
  * @return A handler function that stores log entries to the database.
  */
-inline log::database_log_handler make_database_handler_with_error_callback(
+inline ores::telemetry::log::database_log_handler make_database_handler_with_error_callback(
     std::shared_ptr<repository::telemetry_repository> repo,
     std::function<void(const std::exception&)> error_callback = {}) {
     return [repo, error_callback](const domain::telemetry_log_entry& entry) {

@@ -15,6 +15,25 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests) FIXME:
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+
+# Example for database logging functionality
+set(example_name database_sink_example)
+set(example_target ${example_name}.exe)
+
+add_executable(${example_target}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${example_name}.cpp)
+
+set_target_properties(${example_target} PROPERTIES
+    OUTPUT_NAME ${example_name})
+
+target_link_libraries(${example_target}
+    PRIVATE
+        ores.telemetry.lib
+        ores.logging.lib
+        ores.utility.lib
+        ores.platform.lib
+        Boost::log
+        Boost::program_options
+        ${CMAKE_THREAD_LIBS_INIT})
+
+install(TARGETS ${example_target} RUNTIME DESTINATION examples)

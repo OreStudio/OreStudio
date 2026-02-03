@@ -22,6 +22,7 @@
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.logging/boost_severity.hpp"
 #include "ores.telemetry/domain/trace_id.hpp"
@@ -78,9 +79,22 @@ database_sink_backend::database_sink_backend(
 }
 
 void database_sink_backend::consume(const boost::log::record_view& rec) {
+    // Thread-local guard to prevent recursive logging.
+    // When the handler is executing, it may call code that logs (e.g., repository).
+    // Without this guard, those logs would be processed by this sink, causing
+    // a deadlock on the async sink's mutex.
+    static thread_local bool in_handler = false;
+    if (in_handler) {
+        return; // Skip recursive calls
+    }
+
     // Create a telemetry log entry from the Boost.Log record
     domain::telemetry_log_entry entry;
-    
+
+    // Generate a unique ID for this log entry
+    static thread_local boost::uuids::random_generator uuid_gen;
+    entry.id = uuid_gen();
+
     // Extract timestamp
     auto timestamp_val = boost::log::extract<boost::posix_time::ptime>(
         "TimeStamp", rec);
@@ -143,9 +157,20 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
         entry.account_id = std::nullopt; // No account
     }
 
+    // Set recorded_at to current time (when the log is being persisted)
+    entry.recorded_at = std::chrono::system_clock::now();
+
     // Call the handler to store the log entry (could be to database, file, etc.)
+    // Set the guard to prevent recursive logging from within the handler.
     if (handler_) {
-        handler_(entry);
+        in_handler = true;
+        try {
+            handler_(entry);
+        } catch (...) {
+            in_handler = false;
+            throw;
+        }
+        in_handler = false;
     }
 }
 

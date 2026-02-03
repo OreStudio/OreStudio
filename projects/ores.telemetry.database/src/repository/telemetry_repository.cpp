@@ -234,8 +234,12 @@ telemetry_repository::query(const domain::telemetry_query& q) {
         entity.timestamp = row[1].value_or("");
         entity.source = row[2].value_or("");
         entity.source_name = row[3].value_or("");
-        entity.session_id = row[4].value_or("");
-        entity.account_id = row[5].value_or("");
+        entity.session_id = row[4].has_value() && !row[4]->empty()
+            ? std::optional<std::string>(*row[4])
+            : std::nullopt;
+        entity.account_id = row[5].has_value() && !row[5]->empty()
+            ? std::optional<std::string>(*row[5])
+            : std::nullopt;
         entity.level = row[6].value_or("");
         entity.component = row[7].value_or("");
         entity.message = row[8].value_or("");

@@ -73,11 +73,11 @@ telemetry_entity telemetry_mapper::to_entity(
     r.source = std::string(domain::to_string(entry.source));
     r.source_name = entry.source_name;
     r.session_id = entry.session_id
-        ? boost::lexical_cast<std::string>(*entry.session_id)
-        : "";
+        ? std::optional<std::string>(boost::lexical_cast<std::string>(*entry.session_id))
+        : std::nullopt;
     r.account_id = entry.account_id
-        ? boost::lexical_cast<std::string>(*entry.account_id)
-        : "";
+        ? std::optional<std::string>(boost::lexical_cast<std::string>(*entry.account_id))
+        : std::nullopt;
     r.level = entry.level;
     r.component = entry.component;
     r.message = entry.message;
@@ -96,12 +96,12 @@ domain::telemetry_log_entry telemetry_mapper::to_domain(
     r.timestamp = timestamp_to_timepoint(entity.timestamp.value());
     r.source = domain::telemetry_source_from_string(entity.source);
     r.source_name = entity.source_name;
-    r.session_id = entity.session_id.empty()
-        ? std::nullopt
-        : std::optional<uuid>(boost::lexical_cast<uuid>(entity.session_id));
-    r.account_id = entity.account_id.empty()
-        ? std::nullopt
-        : std::optional<uuid>(boost::lexical_cast<uuid>(entity.account_id));
+    r.session_id = entity.session_id.has_value()
+        ? std::optional<uuid>(boost::lexical_cast<uuid>(*entity.session_id))
+        : std::nullopt;
+    r.account_id = entity.account_id.has_value()
+        ? std::optional<uuid>(boost::lexical_cast<uuid>(*entity.account_id))
+        : std::nullopt;
     r.level = entity.level;
     r.component = entity.component;
     r.message = entity.message;

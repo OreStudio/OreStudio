@@ -145,6 +145,9 @@ void tenant_context::set(context& ctx, const std::string& tenant) {
             std::string(r.error().what()));
     }
 
+    // Also store tenant_id in context for repositories to access directly
+    ctx.set_tenant_id(tenant_id);
+
     BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id;
 }
 

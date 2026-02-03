@@ -46,7 +46,7 @@ context context_factory::make_context(const configuration& cfg) {
     auto pool = make_connection_pool<context::connection_type>(
         pool_config, credentials);
 
-    context r(std::move(pool), credentials);
+    context r(std::move(pool), credentials, cfg.database_options.tenant);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

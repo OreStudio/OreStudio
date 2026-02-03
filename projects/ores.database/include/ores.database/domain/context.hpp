@@ -34,16 +34,35 @@ public:
         sqlgen::ConnectionPool<connection_type>>;
 
     explicit context(connection_pool_type connection_pool,
-                     sqlgen::postgres::Credentials credentials)
+                     sqlgen::postgres::Credentials credentials,
+                     std::string tenant_id = {})
     : connection_pool_(std::move(connection_pool)),
-      credentials_(std::move(credentials)) {}
+      credentials_(std::move(credentials)),
+      tenant_id_(std::move(tenant_id)) {}
 
     connection_pool_type connection_pool() { return connection_pool_; }
     const sqlgen::postgres::Credentials& credentials() const { return credentials_; }
 
+    /**
+     * @brief Gets the tenant ID for this context.
+     *
+     * Returns the tenant ID that was set during context creation.
+     * This is the preferred way to get the tenant ID for repository operations.
+     */
+    const std::string& tenant_id() const { return tenant_id_; }
+
+    /**
+     * @brief Sets the tenant ID for this context.
+     *
+     * This is used by tenant_context::set() to store the tenant ID
+     * after setting the session variable.
+     */
+    void set_tenant_id(std::string tenant_id) { tenant_id_ = std::move(tenant_id); }
+
 private:
     connection_pool_type connection_pool_;
     const sqlgen::postgres::Credentials credentials_;
+    std::string tenant_id_;
 
 };
 

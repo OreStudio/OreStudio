@@ -20,13 +20,12 @@
 #include "ores.iam/repository/tenant_repository.hpp"
 
 #include <algorithm>
-#include <iomanip>
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/repository/tenant_entity.hpp"
 #include "ores.iam/repository/tenant_mapper.hpp"
@@ -104,12 +103,7 @@ std::vector<domain::tenant> tenant_repository::read_all_latest() {
             t.recorded_by = *row[9];
             t.change_reason_code = *row[10];
             t.change_commentary = *row[11];
-            // Parse timestamp from valid_from
-            const auto& timestamp_str = *row[12];
-            std::tm tm = {};
-            std::istringstream ss(timestamp_str);
-            ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-            t.recorded_at = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+            t.recorded_at = timestamp_to_timepoint(std::string_view{*row[12]});
             result.push_back(std::move(t));
         }
     }

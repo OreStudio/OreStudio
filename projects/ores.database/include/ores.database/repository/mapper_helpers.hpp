@@ -75,6 +75,26 @@ std::vector<Dest> map_vector(
 }
 
 /**
+ * @brief Converts a timestamp string to a std::chrono::system_clock::time_point.
+ *
+ * Parses a timestamp string in the format "%Y-%m-%d %H:%M:%S" and converts
+ * it to a C++ chrono time_point for easier time manipulation.
+ *
+ * @param timestamp_str The timestamp string to convert
+ * @return A system_clock::time_point representing the same instant in time
+ *
+ * @example
+ * auto tp = timestamp_to_timepoint("2025-01-15 10:30:00");
+ */
+inline std::chrono::system_clock::time_point
+timestamp_to_timepoint(std::string_view timestamp_str) {
+    std::tm tm = {};
+    std::istringstream ss{std::string{timestamp_str}};
+    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
+/**
  * @brief Converts a sqlgen Timestamp to a std::chrono::system_clock::time_point.
  *
  * Parses a timestamp string in the format "%Y-%m-%d %H:%M:%S" and converts
@@ -88,11 +108,8 @@ std::vector<Dest> map_vector(
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
-    const auto str = ts.str();
-    std::tm tm = {};
-    std::istringstream ss(str);
-    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    const std::string str = ts.str();
+    return timestamp_to_timepoint(std::string_view{str});
 }
 
 /**

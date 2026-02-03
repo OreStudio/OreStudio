@@ -20,8 +20,11 @@
 #ifndef ORES_TESTING_DATABASE_HELPER_HPP
 #define ORES_TESTING_DATABASE_HELPER_HPP
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.testing/test_database_manager.hpp"
 
 namespace ores::testing {
 
@@ -66,6 +69,14 @@ public:
      * @brief Gets the database context.
      */
     database::context& context() { return context_; }
+
+    /**
+     * @brief Gets the test tenant ID.
+     */
+    boost::uuids::uuid tenant_id() {
+        boost::uuids::string_generator gen;
+        return gen(test_database_manager::get_test_tenant_id_env());
+    }
 
 private:
     database::context context_;

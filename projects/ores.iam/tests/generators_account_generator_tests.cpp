@@ -19,6 +19,7 @@
  */
 #include <set>
 #include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account.hpp" // IWYU pragma: keep.
@@ -30,6 +31,11 @@ namespace {
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[generators]");
 
+boost::uuids::uuid make_test_tenant_id() {
+    boost::uuids::random_generator gen;
+    return gen();
+}
+
 }
 
 using namespace ores::iam::generators;
@@ -38,7 +44,7 @@ using namespace ores::logging;
 TEST_CASE("generate_single_account", tags) {
     auto lg(make_logger(test_suite));
 
-    auto account = generate_synthetic_account();
+    auto account = generate_synthetic_account(make_test_tenant_id());
     BOOST_LOG_SEV(lg, debug) << "Generated account: " << account;
 
     CHECK(!account.username.empty());
@@ -53,7 +59,7 @@ TEST_CASE("generate_single_account", tags) {
 TEST_CASE("generate_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    auto accounts = generate_synthetic_accounts(3);
+    auto accounts = generate_synthetic_accounts(3, make_test_tenant_id());
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
     CHECK(accounts.size() == 3);

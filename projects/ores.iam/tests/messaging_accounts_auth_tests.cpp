@@ -130,7 +130,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     const auto admin_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -185,7 +185,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     const auto admin_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -278,7 +278,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // 1. Create an admin account (to be the requester for locking)
-    auto admin_account = generate_synthetic_account();
+    auto admin_account = generate_synthetic_account(h.tenant_id());
 
     save_account_request admin_rq(to_save_account_request(admin_account));
 
@@ -311,7 +311,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     });
 
     // 2. Create a regular account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -392,7 +392,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
     const std::string user_endpoint = internet::endpoint();
 
     // Create a user account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -508,7 +508,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     const std::string user_endpoint = internet::endpoint();
 
     // Create a user account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     save_account_request ca_rq(to_save_account_request(account));
 
     boost::asio::io_context io_ctx;

@@ -134,7 +134,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // Create an admin account (to be the requester)
-    auto admin_account = generate_synthetic_account();
+    auto admin_account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Admin account: " << admin_account;
 
     save_account_request admin_rq(to_save_account_request(admin_account));
@@ -173,7 +173,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     });
 
     // Create a regular account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -237,7 +237,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // Create two regular (non-admin) accounts
-    const auto account1 = generate_synthetic_account();
+    const auto account1 = generate_synthetic_account(h.tenant_id());
     save_account_request ca_rq1(to_save_account_request(account1));
 
     boost::uuids::uuid account1_id;
@@ -250,7 +250,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
         account1_id = save_account_response::deserialize(r.value()).value().account_id;
     });
 
-    const auto account2 = generate_synthetic_account();
+    const auto account2 = generate_synthetic_account(h.tenant_id());
     save_account_request ca_rq2(to_save_account_request(account2));
 
     boost::uuids::uuid account2_id;
@@ -316,7 +316,7 @@ TEST_CASE("handle_lock_account_request", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // Create an admin account (to be the requester)
-    auto admin_account = generate_synthetic_account();
+    auto admin_account = generate_synthetic_account(h.tenant_id());
 
     save_account_request admin_rq(to_save_account_request(admin_account));
 
@@ -349,7 +349,7 @@ TEST_CASE("handle_lock_account_request", tags) {
     });
 
     // Create a regular account to lock
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -408,7 +408,7 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // Create an account to try to lock
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     save_account_request ca_rq(to_save_account_request(account));
 
     boost::uuids::uuid account_id;
@@ -459,7 +459,7 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // Create an account to try to unlock
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     save_account_request ca_rq(to_save_account_request(account));
 
     boost::uuids::uuid account_id;

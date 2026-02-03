@@ -28,9 +28,10 @@
 
 namespace ores::iam::generators {
 
-domain::account generate_synthetic_account() {
+domain::account generate_synthetic_account(const boost::uuids::uuid& tenant_id) {
     domain::account r;
     r.version = 1;
+    r.tenant_id = tenant_id;
     r.recorded_by = faker::internet::username();
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
@@ -54,11 +55,11 @@ domain::account generate_synthetic_account() {
 }
 
 std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n) {
+generate_synthetic_accounts(std::size_t n, const boost::uuids::uuid& tenant_id) {
     std::vector<domain::account> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_account());
+        r.push_back(generate_synthetic_account(tenant_id));
     return r;
 }
 

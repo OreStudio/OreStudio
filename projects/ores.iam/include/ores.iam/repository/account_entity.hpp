@@ -34,6 +34,7 @@ struct account_entity {
     constexpr static const char* tablename = "ores_iam_accounts_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
+    std::string tenant_id;
     int version = 0;
     std::string username;
     std::string password_hash;

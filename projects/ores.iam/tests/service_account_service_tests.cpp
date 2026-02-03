@@ -51,7 +51,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    const auto e = generate_synthetic_account();
+    const auto e = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
@@ -76,7 +76,7 @@ TEST_CASE("create_multiple_accounts", tags) {
     for (int i = 0; i < 5; ++i) {
         BOOST_LOG_SEV(lg, info) << "Creating account: " << i;
 
-        const auto e = generate_synthetic_account();
+        const auto e = generate_synthetic_account(h.tenant_id());
         BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
         const std::string password = faker::internet::password();
@@ -97,7 +97,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account();
+    auto e = generate_synthetic_account(h.tenant_id());
     e.username = "";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -112,7 +112,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account();
+    auto e = generate_synthetic_account(h.tenant_id());
     e.email = "";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -127,7 +127,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    const auto e = generate_synthetic_account();
+    const auto e = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string empty_password;
@@ -158,7 +158,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
     BOOST_LOG_SEV(lg, info) << "Initial accounts: " << initial_count;
 
     const int new_accounts = 3;
-    const auto expected_list = generate_synthetic_accounts(new_accounts);
+    const auto expected_list = generate_synthetic_accounts(new_accounts, h.tenant_id());
 
     for (const auto& e : expected_list) {
         const std::string password = faker::internet::password();
@@ -178,7 +178,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account();
+    auto e = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
@@ -198,7 +198,7 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account();
+    auto e = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
@@ -252,7 +252,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
 
-    auto account = generate_synthetic_account();
+    auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
@@ -271,7 +271,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    auto account = generate_synthetic_account();
+    auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
@@ -306,7 +306,7 @@ TEST_CASE("lock_account_successful", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
     const std::string password = faker::internet::password();
 
@@ -343,7 +343,7 @@ TEST_CASE("unlock_account_successful", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
     const std::string password = faker::internet::password();
 
@@ -408,7 +408,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
     scoped_database_helper h;
     service::account_service sut(h.context());
 
-    auto account = generate_synthetic_account();
+    auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();

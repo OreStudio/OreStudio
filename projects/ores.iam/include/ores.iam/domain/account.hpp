@@ -41,6 +41,11 @@ struct account final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief Username of the person who recorded this version in the system.
      */
     std::string recorded_by;

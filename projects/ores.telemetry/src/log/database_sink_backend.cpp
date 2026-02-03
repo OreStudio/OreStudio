@@ -25,6 +25,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.logging/boost_severity.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
 
@@ -79,6 +80,12 @@ database_sink_backend::database_sink_backend(
 }
 
 void database_sink_backend::consume(const boost::log::record_view& rec) {
+    // Check if this log record is marked to skip telemetry sinks.
+    // This prevents recursive logging when telemetry code itself logs.
+    if (should_skip_telemetry(rec)) {
+        return;
+    }
+
     // Thread-local guard to prevent recursive logging.
     // When the handler is executing, it may call code that logs (e.g., repository).
     // Without this guard, those logs would be processed by this sink, causing

@@ -27,6 +27,7 @@
 #include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 
 namespace ores::telemetry::database::repository {
 
@@ -65,6 +66,7 @@ parse_timestamp(const std::string& str) {
 telemetry_entity telemetry_mapper::to_entity(
     const domain::telemetry_log_entry& entry,
     const std::string& tenant_id) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     telemetry_entity r;
 
     r.id = boost::lexical_cast<std::string>(entry.id);
@@ -89,6 +91,7 @@ telemetry_entity telemetry_mapper::to_entity(
 
 domain::telemetry_log_entry telemetry_mapper::to_domain(
     const telemetry_entity& entity) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_log_entry r;
     using boost::uuids::uuid;
 
@@ -113,6 +116,7 @@ domain::telemetry_log_entry telemetry_mapper::to_domain(
 
 domain::telemetry_stats telemetry_mapper::to_domain(
     const telemetry_stats_hourly_entity& entity) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_stats r;
 
     auto period_start = parse_timestamp(entity.hour);
@@ -132,6 +136,7 @@ domain::telemetry_stats telemetry_mapper::to_domain(
 
 domain::telemetry_stats telemetry_mapper::to_domain(
     const telemetry_stats_daily_entity& entity) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_stats r;
 
     auto period_start = parse_timestamp(entity.day);

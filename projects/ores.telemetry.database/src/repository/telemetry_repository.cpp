@@ -25,6 +25,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 #include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
@@ -43,6 +44,7 @@ std::string telemetry_repository::sql() {
 }
 
 void telemetry_repository::create(const domain::telemetry_log_entry& entry) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
@@ -65,6 +67,7 @@ void telemetry_repository::create(const domain::telemetry_log_entry& entry) {
 
 std::size_t telemetry_repository::create_batch(
     const domain::telemetry_batch& batch) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     if (batch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "Empty batch, nothing to insert";
@@ -197,6 +200,7 @@ std::string build_where_clause(const domain::telemetry_query& q,
 
 std::vector<domain::telemetry_log_entry>
 telemetry_repository::query(const domain::telemetry_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
     const auto start_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -254,6 +258,7 @@ telemetry_repository::query(const domain::telemetry_query& q) {
 }
 
 std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
     const auto start_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -283,6 +288,7 @@ std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
 std::vector<domain::telemetry_log_entry>
 telemetry_repository::read_by_session(const boost::uuids::uuid& session_id,
     std::uint32_t limit_count) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for session: "
                                << boost::uuids::to_string(session_id);
@@ -311,6 +317,7 @@ telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
     const std::chrono::system_clock::time_point& start,
     const std::chrono::system_clock::time_point& end,
     std::uint32_t limit_count) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for account: "
                                << boost::uuids::to_string(account_id);
@@ -340,6 +347,7 @@ telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
 
 std::vector<domain::telemetry_stats>
 telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
     const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -378,6 +386,7 @@ telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) 
 
 std::vector<domain::telemetry_stats>
 telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
     const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -419,6 +428,7 @@ telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
 
 domain::telemetry_summary
 telemetry_repository::get_summary(std::uint32_t hours) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last "
                                << hours << " hours";
 
@@ -473,6 +483,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
 
 std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
     std::uint32_t hours) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name
                                << " in last " << hours << " hours";
@@ -501,6 +512,7 @@ std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
 
 std::uint64_t telemetry_repository::delete_old_logs(
     const std::chrono::system_clock::time_point& older_than) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 

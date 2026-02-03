@@ -22,6 +22,7 @@
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ores.logging/boost_severity.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
 
@@ -55,6 +56,12 @@ telemetry_sink_backend::telemetry_sink_backend(
     , handler_(std::move(handler)) {}
 
 void telemetry_sink_backend::consume(const boost::log::record_view& rec) {
+    // Check if this log record is marked to skip telemetry sinks.
+    // This prevents recursive logging when telemetry code itself logs.
+    if (should_skip_telemetry(rec)) {
+        return;
+    }
+
     domain::log_record telemetry_rec;
 
     // Extract timestamp using boost::log::extract

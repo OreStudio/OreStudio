@@ -89,7 +89,7 @@ std::vector<domain::tenant> tenant_repository::read_all_latest() {
     result.reserve(rows.size());
 
     for (const auto& row : rows) {
-        if (row.size() >= 14 && row[0] && row[2] && row[3] && row[4] &&
+        if (row.size() >= 14 && row[0] && row[1] && row[2] && row[3] && row[4] &&
             row[5] && row[7] && row[8] && row[9] && row[10] && row[11] && row[12]) {
             domain::tenant t;
             t.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);

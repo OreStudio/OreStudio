@@ -21,49 +21,56 @@
 #define ORES_DATABASE_CONTEXT_HPP
 
 #include <sqlgen/postgres.hpp>
+#include "ores.database/domain/tenant_aware_pool.hpp"
 
 namespace ores::database {
 
 /**
  * @brief Context for the operations on a postgres database.
+ *
+ * The context wraps a tenant-aware connection pool that automatically sets
+ * the tenant context (via PostgreSQL session variable) whenever a connection
+ * is acquired. This ensures RLS policies work correctly with connection pooling.
  */
 class context {
 public:
     using connection_type = sqlgen::postgres::Connection;
-    using connection_pool_type = sqlgen::Result<
-        sqlgen::ConnectionPool<connection_type>>;
+    using connection_pool_type = tenant_aware_pool<connection_type>;
 
-    explicit context(connection_pool_type connection_pool,
+    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
                      sqlgen::postgres::Credentials credentials,
                      std::string tenant_id = {})
-    : connection_pool_(std::move(connection_pool)),
-      credentials_(std::move(credentials)),
-      tenant_id_(std::move(tenant_id)) {}
+    : connection_pool_(std::move(connection_pool), tenant_id),
+      credentials_(std::move(credentials)) {}
 
-    connection_pool_type connection_pool() { return connection_pool_; }
+    /**
+     * @brief Gets the tenant-aware connection pool.
+     *
+     * Sessions acquired from this pool will automatically have the
+     * tenant context set via SET_CONFIG before use.
+     */
+    connection_pool_type& connection_pool() { return connection_pool_; }
+
     const sqlgen::postgres::Credentials& credentials() const { return credentials_; }
 
     /**
      * @brief Gets the tenant ID for this context.
-     *
-     * Returns the tenant ID that was set during context creation.
-     * This is the preferred way to get the tenant ID for repository operations.
      */
-    const std::string& tenant_id() const { return tenant_id_; }
+    const std::string& tenant_id() const { return connection_pool_.tenant_id(); }
 
     /**
      * @brief Sets the tenant ID for this context.
      *
-     * This is used by tenant_context::set() to store the tenant ID
-     * after setting the session variable.
+     * Updates the tenant ID used by the connection pool. All subsequent
+     * connection acquisitions will use the new tenant ID.
      */
-    void set_tenant_id(std::string tenant_id) { tenant_id_ = std::move(tenant_id); }
+    void set_tenant_id(std::string tenant_id) {
+        connection_pool_.set_tenant_id(std::move(tenant_id));
+    }
 
 private:
     connection_pool_type connection_pool_;
     const sqlgen::postgres::Credentials credentials_;
-    std::string tenant_id_;
-
 };
 
 }

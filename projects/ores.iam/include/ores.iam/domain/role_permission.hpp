@@ -33,6 +33,11 @@ namespace ores::iam::domain {
  */
 struct role_permission final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief The role to which the permission is granted.
      */
     boost::uuids::uuid role_id;

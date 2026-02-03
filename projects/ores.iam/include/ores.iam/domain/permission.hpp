@@ -40,6 +40,11 @@ namespace ores::iam::domain {
  */
 struct permission final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief Unique identifier for the permission.
      */
     boost::uuids::uuid id;

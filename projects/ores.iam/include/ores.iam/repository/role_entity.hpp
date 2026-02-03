@@ -34,6 +34,7 @@ struct role_entity {
     constexpr static const char* tablename = "ores_iam_roles_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;

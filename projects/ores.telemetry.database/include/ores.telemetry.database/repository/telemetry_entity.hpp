@@ -44,6 +44,11 @@ struct telemetry_entity {
     sqlgen::PrimaryKey<std::string> id;
 
     /**
+     * @brief Tenant ID for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Log timestamp - part of composite primary key.
      *
      * Required in primary key for TimescaleDB hypertable partitioning.

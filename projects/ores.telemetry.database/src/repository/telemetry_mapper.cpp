@@ -63,10 +63,12 @@ parse_timestamp(const std::string& str) {
 }
 
 telemetry_entity telemetry_mapper::to_entity(
-    const domain::telemetry_log_entry& entry) {
+    const domain::telemetry_log_entry& entry,
+    const std::string& tenant_id) {
     telemetry_entity r;
 
     r.id = boost::lexical_cast<std::string>(entry.id);
+    r.tenant_id = tenant_id;
     r.timestamp = timepoint_to_timestamp(entry.timestamp, lg());
     r.source = std::string(domain::to_string(entry.source));
     r.source_name = entry.source_name;

@@ -46,9 +46,19 @@ void telemetry_repository::create(const domain::telemetry_log_entry& entry) {
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
+    // Get the current tenant_id from the session variable
+    const auto tenant_results = execute_raw_string_query(ctx_,
+        "SELECT ores_iam_current_tenant_id_fn()::text",
+        lg(), "Getting current tenant ID");
+
+    if (tenant_results.empty() || tenant_results[0].empty()) {
+        throw std::runtime_error("No tenant context set for telemetry insert");
+    }
+    const auto& tenant_id = tenant_results[0];
+
     const auto r = sqlgen::session(ctx_.connection_pool())
         .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(entry)))
+        .and_then(insert(telemetry_mapper::to_entity(entry, tenant_id)))
         .and_then(commit);
     ensure_success(r, lg());
 }
@@ -65,10 +75,20 @@ std::size_t telemetry_repository::create_batch(
                                << " telemetry log entries from "
                                << batch.source_name;
 
+    // Get the current tenant_id from the session variable
+    const auto tenant_results = execute_raw_string_query(ctx_,
+        "SELECT ores_iam_current_tenant_id_fn()::text",
+        lg(), "Getting current tenant ID");
+
+    if (tenant_results.empty() || tenant_results[0].empty()) {
+        throw std::runtime_error("No tenant context set for telemetry batch insert");
+    }
+    const auto& tenant_id = tenant_results[0];
+
     std::vector<telemetry_entity> entities;
     entities.reserve(batch.size());
     for (const auto& entry : batch.entries) {
-        auto entity = telemetry_mapper::to_entity(entry);
+        auto entity = telemetry_mapper::to_entity(entry, tenant_id);
         // Override source info from batch
         entity.source = std::string(domain::to_string(batch.source));
         entity.source_name = batch.source_name;

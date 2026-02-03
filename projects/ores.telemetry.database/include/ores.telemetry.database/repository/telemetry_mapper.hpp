@@ -33,8 +33,13 @@ class telemetry_mapper {
 public:
     /**
      * @brief Converts a domain log entry to a database entity.
+     *
+     * @param entry The domain entry to convert.
+     * @param tenant_id The tenant ID to associate with the entry.
      */
-    static telemetry_entity to_entity(const domain::telemetry_log_entry& entry);
+    static telemetry_entity to_entity(
+        const domain::telemetry_log_entry& entry,
+        const std::string& tenant_id);
 
     /**
      * @brief Converts a database entity to a domain log entry.

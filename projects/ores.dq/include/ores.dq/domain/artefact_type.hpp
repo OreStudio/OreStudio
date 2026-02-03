@@ -38,6 +38,11 @@ namespace ores::dq::domain {
  */
 struct artefact_type final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Unique code identifying this artefact type.
      *
      * This is the natural key for the type.

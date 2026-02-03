@@ -41,6 +41,7 @@ domain::publication publication_mapper::map(const publication_entity& entity) {
 
     boost::uuids::string_generator gen;
     result.id = gen(entity.id.value());
+    result.tenant_id = entity.tenant_id;
     result.dataset_id = gen(entity.dataset_id);
     result.dataset_code = entity.dataset_code;
     result.mode = domain::publication_mode_from_string(entity.mode)
@@ -71,6 +72,7 @@ publication_entity publication_mapper::to_entity(const domain::publication& doma
     publication_entity entity;
 
     entity.id = boost::uuids::to_string(domain.id);
+    entity.tenant_id = domain.tenant_id;
     entity.dataset_id = boost::uuids::to_string(domain.dataset_id);
     entity.dataset_code = domain.dataset_code;
     entity.mode = to_string(domain.mode);

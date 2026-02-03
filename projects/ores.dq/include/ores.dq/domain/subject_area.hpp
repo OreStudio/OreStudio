@@ -42,6 +42,11 @@ struct subject_area final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Name of this subject area within its domain.
      *
      * Part of the composite key (name + domain_name).

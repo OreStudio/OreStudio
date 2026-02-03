@@ -44,6 +44,11 @@ struct treatment_dimension final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Unique code identifying this treatment type.
      *
      * This is the natural key for the dimension.

@@ -33,6 +33,7 @@ coding_scheme_mapper::map(const coding_scheme_entity& v) {
 
     domain::coding_scheme r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.name = v.name;
     r.authority_type = v.authority_type;
@@ -54,6 +55,7 @@ coding_scheme_mapper::map(const domain::coding_scheme& v) {
 
     coding_scheme_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.name = v.name;
     r.authority_type = v.authority_type;

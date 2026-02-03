@@ -33,6 +33,7 @@ data_domain_mapper::map(const data_domain_entity& v) {
 
     domain::data_domain r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.name = v.name.value();
     r.description = v.description;
     r.recorded_by = v.modified_by;
@@ -49,6 +50,7 @@ data_domain_mapper::map(const domain::data_domain& v) {
 
     data_domain_entity r;
     r.name = v.name;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
     r.modified_by = v.recorded_by;

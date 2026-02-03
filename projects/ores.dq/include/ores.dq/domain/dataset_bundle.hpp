@@ -45,6 +45,11 @@ struct dataset_bundle final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief UUID uniquely identifying this bundle.
      *
      * This is the surrogate key for the bundle.

@@ -35,6 +35,7 @@ struct publication_entity final {
     constexpr static const char* tablename = "ores_dq_dataset_publications_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
+    std::string tenant_id;
     std::string dataset_id;
     std::string dataset_code;
     std::string mode;

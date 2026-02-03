@@ -43,6 +43,11 @@ struct catalog final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Unique name identifying this catalog.
      *
      * This is the natural key for the catalog.

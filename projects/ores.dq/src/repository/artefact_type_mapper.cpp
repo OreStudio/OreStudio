@@ -32,6 +32,7 @@ artefact_type_mapper::map(const artefact_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::artefact_type r;
+    r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
@@ -50,6 +51,7 @@ artefact_type_mapper::map(const domain::artefact_type& v) {
 
     artefact_type_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id;
     r.name = v.name;
     r.description = v.description;
     r.artefact_table = v.artefact_table;

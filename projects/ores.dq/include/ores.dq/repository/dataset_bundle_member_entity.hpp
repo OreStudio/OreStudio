@@ -36,6 +36,7 @@ struct dataset_bundle_member_entity {
     constexpr static const char* tablename = "ores_dq_dataset_bundle_members_tbl";
 
     sqlgen::PrimaryKey<std::string> bundle_code;
+    std::string tenant_id;
     std::string dataset_code;
     int version = 0;
     int display_order = 0;

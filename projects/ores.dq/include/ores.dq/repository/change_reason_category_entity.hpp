@@ -34,6 +34,7 @@ struct change_reason_category_entity {
     constexpr static const char* tablename = "ores_dq_change_reason_categories_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
     std::string description;
     std::string modified_by;

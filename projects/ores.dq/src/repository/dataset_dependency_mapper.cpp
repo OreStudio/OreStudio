@@ -32,6 +32,7 @@ dataset_dependency_mapper::map(const dataset_dependency_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::dataset_dependency r;
+    r.tenant_id = v.tenant_id;
     r.dataset_code = v.dataset_code.value();
     r.dependency_code = v.dependency_code;
     r.role = v.role;

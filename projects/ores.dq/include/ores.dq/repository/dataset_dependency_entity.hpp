@@ -34,6 +34,7 @@ struct dataset_dependency_entity {
     constexpr static const char* tablename = "ores_dq_dataset_dependencies_tbl";
 
     sqlgen::PrimaryKey<std::string> dataset_code;
+    std::string tenant_id;
     std::string dependency_code;
     std::string role;
     std::string recorded_by;

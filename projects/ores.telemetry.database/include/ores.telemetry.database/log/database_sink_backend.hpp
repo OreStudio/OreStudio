@@ -30,7 +30,7 @@
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
 #include "ores.database/domain/context.hpp"
 
-namespace ores::telemetry::log {
+namespace ores::telemetry::database::log {
 
 /**
  * @brief Handler function type for processing log entries destined for database storage.

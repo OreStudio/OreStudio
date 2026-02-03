@@ -25,10 +25,10 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.telemetry/repository/telemetry_mapper.hpp"
-#include "ores.telemetry/repository/telemetry_entity.hpp"
+#include "ores.telemetry.database/repository/telemetry_mapper.hpp"
+#include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
-namespace ores::telemetry::repository {
+namespace ores::telemetry::database::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;

@@ -27,7 +27,7 @@
 #include "ores.logging/lifecycle_manager.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
-#include "ores.telemetry/log/database_sink_backend.hpp"  // Added for database sink
+#include "ores.telemetry/log/database_sink_backend.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 
 namespace ores::telemetry::log {

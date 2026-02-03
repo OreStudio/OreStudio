@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/repository/telemetry_mapper.hpp"
+#include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 
 #include <format>
 #include <iomanip>
@@ -28,7 +28,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
 
-namespace ores::telemetry::repository {
+namespace ores::telemetry::database::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;

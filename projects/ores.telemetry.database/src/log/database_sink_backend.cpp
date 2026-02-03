@@ -27,7 +27,7 @@
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
 
-namespace ores::telemetry::log {
+namespace ores::telemetry::database::log {
 
 namespace {
 

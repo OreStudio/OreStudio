@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/repository/telemetry_entity.hpp"
+#include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
 #include <ostream>
 
-namespace ores::telemetry::repository {
+namespace ores::telemetry::database::repository {
 
 std::ostream& operator<<(std::ostream& s, const telemetry_entity& v) {
     s << "telemetry_entity["

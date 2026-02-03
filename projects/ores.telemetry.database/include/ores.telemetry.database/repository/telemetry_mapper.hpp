@@ -22,9 +22,9 @@
 
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry/domain/telemetry_stats.hpp"
-#include "ores.telemetry/repository/telemetry_entity.hpp"
+#include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
-namespace ores::telemetry::repository {
+namespace ores::telemetry::database::repository {
 
 /**
  * @brief Maps between domain and entity types for telemetry.

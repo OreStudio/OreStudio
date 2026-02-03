@@ -35,6 +35,7 @@ struct currency_entity {
     constexpr static const char* tablename = "ores_refdata_currencies_tbl";
 
     sqlgen::PrimaryKey<std::string> iso_code;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string numeric_code;

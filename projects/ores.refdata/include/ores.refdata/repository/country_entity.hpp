@@ -35,6 +35,7 @@ struct country_entity {
     constexpr static const char* tablename = "ores_refdata_countries_tbl";
 
     sqlgen::PrimaryKey<std::string> alpha2_code;
+    std::string tenant_id;
     int version = 0;
     std::string alpha3_code;
     std::string numeric_code;

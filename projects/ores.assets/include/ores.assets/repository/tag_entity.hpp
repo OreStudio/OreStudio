@@ -35,6 +35,7 @@ struct tag_entity {
     constexpr static const char* tablename = "ores_assets_tags_tbl";
 
     sqlgen::PrimaryKey<std::string> tag_id;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;

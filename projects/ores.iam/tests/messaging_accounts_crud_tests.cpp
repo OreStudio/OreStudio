@@ -24,6 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -59,8 +60,9 @@ save_account_request to_save_account_request(const domain::account& a) {
 }
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::database::context& ctx) {
-    auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
+make_system_flags(ores::database::context& ctx, const std::string& tenant_id) {
+    auto flags = std::make_shared<ores::variability::service::system_flags_service>(
+        ctx, tenant_id);
     flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
 }
@@ -114,7 +116,7 @@ TEST_CASE("handle_single_save_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -123,7 +125,7 @@ TEST_CASE("handle_single_save_account_request", tags) {
     const auto test_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, test_endpoint);
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     save_account_request rq(to_save_account_request(account));
@@ -152,7 +154,7 @@ TEST_CASE("handle_many_save_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -161,7 +163,7 @@ TEST_CASE("handle_many_save_account_requests", tags) {
     const auto test_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, test_endpoint);
 
-    auto accounts = generate_synthetic_accounts(5);
+    auto accounts = generate_synthetic_accounts(5, h.tenant_id());
 
     boost::asio::io_context io_ctx;
     for (const auto& a : accounts) {
@@ -192,7 +194,7 @@ TEST_CASE("handle_get_accounts_request_returns_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -229,7 +231,7 @@ TEST_CASE("handle_get_accounts_request_with_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -246,7 +248,7 @@ TEST_CASE("handle_get_accounts_request_with_accounts", tags) {
     boost::asio::io_context io_ctx;
 
     const int new_accounts = 5;
-    auto accounts = generate_synthetic_accounts(new_accounts);
+    auto accounts = generate_synthetic_accounts(new_accounts, h.tenant_id());
 
     for (const auto& a : accounts) {
         BOOST_LOG_SEV(lg, info) << "Original account: " << a;
@@ -287,7 +289,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -296,7 +298,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     const auto test_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, test_endpoint);
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -344,7 +346,7 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -382,7 +384,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);

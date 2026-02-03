@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_non_iso_currency_populate.mustache
+ * To modify, update the template and regenerate.
+ *
  * FpML Non-ISO Currencies Artefact Population Script
  *
  * Populates the dq_currencies_artefact_tbl with FpML non-ISO currency data.
@@ -83,11 +86,12 @@ begin
 
     -- Insert FpML non-ISO currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
-        dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
+        dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
         fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
     )
     select
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         c.iso_code,
         0,
         c.name,

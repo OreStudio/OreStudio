@@ -43,7 +43,8 @@ $$ language plpgsql stable;
 
 -- Validate that a tenant_id exists and is active
 -- Returns the tenant_id if valid, raises exception otherwise
--- If p_tenant_id is NULL, uses the current session tenant_id
+-- If p_tenant_id is NULL or system tenant ID, uses the current session tenant_id
+-- (System tenant ID is treated as placeholder for "use session tenant")
 create or replace function ores_iam_validate_tenant_fn(
     p_tenant_id uuid
 ) returns uuid as $$
@@ -51,10 +52,17 @@ declare
     v_tenant_id uuid;
 begin
     -- Use provided tenant_id or fall back to session tenant
-    v_tenant_id := coalesce(p_tenant_id, ores_iam_current_tenant_id_fn());
+    -- Treat system tenant ID (nil UUID) as placeholder meaning "use session tenant"
+    if p_tenant_id is not null and p_tenant_id != ores_iam_system_tenant_id_fn() then
+        v_tenant_id := p_tenant_id;
+    else
+        v_tenant_id := ores_iam_current_tenant_id_fn();
+    end if;
 
-    if v_tenant_id is null then
-        raise exception 'tenant_id cannot be null and no session tenant set. Set app.current_tenant_id session variable.' using errcode = '23502';
+    -- If still null/system tenant after fallback, accept it for reference data
+    -- This allows population scripts running with system tenant session
+    if v_tenant_id is null or v_tenant_id = ores_iam_system_tenant_id_fn() then
+        return ores_iam_system_tenant_id_fn();
     end if;
 
     -- Allow during initial bootstrap when tenants table might be empty
@@ -64,7 +72,7 @@ begin
 
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where tenant_id = v_tenant_id
+        where id = v_tenant_id
         and status = 'active'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -83,7 +91,7 @@ create or replace function ores_iam_tenant_by_hostname_fn(
 declare
     v_tenant_id uuid;
 begin
-    select tenant_id into v_tenant_id
+    select id into v_tenant_id
     from ores_iam_tenants_tbl
     where hostname = p_hostname
     and status = 'active'
@@ -105,7 +113,7 @@ create or replace function ores_iam_tenant_by_code_fn(
 declare
     v_tenant_id uuid;
 begin
-    select tenant_id into v_tenant_id
+    select id into v_tenant_id
     from ores_iam_tenants_tbl
     where code = p_code
     and status = 'active'
@@ -117,6 +125,33 @@ begin
     end if;
 
     return v_tenant_id;
+end;
+$$ language plpgsql;
+
+-- Lookup tenant name by ID (used for display in login responses)
+-- Returns 'System' for the system tenant, otherwise looks up the tenant name.
+create or replace function ores_iam_tenant_name_by_id_fn(
+    p_tenant_id uuid
+) returns text as $$
+declare
+    v_name text;
+begin
+    -- Return 'System' for the system tenant
+    if p_tenant_id = ores_iam_system_tenant_id_fn() then
+        return 'System';
+    end if;
+
+    select name into v_name
+    from ores_iam_tenants_tbl
+    where id = p_tenant_id
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        raise exception 'No active tenant found for ID: %', p_tenant_id
+            using errcode = '23503';
+    end if;
+
+    return v_name;
 end;
 $$ language plpgsql;
 
@@ -158,8 +193,8 @@ begin
             v_count, p_code_pattern;
     end if;
 
-    -- Get the tenant_id and set it
-    select t.tenant_id into v_tenant_id
+    -- Get the tenant id and set it
+    select t.id into v_tenant_id
     from ores_iam_tenants_tbl t
     where t.code like p_code_pattern
     and t.valid_to = ores_utility_infinity_timestamp_fn();
@@ -168,9 +203,9 @@ begin
 
     -- Return the tenant info
     return query
-    select t.tenant_id, t.code, t.name, t.description, t.status
+    select t.id, t.code, t.name, t.description, t.status
     from ores_iam_tenants_tbl t
-    where t.tenant_id = v_tenant_id
+    where t.id = v_tenant_id
     and t.valid_to = ores_utility_infinity_timestamp_fn();
 end;
 $$ language plpgsql;
@@ -197,3 +232,45 @@ begin
     return new;
 end;
 $$ language plpgsql;
+
+-- Read all latest tenants including soft-deleted ones.
+-- Returns the most recent version of each tenant ordered by name.
+-- Used by admin interfaces that need to see all tenants regardless of deletion status.
+create or replace function ores_iam_read_all_latest_tenants_fn()
+returns table (
+    id uuid,
+    tenant_id uuid,
+    version integer,
+    type text,
+    code text,
+    name text,
+    description text,
+    hostname text,
+    status text,
+    modified_by text,
+    change_reason_code text,
+    change_commentary text,
+    valid_from timestamp without time zone,
+    valid_to timestamp without time zone
+) as $$
+begin
+    return query
+    select distinct on (t.id)
+        t.id,
+        t.tenant_id,
+        t.version,
+        t.type,
+        t.code,
+        t.name,
+        t.description,
+        t.hostname,
+        t.status,
+        t.modified_by,
+        t.change_reason_code,
+        t.change_commentary,
+        t.valid_from,
+        t.valid_to
+    from ores_iam_tenants_tbl t
+    order by t.id, t.valid_from desc;
+end;
+$$ language plpgsql security definer;

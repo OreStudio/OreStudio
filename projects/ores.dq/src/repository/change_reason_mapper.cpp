@@ -33,6 +33,7 @@ change_reason_mapper::map(const change_reason_entity& v) {
 
     domain::change_reason r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.description = v.description;
     r.category_code = v.category_code;
@@ -54,6 +55,7 @@ change_reason_mapper::map(const domain::change_reason& v) {
 
     change_reason_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
     r.category_code = v.category_code;

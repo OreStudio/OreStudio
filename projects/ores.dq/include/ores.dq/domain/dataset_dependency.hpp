@@ -44,6 +44,11 @@ namespace ores::dq::domain {
  */
 struct dataset_dependency final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief The code of the dataset that has the dependency.
      *
      * References dataset.code.

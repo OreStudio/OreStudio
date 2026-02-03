@@ -62,6 +62,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/health_monitor.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.comms/net/server.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
@@ -136,11 +137,13 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Create shared system flags service and refresh cache from database
     // (System flags are seeded via SQL scripts in the database template)
-    auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
+    auto system_flags = std::make_shared<variability::service::system_flags_service>(
+        ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
 
     // Initialize and check bootstrap mode
-    iam::service::bootstrap_mode_service bootstrap_svc(ctx, auth_service);
+    iam::service::bootstrap_mode_service bootstrap_svc(
+        ctx, database::service::tenant_context::system_tenant_id, auth_service);
     bootstrap_svc.initialize_bootstrap_state();
 
     // Refresh system flags cache after bootstrap state initialization

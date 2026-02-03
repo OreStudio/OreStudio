@@ -24,6 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -58,8 +59,9 @@ save_account_request to_save_account_request(const domain::account& a) {
 }
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::database::context& ctx) {
-    auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
+make_system_flags(ores::database::context& ctx, const std::string& tenant_id) {
+    auto flags = std::make_shared<ores::variability::service::system_flags_service>(
+        ctx, tenant_id);
     flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
 }
@@ -121,7 +123,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -130,7 +132,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     const auto admin_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -147,7 +149,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     });
 
     login_request lrq;
-    lrq.username = ca_rq.username;
+    lrq.principal = ca_rq.username;
     lrq.password = ca_rq.password;
     BOOST_LOG_SEV(lg, info) << "Login request: " << lrq;
 
@@ -176,7 +178,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -185,7 +187,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     const auto admin_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -203,7 +205,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
 
     // Attempt login with wrong password
     login_request lrq;
-    lrq.username = ca_rq.username;
+    lrq.principal = ca_rq.username;
     lrq.password = "wrong_password";
     BOOST_LOG_SEV(lg, info) << "Login request: " << lrq;
 
@@ -229,13 +231,13 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     login_request lrq;
-    lrq.username = "non_existent_user_" +
+    lrq.principal = "non_existent_user_" +
         std::string(faker::number::hexadecimal(8));
     lrq.password = faker::internet::password();
     BOOST_LOG_SEV(lg, info) << "Login request: " << lrq;
@@ -265,7 +267,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -278,7 +280,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // 1. Create an admin account (to be the requester for locking)
-    auto admin_account = generate_synthetic_account();
+    auto admin_account = generate_synthetic_account(h.tenant_id());
 
     save_account_request admin_rq(to_save_account_request(admin_account));
 
@@ -297,7 +299,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
-    admin_login_rq.username = admin_rq.username;
+    admin_login_rq.principal = admin_rq.username;
     admin_login_rq.password = admin_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -311,7 +313,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     });
 
     // 2. Create a regular account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -353,10 +355,10 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     // 4. Attempt login with valid credentials for the now-locked account
     login_request login_rq;
-    login_rq.username = ca_rq.username;
+    login_rq.principal = ca_rq.username;
     login_rq.password = ca_rq.password;
     BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: "
-                            << login_rq.username;
+                            << login_rq.principal;
 
     const auto login_payload = login_rq.serialize();
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -379,7 +381,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -392,7 +394,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
     const std::string user_endpoint = internet::endpoint();
 
     // Create a user account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     save_account_request ca_rq(to_save_account_request(account));
@@ -410,7 +412,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 
     // Login to establish session
     login_request login_rq;
-    login_rq.username = ca_rq.username;
+    login_rq.principal = ca_rq.username;
     login_rq.password = ca_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -445,7 +447,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 
     // Verify the new password works by logging in again
     login_request new_login_rq;
-    new_login_rq.username = ca_rq.username;
+    new_login_rq.principal = ca_rq.username;
     new_login_rq.password = "NewSecurePassword123!";
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -463,7 +465,7 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -495,7 +497,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -508,7 +510,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     const std::string user_endpoint = internet::endpoint();
 
     // Create a user account
-    const auto account = generate_synthetic_account();
+    const auto account = generate_synthetic_account(h.tenant_id());
     save_account_request ca_rq(to_save_account_request(account));
 
     boost::asio::io_context io_ctx;
@@ -521,7 +523,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
 
     // Login to establish session
     login_request login_rq;
-    login_rq.username = ca_rq.username;
+    login_rq.principal = ca_rq.username;
     login_rq.password = ca_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {

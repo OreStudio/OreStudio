@@ -33,6 +33,11 @@ namespace ores::assets::domain {
  */
 struct image_tag final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief The image identifier (UUID).
      */
     boost::uuids::uuid image_id;

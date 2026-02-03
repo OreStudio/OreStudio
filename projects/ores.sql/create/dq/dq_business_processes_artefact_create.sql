@@ -17,6 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
 -- Contains a code representing the type of business process a message (e.g. a status request) applies to. - Artefact Table
 -- =============================================================================
@@ -31,14 +37,14 @@ create table if not exists "ores_dq_business_processes_artefact_tbl" (
     ,"coding_scheme_code" text not null
 );
 
-create index if not exists ores_dq_business_processes_artefact_dataset_idx
-on "ores_dq_business_processes_artefact_tbl" (dataset_id);
+create index if not exists dq_business_processes_artefact_dataset_idx
+on ores_dq_business_processes_artefact_tbl (dataset_id);
 
-create index if not exists ores_dq_business_processes_artefact_tenant_idx
-on "ores_dq_business_processes_artefact_tbl" (tenant_id);
+create index if not exists dq_business_processes_artefact_tenant_idx
+on ores_dq_business_processes_artefact_tbl (tenant_id);
 
-create index if not exists ores_dq_business_processes_artefact_code_idx
-on "ores_dq_business_processes_artefact_tbl" (code);
+create index if not exists dq_business_processes_artefact_code_idx
+on ores_dq_business_processes_artefact_tbl (code);
 
-create index if not exists ores_dq_business_processes_artefact_coding_scheme_idx
-on "ores_dq_business_processes_artefact_tbl" (coding_scheme_code);
+create index if not exists dq_business_processes_artefact_coding_scheme_idx
+on ores_dq_business_processes_artefact_tbl (coding_scheme_code);

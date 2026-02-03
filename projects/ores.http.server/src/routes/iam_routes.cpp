@@ -42,12 +42,45 @@
 #include "ores.iam/domain/account_version.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
+#include "ores.database/service/tenant_context.hpp"
 
 namespace ores::http_server::routes {
 
 using namespace ores::logging;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
+
+namespace {
+
+/**
+ * @brief Parsed components of a user principal.
+ */
+struct parsed_principal {
+    std::string username;
+    std::string hostname;  ///< Empty if no hostname specified (system tenant)
+};
+
+/**
+ * @brief Parse a principal string into username and hostname components.
+ *
+ * The principal format is `username@hostname` or just `username`.
+ * If the principal contains `@`, the last `@` is used as the delimiter.
+ *
+ * @param principal The principal string to parse.
+ * @return Parsed username and hostname. Hostname is empty if not specified.
+ */
+parsed_principal parse_principal(const std::string& principal) {
+    const auto at_pos = principal.rfind('@');
+    if (at_pos == std::string::npos) {
+        return {.username = principal, .hostname = ""};
+    }
+    return {
+        .username = principal.substr(0, at_pos),
+        .hostname = principal.substr(at_pos + 1)
+    };
+}
+
+}  // anonymous namespace
 namespace reason = database::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
@@ -411,9 +444,29 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
     }
 
     try {
+        // Parse principal into username and hostname
+        const auto [username, hostname] = parse_principal(login_req->principal);
+        BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                                   << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
+        // Set tenant context based on hostname and track tenant info
+        std::string tenant_id_str;
+        std::string tenant_name;
+        if (hostname.empty()) {
+            database::service::tenant_context::set_system_tenant(ctx_);
+            tenant_id_str = database::service::tenant_context::system_tenant_id;
+            tenant_name = "System";
+        } else {
+            tenant_id_str =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            database::service::tenant_context::set(ctx_, tenant_id_str);
+            tenant_name =
+                database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
+        }
+
         auto ip_address = boost::asio::ip::make_address(req.remote_address);
         auto account = account_service_.login(
-            login_req->username, login_req->password, ip_address);
+            username, login_req->password, ip_address);
 
         auto login_info = account_service_.get_login_info(account.id);
 
@@ -491,7 +544,9 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         // Build response with token
         std::ostringstream oss;
         oss << R"({"success":true,"account_id":")"
-            << boost::uuids::to_string(account.id) << R"(","username":")"
+            << boost::uuids::to_string(account.id) << R"(","tenant_id":")"
+            << tenant_id_str << R"(","tenant_name":")"
+            << tenant_name << R"(","username":")"
             << account.username << R"(","email":")"
             << account.email << R"(","password_reset_required":)"
             << (login_info.password_reset_required ? "true" : "false");
@@ -506,7 +561,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         // For login, bytes_received was already set when creating the session.
         co_return http_response::json(oss.str());
     } catch (const std::runtime_error&) {
-        BOOST_LOG_SEV(lg(), warn) << "Login failed for user: " << login_req->username;
+        BOOST_LOG_SEV(lg(), warn) << "Login failed for principal: " << login_req->principal;
         co_return http_response::unauthorized("Invalid credentials");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Login error: " << e.what();
@@ -641,11 +696,25 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
     }
 
     try {
+        // Parse principal into username and hostname
+        const auto [username, hostname] = parse_principal(admin_req->principal);
+        BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                                   << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
+        // Set tenant context based on hostname
+        if (hostname.empty()) {
+            database::service::tenant_context::set_system_tenant(ctx_);
+        } else {
+            const auto tenant_id =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            database::service::tenant_context::set(ctx_, tenant_id);
+        }
+
         // Create the initial admin account with Admin role
         // This checks role exists BEFORE creating account to avoid orphaned accounts
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
-            admin_req->username, admin_req->email, admin_req->password,
+            username, admin_req->email, admin_req->password,
             "bootstrap", iam::domain::roles::admin,
             "Initial admin account created during system bootstrap");
 

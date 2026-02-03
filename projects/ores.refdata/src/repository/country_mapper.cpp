@@ -34,6 +34,7 @@ domain::country country_mapper::map(const country_entity& v) {
 
     domain::country r;
     r.version = v.version;
+    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
     BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
                                << " -> domain.version=" << r.version;
     r.alpha2_code = v.alpha2_code.value();
@@ -58,6 +59,7 @@ country_entity country_mapper::map(const domain::country& v) {
 
     country_entity r;
     r.alpha2_code = v.alpha2_code;
+    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
     r.version = v.version;
     r.alpha3_code = v.alpha3_code;
     r.numeric_code = v.numeric_code;

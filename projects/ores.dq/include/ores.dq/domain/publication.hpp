@@ -41,6 +41,11 @@ struct publication final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief ID of the dataset that was published.
      */
     boost::uuids::uuid dataset_id;

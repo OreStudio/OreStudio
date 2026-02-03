@@ -34,6 +34,7 @@ struct feature_flags_entity {
     constexpr static const char* tablename = "ores_variability_feature_flags_tbl";
 
     sqlgen::PrimaryKey<std::string> name;
+    std::string tenant_id;
     int version = 0;
     int enabled;
     std::string description;

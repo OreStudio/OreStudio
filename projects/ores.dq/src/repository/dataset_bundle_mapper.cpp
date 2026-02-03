@@ -35,6 +35,7 @@ dataset_bundle_mapper::map(const dataset_bundle_entity& v) {
 
     domain::dataset_bundle r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.code = v.code;
     r.name = v.name;
@@ -54,6 +55,7 @@ dataset_bundle_mapper::map(const domain::dataset_bundle& v) {
 
     dataset_bundle_entity r;
     r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.code = v.code;
     r.name = v.name;

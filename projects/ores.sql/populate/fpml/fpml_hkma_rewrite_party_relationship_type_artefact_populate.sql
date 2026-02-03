@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_populate_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * DQ Artefact FpML Hkma Rewrite Party Relationship Type Population Script
  *
  * Populates the dq_party_relationships_artefact_tbl with reference data.
@@ -56,9 +59,10 @@ begin
 
     -- Insert reference data
     insert into ores_dq_party_relationships_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'Intragroup',
         1,
         'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
@@ -67,9 +71,10 @@ begin
     );
     v_count := v_count + 1;
     insert into ores_dq_party_relationships_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
+        ores_iam_system_tenant_id_fn(),
         'NotIntragroup',
         1,
         'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
@@ -78,7 +83,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into ores_dq_party_relationships_artefact_tbl', v_count;
+    raise notice 'Populated % records into dq_party_relationships_artefact_tbl', v_count;
 end;
 $$;
 

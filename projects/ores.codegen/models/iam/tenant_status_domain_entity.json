@@ -1,0 +1,112 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "iam",
+    "entity_singular": "tenant_status",
+    "entity_plural": "tenant_statuses",
+    "entity_title": "Tenant Status",
+    "brief": "Tenant lifecycle status definitions.",
+    "description": "Reference data table defining valid tenant lifecycle statuses.\nExamples: 'active', 'suspended', 'terminated'.\n\nTenant statuses are managed by the system tenant and control\ntenant access and capabilities.",
+
+    "primary_key": {
+      "column": "status",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique status code.",
+      "detail": "Examples: 'active', 'suspended', 'terminated'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the status.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" Status\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the status.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_iam_tenant_statuses_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "status",
+      "entity_plural_short": "statuses",
+      "entity_singular_words": "tenant status",
+      "entity_plural_words": "tenant statuses"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "ts",
+      "table_display": [
+        {"column": "status", "header": "Status"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.iam/domain/tenant_status.hpp",
+      "domain_class": "iam::domain::tenant_status",
+      "protocol_include": "ores.iam/messaging/tenant_status_protocol.hpp",
+      "collection_name": "tenant_statuses",
+      "item_var": "tenant_status",
+      "key_field": "status",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "iam::messaging::get_tenant_statuses_request",
+      "get_response_class": "iam::messaging::get_tenant_statuses_response",
+      "get_message_type": "get_tenant_statuses_request",
+      "save_request_class": "iam::messaging::save_tenant_status_request",
+      "save_response_class": "iam::messaging::save_tenant_status_response",
+      "save_message_type": "save_tenant_status_request",
+      "delete_request_class": "iam::messaging::delete_tenant_status_request",
+      "delete_response_class": "iam::messaging::delete_tenant_status_response",
+      "delete_message_type": "delete_tenant_status_request",
+      "history_request_class": "iam::messaging::get_tenant_status_history_request",
+      "history_response_class": "iam::messaging::get_tenant_status_history_response",
+      "history_message_type": "get_tenant_status_history_request",
+
+      "columns": [
+        {"enum_name": "Status", "field": "status", "header": "Status", "is_string": true, "width": 120},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "TenantStatusListWindow",
+      "window_title": "Tenant Statuses",
+      "icon": "CircleCheck"
+    }
+  }
+}

@@ -1,5 +1,10 @@
 {{! Template to generate SQL with enhanced GPL v3 license and flag SVG images data }}
 {{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_flag_populate.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- Script to populate DQ SVG images into the database
 --
@@ -29,9 +34,9 @@ begin
     -- Insert images
 {{#country_currency}}
     insert into ores_dq_images_artefact_tbl (
-        dataset_id, image_id, version, key, description, svg_data
+        dataset_id, tenant_id, image_id, version, key, description, svg_data
     ) values (
-        v_dataset_id, gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
+        v_dataset_id, ores_iam_system_tenant_id_fn(), gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
     );
 {{/country_currency}}
 

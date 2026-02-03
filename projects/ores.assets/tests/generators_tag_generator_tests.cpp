@@ -29,6 +29,7 @@ namespace {
 
 const std::string_view test_suite("ores.assets.tests");
 const std::string tags("[generators]");
+const std::string test_tenant_id("00000000-0000-0000-0000-000000000001");
 
 }
 
@@ -38,7 +39,7 @@ using namespace ores::logging;
 TEST_CASE("generate_single_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(test_tenant_id);
     BOOST_LOG_SEV(lg, debug) << "Generated tag: " << tag;
 
     CHECK(!tag.tag_id.empty());
@@ -46,29 +47,34 @@ TEST_CASE("generate_single_tag", tags) {
     CHECK(!tag.description.empty());
     CHECK(!tag.recorded_by.empty());
     CHECK(!tag.recorded_at.empty());
+    CHECK(tag.tenant_id == test_tenant_id);
 }
 
 TEST_CASE("generate_multiple_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    auto tags_list = generate_synthetic_tags(3);
+    auto tags_list = generate_synthetic_tags(3, test_tenant_id);
     BOOST_LOG_SEV(lg, debug) << "Generated tags: " << tags_list;
 
     CHECK(tags_list.size() == 3);
+    for (const auto& t : tags_list)
+        CHECK(t.tenant_id == test_tenant_id);
 }
 
 TEST_CASE("generate_unique_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    auto tags_list = generate_unique_synthetic_tags(3);
+    auto tags_list = generate_unique_synthetic_tags(3, test_tenant_id);
     BOOST_LOG_SEV(lg, debug) << "Generated unique tags: " << tags_list;
 
     CHECK(tags_list.size() == 3);
 
     // Verify all names are unique
     std::set<std::string> names;
-    for (const auto& t : tags_list)
+    for (const auto& t : tags_list) {
         names.insert(t.name);
+        CHECK(t.tenant_id == test_tenant_id);
+    }
 
     CHECK(names.size() == 3);
 }

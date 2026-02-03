@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_junction_create.mustache
+ * To modify, update the template and regenerate.
+ *
  * Dataset Bundle Member Table
  *
  * Junction table linking bundles to their constituent datasets. Uses codes

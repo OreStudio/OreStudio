@@ -17,37 +17,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 21:45], for Sunday, February 01, 2026.
-|      | <75>                                 |        |      |      |       |
-| Tags | Headline                             | Time   |      |      |     % |
-|------+--------------------------------------+--------+------+------+-------|
-|      | *Total time*                         | *6:50* |      |      | 100.0 |
-|------+--------------------------------------+--------+------+------+-------|
-|      | Stories                              | 6:50   |      |      | 100.0 |
-|      | Active                               |        | 6:50 |      | 100.0 |
-| code | Add tenancy support                  |        |      | 1:20 |  19.5 |
-| code | Use tenancy to isolate tests         |        |      | 5:00 |  73.2 |
-| code | Add NOTICE logging support to sqlgen |        |      | 0:30 |   7.3 |
+#+CAPTION: Clock summary at [2026-02-03 Tue 12:12], for Tuesday, February 03, 2026.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *4:03* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 4:03   |      |      | 100.0 |
+|      | Active                       |        | 4:03 |      | 100.0 |
+| code | Add entity types for tenants |        |      | 4:03 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-01 Sun 21:45]
+#+CAPTION: Clock summary at [2026-02-03 Tue 12:13]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *25:06* |       |       | 100.0 |
+|       | *Total time*                                | *38:44* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 25:06   |       |       | 100.0 |
-|       | Active                                      |         | 25:06 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |   9.6 |
-| code  | Address past review comments                |         |       |  1:14 |   4.9 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  40.2 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   5.4 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   2.4 |
-| code  | Add tenancy support                         |         |       |  3:55 |  15.6 |
-| code  | Use tenancy to isolate tests                |         |       |  5:00 |  19.9 |
-| code  | Add NOTICE logging support to sqlgen        |         |       |  0:30 |   2.0 |
+|       | Stories                                     | 38:44   |       |       | 100.0 |
+|       | Active                                      |         | 38:44 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |   6.2 |
+| code  | Address past review comments                |         |       |  1:14 |   3.2 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  26.0 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   3.5 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   1.5 |
+| code  | Add tenancy support                         |         |       |  3:55 |  10.1 |
+| code  | Use tenancy to isolate tests                |         |       |  5:00 |  12.9 |
+| code  | Add NOTICE logging support to sqlgen        |         |       |  0:53 |   2.3 |
+| code  | Update codegen for tenancy                  |         |       |  3:32 |   9.1 |
+| code  | Add entity types for tenants                |         |       |  9:43 |  25.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -657,16 +657,19 @@ Notes:
 
 All code has been moved into ores.database. Tickets have been raised in sqlgen.
 
-*** STARTED Add NOTICE logging support to sqlgen                       :code:
+*** BLOCKED Add NOTICE logging support to sqlgen                       :code:
     :LOGBOOK:
+    CLOCK: [2026-02-01 Sun 22:45]--[2026-02-01 Sun 23:08] =>  0:23
     CLOCK: [2026-02-01 Sun 20:40]--[2026-02-01 Sun 21:10] =>  0:30
     :END:
+
+- raised PR, waiting for review: [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
 
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/118][#118: Proposal: Add Notice Processor Support to sqlgen]]
 
-*** Add bound parameters to sqlgen                                     :code:
+*** BLOCKED Add bound parameters to sqlgen                             :code:
 
 At present we are using libpq for assorted queries to avoid issues with SQL
 injection. We should extend sqlgen to support this.
@@ -674,6 +677,121 @@ injection. We should extend sqlgen to support this.
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
+
+*** COMPLETED Update codegen for tenancy                               :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-02 Mon 09:00]--[2026-02-02 Mon 10:07] =>  1:07
+    CLOCK: [2026-02-01 Sun 23:09]--[2026-02-02 Mon 01:34] =>  2:25
+    :END:
+
+We need to update code generation to take into account the new tenancy
+infrastructure.
+
+#+begin_quote
+This pull request significantly enhances the multi-tenancy architecture by
+standardizing how enum and lookup tables handle tenant identification. By
+ensuring all shared reference data is associated with a system tenant and
+implementing robust validation mechanisms, the changes promote a more
+consistent, auditable, and scalable data model. The introduction of updated code
+generation templates and new testing utilities streamlines the development and
+maintenance of tenant-aware database schemas.
+
+Highlights:
+
+- Tenancy Consolidation Plan: A detailed plan has been added outlining the
+  strategy to consolidate all enum/lookup tables to use a system tenant
+  (tenant 0) for consistency, eliminating tenant-less tables and ensuring all
+  shared data is auditable and flexible for future tenant-specific needs.
+- Code Generation Template Updates: The sql_schema_domain_entity_create.mustache
+  and sql_schema_table_create.mustache templates have been updated to
+  conditionally include a tenant_id column, adjust primary key and exclusion
+  constraints to incorporate tenant_id, and generate tenant validation logic
+  within insert functions.
+- New Tenant-Aware Entity Models: New JSON models have been introduced for
+  artefact_type, tenant_status, tenant_type, currency, and rounding_type
+  entities, explicitly defining them as tenant-aware with has_tenant_id: true
+  and system_tenant_validation: true where appropriate.
+- SQL Schema and Population Script Modifications: Numerous SQL schema creation
+  scripts across dq, iam, and refdata components have been modified to implement
+  bi-temporal and tenant-aware properties for their respective tables.
+  Corresponding data population scripts have been updated to insert data with
+  the system tenant ID.
+- Introduction of pgTAP Testing Framework: A new section in the SKILL.org
+  documentation details the use of pgTAP for database unit testing, covering
+  test file organization, structure, common patterns for validation functions
+  and trigger defaults, and execution instructions. Dedicated pgTAP test files
+  have been added for artefact_type, tenant_status, tenant_type, currencies, and
+  general refdata validations.
+- New Utility Scripts: New shell scripts generate_refdata_schema.sh and
+  recreate_entity.sh have been added to automate schema generation for refdata
+  entities and to facilitate dropping and recreating individual database
+  entities, respectively.
+#+end_quote
+
+*** COMPLETED Add entity types for tenants                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-03 Tue 11:39]--[2026-02-03 Tue 12:12] =>  0:33
+    CLOCK: [2026-02-03 Tue 07:30]--[2026-02-03 Tue 11:00] =>  3:30
+    CLOCK: [2026-02-02 Mon 21:25]--[2026-02-02 Mon 21:55] =>  0:30
+    CLOCK: [2026-02-02 Mon 17:08]--[2026-02-02 Mon 20:10] =>  3:02
+    CLOCK: [2026-02-02 Mon 15:54]--[2026-02-02 Mon 16:37] =>  0:43
+    CLOCK: [2026-02-02 Mon 14:30]--[2026-02-02 Mon 15:30] =>  1:00
+    CLOCK: [2026-02-02 Mon 10:10]--[2026-02-02 Mon 10:35] =>  0:25
+    :END:
+
+We need to be able to load and save tenants from c++.
+
+#+begin_quote
+This pull request introduces comprehensive multi-tenancy support across the
+system's database, code generation, and client-side interfaces. It establishes a
+robust framework for isolating data and operations per tenant, enhancing
+scalability and data governance. The changes include new tenant-specific
+entities, updated code generation logic to enforce tenant awareness, and
+extended client commands for tenant management, all while ensuring proper
+versioning and backward compatibility where applicable.
+
+Highlights:
+
+- Multi-Tenancy Architecture Enhancement: Standardized enum and lookup tables to
+  consistently use a system tenant (tenant 0), ensuring all shared reference
+  data is auditable and flexible for future tenant-specific needs. This
+  eliminates tenant-less tables and promotes a more consistent data model.
+- Code Generation Template Updates: Modified
+  sql_schema_domain_entity_create.mustache and sql_schema_table_create.mustache
+  templates to conditionally include a tenant_id column, adjust primary key and
+  exclusion constraints to incorporate tenant_id, and generate tenant validation
+  logic within insert functions. This also includes handling different primary
+  key types (UUID or text) for C++ serialization/deserialization.
+- New Tenant-Aware Entity Models: Introduced new JSON models for artefact_type,
+  tenant_status, tenant_type, currency, and rounding_type entities, explicitly
+  defining them as tenant-aware with has_tenant_id: true and
+  system_tenant_validation: true where appropriate.
+- SQL Schema and Population Script Modifications: Numerous SQL schema creation
+  scripts across dq, iam, and refdata components have been modified to implement
+  bi-temporal and tenant-aware properties for their respective tables.
+  Corresponding data population scripts have been updated to insert data with
+  the system tenant ID.
+- pgTAP Testing Framework Integration: A new section in the SKILL.org
+  documentation details the use of pgTAP for database unit testing, covering
+  test file organization, structure, common patterns for validation functions
+  and trigger defaults, and execution instructions. Dedicated pgTAP test files
+  have been added for artefact_type, tenant_status, tenant_type, currencies, and
+  general refdata validations.
+- New Utility Scripts: Added new shell scripts generate_refdata_schema.sh and
+  recreate_entity.sh to automate schema generation for refdata entities and to
+  facilitate dropping and recreating individual database entities, respectively.
+- Protocol Version Bump: The PROTOCOL_VERSION_MAJOR has been incremented to 26
+  and PROTOCOL_VERSION_MINOR to 1 to reflect the significant multi-tenancy
+  support and backward-compatible changes introduced.
+- Shell Command Enhancements: New commands (change-reason-categories,
+  change-reasons, countries, tenants) have been added to the shell, and existing
+  commands like bootstrap and login have been updated to support tenant
+  management and display tenant-specific information.
+- Tenant Context and Principal Parsing: Implemented tenant_context lookups by
+  hostname and name, and enhanced user principal parsing (username@hostname) to
+  correctly determine the target tenant for login and bootstrap operations,
+  improving multi-tenant authentication flow.
+#+end_quote
 
 *** Consider adding telemetry to tests                                 :code:
 

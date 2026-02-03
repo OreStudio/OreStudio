@@ -63,10 +63,10 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     }, "Retrieve all accounts from the server");
 
     accounts_menu->Insert("login", [&session](std::ostream& out,
-            std::string username, std::string password) {
-        process_login(std::ref(out), std::ref(session), std::move(username),
+            std::string principal, std::string password) {
+        process_login(std::ref(out), std::ref(session), std::move(principal),
             std::move(password));
-    }, "Login with username and password");
+    }, "Login with principal (username@hostname or username) and password");
 
     accounts_menu->Insert("lock",
         [&session](std::ostream& out, std::string account_id) {
@@ -146,17 +146,17 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 
     // Bootstrap command at root level (doesn't require authentication)
     root_menu.Insert("bootstrap", [&session](std::ostream& out,
-            std::string username, std::string password, std::string email) {
+            std::string principal, std::string password, std::string email) {
         process_bootstrap(std::ref(out), std::ref(session),
-            std::move(username), std::move(password), std::move(email));
-    }, "Create initial admin account (username password email) - only works in bootstrap mode");
+            std::move(principal), std::move(password), std::move(email));
+    }, "Create initial admin (principal password email) - principal is username@hostname or username");
 
     // Top-level login/logout aliases for convenience
     root_menu.Insert("login", [&session](std::ostream& out,
-            std::string username, std::string password) {
-        process_login(std::ref(out), std::ref(session), std::move(username),
+            std::string principal, std::string password) {
+        process_login(std::ref(out), std::ref(session), std::move(principal),
             std::move(password));
-    }, "Login with username and password (alias for 'accounts login')");
+    }, "Login with principal (username@hostname or username) and password");
 
     root_menu.Insert("logout", [&session](std::ostream& out) {
         process_logout(std::ref(out), std::ref(session));
@@ -186,13 +186,16 @@ process_list_accounts(std::ostream& out, client_session& session) {
 
 void accounts_commands::
 process_login(std::ostream& out, client_session& session,
-    std::string username, std::string password) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating login request for user: "
-                               << username;
+    std::string principal, std::string password) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating login request for principal: "
+                               << principal;
 
     using iam::messaging::login_request;
     auto result = session.process_request(
-        login_request{.username = username, .password = std::move(password)});
+        login_request{
+            .principal = principal,
+            .password = std::move(password)
+        });
 
     if (!result) {
         out << "✗ " << to_string(result.error()) << std::endl;
@@ -206,14 +209,20 @@ process_login(std::ostream& out, client_session& session,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Login successful for user: " << username;
+    BOOST_LOG_SEV(lg(), info) << "Login successful for user: " << response.username
+                              << ", tenant: " << response.tenant_name
+                              << " (" << response.tenant_id << ")";
+
     out << "✓ Login successful!" << std::endl;
+    out << "  User: " << response.username << std::endl;
+    out << "  Tenant: " << response.tenant_name
+        << " (" << response.tenant_id << ")" << std::endl;
 
     // Update session state
     // Note: Permission checks are now handled server-side via RBAC
     comms::net::client_session_info info{
         .account_id = response.account_id,
-        .username = std::move(username)
+        .username = response.username
     };
     session.set_session_info(std::move(info));
 }
@@ -393,13 +402,13 @@ process_logout(std::ostream& out, client_session& session) {
 
 void accounts_commands::
 process_bootstrap(std::ostream& out, client_session& session,
-    std::string username, std::string password, std::string email) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for user: "
-                               << username;
+    std::string principal, std::string password, std::string email) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for principal: "
+                               << principal;
 
     using iam::messaging::create_initial_admin_request;
     auto result = session.process_request(create_initial_admin_request{
-        .username = std::move(username),
+        .principal = std::move(principal),
         .password = std::move(password),
         .email = std::move(email)
     });
@@ -412,9 +421,13 @@ process_bootstrap(std::ostream& out, client_session& session,
     const auto& response = *result;
     if (response.success) {
         BOOST_LOG_SEV(lg(), info) << "Bootstrap successful. Admin account ID: "
-                                  << response.account_id;
+                                  << response.account_id
+                                  << ", tenant: " << response.tenant_name
+                                  << " (" << response.tenant_id << ")";
         out << "✓ Initial admin account created successfully!" << std::endl;
         out << "  Account ID: " << response.account_id << std::endl;
+        out << "  Tenant: " << response.tenant_name
+            << " (" << response.tenant_id << ")" << std::endl;
         out << "  You can now login with the credentials provided." << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << response.error_message;

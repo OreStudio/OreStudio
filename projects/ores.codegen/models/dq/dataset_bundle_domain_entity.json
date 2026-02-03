@@ -1,7 +1,9 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "dq",
+    "has_tenant_id": true,
     "entity_singular": "dataset_bundle",
     "entity_plural": "dataset_bundles",
     "entity_title": "Dataset Bundle",

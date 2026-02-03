@@ -34,6 +34,7 @@ struct login_info_entity {
     constexpr static const char* tablename = "ores_iam_login_info_tbl";
 
     sqlgen::PrimaryKey<std::string> account_id;
+    std::string tenant_id;
     std::string last_ip;
     std::string last_attempt_ip;
     int failed_logins;

@@ -1,5 +1,10 @@
 {{! Template to generate SQL with enhanced GPL v3 license and tag data }}
 {{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_tag_populate.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
 -- Data Quality Slovaris Tags
@@ -8,7 +13,7 @@
 \echo '--- Data Quality Slovaris Tags ---'
 
 {{#tags}}
-select ores_dq_tags_upsert_fn(
+select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{dataset_name}}',
     '{{subject_area_name}}',
     '{{domain_name}}',

@@ -33,6 +33,7 @@ treatment_dimension_mapper::map(const treatment_dimension_entity& v) {
 
     domain::treatment_dimension r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
@@ -50,6 +51,7 @@ treatment_dimension_mapper::map(const domain::treatment_dimension& v) {
 
     treatment_dimension_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

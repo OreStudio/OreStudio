@@ -29,6 +29,7 @@
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
+#include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -75,6 +76,20 @@ using bundle_provider_fn = std::function<std::vector<bootstrap_bundle_info>()>;
  * - revoke_role_request: Revokes a role from an account
  * - get_account_roles_request: Gets all roles assigned to an account
  * - get_account_permissions_request: Gets effective permissions for an account
+ *
+ * Tenant management operations:
+ * - get_tenants_request: Lists all tenants
+ * - save_tenant_request: Creates or updates a tenant
+ * - delete_tenant_request: Deletes a tenant
+ * - get_tenant_history_request: Gets tenant version history
+ * - get_tenant_types_request: Lists tenant types
+ * - save_tenant_type_request: Creates or updates a tenant type
+ * - delete_tenant_type_request: Deletes a tenant type
+ * - get_tenant_type_history_request: Gets tenant type version history
+ * - get_tenant_statuses_request: Lists tenant statuses
+ * - save_tenant_status_request: Creates or updates a tenant status
+ * - delete_tenant_status_request: Deletes a tenant status
+ * - get_tenant_status_history_request: Gets tenant status version history
  */
 class accounts_message_handler final : public comms::messaging::message_handler {
 private:
@@ -399,6 +414,118 @@ private:
     handle_get_active_sessions_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Tenant Management Handlers
+    // =========================================================================
+
+    /**
+     * @brief Handle get_tenants_request message.
+     *
+     * Requires authentication and tenants:read permission.
+     */
+    handler_result
+    handle_get_tenants_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle save_tenant_request message.
+     *
+     * Requires authentication and tenants:write permission.
+     */
+    handler_result
+    handle_save_tenant_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle delete_tenant_request message.
+     *
+     * Requires authentication and tenants:delete permission.
+     */
+    handler_result
+    handle_delete_tenant_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_tenant_history_request message.
+     *
+     * Requires authentication and tenants:read permission.
+     */
+    handler_result
+    handle_get_tenant_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_tenant_types_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_get_tenant_types_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle save_tenant_type_request message.
+     *
+     * Requires authentication and system admin permission.
+     */
+    handler_result
+    handle_save_tenant_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle delete_tenant_type_request message.
+     *
+     * Requires authentication and system admin permission.
+     */
+    handler_result
+    handle_delete_tenant_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_tenant_type_history_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_get_tenant_type_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_tenant_statuses_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_get_tenant_statuses_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle save_tenant_status_request message.
+     *
+     * Requires authentication and system admin permission.
+     */
+    handler_result
+    handle_save_tenant_status_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle delete_tenant_status_request message.
+     *
+     * Requires authentication and system admin permission.
+     */
+    handler_result
+    handle_delete_tenant_status_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_tenant_status_history_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_get_tenant_status_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     service::account_service service_;
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
@@ -406,6 +533,7 @@ private:
     std::shared_ptr<service::authorization_service> auth_service_;
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
+    repository::tenant_repository tenant_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
     bundle_provider_fn bundle_provider_;
 };

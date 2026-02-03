@@ -40,6 +40,11 @@ struct dataset final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief UUID uniquely identifying this dataset.
      *
      * This is the surrogate key for the dataset.

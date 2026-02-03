@@ -30,9 +30,10 @@ using namespace ores::logging;
 namespace reason = database::domain::change_reason_constants;
 
 bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
+    std::string tenant_id,
     std::shared_ptr<authorization_service> auth_service)
     : account_repo_(ctx),
-      system_flags_service_(ctx),
+      system_flags_service_(ctx, std::move(tenant_id)),
       auth_service_(std::move(auth_service)),
       ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();

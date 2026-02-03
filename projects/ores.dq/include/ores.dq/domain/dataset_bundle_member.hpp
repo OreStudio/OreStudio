@@ -43,6 +43,11 @@ struct dataset_bundle_member final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Code of the bundle this membership belongs to.
      *
      * References dataset_bundle.code (soft FK).

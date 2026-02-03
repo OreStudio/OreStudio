@@ -20,6 +20,7 @@
 #ifndef ORES_VARIABILITY_SERVICE_SYSTEM_FLAGS_SERVICE_HPP
 #define ORES_VARIABILITY_SERVICE_SYSTEM_FLAGS_SERVICE_HPP
 
+#include <string>
 #include <string_view>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -60,8 +61,9 @@ public:
      * @brief Constructs a system_flags_service.
      *
      * @param ctx The database context to be used by the underlying repository.
+     * @param tenant_id The tenant identifier for multi-tenancy isolation.
      */
-    explicit system_flags_service(database::context ctx);
+    system_flags_service(database::context ctx, std::string tenant_id);
 
     /**
      * @brief Refreshes the cache by reading all system flags from the database.
@@ -177,6 +179,7 @@ private:
     void update_cache(domain::system_flag flag, bool enabled);
 
     feature_flags_service feature_flags_service_;
+    std::string tenant_id_;
     domain::system_flags_cache cache_;
 };
 

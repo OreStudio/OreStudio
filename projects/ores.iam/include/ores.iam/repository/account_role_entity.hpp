@@ -36,6 +36,7 @@ struct account_role_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_account_roles_tbl";
 
+    std::string tenant_id;
     std::string account_id;
     std::string role_id;
     std::string assigned_by;

@@ -32,6 +32,7 @@ domain::role_permission role_permission_mapper::map(const role_permission_entity
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::role_permission r;
+    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
     r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
     r.permission_id = boost::lexical_cast<boost::uuids::uuid>(v.permission_id);
 
@@ -43,6 +44,7 @@ role_permission_entity role_permission_mapper::map(const domain::role_permission
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     role_permission_entity r;
+    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
     r.role_id = boost::lexical_cast<std::string>(v.role_id);
     r.permission_id = boost::lexical_cast<std::string>(v.permission_id);
 

@@ -26,6 +26,7 @@
 #include "ores.http/net/http_server.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
@@ -65,7 +66,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Initialize shared services
     BOOST_LOG_SEV(lg(), info) << "Initializing shared services...";
-    auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
+    auto system_flags = std::make_shared<variability::service::system_flags_service>(
+        ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
     auto sessions = std::make_shared<comms::service::auth_session_service>();
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);

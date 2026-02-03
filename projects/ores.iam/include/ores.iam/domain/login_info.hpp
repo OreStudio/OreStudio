@@ -31,6 +31,11 @@ namespace ores::iam::domain {
  */
 struct login_info final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief Timestamp of the last successful login.
      */
     std::chrono::system_clock::time_point last_login;

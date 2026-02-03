@@ -77,6 +77,11 @@ session_protocol_from_string(std::string_view s) {
  */
 struct session final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief Unique identifier for this session.
      */
     boost::uuids::uuid id;

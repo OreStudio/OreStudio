@@ -44,6 +44,11 @@ struct session_entity {
     sqlgen::PrimaryKey<std::string> id;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Foreign key to accounts table.
      */
     std::string account_id;

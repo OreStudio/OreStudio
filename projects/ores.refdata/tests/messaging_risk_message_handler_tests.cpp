@@ -24,6 +24,8 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -41,8 +43,9 @@ const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[messaging][handler]");
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::database::context& ctx) {
-    auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
+make_system_flags(ores::database::context& ctx, const std::string& tenant_id) {
+    auto flags = std::make_shared<ores::variability::service::system_flags_service>(
+        ctx, tenant_id);
     // Disable bootstrap mode so tests can proceed
     flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
@@ -77,7 +80,7 @@ TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
@@ -117,7 +120,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     repo.write(h.context(), {ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
 
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
@@ -162,7 +165,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     repo.write(h.context(), currencies);
 
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
@@ -212,7 +215,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
 
     repo.write(h.context(), currencies);
 
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
@@ -272,7 +275,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     repo.write(h.context(), {original_ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << original_ccy;
 
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
@@ -333,7 +336,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     repo.write(h.context(), currencies);
     BOOST_LOG_SEV(lg, debug) << "Currencies written to db.";
 
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
@@ -377,7 +380,7 @@ TEST_CASE("handle_invalid_message_type",
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     std::vector<std::byte> empty_payload;

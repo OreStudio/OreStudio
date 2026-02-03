@@ -37,6 +37,7 @@
 #include "ores.comms.shell/app/commands/compression_commands.hpp"
 #include "ores.comms.shell/app/commands/subscription_commands.hpp"
 #include "ores.comms.shell/app/commands/rbac_commands.hpp"
+#include "ores.comms.shell/app/commands/tenants_commands.hpp"
 
 namespace ores::comms::shell::app {
 
@@ -76,6 +77,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     compression_commands::register_commands(*root);
     subscription_commands::register_commands(*root, session_);
     rbac_commands::register_commands(*root, session_);
+    tenants_commands::register_commands(*root, session_);
 
     auto cli_instance =
         std::make_unique<cli::Cli>(std::move(root));

@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_dataset_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * FpML Party Relationship Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.party_relationship_type.
@@ -32,7 +35,7 @@
 
 \echo '--- FpML Party Relationship Type Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.party_relationship_type',
     'FpML Standards',
     'Parties',

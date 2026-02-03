@@ -539,8 +539,9 @@ void ApplyProvisioningPage::startProvisioning() {
             result.log_messages.append(
                 QString("[1/4] Creating administrator account: %1").arg(QString::fromStdString(username)));
 
+            // username acts as principal (can be "user" or "user@hostname")
             iam::messaging::create_initial_admin_request adminRequest;
-            adminRequest.username = username;
+            adminRequest.principal = username;
             adminRequest.password = password;
             adminRequest.email = email;
 

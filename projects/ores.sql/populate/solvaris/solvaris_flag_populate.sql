@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_flag_populate.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- Script to populate DQ SVG images into the database
 --

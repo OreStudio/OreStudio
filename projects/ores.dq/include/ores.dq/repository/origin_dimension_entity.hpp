@@ -34,6 +34,7 @@ struct origin_dimension_entity {
     constexpr static const char* tablename = "ores_dq_origin_dimensions_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;

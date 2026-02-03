@@ -35,6 +35,11 @@ namespace ores::iam::domain {
  */
 struct account_role final {
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief The account to which the role is assigned.
      */
     boost::uuids::uuid account_id;

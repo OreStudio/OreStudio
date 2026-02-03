@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_dataset_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * FpML Cftc Organization Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.cftc_organization_type.
@@ -32,7 +35,7 @@
 
 \echo '--- FpML Cftc Organization Type Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.cftc_organization_type',
     'FpML Standards',
     'Parties',

@@ -35,6 +35,7 @@ methodology_mapper::map(const methodology_entity& v) {
 
     domain::methodology r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
     r.description = v.description;
@@ -54,6 +55,7 @@ methodology_mapper::map(const domain::methodology& v) {
 
     methodology_entity r;
     r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

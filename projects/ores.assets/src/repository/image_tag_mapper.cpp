@@ -32,6 +32,7 @@ domain::image_tag image_tag_mapper::map(const image_tag_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::image_tag r;
+    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
     r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
     r.tag_id = boost::lexical_cast<boost::uuids::uuid>(v.tag_id.value());
     r.assigned_by = v.assigned_by;
@@ -45,6 +46,7 @@ image_tag_entity image_tag_mapper::map(const domain::image_tag& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     image_tag_entity r;
+    r.tenant_id = boost::uuids::to_string(v.tenant_id);
     r.image_id = boost::uuids::to_string(v.image_id);
     r.tag_id = boost::uuids::to_string(v.tag_id);
     r.assigned_by = v.assigned_by;

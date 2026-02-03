@@ -35,6 +35,7 @@ struct catalog_entity {
     constexpr static const char* tablename = "ores_dq_catalogs_tbl";
 
     sqlgen::PrimaryKey<std::string> name;
+    std::string tenant_id;
     int version = 0;
     std::string description;
     std::optional<std::string> owner;

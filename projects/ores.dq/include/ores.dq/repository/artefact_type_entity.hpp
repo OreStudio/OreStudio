@@ -36,6 +36,7 @@ struct artefact_type_entity {
     constexpr static const char* tablename = "ores_dq_artefact_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     std::string name;
     std::optional<std::string> description;
     std::optional<std::string> artefact_table;

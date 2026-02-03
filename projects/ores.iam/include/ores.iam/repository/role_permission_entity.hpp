@@ -40,6 +40,7 @@ struct role_permission_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_role_permissions_tbl";
 
+    std::string tenant_id;
     std::string role_id;
     std::string permission_id;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";

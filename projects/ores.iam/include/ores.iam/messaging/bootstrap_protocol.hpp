@@ -51,7 +51,23 @@ std::ostream& operator<<(std::ostream& s, const bootstrap_bundle_info& v);
  * It must be called from localhost only.
  */
 struct create_initial_admin_request final {
-    std::string username;
+    /**
+     * @brief User principal identifying the account and tenant.
+     *
+     * Format: `username@hostname` or just `username`
+     *
+     * The principal is parsed server-side to extract the username and tenant:
+     * - If the principal contains `@`, everything before the last `@` is the
+     *   username and everything after is the hostname used to resolve the tenant.
+     * - If no `@` is present, the entire string is treated as the username and
+     *   the system tenant (00000000-0000-0000-0000-000000000000) is used.
+     *
+     * Examples:
+     * - `admin@localhost` - User "admin" in tenant with hostname "localhost"
+     * - `admin@acme.example.com` - User "admin" in tenant "acme.example.com"
+     * - `admin` - User "admin" in the system tenant
+     */
+    std::string principal;
     std::string password;
     std::string email;
 
@@ -59,8 +75,8 @@ struct create_initial_admin_request final {
      * @brief Serialize request to bytes.
      *
      * Format:
-     * - 2 bytes: username length
-     * - N bytes: username (UTF-8)
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
      * - 2 bytes: password length
      * - N bytes: password (UTF-8)
      * - 2 bytes: email length
@@ -84,6 +100,8 @@ struct create_initial_admin_response final {
     bool success;
     std::string error_message;
     boost::uuids::uuid account_id;
+    boost::uuids::uuid tenant_id;      ///< ID of the tenant the account was created in
+    std::string tenant_name;           ///< Name of the tenant the account was created in
 
     /**
      * @brief Serialize response to bytes.
@@ -93,6 +111,9 @@ struct create_initial_admin_response final {
      * - 2 bytes: error_message length
      * - N bytes: error_message (UTF-8)
      * - 16 bytes: account_id (UUID)
+     * - 16 bytes: tenant_id (UUID)
+     * - 2 bytes: tenant_name length
+     * - N bytes: tenant_name (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

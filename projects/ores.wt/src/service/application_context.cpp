@@ -19,6 +19,7 @@
  */
 #include "ores.wt/service/application_context.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -90,7 +91,7 @@ void application_context::setup_services() {
     // Create system flags service and refresh cache from database
     // (System flags are seeded via SQL scripts in the database template)
     system_flags_service_ = std::make_shared<variability::service::system_flags_service>(
-        *db_context_);
+        *db_context_, database::service::tenant_context::system_tenant_id);
     system_flags_service_->refresh();
 
     account_service_ = std::make_unique<iam::service::account_service>(
@@ -158,7 +159,8 @@ void application_context::check_bootstrap_mode() {
     using namespace ores::logging;
 
     iam::service::bootstrap_mode_service bootstrap_svc(
-        *db_context_, authorization_service_);
+        *db_context_, database::service::tenant_context::system_tenant_id,
+        authorization_service_);
     bootstrap_svc.initialize_bootstrap_state();
 
     system_flags_service_->refresh();

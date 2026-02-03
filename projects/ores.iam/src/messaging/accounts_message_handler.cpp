@@ -23,12 +23,16 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.iam/messaging/tenant_type_protocol.hpp"
+#include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
 
@@ -37,6 +41,41 @@ namespace ores::iam::messaging {
 using namespace ores::logging;
 using comms::messaging::message_type;
 namespace reason = database::domain::change_reason_constants;
+
+namespace {
+
+/**
+ * @brief Parsed components of a user principal.
+ */
+struct parsed_principal {
+    std::string username;
+    std::string hostname;  ///< Empty if no hostname specified (system tenant)
+};
+
+/**
+ * @brief Parse a principal string into username and hostname components.
+ *
+ * The principal format is `username@hostname` or just `username`.
+ * If the principal contains `@`, the last `@` is used as the delimiter
+ * (allowing usernames that contain `@` if needed in the future).
+ *
+ * @param principal The principal string to parse.
+ * @return Parsed username and hostname. Hostname is empty if not specified.
+ */
+parsed_principal parse_principal(const std::string& principal) {
+    const auto at_pos = principal.rfind('@');
+    if (at_pos == std::string::npos) {
+        // No @ found - entire string is username, use system tenant
+        return {.username = principal, .hostname = ""};
+    }
+    // Split at last @
+    return {
+        .username = principal.substr(0, at_pos),
+        .hostname = principal.substr(at_pos + 1)
+    };
+}
+
+}  // anonymous namespace
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
@@ -47,7 +86,7 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
-      session_repo_(ctx), geo_service_(std::move(geo_service)),
+      session_repo_(ctx), tenant_repo_(ctx), geo_service_(std::move(geo_service)),
       bundle_provider_(std::move(bundle_provider)) {}
 
 accounts_message_handler::handler_result
@@ -127,6 +166,31 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_roles_request(payload, remote_address);
     case message_type::get_account_permissions_request:
         co_return co_await handle_get_account_permissions_request(payload, remote_address);
+    // Tenant management messages
+    case message_type::get_tenants_request:
+        co_return co_await handle_get_tenants_request(payload, remote_address);
+    case message_type::save_tenant_request:
+        co_return co_await handle_save_tenant_request(payload, remote_address);
+    case message_type::delete_tenant_request:
+        co_return co_await handle_delete_tenant_request(payload, remote_address);
+    case message_type::get_tenant_history_request:
+        co_return co_await handle_get_tenant_history_request(payload, remote_address);
+    case message_type::get_tenant_types_request:
+        co_return co_await handle_get_tenant_types_request(payload, remote_address);
+    case message_type::save_tenant_type_request:
+        co_return co_await handle_save_tenant_type_request(payload, remote_address);
+    case message_type::delete_tenant_type_request:
+        co_return co_await handle_delete_tenant_type_request(payload, remote_address);
+    case message_type::get_tenant_type_history_request:
+        co_return co_await handle_get_tenant_type_history_request(payload, remote_address);
+    case message_type::get_tenant_statuses_request:
+        co_return co_await handle_get_tenant_statuses_request(payload, remote_address);
+    case message_type::save_tenant_status_request:
+        co_return co_await handle_save_tenant_status_request(payload, remote_address);
+    case message_type::delete_tenant_status_request:
+        co_return co_await handle_delete_tenant_status_request(payload, remote_address);
+    case message_type::get_tenant_status_history_request:
+        co_return co_await handle_get_tenant_status_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
@@ -310,7 +374,26 @@ handle_login_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Parse principal into username and hostname
+    const auto [username, hostname] = parse_principal(request.principal);
+    BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                               << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
     try {
+        // Set tenant context based on hostname
+        boost::uuids::uuid tenant_id;
+        if (hostname.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+            database::service::tenant_context::set_system_tenant(ctx_);
+            tenant_id = boost::uuids::nil_uuid();  // System tenant
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+            const auto tenant_id_str =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            database::service::tenant_context::set(ctx_, tenant_id_str);
+            tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
+        }
+
         // Extract the IP address.
         std::string_view ip_view(remote_address);
         auto colon_pos = ip_view.find(':');
@@ -320,7 +403,7 @@ handle_login_request(std::span<const std::byte> payload,
         using namespace boost::asio::ip;
         const address ip_address = make_address(std::string(ip_view));
 
-        domain::account account = service_.login(request.username,
+        domain::account account = service_.login(username,
             request.password, ip_address);
 
         // Get login_info to check password_reset_required flag
@@ -383,10 +466,17 @@ handle_login_request(std::span<const std::byte> payload,
         sessions_->store_session_data(remote_address,
             service::session_converter::to_session_data(*sess));
 
+        // Look up tenant name
+        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
+        const auto tenant_name =
+            database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
+
         login_response response{
             .success = true,
             .error_message = "",
             .account_id = account.id,
+            .tenant_id = tenant_id,
+            .tenant_name = tenant_name,
             .username = account.username,
             .email = account.email,
             .password_reset_required = password_reset_required
@@ -394,15 +484,17 @@ handle_login_request(std::span<const std::byte> payload,
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Authentication failed for username '"
-                                  << request.username << "' from " << remote_address
+        BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Authentication failed for principal '"
+                                  << request.principal << "' from " << remote_address
                                   << ", reason: " << e.what();
 
         login_response response{
             .success = false,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
-            .username = request.username,
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = "",
+            .username = username,
             .email = "",
             .password_reset_required = false
         };
@@ -657,7 +749,9 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         create_initial_admin_response response{
             .success = false,
             .error_message = "Bootstrap endpoint only accessible from localhost",
-            .account_id = boost::uuids::nil_uuid()
+            .account_id = boost::uuids::nil_uuid(),
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = ""
         };
         co_return response.serialize();
     }
@@ -668,7 +762,9 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         create_initial_admin_response response{
             .success = false,
             .error_message = "System not in bootstrap mode - admin account already exists",
-            .account_id = boost::uuids::nil_uuid()
+            .account_id = boost::uuids::nil_uuid(),
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = ""
         };
         co_return response.serialize();
     }
@@ -683,11 +779,31 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Parse principal into username and hostname
+    const auto [username, hostname] = parse_principal(request.principal);
+    BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                               << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
     try {
+        // Set tenant context based on hostname
+        // If hostname is empty, use system tenant
+        boost::uuids::uuid tenant_id;
+        if (hostname.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+            database::service::tenant_context::set_system_tenant(ctx_);
+            tenant_id = boost::uuids::nil_uuid();  // System tenant
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+            const auto tenant_id_str =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            database::service::tenant_context::set(ctx_, tenant_id_str);
+            tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
+        }
+
         // Create the initial admin account with Admin role
         // This checks role exists BEFORE creating account to avoid orphaned accounts
         domain::account account = setup_service_.create_account_with_role(
-            request.username,
+            username,
             request.email,
             request.password,
             "bootstrap",
@@ -699,15 +815,23 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         system_flags_->set_bootstrap_mode(false, "system",
             std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
+        // Look up tenant name
+        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
+        const auto tenant_name =
+            database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
+
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
-            << " for username: " << account.username;
+            << " for username: " << account.username
+            << " in tenant: " << tenant_name << " (" << tenant_id << ")";
         BOOST_LOG_SEV(lg(), info) << "System transitioned to SECURE MODE";
 
         create_initial_admin_response response{
             .success = true,
             .error_message = "",
-            .account_id = account.id
+            .account_id = account.id,
+            .tenant_id = tenant_id,
+            .tenant_name = tenant_name
         };
         co_return response.serialize();
 
@@ -718,7 +842,9 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         create_initial_admin_response response{
             .success = false,
             .error_message = std::string("Failed to create admin account: ") + e.what(),
-            .account_id = boost::uuids::nil_uuid()
+            .account_id = boost::uuids::nil_uuid(),
+            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_name = ""
         };
         co_return response.serialize();
     }
@@ -1583,6 +1709,423 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
 
     get_active_sessions_response response{
         .sessions = std::move(active_sessions)
+    };
+    co_return response.serialize();
+}
+
+// =============================================================================
+// Tenant Management Handlers
+// =============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenants_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenants_request from "
+                               << remote_address;
+
+    auto request_result = get_tenants_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenants_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and tenants:read permission
+    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenants");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    try {
+        std::vector<domain::tenant> tenants;
+        if (request.include_deleted) {
+            tenants = tenant_repo_.read_all_latest();
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size()
+                                      << " tenants (including deleted)";
+        } else {
+            tenants = tenant_repo_.read_latest();
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size() << " tenants";
+        }
+
+        get_tenants_response response{
+            .tenants = std::move(tenants)
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get tenants: " << e.what();
+        get_tenants_response response{
+            .tenants = {}
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_tenant_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_tenant_request from "
+                               << remote_address;
+
+    auto request_result = save_tenant_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_tenant_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and tenants:write permission
+    auto auth_result = check_authorization(remote_address, "tenants:write", "Save tenant");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto tenant = request.tenant;
+    // recorded_by comes from the request; if empty, the database trigger sets it
+
+    try {
+        tenant_repo_.write(tenant);
+        BOOST_LOG_SEV(lg(), info) << "Saved tenant: " << tenant.name
+                                  << " (code: " << tenant.code << ")";
+
+        save_tenant_response response{
+            .success = true,
+            .message = "Tenant saved successfully"
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save tenant: " << e.what();
+        save_tenant_response response{
+            .success = false,
+            .message = std::string("Failed to save tenant: ") + e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_tenant_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_tenant_request from "
+                               << remote_address;
+
+    auto request_result = delete_tenant_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_tenant_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and tenants:delete permission
+    auto auth_result = check_authorization(remote_address, "tenants:delete", "Delete tenant");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    const auto& request = *request_result;
+    std::vector<delete_tenant_result> results;
+    results.reserve(request.ids.size());
+
+    for (const auto& id : request.ids) {
+        try {
+            // Check if tenant exists
+            auto existing = tenant_repo_.read_latest(id);
+            if (existing.empty()) {
+                results.push_back({
+                    .id = id,
+                    .success = false,
+                    .message = "Tenant not found"
+                });
+                continue;
+            }
+
+            // Prevent deletion of system tenant
+            static const auto system_tenant_id = boost::uuids::uuid{};
+            if (id == system_tenant_id) {
+                results.push_back({
+                    .id = id,
+                    .success = false,
+                    .message = "Cannot delete the system tenant"
+                });
+                continue;
+            }
+
+            tenant_repo_.remove(id);
+            BOOST_LOG_SEV(lg(), info) << "Deleted tenant: " << id;
+
+            results.push_back({
+                .id = id,
+                .success = true,
+                .message = "Tenant deleted successfully"
+            });
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete tenant " << id
+                                       << ": " << e.what();
+            results.push_back({
+                .id = id,
+                .success = false,
+                .message = std::string("Failed to delete tenant: ") + e.what()
+            });
+        }
+    }
+
+    delete_tenant_response response{
+        .results = std::move(results)
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_history_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and tenants:read permission
+    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenant history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    try {
+        auto versions = tenant_repo_.read_history(request.id);
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << versions.size()
+                                  << " versions for tenant " << request.id;
+
+        get_tenant_history_response response{
+            .success = true,
+            .message = "",
+            .versions = std::move(versions)
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get tenant history: " << e.what();
+        get_tenant_history_response response{
+            .success = false,
+            .message = std::string("Failed to get tenant history: ") + e.what(),
+            .versions = {}
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_types_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_types_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_types_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_types_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant types");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_types_request not yet implemented";
+    get_tenant_types_response response{
+        .types = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_tenant_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_tenant_type_request from "
+                               << remote_address;
+
+    auto request_result = save_tenant_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_tenant_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Save tenant type");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "save_tenant_type_request not yet implemented";
+    save_tenant_type_response response{
+        .success = false,
+        .message = "Tenant type management not yet implemented"
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_tenant_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_tenant_type_request from "
+                               << remote_address;
+
+    auto request_result = delete_tenant_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_tenant_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Delete tenant type");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_type_request not yet implemented";
+    delete_tenant_type_response response{
+        .results = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_type_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_type_history_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_type_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_type_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant type history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant type repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_type_history_request not yet implemented";
+    get_tenant_type_history_response response{
+        .success = false,
+        .message = "Tenant type management not yet implemented",
+        .versions = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_statuses_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_statuses_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_statuses_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_statuses_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant statuses");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_statuses_request not yet implemented";
+    get_tenant_statuses_response response{
+        .statuses = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_tenant_status_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_tenant_status_request from "
+                               << remote_address;
+
+    auto request_result = save_tenant_status_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_tenant_status_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Save tenant status");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "save_tenant_status_request not yet implemented";
+    save_tenant_status_response response{
+        .success = false,
+        .message = "Tenant status management not yet implemented"
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_tenant_status_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_tenant_status_request from "
+                               << remote_address;
+
+    auto request_result = delete_tenant_status_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_tenant_status_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and system admin permission
+    auto auth_result = get_authenticated_session(remote_address, "Delete tenant status");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_status_request not yet implemented";
+    delete_tenant_status_response response{
+        .results = {}
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_tenant_status_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_tenant_status_history_request from "
+                               << remote_address;
+
+    auto request_result = get_tenant_status_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_tenant_status_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication
+    auto auth_result = get_authenticated_session(remote_address, "Get tenant status history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    // TODO: Implement when tenant status repository is available
+    BOOST_LOG_SEV(lg(), warn) << "get_tenant_status_history_request not yet implemented";
+    get_tenant_status_history_response response{
+        .success = false,
+        .message = "Tenant status management not yet implemented",
+        .versions = {}
     };
     co_return response.serialize();
 }

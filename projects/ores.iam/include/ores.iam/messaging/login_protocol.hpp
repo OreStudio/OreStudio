@@ -34,17 +34,36 @@ namespace ores::iam::messaging {
 
 /**
  * @brief Request to authenticate a user.
+ *
+ * The principal field identifies both the user and the tenant for multi-tenancy
+ * support. The format follows the Kerberos principal convention.
  */
 struct login_request final {
-    std::string username;
+    /**
+     * @brief User principal identifying the account and tenant.
+     *
+     * Format: `username@hostname` or just `username`
+     *
+     * The principal is parsed server-side to extract the username and tenant:
+     * - If the principal contains `@`, everything before the last `@` is the
+     *   username and everything after is the hostname used to resolve the tenant.
+     * - If no `@` is present, the entire string is treated as the username and
+     *   the system tenant (00000000-0000-0000-0000-000000000000) is used.
+     *
+     * Examples:
+     * - `admin@localhost` - User "admin" in tenant with hostname "localhost"
+     * - `admin@acme.example.com` - User "admin" in tenant "acme.example.com"
+     * - `admin` - User "admin" in the system tenant
+     */
+    std::string principal;
     std::string password;
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
-     * - 2 bytes: username length
-     * - N bytes: username (UTF-8)
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
      * - 2 bytes: password length
      * - N bytes: password (UTF-8)
      */
@@ -69,6 +88,8 @@ struct login_response final {
     bool success = false;
     std::string error_message;
     boost::uuids::uuid account_id;
+    boost::uuids::uuid tenant_id;  ///< ID of authenticated tenant
+    std::string tenant_name;       ///< Name of authenticated tenant
     std::string username;
     std::string email;
     bool password_reset_required = false;
@@ -81,6 +102,9 @@ struct login_response final {
      * - 2 bytes: error_message length
      * - N bytes: error_message (UTF-8)
      * - 16 bytes: account_id (UUID)
+     * - 16 bytes: tenant_id (UUID)
+     * - 2 bytes: tenant_name length
+     * - N bytes: tenant_name (UTF-8)
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
      * - 2 bytes: email length

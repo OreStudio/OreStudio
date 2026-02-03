@@ -35,6 +35,7 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     domain::login_info r;
     using boost::uuids::uuid;
     using namespace boost::asio;
+    r.tenant_id = boost::lexical_cast<uuid>(v.tenant_id);
     r.account_id = boost::lexical_cast<uuid>(v.account_id.value());
     r.last_ip = ip::make_address(v.last_ip);
     r.last_attempt_ip = ip::make_address(v.last_attempt_ip);
@@ -52,6 +53,7 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     login_info_entity r;
+    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
     r.last_ip = v.last_ip.to_string();
     r.last_attempt_ip = v.last_attempt_ip.to_string();

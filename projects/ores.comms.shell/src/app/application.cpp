@@ -21,6 +21,7 @@
 #include "ores.comms.shell/app/application.hpp"
 
 #include <iostream>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/version/version.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -84,8 +85,9 @@ bool auto_login(client_session& session, std::ostream& out,
     const config::login_options& login_config) {
     using iam::messaging::login_request;
 
+    // username from config acts as principal (can be "user" or "user@hostname")
     auto result = session.process_request(login_request{
-        .username = login_config.username,
+        .principal = login_config.username,
         .password = login_config.password
     });
 
@@ -100,7 +102,9 @@ bool auto_login(client_session& session, std::ostream& out,
         return false;
     }
 
-    out << "✓ Logged in as: " << login_config.username << std::endl;
+    out << "✓ Logged in as: " << response.username << std::endl;
+    out << "  Tenant: " << response.tenant_name
+        << " (" << response.tenant_id << ")" << std::endl;
 
     // Update session state
     // Note: Permission checks are now handled server-side via RBAC

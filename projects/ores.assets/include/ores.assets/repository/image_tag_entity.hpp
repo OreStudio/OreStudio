@@ -36,6 +36,7 @@ struct image_tag_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_assets_image_tags_tbl";
 
+    std::string tenant_id;
     sqlgen::PrimaryKey<std::string> image_id;
     sqlgen::PrimaryKey<std::string> tag_id;
     std::string assigned_by;

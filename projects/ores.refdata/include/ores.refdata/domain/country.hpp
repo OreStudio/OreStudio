@@ -37,6 +37,11 @@ struct country final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief ISO 3166-1 alpha-2 code (e.g., "US", "GB").
      */
     std::string alpha2_code;

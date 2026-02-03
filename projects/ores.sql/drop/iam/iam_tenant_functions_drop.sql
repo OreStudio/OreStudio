@@ -18,7 +18,12 @@
  *
  */
 
+drop function if exists st cascade;
+drop function if exists ores_iam_set_tenant_fn cascade;
+drop function if exists ores_iam_set_tenant_id_on_insert_fn cascade;
 drop function if exists ores_iam_is_system_tenant_fn cascade;
+drop function if exists ores_iam_tenant_name_by_id_fn cascade;
+drop function if exists ores_iam_tenant_by_code_fn cascade;
 drop function if exists ores_iam_tenant_by_hostname_fn cascade;
 drop function if exists ores_iam_validate_tenant_fn cascade;
 drop function if exists ores_iam_current_tenant_id_fn cascade;

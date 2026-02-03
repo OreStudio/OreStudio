@@ -40,7 +40,7 @@
 -- Caller must have system tenant context set.
 --
 -- Parameters:
---   p_type: Tenant type ('organisation' or 'platform')
+--   p_type: Tenant type ('organisation', 'platform', or 'test')
 --   p_code: Unique tenant code (e.g., 'acme', 'test_20260201_143052_abc')
 --   p_name: Display name for the tenant
 --   p_hostname: Unique hostname (e.g., 'acme.example.com', 'test_123.localhost')
@@ -72,7 +72,7 @@ begin
     -- Verify system tenant exists and is active
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where tenant_id = v_system_tenant_id
+        where id = v_system_tenant_id
         and status = 'active'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -84,8 +84,9 @@ begin
     v_new_tenant_id := gen_random_uuid();
 
     -- Create the tenant record
+    -- Note: The trigger sets tenant_id = system_tenant_id (all tenants owned by system)
     insert into ores_iam_tenants_tbl (
-        tenant_id, type, code, name, description, hostname, status,
+        id, type, code, name, description, hostname, status,
         modified_by, change_reason_code, change_commentary
     ) values (
         v_new_tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',

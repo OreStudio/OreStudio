@@ -1058,6 +1058,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Add computed properties for primary key type detection
+        if 'primary_key' in domain_entity:
+            pk = domain_entity['primary_key']
+            pk_type = pk.get('type', 'uuid')
+            pk['is_uuid'] = pk_type == 'uuid'
+            pk['is_text'] = pk_type == 'text'
+            # Ensure cpp_type is set with sensible defaults
+            if 'cpp_type' not in pk:
+                if pk['is_uuid']:
+                    pk['cpp_type'] = 'boost::uuids::uuid'
+                else:
+                    pk['cpp_type'] = 'std::string'
         # Process Qt-specific fields
         if 'qt' in domain_entity:
             qt = domain_entity['qt']

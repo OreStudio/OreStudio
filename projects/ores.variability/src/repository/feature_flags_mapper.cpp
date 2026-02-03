@@ -33,6 +33,7 @@ domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
 
     domain::feature_flags r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.name = v.name.value();
     r.enabled = v.enabled != 0 ? true : false;
     r.description = v.description;
@@ -50,6 +51,7 @@ feature_flags_entity feature_flags_mapper::map(const domain::feature_flags& v) {
 
     feature_flags_entity r;
     r.name = v.name;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.enabled = v.enabled;
     r.description = v.description;

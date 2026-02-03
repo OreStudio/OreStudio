@@ -58,7 +58,7 @@ begin
     -- Get tenant code for logging (check both active and terminated tenants)
     select code into v_tenant_code
     from ores_iam_tenants_tbl
-    where tenant_id = p_tenant_id
+    where id = p_tenant_id
     limit 1;
 
     if not found then
@@ -180,8 +180,8 @@ begin
     -- Disable the soft-delete rule
     alter table ores_iam_tenants_tbl disable rule ores_iam_tenants_delete_rule;
 
-    -- Hard delete all specified tenants
-    delete from ores_iam_tenants_tbl where tenant_id = any(p_tenant_ids);
+    -- Hard delete all specified tenants (by their id, not tenant_id which is always system)
+    delete from ores_iam_tenants_tbl where id = any(p_tenant_ids);
     get diagnostics v_count = row_count;
 
     -- Re-enable the soft-delete rule
@@ -215,13 +215,13 @@ begin
     -- First collect all test tenant IDs and purge their data
     -- Matches: ores.* (new format) and test_* (old format)
     for v_tenant in
-        select distinct tenant_id, code
+        select distinct id, code
         from ores_iam_tenants_tbl
         where code like 'ores.%' or code like 'test_%'
         order by code
     loop
-        perform ores_iam_purge_tenant_fn(v_tenant.tenant_id);
-        v_tenant_ids := array_append(v_tenant_ids, v_tenant.tenant_id);
+        perform ores_iam_purge_tenant_fn(v_tenant.id);
+        v_tenant_ids := array_append(v_tenant_ids, v_tenant.id);
         v_count := v_count + 1;
     end loop;
 

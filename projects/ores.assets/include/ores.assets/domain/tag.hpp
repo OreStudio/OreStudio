@@ -36,6 +36,11 @@ struct tag final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Unique identifier for the tag (UUID).
      */
     std::string tag_id;

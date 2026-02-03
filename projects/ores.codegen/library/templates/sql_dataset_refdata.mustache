@@ -1,7 +1,10 @@
 {{! Template to generate SQL dataset entry for FPML reference data }}
 {{{sql_license}}}
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_dataset_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
  * {{dataset.name}} Dataset Population Script
  *
  * Creates the dataset entry for {{dataset.code}}.
@@ -15,7 +18,7 @@
 
 \echo '--- {{dataset.name}} Dataset ---'
 
-select ores_dq_datasets_upsert_fn(
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '{{dataset.code}}',
     'FpML Standards',
     '{{entity.subject_area}}',

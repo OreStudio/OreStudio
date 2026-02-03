@@ -33,6 +33,7 @@ coding_scheme_authority_type_mapper::map(const coding_scheme_authority_type_enti
 
     domain::coding_scheme_authority_type r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
@@ -50,6 +51,7 @@ coding_scheme_authority_type_mapper::map(const domain::coding_scheme_authority_t
 
     coding_scheme_authority_type_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

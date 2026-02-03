@@ -34,6 +34,7 @@ struct permission_entity {
     constexpr static const char* tablename = "ores_iam_permissions_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
+    std::string tenant_id;
     std::string code;
     std::string description;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";

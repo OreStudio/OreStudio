@@ -35,6 +35,7 @@ struct image_entity {
     constexpr static const char* tablename = "ores_assets_images_tbl";
 
     sqlgen::PrimaryKey<std::string> image_id;
+    std::string tenant_id;
     int version = 0;
     std::string key;
     std::string description;

@@ -37,6 +37,11 @@ struct currency final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief ISO 4217 alphabetic code (e.g., "USD").
      */
     std::string iso_code;

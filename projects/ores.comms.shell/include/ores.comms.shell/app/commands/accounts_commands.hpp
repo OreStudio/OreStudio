@@ -91,12 +91,13 @@ public:
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param username Account username
+     * @param principal User principal in format `username@hostname` or just `username`
+     *                  for system tenant. See login_request::principal for details.
      * @param password Account password
      */
     static void process_login(std::ostream& out,
         comms::net::client_session& session,
-        std::string username, std::string password);
+        std::string principal, std::string password);
 
     /**
      * @brief Process a lock account request.
@@ -154,13 +155,14 @@ public:
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param username Admin account username
+     * @param principal User principal in format `username@hostname` or just `username`
+     *                  for system tenant. See create_initial_admin_request::principal.
      * @param password Admin account password
      * @param email Admin account email
      */
     static void process_bootstrap(std::ostream& out,
         comms::net::client_session& session,
-        std::string username, std::string password, std::string email);
+        std::string principal, std::string password, std::string email);
 
     /**
      * @brief Process a list sessions request.

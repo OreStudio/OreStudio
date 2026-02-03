@@ -33,6 +33,7 @@ catalog_mapper::map(const catalog_entity& v) {
 
     domain::catalog r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.name = v.name.value();
     r.description = v.description;
     r.owner = v.owner;
@@ -50,6 +51,7 @@ catalog_mapper::map(const domain::catalog& v) {
 
     catalog_entity r;
     r.name = v.name;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
     r.owner = v.owner;

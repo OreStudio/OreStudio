@@ -24,8 +24,10 @@ namespace ores::variability::service {
 
 using namespace ores::logging;
 
-system_flags_service::system_flags_service(database::context ctx)
-    : feature_flags_service_(std::move(ctx)) {}
+system_flags_service::system_flags_service(database::context ctx,
+    std::string tenant_id)
+    : feature_flags_service_(std::move(ctx)),
+      tenant_id_(std::move(tenant_id)) {}
 
 void system_flags_service::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Refreshing system flags cache from database";
@@ -75,6 +77,7 @@ void system_flags_service::set_enabled(domain::system_flag flag, bool enabled,
         << " by " << recorded_by;
 
     domain::feature_flags ff{
+        .tenant_id = tenant_id_,
         .enabled = enabled,
         .name = flag_name,
         .description = std::string(def.description),

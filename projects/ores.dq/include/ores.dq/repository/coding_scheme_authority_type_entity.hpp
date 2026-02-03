@@ -34,6 +34,7 @@ struct coding_scheme_authority_type_entity {
     constexpr static const char* tablename = "ores_dq_coding_scheme_authority_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;

@@ -31,7 +31,7 @@ Component]].
 ORE Studio Shell is an interactive REPL for ORE Studio.
 It provides a command-line interface for connecting to and interacting with ores.comms.service.
 
-Usage: ores.shell [options]
+Usage: ores.comms.shell [options]
 
 
 General:
@@ -46,17 +46,20 @@ Logging:
   --log-to-console                      Output logging to the console, as well
                                         as to file.
   --log-directory arg (=log)            Where to place the log files.
-  --log-filename arg (=ores.shell.log)  Name of the log file.
+  --log-filename arg (=ores.comms.shell.log)
+                                        Name of the log file.
+  --log-include-pid                     Include process ID in log filename
+                                        (e.g., app.12345.log).
 
 Telemetry:
   --telemetry-enabled                   Enable telemetry export. When enabled,
                                         all log records are exported to a JSON
                                         Lines file for log aggregation.
-  --telemetry-service-name arg (=ores-shell)
+  --telemetry-service-name arg (=ores-comms-shell)
                                         Name of the service producing
                                         telemetry. Used as service.name in
                                         resource attributes.
-  --telemetry-service-version arg (=0.0.8)
+  --telemetry-service-version arg (=0.0.11)
                                         Version of the service producing
                                         telemetry. Used as service.version in
                                         resource attributes.
@@ -95,12 +98,12 @@ Login:
 
 #+RESULTS:
 #+begin_example
-Client for ORE Studio v0.0.8
+Client for ORE Studio v0.0.11
 Copyright (C) 2025 Marco Craveiro.
 License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
-Build: Provider = LOCAL
+local 49bc733d-dirty 2026/02/02 17:29:54
 IMPORTANT: build details are NOT for security purposes.
 #+end_example
 
@@ -121,7 +124,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> Commands available:
@@ -133,18 +136,24 @@ ores-shell> Commands available:
 	Show the history
  - ! <history entry index>
 	Exec a command by index in the history
+ - change-reason-categories
+	(menu)
+ - change-reasons
+	(menu)
  - connect <string> <string> <string>
 	Connect to server (optional: host port identifier)
  - disconnect
 	Disconnect from server
+ - countries
+	(menu)
  - currencies
 	(menu)
  - accounts
 	(menu)
  - bootstrap <string> <string> <string>
-	Create initial admin account (username password email) - only works in bootstrap mode
+	Create initial admin (principal password email) - principal is username@hostname or username
  - login <string> <string>
-	Login with username and password (alias for 'accounts login')
+	Login with principal (username@hostname or username) and password
  - logout
 	Logout the current user (alias for 'accounts logout')
  - variability
@@ -159,130 +168,14 @@ ores-shell> Commands available:
 	(menu)
  - roles
 	(menu)
+ - tenants
+	(menu)
 ores-shell> Bye!
 #+end_example
-
-** Connectivity
-
-Functionality related to connectivity such as connect to server, etc.
-
-*** Auto connect
-   :PROPERTIES:
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
-
-#+name: auto-connect
-#+begin_src ores-shell :exports none
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output :wrap example
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
-<<auto-connect>>
-EOF
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-
-⚠ WARNING: System is in BOOTSTRAP MODE
-  System in BOOTSTRAP MODE - awaiting initial admin account creation
-  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
-
-ORE Studio Shell REPL v0.0.10
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> Bye!
-#+end_example
-
-*** Basic connect
-
-#+name: basic-connect
-#+begin_src ores-shell :exports none
-connect localhost 51004 test
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
-<<basic-connect>>
-EOF
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-ORE Studio Shell REPL v0.0.8
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> ✓ Connected to :51004
-
-⚠ WARNING: System is in BOOTSTRAP MODE
-  System in BOOTSTRAP MODE - awaiting initial admin account creation
-
-ores-shell> Bye!
-#+end_example
-
-*** Auto login
-   :PROPERTIES:
-   :ID: CA27A829-0A1C-2C44-9AE3-D389D3898C4E
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :header-args+: :var login_args="--login-username newuser3"
-   :END:
-
-#+name: auto-login
-#+begin_src ores-shell :exports none
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<auto-login>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> Bye!
-#+end_example
-
-*** Login logout
-
-#+name: login-alias
-#+begin_src ores-shell :exports none
-connect localhost 51004 test
-login newuser3 Secure-Password-123
-logout
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
-<<login-alias>>
-EOF
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-ORE Studio Shell REPL v0.0.8
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> ✓ Connected to :51004
-ores-shell> ✓ Login successful!
-ores-shell> ✓ Logged out successfully.
-ores-shell> Bye!
-#+end_example
-
 
 ** Accounts
    :PROPERTIES:
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 52004 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the accounts domain entity in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio Accounts
@@ -305,7 +198,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.10
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> currencies> Commands available:
@@ -330,6 +223,60 @@ ores-shell> currencies> Commands available:
 currencies> Bye!
 #+end_example
 
+*** Auto connect
+
+#+name: auto-connect
+#+begin_src ores-shell :exports none
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+<<auto-connect>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
+
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Bye!
+#+end_example
+
+*** Basic connect
+
+#+name: basic-connect
+#+begin_src ores-shell :exports none
+connect localhost 51004 test
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<basic-connect>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+
+ores-shell> Bye!
+#+end_example
+
 *** Bootstrap
 
 Create the initial admin account.
@@ -348,11 +295,77 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :52004
-ORE Studio Shell REPL v0.0.10
+✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
+
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✗ Operation not allowed - system is not in bootstrap mode
+ores-shell> ✓ Initial admin account created successfully!
+  Account ID: 019c201e-923e-7e49-8de0-8fd5f796c183
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+  You can now login with the credentials provided.
+ores-shell> Bye!
+#+end_example
+
+*** Auto login
+   :PROPERTIES:
+   :ID: CA27A829-0A1C-2C44-9AE3-D389D3898C4E
+   :header-args+: :var login_args="--login-username newuser3"
+   :END:
+
+#+name: auto-login
+#+begin_src ores-shell :exports none
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<auto-login>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Bye!
+#+end_example
+
+*** Login logout
+
+#+name: login-alias
+#+begin_src ores-shell :exports none
+connect localhost 51004 test
+login newuser3 Secure-Password-123
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<login-alias>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Connected to :51004
+ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
 
@@ -376,10 +389,12 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected to :51004
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
 ores-shell> Bye!
 #+end_example
 
@@ -403,10 +418,12 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected to :51004
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
 ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
@@ -436,11 +453,12 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019baed4-fb93-74e1-b143-3677befb0c19
-ores-shell> ✓ Account created with ID: 019baed4-fc08-71a3-b9a3-7c75ae40d6d8
+ores-shell> ✓ Account created with ID: 019c1fd6-bade-7014-a1ec-b05e808e4e4d
+ores-shell> ✓ Account created with ID: 019c1fd6-bb5a-710e-a34c-b6d5f9534774
 ores-shell> Bye!
 #+end_example
 
@@ -468,17 +486,18 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-+--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
-| ID (UUID)                            | Username  | Email                 | Recorded By | Recorded At                   | Version |
-+--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
-| 019bae63-e9cd-7e8b-a378-2e0ca0d48610 | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | 1       |
-| 019bae63-e953-727c-bb2c-e765d462f1f0 | newuser40 | newuser40@example.com | ores        | 2026-01-11 18:49:02.000000000 | 1       |
-| 019ba3a0-48bb-7924-96ae-686f0883cc9c | newuser3  | newuser3@test.com     | bootstrap   | 2026-01-09 16:39:09.000000000 | 1       |
-+--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
++--------------------------------------+-----------+-----------------------+-------------------+-----------------+-------------------------------+---------+
+| ID (UUID)                            | Username  | Email                 | Change Reason     | Recorded By     | Recorded At                   | Version |
++--------------------------------------+-----------+-----------------------+-------------------+-----------------+-------------------------------+---------+
+| 019c1fd6-bb5a-710e-a34c-b6d5f9534774 | newuser41 | newuser41@example.com | system.new_record | ores_comms_user | 2026-02-02 19:31:32.000000000 | 1       |
+| 019c1fd6-bade-7014-a1ec-b05e808e4e4d | newuser40 | newuser40@example.com | system.new_record | ores_comms_user | 2026-02-02 19:31:32.000000000 | 1       |
+| 019c1fd6-328d-7044-abf6-90524fec4a64 | newuser3  | newuser3@test.com     | system.new_record | bootstrap       | 2026-02-02 19:30:57.000000000 | 1       |
++--------------------------------------+-----------+-----------------------+-------------------+-----------------+-------------------------------+---------+
 
 
 ores-shell> Bye!
@@ -508,16 +527,17 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 | Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
-| 019bae63-e953-727c-bb2c-e765d462f1f0 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019bae63-e9cd-7e8b-a378-2e0ca0d48610 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019ba3a0-48bb-7924-96ae-686f0883cc9c | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-01-11 18:49:28 |
+| 019c1fd6-bade-7014-a1ec-b05e808e4e4d | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019c1fd6-bb5a-710e-a34c-b6d5f9534774 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019c1fd6-328d-7044-abf6-90524fec4a64 | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-02-02 19:32:05 |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 
 
@@ -779,6 +799,231 @@ ores-shell> +---------+-----------+-----------------------+-------------+-------
 | 1       | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | Version 1      |
 +---------+-----------+-----------------------+-------------+-------------------------------+----------------+
 
+ores-shell> Bye!
+#+end_example
+
+
+** Tenants
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
+   :END:
+
+Tenant management functionality for multi-tenancy support in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM
+Component]].
+
+*** Help Menu
+
+#+name: help-tenants-exit
+#+begin_src ores-shell :exports none
+tenants
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<help-tenants-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> tenants> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all tenants from the server
+ - add <string> <string> <string> <string> <string>
+	Add a tenant (code name type hostname description)
+ - history <string>
+	Show history for a tenant (tenant_id)
+ - delete <string>
+	Delete a tenant (tenant_id)
+ - ores-shell
+	(menu)
+tenants> Bye!
+#+end_example
+
+*** Get Tenants
+
+Retrieve all tenants from the server.
+
+#+name: tenants-get
+#+begin_src ores-shell :exports none
+tenants get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-get>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| Code                                          | Name                                          | Type         | Hostname                                                | Status | Recorded By        | Version |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| ores.assets.tests_20260202_205009_969425_8799 | ores.assets.tests_20260202_205009_969425_8799 | organisation | ores.assets.tests_20260202_205009_969425_8799.localhost | active | ores_test_dml_user | 1       |
+| system                                        | System                                        | platform     | localhost                                               | active | system             | 1       |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+*** Get All Tenants
+
+Retrieve all tenants from the server.
+
+#+name: tenants-get-all
+#+begin_src ores-shell :exports none
+tenants get-all
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-get-all>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| Code                                          | Name                                          | Type         | Hostname                                                | Status | Recorded By        | Version |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+| ores.assets.tests_20260202_205009_969425_8799 | ores.assets.tests_20260202_205009_969425_8799 | organisation | ores.assets.tests_20260202_205009_969425_8799.localhost | active | ores_test_dml_user | 1       |
+| system                                        | System                                        | platform     | localhost                                               | active | system             | 1       |
++-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+
+*** Add Tenant
+
+Create a new tenant with the specified parameters.
+
+#+name: tenants-add
+#+begin_src ores-shell :exports none
+tenants add acme "ACME Corp" enterprise acme.example.com "ACME Corporation tenant"
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Tenant added successfully!
+  ID: 019c1234-5678-90ab-cdef-1234567890ab
+ores-shell> Bye!
+#+end_example
+
+*** Tenant History
+
+Get version history for a specific tenant.
+
+#+name: tenants-history
+#+begin_src ores-shell :exports none
+tenants history 00000000-0000-0000-0000-000000000000
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> History for tenant 00000000-0000-0000-0000-000000000000 (1 versions):
+--------------------------------------------------------------------------------
+  Version 1
+    Code: system
+    Name: System
+    Type: system_tenant
+    Hostname: localhost
+    Status: active
+    Recorded: 2026-02-02 19:24:23 by system
+    Reason: system.new_record - System tenant created during database initialization
+
+ores-shell> Bye!
+#+end_example
+
+*** Delete Tenant
+
+Delete a tenant by ID. Note: The system tenant cannot be deleted.
+
+#+name: tenants-delete
+#+begin_src ores-shell :exports none
+tenants delete 019c1234-5678-90ab-cdef-1234567890ab
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<tenants-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Tenant deleted successfully!
 ores-shell> Bye!
 #+end_example
 
@@ -2429,7 +2674,6 @@ ores-shell>
 
 ores-shell> Bye!
 #+end_example
-
 
 * Footer
 

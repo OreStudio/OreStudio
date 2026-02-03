@@ -35,7 +35,7 @@ using ores::utility::serialization::writer;
 
 std::vector<std::byte> login_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_string(buffer, username);
+    writer::write_string(buffer, principal);
     writer::write_string(buffer, password);
     return buffer;
 }
@@ -44,9 +44,9 @@ std::expected<login_request, ores::utility::serialization::error_code>
 login_request::deserialize(std::span<const std::byte> data) {
     login_request request;
 
-    auto username_result = reader::read_string(data);
-    if (!username_result) return std::unexpected(username_result.error());
-    request.username = *username_result;
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
 
     auto password_result = reader::read_string(data);
     if (!password_result) return std::unexpected(password_result.error());
@@ -66,6 +66,8 @@ std::vector<std::byte> login_response::serialize() const {
     writer::write_bool(buffer, success);
     writer::write_string(buffer, error_message);
     writer::write_uuid(buffer, account_id);
+    writer::write_uuid(buffer, tenant_id);
+    writer::write_string(buffer, tenant_name);
     writer::write_string(buffer, username);
     writer::write_string(buffer, email);
     writer::write_bool(buffer, password_reset_required);
@@ -87,6 +89,14 @@ login_response::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     response.account_id = *account_id_result;
+
+    auto tenant_id_result = reader::read_uuid(data);
+    if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+    response.tenant_id = *tenant_id_result;
+
+    auto tenant_name_result = reader::read_string(data);
+    if (!tenant_name_result) return std::unexpected(tenant_name_result.error());
+    response.tenant_name = *tenant_name_result;
 
     auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());

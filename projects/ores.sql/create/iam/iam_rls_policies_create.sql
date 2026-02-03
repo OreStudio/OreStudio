@@ -134,13 +134,15 @@ with check (
 -- Tenants Table - Special Case
 -- -----------------------------------------------------------------------------
 -- The tenants table itself needs special handling:
+-- - All tenant records have tenant_id = system_tenant_id (owned by system)
 -- - System tenant (SuperAdmin) can see all tenants
--- - Regular tenants can only see their own tenant record
+-- - Regular tenants can see their own tenant record (where id = their tenant_id)
+-- - Only system tenant can create/modify tenant records
 alter table ores_iam_tenants_tbl enable row level security;
 
 create policy ores_iam_tenants_read_policy on ores_iam_tenants_tbl
 for select using (
-    tenant_id = ores_iam_current_tenant_id_fn()
+    id = ores_iam_current_tenant_id_fn()
     or ores_iam_is_system_tenant_fn()
 );
 

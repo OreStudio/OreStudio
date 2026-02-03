@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_tag_populate.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
 -- Data Quality Slovaris Tags
@@ -53,9 +58,9 @@ select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
 \echo ''
 \echo '--- Summary ---'
 
-select 'dq_datasets' as entity, count(*) as count
+select 'ores_dq_datasets' as entity, count(*) as count
 from ores_dq_datasets_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
 union all
-select 'dq_tags_artefact', count(*)
+select 'ores_dq_tags_artefact', count(*)
 from ores_dq_tags_artefact_tbl;

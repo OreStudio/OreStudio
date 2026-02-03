@@ -37,6 +37,11 @@ struct methodology final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief UUID uniquely identifying this methodology.
      *
      * This is the surrogate key for the methodology.

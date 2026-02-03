@@ -25,7 +25,12 @@ namespace {
 void write_{{entity_singular}}(std::vector<std::byte>& buffer,
     const domain::{{entity_singular}}& {{cpp.iterator_var}}) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>({{cpp.iterator_var}}.version));
-    writer::write_uuid(buffer, {{cpp.iterator_var}}.id);
+{{#primary_key.is_uuid}}
+    writer::write_uuid(buffer, {{cpp.iterator_var}}.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+    writer::write_string(buffer, {{cpp.iterator_var}}.{{primary_key.column}});
+{{/primary_key.is_text}}
 {{#natural_keys}}
     writer::write_string(buffer, {{iter_var}}.{{column}});
 {{/natural_keys}}
@@ -52,9 +57,16 @@ read_{{entity_singular}}(std::span<const std::byte>& data) {
     if (!version_result) return std::unexpected(version_result.error());
     {{cpp.iterator_var}}.version = static_cast<int>(*version_result);
 
-    auto id_result = reader::read_uuid(data);
-    if (!id_result) return std::unexpected(id_result.error());
-    {{cpp.iterator_var}}.id = *id_result;
+{{#primary_key.is_uuid}}
+    auto {{primary_key.column}}_result = reader::read_uuid(data);
+    if (!{{primary_key.column}}_result) return std::unexpected({{primary_key.column}}_result.error());
+    {{cpp.iterator_var}}.{{primary_key.column}} = *{{primary_key.column}}_result;
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+    auto {{primary_key.column}}_result = reader::read_string(data);
+    if (!{{primary_key.column}}_result) return std::unexpected({{primary_key.column}}_result.error());
+    {{cpp.iterator_var}}.{{primary_key.column}} = *{{primary_key.column}}_result;
+{{/primary_key.is_text}}
 
 {{#natural_keys}}
     auto {{column}}_result = reader::read_string(data);
@@ -210,9 +222,14 @@ std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_resul
 
 std::vector<std::byte> delete_{{entity_singular}}_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(ids.size()));
-    for (const auto& id : ids) {
-        writer::write_uuid(buffer, id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>({{primary_key.column}}s.size()));
+    for (const auto& {{primary_key.column}} : {{primary_key.column}}s) {
+{{#primary_key.is_uuid}}
+        writer::write_uuid(buffer, {{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+        writer::write_string(buffer, {{primary_key.column}});
+{{/primary_key.is_text}}
     }
     return buffer;
 }
@@ -225,11 +242,16 @@ delete_{{entity_singular}}_request::deserialize(std::span<const std::byte> data)
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
-    request.ids.reserve(count);
+    request.{{primary_key.column}}s.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        request.ids.push_back(*id_result);
+{{#primary_key.is_uuid}}
+        auto {{primary_key.column}}_result = reader::read_uuid(data);
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+        auto {{primary_key.column}}_result = reader::read_string(data);
+{{/primary_key.is_text}}
+        if (!{{primary_key.column}}_result) return std::unexpected({{primary_key.column}}_result.error());
+        request.{{primary_key.column}}s.push_back(*{{primary_key.column}}_result);
     }
 
     return request;
@@ -244,7 +266,12 @@ std::vector<std::byte> delete_{{entity_singular}}_response::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
     for (const auto& r : results) {
-        writer::write_uuid(buffer, r.id);
+{{#primary_key.is_uuid}}
+        writer::write_uuid(buffer, r.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+        writer::write_string(buffer, r.{{primary_key.column}});
+{{/primary_key.is_text}}
         writer::write_bool(buffer, r.success);
         writer::write_string(buffer, r.message);
     }
@@ -263,9 +290,14 @@ delete_{{entity_singular}}_response::deserialize(std::span<const std::byte> data
     for (std::uint32_t i = 0; i < count; ++i) {
         delete_{{entity_singular}}_result r;
 
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        r.id = *id_result;
+{{#primary_key.is_uuid}}
+        auto {{primary_key.column}}_result = reader::read_uuid(data);
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+        auto {{primary_key.column}}_result = reader::read_string(data);
+{{/primary_key.is_text}}
+        if (!{{primary_key.column}}_result) return std::unexpected({{primary_key.column}}_result.error());
+        r.{{primary_key.column}} = *{{primary_key.column}}_result;
 
         auto success_result = reader::read_bool(data);
         if (!success_result) return std::unexpected(success_result.error());
@@ -288,7 +320,12 @@ std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_respo
 
 std::vector<std::byte> get_{{entity_singular}}_history_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, id);
+{{#primary_key.is_uuid}}
+    writer::write_uuid(buffer, {{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+    writer::write_string(buffer, {{primary_key.column}});
+{{/primary_key.is_text}}
     return buffer;
 }
 
@@ -296,9 +333,14 @@ std::expected<get_{{entity_singular}}_history_request, error_code>
 get_{{entity_singular}}_history_request::deserialize(std::span<const std::byte> data) {
     get_{{entity_singular}}_history_request request;
 
-    auto id_result = reader::read_uuid(data);
-    if (!id_result) return std::unexpected(id_result.error());
-    request.id = *id_result;
+{{#primary_key.is_uuid}}
+    auto {{primary_key.column}}_result = reader::read_uuid(data);
+{{/primary_key.is_uuid}}
+{{#primary_key.is_text}}
+    auto {{primary_key.column}}_result = reader::read_string(data);
+{{/primary_key.is_text}}
+    if (!{{primary_key.column}}_result) return std::unexpected({{primary_key.column}}_result.error());
+    request.{{primary_key.column}} = *{{primary_key.column}}_result;
 
     return request;
 }

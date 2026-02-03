@@ -148,8 +148,9 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
             }
 
             // Perform login request
+            // stored_username_ acts as principal (can be "user" or "user@hostname")
             iam::messaging::login_request request{
-                .username = stored_username_,
+                .principal = stored_username_,
                 .password = stored_password_
             };
 
@@ -301,8 +302,9 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
 
     try {
         // Perform Login
+        // username acts as principal (can be "user" or "user@hostname")
         iam::messaging::login_request request{
-            .username = username,
+            .principal = username,
             .password = password
         };
 
@@ -507,8 +509,9 @@ LoginResult ClientManager::testConnection(
         temp_client->connect_sync();
 
         // Perform Login
+        // username acts as principal (can be "user" or "user@hostname")
         iam::messaging::login_request request{
-            .username = username,
+            .principal = username,
             .password = password
         };
 

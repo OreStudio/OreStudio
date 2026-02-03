@@ -36,6 +36,11 @@ struct image final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief Unique identifier for the image (UUID).
      */
     boost::uuids::uuid image_id;

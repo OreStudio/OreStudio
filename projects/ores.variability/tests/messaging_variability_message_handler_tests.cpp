@@ -23,6 +23,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -40,8 +41,9 @@ namespace {
 const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[messaging][handler]");
 
-ores::variability::domain::feature_flags generate_feature_flag() {
+ores::variability::domain::feature_flags generate_feature_flag(const std::string& tenant_id) {
     ores::variability::domain::feature_flags flag;
+    flag.tenant_id = tenant_id;
     flag.name = std::string(faker::word::noun()) + "_" +
         std::string(faker::word::verb()) + "_" +
         faker::string::alphanumeric(4);
@@ -54,11 +56,11 @@ ores::variability::domain::feature_flags generate_feature_flag() {
 }
 
 std::vector<ores::variability::domain::feature_flags>
-generate_feature_flags(int count) {
+generate_feature_flags(int count, const std::string& tenant_id) {
     std::vector<ores::variability::domain::feature_flags> flags;
     flags.reserve(count);
     for (int i = 0; i < count; ++i) {
-        flags.push_back(generate_feature_flag());
+        flags.push_back(generate_feature_flag(tenant_id));
     }
     return flags;
 }
@@ -114,7 +116,7 @@ TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
 
     // Add more flags to the database
     const int additional_count = 5;
-    auto flags = generate_feature_flags(additional_count);
+    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " additional feature flags";
     repo.write(flags);
 
@@ -154,7 +156,7 @@ TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     const int additional_count = 3;
-    auto flags = generate_feature_flags(additional_count);
+    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
     repo.write(flags);
     const auto expected_count = initial_count + additional_count;
 
@@ -212,7 +214,10 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     // Create flags with specific known values
     feature_flags_repository repo(h.context());
 
+    const auto tenant_id = boost::uuids::to_string(h.tenant_id());
+
     ores::variability::domain::feature_flags flag1;
+    flag1.tenant_id = tenant_id;
     flag1.name = "test_feature_alpha";
     flag1.enabled = true;
     flag1.description = "Alpha feature for testing";
@@ -221,6 +226,7 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     flag1.change_commentary = "Test data";
 
     ores::variability::domain::feature_flags flag2;
+    flag2.tenant_id = tenant_id;
     flag2.name = "test_feature_beta";
     flag2.enabled = false;
     flag2.description = "Beta feature for testing";
@@ -284,7 +290,7 @@ TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
 
     // Create a larger number of flags
     const int additional_count = 20;
-    auto flags = generate_feature_flags(additional_count);
+    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " feature flags";
     repo.write(flags);
 
@@ -323,7 +329,7 @@ TEST_CASE("handle_get_feature_flags_request_from_different_endpoints", tags) {
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     const int additional_count = 3;
-    auto flags = generate_feature_flags(additional_count);
+    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
     repo.write(flags);
     const auto expected_count = initial_count + additional_count;
 

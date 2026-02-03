@@ -20,11 +20,12 @@
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 #include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
 
 namespace {
 
@@ -32,8 +33,9 @@ const std::string_view test_suite("ores.variability.tests");
 const std::string database_table("ores_variability_feature_flags_tbl");
 const std::string tags("[repository]");
 
-ores::variability::domain::feature_flags generate_feature_flag() {
+ores::variability::domain::feature_flags generate_feature_flag(const std::string& tenant_id) {
     ores::variability::domain::feature_flags flag;
+    flag.tenant_id = tenant_id;
     flag.name = std::string(faker::word::noun()) + "_" +
         std::string(faker::word::verb()) + "_" +
         faker::string::alphanumeric(4);
@@ -46,11 +48,11 @@ ores::variability::domain::feature_flags generate_feature_flag() {
 }
 
 std::vector<ores::variability::domain::feature_flags>
-generate_feature_flags(int count) {
+generate_feature_flags(int count, const std::string& tenant_id) {
     std::vector<ores::variability::domain::feature_flags> flags;
     flags.reserve(count);
     for (int i = 0; i < count; ++i) {
-        flags.push_back(generate_feature_flag());
+        flags.push_back(generate_feature_flag(tenant_id));
     }
     return flags;
 }
@@ -58,17 +60,17 @@ generate_feature_flags(int count) {
 }
 
 using namespace ores::logging;
-using ores::testing::database_helper;
+using ores::testing::scoped_database_helper;
 using ores::variability::domain::feature_flags;
 using ores::variability::repository::feature_flags_repository;
 
 TEST_CASE("write_single_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
-    auto flag = generate_feature_flag();
+    auto flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
 
     BOOST_LOG_SEV(lg, debug) << "Feature flag: " << flag;
     CHECK_NOTHROW(repo.write(flag));
@@ -84,10 +86,10 @@ TEST_CASE("write_single_feature_flag", tags) {
 TEST_CASE("write_multiple_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
-    auto flags = generate_feature_flags(5);
+    auto flags = generate_feature_flags(5, boost::uuids::to_string(h.tenant_id()));
     BOOST_LOG_SEV(lg, debug) << "Generated " << flags.size() << " feature flags";
 
     const auto initial_count = repo.read_latest().size();
@@ -102,13 +104,13 @@ TEST_CASE("write_multiple_feature_flags", tags) {
 TEST_CASE("read_latest_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
     const auto initial_count = repo.read_latest().size();
     BOOST_LOG_SEV(lg, debug) << "Initial feature flags count: " << initial_count;
 
-    auto written_flags = generate_feature_flags(3);
+    auto written_flags = generate_feature_flags(3, boost::uuids::to_string(h.tenant_id()));
     BOOST_LOG_SEV(lg, debug) << "Writing " << written_flags.size() << " feature flags";
 
     repo.write(written_flags);
@@ -123,10 +125,10 @@ TEST_CASE("read_latest_feature_flags", tags) {
 TEST_CASE("read_latest_feature_flag_by_name", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
-    auto flags = generate_feature_flags(5);
+    auto flags = generate_feature_flags(5, boost::uuids::to_string(h.tenant_id()));
 
     const auto target = flags.front();
     BOOST_LOG_SEV(lg, debug) << "Write feature flags, target: " << target.name;
@@ -146,13 +148,13 @@ TEST_CASE("read_latest_feature_flag_by_name", tags) {
 TEST_CASE("read_all_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
     const auto initial_count = repo.read_all().size();
     BOOST_LOG_SEV(lg, debug) << "Initial feature flags count (all versions): " << initial_count;
 
-    auto written_flags = generate_feature_flags(5);
+    auto written_flags = generate_feature_flags(5, boost::uuids::to_string(h.tenant_id()));
     BOOST_LOG_SEV(lg, debug) << "Writing " << written_flags.size() << " feature flags";
 
     repo.write(written_flags);
@@ -167,12 +169,12 @@ TEST_CASE("read_all_feature_flags", tags) {
 TEST_CASE("read_all_feature_flags_by_name", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
 
     // Create a flag and write multiple versions
-    auto flag1 = generate_feature_flag();
+    auto flag1 = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
     const std::string test_name = flag1.name;
     BOOST_LOG_SEV(lg, debug) << "Flag version 1: " << flag1;
 
@@ -205,7 +207,7 @@ TEST_CASE("read_all_feature_flags_by_name", tags) {
 TEST_CASE("read_nonexistent_feature_flag_by_name", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
 
@@ -222,12 +224,12 @@ TEST_CASE("read_nonexistent_feature_flag_by_name", tags) {
 TEST_CASE("remove_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
 
     // Write a flag
-    auto flag = generate_feature_flag();
+    auto flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
     BOOST_LOG_SEV(lg, debug) << "Feature flag: " << flag;
     repo.write(flag);
 
@@ -247,12 +249,12 @@ TEST_CASE("remove_feature_flag", tags) {
 TEST_CASE("write_and_read_enabled_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
 
     // Create enabled flag
-    auto enabled_flag = generate_feature_flag();
+    auto enabled_flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
     enabled_flag.enabled = true;
     BOOST_LOG_SEV(lg, debug) << "Enabled flag: " << enabled_flag;
 
@@ -270,12 +272,12 @@ TEST_CASE("write_and_read_enabled_feature_flag", tags) {
 TEST_CASE("write_and_read_disabled_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
 
     // Create disabled flag
-    auto disabled_flag = generate_feature_flag();
+    auto disabled_flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
     disabled_flag.enabled = false;
     BOOST_LOG_SEV(lg, debug) << "Disabled flag: " << disabled_flag;
 
@@ -293,12 +295,12 @@ TEST_CASE("write_and_read_disabled_feature_flag", tags) {
 TEST_CASE("feature_flag_version_increment", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h;
 
     feature_flags_repository repo(h.context());
 
     // Create initial version
-    auto flag = generate_feature_flag();
+    auto flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
     flag.version = 0;
     const std::string flag_name = flag.name;
     BOOST_LOG_SEV(lg, debug) << "Initial flag: " << flag;

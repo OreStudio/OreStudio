@@ -30,10 +30,11 @@
 
 namespace ores::assets::generators {
 
-domain::tag generate_synthetic_tag() {
+domain::tag generate_synthetic_tag(const std::string& tenant_id) {
     domain::tag r;
 
     static boost::uuids::random_generator gen;
+    r.tenant_id = tenant_id;
     r.tag_id = boost::uuids::to_string(gen());
     // Use UUID suffix to ensure global uniqueness across tests
     const auto uuid = boost::uuids::to_string(gen());
@@ -47,16 +48,18 @@ domain::tag generate_synthetic_tag() {
     return r;
 }
 
-std::vector<domain::tag> generate_synthetic_tags(std::size_t n) {
+std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
+    const std::string& tenant_id) {
     std::vector<domain::tag> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_tag());
+        r.push_back(generate_synthetic_tag(tenant_id));
 
     return r;
 }
 
-std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n) {
+std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
+    const std::string& tenant_id) {
     std::unordered_set<std::string> seen;
     seen.reserve(n);
 
@@ -65,7 +68,7 @@ std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n) {
 
     std::size_t suffix = 0;
     while (r.size() < n) {
-        auto tag = generate_synthetic_tag();
+        auto tag = generate_synthetic_tag(tenant_id);
         // Loop until we find a unique key
         if (!seen.insert(tag.name).second) {
             auto base_name = tag.name;

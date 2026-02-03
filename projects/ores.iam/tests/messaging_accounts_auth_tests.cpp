@@ -24,6 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -58,8 +59,9 @@ save_account_request to_save_account_request(const domain::account& a) {
 }
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::database::context& ctx) {
-    auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
+make_system_flags(ores::database::context& ctx, const std::string& tenant_id) {
+    auto flags = std::make_shared<ores::variability::service::system_flags_service>(
+        ctx, tenant_id);
     flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
 }
@@ -121,7 +123,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -176,7 +178,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -229,7 +231,7 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -265,7 +267,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -379,7 +381,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -463,7 +465,7 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -495,7 +497,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context());
+    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);

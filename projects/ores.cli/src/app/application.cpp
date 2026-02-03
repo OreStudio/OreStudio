@@ -809,7 +809,8 @@ add_account(const config::add_account_options& cfg) const {
     account.totp_secret = "";    // Can be set later
     account.email = cfg.email;
 
-    iam::service::bootstrap_mode_service bootstrap_svc(context_, auth_service);
+    iam::service::bootstrap_mode_service bootstrap_svc(
+        context_, database::service::tenant_context::system_tenant_id, auth_service);
     bootstrap_svc.initialize_bootstrap_state();
     if (bootstrap_svc.is_in_bootstrap_mode())
         output_stream_ << "System is currently in bootstrap mode." << std::endl;

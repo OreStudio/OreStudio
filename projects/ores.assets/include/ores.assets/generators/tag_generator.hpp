@@ -28,17 +28,19 @@ namespace ores::assets::generators {
 /**
  * @brief Generates a synthetic tag.
  */
-domain::tag generate_synthetic_tag();
+domain::tag generate_synthetic_tag(const std::string& tenant_id);
 
 /**
  * @brief Generates N synthetic tags. May contain duplicates.
  */
-std::vector<domain::tag> generate_synthetic_tags(std::size_t n);
+std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
+    const std::string& tenant_id);
 
 /**
  * @brief Generates N synthetic tags with unique names.
  */
-std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n);
+std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
+    const std::string& tenant_id);
 
 }
 

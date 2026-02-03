@@ -21,6 +21,7 @@
 #define ORES_IAM_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 
 #include <memory>
+#include <string>
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -64,9 +65,10 @@ public:
      * @brief Constructs a bootstrap_mode_service with required repositories.
      *
      * @param ctx The database context for repository access
+     * @param tenant_id The tenant identifier for multi-tenancy isolation
      * @param auth_service The authorization service for RBAC checks
      */
-    explicit bootstrap_mode_service(database::context ctx,
+    bootstrap_mode_service(database::context ctx, std::string tenant_id,
         std::shared_ptr<authorization_service> auth_service);
 
     /**

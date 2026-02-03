@@ -20,6 +20,7 @@
 #include "ores.variability/service/system_flags_service.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 
@@ -39,7 +40,7 @@ TEST_CASE("system_flags_service_default_values", tags) {
 
     SECTION("bootstrap_mode returns default true when flag not in database") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Flag doesn't exist, should return default from definition (true)
         const bool result = sut.is_bootstrap_mode_enabled();
@@ -50,7 +51,7 @@ TEST_CASE("system_flags_service_default_values", tags) {
 
     SECTION("user_signups returns default false when flag not in database") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Flag doesn't exist, should return default from definition (false)
         const bool result = sut.is_user_signups_enabled();
@@ -61,7 +62,7 @@ TEST_CASE("system_flags_service_default_values", tags) {
 
     SECTION("is_enabled returns default for any system flag not in database") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Test generic is_enabled method
         CHECK(sut.is_enabled(system_flag::bootstrap_mode) == true);
@@ -74,7 +75,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
 
     SECTION("set_bootstrap_mode persists value") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Set to false (opposite of default)
         sut.set_bootstrap_mode(false, "test_user", "system.new_record", "Test");
@@ -87,7 +88,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
 
     SECTION("set_user_signups persists value") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Set to true (opposite of default)
         sut.set_user_signups(true, "admin", "system.new_record", "Test");
@@ -100,7 +101,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
 
     SECTION("set_enabled with generic method persists value") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         sut.set_enabled(system_flag::bootstrap_mode, false, "system", "system.new_record", "Test");
         sut.set_enabled(system_flag::user_signups, true, "system", "system.new_record", "Test");
@@ -115,7 +116,7 @@ TEST_CASE("system_flags_service_update_existing", tags) {
 
     SECTION("updating bootstrap_mode toggles value") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Set initial value
         sut.set_bootstrap_mode(true, "initial", "system.new_record", "Test");
@@ -132,7 +133,7 @@ TEST_CASE("system_flags_service_update_existing", tags) {
 
     SECTION("updating user_signups toggles value") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Set initial value
         sut.set_user_signups(false, "initial", "system.new_record", "Test");
@@ -153,7 +154,7 @@ TEST_CASE("system_flags_service_multiple_flags_independent", tags) {
 
     SECTION("setting one flag does not affect others") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Set bootstrap_mode to false
         sut.set_bootstrap_mode(false, "test", "system.new_record", "Test");
@@ -179,13 +180,13 @@ TEST_CASE("system_flags_service_refresh", tags) {
 
         // First service writes to database
         {
-            system_flags_service writer(db_helper.context());
+            system_flags_service writer(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
             writer.set_bootstrap_mode(false, "writer", "system.new_record", "Test");
             writer.set_user_signups(true, "writer", "system.new_record", "Test");
         }
 
         // Second service should see defaults initially, then DB values after refresh
-        system_flags_service reader(db_helper.context());
+        system_flags_service reader(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Before refresh - returns POD defaults
         CHECK(reader.is_bootstrap_mode_enabled() == true);
@@ -203,7 +204,7 @@ TEST_CASE("system_flags_service_cache_accessor", tags) {
 
     SECTION("cache returns current flag values") {
         ores::testing::scoped_database_helper db_helper;
-        system_flags_service sut(db_helper.context());
+        system_flags_service sut(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
 
         // Set some values
         sut.set_bootstrap_mode(false, "test", "system.new_record", "Test");
@@ -220,12 +221,12 @@ TEST_CASE("system_flags_service_cache_accessor", tags) {
 
         // Write values with one service
         {
-            system_flags_service writer(db_helper.context());
+            system_flags_service writer(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
             writer.set_bootstrap_mode(false, "writer", "system.new_record", "Test");
         }
 
         // Read with another service
-        system_flags_service reader(db_helper.context());
+        system_flags_service reader(db_helper.context(), boost::uuids::to_string(db_helper.tenant_id()));
         reader.refresh();
 
         const auto& cache = reader.cache();

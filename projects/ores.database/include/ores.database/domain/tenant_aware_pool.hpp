@@ -77,7 +77,8 @@ public:
         }
 
         if (tenant_id_.empty()) {
-            return sqlgen::error("tenant_aware_pool::acquire() called with empty tenant_id");
+            BOOST_LOG_SEV(lg(), trace) << "Acquiring connection without tenant context";
+            return session_result;
         }
 
         const std::string sql =

@@ -47,3 +47,12 @@ TENANT_002 ores_dq_*_artefact_tbl
 # tenant_id is present for filtering but not for uniqueness.
 # =============================================================================
 TENANT_002 ores_dq_dataset_publications_tbl
+
+# =============================================================================
+# Tenants table - tenant_id is always system_tenant_id by design
+# All tenant records are owned by the system tenant. The tenant's own identity
+# is stored in 'id', not 'tenant_id'. Including tenant_id in PK or EXCLUDE
+# would be redundant since it's always the same value (system tenant).
+# =============================================================================
+TENANT_002 ores_iam_tenants_tbl
+TENANT_003 ores_iam_tenants_tbl

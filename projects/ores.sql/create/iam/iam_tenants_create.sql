@@ -26,6 +26,12 @@
 -- Note: All tenant records belong to the system tenant (tenant_id = system_tenant_id).
 -- This allows the system tenant to manage all tenants. Regular tenants can still
 -- see their own record via RLS policy that checks id = current_tenant_id.
+--
+-- IMPORTANT: Unlike other tenant-aware tables, tenant_id is intentionally NOT
+-- included in the primary key or EXCLUDE constraint because:
+--   1. tenant_id is always system_tenant_id for ALL rows (constant value)
+--   2. The tenant's identity is stored in 'id', not 'tenant_id'
+--   3. Including tenant_id would be redundant and provide no uniqueness benefit
 -- =============================================================================
 
 create table if not exists "ores_iam_tenants_tbl" (

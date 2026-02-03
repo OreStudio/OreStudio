@@ -43,7 +43,8 @@ $$ language plpgsql stable;
 
 -- Validate that a tenant_id exists and is active
 -- Returns the tenant_id if valid, raises exception otherwise
--- If p_tenant_id is NULL or nil UUID (system tenant), uses the current session tenant_id
+-- If p_tenant_id is NULL or system tenant ID, uses the current session tenant_id
+-- (System tenant ID is treated as placeholder for "use session tenant")
 create or replace function ores_iam_validate_tenant_fn(
     p_tenant_id uuid
 ) returns uuid as $$
@@ -51,15 +52,17 @@ declare
     v_tenant_id uuid;
 begin
     -- Use provided tenant_id or fall back to session tenant
-    -- Treat nil UUID (system tenant ID used as placeholder) as null
+    -- Treat system tenant ID (nil UUID) as placeholder meaning "use session tenant"
     if p_tenant_id is not null and p_tenant_id != ores_iam_system_tenant_id_fn() then
         v_tenant_id := p_tenant_id;
     else
         v_tenant_id := ores_iam_current_tenant_id_fn();
     end if;
 
-    if v_tenant_id is null then
-        raise exception 'tenant_id cannot be null and no session tenant set. Set app.current_tenant_id session variable.' using errcode = '23502';
+    -- If still null/system tenant after fallback, accept it for reference data
+    -- This allows population scripts running with system tenant session
+    if v_tenant_id is null or v_tenant_id = ores_iam_system_tenant_id_fn() then
+        return ores_iam_system_tenant_id_fn();
     end if;
 
     -- Allow during initial bootstrap when tenants table might be empty

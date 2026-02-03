@@ -153,35 +153,35 @@ std::string test_database_manager::provision_test_tenant(
     return tenant_id;
 }
 
-void test_database_manager::deprovision_test_tenant(
+void test_database_manager::terminate_test_tenant(
     database::context& ctx, const std::string& tenant_id) {
     using database::service::tenant_context;
     using database::repository::execute_parameterized_command;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Deprovisioning test tenant: " << tenant_id;
+    BOOST_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
 
     // Set system tenant context
     try {
         tenant_context::set_system_tenant(ctx);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
-                                  << "deprovisioning: " << e.what();
+                                  << "termination: " << e.what();
         // Don't throw - cleanup should be best-effort
         return;
     }
 
-    // Call deprovisioner with parameterized query
+    // Call terminator - marks tenant as terminated but preserves all data
     try {
         execute_parameterized_command(ctx,
-            "SELECT ores_iam_deprovision_tenant_fn($1::uuid)",
+            "SELECT ores_iam_terminate_tenant_fn($1::uuid)",
             {tenant_id},
-            lg(), "Deprovisioning test tenant");
+            lg(), "Terminating test tenant");
 
-        BOOST_LOG_SEV(lg(), info) << "Successfully deprovisioned test tenant: "
-                                  << tenant_id;
+        BOOST_LOG_SEV(lg(), info) << "Successfully terminated test tenant: "
+                                  << tenant_id << ". Data preserved for analysis.";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to deprovision test tenant "
+        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant "
                                   << tenant_id << ": " << e.what();
         // Don't throw - cleanup should be best-effort
     }

@@ -87,16 +87,19 @@ private:
                                              const std::string& description);
 
     /**
-     * @brief Deprovisions a test tenant using the SQL deprovisioner function.
+     * @brief Terminates a test tenant using the SQL terminator function.
      *
-     * Soft-deletes the tenant and all its data. The caller must have system
-     * tenant context.
+     * Marks the tenant as terminated but preserves all data for analysis.
+     * Use this after unit tests to allow debugging while preventing further
+     * use of the tenant. The caller must have system tenant context.
+     *
+     * For complete data deletion, use ores_iam_purge_tenant_fn directly.
      *
      * @param ctx The database context to use
-     * @param tenant_id The UUID of the tenant to deprovision
+     * @param tenant_id The UUID of the tenant to terminate
      */
-    static void deprovision_test_tenant(database::context& ctx,
-                                        const std::string& tenant_id);
+    static void terminate_test_tenant(database::context& ctx,
+                                      const std::string& tenant_id);
 
     /**
      * @brief Sets the ORES_TEST_DB_TENANT_ID environment variable.

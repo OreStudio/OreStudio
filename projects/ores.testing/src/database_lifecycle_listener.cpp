@@ -74,16 +74,16 @@ void database_lifecycle_listener::testRunEnded(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Test run ended, deprovisioning test tenant: "
+    BOOST_LOG_SEV(lg(), info) << "Test run ended, terminating test tenant: "
                               << test_tenant_id_;
 
     try {
         auto ctx = test_database_manager::make_context();
-        test_database_manager::deprovision_test_tenant(ctx, test_tenant_id_);
+        test_database_manager::terminate_test_tenant(ctx, test_tenant_id_);
         test_tenant_id_.clear();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Failed to deprovision test tenant: " << e.what();
+            << "Failed to terminate test tenant: " << e.what();
         // Don't throw - cleanup should be best-effort
     }
 }

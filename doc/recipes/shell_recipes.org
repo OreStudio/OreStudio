@@ -895,7 +895,7 @@ ores-shell> Bye!
 
 Retrieve all tenants from the server.
 
-#+name: tenants-get
+#+name: tenants-get-all
 #+begin_src ores-shell :exports none
 tenants get-all
 exit
@@ -904,7 +904,7 @@ exit
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
 ./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<tenants-get>>
+<<tenants-get-all>>
 EOF
 #+end_src
 

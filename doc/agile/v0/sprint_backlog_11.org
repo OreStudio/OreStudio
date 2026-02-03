@@ -17,39 +17,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-03 Tue 15:36], for Tuesday, February 03, 2026.
+#+CAPTION: Clock summary at [2026-02-03 Tue 22:24], for Tuesday, February 03, 2026.
 |      | <75>                                 |        |      |      |       |
 | Tags | Headline                             | Time   |      |      |     % |
 |------+--------------------------------------+--------+------+------+-------|
-|      | *Total time*                         | *6:27* |      |      | 100.0 |
+|      | *Total time*                         | *9:03* |      |      | 100.0 |
 |------+--------------------------------------+--------+------+------+-------|
-|      | Stories                              | 6:27   |      |      | 100.0 |
-|      | Active                               |        | 6:27 |      | 100.0 |
-| code | Add entity types for tenants         |        |      | 4:03 |  62.8 |
-| code | Add sink to log to database directly |        |      | 2:24 |  37.2 |
+|      | Stories                              | 9:03   |      |      | 100.0 |
+|      | Active                               |        | 9:03 |      | 100.0 |
+| code | Add entity types for tenants         |        |      | 4:03 |  44.8 |
+| code | Add sink to log to database directly |        |      | 5:00 |  55.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-03 Tue 15:36]
+#+CAPTION: Clock summary at [2026-02-03 Tue 22:24]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *41:08* |       |       | 100.0 |
+|       | *Total time*                                | *43:44* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 41:08   |       |       | 100.0 |
-|       | Active                                      |         | 41:08 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |   5.8 |
-| code  | Address past review comments                |         |       |  1:14 |   3.0 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  24.5 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   3.3 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   1.5 |
-| code  | Add tenancy support                         |         |       |  3:55 |   9.5 |
-| code  | Use tenancy to isolate tests                |         |       |  5:00 |  12.2 |
-| code  | Add NOTICE logging support to sqlgen        |         |       |  0:53 |   2.1 |
-| code  | Update codegen for tenancy                  |         |       |  3:32 |   8.6 |
-| code  | Add entity types for tenants                |         |       |  9:43 |  23.6 |
-| code  | Add sink to log to database directly        |         |       |  2:24 |   5.8 |
+|       | Stories                                     | 43:44   |       |       | 100.0 |
+|       | Active                                      |         | 43:44 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  2:24 |   5.5 |
+| code  | Address past review comments                |         |       |  1:14 |   2.8 |
+| code  | Split "god" admin account                   |         |       | 10:05 |  23.1 |
+| code  | Move all database entities to public schema |         |       |  1:22 |   3.1 |
+| code  | Check directory structure in SQL            |         |       |  0:36 |   1.4 |
+| code  | Add tenancy support                         |         |       |  3:55 |   9.0 |
+| code  | Use tenancy to isolate tests                |         |       |  5:00 |  11.4 |
+| code  | Add NOTICE logging support to sqlgen        |         |       |  0:53 |   2.0 |
+| code  | Update codegen for tenancy                  |         |       |  3:32 |   8.1 |
+| code  | Add entity types for tenants                |         |       |  9:43 |  22.2 |
+| code  | Add sink to log to database directly        |         |       |  5:00 |  11.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -797,6 +797,8 @@ Highlights:
 
 *** COMPLETED Add sink to log to database directly                     :code:
     :LOGBOOK:
+    CLOCK: [2026-02-03 Tue 21:30]--[2026-02-03 Tue 22:24] =>  0:54
+    CLOCK: [2026-02-03 Tue 17:30]--[2026-02-03 Tue 19:12] =>  1:42
     CLOCK: [2026-02-03 Tue 13:50]--[2026-02-03 Tue 15:34] =>  1:44
     CLOCK: [2026-02-03 Tue 12:20]--[2026-02-03 Tue 13:00] =>  0:40
     :END:
@@ -810,6 +812,8 @@ With this we could also do reporting such as compare runs. Or maybe even better:
 create a new sink which connects to database and uploads logs.
 
 This feature useful for unit testing and for CLI tool as well.
+
+**** Add database component
 
 #+begin_quote
 This pull request refactors the telemetry system by introducing a dedicated
@@ -843,6 +847,45 @@ Highlights:
   include the new library and manage its dependencies. New example files
   demonstrate how to integrate and use the database logging sink.
 #+end_quote
+
+**** Add database logging for tests
+#+begin_quote
+
+This pull request significantly enhances the testing and telemetry
+infrastructure by enabling direct logging of unit test telemetry data to the
+database. It addresses critical tenant provisioning issues, ensuring tests
+operate within their correct tenant contexts, and introduces a more granular
+tenant lifecycle management system. Furthermore, the telemetry architecture has
+been refactored to improve modularity and prevent recursive logging, making the
+system more robust and maintainable.
+
+Highlights:
+
+- Telemetry Database Logging Integration: Integrated a database logging sink
+  with the unit test framework, allowing test logs to be persisted to the
+  database for debugging and analysis. This is controlled by the new
+  ORES_TEST_LOG_DATABASE CMake option.
+- Tenant Provisioning Fix: Corrected an issue in tenant provisioning where the
+  wrong column was selected for the tenant ID, leading to tests incorrectly
+  using the system tenant. The tenant_id is now reliably stored in the database
+  context.
+- Three-Tier Tenant Lifecycle: Introduced a new three-tier tenant lifecycle:
+  'terminate' (marks inactive, preserves all data), 'deprovision' (soft-deletes
+  temporal data, preserves non-temporal), and 'purge' (hard-deletes everything).
+  A new SQL function ores_iam_terminate_tenant_fn was added for the 'terminate'
+  stage.
+- Recursive Logging Prevention: Implemented a skip_telemetry_guard (RAII
+  attribute) to prevent recursive logging loops within telemetry components when
+  telemetry operations themselves generate logs.
+- Telemetry System Refactoring: Refactored the telemetry system by introducing a
+  dedicated ores.telemetry.database library. This resolves circular dependencies
+  between core telemetry and database components, enhancing modularity and
+  testability.
+- Unit Test Coverage: Added comprehensive unit tests for the
+  database_sink_backend and telemetry_repository components to ensure the
+  reliability of the new database logging and data persistence mechanisms.
+#+end_quote
+
 *** Add database support for tests                                     :code:
 
 We could create a schema for logging:
@@ -911,8 +954,6 @@ Tasks:
 - Implement =span_exporter= interface (similar to =log_exporter=).
 - Create =file_span_exporter= that writes spans as JSON Lines.
 - Integrate span export with =lifecycle_manager= or create =telemetry_provider=.
-
-
 
 *** Add tenant CRUD commands to CLI                                    :code:
 
@@ -2318,6 +2359,6 @@ should try the coloured ones and see if it improves readability.
 
 
 
-*** Footer
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

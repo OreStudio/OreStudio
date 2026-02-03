@@ -25,7 +25,7 @@
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.telemetry/repository/telemetry_repository.hpp"
+#include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -60,7 +60,7 @@ public:
      * @param ctx Database context for repository access
      * @param sessions Shared auth session service for session/account lookup
      */
-    telemetry_message_handler(database::context ctx,
+    telemetry_message_handler(::ores::database::context ctx,
         std::shared_ptr<comms::service::auth_session_service> sessions);
 
     /**
@@ -121,9 +121,9 @@ private:
      */
     static std::string severity_to_string(logging::severity_level level);
 
-    database::context ctx_;
+    ::ores::database::context ctx_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
-    repository::telemetry_repository repo_;
+    database::repository::telemetry_repository repo_;
 };
 
 }

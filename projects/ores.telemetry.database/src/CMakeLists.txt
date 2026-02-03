@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.telemetry")
+set(name "ores.telemetry.database")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -24,33 +24,23 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# Exclude messaging handler and registrar files - they require
-# ores.comms.lib which would create circular dependencies.
-# These files are built in ores.comms.service instead.
-list(FILTER files EXCLUDE REGEX "messaging/telemetry_message_handler.cpp")
-list(FILTER files EXCLUDE REGEX "messaging/registrar.cpp")
-
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
+
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry.database/include
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include
-    # Header-only include for telemetry_protocol.hpp which uses comms message types
-    ${CMAKE_SOURCE_DIR}/projects/ores.comms/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.logging/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.logging.lib
-        ores.utility.lib
-        # NOTE: ores.database.lib dependency removed to break circular dependency.
-        # Repository files are compiled in ores.comms.service instead.
-    INTERFACE
-        # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
-        reflectcpp::reflectcpp
+        ores.telemetry.lib      # Core telemetry functionality
+        ores.database.lib       # Database access
     PRIVATE
         ores.platform.lib
         Boost::boost)

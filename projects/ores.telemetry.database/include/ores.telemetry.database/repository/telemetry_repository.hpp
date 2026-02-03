@@ -32,7 +32,7 @@
 #include "ores.telemetry/domain/telemetry_stats.hpp"
 #include "ores.telemetry/domain/telemetry_batch.hpp"
 
-namespace ores::telemetry::repository {
+namespace ores::telemetry::database::repository {
 
 /**
  * @brief Repository for telemetry log persistence and querying.

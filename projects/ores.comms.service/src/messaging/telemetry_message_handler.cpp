@@ -28,7 +28,7 @@ namespace ores::telemetry::messaging {
 
 using namespace ores::logging;
 
-telemetry_message_handler::telemetry_message_handler(database::context ctx,
+telemetry_message_handler::telemetry_message_handler(::ores::database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , sessions_(std::move(sessions))

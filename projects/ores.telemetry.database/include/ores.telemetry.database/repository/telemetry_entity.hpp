@@ -26,7 +26,7 @@
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::telemetry::repository {
+namespace ores::telemetry::database::repository {
 
 /**
  * @brief Represents a telemetry log record in the database.

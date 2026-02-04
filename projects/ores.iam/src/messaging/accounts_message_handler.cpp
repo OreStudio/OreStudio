@@ -1745,8 +1745,8 @@ handle_get_tenants_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:read permission
-    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenants");
+    // Requires authentication and iam::tenants:read permission
+    auto auth_result = check_authorization(remote_address, "iam::tenants:read", "Get tenants");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1789,8 +1789,8 @@ handle_save_tenant_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:write permission
-    auto auth_result = check_authorization(remote_address, "tenants:write", "Save tenant");
+    // Requires authentication and iam::tenants:write permission
+    auto auth_result = check_authorization(remote_address, "iam::tenants:write", "Save tenant");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1831,8 +1831,8 @@ handle_delete_tenant_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:delete permission
-    auto auth_result = check_authorization(remote_address, "tenants:delete", "Delete tenant");
+    // Requires authentication and iam::tenants:delete permission
+    auto auth_result = check_authorization(remote_address, "iam::tenants:delete", "Delete tenant");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1902,8 +1902,8 @@ handle_get_tenant_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:read permission
-    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenant history");
+    // Requires authentication and iam::tenants:read permission
+    auto auth_result = check_authorization(remote_address, "iam::tenants:read", "Get tenant history");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }

@@ -160,7 +160,7 @@ begin
             ores_iam_system_tenant_id_fn(),
             r.code, 0, r.name, r.authority_type, r.subject_area_name, r.domain_name,
             r.uri, r.description,
-            'data_importer', 'data_importer', 'system.external_data_import',
+            current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

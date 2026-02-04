@@ -156,7 +156,7 @@ begin
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             r.code, 0, r.coding_scheme_code, r.source, r.description,
-            'data_importer', 'data_importer', 'system.external_data_import',
+            current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

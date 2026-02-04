@@ -280,7 +280,7 @@ begin
         ) values (
             ores_iam_system_tenant_id_fn(),
             coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
-            'data_importer', 'data_importer', 'system.external_data_import',
+            current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;
@@ -452,7 +452,7 @@ begin
             ores_iam_system_tenant_id_fn(),
             r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name,
             v_coding_scheme_code, v_resolved_image_id,
-            'data_importer', 'data_importer', 'system.external_data_import',
+            current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;
@@ -641,7 +641,7 @@ begin
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type,
             v_coding_scheme_code, v_resolved_image_id,
-            'data_importer', 'data_importer', 'system.external_data_import',
+            current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

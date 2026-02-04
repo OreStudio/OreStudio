@@ -39,6 +39,7 @@
 -- Accounts
 \ir ./iam_accounts_notify_trigger_drop.sql
 \ir ./iam_accounts_drop.sql
+\ir ./iam_account_types_drop.sql
 
 -- Population functions
 \ir ./iam_population_functions_drop.sql

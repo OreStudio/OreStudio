@@ -295,8 +295,9 @@ begin
         raise exception 'Account username cannot be null or empty' using errcode = '23502';
     end if;
 
-    -- 'system' is always valid (for bootstrap and system operations)
-    if p_username = 'system' then
+    -- 'postgres' superuser is always valid (no account required)
+    -- This allows bootstrap scripts run by postgres to work
+    if p_username = 'postgres' then
         return p_username;
     end if;
 

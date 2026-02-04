@@ -29,20 +29,20 @@
 
 insert into ores_iam_account_types_tbl (
     tenant_id, type, version, name, description, display_order,
-    modified_by, change_reason_code, change_commentary
+    modified_by, performed_by, change_reason_code, change_commentary
 ) values
     (ores_iam_system_tenant_id_fn(), 'user', 0, 'User',
      'Human user account that can authenticate with username and password', 0,
-     current_user, 'system.initial_load', 'Initial population of account types'),
+     current_user, current_user, 'system.initial_load', 'Initial population of account types'),
     (ores_iam_system_tenant_id_fn(), 'service', 0, 'Service',
      'Service account for non-human processes and applications', 10,
-     current_user, 'system.initial_load', 'Initial population of account types'),
+     current_user, current_user, 'system.initial_load', 'Initial population of account types'),
     (ores_iam_system_tenant_id_fn(), 'algorithm', 0, 'Algorithm',
      'Account for automated algorithms and computational processes', 20,
-     current_user, 'system.initial_load', 'Initial population of account types'),
+     current_user, current_user, 'system.initial_load', 'Initial population of account types'),
     (ores_iam_system_tenant_id_fn(), 'llm', 0, 'LLM',
      'Account for Large Language Model agents and AI systems', 30,
-     current_user, 'system.initial_load', 'Initial population of account types')
+     current_user, current_user, 'system.initial_load', 'Initial population of account types')
 on conflict (tenant_id, type)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

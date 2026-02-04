@@ -89,11 +89,11 @@ begin
 
     insert into ores_dq_data_domains_tbl (
         tenant_id, name, version, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_name, 0, p_description,
-        'system', 'system.new_record', 'System seed data - data quality data domain',
+        current_user, 'system.new_record', 'System seed data - data quality data domain',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -125,11 +125,11 @@ begin
 
     insert into ores_dq_subject_areas_tbl (
         tenant_id, name, version, domain_name, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_name, 0, p_domain_name, p_description,
-        'system', 'system.new_record', 'System seed data - data quality subject area',
+        current_user, 'system.new_record', 'System seed data - data quality subject area',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name, domain_name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -160,11 +160,11 @@ begin
 
     insert into ores_dq_catalogs_tbl (
         tenant_id, name, version, description, owner,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_name, 0, p_description, p_owner,
-        'system', 'system.new_record', 'System seed data - data quality catalog',
+        current_user, 'system.new_record', 'System seed data - data quality catalog',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -198,7 +198,7 @@ begin
     )
     values (
         p_tenant_id, p_dataset_code, p_dependency_code, p_role,
-        'system', 'system.new_record', 'System seed data - dataset dependency',
+        current_user, 'system.new_record', 'System seed data - dataset dependency',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, dataset_code, dependency_code)
@@ -230,11 +230,11 @@ begin
 
     insert into ores_dq_origin_dimensions_tbl (
         tenant_id, code, version, name, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        'system', 'system.new_record', 'System seed data - data quality origin dimension',
+        current_user, 'system.new_record', 'System seed data - data quality origin dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -261,11 +261,11 @@ begin
 
     insert into ores_dq_nature_dimensions_tbl (
         tenant_id, code, version, name, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        'system', 'system.new_record', 'System seed data - data quality nature dimension',
+        current_user, 'system.new_record', 'System seed data - data quality nature dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -292,11 +292,11 @@ begin
 
     insert into ores_dq_treatment_dimensions_tbl (
         tenant_id, code, version, name, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        'system', 'system.new_record', 'System seed data - data quality treatment dimension',
+        current_user, 'system.new_record', 'System seed data - data quality treatment dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -398,11 +398,11 @@ begin
 
     insert into ores_dq_coding_scheme_authority_types_tbl (
         tenant_id, code, version, name, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        'system', 'system.new_record', 'System seed data - coding scheme authority type',
+        current_user, 'system.new_record', 'System seed data - coding scheme authority type',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -433,11 +433,11 @@ begin
 
     insert into ores_dq_coding_schemes_tbl (
         tenant_id, code, version, name, authority_type, subject_area_name, domain_name, uri, description,
-        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
-        'system', 'system.new_record', 'System seed data - coding scheme',
+        current_user, 'system.new_record', 'System seed data - coding scheme',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -474,7 +474,7 @@ begin
     )
     values (
         p_tenant_id, gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
-        'system', 'system.new_record', 'System seed data',
+        current_user, 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -545,7 +545,7 @@ begin
         p_name, p_description, p_source_system_id, p_business_context,
         null, 0, p_as_of_date, current_timestamp, p_license_info,
         p_artefact_type,
-        'system', 'system.new_record', 'System seed data',
+        current_user, 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name, subject_area_name, domain_name)
@@ -685,7 +685,7 @@ begin
 
     insert into ores_iam_accounts_tbl (
         id, tenant_id, version, account_type, username, password_hash, password_salt,
-        totp_secret, email, modified_by, change_reason_code, change_commentary,
+        totp_secret, email, modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
@@ -698,7 +698,8 @@ begin
         '',
         '',
         p_email,
-        'system',
+        current_user,
+        current_user,
         'system.initial_load',
         p_description,
         current_timestamp,
@@ -816,7 +817,7 @@ begin
     )
     values (
         p_tenant_id, gen_random_uuid(), 0, p_code, p_name, p_description,
-        'system', 'system.new_record', 'System seed data - dataset bundle',
+        current_user, 'system.new_record', 'System seed data - dataset bundle',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -849,7 +850,7 @@ begin
     )
     values (
         p_tenant_id, p_bundle_code, p_dataset_code, 0, p_display_order,
-        'system', 'system.new_record', 'System seed data - dataset bundle member',
+        current_user, 'system.new_record', 'System seed data - dataset bundle member',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, bundle_code, dataset_code)

@@ -22,6 +22,7 @@
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.comms.shell/app/commands/compression_commands.hpp"
@@ -33,22 +34,35 @@ using comms::net::client_session;
 
 namespace {
 
+inline std::string_view anon_logger_name =
+    "ores.comms.shell.app.commands.connection_commands";
+
+auto& anon_lg() {
+    static auto instance = make_logger(anon_logger_name);
+    return instance;
+}
+
 void check_bootstrap_status(client_session& session, std::ostream& out) {
     using iam::messaging::bootstrap_status_request;
 
     auto result = session.process_request(bootstrap_status_request{});
 
     if (!result) {
-        // Silently ignore errors - bootstrap check is optional
+        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed: "
+                                        << to_string(result.error());
         return;
     }
 
     const auto& response = *result;
     if (response.is_in_bootstrap_mode) {
+        BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: "
+                                       << response.message;
         out << std::endl;
         out << "⚠ WARNING: System is in BOOTSTRAP MODE" << std::endl;
         out << "  " << response.message << std::endl;
         out << std::endl;
+    } else {
+        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status: not in bootstrap mode";
     }
 }
 

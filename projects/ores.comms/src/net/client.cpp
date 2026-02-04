@@ -610,6 +610,11 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
     notify_shutdown_if_complete();
 }
 
+void client::disable_auto_reconnect() {
+    BOOST_LOG_SEV(lg(), debug) << "Disabling auto-reconnect";
+    shutdown_requested_.store(true, std::memory_order_release);
+}
+
 void client::disconnect() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server";
 

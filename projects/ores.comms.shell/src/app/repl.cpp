@@ -26,7 +26,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.comms/messaging/message_type.hpp"
-#include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp" // IWYU pragma: keep.
 #include "ores.comms.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.comms.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.comms.shell/app/commands/countries_commands.hpp"
@@ -56,7 +56,6 @@ void repl::run() {
     cli::CliFileSession session(*cli_instance, std::cin, std::cout);
     session.Start();
 
-    // Clean up before exiting
     cleanup();
 
     BOOST_LOG_SEV(lg(), info) << "REPL session ended.";
@@ -95,13 +94,11 @@ void repl::display_welcome() const {
 }
 
 void repl::cleanup() {
-    // Only proceed if connected
     if (!session_.is_connected()) {
         BOOST_LOG_SEV(lg(), debug) << "Not connected, skipping cleanup.";
         return;
     }
 
-    // Send logout if logged in
     if (session_.is_logged_in()) {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
 
@@ -123,7 +120,6 @@ void repl::cleanup() {
         session_.clear_session_info();
     }
 
-    // Disconnect cleanly
     BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server.";
     session_.disconnect();
 }

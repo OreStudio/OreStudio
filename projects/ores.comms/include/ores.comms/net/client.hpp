@@ -338,6 +338,18 @@ public:
      */
     void set_notification_callback(notification_callback_t callback);
 
+    /**
+     * @brief Disable auto-reconnect.
+     *
+     * Prevents the client from attempting to reconnect if the connection
+     * is lost. Call this before logout to ensure the client doesn't try
+     * to reconnect when the server closes the connection.
+     *
+     * This sets the shutdown_requested flag without closing the connection,
+     * allowing pending requests to complete.
+     */
+    void disable_auto_reconnect();
+
     // =========================================================================
     // Session Recording
     // =========================================================================

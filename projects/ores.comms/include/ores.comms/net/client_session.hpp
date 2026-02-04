@@ -202,6 +202,18 @@ public:
     }
 
     /**
+     * @brief Disable auto-reconnect on the underlying client.
+     *
+     * Call this before logout to prevent the client from attempting
+     * to reconnect when the server closes the connection.
+     */
+    void disable_auto_reconnect() {
+        if (client_) {
+            client_->disable_auto_reconnect();
+        }
+    }
+
+    /**
      * @brief Check if logged in.
      */
     [[nodiscard]] bool is_logged_in() const noexcept {

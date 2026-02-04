@@ -96,14 +96,17 @@ option(WITH_WT "Build the Wt web interface (requires Wt library)" ON)
 # ORES_TEST_LOG_LEVEL: Set to a log level (trace, debug, info, warn, error) to
 #                      enable test logging. Default is OFF (logging disabled).
 # ORES_TEST_LOG_CONSOLE: Set to ON to also output logs to console.
+# ORES_TEST_LOG_DATABASE: Set to ON to also write logs to the telemetry database.
 #
 # Example usage:
 #   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
 #   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+#   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug -DORES_TEST_LOG_DATABASE=ON
 #
 set(ORES_TEST_LOG_LEVEL "OFF" CACHE STRING "Test log level (OFF, trace, debug, info, warn, error)")
 set_property(CACHE ORES_TEST_LOG_LEVEL PROPERTY STRINGS OFF trace debug info warn error)
 option(ORES_TEST_LOG_CONSOLE "Enable console output for test logs" OFF)
+option(ORES_TEST_LOG_DATABASE "Enable database output for test logs" OFF)
 
 #
 # Test environment variables: applied to all test targets.
@@ -118,7 +121,10 @@ if(NOT ORES_TEST_LOG_LEVEL STREQUAL "OFF")
     if(ORES_TEST_LOG_CONSOLE)
         string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_CONSOLE=true")
     endif()
-    message(STATUS "Test logging: ENABLED (level=${ORES_TEST_LOG_LEVEL}, console=${ORES_TEST_LOG_CONSOLE})")
+    if(ORES_TEST_LOG_DATABASE)
+        string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_DATABASE=true")
+    endif()
+    message(STATUS "Test logging: ENABLED (level=${ORES_TEST_LOG_LEVEL}, console=${ORES_TEST_LOG_CONSOLE}, database=${ORES_TEST_LOG_DATABASE})")
 else()
     message(STATUS "Test logging: DISABLED (use -DORES_TEST_LOG_LEVEL=debug to enable)")
 endif()

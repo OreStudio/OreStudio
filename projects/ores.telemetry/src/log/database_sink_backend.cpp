@@ -22,8 +22,10 @@
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.logging/boost_severity.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
 
@@ -78,9 +80,19 @@ database_sink_backend::database_sink_backend(
 }
 
 void database_sink_backend::consume(const boost::log::record_view& rec) {
+    // Check if this log record is marked to skip telemetry sinks.
+    // This prevents recursive logging when telemetry code itself logs.
+    if (should_skip_telemetry(rec)) {
+        return;
+    }
+
     // Create a telemetry log entry from the Boost.Log record
     domain::telemetry_log_entry entry;
-    
+
+    // Generate a unique ID for this log entry
+    static thread_local boost::uuids::random_generator uuid_gen;
+    entry.id = uuid_gen();
+
     // Extract timestamp
     auto timestamp_val = boost::log::extract<boost::posix_time::ptime>(
         "TimeStamp", rec);
@@ -125,7 +137,7 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
             // Convert hex string to trace_id and then to string for the database
             auto trace_id = domain::trace_id::from_hex(trace_id_val.get());
             entry.tag = trace_id.to_hex(); // Using tag field to store trace_id for now
-        } catch (...) {
+        } catch (const std::exception& /* e */) {
             // Invalid trace_id format - skip
         }
     }
@@ -142,6 +154,9 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     } else {
         entry.account_id = std::nullopt; // No account
     }
+
+    // Set recorded_at to current time (when the log is being persisted)
+    entry.recorded_at = std::chrono::system_clock::now();
 
     // Call the handler to store the log entry (could be to database, file, etc.)
     if (handler_) {

@@ -44,6 +44,11 @@ struct telemetry_entity {
     sqlgen::PrimaryKey<std::string> id;
 
     /**
+     * @brief Tenant ID for multi-tenancy isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Log timestamp - part of composite primary key.
      *
      * Required in primary key for TimescaleDB hypertable partitioning.
@@ -61,17 +66,14 @@ struct telemetry_entity {
     std::string source_name;
 
     /**
-     * @brief Session ID (empty string for no session).
-     *
-     * Uses std::string instead of std::optional because sqlgen doesn't
-     * support optional types in operations.
+     * @brief Session ID (nullopt for no session).
      */
-    std::string session_id;
+    std::optional<std::string> session_id;
 
     /**
-     * @brief Account ID (empty string for no account).
+     * @brief Account ID (nullopt for no account).
      */
-    std::string account_id;
+    std::optional<std::string> account_id;
 
     /**
      * @brief Log severity level.

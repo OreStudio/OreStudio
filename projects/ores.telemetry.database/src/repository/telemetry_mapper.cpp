@@ -27,6 +27,7 @@
 #include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 
 namespace ores::telemetry::database::repository {
 
@@ -63,19 +64,22 @@ parse_timestamp(const std::string& str) {
 }
 
 telemetry_entity telemetry_mapper::to_entity(
-    const domain::telemetry_log_entry& entry) {
+    const domain::telemetry_log_entry& entry,
+    const std::string& tenant_id) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     telemetry_entity r;
 
     r.id = boost::lexical_cast<std::string>(entry.id);
+    r.tenant_id = tenant_id;
     r.timestamp = timepoint_to_timestamp(entry.timestamp, lg());
     r.source = std::string(domain::to_string(entry.source));
     r.source_name = entry.source_name;
     r.session_id = entry.session_id
-        ? boost::lexical_cast<std::string>(*entry.session_id)
-        : "";
+        ? std::optional<std::string>(boost::lexical_cast<std::string>(*entry.session_id))
+        : std::nullopt;
     r.account_id = entry.account_id
-        ? boost::lexical_cast<std::string>(*entry.account_id)
-        : "";
+        ? std::optional<std::string>(boost::lexical_cast<std::string>(*entry.account_id))
+        : std::nullopt;
     r.level = entry.level;
     r.component = entry.component;
     r.message = entry.message;
@@ -87,6 +91,7 @@ telemetry_entity telemetry_mapper::to_entity(
 
 domain::telemetry_log_entry telemetry_mapper::to_domain(
     const telemetry_entity& entity) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_log_entry r;
     using boost::uuids::uuid;
 
@@ -94,12 +99,12 @@ domain::telemetry_log_entry telemetry_mapper::to_domain(
     r.timestamp = timestamp_to_timepoint(entity.timestamp.value());
     r.source = domain::telemetry_source_from_string(entity.source);
     r.source_name = entity.source_name;
-    r.session_id = entity.session_id.empty()
-        ? std::nullopt
-        : std::optional<uuid>(boost::lexical_cast<uuid>(entity.session_id));
-    r.account_id = entity.account_id.empty()
-        ? std::nullopt
-        : std::optional<uuid>(boost::lexical_cast<uuid>(entity.account_id));
+    r.session_id = entity.session_id.has_value()
+        ? std::optional<uuid>(boost::lexical_cast<uuid>(*entity.session_id))
+        : std::nullopt;
+    r.account_id = entity.account_id.has_value()
+        ? std::optional<uuid>(boost::lexical_cast<uuid>(*entity.account_id))
+        : std::nullopt;
     r.level = entity.level;
     r.component = entity.component;
     r.message = entity.message;
@@ -111,6 +116,7 @@ domain::telemetry_log_entry telemetry_mapper::to_domain(
 
 domain::telemetry_stats telemetry_mapper::to_domain(
     const telemetry_stats_hourly_entity& entity) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_stats r;
 
     auto period_start = parse_timestamp(entity.hour);
@@ -130,6 +136,7 @@ domain::telemetry_stats telemetry_mapper::to_domain(
 
 domain::telemetry_stats telemetry_mapper::to_domain(
     const telemetry_stats_daily_entity& entity) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_stats r;
 
     auto period_start = parse_timestamp(entity.day);

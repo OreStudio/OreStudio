@@ -21,6 +21,7 @@
 
 #include <fstream>
 #include "ores.logging/make_logger.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -84,6 +85,7 @@ std::uint64_t upload_position_tracker::load_position_from_file() const {
 void upload_position_tracker::save_position_to_file(
     std::uint64_t position) const {
     using namespace ores::logging;
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     std::ofstream file(marker_file_path_,
         std::ios::binary | std::ios::trunc);

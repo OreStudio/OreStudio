@@ -23,14 +23,19 @@
 #include <string>
 #include <sstream>
 #include <optional>
+#include <iostream>
 #include <filesystem>
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry/domain/resource.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.testing/test_database_manager.hpp"
+#include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 using namespace ores::logging;
 using telemetry_lifecycle_manager = ores::telemetry::log::lifecycle_manager;
@@ -82,6 +87,17 @@ std::string get_log_level() {
 bool is_console_output_enabled() {
     static const bool enabled =
         env::get_value_or_default("ORES_TEST_LOG_CONSOLE", "false") == "true";
+    return enabled;
+}
+
+/**
+ * @brief Returns true if database output is enabled via environment variable.
+ *
+ * Controlled by ORES_TEST_LOG_DATABASE. Defaults to false.
+ */
+bool is_database_output_enabled() {
+    static const bool enabled =
+        env::get_value_or_default("ORES_TEST_LOG_DATABASE", "false") == "true";
     return enabled;
 }
 
@@ -180,6 +196,47 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     // Initialize logging lifecycle manager with options
     current_test_context.lifecycle_mgr =
         std::make_unique<telemetry_lifecycle_manager>(std::optional<logging_options>{cfg});
+
+    // Add database sink if enabled
+    if (is_database_output_enabled()) {
+        const auto tenant_id = test_database_manager::get_test_tenant_id_env();
+        if (!tenant_id.empty()) {
+            try {
+                // Create context and repository ONCE here, before any logging happens.
+                // This avoids recursive logging issues (make_context uses BOOST_LOG).
+                auto ctx = test_database_manager::make_context();
+                ores::database::service::tenant_context::set(ctx, tenant_id);
+
+                auto repo = std::make_shared<
+                    ores::telemetry::database::repository::telemetry_repository>(
+                        std::move(ctx));
+
+                // Create resource for telemetry
+                auto resource = std::make_shared<ores::telemetry::domain::resource>(
+                    ores::telemetry::domain::resource::from_environment(module, "test"));
+
+                // Add database sink with handler that uses the pre-created repository.
+                // The handler must not call any functions that log (to avoid recursion).
+                current_test_context.lifecycle_mgr->add_database_sink(
+                    resource,
+                    [repo](const ores::telemetry::domain::telemetry_log_entry& entry) {
+                        try {
+                            repo->create(entry);
+                        } catch (const std::exception& ex) {
+                            // Use cerr, not logging (to avoid recursion)
+                            std::cerr << "[Database Sink] Failed to write log: "
+                                      << ex.what() << std::endl;
+                        }
+                    },
+                    "test",
+                    module + "/" + suite + "/" + test_name);
+            } catch (const std::exception& e) {
+                // Log error but don't fail the test
+                std::cerr << "[Logging] Failed to set up database sink: "
+                          << e.what() << std::endl;
+            }
+        }
+    }
 
     // Create logger for this test
     current_test_context.logger.emplace(make_logger(component_name));

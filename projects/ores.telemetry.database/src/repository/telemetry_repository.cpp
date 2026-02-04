@@ -25,6 +25,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 #include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
@@ -43,18 +44,26 @@ std::string telemetry_repository::sql() {
 }
 
 void telemetry_repository::create(const domain::telemetry_log_entry& entry) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
+    // Get tenant_id from context (set by tenant_context::set())
+    const auto& tenant_id = ctx_.tenant_id();
+    if (tenant_id.empty()) {
+        throw std::runtime_error("No tenant context set for telemetry insert");
+    }
+
     const auto r = sqlgen::session(ctx_.connection_pool())
         .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(entry)))
+        .and_then(insert(telemetry_mapper::to_entity(entry, tenant_id)))
         .and_then(commit);
     ensure_success(r, lg());
 }
 
 std::size_t telemetry_repository::create_batch(
     const domain::telemetry_batch& batch) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     if (batch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "Empty batch, nothing to insert";
@@ -65,10 +74,16 @@ std::size_t telemetry_repository::create_batch(
                                << " telemetry log entries from "
                                << batch.source_name;
 
+    // Get tenant_id from context (set by tenant_context::set())
+    const auto& tenant_id = ctx_.tenant_id();
+    if (tenant_id.empty()) {
+        throw std::runtime_error("No tenant context set for telemetry batch insert");
+    }
+
     std::vector<telemetry_entity> entities;
     entities.reserve(batch.size());
     for (const auto& entry : batch.entries) {
-        auto entity = telemetry_mapper::to_entity(entry);
+        auto entity = telemetry_mapper::to_entity(entry, tenant_id);
         // Override source info from batch
         entity.source = std::string(domain::to_string(batch.source));
         entity.source_name = batch.source_name;
@@ -177,6 +192,7 @@ std::string build_where_clause(const domain::telemetry_query& q,
 
 std::vector<domain::telemetry_log_entry>
 telemetry_repository::query(const domain::telemetry_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
     const auto start_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -214,8 +230,12 @@ telemetry_repository::query(const domain::telemetry_query& q) {
         entity.timestamp = row[1].value_or("");
         entity.source = row[2].value_or("");
         entity.source_name = row[3].value_or("");
-        entity.session_id = row[4].value_or("");
-        entity.account_id = row[5].value_or("");
+        entity.session_id = row[4].has_value() && !row[4]->empty()
+            ? std::optional<std::string>(*row[4])
+            : std::nullopt;
+        entity.account_id = row[5].has_value() && !row[5]->empty()
+            ? std::optional<std::string>(*row[5])
+            : std::nullopt;
         entity.level = row[6].value_or("");
         entity.component = row[7].value_or("");
         entity.message = row[8].value_or("");
@@ -230,6 +250,7 @@ telemetry_repository::query(const domain::telemetry_query& q) {
 }
 
 std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
     const auto start_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -259,6 +280,7 @@ std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
 std::vector<domain::telemetry_log_entry>
 telemetry_repository::read_by_session(const boost::uuids::uuid& session_id,
     std::uint32_t limit_count) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for session: "
                                << boost::uuids::to_string(session_id);
@@ -287,6 +309,7 @@ telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
     const std::chrono::system_clock::time_point& start,
     const std::chrono::system_clock::time_point& end,
     std::uint32_t limit_count) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for account: "
                                << boost::uuids::to_string(account_id);
@@ -316,6 +339,7 @@ telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
 
 std::vector<domain::telemetry_stats>
 telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
     const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -354,6 +378,7 @@ telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) 
 
 std::vector<domain::telemetry_stats>
 telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
     const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
@@ -395,6 +420,7 @@ telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
 
 domain::telemetry_summary
 telemetry_repository::get_summary(std::uint32_t hours) {
+    ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last "
                                << hours << " hours";
 
@@ -405,14 +431,13 @@ telemetry_repository::get_summary(std::uint32_t hours) {
     const auto start_ts = timepoint_to_timestamp(summary.start_time, lg());
     const auto end_ts = timepoint_to_timestamp(summary.end_time, lg());
 
-    // Count total logs in time range
     struct count_result {
         long long count;
     };
 
     auto total_query = sqlgen::select_from<telemetry_entity>(
         sqlgen::count().as<"count">()) |
-        where("timestamp"_c >= start_ts && "timestamp"_c < end_ts) |
+        where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts) |
         sqlgen::to<count_result>;
 
     auto total_r = sqlgen::session(ctx_.connection_pool()).and_then(total_query);
@@ -432,7 +457,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
     for (const auto& [level, target] : level_targets) {
         auto level_query = sqlgen::select_from<telemetry_entity>(
             sqlgen::count().as<"count">()) |
-            where("timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
+            where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts &&
                   "level"_c == level) |
             sqlgen::to<count_result>;
 
@@ -449,6 +474,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
 
 std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
     std::uint32_t hours) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name
                                << " in last " << hours << " hours";
@@ -477,6 +503,7 @@ std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
 
 std::uint64_t telemetry_repository::delete_old_logs(
     const std::chrono::system_clock::time_point& older_than) {
+    ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 

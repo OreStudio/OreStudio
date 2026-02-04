@@ -124,7 +124,6 @@ std::string test_database_manager::provision_test_tenant(
     database::context& ctx, const std::string& tenant_code,
     const std::string& description) {
     using database::service::tenant_context;
-    using database::repository::execute_parameterized_command;
     using database::repository::execute_parameterized_string_query;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
@@ -134,22 +133,15 @@ std::string test_database_manager::provision_test_tenant(
     // First set system tenant context
     tenant_context::set_system_tenant(ctx);
 
-    // Call the provisioner function with parameterized query
-    execute_parameterized_command(ctx,
-        "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)",
+    // Call the provisioner function - it returns the new tenant's UUID
+    const auto results = execute_parameterized_string_query(ctx,
+        "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)::text",
         {"test", tenant_code, tenant_code,
          tenant_code + ".localhost", description},
         lg(), "Provisioning test tenant");
 
-    // Query for the tenant_id by code (since provisioner just created it)
-    const auto results = execute_parameterized_string_query(ctx,
-        "SELECT tenant_id::text FROM ores_iam_tenants_tbl "
-        "WHERE code = $1 AND valid_to = '9999-12-31 23:59:59'::timestamptz",
-        {tenant_code},
-        lg(), "Looking up provisioned tenant ID");
-
     if (results.empty()) {
-        const auto error_msg = "Failed to retrieve tenant_id for " + tenant_code;
+        const auto error_msg = "Provisioner returned no tenant_id for " + tenant_code;
         BOOST_LOG_SEV(lg(), error) << error_msg;
         throw std::runtime_error(error_msg);
     }
@@ -161,35 +153,35 @@ std::string test_database_manager::provision_test_tenant(
     return tenant_id;
 }
 
-void test_database_manager::deprovision_test_tenant(
+void test_database_manager::terminate_test_tenant(
     database::context& ctx, const std::string& tenant_id) {
     using database::service::tenant_context;
     using database::repository::execute_parameterized_command;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Deprovisioning test tenant: " << tenant_id;
+    BOOST_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
 
     // Set system tenant context
     try {
         tenant_context::set_system_tenant(ctx);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
-                                  << "deprovisioning: " << e.what();
+                                  << "termination: " << e.what();
         // Don't throw - cleanup should be best-effort
         return;
     }
 
-    // Call deprovisioner with parameterized query
+    // Call terminator - marks tenant as terminated but preserves all data
     try {
         execute_parameterized_command(ctx,
-            "SELECT ores_iam_deprovision_tenant_fn($1::uuid)",
+            "SELECT ores_iam_terminate_tenant_fn($1::uuid)",
             {tenant_id},
-            lg(), "Deprovisioning test tenant");
+            lg(), "Terminating test tenant");
 
-        BOOST_LOG_SEV(lg(), info) << "Successfully deprovisioned test tenant: "
-                                  << tenant_id;
+        BOOST_LOG_SEV(lg(), info) << "Successfully terminated test tenant: "
+                                  << tenant_id << ". Data preserved for analysis.";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to deprovision test tenant "
+        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant "
                                   << tenant_id << ": " << e.what();
         // Don't throw - cleanup should be best-effort
     }

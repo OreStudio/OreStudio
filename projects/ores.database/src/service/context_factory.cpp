@@ -19,6 +19,7 @@
  */
 #include "ores.database/service/context_factory.hpp"
 
+#include <stdexcept>
 #include <rfl/json.hpp>
 #include "ores.database/domain/database_options.hpp"
 
@@ -43,10 +44,15 @@ context context_factory::make_context(const configuration& cfg) {
         .wait_time_in_seconds = cfg.wait_time_in_seconds
     };
 
-    auto pool = make_connection_pool<context::connection_type>(
+    auto pool_result = make_connection_pool<context::connection_type>(
         pool_config, credentials);
 
-    context r(std::move(pool), credentials);
+    if (!pool_result) {
+        throw std::runtime_error("Failed to create connection pool: " +
+            std::string(pool_result.error().what()));
+    }
+
+    context r(std::move(*pool_result), credentials, cfg.database_options.tenant);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

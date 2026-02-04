@@ -31,18 +31,20 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
 }
 
 lifecycle_manager::~lifecycle_manager() {
-    // Stop and flush the database sink first (it's async like telemetry sink)
+    // Stop and flush the database sink first (it's async like telemetry sink).
+    // Order matters: remove from core first to stop new records, then flush
+    // pending records, then stop the background thread.
     if (database_sink_) {
-        database_sink_->stop();
-        database_sink_->flush();
         boost::log::core::get()->remove_sink(database_sink_);
+        database_sink_->flush();
+        database_sink_->stop();
     }
 
     // Stop and flush the telemetry sink (it's async)
     if (telemetry_sink_) {
-        telemetry_sink_->stop();
-        telemetry_sink_->flush();
         boost::log::core::get()->remove_sink(telemetry_sink_);
+        telemetry_sink_->flush();
+        telemetry_sink_->stop();
     }
     // Base class destructor handles console and file sinks.
 }

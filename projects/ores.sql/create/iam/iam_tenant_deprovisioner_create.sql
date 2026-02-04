@@ -21,22 +21,29 @@
 -- =============================================================================
 -- Tenant Deprovisioning Functions
 -- =============================================================================
--- These functions handle tenant termination and cleanup.
--- Data is soft-deleted (valid_to set to current timestamp) to preserve history.
+-- These functions handle tenant deprovisioning (soft-delete of temporal data).
+-- Non-temporal data is preserved for analysis. Use purge functions for complete
+-- data deletion.
+--
+-- Tenant lifecycle:
+--   1. terminate - Mark inactive, preserve ALL data (use after unit tests)
+--   2. deprovision - Soft-delete temporal data, preserve non-temporal (this fn)
+--   3. purge - Hard-delete everything (use when data no longer needed)
 
 -- -----------------------------------------------------------------------------
--- Deprovision a tenant (soft delete)
+-- Deprovision a tenant (soft delete temporal data only)
 -- -----------------------------------------------------------------------------
--- Terminates a tenant by:
---   1. Updating tenant status to 'terminated'
---   2. Soft-deleting all tenant data (sets valid_to to current timestamp)
+-- Deprovisions a tenant by:
+--   1. Ending active sessions
+--   2. Soft-deleting temporal tables (sets valid_to to current timestamp)
+--   3. Updating tenant status to 'terminated'
+--
+-- Non-temporal tables (e.g., telemetry logs) are NOT deleted - they are
+-- preserved for debugging and analysis. Use ores_iam_purge_tenant_fn for
+-- complete data deletion.
 --
 -- The system tenant cannot be deprovisioned.
 -- Caller must have system tenant context set.
---
--- Uses dynamic SQL to automatically discover all tenant-aware tables:
---   - Tables with tenant_id + valid_to: soft-delete (UPDATE valid_to)
---   - Tables with tenant_id only: hard-delete (DELETE)
 --
 -- Parameters:
 --   p_tenant_id: The tenant ID to deprovision
@@ -50,7 +57,6 @@ declare
     v_table_name text;
     v_affected_count integer;
     v_total_soft_deleted integer := 0;
-    v_total_hard_deleted integer := 0;
     v_sql text;
 begin
     v_system_tenant_id := ores_iam_system_tenant_id_fn();
@@ -140,42 +146,9 @@ begin
 
     raise notice 'Total soft-deleted: % rows', v_total_soft_deleted;
 
-    -- =========================================================================
-    -- Dynamically hard-delete all non-temporal tables with tenant_id only
-    -- =========================================================================
-    for v_table_name in
-        select distinct c.table_name
-        from information_schema.columns c
-        where c.table_schema = 'public'
-        and c.column_name = 'tenant_id'
-        and c.table_name like 'ores_%_tbl'
-        -- Only tables without valid_to column
-        and not exists (
-            select 1 from information_schema.columns c2
-            where c2.table_schema = c.table_schema
-            and c2.table_name = c.table_name
-            and c2.column_name = 'valid_to'
-        )
-        -- Exclude tables handled specially
-        and c.table_name not in (
-            'ores_iam_tenants_tbl',
-            'ores_iam_sessions_tbl',
-            'ores_iam_login_info_tbl'
-        )
-        order by c.table_name
-    loop
-        v_sql := format('DELETE FROM %I WHERE tenant_id = $1', v_table_name);
-
-        execute v_sql using p_tenant_id;
-        get diagnostics v_affected_count = row_count;
-
-        if v_affected_count > 0 then
-            raise notice 'Hard-deleted % rows from %', v_affected_count, v_table_name;
-            v_total_hard_deleted := v_total_hard_deleted + v_affected_count;
-        end if;
-    end loop;
-
-    raise notice 'Total hard-deleted: % rows', v_total_hard_deleted;
+    -- NOTE: Non-temporal tables (e.g., telemetry logs) are intentionally NOT
+    -- deleted here. They are preserved for debugging and analysis. Use
+    -- ores_iam_purge_tenant_fn for complete data deletion.
 
     -- =========================================================================
     -- Finally, terminate the tenant itself

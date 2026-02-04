@@ -1,3 +1,6 @@
+:PROPERTIES:
+:ID: 08FBD248-257A-A474-DD43-DB08949978F1
+:END:
 #+title: OreStudio Code Generator (ores.codegen)
 #+author: ORE Studio Team
 #+startup: overview

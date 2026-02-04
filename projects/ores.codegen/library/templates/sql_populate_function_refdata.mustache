@@ -153,7 +153,7 @@ begin
 {{^image_linking}}
             code, version, coding_scheme_code, source, description,
 {{/image_linking}}
-            modified_by, change_reason_code, change_commentary
+            modified_by, performed_by, change_reason_code, change_commentary
         ) values (
 {{#image_linking}}
             r.code, 0, r.coding_scheme_code, r.source, r.description, r.image_id,
@@ -161,7 +161,7 @@ begin
 {{^image_linking}}
             r.code, 0, r.coding_scheme_code, r.source, r.description,
 {{/image_linking}}
-            'data_importer', 'system.external_data_import',
+            current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

@@ -96,6 +96,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 
     ui_->versionEdit->setText(QString::number({{domain_entity.qt.item_var}}_.version));
     ui_->recordedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.recorded_by));
+    ui_->performedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format({{domain_entity.qt.item_var}}_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.change_commentary));
 }
@@ -107,6 +108,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     {{domain_entity.qt.item_var}}_.name = ui_->nameEdit->text().trimmed().toStdString();
     {{domain_entity.qt.item_var}}_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     {{domain_entity.qt.item_var}}_.recorded_by = username_;
+    {{domain_entity.qt.item_var}}_.performed_by = username_;
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onCodeChanged(const QString& /* text */) {

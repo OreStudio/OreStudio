@@ -23,6 +23,7 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
 {{/domain_entity.columns}}
     "modified_by" text not null,
+    "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
@@ -120,6 +121,9 @@ begin
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
+    end if;
+    if NEW.performed_by is null or NEW.performed_by = '' then
+        NEW.performed_by = current_user;
     end if;
 
 {{#domain_entity.has_tenant_id}}

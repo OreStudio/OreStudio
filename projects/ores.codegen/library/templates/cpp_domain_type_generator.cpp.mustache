@@ -23,6 +23,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}() {
     r.{{name}} = {{{generator_expr}}};
 {{/columns}}
     r.recorded_by = std::string(faker::internet::username());
+    r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
@@ -57,6 +58,7 @@ domain::{{name_singular}} generate_synthetic_{{name_singular}}() {
     r.{{name}} = {{{generator_expr}}};
 {{/columns}}
     r.recorded_by = std::string(faker::internet::username());
+    r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();

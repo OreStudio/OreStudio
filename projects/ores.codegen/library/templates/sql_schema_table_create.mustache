@@ -30,6 +30,7 @@ create table if not exists "{{entity.product}}_{{entity.component}}_{{entity.ent
     "image_id" uuid,
 {{/entity.has_image_id}}
     "modified_by" text not null,
+    "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
@@ -198,6 +199,9 @@ begin
     new.valid_to = ores_utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
+    end if;
+    if new.performed_by is null or new.performed_by = '' then
+        new.performed_by = current_user;
     end if;
 
     return new;

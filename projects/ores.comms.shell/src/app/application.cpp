@@ -26,8 +26,8 @@
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/client/auth_helpers.hpp"
 #include "ores.comms.shell/app/repl.hpp"
 #include "ores.comms.shell/app/commands/compression_commands.hpp"
 
@@ -35,7 +35,6 @@ namespace ores::comms::shell::app {
 
 using namespace ores::logging;
 using comms::net::client_session;
-using comms::net::client_session_info;
 
 application::application(
     std::optional<comms::net::client_options> connection_config,
@@ -84,36 +83,16 @@ bool auto_connect(client_session& session, std::ostream& out,
 
 bool auto_login(client_session& session, std::ostream& out,
     const config::login_options& login_config) {
-    using iam::messaging::login_request;
-
-    // username from config acts as principal (can be "user" or "user@hostname")
-    auto result = session.process_request(login_request{
-        .principal = login_config.username,
-        .password = login_config.password
-    });
-
-    if (!result) {
-        out << "✗ Auto-login failed: " << to_string(result.error()) << std::endl;
-        return false;
+    auto result = iam::client::login(session, login_config.username,
+        login_config.password);
+    if (result.success) {
+        out << "✓ Logged in as: " << result.username << std::endl;
+        out << "  Tenant: " << result.tenant_name
+            << " (" << result.tenant_id << ")" << std::endl;
+        return true;
     }
-
-    const auto& response = *result;
-    if (!response.success) {
-        out << "✗ Auto-login failed: " << response.error_message << std::endl;
-        return false;
-    }
-
-    out << "✓ Logged in as: " << response.username << std::endl;
-    out << "  Tenant: " << response.tenant_name
-        << " (" << response.tenant_id << ")" << std::endl;
-
-    // Update session state
-    // Note: Permission checks are now handled server-side via RBAC
-    session.set_session_info(client_session_info{
-        .account_id = response.account_id,
-        .username = login_config.username
-    });
-    return true;
+    out << "✗ Auto-login failed: " << result.error_message << std::endl;
+    return false;
 }
 
 void check_bootstrap_status(client_session& session, std::ostream& out) {

@@ -395,6 +395,8 @@ process_logout(std::ostream& out, client_session& session) {
         BOOST_LOG_SEV(lg(), info) << "Logout successful.";
         out << "✓ Logged out successfully." << std::endl;
         session.clear_session_info();
+        // Disconnect to prevent auto-reconnect after server closes connection
+        session.disconnect();
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Logout failed: " << response.message;
         out << "✗ Logout failed: " << response.message << std::endl;

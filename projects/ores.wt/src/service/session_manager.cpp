@@ -144,7 +144,7 @@ login_result session_manager::create_bootstrap_admin(
             username, email, password, "bootstrap",
             "Initial admin account created during system bootstrap");
 
-        auto admin_role = ctx.authorization_service().find_role_by_name("Admin");
+        auto admin_role = ctx.authorization_service().find_role_by_name("SuperAdmin");
         if (admin_role) {
             ctx.authorization_service().assign_role(
                 account.id, admin_role->id, "bootstrap",

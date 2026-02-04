@@ -103,7 +103,8 @@ struct role final {
  * @brief Well-known role names used throughout the system.
  */
 namespace roles {
-    constexpr auto admin = "Admin";
+    constexpr auto super_admin = "SuperAdmin";
+    constexpr auto tenant_admin = "TenantAdmin";
     constexpr auto trading = "Trading";
     constexpr auto sales = "Sales";
     constexpr auto operations = "Operations";

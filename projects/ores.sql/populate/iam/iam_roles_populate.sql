@@ -26,7 +26,8 @@
  * not create duplicate entries.
  *
  * Predefined Roles:
- * - Admin: Full access (wildcard permission)
+ * - SuperAdmin: Platform super administrator (tenant0) with tenant management
+ * - TenantAdmin: Tenant administrator with full access within a tenant
  * - Trading: Currency read access for trading operations
  * - Sales: Read-only currency access for sales
  * - Operations: Currency management and account viewing
@@ -37,20 +38,16 @@
  * - permissions_populate.sql must be run first
  */
 
--- Create roles
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Admin', 'Full administrative access to all system functions');
+-- Create platform-level admin roles
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'Platform super administrator with tenant management access');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'TenantAdmin', 'Tenant administrator with full access within a tenant');
+
+-- Create functional roles
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Trading', 'Trading operations - currency read access');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Sales', 'Sales operations - read-only currency access');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'Operations - currency management and account viewing');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Support', 'Support - read-only access to all resources and admin screens');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Viewer', 'Viewer - basic read-only access to domain data');
-
--- Platform-level roles (system tenant only)
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'Platform super administrator with tenant management access');
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'TenantAdmin', 'Tenant administrator with full access within a tenant');
-
--- Assign permissions to Admin role (wildcard)
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Admin', '*');
 
 -- Assign permissions to SuperAdmin role (platform-level)
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', '*');

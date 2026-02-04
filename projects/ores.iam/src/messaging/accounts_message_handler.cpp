@@ -816,15 +816,15 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
         }
 
-        // Create the initial admin account with Admin role
+        // Create the initial admin account with SuperAdmin role
         // This checks role exists BEFORE creating account to avoid orphaned accounts
         domain::account account = setup_service_.create_account_with_role(
             username,
             request.email,
             request.password,
             "bootstrap",
-            domain::roles::admin,
-            "Initial admin account created during system bootstrap"
+            domain::roles::super_admin,
+            "Initial SuperAdmin account created during system bootstrap"
         );
 
         // Exit bootstrap mode - updates database and shared cache

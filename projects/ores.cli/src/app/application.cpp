@@ -825,7 +825,7 @@ add_account(const config::add_account_options& cfg) const {
     // If --admin was specified, assign Admin role via RBAC
     const bool assign_admin = cfg.admin.value_or(false);
     if (assign_admin) {
-        auto admin_role = auth_service->find_role_by_name(iam::domain::roles::admin);
+        auto admin_role = auth_service->find_role_by_name(iam::domain::roles::super_admin);
         if (admin_role) {
             auth_service->assign_role(account_id, admin_role->id, cfg.modified_by);
             BOOST_LOG_SEV(lg(), info) << "Assigned Admin role to account: "

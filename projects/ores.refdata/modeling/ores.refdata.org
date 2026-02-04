@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 204DB292-C32B-03E4-9DDB-BFE634F7CE91
 :END:
-#+title: ORE Studio Risk Component
+#+title: ORE Studio RefData Component
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages

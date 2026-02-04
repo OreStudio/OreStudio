@@ -693,8 +693,8 @@ begin
         0,
         'service',
         p_username,
-        null,
-        '',
+        '!SERVICE_ACCOUNT_NO_PASSWORD!',  -- Dummy hash - service accounts cannot login
+        '!NO_SALT!',                       -- Dummy salt - service accounts cannot login
         '',
         p_email,
         current_user,

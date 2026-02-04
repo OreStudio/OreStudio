@@ -30,8 +30,8 @@ create table if not exists ores_iam_accounts_tbl (
     "version" integer not null,
     "account_type" text not null default 'user',
     "username" text not null,
-    "password_hash" text null,
-    "password_salt" text null,
+    "password_hash" text not null,
+    "password_salt" text not null,
     "totp_secret" text not null,
     "email" text not null,
     "modified_by" text not null,
@@ -79,12 +79,6 @@ begin
 
     -- Validate account_type
     new.account_type := ores_iam_validate_account_type_fn(new.account_type);
-
-    -- Enforce password requirement for user accounts
-    if new.account_type = 'user' and (new.password_hash is null or new.password_hash = '') then
-        raise exception 'User accounts must have a password'
-            using errcode = '23502';
-    end if;
 
     select version into current_version
     from ores_iam_accounts_tbl

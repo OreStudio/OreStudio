@@ -128,25 +128,20 @@ void tenant_context::set(context& ctx, const std::string& tenant) {
             "Invalid tenant ID format (must be UUID): " + tenant_id);
     }
 
-    // Use connection pool to set tenant context on pool connections.
-    // UUID validation above ensures this is safe from SQL injection.
-    const std::string sql = "SELECT set_config('app.current_tenant_id', '" +
-        tenant_id + "', false)";
+    // Set tenant_id on context. The tenant_aware_pool will automatically
+    // set the PostgreSQL session variable via set_config() whenever a
+    // connection is acquired from the pool.
+    ctx.set_tenant_id(tenant_id);
 
-    const auto execute_stmt = [&sql](auto&& session) {
-        return session->execute(sql);
-    };
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(execute_stmt);
+    // Verify the tenant context works by acquiring a connection.
+    // This catches configuration errors early rather than at first use.
+    const auto r = sqlgen::session(ctx.connection_pool());
     if (!r) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to set tenant context: "
+        BOOST_LOG_SEV(lg(), error) << "Failed to verify tenant context: "
                                    << r.error().what();
         throw std::runtime_error("Failed to set tenant context: " +
             std::string(r.error().what()));
     }
-
-    // Also store tenant_id in context for repositories to access directly
-    ctx.set_tenant_id(tenant_id);
 
     BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id;
 }

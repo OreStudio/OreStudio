@@ -90,14 +90,17 @@ login_result login(comms::net::client_session& session,
     return result;
 }
 
-bool logout(comms::net::client_session& session) {
+logout_result logout(comms::net::client_session& session) {
     using namespace ores::logging;
 
     BOOST_LOG_SEV(lg(), debug) << "Processing logout request.";
 
+    logout_result result;
+
     if (!session.is_logged_in()) {
         BOOST_LOG_SEV(lg(), warn) << "Logout called but not logged in.";
-        return false;
+        result.error_message = "Not logged in.";
+        return result;
     }
 
     using iam::messaging::logout_request;
@@ -110,20 +113,23 @@ bool logout(comms::net::client_session& session) {
     if (!response_result) {
         BOOST_LOG_SEV(lg(), error) << "Logout request failed: "
                                    << comms::net::to_string(response_result.error());
-        return false;
+        result.error_message = comms::net::to_string(response_result.error());
+        return result;
     }
 
     const auto& response = *response_result;
     if (!response.success) {
         BOOST_LOG_SEV(lg(), warn) << "Logout failed: " << response.message;
-        return false;
+        result.error_message = response.message;
+        return result;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Logout successful.";
     session.clear_session_info();
     // Disconnect to prevent auto-reconnect after server closes connection
     session.disconnect();
-    return true;
+    result.success = true;
+    return result;
 }
 
 }

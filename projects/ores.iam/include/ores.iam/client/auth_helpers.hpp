@@ -59,15 +59,25 @@ login_result login(comms::net::client_session& session,
     const std::string& password);
 
 /**
+ * @brief Result of a logout operation.
+ *
+ * Contains success status and error message on failure.
+ */
+struct logout_result {
+    bool success = false;
+    std::string error_message;
+};
+
+/**
  * @brief Perform logout with proper cleanup.
  *
  * Sends logout_request, clears session info, and disconnects
  * to prevent auto-reconnect after server closes connection.
  *
  * @param session The client session to use for the request.
- * @return true if logout was successful, false otherwise.
+ * @return logout_result containing the result of the operation.
  */
-bool logout(comms::net::client_session& session);
+logout_result logout(comms::net::client_session& session);
 
 }
 

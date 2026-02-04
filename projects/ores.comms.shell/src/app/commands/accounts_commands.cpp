@@ -341,15 +341,11 @@ process_list_login_info(std::ostream& out, client_session& session) {
 
 void accounts_commands::
 process_logout(std::ostream& out, client_session& session) {
-    if (!session.is_logged_in()) {
-        out << "✗ Not logged in." << std::endl;
-        return;
-    }
-
-    if (iam::client::logout(session)) {
+    auto result = iam::client::logout(session);
+    if (result.success) {
         out << "✓ Logged out successfully." << std::endl;
     } else {
-        out << "✗ Logout failed." << std::endl;
+        out << "✗ Logout failed: " << result.error_message << std::endl;
     }
 }
 

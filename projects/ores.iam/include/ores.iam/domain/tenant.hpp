@@ -103,11 +103,7 @@ struct tenant final {
     std::string change_commentary;
 
     /**
-     * @brief ID of the service account that performed this operation.
-     *
-     * Null when operation was performed directly by a user.
-     * Set when operation was triggered by a service, algorithm, or LLM.
-     * Contains the UUID as a string for serialization compatibility.
+     * @brief Username of the account that performed this operation.
      */
     std::string performed_by;
 

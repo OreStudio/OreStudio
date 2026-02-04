@@ -60,6 +60,7 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::role
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:create', 'Create new tenants');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:read', 'View tenant details');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:update', 'Modify tenant settings');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:delete', 'Delete tenants');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:suspend', 'Suspend tenants');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:terminate', 'Terminate tenants');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:impersonate', 'Access other tenants');

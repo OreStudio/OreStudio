@@ -54,6 +54,7 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Supe
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:create');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:update');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:delete');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:suspend');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:terminate');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:impersonate');

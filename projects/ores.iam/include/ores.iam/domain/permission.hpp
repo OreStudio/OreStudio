@@ -103,6 +103,7 @@ namespace permissions {
     constexpr auto tenants_create = "iam::tenants:create";
     constexpr auto tenants_read = "iam::tenants:read";
     constexpr auto tenants_update = "iam::tenants:update";
+    constexpr auto tenants_delete = "iam::tenants:delete";
     constexpr auto tenants_suspend = "iam::tenants:suspend";
     constexpr auto tenants_terminate = "iam::tenants:terminate";
     constexpr auto tenants_impersonate = "iam::tenants:impersonate";

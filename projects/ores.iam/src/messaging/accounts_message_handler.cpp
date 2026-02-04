@@ -212,6 +212,11 @@ handle_save_account_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Parse principal into username and hostname
+    const auto [username, hostname] = parse_principal(request.principal);
+    BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                               << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
     // Determine if this is a create or update based on account_id
     const bool is_create = request.account_id.is_nil();
 
@@ -224,8 +229,19 @@ handle_save_account_request(std::span<const std::byte> payload,
         }
 
         try {
+            // Set tenant context based on hostname
+            if (hostname.empty()) {
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+                database::service::tenant_context::set_system_tenant(ctx_);
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+                const auto tenant_id_str =
+                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+                database::service::tenant_context::set(ctx_, tenant_id_str);
+            }
+
             domain::account account =
-                setup_service_.create_account(request.username, request.email,
+                setup_service_.create_account(username, request.email,
                 request.password, request.recorded_by, request.change_commentary);
 
             BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id

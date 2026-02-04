@@ -50,7 +50,7 @@ const std::string tags("[messaging][handler][auth]");
 
 save_account_request to_save_account_request(const domain::account& a) {
     save_account_request r;
-    r.username = a.username;
+    r.principal = a.username;
     r.password = faker::internet::password();
     r.totp_secret = a.totp_secret;
     r.email = a.email;
@@ -149,7 +149,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     });
 
     login_request lrq;
-    lrq.principal = ca_rq.username;
+    lrq.principal = ca_rq.principal;
     lrq.password = ca_rq.password;
     BOOST_LOG_SEV(lg, info) << "Login request: " << lrq;
 
@@ -168,7 +168,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
 
         CHECK(rp.success == true);
         CHECK(rp.error_message.empty());
-        CHECK(rp.username == ca_rq.username);
+        CHECK(rp.username == ca_rq.principal);
         CHECK(!rp.account_id.is_nil());
     });
 }
@@ -205,7 +205,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
 
     // Attempt login with wrong password
     login_request lrq;
-    lrq.principal = ca_rq.username;
+    lrq.principal = ca_rq.principal;
     lrq.password = "wrong_password";
     BOOST_LOG_SEV(lg, info) << "Login request: " << lrq;
 
@@ -299,7 +299,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
-    admin_login_rq.principal = admin_rq.username;
+    admin_login_rq.principal = admin_rq.principal;
     admin_login_rq.password = admin_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -355,7 +355,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     // 4. Attempt login with valid credentials for the now-locked account
     login_request login_rq;
-    login_rq.principal = ca_rq.username;
+    login_rq.principal = ca_rq.principal;
     login_rq.password = ca_rq.password;
     BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: "
                             << login_rq.principal;
@@ -412,7 +412,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 
     // Login to establish session
     login_request login_rq;
-    login_rq.principal = ca_rq.username;
+    login_rq.principal = ca_rq.principal;
     login_rq.password = ca_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -447,7 +447,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 
     // Verify the new password works by logging in again
     login_request new_login_rq;
-    new_login_rq.principal = ca_rq.username;
+    new_login_rq.principal = ca_rq.principal;
     new_login_rq.password = "NewSecurePassword123!";
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -523,7 +523,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
 
     // Login to establish session
     login_request login_rq;
-    login_rq.principal = ca_rq.username;
+    login_rq.principal = ca_rq.principal;
     login_rq.password = ca_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {

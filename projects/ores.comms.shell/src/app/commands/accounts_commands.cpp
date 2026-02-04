@@ -50,13 +50,13 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         std::make_unique<cli::Menu>("accounts");
 
     accounts_menu->Insert("create", [&session](std::ostream & out,
-            std::string username, std::string password, std::string totp_secret,
+            std::string principal, std::string password, std::string totp_secret,
             std::string email) {
         process_create_account(std::ref(out),
-            std::ref(session), std::move(username),
+            std::ref(session), std::move(principal),
             std::move(password), std::move(totp_secret),
                 std::move(email));
-    }, "Create a new account (username password totp_secret email)");
+    }, "Create a new account (principal password totp_secret email) - principal is username@hostname or username");
 
     accounts_menu->Insert("list", [&session](std::ostream& out) {
         process_list_accounts(std::ref(out), std::ref(session));
@@ -320,9 +320,10 @@ process_unlock_account(std::ostream& out, client_session& session,
 }
 
 void accounts_commands::process_create_account(std::ostream& out,
-    client_session& session, std::string username,
+    client_session& session, std::string principal,
     std::string password, std::string totp_secret, std::string email) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating create account request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating create account request for principal: "
+                               << principal;
 
     using iam::messaging::save_account_request;
     using iam::messaging::save_account_response;
@@ -330,7 +331,7 @@ void accounts_commands::process_create_account(std::ostream& out,
                                                         save_account_response,
                                                         message_type::save_account_request>
         (save_account_request {
-            .username = std::move(username),
+            .principal = std::move(principal),
             .password = std::move(password),
             .totp_secret = std::move(totp_secret),
             .email = std::move(email)

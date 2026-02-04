@@ -39,14 +39,14 @@ TEST_CASE("save_account_request_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
     save_account_request rq;
-    rq.username = "testuser";
+    rq.principal = "testuser";
     rq.password = "test_password";
     rq.totp_secret = "JBSWY3DPEHPK3PXP";
     rq.email = "test@example.com";
     rq.recorded_by = "admin";
     BOOST_LOG_SEV(lg, info) << "Rrequest: " << rq;
 
-    CHECK(rq.username == "testuser");
+    CHECK(rq.principal == "testuser");
     CHECK(rq.password == "test_password");
     CHECK(rq.totp_secret == "JBSWY3DPEHPK3PXP");
     CHECK(rq.email == "test@example.com");
@@ -57,14 +57,14 @@ TEST_CASE("save_account_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     save_account_request rq;
-    rq.username = std::string(faker::internet::username());
+    rq.principal = std::string(faker::internet::username());
     rq.password = std::string(faker::internet::password());
     rq.totp_secret = faker::string::alphanumeric(16);
     rq.email = std::string(faker::internet::email());
     rq.recorded_by = std::string(faker::internet::username());
     BOOST_LOG_SEV(lg, info) << "save_account_request: " << rq;
 
-    CHECK(!rq.username.empty());
+    CHECK(!rq.principal.empty());
     CHECK(!rq.password.empty());
     CHECK(rq.totp_secret.length() == 16);
     CHECK(!rq.email.empty());
@@ -75,7 +75,7 @@ TEST_CASE("save_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_account_request e;
-    e.username = std::string(faker::internet::username());
+    e.principal = std::string(faker::internet::username());
     e.password = std::string(faker::internet::password());
     e.totp_secret = faker::string::alphanumeric(20);
     e.email = std::string(faker::internet::email());
@@ -89,7 +89,7 @@ TEST_CASE("save_account_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.username == e.username);
+    CHECK(a.principal == e.principal);
     CHECK(a.password == e.password);
     CHECK(a.totp_secret == e.totp_secret);
     CHECK(a.email == e.email);
@@ -471,7 +471,7 @@ TEST_CASE("create_multiple_random_save_account_requests", tags) {
 
     for (int i = 0; i < 3; ++i) {
         save_account_request rq;
-        rq.username = std::string(faker::internet::username());
+        rq.principal = std::string(faker::internet::username());
         rq.password = std::string(faker::internet::password());
         rq.totp_secret = faker::string::alphanumeric(16);
         rq.email = std::string(faker::internet::email());
@@ -479,7 +479,7 @@ TEST_CASE("create_multiple_random_save_account_requests", tags) {
             std::string(faker::person::lastName());
         BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;
 
-        CHECK(!rq.username.empty());
+        CHECK(!rq.principal.empty());
         CHECK(!rq.email.empty());
         CHECK(rq.totp_secret.length() == 16);
     }

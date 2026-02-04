@@ -42,7 +42,7 @@ namespace ores::iam::messaging {
  */
 struct save_account_request final {
     boost::uuids::uuid account_id;  // Nil for create, valid UUID for update
-    std::string username;
+    std::string principal;     // username@hostname or just username (system tenant)
     std::string password;      // Plain text for new accounts, optional for updates
     std::string totp_secret;
     std::string email;
@@ -55,8 +55,8 @@ struct save_account_request final {
      *
      * Format:
      * - 16 bytes: account_id (UUID, nil for create)
-     * - 2 bytes: username length
-     * - N bytes: username (UTF-8)
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
      * - 2 bytes: password length
      * - N bytes: password (UTF-8)
      * - 2 bytes: totp_secret length

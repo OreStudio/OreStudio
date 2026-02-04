@@ -50,7 +50,7 @@ const std::string tags("[messaging][handler][lock]");
 
 save_account_request to_save_account_request(const domain::account& a) {
     save_account_request r;
-    r.username = a.username;
+    r.principal = a.username;
     r.password = faker::internet::password();
     r.totp_secret = a.totp_secret;
     r.email = a.email;
@@ -161,7 +161,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
 
     // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
-    admin_login_rq.principal = admin_rq.username;
+    admin_login_rq.principal = admin_rq.principal;
     admin_login_rq.password = admin_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -266,7 +266,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
 
     // Login as non-admin account1 to establish session
     login_request login_rq;
-    login_rq.principal = ca_rq1.username;
+    login_rq.principal = ca_rq1.principal;
     login_rq.password = ca_rq1.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -337,7 +337,7 @@ TEST_CASE("handle_lock_account_request", tags) {
 
     // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
-    admin_login_rq.principal = admin_rq.username;
+    admin_login_rq.principal = admin_rq.principal;
     admin_login_rq.password = admin_rq.password;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {

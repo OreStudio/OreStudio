@@ -229,19 +229,28 @@ handle_save_account_request(std::span<const std::byte> payload,
         }
 
         try {
+            // Create a fresh context copy for this request to avoid race conditions
+            // with concurrent requests from different tenants.
+            auto operation_ctx = ctx_;
+
             // Set tenant context based on hostname
             if (hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                database::service::tenant_context::set_system_tenant(ctx_);
+                database::service::tenant_context::set_system_tenant(operation_ctx);
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
                 const auto tenant_id_str =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                database::service::tenant_context::set(ctx_, tenant_id_str);
+                    database::service::tenant_context::lookup_by_hostname(operation_ctx, hostname);
+                database::service::tenant_context::set(operation_ctx, tenant_id_str);
             }
 
+            // Create temporary services with the correctly-scoped tenant context.
+            // This ensures each concurrent request is isolated.
+            service::account_service temp_account_svc(operation_ctx);
+            service::account_setup_service temp_setup_svc(temp_account_svc, auth_service_);
+
             domain::account account =
-                setup_service_.create_account(username, request.email,
+                temp_setup_svc.create_account(username, request.email,
                 request.password, request.recorded_by, request.change_commentary);
 
             BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id

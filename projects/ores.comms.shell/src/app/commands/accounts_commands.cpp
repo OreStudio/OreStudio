@@ -339,9 +339,16 @@ void accounts_commands::process_create_account(std::ostream& out,
         return;
     }
 
+    const auto& response = *result;
+    if (!response.success) {
+        BOOST_LOG_SEV(lg(), warn) << "Account creation failed: " << response.message;
+        out << "✗ " << response.message << std::endl;
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Successfully created account with ID: "
-                              << result->account_id;
-    out << "✓ Account created with ID: " << result->account_id << std::endl;
+                              << response.account_id;
+    out << "✓ Account created with ID: " << response.account_id << std::endl;
 }
 
 void accounts_commands::

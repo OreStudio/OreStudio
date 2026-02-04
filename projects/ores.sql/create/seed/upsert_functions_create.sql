@@ -325,11 +325,11 @@ begin
     perform ores_seed_validate_not_empty_fn(p_code, 'Change reason category code');
 
     insert into ores_dq_change_reason_categories_tbl (
-        tenant_id, code, description, modified_by, change_commentary,
+        tenant_id, code, description, modified_by, performed_by, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_tenant_id, p_code, p_description, 'system',
+        p_tenant_id, p_code, p_description, current_user, current_user,
         'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
@@ -362,12 +362,12 @@ begin
     insert into ores_dq_change_reasons_tbl (
         tenant_id, code, description, category_code,
         applies_to_amend, applies_to_delete, requires_commentary, display_order,
-        modified_by, change_commentary, valid_from, valid_to
+        modified_by, performed_by, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, p_description, p_category_code,
         p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
-        'system', 'System seed data - standard regulatory taxonomy',
+        current_user, current_user, 'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -643,17 +643,16 @@ $$ language plpgsql;
 create or replace function ores_iam_roles_upsert_fn(
     p_tenant_id uuid,
     p_name text,
-    p_description text,
-    p_recorded_by text default 'system'
+    p_description text
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Role name');
 
     -- Insert role if it doesn't exist (uses partial unique index for atomicity)
     insert into ores_iam_roles_tbl (tenant_id, id, version, name, description, modified_by,
-        change_reason_code, change_commentary, valid_from, valid_to)
-    values (p_tenant_id, gen_random_uuid(), 1, p_name, p_description, p_recorded_by,
-            'system.new_record', 'System seed data',
+        performed_by, change_reason_code, change_commentary, valid_from, valid_to)
+    values (p_tenant_id, gen_random_uuid(), 1, p_name, p_description, current_user,
+            current_user, 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
@@ -722,7 +721,7 @@ create or replace function ores_iam_role_permissions_assign_fn(
     p_tenant_id uuid,
     p_role_name text,
     p_permission_code text,
-    p_assigned_by text default 'system'
+    p_assigned_by text default current_user
 ) returns void as $$
 declare
     v_role_id uuid;
@@ -779,9 +778,9 @@ begin
     -- Insert flag if it doesn't exist (preserve existing values)
     -- Cast boolean to integer for the enabled column
     insert into ores_variability_feature_flags_tbl (tenant_id, name, enabled, description, modified_by,
-        change_reason_code, change_commentary, valid_from, valid_to)
-    values (p_tenant_id, p_name, p_enabled::int, p_description, 'system',
-            'system.new_record', 'System seed data',
+        performed_by, change_reason_code, change_commentary, valid_from, valid_to)
+    values (p_tenant_id, p_name, p_enabled::int, p_description, current_user,
+            current_user, 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 

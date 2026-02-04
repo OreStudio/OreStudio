@@ -886,6 +886,77 @@ Highlights:
   reliability of the new database logging and data persistence mechanisms.
 #+end_quote
 
+*** COMPLETED Add system accounts for services                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-04 Wed 09:00]--[2026-02-04 Wed 12:32] =>  3:32
+    :END:
+
+Services should also "login" and start sessions. This is needed so we can
+associate their log files with the session. Use the same account as we use for
+database.
+
+Notes:
+
+- unit tests should also "log in" and create sessions so we can see stats.
+- add performed by as per audit requirements.
+
+#+begin_quote
+This pull request significantly enhances the system's auditing capabilities by
+distinguishing between the database user and the application account responsible
+for changes. It also introduces a robust framework for managing service
+accounts, enabling secure authentication for automated processes. Furthermore,
+it addresses a critical deadlock in the telemetry system and refines several
+core database bootstrap and tenant management processes for improved stability
+and reliability.
+
+Highlights:
+
+- Performed By Audit Field: A new 'performed_by' field has been introduced
+  across all 42 domain tables to track the application account initiating an
+  action, complementing the existing 'modified_by' (database user). This change
+  is propagated through codegen templates for C++ domain classes, mappers,
+  protocol serialization, and Qt UI, ensuring comprehensive auditing.
+- Service Account Management: New 'account_type' classifications (user, service,
+  algorithm, LLM) are now supported, with dedicated service accounts created for
+  non-human entities. Service accounts are designed to authenticate via sessions
+  only, without passwords, and are integrated into the IAM schema and population
+  scripts.
+- Telemetry Deadlock Resolution: A critical fix has been implemented for a
+  telemetry async sink deadlock by introducing a 'skip_telemetry_guard' and
+  applying a filter to prevent recursive logging during database operations,
+  enhancing system stability.
+- SQL Bootstrap and Tenant Fixes: Various issues in SQL bootstrap and population
+  scripts have been resolved, including proper versioning for tenant termination
+  and ensuring system tenant context is set on service startup. A fail-fast
+  validation was also added to 'tenant_aware_pool' acquisition to prevent
+  operations without a defined tenant context.
+#+end_quote
+
+*** STARTED Log in from ores.qt with tenancy enabled                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-04 Wed 21:00]--[2026-02-04 Wed 21:32] =>  0:32
+    CLOCK: [2026-02-04 Wed 14:25]--[2026-02-04 Wed 16:26] =>  2:01
+    CLOCK: [2026-02-03 Tue 22:50]--[2026-02-03 Tue 23:27] =>  0:37
+    :END:
+
+Ensure tenancy is working correctly with several scenarios:
+
+- log in as super admin.
+- create tenant admin account and login to tenant.
+- create tenant user account and login.
+
+Notes:
+
+- bootstrap, stop service then start service. System is in bootstrap mode again.
+
+*** Generate protocol docs via codegen                                 :code:
+
+At present protocol documentation is very behind. We are not consistently
+generating it. Also, we keep making manual changes to document. We need to split
+it into two documents, the overview document which we maintain manually, and the
+list of versions, messages etc which is automatically generated. We should use
+mustache.
+
 *** Add database support for tests                                     :code:
 
 We could create a schema for logging:
@@ -919,16 +990,6 @@ Notes:
   coverage as well.
 - Claude can then plug into all of this information. For a given test run, we
   could generate a summary report and then have Claude analyse it.
-
-*** Add system accounts for services                                   :code:
-
-Services should also "login" and start sessions. This is needed so we can
-associate their log files with the session. Use the same account as we use for
-database.
-
-Notes:
-
-- unit tests should also "log in" and create sessions so we can see stats.
 
 *** Instrument components with telemetry context                       :code:
 

@@ -15,6 +15,8 @@ Component]].
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
+  :header-args+: :var login_args="--login-username newuser3"
+  :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
   :header-args+: :var ORES_COMMS_SHELL_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
   :END:
 
@@ -174,25 +176,21 @@ ores-shell> Bye!
 #+end_example
 
 ** Accounts
-   :PROPERTIES:
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
 
-Functionality related to the accounts domain entity in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio Accounts
-Component]].
+Functionality related to the accounts domain entity in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM Component]].
 
 *** Help Menu
 
-#+name: help-currencies-exit
+#+name: help-accounts-exit
 #+begin_src ores-shell :exports none
-currencies
+accounts
 help
 exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
 ./ores.comms.shell ${log_args} << 'EOF'
-<<help-currencies-exit>>
+<<help-accounts-exit>>
 EOF
 #+end_src
 
@@ -201,7 +199,7 @@ EOF
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> currencies> Commands available:
+ores-shell> accounts> Commands available:
  - help
 	This help message
  - exit
@@ -210,17 +208,43 @@ ores-shell> currencies> Commands available:
 	Show the history
  - ! <history entry index>
 	Exec a command by index in the history
- - get
-	Retrieve all currencies from the server
- - add <string> <string> <string> <string> <string> <string> <string>
-	Add a currency (iso_code name numeric_code symbol fractions reason_code "commentary")
- - delete <string>
-	Delete a currency by ISO code
+ - create <string> <string> <string> <string>
+	Create a new account (principal password totp_secret email) - principal is username@hostname or username
+ - list
+	Retrieve all accounts from the server
+ - login <string> <string>
+	Login with principal (username@hostname or username) and password
+ - lock <string>
+	Lock an account (account_id) - requires accounts:lock permission
+ - unlock <string>
+	Unlock a locked account (account_id) - requires accounts:unlock permission
+ - list-logins
+	Retrieve all login info records from the server
+ - logout
+	Logout the current user
+ - roles <string>
+	List roles assigned to an account (account_id)
+ - assign-role <string> <string>
+	Assign a role to an account (account_id role_id)
+ - revoke-role <string> <string>
+	Revoke a role from an account (account_id role_id)
+ - permissions <string>
+	List effective permissions for an account (account_id)
+ - sessions
+	List your session history
+ - sessions-for <string>
+	List sessions for an account (account_id) - requires accounts:read permission
+ - active-sessions
+	List your currently active sessions
+ - session-stats
+	Show session statistics for the last 30 days
+ - session-stats-days <int>
+	Show session statistics for the specified number of days
  - history <string>
-	Get version history for a currency by ISO code
+	Get version history for an account by username
  - ores-shell
 	(menu)
-currencies> Bye!
+accounts> Bye!
 #+end_example
 
 *** Auto connect
@@ -305,7 +329,7 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c201e-923e-7e49-8de0-8fd5f796c183
+  Account ID: 019c2a9c-afe4-7292-9efe-a8946411caec
   Tenant: System (00000000-0000-0000-0000-000000000000)
   You can now login with the credentials provided.
 ores-shell> Bye!
@@ -314,7 +338,6 @@ ores-shell> Bye!
 *** Auto login
    :PROPERTIES:
    :ID: CA27A829-0A1C-2C44-9AE3-D389D3898C4E
-   :header-args+: :var login_args="--login-username newuser3"
    :END:
 
 #+name: auto-login
@@ -429,11 +452,8 @@ ores-shell> Bye!
 #+end_example
 
 *** Create
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
-Creates new user accounts.
+Creates new user accounts on system tenant.
 
 #+name: create-account
 #+begin_src ores-shell :exports none
@@ -457,15 +477,12 @@ EOF
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c1fd6-bade-7014-a1ec-b05e808e4e4d
-ores-shell> ✓ Account created with ID: 019c1fd6-bb5a-710e-a34c-b6d5f9534774
+ores-shell> ✓ Account created with ID: 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
+ores-shell> ✓ Account created with ID: 019c2a9d-eab1-7d1c-9e3f-dc689236f099
 ores-shell> Bye!
 #+end_example
 
 *** List
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Lists existing accounts.
 
@@ -491,22 +508,26 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-+--------------------------------------+-----------+-----------------------+-------------------+-----------------+-------------------------------+---------+
-| ID (UUID)                            | Username  | Email                 | Change Reason     | Recorded By     | Recorded At                   | Version |
-+--------------------------------------+-----------+-----------------------+-------------------+-----------------+-------------------------------+---------+
-| 019c1fd6-bb5a-710e-a34c-b6d5f9534774 | newuser41 | newuser41@example.com | system.new_record | ores_comms_user | 2026-02-02 19:31:32.000000000 | 1       |
-| 019c1fd6-bade-7014-a1ec-b05e808e4e4d | newuser40 | newuser40@example.com | system.new_record | ores_comms_user | 2026-02-02 19:31:32.000000000 | 1       |
-| 019c1fd6-328d-7044-abf6-90524fec4a64 | newuser3  | newuser3@test.com     | system.new_record | bootstrap       | 2026-02-02 19:30:57.000000000 | 1       |
-+--------------------------------------+-----------+-----------------------+-------------------+-----------------+-------------------------------+---------+
++--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
+| ID (UUID)                            | Username           | Email                 | Change Reason       | Recorded By | Recorded At                   | Version |
++--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
+| 019c2a9d-eab1-7d1c-9e3f-dc689236f099 | newuser41          | newuser41@example.com | system.new_record   | postgres    | 2026-02-04 21:45:18.000000000 | 1       |
+| 019c2a9d-ea3a-76f5-a152-cf85f2adce9f | newuser40          | newuser40@example.com | system.new_record   | postgres    | 2026-02-04 21:45:18.000000000 | 1       |
+| 019c2a9c-afe4-7292-9efe-a8946411caec | newuser3           | newuser3@test.com     | system.new_record   | bootstrap   | 2026-02-04 21:43:57.000000000 | 1       |
+| 366aef0f-fa41-4269-bf5f-70466ce6fb29 | ores_test_dml_user | test_dml@system.ores  | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| bf91c7f6-dd57-49ae-817b-2ac4f822ca5f | ores_test_ddl_user | test_ddl@system.ores  | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| 5e958b97-cd55-4eac-b922-bd15a97a9761 | ores_http_user     | http@system.ores      | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| 19a6edb1-0439-4c56-b0d3-212c07996f27 | ores_comms_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| 0e505156-746b-4f3e-a2c4-4d995d2f19d4 | ores_wt_user       | wt@system.ores        | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| 20d944e2-4b6c-40b7-9c17-13734f4c3a1f | ores_cli_user      | cli@system.ores       | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| dcec2342-3f7a-4635-becf-3af109d81af6 | ores_ddl_user      | ddl@system.ores       | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
++--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
 
 
 ores-shell> Bye!
 #+end_example
 
 *** List Login Info
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Lists login information.
 
@@ -535,9 +556,9 @@ ores-shell>
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 | Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
-| 019c1fd6-bade-7014-a1ec-b05e808e4e4d | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019c1fd6-bb5a-710e-a34c-b6d5f9534774 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019c1fd6-328d-7044-abf6-90524fec4a64 | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-02-02 19:32:05 |
+| 019c2a9d-ea3a-76f5-a152-cf85f2adce9f | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019c2a9d-eab1-7d1c-9e3f-dc689236f099 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019c2a9c-afe4-7292-9efe-a8946411caec | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-02-04 21:45:53 |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 
 
@@ -545,15 +566,12 @@ ores-shell> Bye!
 #+end_example
 
 *** Lock
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Lock an account to prevent login.
 
 #+name: lock-account
 #+begin_src ores-shell :exports none
-accounts lock 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+accounts lock 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
 exit
 #+end_src
 
@@ -568,24 +586,22 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Account locked successfully!
-  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+  Account ID: 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
 ores-shell> Bye!
 #+end_example
 
 *** Unlock
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Unlock a previously locked account.
 
 #+name: unlock-account
 #+begin_src ores-shell :exports none
-accounts unlock 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+accounts unlock 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
 exit
 #+end_src
 
@@ -600,24 +616,22 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Account unlocked successfully!
-  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+  Account ID: 019c2a9d-ea3a-76f5-a152-cf85f2adce9f
 ores-shell> Bye!
 #+end_example
 
 *** Account Roles
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 List roles assigned to an account.
 
 #+name: account-roles
 #+begin_src ores-shell :exports none
-accounts roles 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+accounts roles 019c2a9c-afe4-7292-9efe-a8946411caec
 exit
 #+end_src
 
@@ -632,32 +646,30 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-Roles for Account: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+Roles for Account: 019c2a9c-afe4-7292-9efe-a8946411caec
 
-+--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
-| ID (UUID)                            | Name   | Description                                    | Permissions                 | Recorded By | Version |
-+--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
-| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer | Viewer - basic read-only access to domain data | currencies:read, flags:read | system      | 1       |
-+--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
++--------------------------------------+-------+----------------------------------------------------+-------------+-------------+---------+
+| ID (UUID)                            | Name  | Description                                        | Permissions | Recorded By | Version |
++--------------------------------------+-------+----------------------------------------------------+-------------+-------------+---------+
+| e3e4c8ac-8ba7-432c-bece-aff67b4720b7 | Admin | Full administrative access to all system functions | *           | postgres    | 1       |
++--------------------------------------+-------+----------------------------------------------------+-------------+-------------+---------+
 
 
 ores-shell> Bye!
 #+end_example
 
 *** Account Permissions
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 List effective permissions for an account.
 
 #+name: account-permissions
 #+begin_src ores-shell :exports none
-accounts permissions 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+accounts permissions 019c2a9c-afe4-7292-9efe-a8946411caec
 exit
 #+end_src
 
@@ -672,24 +684,21 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-Effective Permissions for Account: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+Effective Permissions for Account: 019c2a9c-afe4-7292-9efe-a8946411caec
 =======================================================================
 
-  - currencies:read
-  - flags:read
+  - *
 
-Total: 2 item(s)
+Total: 1 item(s)
 ores-shell> Bye!
 #+end_example
 
 *** Assign Role
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Assign a role to an account.
 
@@ -711,32 +720,30 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-+--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
-| ID (UUID)                            | Name       | Description                                                   | Permissions                                                   | Recorded By | Version |
-+--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
-| f60d8103-0283-4d46-aa4c-aa6bb50934d9 | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
-| d6ac9d9f-91c3-40d2-998d-0e18604a8687 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
-| 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
-| 1bc4ce25-7f72-4ac1-b42a-6c11dd350906 | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
-| a6eb024f-0c0c-4e0e-93a4-8fb5df41b2e2 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
-| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
-+--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
++--------------------------------------+-------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
+| ID (UUID)                            | Name        | Description                                                   | Permissions                                                   | Recorded By | Version |
++--------------------------------------+-------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
+| e3e4c8ac-8ba7-432c-bece-aff67b4720b7 | Admin       | Full administrative access to all system functions            | *                                                             | postgres    | 1       |
+| 9eae96db-1db0-4668-97ab-dcd3c08f2e84 | Operations  | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | postgres    | 1       |
+| 32b431ae-f56a-4178-8d2f-8d08b7681ecb | Sales       | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | postgres    | 1       |
+| 6aa4d6a8-f259-4b16-b197-42b31e3740d2 | SuperAdmin  | Platform super administrator with tenant management access    | *, tenants:create, tenants:impersonate (+4 more)              | postgres    | 1       |
+| de2a1deb-f0e1-4b9d-b1e0-b0e8f143fa62 | Support     | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | postgres    | 1       |
+| cbcb15c3-1bb1-49d1-b8b7-7bbfd5ff1dd7 | TenantAdmin | Tenant administrator with full access within a tenant         | *                                                             | postgres    | 1       |
+| 00cad95f-c021-4b8c-a0e9-e587fff91f52 | Trading     | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | postgres    | 1       |
+| 52e6f885-9641-4f6e-bda3-5d62c2489406 | Viewer      | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | postgres    | 1       |
++--------------------------------------+-------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 
 
-ores-shell> V Role assigned successfully!
-  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
-  Role ID:    82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
+ores-shell> X Failed to assign role: Failed to assign role: Role not found: 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 ores-shell> Bye!
 #+end_example
 
 *** Revoke Role
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Revoke a role from an account.
 
@@ -767,9 +774,6 @@ ores-shell> Bye!
 #+end_example
 
 *** History
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Get version history for an account.
 
@@ -804,10 +808,6 @@ ores-shell> Bye!
 
 
 ** Tenants
-   :PROPERTIES:
-   :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
 
 Tenant management functionality for multi-tenancy support in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM
 Component]].
@@ -880,12 +880,18 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-+-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
-| Code                                          | Name                                          | Type         | Hostname                                                | Status | Recorded By        | Version |
-+-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
-| ores.assets.tests_20260202_205009_969425_8799 | ores.assets.tests_20260202_205009_969425_8799 | organisation | ores.assets.tests_20260202_205009_969425_8799.localhost | active | ores_test_dml_user | 1       |
-| system                                        | System                                        | platform     | localhost                                               | active | system             | 1       |
-+-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
++------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+--------+--------------------+---------+
+| Code                                                       | Name                                                       | Type     | Hostname                                                             | Status | Recorded By        | Version |
++------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+--------+--------------------+---------+
+| ores.database.tests_20260204_210832_2516613_7890           | ores.database.tests_20260204_210832_2516613_7890           | test     | ores.database.tests_20260204_210832_2516613_7890.localhost           | active | ores_test_dml_user | 1       |
+| ores.eventing.tests_20260204_211018_2521337_9377           | ores.eventing.tests_20260204_211018_2521337_9377           | test     | ores.eventing.tests_20260204_211018_2521337_9377.localhost           | active | ores_test_dml_user | 1       |
+| ores.platform.tests_20260204_210826_2515998_4705           | ores.platform.tests_20260204_210826_2515998_4705           | test     | ores.platform.tests_20260204_210826_2515998_4705.localhost           | active | ores_test_dml_user | 1       |
+| ores.telemetry.database.tests_20260204_210848_2517492_5720 | ores.telemetry.database.tests_20260204_210848_2517492_5720 | test     | ores.telemetry.database.tests_20260204_210848_2517492_5720.localhost | active | ores_test_dml_user | 1       |
+| ores.telemetry.tests_20260204_210842_2516971_8464          | ores.telemetry.tests_20260204_210842_2516971_8464          | test     | ores.telemetry.tests_20260204_210842_2516971_8464.localhost          | active | ores_test_dml_user | 1       |
+| ores.utility.tests_20260204_210701_2514547_1836            | ores.utility.tests_20260204_210701_2514547_1836            | test     | ores.utility.tests_20260204_210701_2514547_1836.localhost            | active | ores_test_dml_user | 1       |
+| ores.variability.tests_20260204_210850_2517612_2808        | ores.variability.tests_20260204_210850_2517612_2808        | test     | ores.variability.tests_20260204_210850_2517612_2808.localhost        | active | ores_test_dml_user | 1       |
+| system                                                     | System                                                     | platform | localhost                                                            | active | postgres           | 1       |
++------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+--------+--------------------+---------+
 
 
 ores-shell> Bye!
@@ -911,20 +917,16 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected to :51004
-✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
+
+✗ Auto-login failed: System is in bootstrap mode. Only initial admin account creation is allowed. Please create the initial admin account from localhost.
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell>
-+-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
-| Code                                          | Name                                          | Type         | Hostname                                                | Status | Recorded By        | Version |
-+-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
-| ores.assets.tests_20260202_205009_969425_8799 | ores.assets.tests_20260202_205009_969425_8799 | organisation | ores.assets.tests_20260202_205009_969425_8799.localhost | active | ores_test_dml_user | 1       |
-| system                                        | System                                        | platform     | localhost                                               | active | system             | 1       |
-+-----------------------------------------------+-----------------------------------------------+--------------+---------------------------------------------------------+--------+--------------------+---------+
-
-
+ores-shell> ✗ Not logged in
 ores-shell> Bye!
 #+end_example
 
@@ -935,7 +937,7 @@ Create a new tenant with the specified parameters.
 
 #+name: tenants-add
 #+begin_src ores-shell :exports none
-tenants add acme "ACME Corp" enterprise acme.example.com "ACME Corporation tenant"
+tenants add acme "ACME Corp" organisation acme.example.com "ACME Corporation tenant"
 exit
 #+end_src
 
@@ -955,9 +957,30 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Tenant added successfully!
-  ID: 019c1234-5678-90ab-cdef-1234567890ab
+  ID: 5da8cae4-9bd3-495a-89d2-7ce8c0d43b37
 ores-shell> Bye!
 #+end_example
+
+*** Create Account on Tenant
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Creates new user accounts on system tenant.
+
+#+name: create-account
+#+begin_src ores-shell :exports none
+accounts create newuser40@acme Secure-Password-123 567 newuser40@acme.com
+accounts create newuser41@acme Secure-Password-123 567 newuser41@acme.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<create-account>>
+EOF
+#+END_SRC
 
 *** Tenant History
 
@@ -1029,10 +1052,6 @@ ores-shell> Bye!
 
 
 ** Variability
-   :PROPERTIES:
-   :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
 
 Functionality related to the accounts domain entity in [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE Studio Variability
 Component]].
@@ -1215,12 +1234,9 @@ ores-shell> Bye!
 
 
 ** Currencies
-   :PROPERTIES:
-   :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
 
-Functionality related to the currencies domain entity.
+Functionality related to the currencies domain entity in [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ORE Studio RefData
+Component]].
 
 *** Help Menu
 
@@ -1484,51 +1500,12 @@ ores-shell> Bye!
 #+end_example
 
 
-** RBAC
-   :PROPERTIES:
-   :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-   :END:
+** Roles
 
-Role-Based Access Control functionality for managing permissions and roles.
+Role-Based Access Control functionality for managing roles, in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM
+Component]].
 
-*** Help Menu Permissions
-
-#+name: help-permissions-exit
-#+begin_src ores-shell :exports none
-permissions
-help
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
-<<help-permissions-exit>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-ORE Studio Shell REPL v0.0.8
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> permissions> Commands available:
- - help
-	This help message
- - exit
-	Quit the session
- - history
-	Show the history
- - ! <history entry index>
-	Exec a command by index in the history
- - list
-	List all permissions in the system
- - ores-shell
-	(menu)
-permissions> Bye!
-#+end_example
-
-*** Help Menu Roles
+*** Help
 
 #+name: help-roles-exit
 #+begin_src ores-shell :exports none
@@ -1545,7 +1522,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> roles> Commands available:
@@ -1559,72 +1536,14 @@ ores-shell> roles> Commands available:
 	Exec a command by index in the history
  - list
 	List all roles in the system
- - show <string>
-	Show role details (role_name or role_id)
+ - get <string>
+	Get role details (role_name or role_id)
  - ores-shell
 	(menu)
 roles> Bye!
 #+end_example
 
-*** List Permissions
-
-List all permissions in the system.
-
-#+name: list-permissions
-#+begin_src ores-shell :exports none
-permissions list
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<list-permissions>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell>
-+--------------------------------------+-------------------------+---------------------------------------+
-| ID (UUID)                            | Code                    | Description                           |
-+--------------------------------------+-------------------------+---------------------------------------+
-| 963e09c4-9e79-4999-8328-6d75d2f07357 | *                       | Full access to all operations         |
-| ee6134aa-51da-463f-aef7-151ada8f1ef0 | accounts:create         | Create new user accounts              |
-| da55dfdd-5cc9-44fa-a180-a7b6a63f2c8b | accounts:delete         | Delete user accounts                  |
-| 2931b81c-54b4-416e-ac6a-ab16abaa83b0 | accounts:lock           | Lock user accounts                    |
-| 1bb87ab9-97b5-4da3-a630-247278e01b32 | accounts:read           | View user account details             |
-| 45763784-6d33-4404-9159-085afa320a74 | accounts:reset_password | Force password reset on user accounts |
-| 3051b7f0-26ef-48d6-89a0-0628f83ef8d4 | accounts:unlock         | Unlock user accounts                  |
-| 8526dcf5-e1d3-4b61-8060-74d464be79a1 | accounts:update         | Modify user account settings          |
-| 70302a28-b2c3-4a11-8f89-f5bb96ecaa36 | currencies:create       | Create new currencies                 |
-| 0ac3bdba-73c9-4519-87a7-338820adee11 | currencies:delete       | Delete currencies                     |
-| c2fb104f-140b-4c85-8853-81a92757bb68 | currencies:history      | View currency version history         |
-| d78c18f5-6705-408b-9512-5c7ac643796b | currencies:read         | View currency details                 |
-| 0ce6311e-7239-415f-818c-992ed784bf98 | currencies:update       | Modify currency settings              |
-| 106b9e3e-2ece-433d-8997-215c73e3de3a | flags:create            | Create new feature flags              |
-| 9206160e-3897-4277-bbae-d5c30d25b2fe | flags:delete            | Delete feature flags                  |
-| 58ea2c77-ca88-4d32-9022-bc92802910bc | flags:read              | View feature flag status              |
-| f846d3e5-6f63-4358-bfcc-cae3def9beb6 | flags:update            | Modify feature flag settings          |
-| 9cf7a227-a474-4bc7-9d4a-fc154d14f9b8 | login_info:read         | View login history and info           |
-| 2f503f67-77c2-49a7-aa7d-cf12afef08a3 | roles:assign            | Assign roles to accounts              |
-| c6c02365-8124-480e-b7e9-9a0474385723 | roles:create            | Create new roles                      |
-| 0154a24e-e857-4a63-abf4-346cf42c77ef | roles:delete            | Delete roles                          |
-| e2c6661e-9cd5-4979-a8df-2373d3526fd2 | roles:read              | View role details                     |
-| 2ff0ea13-c8b9-47be-97c1-dd4467a2df47 | roles:revoke            | Revoke roles from accounts            |
-| 1bbc70ed-b41b-46e0-b991-b1e81d5138b2 | roles:update            | Modify role permissions               |
-+--------------------------------------+-------------------------+---------------------------------------+
-
-
-ores-shell> Bye!
-#+end_example
-
-*** List Roles
+*** List
 
 List all roles in the system.
 
@@ -1664,7 +1583,7 @@ ores-shell>
 ores-shell> Bye!
 #+end_example
 
-*** Get Role
+*** Get
 
 Get details for a specific role.
 
@@ -1707,6 +1626,114 @@ Permissions (1):
 ores-shell> Bye!
 #+end_example
 
+
+
+
+** Permissions
+
+Role-Based Access Control functionality for managing permissions, in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio
+IAM Component]].
+
+*** Help Permissions
+
+#+name: help-permissions-exit
+#+begin_src ores-shell :exports none
+permissions
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<help-permissions-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> permissions> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - list
+	List all permissions in the system
+ - ores-shell
+	(menu)
+permissions> Bye!
+#+end_example
+
+*** List Permissions
+
+List all permissions in the system.
+
+#+name: list-permissions
+#+begin_src ores-shell :exports none
+permissions list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<list-permissions>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------------------------------------+-------------------------+---------------------------------------+
+| ID (UUID)                            | Code                    | Description                           |
++--------------------------------------+-------------------------+---------------------------------------+
+| 9419caac-72d8-450c-9d11-1f7918345e49 | *                       | Full access to all operations         |
+| 724e3690-a1b8-4fe4-a895-9a63d36d54bd | accounts:create         | Create new user accounts              |
+| 45585d27-2aa9-4962-a9d1-1dd5a28b0d4d | accounts:delete         | Delete user accounts                  |
+| 01015492-b33a-4423-be66-d893783abf59 | accounts:lock           | Lock user accounts                    |
+| 19590e4b-a7db-4658-983a-a2ae7d03c3a8 | accounts:read           | View user account details             |
+| 2811d1b2-2838-4ac2-b8a0-9946f5ab27f1 | accounts:reset_password | Force password reset on user accounts |
+| 67d955c7-f181-43e5-bec8-4e0abc7b598b | accounts:unlock         | Unlock user accounts                  |
+| d9d3ea86-9488-4c96-a630-49722a7e8818 | accounts:update         | Modify user account settings          |
+| 7fcae376-2fec-4fa3-8202-73bdf94102b6 | currencies:create       | Create new currencies                 |
+| 69517ef0-774e-4766-9f76-aa3dc7a13899 | currencies:delete       | Delete currencies                     |
+| 032cb9fe-3e20-4a5b-a868-81de0847159f | currencies:history      | View currency version history         |
+| fc20f9d6-2f9a-44fa-b3ab-35508c0bc159 | currencies:read         | View currency details                 |
+| f24f6086-b870-4181-a209-292d66645701 | currencies:update       | Modify currency settings              |
+| 89547294-7d87-487e-8943-e7dfa463ee6b | flags:create            | Create new feature flags              |
+| 2aac3165-1041-4d30-a302-d87131720771 | flags:delete            | Delete feature flags                  |
+| 44d8d0d2-b76f-45f3-9a0e-247741823b18 | flags:read              | View feature flag status              |
+| 113e6f5e-6dc5-4a9a-a517-830c7358ac3d | flags:update            | Modify feature flag settings          |
+| 2585f8bc-9f49-4263-b541-3649316089ab | login_info:read         | View login history and info           |
+| 34427cd3-142f-4e7b-a1c4-27a4f69a644b | roles:assign            | Assign roles to accounts              |
+| 35df85f7-d1bb-4a0f-b313-5a945b6180e2 | roles:create            | Create new roles                      |
+| 6de5d1c3-41b0-4308-91cf-ef99071f9b9f | roles:delete            | Delete roles                          |
+| 9a2eeab8-4d85-4165-96bb-b02b3bc6c458 | roles:read              | View role details                     |
+| 6cc5048f-5a75-4424-b4f6-df810179016d | roles:revoke            | Revoke roles from accounts            |
+| 5e28f39a-9949-4b9e-869a-aa149e25843a | roles:update            | Modify role permissions               |
+| 2039fe0b-cac8-42d7-be41-777161a3c62b | tenants:create          | Create new tenants                    |
+| 63398d70-793a-43c3-90ad-c330b325715a | tenants:impersonate     | Access other tenants                  |
+| 0d48b476-5560-480f-8e94-6e320245e835 | tenants:read            | View tenant details                   |
+| f56550e1-819f-4e9b-a50d-5833c5812b56 | tenants:suspend         | Suspend tenants                       |
+| 989874d8-f59f-41e2-90e0-4c600ed50c0d | tenants:terminate       | Terminate tenants                     |
+| bf8c077f-ed23-4702-b4f6-0841de33f090 | tenants:update          | Modify tenant settings                |
++--------------------------------------+-------------------------+---------------------------------------+
+
+
+ores-shell> Bye!
+#+end_example
 
 ** Events
    :PROPERTIES:

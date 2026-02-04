@@ -21,6 +21,7 @@
 #define ORES_DQ_DOMAIN_DATASET_DEPENDENCY_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 
 namespace ores::dq::domain {
@@ -75,6 +76,11 @@ struct dataset_dependency final {
      * @brief Username of the person who recorded this dependency.
      */
     std::string recorded_by;
+
+    /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
 
     /**
      * @brief Timestamp when this dependency was recorded.

@@ -21,6 +21,7 @@
 #define ORES_DQ_DOMAIN_DATASET_BUNDLE_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 
@@ -89,6 +90,11 @@ struct dataset_bundle final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
+
+    /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

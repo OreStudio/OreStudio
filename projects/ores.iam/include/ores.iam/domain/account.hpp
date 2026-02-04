@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 
@@ -61,6 +62,19 @@ struct account final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
+
+    /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Account type classification.
+     *
+     * Determines account capabilities. 'user' accounts can login with password,
+     * while 'service', 'algorithm', and 'llm' accounts authenticate via sessions.
+     */
+    std::string account_type = "user";
 
     /**
      * @brief Unique username for login purposes.

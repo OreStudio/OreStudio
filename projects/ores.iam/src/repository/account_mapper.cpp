@@ -37,8 +37,10 @@ domain::account account_mapper::map(const account_entity& v) {
     r.recorded_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
+    r.performed_by = v.performed_by;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
+    r.account_type = v.account_type;
     r.username = v.username;
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
@@ -57,6 +59,7 @@ account_entity account_mapper::map(const domain::account& v) {
     r.id = boost::lexical_cast<std::string>(v.id);
     r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
     r.version = v.version;
+    r.account_type = v.account_type;
     r.username = v.username;
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
@@ -65,6 +68,7 @@ account_entity account_mapper::map(const domain::account& v) {
     r.modified_by = v.recorded_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
+    r.performed_by = v.performed_by;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

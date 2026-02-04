@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ROLE_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
@@ -78,6 +79,11 @@ struct role final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
+
+    /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

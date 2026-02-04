@@ -76,6 +76,11 @@ struct catalog final {
     std::string change_commentary;
 
     /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;

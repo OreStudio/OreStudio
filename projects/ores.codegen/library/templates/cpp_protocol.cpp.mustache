@@ -43,6 +43,7 @@ void write_{{entity_singular}}(std::vector<std::byte>& buffer,
 {{/is_int}}
 {{/columns}}
     writer::write_string(buffer, {{cpp.iterator_var}}.recorded_by);
+    writer::write_string(buffer, {{cpp.iterator_var}}.performed_by);
     writer::write_string(buffer, {{cpp.iterator_var}}.change_reason_code);
     writer::write_string(buffer, {{cpp.iterator_var}}.change_commentary);
     writer::write_string(buffer,
@@ -91,6 +92,10 @@ read_{{entity_singular}}(std::span<const std::byte>& data) {
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     {{cpp.iterator_var}}.recorded_by = *recorded_by_result;
+
+    auto performed_by_result = reader::read_string(data);
+    if (!performed_by_result) return std::unexpected(performed_by_result.error());
+    {{cpp.iterator_var}}.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
@@ -431,6 +436,7 @@ void write_{{name_singular}}(std::vector<std::byte>& buffer,
 {{/is_int}}
 {{/columns}}
     writer::write_string(buffer, {{cpp.iterator_var}}.recorded_by);
+    writer::write_string(buffer, {{cpp.iterator_var}}.performed_by);
     writer::write_string(buffer, {{cpp.iterator_var}}.change_reason_code);
     writer::write_string(buffer, {{cpp.iterator_var}}.change_commentary);
     writer::write_string(buffer,
@@ -470,6 +476,10 @@ read_{{name_singular}}(std::span<const std::byte>& data) {
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     {{cpp.iterator_var}}.recorded_by = *recorded_by_result;
+
+    auto performed_by_result = reader::read_string(data);
+    if (!performed_by_result) return std::unexpected(performed_by_result.error());
+    {{cpp.iterator_var}}.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

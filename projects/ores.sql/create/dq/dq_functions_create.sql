@@ -39,7 +39,7 @@ begin
     ) then
         insert into ores_dq_methodologies_tbl (
             id, version, name, description, logic_reference, implementation_details,
-            modified_by, change_reason_code, change_commentary,
+            modified_by, performed_by, change_reason_code, change_commentary,
             valid_from, valid_to
         )
         values (
@@ -88,7 +88,7 @@ begin
             id, version, subject_area_name, domain_name, origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
-            modified_by, change_reason_code, change_commentary,
+            modified_by, performed_by, change_reason_code, change_commentary,
             valid_from, valid_to
         )
         values (

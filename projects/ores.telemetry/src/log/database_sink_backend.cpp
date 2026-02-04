@@ -159,7 +159,11 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     entry.recorded_at = std::chrono::system_clock::now();
 
     // Call the handler to store the log entry (could be to database, file, etc.)
+    // Use skip_telemetry_guard to prevent recursive logging from within the handler.
+    // Any logs generated during database operations (e.g., connection pool, SQL execution)
+    // will be marked to skip telemetry sinks, preventing deadlocks in the async sink.
     if (handler_) {
+        skip_telemetry_guard guard;
         handler_(entry);
     }
 }

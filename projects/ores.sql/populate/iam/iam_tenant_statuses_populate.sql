@@ -29,17 +29,17 @@
 
 insert into ores_iam_tenant_statuses_tbl (
     tenant_id, status, version, name, description, display_order,
-    modified_by, change_reason_code, change_commentary
+    modified_by, performed_by, change_reason_code, change_commentary
 ) values
     (ores_iam_system_tenant_id_fn(), 'active', 0, 'Active',
      'Tenant is active and fully operational', 0,
-     current_user, 'system.initial_load', 'Initial population of tenant statuses'),
+     current_user, current_user, 'system.initial_load', 'Initial population of tenant statuses'),
     (ores_iam_system_tenant_id_fn(), 'suspended', 0, 'Suspended',
      'Tenant is temporarily suspended - users cannot log in', 10,
-     current_user, 'system.initial_load', 'Initial population of tenant statuses'),
+     current_user, current_user, 'system.initial_load', 'Initial population of tenant statuses'),
     (ores_iam_system_tenant_id_fn(), 'terminated', 0, 'Terminated',
      'Tenant has been permanently terminated', 20,
-     current_user, 'system.initial_load', 'Initial population of tenant statuses')
+     current_user, current_user, 'system.initial_load', 'Initial population of tenant statuses')
 on conflict (tenant_id, status)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

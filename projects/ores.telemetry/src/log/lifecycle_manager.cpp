@@ -21,6 +21,8 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include "ores.telemetry/log/skip_telemetry_guard.hpp"
 
 namespace ores::telemetry::log {
 
@@ -58,8 +60,11 @@ void lifecycle_manager::add_telemetry_sink(
 
     telemetry_sink_ = boost::make_shared<telemetry_sink_type>(backend);
 
-    // The telemetry sink receives all log records (no filtering by severity)
-    // Filtering can be done in the handler if needed
+    // Filter out records marked to skip telemetry (prevents recursive logging deadlock)
+    telemetry_sink_->set_filter(
+        !boost::log::expressions::has_attr<bool>(skip_telemetry_attribute) ||
+        boost::log::expressions::attr<bool>(skip_telemetry_attribute) != true);
+
     boost::log::core::get()->add_sink(telemetry_sink_);
 }
 
@@ -74,8 +79,11 @@ void lifecycle_manager::add_database_sink(
 
     database_sink_ = boost::make_shared<database_sink_type>(backend);
 
-    // The database sink receives all log records (no filtering by severity)
-    // Filtering can be done in the handler if needed
+    // Filter out records marked to skip telemetry (prevents recursive logging deadlock)
+    database_sink_->set_filter(
+        !boost::log::expressions::has_attr<bool>(skip_telemetry_attribute) ||
+        boost::log::expressions::attr<bool>(skip_telemetry_attribute) != true);
+
     boost::log::core::get()->add_sink(database_sink_);
 }
 

@@ -63,14 +63,14 @@ public:
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param username Account username
+     * @param principal Account principal (username@hostname or just username)
      * @param password Account password
      * @param totp_secret TOTP secret for 2FA
      * @param email Account email
      */
     static void process_create_account(std::ostream& out,
         comms::net::client_session& session,
-        std::string username, std::string password, std::string totp_secret,
+        std::string principal, std::string password, std::string totp_secret,
         std::string email);
 
     /**

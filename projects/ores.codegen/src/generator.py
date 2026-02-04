@@ -351,6 +351,19 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{EntityPascal}', entity_pascal)
 
+    elif 'entity' in model_data:
+        # Handle entity schema models (files ending with _entity.json)
+        entity = model_data['entity']
+        component = entity.get('component', 'unknown')
+        entity_singular = entity.get('entity_singular', 'unknown')
+        entity_plural = entity.get('entity_plural', entity_singular + 's')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
     return result
 
 

@@ -66,18 +66,23 @@ public:
      * This method acquires a connection from the underlying pool and
      * executes SET_CONFIG to set the tenant context before returning.
      *
-     * @return A session with tenant context set, or an error
+     * @return A session with tenant context set, or an error if tenant_id is not set
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
 
-        auto session_result = pool_.acquire();
-        if (!session_result) {
-            return session_result;
+        if (tenant_id_.empty()) {
+            BOOST_LOG_SEV(lg(), error)
+                << "acquire() called without tenant context. "
+                << "Use set_tenant_id() or tenant_context::set_system_tenant() first.";
+            return sqlgen::error(
+                "tenant_aware_pool requires tenant_id to be set. "
+                "Use set_tenant_id() or tenant_context::set_system_tenant() "
+                "for system operations.");
         }
 
-        if (tenant_id_.empty()) {
-            BOOST_LOG_SEV(lg(), trace) << "Acquiring connection without tenant context";
+        auto session_result = pool_.acquire();
+        if (!session_result) {
             return session_result;
         }
 

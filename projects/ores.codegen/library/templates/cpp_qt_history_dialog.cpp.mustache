@@ -65,9 +65,9 @@ void {{domain_entity.entity_pascal}}HistoryDialog::setupUi() {
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
-    ui_->versionListWidget->setColumnCount(4);
+    ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Recorded By", "Commentary"});
+        {"Version", "Recorded At", "Recorded By", "Performed By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -220,9 +220,13 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
             QString::fromStdString(version.recorded_by));
         ui_->versionListWidget->setItem(row, 2, recordedByItem);
 
+        auto* performedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.performed_by));
+        ui_->versionListWidget->setItem(row, 3, performedByItem);
+
         auto* commentaryItem = new QTableWidgetItem(
             QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 3, commentaryItem);
+        ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
     // Select the first (most recent) version
@@ -316,6 +320,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->performedByValue->setText(QString::fromStdString(version.performed_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(
         QString::fromStdString(version.change_commentary));

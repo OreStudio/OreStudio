@@ -51,7 +51,7 @@ const std::string tags("[messaging][handler][crud]");
 
 save_account_request to_save_account_request(const domain::account& a) {
     save_account_request r;
-    r.username = a.username;
+    r.principal = a.username;
     r.password = faker::internet::password();
     r.totp_secret = a.totp_secret;
     r.email = a.email;

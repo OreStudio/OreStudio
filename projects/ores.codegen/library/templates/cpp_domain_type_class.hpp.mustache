@@ -59,6 +59,11 @@ struct {{entity_singular}} final {
     std::string recorded_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
      *
      * References change_reasons table (soft FK).
@@ -136,6 +141,11 @@ struct {{name_singular}} final {
      * @brief Username of the person who last modified this {{name_singular_words}}.
      */
     std::string recorded_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.

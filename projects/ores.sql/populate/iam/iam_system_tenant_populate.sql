@@ -51,6 +51,7 @@ begin
             hostname,
             status,
             modified_by,
+            performed_by,
             change_reason_code,
             change_commentary
         ) values (
@@ -62,7 +63,8 @@ begin
             'Platform-level system tenant for shared governance data and administration',
             'localhost',
             'active',
-            'system',
+            current_user,
+            current_user,
             'system.initial_load',
             'Initial system tenant creation'
         );

@@ -353,11 +353,11 @@ void AccountDetailDialog::onSaveClicked() {
                                            << username;
 
                 iam::messaging::save_account_request request;
-                request.username = username;
+                request.principal = username;
                 request.password = password;
                 request.email = email;
                 request.recorded_by = recorded_by;
-                request.totp_secret = ""; // Not used yet
+                request.totp_secret = "";
 
                 auto payload = request.serialize();
                 frame request_frame(message_type::save_account_request,

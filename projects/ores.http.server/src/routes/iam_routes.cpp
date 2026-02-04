@@ -785,7 +785,7 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
         // Use setup_service to create account with default Viewer role
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account(
-            create_req->username, create_req->email,
+            create_req->principal, create_req->email,
             create_req->password, req.authenticated_user->username.value_or("system"));
 
         iam::messaging::save_account_response resp;

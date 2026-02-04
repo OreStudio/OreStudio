@@ -28,14 +28,16 @@ create table if not exists ores_iam_accounts_tbl (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "account_type" text not null default 'user',
     "username" text not null,
-    "password_hash" text not null,
-    "password_salt" text not null,
+    "password_hash" text null,
+    "password_salt" text null,
     "totp_secret" text not null,
     "email" text not null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
+    "performed_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (tenant_id, id, valid_from, valid_to),
@@ -74,6 +76,15 @@ declare
 begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+    -- Validate account_type
+    new.account_type := ores_iam_validate_account_type_fn(new.account_type);
+
+    -- Enforce password requirement for user accounts
+    if new.account_type = 'user' and (new.password_hash is null or new.password_hash = '') then
+        raise exception 'User accounts must have a password'
+            using errcode = '23502';
+    end if;
 
     select version into current_version
     from ores_iam_accounts_tbl

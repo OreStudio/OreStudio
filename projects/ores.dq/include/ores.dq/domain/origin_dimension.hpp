@@ -21,6 +21,7 @@
 #define ORES_DQ_DOMAIN_ORIGIN_DIMENSION_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 
 namespace ores::dq::domain {
@@ -74,6 +75,11 @@ struct origin_dimension final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
+
+    /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

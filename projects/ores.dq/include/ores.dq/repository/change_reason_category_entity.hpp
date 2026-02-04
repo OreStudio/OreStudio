@@ -38,6 +38,7 @@ struct change_reason_category_entity {
     int version = 0;
     std::string description;
     std::string modified_by;
+    std::string performed_by;
     std::string change_commentary;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";

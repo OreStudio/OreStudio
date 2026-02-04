@@ -58,7 +58,7 @@ read_timepoint(std::span<const std::byte>& data) {
 std::vector<std::byte> save_account_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
-    writer::write_string(buffer, username);
+    writer::write_string(buffer, principal);
     writer::write_string(buffer, password);
     writer::write_string(buffer, totp_secret);
     writer::write_string(buffer, email);
@@ -76,9 +76,9 @@ save_account_request::deserialize(std::span<const std::byte> data) {
     if (!account_id_result) return std::unexpected(account_id_result.error());
     request.account_id = *account_id_result;
 
-    auto username_result = reader::read_string(data);
-    if (!username_result) return std::unexpected(username_result.error());
-    request.username = *username_result;
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
 
     auto password_result = reader::read_string(data);
     if (!password_result) return std::unexpected(password_result.error());

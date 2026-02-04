@@ -22,6 +22,7 @@
 
 #include <string>
 #include <chrono>
+#include <optional>
 #include <sstream>
 #include <cstdint>
 #include <stdexcept>
@@ -59,6 +60,31 @@ struct Reflector<boost::uuids::uuid> {
 
     static ReflType from(const boost::uuids::uuid& v) {
         return boost::lexical_cast<std::string>(v);
+    }
+};
+
+/**
+ * @brief Custom reflector for std::optional<boost::uuids::uuid>.
+ *
+ * Serializes optional UUID as nullable string representation.
+ * An empty optional serializes to null, a present value serializes as UUID string.
+ */
+template<>
+struct Reflector<std::optional<boost::uuids::uuid>> {
+    using ReflType = std::optional<std::string>;
+
+    static std::optional<boost::uuids::uuid> to(const ReflType& str) {
+        if (!str.has_value()) {
+            return std::nullopt;
+        }
+        return boost::lexical_cast<boost::uuids::uuid>(str.value());
+    }
+
+    static ReflType from(const std::optional<boost::uuids::uuid>& v) {
+        if (!v.has_value()) {
+            return std::nullopt;
+        }
+        return boost::lexical_cast<std::string>(v.value());
     }
 };
 

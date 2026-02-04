@@ -25,7 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include <boost/asio/prefer.hpp>
 
 namespace {

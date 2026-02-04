@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam/messaging/registrar.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include <memory>
 #include "ores.iam/messaging/accounts_message_handler.hpp"

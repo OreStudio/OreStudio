@@ -21,6 +21,7 @@
 #define ORES_TELEMETRY_MESSAGING_TELEMETRY_MESSAGE_HANDLER_HPP
 
 #include <memory>
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"

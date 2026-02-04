@@ -18,6 +18,7 @@
  *
  */
 #include "ores.telemetry/messaging/registrar.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include "ores.telemetry/messaging/telemetry_message_handler.hpp"
 

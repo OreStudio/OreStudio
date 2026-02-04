@@ -39,6 +39,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.comms/net/client_options.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/connection.hpp"
 #include "ores.comms/net/pending_request_map.hpp"
 #include "ores.comms/messaging/frame.hpp"

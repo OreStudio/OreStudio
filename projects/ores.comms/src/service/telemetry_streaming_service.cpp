@@ -21,7 +21,7 @@
 
 #include <boost/make_shared.hpp>
 #include "ores.comms/net/client.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.telemetry/messaging/log_records_protocol.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
 

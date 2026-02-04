@@ -233,7 +233,7 @@ void execute_raw_command(context ctx, const std::string& sql,
     if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
         PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         // Rollback on error
-        PQexec(conn_guard.conn, "ROLLBACK");
+        pg_result_guard rollback_guard(PQexec(conn_guard.conn, "ROLLBACK"));
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
         throw std::runtime_error("Command execution failed: " + err_msg);
@@ -355,7 +355,7 @@ void execute_parameterized_command(context ctx, const std::string& sql,
     if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
         PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         // Rollback on error
-        PQexec(conn_guard.conn, "ROLLBACK");
+        pg_result_guard rollback_guard(PQexec(conn_guard.conn, "ROLLBACK"));
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
         throw std::runtime_error("Command execution failed: " + err_msg);

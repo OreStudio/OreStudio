@@ -23,7 +23,8 @@
 #include "ores.comms/net/connection.hpp"
 #include "ores.comms/net/connection_error.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 namespace ores::comms::service {
 
@@ -80,7 +81,7 @@ boost::asio::awaitable<messaging::compression_type> handshake_service::perform_c
 
         throw net::connection_error(std::format(
             "Failed to read handshake response from server ({})",
-            messaging::to_string(ec)));
+            ores::utility::serialization::to_string(ec)));
     }
 
     const auto& response_frame = *response_read_result.frame;

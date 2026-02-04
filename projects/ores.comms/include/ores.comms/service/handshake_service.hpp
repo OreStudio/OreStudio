@@ -26,7 +26,8 @@
 #include <functional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/compression_type.hpp"
 
 namespace ores::comms::net { class connection; }
 

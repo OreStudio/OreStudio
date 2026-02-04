@@ -18,6 +18,7 @@
  *
  */
 #include "ores.variability/messaging/registrar.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include "ores.variability/messaging/variability_message_handler.hpp"
 

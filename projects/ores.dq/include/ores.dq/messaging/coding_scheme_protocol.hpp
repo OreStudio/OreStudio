@@ -24,7 +24,8 @@
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/coding_scheme.hpp"
 #include "ores.dq/domain/coding_scheme_authority_type.hpp"

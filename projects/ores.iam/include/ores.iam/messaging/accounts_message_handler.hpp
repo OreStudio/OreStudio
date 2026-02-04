@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 
 #include <memory>
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"

@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <cli/cli.h>
 #include "ores.platform/time/datetime.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.iam/domain/tenant_table_io.hpp" // IWYU pragma: keep.

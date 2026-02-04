@@ -20,7 +20,8 @@
 #include <iostream>
 #include <exception>
 #include "ores.utility/version/version.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms.analyser/config/parser.hpp"

@@ -27,6 +27,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::comms::net {

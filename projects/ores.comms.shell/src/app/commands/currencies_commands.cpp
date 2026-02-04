@@ -22,7 +22,7 @@
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.refdata/domain/currency_table_io.hpp" // IWYU pragma: keep.

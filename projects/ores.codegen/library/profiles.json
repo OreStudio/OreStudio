@@ -190,6 +190,16 @@
           "output": "output/{entity}_er.puml"
         }
       ]
+    },
+    "enum": {
+      "description": "C++ enum class with string conversion",
+      "model_types": ["enum"],
+      "templates": [
+        {
+          "template": "cpp_enum.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/messaging/{enum_name}.hpp"
+        }
+      ]
     }
   }
 }

@@ -22,7 +22,7 @@
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.variability/domain/feature_flags_table_io.hpp"  // IWYU pragma: keep.
 

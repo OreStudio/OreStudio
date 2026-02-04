@@ -35,6 +35,7 @@
 #include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/account_version_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam/client/auth_helpers.hpp"
 #include "ores.comms.shell/app/commands/rbac_commands.hpp"
 
 namespace ores::comms::shell::app::commands {
@@ -42,7 +43,6 @@ namespace ores::comms::shell::app::commands {
 using namespace ores::logging;
 using comms::messaging::message_type;
 using comms::net::client_session;
-using comms::net::client_session_error;
 
 void accounts_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
@@ -187,44 +187,15 @@ process_list_accounts(std::ostream& out, client_session& session) {
 void accounts_commands::
 process_login(std::ostream& out, client_session& session,
     std::string principal, std::string password) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating login request for principal: "
-                               << principal;
-
-    using iam::messaging::login_request;
-    auto result = session.process_request(
-        login_request{
-            .principal = principal,
-            .password = std::move(password)
-        });
-
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
-        return;
+    auto result = iam::client::login(session, principal, password);
+    if (result.success) {
+        out << "✓ Login successful!" << std::endl;
+        out << "  User: " << result.username << std::endl;
+        out << "  Tenant: " << result.tenant_name
+            << " (" << result.tenant_id << ")" << std::endl;
+    } else {
+        out << "✗ Login failed: " << result.error_message << std::endl;
     }
-
-    const auto& response = *result;
-    if (!response.success) {
-        BOOST_LOG_SEV(lg(), warn) << "Login failed: " << response.error_message;
-        out << "✗ Login failed: " << response.error_message << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Login successful for user: " << response.username
-                              << ", tenant: " << response.tenant_name
-                              << " (" << response.tenant_id << ")";
-
-    out << "✓ Login successful!" << std::endl;
-    out << "  User: " << response.username << std::endl;
-    out << "  Tenant: " << response.tenant_name
-        << " (" << response.tenant_id << ")" << std::endl;
-
-    // Update session state
-    // Note: Permission checks are now handled server-side via RBAC
-    comms::net::client_session_info info{
-        .account_id = response.account_id,
-        .username = response.username
-    };
-    session.set_session_info(std::move(info));
 }
 
 void accounts_commands::
@@ -370,34 +341,11 @@ process_list_login_info(std::ostream& out, client_session& session) {
 
 void accounts_commands::
 process_logout(std::ostream& out, client_session& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing logout request.";
-
-    // Check if logged in
-    if (!session.is_logged_in()) {
-        out << "✗ Not logged in." << std::endl;
-        return;
-    }
-
-    using iam::messaging::logout_request;
-    using iam::messaging::logout_response;
-    auto result = session.process_authenticated_request<logout_request,
-                                                        logout_response,
-                                                        message_type::logout_request>
-        (logout_request{});
-
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
-        return;
-    }
-
-    const auto& response = *result;
-    if (response.success) {
-        BOOST_LOG_SEV(lg(), info) << "Logout successful.";
+    auto result = iam::client::logout(session);
+    if (result.success) {
         out << "✓ Logged out successfully." << std::endl;
-        session.clear_session_info();
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Logout failed: " << response.message;
-        out << "✗ Logout failed: " << response.message << std::endl;
+        out << "✗ Logout failed: " << result.error_message << std::endl;
     }
 }
 

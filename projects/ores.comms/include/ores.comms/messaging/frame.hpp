@@ -27,7 +27,9 @@
 #include <cstdint>
 #include <expected>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.utility/serialization/error_code.hpp"
+#include "ores.comms/messaging/compression_type.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 
 namespace ores::comms::messaging {
 

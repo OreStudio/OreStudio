@@ -18,6 +18,7 @@
  *
  */
 #include <span>
+#include "ores.comms/messaging/protocol.hpp"
 #include <vector>
 #include <string>
 #include <cstdint>

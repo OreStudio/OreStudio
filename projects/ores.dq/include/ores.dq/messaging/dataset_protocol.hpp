@@ -26,7 +26,7 @@
 #include <vector>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"

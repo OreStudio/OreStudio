@@ -30,7 +30,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"

@@ -21,6 +21,7 @@
 #define ORES_VARIABILITY_MESSAGING_VARIABILITY_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"

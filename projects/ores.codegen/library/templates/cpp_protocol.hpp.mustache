@@ -10,7 +10,7 @@
 {{#primary_key.is_uuid}}
 #include <boost/uuid/uuid.hpp>
 {{/primary_key.is_uuid}}
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.{{component}}/domain/{{entity_singular}}.hpp"
 
@@ -193,7 +193,7 @@ struct message_traits<{{component}}::messaging::get_{{entity_singular}}_history_
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.{{component}}/domain/{{name_singular}}.hpp"
 

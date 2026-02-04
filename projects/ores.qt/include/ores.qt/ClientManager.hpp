@@ -33,6 +33,7 @@
 #include <QObject>
 #include <QDateTime>
 #include "ores.comms/net/client.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
 #include "ores.comms/recording/session_recorder.hpp"

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.comms/net/server.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include <chrono>
 #include <boost/asio/co_spawn.hpp>

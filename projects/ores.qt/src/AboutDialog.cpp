@@ -21,7 +21,8 @@
 #include "ores.qt/AboutDialog.hpp"
 
 #include "ores.utility/version/version.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 #include <QDate>
 #include <QTime>
 #include <QPainter>

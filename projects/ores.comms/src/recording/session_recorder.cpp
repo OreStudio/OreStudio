@@ -18,6 +18,7 @@
  *
  */
 #include "ores.comms/recording/session_recorder.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include <cstring>
 #include "ores.utility/uuid/uuid_v7_generator.hpp"

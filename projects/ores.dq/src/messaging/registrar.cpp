@@ -18,6 +18,7 @@
  *
  */
 #include "ores.dq/messaging/registrar.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include <memory>
 #include "ores.dq/messaging/dq_message_handler.hpp"

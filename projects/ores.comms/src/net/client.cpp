@@ -18,6 +18,7 @@
  *
  */
 #include "ores.comms/net/client.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include <mutex>
 #include <memory>

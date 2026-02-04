@@ -32,7 +32,8 @@
 #include <set>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.utility/serialization/error_code.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
@@ -312,7 +313,7 @@ public:
             }
             return std::unexpected(session_error(
                 client_session_error::request_failed,
-                "Request failed: " + messaging::to_string(error_code)));
+                "Request failed: " + ores::utility::serialization::to_string(error_code)));
         }
 
         auto decompressed = response_result->decompressed_payload();

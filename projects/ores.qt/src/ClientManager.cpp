@@ -24,7 +24,7 @@
 #include <QThreadPool>
 #include <QTimeZone>
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.iam/messaging/protocol.hpp"

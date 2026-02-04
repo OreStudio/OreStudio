@@ -27,7 +27,8 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/service/session_data.hpp"
 
 namespace ores::comms::service {

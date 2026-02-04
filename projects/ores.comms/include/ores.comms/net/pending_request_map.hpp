@@ -27,7 +27,8 @@
 #include <boost/asio/any_io_executor.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/response_channel.hpp"
 
 namespace ores::comms::net {

@@ -24,7 +24,8 @@
 #include <vector>
 #include <cstddef>
 #include <expected>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/compression_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::comms::messaging {
 

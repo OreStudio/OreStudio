@@ -18,6 +18,7 @@
  *
  */
 #include "ores.assets/messaging/registrar.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include "ores.assets/messaging/assets_message_handler.hpp"
 

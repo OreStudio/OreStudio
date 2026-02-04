@@ -19,6 +19,7 @@
  *
  */
 #include "ores.comms.service/app/application.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include <boost/throw_exception.hpp>
 #include <boost/asio/co_spawn.hpp>

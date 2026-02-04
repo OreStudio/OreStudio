@@ -26,6 +26,7 @@
 #include <boost/asio/awaitable.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 

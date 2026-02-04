@@ -1,0 +1,72 @@
+{{{cpp_license}}}
+{{#enum}}
+#ifndef ORES_{{component_upper}}_MESSAGING_{{name_upper}}_HPP
+#define ORES_{{component_upper}}_MESSAGING_{{name_upper}}_HPP
+
+{{#includes}}
+#include {{{.}}}
+{{/includes}}
+
+namespace {{namespace}} {
+
+/**
+ * @brief {{{brief}}}
+ *
+{{#description_lines}}
+ * {{{.}}}
+{{/description_lines}}
+ */
+enum class {{name}}{{#underlying_type}} : {{underlying_type}}{{/underlying_type}} {
+{{#values}}
+{{#comment}}
+    // {{{comment}}}
+{{/comment}}
+{{#value}}
+    {{name}} = {{value}}{{^last}},{{/last}}
+{{/value}}
+{{^value}}
+    {{name}}{{^last}},{{/last}}
+{{/value}}
+{{/values}}
+};
+
+/**
+ * @brief Convert {{name}} to string representation.
+ *
+ * @param v The enum value to convert.
+ * @return String view of the enum name, or empty for unknown values.
+ */
+[[nodiscard]] constexpr std::string_view to_string({{name}} v) noexcept {
+    switch (v) {
+{{#values}}
+{{#value}}
+    case {{enum_name}}::{{name}}: return "{{name}}";
+{{/value}}
+{{/values}}
+    default: return {};
+    }
+}
+
+/**
+ * @brief Stream output operator for {{name}}.
+ *
+ * Outputs the enum name followed by the hex value in parentheses.
+ * Example: "get_currencies_request (0x1001)"
+ * If the value is unknown, outputs "[unknown]" prefix.
+ */
+inline std::ostream& operator<<(std::ostream& os, {{name}} v) {
+    const auto name = to_string(v);
+    if (name.empty()) {
+        os << "[unknown]";
+    } else {
+        os << name;
+    }
+    return os << " (0x" << std::hex
+              << static_cast<{{underlying_type}}>(v)
+              << std::dec << ")";
+}
+
+}
+
+#endif
+{{/enum}}

@@ -1,0 +1,18 @@
+{
+  "enum": {
+    "component": "comms",
+    "namespace": "ores::comms::messaging",
+    "name": "compression_type",
+    "brief": "Compression algorithm used for payload compression.",
+    "description": "The compression type is stored in the high byte of the former reserved1\nfield in the frame header. Using none (0x00) maintains backward\ncompatibility with uncompressed payloads.",
+    "underlying_type": "std::uint8_t",
+    "includes": ["<cstdint>", "<ostream>", "<string_view>"],
+
+    "values": [
+      {"name": "none", "value": "0x00", "comment": "No compression (default)"},
+      {"name": "zlib", "value": "0x01", "comment": "zlib/deflate compression"},
+      {"name": "gzip", "value": "0x02", "comment": "gzip compression"},
+      {"name": "bzip2", "value": "0x03", "comment": "bzip2 compression"}
+    ]
+  }
+}

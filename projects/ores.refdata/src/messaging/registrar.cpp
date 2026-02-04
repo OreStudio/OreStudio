@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata/messaging/registrar.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 
 #include "ores.refdata/messaging/risk_message_handler.hpp"
 

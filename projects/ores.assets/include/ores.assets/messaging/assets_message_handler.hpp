@@ -21,6 +21,7 @@
 #define ORES_ASSETS_MESSAGING_ASSETS_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.assets/repository/image_repository.hpp"

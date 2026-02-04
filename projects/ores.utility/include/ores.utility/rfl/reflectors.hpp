@@ -40,7 +40,7 @@ namespace ores::utility::serialization {
 }
 namespace ores::comms::messaging {
     enum class compression_type : std::uint8_t;
-    enum class message_type;
+    enum class message_type : std::uint16_t;
 }
 
 namespace rfl {

@@ -31,7 +31,7 @@
 #include "ores.http/domain/http_response.hpp"
 #include "ores.http/domain/http_method.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http::messaging {

@@ -25,7 +25,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.comms.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.comms.shell/app/commands/change_reasons_commands.hpp"

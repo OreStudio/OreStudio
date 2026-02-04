@@ -21,6 +21,7 @@
 
 #include "ores.utility/rfl/reflectors.hpp"
 #include <rfl/bson.hpp>
+#include "ores.comms/messaging/protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace {

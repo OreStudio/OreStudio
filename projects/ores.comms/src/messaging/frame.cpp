@@ -25,6 +25,7 @@
 #include <boost/crc.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
 #include <rfl/json.hpp>
+#include "ores.comms/messaging/protocol.hpp"
 #include "ores.comms/messaging/compression.hpp"
 
 namespace {

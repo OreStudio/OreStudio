@@ -28,7 +28,8 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::comms::net {
 

@@ -247,6 +247,19 @@ def is_junction_model(model_filename):
     return model_filename.endswith("_junction.json")
 
 
+def is_enum_model(model_filename):
+    """
+    Check if a model file is an enum model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is an enum model
+    """
+    return model_filename.endswith("_enum.json")
+
+
 def get_model_type(model_filename):
     """
     Determine the model type from the filename.
@@ -255,12 +268,14 @@ def get_model_type(model_filename):
         model_filename (str): The model filename
 
     Returns:
-        str: The model type ('domain_entity', 'junction', 'schema', 'data', or 'unknown')
+        str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data', or 'unknown')
     """
     if is_domain_entity_model(model_filename):
         return 'domain_entity'
     elif is_junction_model(model_filename):
         return 'junction'
+    elif is_enum_model(model_filename):
+        return 'enum'
     elif is_entity_schema_model(model_filename):
         return 'schema'
     elif is_entity_data_model(model_filename):
@@ -307,7 +322,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
     Args:
         output_pattern (str): Output path pattern with placeholders
         model_data (dict): The loaded model data
-        model_type (str): The model type ('domain_entity', 'junction', etc.)
+        model_type (str): The model type ('domain_entity', 'junction', 'enum', etc.)
 
     Returns:
         str: Resolved output path
@@ -338,6 +353,14 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{junction_name}', junction_name)
         result = result.replace('{entity}', name_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
+
+    elif model_type == 'enum' and 'enum' in model_data:
+        enum = model_data['enum']
+        component = enum.get('component', 'unknown')
+        enum_name = enum.get('name', 'unknown')
+
+        result = result.replace('{component}', component)
+        result = result.replace('{enum_name}', enum_name)
 
     elif 'schema' in model_data:
         schema = model_data['schema']
@@ -600,6 +623,18 @@ def get_cpp_junction_template_mappings():
     ]
 
 
+def get_enum_template_mappings():
+    """
+    Define the mapping for enum schema templates.
+
+    Returns:
+        list: List of tuples (template_name, output_suffix) for enum generation
+    """
+    return [
+        ("cpp_enum.hpp.mustache", ".hpp"),
+    ]
+
+
 def get_populate_template_mappings():
     """
     Define the mapping for entity populate templates (per-dataset).
@@ -844,6 +879,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_data_model = is_entity_data_model(model_filename)
     is_domain_entity = is_domain_entity_model(model_filename)
     is_junction = is_junction_model(model_filename)
+    is_enum = is_enum_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -859,6 +895,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     elif is_junction:
         # Junction table models use a specific template
         templates_to_process = [t[0] for t in get_junction_template_mappings()]
+    elif is_enum:
+        # Enum models use a specific template
+        templates_to_process = [t[0] for t in get_enum_template_mappings()]
     elif is_schema_model:
         # Entity schema models use a different template set
         templates_to_process = [t[0] for t in get_schema_template_mappings()]
@@ -1137,6 +1176,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 junction[key] = value
         data['junction'] = junction
 
+    # Special processing for enum models
+    if is_enum and isinstance(model, dict) and 'enum' in model:
+        enum = model['enum']
+        enum_name = enum.get('name', 'unknown')
+        # Mark last value for comma handling in template
+        # Also add enum_name to each value for case statements
+        if 'values' in enum:
+            _mark_last_item(enum['values'])
+            for val in enum['values']:
+                val['enum_name'] = enum_name
+        # Split description into lines for C++ doxygen comments
+        if 'description' in enum:
+            enum['description_lines'] = enum['description'].split('\n')
+        # Add uppercase versions for C++ include guards
+        if 'component' in enum:
+            enum['component_upper'] = enum['component'].upper()
+        if 'name' in enum:
+            enum['name_upper'] = enum['name'].upper()
+        data['enum'] = enum
+
     # Special processing for entity data models (populate scripts)
     if is_data_model and isinstance(model, dict):
         # New format: model has 'dataset', 'entity' and 'items' keys (per-coding-scheme)
@@ -1316,6 +1375,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction_mappings = get_junction_template_mappings()
             suffix = next((s for t, s in junction_mappings if t == template_name), '_create.sql')
             output_filename = f"{component}_{name_singular}{suffix}"
+        elif is_enum and 'enum' in data:
+            # For enum models, derive filename from enum definition
+            enum = data['enum']
+            enum_name = enum.get('name', 'unknown')
+            enum_mappings = get_enum_template_mappings()
+            suffix = next((s for t, s in enum_mappings if t == template_name), '.hpp')
+            output_filename = f"{enum_name}{suffix}"
         elif is_schema_model and 'entity' in data:
             # For entity schema models, derive filename from entity definition
             entity = data['entity']
@@ -1357,8 +1423,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             output_filename = template_name.replace('.mustache', output_ext)
 
         # Apply prefix if provided, replacing 'sql_' with prefix + '_'
-        # Skip prefix handling for schema/domain_entity/junction models (they use entity-based naming)
-        if prefix and not is_schema_model and not is_domain_entity and not is_junction:
+        # Skip prefix handling for schema/domain_entity/junction/enum models (they use entity-based naming)
+        if prefix and not is_schema_model and not is_domain_entity and not is_junction and not is_enum:
             # Special case: master include file should be just {prefix}.sql
             if template_name == 'sql_batch_execute.mustache':
                 output_filename = f"{prefix}.sql"

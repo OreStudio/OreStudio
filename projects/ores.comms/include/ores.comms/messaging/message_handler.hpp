@@ -25,7 +25,8 @@
 #include <cstdint>
 #include <expected>
 #include <boost/asio/awaitable.hpp>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::comms::messaging {
 

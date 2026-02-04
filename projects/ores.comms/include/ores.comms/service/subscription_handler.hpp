@@ -21,6 +21,7 @@
 #define ORES_COMMS_SERVICE_SUBSCRIPTION_HANDLER_HPP
 
 #include <memory>
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.eventing/service/event_channel_registry.hpp"
 #include "ores.comms/messaging/message_handler.hpp"

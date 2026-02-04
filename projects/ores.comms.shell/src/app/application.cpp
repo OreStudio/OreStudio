@@ -23,7 +23,8 @@
 #include <iostream>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/version/version.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"

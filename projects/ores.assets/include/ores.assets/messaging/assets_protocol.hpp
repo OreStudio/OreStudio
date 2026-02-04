@@ -26,7 +26,8 @@
 #include <vector>
 #include <optional>
 #include <expected>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.assets/domain/image.hpp"
 

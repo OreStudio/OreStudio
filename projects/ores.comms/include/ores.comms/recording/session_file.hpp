@@ -26,7 +26,8 @@
 #include <expected>
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/compression_type.hpp"
 
 namespace ores::comms::recording {
 

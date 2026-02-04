@@ -21,7 +21,7 @@
 #define ORES_COMMS_MESSAGING_MESSAGE_TRAITS_HPP
 
 #include <concepts>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
 
 namespace ores::comms::messaging {
 

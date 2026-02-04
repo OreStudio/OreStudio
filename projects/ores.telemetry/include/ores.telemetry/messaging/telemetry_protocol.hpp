@@ -25,7 +25,8 @@
 #include <vector>
 #include <cstdint>
 #include <expected>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_type.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry/domain/telemetry_batch.hpp"

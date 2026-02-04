@@ -25,6 +25,9 @@
 \ir ./iam_tenants_create.sql
 \ir ./iam_tenants_notify_trigger_create.sql
 
+-- Account types (must come before accounts)
+\ir ./iam_account_types_create.sql
+
 -- Accounts
 \ir ./iam_accounts_create.sql
 \ir ./iam_accounts_notify_trigger_create.sql

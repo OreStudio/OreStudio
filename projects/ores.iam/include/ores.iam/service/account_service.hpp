@@ -85,6 +85,25 @@ public:
         const std::string& change_commentary = "Account created");
 
     /**
+     * @brief Creates a new service account for non-human entities.
+     *
+     * Service accounts (service, algorithm, llm) cannot login with passwords.
+     * They authenticate by creating sessions directly at startup.
+     *
+     * @param username The unique username for the service account
+     * @param email The email address for the service account
+     * @param account_type The type of service account ('service', 'algorithm', 'llm')
+     * @param recorded_by The username of the person creating the account
+     * @param change_commentary Optional commentary explaining account creation
+     * @return The created service account
+     * @throws std::invalid_argument If account_type is 'user' or invalid
+     */
+    domain::account create_service_account(const std::string& username,
+        const std::string& email, const std::string& account_type,
+        const std::string& recorded_by,
+        const std::string& change_commentary = "Service account created");
+
+    /**
      * @brief Gets a single account by its ID.
      *
      * @param account_id The ID of the account to retrieve

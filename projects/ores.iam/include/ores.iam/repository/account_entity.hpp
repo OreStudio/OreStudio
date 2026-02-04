@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_REPOSITORY_ACCOUNT_ENTITY_HPP
 #define ORES_IAM_REPOSITORY_ACCOUNT_ENTITY_HPP
 
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -36,6 +37,7 @@ struct account_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string account_type = "user";
     std::string username;
     std::string password_hash;
     std::string password_salt;
@@ -44,6 +46,7 @@ struct account_entity {
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;
+    std::optional<std::string> performed_by;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
 };

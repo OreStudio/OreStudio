@@ -76,6 +76,15 @@ struct catalog final {
     std::string change_commentary;
 
     /**
+     * @brief ID of the service account that performed this operation.
+     *
+     * Null when operation was performed directly by a user.
+     * Set when operation was triggered by a service, algorithm, or LLM.
+     * Contains the UUID as a string for serialization compatibility.
+     */
+    std::optional<std::string> performed_by;
+
+    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;

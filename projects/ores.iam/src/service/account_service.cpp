@@ -78,6 +78,7 @@ account_service::create_account(const std::string& username,
         .recorded_by = recorded_by,
         .change_reason_code = std::string{reason::codes::new_record},
         .change_commentary = change_commentary,
+        .account_type = "user",
         .username = username,
         .password_hash = password_hash,
         .password_salt = "", // FIXME remove
@@ -101,6 +102,72 @@ account_service::create_account(const std::string& username,
 
     std::vector<domain::login_info> login_infos{li};
     login_info_repo_.write(login_infos);
+
+    return new_account;
+}
+
+domain::account
+account_service::create_service_account(const std::string& username,
+    const std::string& email, const std::string& account_type,
+    const std::string& recorded_by,
+    const std::string& change_commentary) {
+
+    throw_if_empty("Username", username);
+    throw_if_empty("Email", email);
+    throw_if_empty("Account type", account_type);
+
+    // Validate account type is not 'user'
+    if (account_type == "user") {
+        BOOST_LOG_SEV(lg(), error) << "Cannot create user account via create_service_account. "
+                                   << "Use create_account() instead.";
+        throw std::invalid_argument("Use create_account() for user accounts");
+    }
+
+    // Validate account type is one of the valid service account types
+    if (account_type != "service" && account_type != "algorithm" && account_type != "llm") {
+        BOOST_LOG_SEV(lg(), error) << "Invalid account type for service account: "
+                                   << account_type;
+        throw std::invalid_argument("Account type must be 'service', 'algorithm', or 'llm'");
+    }
+
+    // Generate a new UUID for the account
+    auto id = uuid_generator_();
+    BOOST_LOG_SEV(lg(), debug) << "ID for new service account: " << id;
+
+    // Create the service account - no password required
+    domain::account new_account {
+        .version = 0, // will be set by repository
+        .id = id,
+        .recorded_by = recorded_by,
+        .change_reason_code = std::string{reason::codes::new_record},
+        .change_commentary = change_commentary,
+        .account_type = account_type,
+        .username = username,
+        .password_hash = "", // Service accounts have no password
+        .password_salt = "",
+        .totp_secret = "",
+        .email = email
+    };
+
+    std::vector<domain::account> accounts{new_account};
+    account_repo_.write(accounts);
+
+    // Create a corresponding login tracking entry (for consistency)
+    domain::login_info li {
+        .last_login = {},
+        .account_id = id,
+        .failed_logins = 0,
+        .locked = false,
+        .online = false,
+        .last_ip = {},
+        .last_attempt_ip = {}
+    };
+
+    std::vector<domain::login_info> login_infos{li};
+    login_info_repo_.write(login_infos);
+
+    BOOST_LOG_SEV(lg(), info) << "Created service account: " << username
+                              << " (type: " << account_type << ")";
 
     return new_account;
 }
@@ -168,6 +235,14 @@ domain::account account_service::login(const std::string& username,
     }
 
     const auto& account = accounts[0];
+
+    // Only user accounts can login with password
+    if (account.account_type != "user") {
+        BOOST_LOG_SEV(lg(), warn) << "Login attempt for non-user account type '"
+                                  << account.account_type << "' for username: "
+                                  << username;
+        throw std::runtime_error("Password login is only available for user accounts");
+    }
 
     auto login_info_vec =
         login_info_repo_.read(account.id);

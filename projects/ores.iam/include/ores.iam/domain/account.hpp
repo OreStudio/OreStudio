@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 
@@ -61,6 +62,23 @@ struct account final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
+
+    /**
+     * @brief ID of the service account that performed this operation.
+     *
+     * Null when operation was performed directly by a user.
+     * Set when operation was triggered by a service, algorithm, or LLM.
+     * Contains the UUID as a string for serialization compatibility.
+     */
+    std::optional<std::string> performed_by;
+
+    /**
+     * @brief Account type classification.
+     *
+     * Determines account capabilities. 'user' accounts can login with password,
+     * while 'service', 'algorithm', and 'llm' accounts authenticate via sessions.
+     */
+    std::string account_type = "user";
 
     /**
      * @brief Unique username for login purposes.

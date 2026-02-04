@@ -276,11 +276,11 @@ begin
         insert into ores_assets_images_tbl (
             tenant_id,
             image_id, version, key, description, svg_data,
-            modified_by, change_reason_code, change_commentary
+            modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             ores_iam_system_tenant_id_fn(),
             coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
-            'data_importer', 'system.external_data_import',
+            'data_importer', 'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;
@@ -447,12 +447,12 @@ begin
             tenant_id,
             alpha2_code, version, alpha3_code, numeric_code, name, official_name,
             coding_scheme_code, image_id,
-            modified_by, change_reason_code, change_commentary
+            modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             ores_iam_system_tenant_id_fn(),
             r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name,
             v_coding_scheme_code, v_resolved_image_id,
-            'data_importer', 'system.external_data_import',
+            'data_importer', 'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;
@@ -635,13 +635,13 @@ begin
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision, format, currency_type,
             coding_scheme_code, image_id,
-            modified_by, change_reason_code, change_commentary
+            modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             ores_iam_system_tenant_id_fn(),
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type,
             v_coding_scheme_code, v_resolved_image_id,
-            'data_importer', 'system.external_data_import',
+            'data_importer', 'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

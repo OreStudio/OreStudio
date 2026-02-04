@@ -87,10 +87,10 @@ begin
     -- Note: The trigger sets tenant_id = system_tenant_id (all tenants owned by system)
     insert into ores_iam_tenants_tbl (
         id, type, code, name, description, hostname, status,
-        modified_by, change_reason_code, change_commentary
+        modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         v_new_tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',
-        current_user, 'system.new_record', 'Tenant provisioned'
+        current_user, current_user, 'system.new_record', 'Tenant provisioned'
     );
 
     raise notice 'Created tenant: % (id: %)', p_code, v_new_tenant_id;
@@ -116,11 +116,11 @@ begin
     -- Copy roles (versioned table with audit columns)
     insert into ores_iam_roles_tbl (
         id, tenant_id, name, description,
-        modified_by, change_reason_code, change_commentary
+        modified_by, performed_by, change_reason_code, change_commentary
     )
     select
         gen_random_uuid(), v_new_tenant_id, name, description,
-        current_user, 'system.new_record', 'Copied from system tenant during provisioning'
+        current_user, current_user, 'system.new_record', 'Copied from system tenant during provisioning'
     from ores_iam_roles_tbl
     where tenant_id = v_system_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();

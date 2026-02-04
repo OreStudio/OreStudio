@@ -155,12 +155,12 @@ begin
             tenant_id,
             code, version, name, authority_type, subject_area_name, domain_name,
             uri, description,
-            modified_by, change_reason_code, change_commentary
+            modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             ores_iam_system_tenant_id_fn(),
             r.code, 0, r.name, r.authority_type, r.subject_area_name, r.domain_name,
             r.uri, r.description,
-            'data_importer', 'system.external_data_import',
+            'data_importer', 'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

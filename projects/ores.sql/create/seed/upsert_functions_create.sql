@@ -666,6 +666,55 @@ end;
 $$ language plpgsql;
 
 /**
+ * Upsert a service account (non-human account for services, algorithms, LLMs).
+ *
+ * Service accounts:
+ * - Belong to the system tenant
+ * - Cannot login with passwords (password_hash is null)
+ * - Authenticate by creating sessions directly at startup
+ * - Account names should match database user names for consistency
+ */
+create or replace function ores_iam_service_accounts_upsert_fn(
+    p_username text,
+    p_email text,
+    p_description text
+) returns void as $$
+begin
+    perform ores_seed_validate_not_empty_fn(p_username, 'Service account username');
+    perform ores_seed_validate_not_empty_fn(p_email, 'Service account email');
+
+    insert into ores_iam_accounts_tbl (
+        id, tenant_id, version, account_type, username, password_hash, password_salt,
+        totp_secret, email, modified_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        gen_random_uuid(),
+        ores_iam_system_tenant_id_fn(),
+        0,
+        'service',
+        p_username,
+        null,
+        '',
+        '',
+        p_email,
+        'system',
+        'system.initial_load',
+        p_description,
+        current_timestamp,
+        ores_utility_infinity_timestamp_fn()
+    )
+    on conflict (tenant_id, username) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created service account: %', p_username;
+    else
+        raise notice 'Service account already exists: %', p_username;
+    end if;
+end;
+$$ language plpgsql;
+
+/**
  * Assign a permission to a role.
  */
 create or replace function ores_iam_role_permissions_assign_fn(

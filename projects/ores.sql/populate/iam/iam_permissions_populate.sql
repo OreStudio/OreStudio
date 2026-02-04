@@ -99,6 +99,83 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variabili
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::*', 'Full access to all variability operations');
 
 -- =============================================================================
+-- Data Quality Component Permissions
+-- =============================================================================
+
+-- Change reasons
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::change_reasons:read', 'View change reasons');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::change_reasons:write', 'Create and modify change reasons');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::change_reasons:delete', 'Delete change reasons');
+
+-- Change reason categories
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::change_reason_categories:read', 'View change reason categories');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::change_reason_categories:write', 'Create and modify change reason categories');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::change_reason_categories:delete', 'Delete change reason categories');
+
+-- Catalogs
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::catalogs:read', 'View catalogs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::catalogs:write', 'Create and modify catalogs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::catalogs:delete', 'Delete catalogs');
+
+-- Data domains
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::data_domains:read', 'View data domains');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::data_domains:write', 'Create and modify data domains');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::data_domains:delete', 'Delete data domains');
+
+-- Subject areas
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::subject_areas:read', 'View subject areas');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::subject_areas:write', 'Create and modify subject areas');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::subject_areas:delete', 'Delete subject areas');
+
+-- Datasets
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::datasets:read', 'View datasets');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::datasets:write', 'Create and modify datasets');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::datasets:delete', 'Delete datasets');
+
+-- Methodologies
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:read', 'View methodologies');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:write', 'Create and modify methodologies');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:delete', 'Delete methodologies');
+
+-- Coding schemes
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::coding_schemes:read', 'View coding schemes');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::coding_schemes:write', 'Create and modify coding schemes');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::coding_schemes:delete', 'Delete coding schemes');
+
+-- Coding scheme authority types
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::coding_scheme_authority_types:read', 'View coding scheme authority types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::coding_scheme_authority_types:write', 'Create and modify coding scheme authority types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::coding_scheme_authority_types:delete', 'Delete coding scheme authority types');
+
+-- Nature dimensions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::nature_dimensions:read', 'View nature dimensions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::nature_dimensions:write', 'Create and modify nature dimensions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::nature_dimensions:delete', 'Delete nature dimensions');
+
+-- Origin dimensions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::origin_dimensions:read', 'View origin dimensions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::origin_dimensions:write', 'Create and modify origin dimensions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::origin_dimensions:delete', 'Delete origin dimensions');
+
+-- Treatment dimensions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::treatment_dimensions:read', 'View treatment dimensions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::treatment_dimensions:write', 'Create and modify treatment dimensions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::treatment_dimensions:delete', 'Delete treatment dimensions');
+
+-- Dataset bundles
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundles:read', 'View dataset bundles');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundles:write', 'Create and modify dataset bundles');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundles:delete', 'Delete dataset bundles');
+
+-- Dataset bundle members
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundle_members:read', 'View dataset bundle members');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundle_members:write', 'Create and modify dataset bundle members');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundle_members:delete', 'Delete dataset bundle members');
+
+-- Data Quality component wildcard
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::*', 'Full access to all data quality operations');
+
+-- =============================================================================
 -- Global Wildcard Permission
 -- =============================================================================
 

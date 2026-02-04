@@ -45,6 +45,7 @@ create table if not exists "ores_iam_tenants_tbl" (
     "hostname" text not null,
     "status" text not null,
     "modified_by" text not null,
+    "performed_by" uuid null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,

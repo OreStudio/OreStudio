@@ -37,6 +37,7 @@ create table if not exists "ores_refdata_business_centres_tbl" (
     "coding_scheme_code" text not null,
     "image_id" uuid,
     "modified_by" text not null,
+    "performed_by" uuid null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,

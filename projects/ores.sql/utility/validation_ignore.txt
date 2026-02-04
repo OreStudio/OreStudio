@@ -56,3 +56,11 @@ TENANT_002 ores_dq_dataset_publications_tbl
 # =============================================================================
 TENANT_002 ores_iam_tenants_tbl
 TENANT_003 ores_iam_tenants_tbl
+
+# =============================================================================
+# Tags table - tag_id UUID is globally unique by design
+# tenant_id is used for filtering and name uniqueness within tenant,
+# but not needed in PK/EXCLUDE since tag_id is already globally unique.
+# =============================================================================
+TENANT_002 ores_assets_tags_tbl
+TENANT_003 ores_assets_tags_tbl

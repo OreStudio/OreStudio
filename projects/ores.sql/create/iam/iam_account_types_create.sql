@@ -33,7 +33,7 @@ create table if not exists "ores_iam_account_types_tbl" (
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
-    "performed_by" uuid null,
+    "performed_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (tenant_id, type, valid_from, valid_to),

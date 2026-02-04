@@ -1181,11 +1181,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         enum = model['enum']
         enum_name = enum.get('name', 'unknown')
         # Mark last value for comma handling in template
-        # Also add enum_name to each value for case statements
+        # Also add enum_name and is_sentinel to each value for case statements
         if 'values' in enum:
             _mark_last_item(enum['values'])
             for val in enum['values']:
                 val['enum_name'] = enum_name
+                # Mark sentinel values explicitly for template logic
+                comment = val.get('comment', '').lower()
+                val['is_sentinel'] = 'sentinel' in comment
         # Split description into lines for C++ doxygen comments
         if 'description' in enum:
             enum['description_lines'] = enum['description'].split('\n')

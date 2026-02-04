@@ -39,9 +39,9 @@ enum class {{name}}{{#underlying_type}} : {{underlying_type}}{{/underlying_type}
 [[nodiscard]] constexpr std::string_view to_string({{name}} v) noexcept {
     switch (v) {
 {{#values}}
-{{#value}}
+{{^is_sentinel}}
     case {{enum_name}}::{{name}}: return "{{name}}";
-{{/value}}
+{{/is_sentinel}}
 {{/values}}
     default: return {};
     }

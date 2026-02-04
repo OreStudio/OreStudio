@@ -93,7 +93,7 @@ begin
     )
     values (
         p_tenant_id, p_name, 0, p_description,
-        current_user, 'system.new_record', 'System seed data - data quality data domain',
+        current_user, current_user, 'system.new_record', 'System seed data - data quality data domain',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -129,7 +129,7 @@ begin
     )
     values (
         p_tenant_id, p_name, 0, p_domain_name, p_description,
-        current_user, 'system.new_record', 'System seed data - data quality subject area',
+        current_user, current_user, 'system.new_record', 'System seed data - data quality subject area',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name, domain_name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -164,7 +164,7 @@ begin
     )
     values (
         p_tenant_id, p_name, 0, p_description, p_owner,
-        current_user, 'system.new_record', 'System seed data - data quality catalog',
+        current_user, current_user, 'system.new_record', 'System seed data - data quality catalog',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -234,7 +234,7 @@ begin
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        current_user, 'system.new_record', 'System seed data - data quality origin dimension',
+        current_user, current_user, 'system.new_record', 'System seed data - data quality origin dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -265,7 +265,7 @@ begin
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        current_user, 'system.new_record', 'System seed data - data quality nature dimension',
+        current_user, current_user, 'system.new_record', 'System seed data - data quality nature dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -296,7 +296,7 @@ begin
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        current_user, 'system.new_record', 'System seed data - data quality treatment dimension',
+        current_user, current_user, 'system.new_record', 'System seed data - data quality treatment dimension',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -402,7 +402,7 @@ begin
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_description,
-        current_user, 'system.new_record', 'System seed data - coding scheme authority type',
+        current_user, current_user, 'system.new_record', 'System seed data - coding scheme authority type',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
@@ -437,7 +437,7 @@ begin
     )
     values (
         p_tenant_id, p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
-        current_user, 'system.new_record', 'System seed data - coding scheme',
+        current_user, current_user, 'system.new_record', 'System seed data - coding scheme',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;

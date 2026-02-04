@@ -35,13 +35,21 @@ using comms::messaging::message_type;
 using comms::net::client_session;
 
 void currencies_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, client_session& session,
+                  pagination_context& pagination) {
     auto currencies_menu =
         std::make_unique<cli::Menu>("currencies");
 
-    currencies_menu->Insert("get", [&session](std::ostream& out) {
-        process_get_currencies(std::ref(out), std::ref(session));
-    }, "Retrieve all currencies from the server");
+    currencies_menu->Insert("get", [&session, &pagination](std::ostream& out) {
+        process_get_currencies(std::ref(out), std::ref(session),
+                               std::ref(pagination));
+    }, "Retrieve currencies from the server (paginated)");
+
+    // Register list callback for navigation
+    pagination.register_list_callback("currencies",
+        [&session, &pagination](std::ostream& out) {
+            process_get_currencies(out, session, pagination);
+        });
 
     currencies_menu->Insert("add", [&session](std::ostream& out,
             std::string iso_code, std::string name,
@@ -71,20 +79,38 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void currencies_commands::
-process_get_currencies(std::ostream& out, client_session& session) {
+process_get_currencies(std::ostream& out, client_session& session,
+                       pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
 
+    auto& state = pagination.state_for("currencies");
+
     using refdata::messaging::get_currencies_request;
-    auto result = session.process_request(get_currencies_request{});
+    auto result = session.process_request(get_currencies_request{
+        .offset = state.current_offset,
+        .limit = pagination.page_size()
+    });
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
+    state.total_count = result->total_available_count;
+    pagination.set_last_entity("currencies");
+
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << result->currencies.size() << " currencies.";
     out << result->currencies << std::endl;
+
+    // Display pagination info
+    const auto page = (state.current_offset / pagination.page_size()) + 1;
+    const auto total_pages = state.total_count > 0
+        ? ((state.total_count + pagination.page_size() - 1) / pagination.page_size())
+        : 1;
+    out << "\nPage " << page << " of " << total_pages
+        << " (" << result->currencies.size() << " of "
+        << state.total_count << " total)" << std::endl;
 }
 
 void currencies_commands::

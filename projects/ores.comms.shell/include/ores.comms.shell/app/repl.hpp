@@ -23,6 +23,7 @@
 #include <memory>
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -95,6 +96,7 @@ private:
     void cleanup();
 
     comms::net::client_session& session_;
+    pagination_context pagination_;
 };
 
 }

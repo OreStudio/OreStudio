@@ -23,6 +23,7 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -55,9 +56,13 @@ public:
      *
      * Creates the roles and permissions submenus and adds RBAC operations.
      * Also extends the accounts menu with role assignment commands.
+     *
+     * Note: Roles and permissions don't support pagination at the protocol level
+     * yet, but the pagination_context is passed for consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     // =========================================================================
     // Permissions Commands

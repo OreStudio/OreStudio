@@ -22,6 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -50,9 +51,13 @@ public:
      * @brief Register change reason-related commands.
      *
      * Creates the change-reasons submenu and adds operations.
+     *
+     * Note: Change reasons protocol doesn't support pagination yet, but the
+     * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process a get change reasons request.

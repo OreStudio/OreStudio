@@ -22,6 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -52,9 +53,13 @@ public:
      * @brief Register tenant-related commands.
      *
      * Creates the tenants submenu and adds tenant operations.
+     *
+     * Note: Tenant protocol doesn't support pagination yet, but the
+     * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process a get tenants request.

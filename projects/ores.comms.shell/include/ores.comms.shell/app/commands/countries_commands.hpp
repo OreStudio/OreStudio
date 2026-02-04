@@ -22,6 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -52,18 +53,21 @@ public:
      * Creates the countries submenu and adds country operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process a get countries request.
      *
-     * Retrieves all countries from the server and displays them.
+     * Retrieves countries from the server with pagination and displays them.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
+     * @param pagination Pagination context for state management.
      */
     static void process_get_countries(std::ostream& out,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process an add country request.

@@ -23,6 +23,7 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -53,7 +54,8 @@ public:
      * Creates the accounts submenu and adds account operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process a create account request.
@@ -76,13 +78,15 @@ public:
     /**
      * @brief Process a list accounts request.
      *
-     * Retrieves all accounts from the server and displays them.
+     * Retrieves accounts from the server with pagination and displays them.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
+     * @param pagination Pagination context for state management.
      */
     static void process_list_accounts(std::ostream& out,
-        comms::net::client_session& session);
+        comms::net::client_session& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process a login request.

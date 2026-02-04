@@ -38,6 +38,7 @@
 #include "ores.comms.shell/app/commands/subscription_commands.hpp"
 #include "ores.comms.shell/app/commands/rbac_commands.hpp"
 #include "ores.comms.shell/app/commands/tenants_commands.hpp"
+#include "ores.comms.shell/app/commands/navigation_commands.hpp"
 
 namespace ores::comms::shell::app {
 
@@ -67,16 +68,17 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
 
     using namespace commands;
     change_reason_categories_commands::register_commands(*root, session_);
-    change_reasons_commands::register_commands(*root, session_);
+    change_reasons_commands::register_commands(*root, session_, pagination_);
     connection_commands::register_commands(*root, session_);
-    countries_commands::register_commands(*root, session_);
-    currencies_commands::register_commands(*root, session_);
-    accounts_commands::register_commands(*root, session_);
+    countries_commands::register_commands(*root, session_, pagination_);
+    currencies_commands::register_commands(*root, session_, pagination_);
+    accounts_commands::register_commands(*root, session_, pagination_);
     variability_commands::register_commands(*root, session_);
     compression_commands::register_commands(*root);
     subscription_commands::register_commands(*root, session_);
-    rbac_commands::register_commands(*root, session_);
-    tenants_commands::register_commands(*root, session_);
+    rbac_commands::register_commands(*root, session_, pagination_);
+    tenants_commands::register_commands(*root, session_, pagination_);
+    navigation_commands::register_commands(*root, pagination_);
 
     auto cli_instance =
         std::make_unique<cli::Cli>(std::move(root));

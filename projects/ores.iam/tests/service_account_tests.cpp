@@ -156,14 +156,10 @@ TEST_CASE("account_performed_by_field", tags) {
     sut.account_type = "service";
     sut.username = "test.service";
 
-    // performed_by is optional and defaults to nullopt
-    CHECK(!sut.performed_by.has_value());
+    // performed_by is required and defaults to empty string
+    CHECK(sut.performed_by.empty());
 
-    // Can be set to a service account's UUID as a string
-    auto service_account_id = boost::uuids::random_generator()();
-    std::string service_account_id_str = boost::lexical_cast<std::string>(service_account_id);
-    sut.performed_by = service_account_id_str;
-
-    CHECK(sut.performed_by.has_value());
-    CHECK(sut.performed_by.value() == service_account_id_str);
+    // Can be set to an account username
+    sut.performed_by = "test.service";
+    CHECK(sut.performed_by == "test.service");
 }

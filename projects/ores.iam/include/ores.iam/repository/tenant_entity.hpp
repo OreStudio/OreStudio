@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_REPOSITORY_TENANT_ENTITY_HPP
 #define ORES_IAM_REPOSITORY_TENANT_ENTITY_HPP
 
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -46,6 +47,7 @@ struct tenant_entity {
     std::string hostname;
     std::string status;
     std::string modified_by;
+    std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";

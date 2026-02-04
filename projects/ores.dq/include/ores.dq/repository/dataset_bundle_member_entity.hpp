@@ -41,6 +41,7 @@ struct dataset_bundle_member_entity {
     int version = 0;
     int display_order = 0;
     std::string modified_by;
+    std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";

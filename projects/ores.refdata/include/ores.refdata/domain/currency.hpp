@@ -118,7 +118,7 @@ struct currency final {
      * Set when operation was triggered by a service, algorithm, or LLM.
      * Contains the UUID as a string for serialization compatibility.
      */
-    std::optional<std::string> performed_by;
+    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded in the system.

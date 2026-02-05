@@ -233,15 +233,16 @@ handle_save_account_request(std::span<const std::byte> payload,
             // with concurrent requests from different tenants.
             auto operation_ctx = ctx_;
 
-            // Set tenant context based on hostname
-            if (hostname.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                database::service::tenant_context::set_system_tenant(operation_ctx);
-            } else {
+            // Set tenant context based on hostname if provided.
+            // If no hostname, keep the current context's tenant (don't switch to system).
+            if (!hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
                 const auto tenant_id_str =
                     database::service::tenant_context::lookup_by_hostname(operation_ctx, hostname);
                 database::service::tenant_context::set(operation_ctx, tenant_id_str);
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
+                                           << operation_ctx.tenant_id();
             }
 
             // Create temporary services with the correctly-scoped tenant context.
@@ -405,18 +406,25 @@ handle_login_request(std::span<const std::byte> payload,
                                << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
 
     try {
-        // Set tenant context based on hostname
+        // Set tenant context based on hostname if provided.
+        // If no hostname, keep the current context's tenant.
         boost::uuids::uuid tenant_id;
-        if (hostname.empty()) {
-            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-            database::service::tenant_context::set_system_tenant(ctx_);
-            tenant_id = boost::uuids::nil_uuid();  // System tenant
-        } else {
+        if (!hostname.empty()) {
             BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
             const auto tenant_id_str =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
             database::service::tenant_context::set(ctx_, tenant_id_str);
             tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
+        } else {
+            // Use current context's tenant
+            const auto current_tenant = ctx_.tenant_id();
+            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
+                                       << current_tenant;
+            if (current_tenant.empty()) {
+                tenant_id = boost::uuids::nil_uuid();
+            } else {
+                tenant_id = boost::lexical_cast<boost::uuids::uuid>(current_tenant);
+            }
         }
 
         // Extract the IP address.

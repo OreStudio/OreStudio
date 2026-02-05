@@ -20,7 +20,9 @@
 #ifndef ORES_ASSETS_MESSAGING_REGISTRAR_HPP
 #define ORES_ASSETS_MESSAGING_REGISTRAR_HPP
 
+#include <memory>
 #include "ores.comms/net/server.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
@@ -34,6 +36,7 @@ namespace ores::assets::messaging {
  *
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
+ * @param sessions Shared auth session service for authentication
  */
 class registrar {
 private:
@@ -48,7 +51,8 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        database::context ctx);
+        database::context ctx,
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 };
 
 }

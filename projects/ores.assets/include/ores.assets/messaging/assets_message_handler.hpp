@@ -20,7 +20,9 @@
 #ifndef ORES_ASSETS_MESSAGING_ASSETS_MESSAGE_HANDLER_HPP
 #define ORES_ASSETS_MESSAGING_ASSETS_MESSAGE_HANDLER_HPP
 
+#include <memory>
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -54,8 +56,10 @@ public:
      * @brief Construct an assets message handler.
      *
      * @param ctx Database context for repository access
+     * @param sessions Shared auth session service for authentication
      */
-    explicit assets_message_handler(database::context ctx);
+    assets_message_handler(database::context ctx,
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 
     /**
      * @brief Handle an assets subsystem message.
@@ -75,15 +79,27 @@ private:
      * @brief Handle get_images_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_images_request(std::span<const std::byte> payload);
+    handle_get_images_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle list_images_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_list_images_request(std::span<const std::byte> payload);
+    handle_list_images_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Create a database context for the session's tenant.
+     *
+     * @param session The session containing the tenant ID
+     * @return A new context configured for the session's tenant
+     */
+    [[nodiscard]] database::context
+    make_request_context(const comms::service::session_info& session) const;
 
     database::context ctx_;
+    std::shared_ptr<comms::service::auth_session_service> sessions_;
     repository::image_repository image_repo_;
 };
 

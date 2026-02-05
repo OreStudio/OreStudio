@@ -1084,6 +1084,25 @@ class handler {
 
 At present we are using std::string and then mapping to boost UUID.
 
+*** Refactor tenant lookup functions to accept const context           :code:
+
+The tenant lookup functions (=resolve_tenant_id=, =lookup_by_code=,
+=lookup_by_hostname=) currently take =context&= (non-const reference) even
+though they only perform read operations. This forces callers to create
+unnecessary mutable copies when they have a const context.
+
+Current workaround in =tenant_context.cpp=:
+#+begin_src cpp
+// Creates unnecessary copy just to satisfy non-const parameter
+auto lookup_ctx = ctx.with_tenant(ctx.tenant_id());
+const auto resolved = resolve_tenant_id(lookup_ctx, tenant);
+#+end_src
+
+Refactoring these to accept =const context&= would:
+- Eliminate unnecessary context copies
+- Better express the read-only nature of lookups
+- Allow callers to use const contexts directly
+
 *** Generate protocol docs via codegen                                 :code:
 
 At present protocol documentation is very behind. We are not consistently

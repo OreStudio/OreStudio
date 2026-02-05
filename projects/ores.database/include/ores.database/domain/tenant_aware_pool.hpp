@@ -127,7 +127,7 @@ public:
 
 private:
     sqlgen::ConnectionPool<Connection> pool_;
-    std::string tenant_id_;  // Immutable by convention (no setter exposed)
+    std::string tenant_id_;
 };
 
 }

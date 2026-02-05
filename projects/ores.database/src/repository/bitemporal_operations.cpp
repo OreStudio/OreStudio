@@ -19,6 +19,7 @@
  */
 #include "ores.database/repository/bitemporal_operations.hpp"
 
+#include <array>
 #include <libpq-fe.h>
 #include <stdexcept>
 #include <sstream>
@@ -78,10 +79,15 @@ void set_tenant_context(PGconn* conn, const std::string& tenant_id,
         return;
     }
 
-    const std::string sql =
-        "SELECT set_config('app.current_tenant_id', '" + tenant_id + "', false)";
+    // Use parameterized query to prevent SQL injection
+    std::array<const char*, 1> param_values = {tenant_id.c_str()};
+    std::array<int, 1> param_lengths = {static_cast<int>(tenant_id.length())};
+    std::array<int, 1> param_formats = {0}; // text format
 
-    pg_result_guard result(PQexec(conn, sql.c_str()));
+    const std::string sql = "SELECT set_config('app.current_tenant_id', $1, false)";
+
+    pg_result_guard result(PQexecParams(conn, sql.c_str(), 1, nullptr,
+        param_values.data(), param_lengths.data(), param_formats.data(), 0));
     if (PQresultStatus(result.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn);
         BOOST_LOG_SEV(lg, error) << "Failed to set tenant context: " << err_msg;

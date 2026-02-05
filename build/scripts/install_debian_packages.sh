@@ -62,7 +62,7 @@ if [[ $with_valgrind -eq 1 ]]; then
 fi
 
 install_packages() {
-    sudo apt-get update -o Acquire::Retries=3
+    sudo apt-get update -o Acquire::Retries=3 && \
     sudo apt-get install -y -o Acquire::Retries=3 "${packages[@]}"
 }
 

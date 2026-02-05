@@ -64,6 +64,33 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
     return oss.str();
 }
 
+/**
+ * @brief Sets the tenant context on a connection for RLS policies.
+ *
+ * This mirrors what tenant_aware_pool does when acquiring a connection.
+ * Must be called after connecting but before executing queries.
+ */
+void set_tenant_context(PGconn* conn, const std::string& tenant_id,
+    logging::logger_t& lg) {
+
+    if (tenant_id.empty()) {
+        BOOST_LOG_SEV(lg, trace) << "No tenant_id provided, skipping context set";
+        return;
+    }
+
+    const std::string sql =
+        "SELECT set_config('app.current_tenant_id', '" + tenant_id + "', false)";
+
+    pg_result_guard result(PQexec(conn, sql.c_str()));
+    if (PQresultStatus(result.result) != PGRES_TUPLES_OK) {
+        const std::string err_msg = PQerrorMessage(conn);
+        BOOST_LOG_SEV(lg, error) << "Failed to set tenant context: " << err_msg;
+        throw std::runtime_error("Failed to set tenant context: " + err_msg);
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Set tenant context to: " << tenant_id;
+}
+
 } // anonymous namespace
 
 std::vector<std::string> execute_raw_string_query(context ctx,
@@ -83,6 +110,9 @@ std::vector<std::string> execute_raw_string_query(context ctx,
         BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
+
+    // Set tenant context for RLS policies
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
 
     // Execute the query
     pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
@@ -124,6 +154,9 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
         BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
+
+    // Set tenant context for RLS policies
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
 
     // Execute the query
     pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
@@ -173,6 +206,9 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
+    // Set tenant context for RLS policies
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+
     // Execute the query
     pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
 
@@ -218,6 +254,9 @@ void execute_raw_command(context ctx, const std::string& sql,
         BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
+
+    // Set tenant context for RLS policies
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
 
     // Begin transaction
     pg_result_guard begin_guard(PQexec(conn_guard.conn, "BEGIN"));
@@ -268,6 +307,9 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
         BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
+
+    // Set tenant context for RLS policies
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
 
     // Build parameter arrays for PQexecParams
     std::vector<const char*> param_values;
@@ -324,6 +366,9 @@ void execute_parameterized_command(context ctx, const std::string& sql,
         BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
+
+    // Set tenant context for RLS policies
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
 
     // Build parameter arrays for PQexecParams
     std::vector<const char*> param_values;

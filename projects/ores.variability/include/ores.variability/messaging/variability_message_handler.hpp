@@ -96,6 +96,7 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_feature_flag_history_request(std::span<const std::byte> payload);
 
+    database::context ctx_;
     repository::feature_flags_repository feature_flags_repo_;
 };
 

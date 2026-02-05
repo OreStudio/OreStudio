@@ -165,4 +165,4 @@ begin
 
     return v_new_tenant_id;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;

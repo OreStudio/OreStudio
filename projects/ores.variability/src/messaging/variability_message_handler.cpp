@@ -28,7 +28,7 @@ namespace ores::variability::messaging {
 using namespace ores::logging;
 
 variability_message_handler::variability_message_handler(database::context ctx)
-    : feature_flags_repo_(std::move(ctx)) {}
+    : ctx_(ctx), feature_flags_repo_(std::move(ctx)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
@@ -97,10 +97,14 @@ handle_save_feature_flag_request(std::span<const std::byte> payload) {
 
     save_feature_flag_response response;
     try {
-        // Save the feature flag
-        feature_flags_repo_.write(request_result->flag);
+        // Override tenant_id from server-side context (don't trust client)
+        auto flag = request_result->flag;
+        flag.tenant_id = ctx_.tenant_id();
 
-        BOOST_LOG_SEV(lg(), info) << "Saved feature flag: " << request_result->flag.name;
+        // Save the feature flag
+        feature_flags_repo_.write(flag);
+
+        BOOST_LOG_SEV(lg(), info) << "Saved feature flag: " << flag.name;
 
         response.success = true;
         co_return response.serialize();

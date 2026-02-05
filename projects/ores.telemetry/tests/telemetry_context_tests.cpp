@@ -70,9 +70,8 @@ TEST_CASE("telemetry_context_is_valid_when_properly_constructed", tags) {
 TEST_CASE("telemetry_context_start_span_creates_child", tags) {
     auto lg(make_logger(test_suite));
 
-    auto ctx = create_test_context();
     auto res = create_test_resource();
-    telemetry_context parent_ctx(ctx, res);
+    auto parent_ctx = telemetry_context::create_root(res);
 
     auto [child_ctx, child_span] = parent_ctx.start_span("test_operation");
 
@@ -99,9 +98,8 @@ TEST_CASE("telemetry_context_start_span_creates_child", tags) {
 TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", tags) {
     auto lg(make_logger(test_suite));
 
-    auto ctx = create_test_context();
     auto res = create_test_resource();
-    telemetry_context parent_ctx(ctx, res);
+    auto parent_ctx = telemetry_context::create_root(res);
 
     auto [linked_ctx, linked_span] =
         parent_ctx.start_linked_trace("grid_computation");
@@ -131,9 +129,8 @@ TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", tags) {
 }
 
 TEST_CASE("telemetry_context_shares_resource", tags) {
-    auto ctx = create_test_context();
     auto res = create_test_resource();
-    telemetry_context parent_ctx(ctx, res);
+    auto parent_ctx = telemetry_context::create_root(res);
 
     auto [child_ctx, child_span] = parent_ctx.start_span("child_op");
 
@@ -142,9 +139,8 @@ TEST_CASE("telemetry_context_shares_resource", tags) {
 }
 
 TEST_CASE("span_is_root_works_correctly", tags) {
-    auto ctx = create_test_context();
     auto res = create_test_resource();
-    telemetry_context parent_ctx(ctx, res);
+    auto parent_ctx = telemetry_context::create_root(res);
 
     // Create a root span (no parent)
     span root_span;

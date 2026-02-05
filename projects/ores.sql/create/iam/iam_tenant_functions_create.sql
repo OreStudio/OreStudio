@@ -245,8 +245,8 @@ returns table (
     modified_by text,
     change_reason_code text,
     change_commentary text,
-    valid_from timestamp without time zone,
-    valid_to timestamp without time zone
+    valid_from timestamp with time zone,
+    valid_to timestamp with time zone
 ) as $$
 begin
     return query

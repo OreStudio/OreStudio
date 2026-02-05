@@ -158,14 +158,6 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- Check if current session is in system tenant
-create or replace function ores_iam_is_system_tenant_fn()
-returns boolean as $$
-begin
-    return ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn();
-end;
-$$ language plpgsql stable;
-
 -- Set tenant context by code pattern (for interactive psql sessions)
 -- Usage: SELECT * FROM ores_iam_set_tenant_fn('ores.cli%');
 -- Short alias: SELECT * FROM st('ores.cli%');
@@ -253,8 +245,8 @@ returns table (
     modified_by text,
     change_reason_code text,
     change_commentary text,
-    valid_from timestamp without time zone,
-    valid_to timestamp without time zone
+    valid_from timestamp with time zone,
+    valid_to timestamp with time zone
 ) as $$
 begin
     return query

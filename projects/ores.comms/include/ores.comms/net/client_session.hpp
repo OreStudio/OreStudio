@@ -56,6 +56,7 @@ namespace ores::comms::net {
  */
 struct client_session_info {
     boost::uuids::uuid account_id;
+    boost::uuids::uuid tenant_id;
     std::string username;
     std::string email;
 };

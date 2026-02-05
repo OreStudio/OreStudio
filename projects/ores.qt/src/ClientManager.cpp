@@ -192,6 +192,7 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
             // Update session info
             session_.set_session_info(comms::net::client_session_info{
                 .account_id = response->account_id,
+                .tenant_id = response->tenant_id,
                 .username = response->username,
                 .email = response->email
             });
@@ -379,6 +380,7 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         // Set session info
         session_.set_session_info(comms::net::client_session_info{
             .account_id = response->account_id,
+            .tenant_id = response->tenant_id,
             .username = response->username,
             .email = response->email
         });

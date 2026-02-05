@@ -107,34 +107,37 @@ std::string tenant_context::lookup_name(context& ctx,
     return results[0];
 }
 
-void tenant_context::set(context& ctx, const std::string& tenant) {
-    using namespace ores::logging;
+namespace {
 
-    BOOST_LOG_SEV(lg(), debug) << "Setting tenant context: " << tenant;
+using namespace ores::logging;
 
-    std::string tenant_id;
-
-    if (is_uuid(tenant)) {
-        tenant_id = tenant;
-        BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant_id;
-    } else {
-        tenant_id = lookup_by_code(ctx, tenant);
+/**
+ * @brief Resolves a tenant identifier to a UUID string.
+ *
+ * If the tenant is already a UUID, returns it directly.
+ * Otherwise, looks up the tenant by code.
+ */
+std::string resolve_tenant_id(context& ctx, const std::string& tenant) {
+    if (tenant_context::is_uuid(tenant)) {
+        BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant;
+        return tenant;
     }
 
+    auto tenant_id = tenant_context::lookup_by_code(ctx, tenant);
+
     // Validate tenant_id is a proper UUID format to prevent injection
-    // (is_uuid check ensures 36 chars with hyphens at correct positions)
-    if (!is_uuid(tenant_id)) {
+    if (!tenant_context::is_uuid(tenant_id)) {
         throw std::runtime_error(
             "Invalid tenant ID format (must be UUID): " + tenant_id);
     }
 
-    // Set tenant_id on context. The tenant_aware_pool will automatically
-    // set the PostgreSQL session variable via set_config() whenever a
-    // connection is acquired from the pool.
-    ctx.set_tenant_id(tenant_id);
+    return tenant_id;
+}
 
-    // Verify the tenant context works by acquiring a connection.
-    // This catches configuration errors early rather than at first use.
+/**
+ * @brief Verifies that a tenant context works by acquiring a connection.
+ */
+void verify_tenant_context(context& ctx, const std::string& tenant_id) {
     const auto r = sqlgen::session(ctx.connection_pool());
     if (!r) {
         BOOST_LOG_SEV(lg(), error) << "Failed to verify tenant context: "
@@ -142,12 +145,31 @@ void tenant_context::set(context& ctx, const std::string& tenant) {
         throw std::runtime_error("Failed to set tenant context: " +
             std::string(r.error().what()));
     }
-
     BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id;
 }
 
-void tenant_context::set_system_tenant(context& ctx) {
-    set(ctx, system_tenant_id);
+}  // anonymous namespace
+
+context tenant_context::with_tenant(const context& ctx, const std::string& tenant) {
+    using namespace ores::logging;
+
+    BOOST_LOG_SEV(lg(), debug) << "Creating context with tenant: " << tenant;
+
+    // Use a mutable copy for the lookup (if needed)
+    auto lookup_ctx = ctx.with_tenant(ctx.tenant_id());
+    const auto tenant_id = resolve_tenant_id(lookup_ctx, tenant);
+
+    // Create the new context with the resolved tenant ID
+    auto result = ctx.with_tenant(tenant_id);
+
+    // Verify the tenant context works
+    verify_tenant_context(result, tenant_id);
+
+    return result;
+}
+
+context tenant_context::with_system_tenant(const context& ctx) {
+    return with_tenant(ctx, system_tenant_id);
 }
 
 }

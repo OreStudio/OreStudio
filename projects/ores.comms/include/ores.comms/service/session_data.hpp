@@ -72,6 +72,15 @@ struct session_data final {
     boost::uuids::uuid account_id;
 
     /**
+     * @brief Tenant ID for this session.
+     *
+     * Resolved at login time from the account's tenant and immutable for the
+     * session lifetime. Used to establish the correct database context for
+     * all operations performed during this session.
+     */
+    boost::uuids::uuid tenant_id;
+
+    /**
      * @brief Timestamp when the session started (login time).
      */
     std::chrono::system_clock::time_point start_time;

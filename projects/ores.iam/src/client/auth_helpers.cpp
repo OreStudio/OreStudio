@@ -83,7 +83,9 @@ login_result login(comms::net::client_session& session,
     // Update session state
     comms::net::client_session_info info{
         .account_id = response.account_id,
-        .username = response.username
+        .tenant_id = response.tenant_id,
+        .username = response.username,
+        .email = response.email
     };
     session.set_session_info(std::move(info));
 

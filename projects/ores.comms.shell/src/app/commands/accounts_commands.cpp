@@ -679,7 +679,7 @@ process_get_account_history(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << response.history.versions.size()
                               << " history records.";
-    out << response.history.versions << std::endl;
+    out << std::endl << response.history.versions << std::endl;
 }
 
 }

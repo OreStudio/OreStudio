@@ -17,40 +17,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-05 Thu 00:03], for Thursday, February 05, 2026.
+#+CAPTION: Clock summary at [2026-02-05 Thu 15:39], for Thursday, February 05, 2026.
 |      | <75>                                          |        |      |      |       |
 | Tags | Headline                                      | Time   |      |      |     % |
 |------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *0:02* |      |      | 100.0 |
+|      | *Total time*                                  | *4:28* |      |      | 100.0 |
 |------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 0:02   |      |      | 100.0 |
-|      | Active                                        |        | 0:02 |      | 100.0 |
-| code | Test shell functionality with tenancy enabled |        |      | 0:02 | 100.0 |
+|      | Stories                                       | 4:28   |      |      | 100.0 |
+|      | Active                                        |        | 4:28 |      | 100.0 |
+| code | Test shell functionality with tenancy enabled |        |      | 4:08 |  92.5 |
+| code | Fix apt-get failures on nightly build         |        |      | 0:20 |   7.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-05 Thu 00:03]
+#+CAPTION: Clock summary at [2026-02-05 Thu 15:39]
 |       | <75>                                          |         |       |       |       |
 | Tags  | Headline                                      | Time    |       |       |     % |
 |-------+-----------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                  | *52:54* |       |       | 100.0 |
+|       | *Total time*                                  | *57:20* |       |       | 100.0 |
 |-------+-----------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                       | 52:54   |       |       | 100.0 |
-|       | Active                                        |         | 52:54 |       | 100.0 |
-| agile | Sprint and product backlog refinement         |         |       |  2:24 |   4.5 |
-| code  | Address past review comments                  |         |       |  1:14 |   2.3 |
-| code  | Split "god" admin account                     |         |       | 10:05 |  19.1 |
-| code  | Move all database entities to public schema   |         |       |  1:22 |   2.6 |
-| code  | Check directory structure in SQL              |         |       |  0:36 |   1.1 |
-| code  | Add tenancy support                           |         |       |  3:55 |   7.4 |
-| code  | Use tenancy to isolate tests                  |         |       |  5:00 |   9.5 |
-| code  | Add NOTICE logging support to sqlgen          |         |       |  0:53 |   1.7 |
-| code  | Update codegen for tenancy                    |         |       |  3:32 |   6.7 |
-| code  | Add entity types for tenants                  |         |       |  9:43 |  18.4 |
-| code  | Add sink to log to database directly          |         |       |  5:00 |   9.5 |
-| code  | Add system accounts for services              |         |       |  3:32 |   6.7 |
-| code  | Test shell functionality with tenancy enabled |         |       |  5:38 |  10.6 |
+|       | Stories                                       | 57:20   |       |       | 100.0 |
+|       | Active                                        |         | 57:20 |       | 100.0 |
+| agile | Sprint and product backlog refinement         |         |       |  2:24 |   4.2 |
+| code  | Address past review comments                  |         |       |  1:14 |   2.2 |
+| code  | Split "god" admin account                     |         |       | 10:05 |  17.6 |
+| code  | Move all database entities to public schema   |         |       |  1:22 |   2.4 |
+| code  | Check directory structure in SQL              |         |       |  0:36 |   1.0 |
+| code  | Add tenancy support                           |         |       |  3:55 |   6.8 |
+| code  | Use tenancy to isolate tests                  |         |       |  5:00 |   8.7 |
+| code  | Add NOTICE logging support to sqlgen          |         |       |  0:53 |   1.5 |
+| code  | Update codegen for tenancy                    |         |       |  3:32 |   6.2 |
+| code  | Add entity types for tenants                  |         |       |  9:43 |  16.9 |
+| code  | Add sink to log to database directly          |         |       |  5:00 |   8.7 |
+| code  | Add system accounts for services              |         |       |  3:32 |   6.2 |
+| code  | Test shell functionality with tenancy enabled |         |       |  9:44 |  17.0 |
+| code  | Fix apt-get failures on nightly build         |         |       |  0:20 |   0.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -935,6 +937,9 @@ Highlights:
 
 *** STARTED Test shell functionality with tenancy enabled              :code:
     :LOGBOOK:
+    CLOCK: [2026-02-05 Thu 13:43]--[2026-02-05 Thu 15:39] =>  1:56
+    CLOCK: [2026-02-05 Thu 11:10]--[2026-02-05 Thu 12:20] =>  1:10
+    CLOCK: [2026-02-05 Thu 10:10]--[2026-02-05 Thu 11:10] =>  1:00
     CLOCK: [2026-02-04 Wed 22:51]--[2026-02-05 Thu 00:02] =>  1:11
     CLOCK: [2026-02-04 Wed 21:33]--[2026-02-04 Wed 22:50] =>  1:17
     CLOCK: [2026-02-04 Wed 21:00]--[2026-02-04 Wed 21:32] =>  0:32
@@ -987,6 +992,116 @@ Highlights:
 - Dependency Update: The ores.iam project now explicitly links against
   ores.comms.lib to support the new client-side authentication helpers.
 #+end_quote
+
+*** BLOCKED Fix apt-get failures on nightly build                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-05 Thu 09:50]--[2026-02-05 Thu 10:10] =>  0:20
+    :END:
+
+#+begin_quote
+This pull request significantly improves the robustness of Debian package
+installations within the CI environment by introducing comprehensive retry
+mechanisms and making the installation process more configurable. It streamlines
+the install_debian_packages.sh script, enhances its reliability against
+transient network issues, and adds a convenient option for installing Valgrind,
+which is beneficial for memory debugging in nightly builds.
+
+Highlights:
+
+- Retry Logic: Implemented exponential backoff for apt-get operations in
+  install_debian_packages.sh to enhance CI reliability, with 5 retries starting
+  at a 5-second delay.
+- APT Retries: Configured apt-get commands to use Acquire::Retries=3, providing
+  download-level resilience for package fetching.
+- Valgrind Option: Added a --with-valgrind flag to the installation script,
+  allowing optional installation of Valgrind for specific build types like
+  nightly builds.
+- Script Refactoring and Bug Fix: Cleaned up the install_debian_packages.sh
+  script, including converting packages to an array and fixing a bug where
+  apt-get clean and apt-get autoremove were incorrectly placed on the same line.
+- Nightly Workflow Update: The nightly build workflow was updated to utilize the
+  new --with-valgrind flag, streamlining the Valgrind installation process.
+#+end_quote
+
+*** Refactor message handlers for per-request tenant context          :code:
+
+Message handlers currently use a fixed database context that is set at
+construction time (typically with system tenant). When users from different
+tenants authenticate and make requests, their operations execute in the wrong
+tenant context, causing data isolation failures.
+
+The session correctly stores the tenant_id from login, but handlers don't use it
+to create per-request database contexts. This is a security issue that can lead
+to cross-tenant data leakage.
+
+See design document: =doc/design/multi_tenant_message_handling.org=
+
+**** Acceptance Criteria
+
+- Handlers create per-request database contexts using session's tenant_id
+- Each request executes in the correct tenant's RLS context
+- Multi-tenant concurrent requests don't interfere with each other
+- ThreadSanitizer build passes under concurrent load
+
+**** Tasks
+
+- [ ] Refactor =accounts_message_handler= to use per-request context
+- [ ] Refactor =risk_message_handler= to use per-request context
+- [ ] Refactor =dq_message_handler= to use per-request context
+- [ ] Refactor =assets_message_handler= to use per-request context
+- [ ] Refactor =telemetry_message_handler= to use per-request context
+- [ ] Refactor =variability_message_handler= to use per-request context
+- [ ] Add multi-tenant concurrent integration test
+- [ ] Run ThreadSanitizer build and verify no races
+
+**** Notes
+
+PR #410 completed the foundation work:
+- Added =tenant_id= to =session_data= and =session_info=
+- Made =tenant_context= immutable
+- Fixed RLS policies and raw query tenant context
+- Added design document
+
+The handler refactoring pattern is:
+#+begin_src cpp
+// Before: Fixed context at construction
+class handler {
+    database::context ctx_;
+    service svc_{ctx_};  // Caches wrong tenant
+};
+
+// After: Per-request context from session
+class handler {
+    sqlgen::ConnectionPool<Connection> pool_;
+
+    database::context make_context(const session_info& session) {
+        return database::context(pool_, creds_, to_string(session.tenant_id));
+    }
+};
+#+end_src
+
+*** Consider using UUID in the database layer
+
+At present we are using std::string and then mapping to boost UUID.
+
+*** Refactor tenant lookup functions to accept const context           :code:
+
+The tenant lookup functions (=resolve_tenant_id=, =lookup_by_code=,
+=lookup_by_hostname=) currently take =context&= (non-const reference) even
+though they only perform read operations. This forces callers to create
+unnecessary mutable copies when they have a const context.
+
+Current workaround in =tenant_context.cpp=:
+#+begin_src cpp
+// Creates unnecessary copy just to satisfy non-const parameter
+auto lookup_ctx = ctx.with_tenant(ctx.tenant_id());
+const auto resolved = resolve_tenant_id(lookup_ctx, tenant);
+#+end_src
+
+Refactoring these to accept =const context&= would:
+- Eliminate unnecessary context copies
+- Better express the read-only nature of lookups
+- Allow callers to use const contexts directly
 
 *** Generate protocol docs via codegen                                 :code:
 

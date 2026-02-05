@@ -120,6 +120,16 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     40      -- display order
 );
 
+select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'system.tenant_terminated',
+    'Tenant marked as terminated',
+    'system',
+    true,   -- applies to amend (termination is updating status)
+    false,  -- not for delete
+    false,  -- no commentary required
+    50      -- display order
+);
+
 -- =============================================================================
 -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
 -- =============================================================================

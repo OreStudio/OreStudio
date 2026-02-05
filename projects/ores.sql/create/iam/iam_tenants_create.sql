@@ -159,6 +159,7 @@ create or replace rule ores_iam_tenants_delete_rule as
 on delete to ores_iam_tenants_tbl
 do instead
     update ores_iam_tenants_tbl
-    set valid_to = current_timestamp
+    set valid_to = current_timestamp,
+        status = 'terminated'
     where id = old.id
       and valid_to = ores_utility_infinity_timestamp_fn();

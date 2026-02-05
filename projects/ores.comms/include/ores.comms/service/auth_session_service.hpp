@@ -34,15 +34,14 @@
 namespace ores::comms::service {
 
 /**
- * @brief Lightweight session info for backward compatibility.
+ * @brief Lightweight session info for authorization checks.
  *
- * Authorization is now handled via RBAC permissions checked at the handler
- * level using authorization_service.
- *
- * @deprecated Use get_session_data() to access the full session object.
+ * Contains the essential identity information needed for request processing.
+ * Authorization is handled via RBAC permissions checked at the handler level.
  */
 struct session_info {
     boost::uuids::uuid account_id;
+    boost::uuids::uuid tenant_id;
 };
 
 /**

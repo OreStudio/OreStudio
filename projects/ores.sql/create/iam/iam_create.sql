@@ -49,4 +49,5 @@
 -- Tenant lifecycle (must come after all tables it references)
 \ir ./iam_tenant_provisioner_create.sql
 \ir ./iam_tenant_deprovisioner_create.sql
+\ir ./iam_tenant_terminator_create.sql
 

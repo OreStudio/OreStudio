@@ -74,11 +74,10 @@ public:
         if (tenant_id_.empty()) {
             BOOST_LOG_SEV(lg(), error)
                 << "acquire() called without tenant context. "
-                << "Use set_tenant_id() or tenant_context::set_system_tenant() first.";
+                << "Create a new context with tenant_id set at construction.";
             return sqlgen::error(
-                "tenant_aware_pool requires tenant_id to be set. "
-                "Use set_tenant_id() or tenant_context::set_system_tenant() "
-                "for system operations.");
+                "tenant_aware_pool requires tenant_id to be set at construction. "
+                "Create a new context with the desired tenant_id.");
         }
 
         auto session_result = pool_.acquire();
@@ -102,18 +101,19 @@ public:
     }
 
     /**
-     * @brief Updates the tenant ID for subsequent acquisitions.
-     *
-     * @param tenant_id The new tenant ID to use
-     */
-    void set_tenant_id(std::string tenant_id) {
-        tenant_id_ = std::move(tenant_id);
-    }
-
-    /**
      * @brief Gets the current tenant ID.
      */
     const std::string& tenant_id() const { return tenant_id_; }
+
+    /**
+     * @brief Gets the underlying connection pool.
+     *
+     * Allows creating new tenant_aware_pool instances that share the same
+     * underlying connections but have different tenant IDs.
+     */
+    const sqlgen::ConnectionPool<Connection>& underlying_pool() const {
+        return pool_;
+    }
 
     /**
      * @brief Gets the number of available connections.

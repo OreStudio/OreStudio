@@ -1,0 +1,388 @@
+:PROPERTIES:
+:ID: A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B
+:END:
+#+title: Unit Test Database Integration Guide
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+This document explains how unit tests interact with the database, including
+tenant lifecycle management, logging configuration, and troubleshooting.
+
+For test writing conventions and patterns, see the [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer Skill]].
+
+* Overview
+
+ORE Studio uses PostgreSQL with Row-Level Security (RLS) for multi-tenant data
+isolation. Each test suite runs in its own isolated tenant, allowing parallel
+test execution without interference.
+
+#+begin_example
+Test Process A (ores.iam.tests)     Test Process B (ores.cli.tests)
+         |                                    |
+         v                                    v
+    Tenant A                             Tenant B
+    (isolated)                           (isolated)
+         |                                    |
+         +----------> PostgreSQL <-----------+
+                     (shared DB)
+#+end_example
+
+* Tenant Lifecycle
+
+** Lifecycle Phases
+
+Each test suite goes through four phases:
+
+1. *Provision* - Create a new tenant with required reference data
+2. *Execute* - Run tests within the tenant's isolated context
+3. *Terminate* - Mark tenant as terminated and soft-delete
+4. *Cleanup* - Data preserved for debugging (optional purge later)
+
+** Catch2 Listeners
+
+Two Catch2 event listeners manage the lifecycle automatically:
+
+#+begin_src cpp
+// In main.cpp of each test suite
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+#+end_src
+
+| Listener                        | Purpose                                |
+|---------------------------------+----------------------------------------|
+| =logging_listener=              | Initializes Boost.Log for each test    |
+| =database_lifecycle_listener=   | Manages tenant provision/termination   |
+
+** Provisioning (testRunStarting)
+
+When a test suite starts, =database_lifecycle_listener::testRunStarting()=:
+
+1. Creates a database context connecting to the shared database
+2. Generates a unique tenant code: ~{suite}_{YYYYMMDD}_{HHMMSS}_{pid}_{random}~
+3. Calls =ores_iam_provision_tenant_fn()= which:
+   - Creates a new tenant record with =type='test'=
+   - Copies permissions, roles, and role-permission mappings from system tenant
+4. Sets =ORES_TEST_DB_TENANT_ID= environment variable for tests to use
+
+Example tenant code: =ores.iam.tests_20260205_144309_3041345_3127=
+
+** Termination (testRunEnded)
+
+When tests complete, =database_lifecycle_listener::testRunEnded()=:
+
+1. Switches to system tenant context
+2. Calls =ores_iam_terminate_tenant_fn()= which:
+   - Soft-deletes the tenant (sets =valid_to= to current timestamp)
+   - Sets =status='terminated'=
+3. The tenant no longer appears in "current" queries
+
+** Environment Variables
+
+| Variable                 | Description                                 |
+|--------------------------+---------------------------------------------|
+| =ORES_TEST_DB_USER=      | Database user (default: ores_test_dml_user) |
+| =ORES_TEST_DB_PASSWORD=  | Database password                           |
+| =ORES_TEST_DB_HOST=      | Database host (default: localhost)          |
+| =ORES_TEST_DB_DATABASE=  | Database name (default: ores_default)       |
+| =ORES_TEST_DB_PORT=      | Database port (default: 5432)               |
+| =ORES_TEST_DB_TENANT_ID= | Set automatically during provisioning       |
+
+* Logging Configuration
+
+** Enabling Test Logging
+
+By default, test logging is *disabled* to reduce noise. Enable it via CMake:
+
+#+begin_src bash
+# Enable debug logging to files
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
+
+# Enable trace logging with console output
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+
+# Enable logging to database (telemetry tables)
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug -DORES_TEST_LOG_DATABASE=ON
+
+# All options combined
+cmake --preset linux-clang-debug \
+  -DORES_TEST_LOG_LEVEL=trace \
+  -DORES_TEST_LOG_CONSOLE=ON \
+  -DORES_TEST_LOG_DATABASE=ON
+#+end_src
+
+After changing CMake options, rebuild and run tests:
+
+#+begin_src bash
+cmake --build --preset linux-clang-debug --target rat
+#+end_src
+
+** CMake Options
+
+| Option                   | Values                          | Default | Description                   |
+|--------------------------+---------------------------------+---------+-------------------------------|
+| =ORES_TEST_LOG_LEVEL=    | OFF, trace, debug, info, warn, error | OFF     | Log severity threshold        |
+| =ORES_TEST_LOG_CONSOLE=  | ON, OFF                         | OFF     | Output logs to console        |
+| =ORES_TEST_LOG_DATABASE= | ON, OFF                         | OFF     | Write logs to telemetry table |
+
+** Log File Locations
+
+When logging is enabled, log files are written to:
+
+#+begin_example
+build/output/{preset}/publish/log/{suite}.tests/{suite}.tests.log
+#+end_example
+
+Example:
+#+begin_example
+build/output/linux-clang-debug/publish/log/ores.iam.tests/ores.iam.tests.log
+#+end_example
+
+Per-test-case logs are organised by category (tag):
+#+begin_example
+build/output/linux-clang-debug/publish/log/ores.iam.tests/[domain]/test_name.log
+#+end_example
+
+* Analyzing Test Results
+
+** parse-test-results.sh Script
+
+The =scripts/parse-test-results.sh= script parses Catch2 XML output and correlates
+failures with log files:
+
+#+begin_src bash
+# Default preset (linux-clang-debug)
+./scripts/parse-test-results.sh
+
+# Specific preset
+./scripts/parse-test-results.sh linux-clang-release
+
+# Specific directory
+./scripts/parse-test-results.sh -d /path/to/bin
+#+end_src
+
+** Script Output
+
+The script provides:
+
+- Test suite summary (total, passed, failed, skipped)
+- Failed test details (file, line, exception)
+- Relevant log excerpts (ERROR/WARN lines)
+- Overall summary across all test suites
+
+Example output:
+#+begin_example
+================================================================================
+Processing: test-results-ores.iam.tests.xml
+================================================================================
+Test Suite: ores.iam.tests
+Total Tests: 201
+Passed: 200
+Failed: 1
+Total Duration: 12.345s
+
+Found 1 failed test(s):
+
+FAILURE #1 (test_case_name):
+  Name: test_case_name
+  Tags: [domain]
+  File: /path/to/tests/domain_account_tests.cpp
+  Line: 42
+  Exception: [domain_account_tests.cpp:45] CHECK failed...
+
+  Test Suite Log: build/output/.../log/ores.iam.tests/ores.iam.tests.log
+  Errors/Warnings in test suite log:
+    Line 123: [ERROR] Database connection failed...
+================================================================================
+#+end_example
+
+** XML Result Files
+
+Catch2 generates XML result files in:
+
+#+begin_example
+build/output/{preset}/publish/bin/test-results-{suite}.tests.xml
+#+end_example
+
+* Querying Telemetry for Test Logs
+
+When =ORES_TEST_LOG_DATABASE=ON=, logs are written to =ores_telemetry_logs_tbl=.
+
+** Schema
+
+#+begin_src sql
+CREATE TABLE ores_telemetry_logs_tbl (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    timestamp timestamp with time zone NOT NULL,
+    source text NOT NULL,           -- 'client' or 'server'
+    source_name text NOT NULL,      -- e.g., 'ores.iam.tests'
+    session_id uuid,
+    account_id uuid,
+    level text NOT NULL,            -- trace, debug, info, warn, error
+    component text NOT NULL,        -- logger name
+    message text NOT NULL,
+    tag text NOT NULL,              -- e.g., test case name
+    recorded_at timestamp with time zone NOT NULL
+);
+#+end_src
+
+** Finding Test Tenant ID
+
+First, find the tenant for your test run:
+
+#+begin_src sql
+-- Find test tenants by name pattern
+SELECT id, code, status, valid_to
+FROM ores_iam_tenants_tbl
+WHERE code LIKE 'ores.iam.tests_%'
+ORDER BY valid_from DESC
+LIMIT 10;
+#+end_src
+
+** Querying Logs by Tenant
+
+#+begin_src sql
+-- Get all logs for a specific test run
+SELECT timestamp, level, component, message
+FROM ores_telemetry_logs_tbl
+WHERE tenant_id = 'your-tenant-uuid-here'
+ORDER BY timestamp;
+
+-- Get errors only
+SELECT timestamp, component, message
+FROM ores_telemetry_logs_tbl
+WHERE tenant_id = 'your-tenant-uuid-here'
+  AND level = 'error'
+ORDER BY timestamp;
+#+end_src
+
+** Querying by Source Name
+
+#+begin_src sql
+-- Get recent logs from a specific test suite
+SELECT timestamp, level, tag, message
+FROM ores_telemetry_logs_tbl
+WHERE source_name = 'ores.iam.tests'
+  AND timestamp > now() - interval '1 hour'
+ORDER BY timestamp DESC
+LIMIT 100;
+#+end_src
+
+** Querying by Component
+
+#+begin_src sql
+-- Find all logs from a specific component/logger
+SELECT timestamp, level, message
+FROM ores_telemetry_logs_tbl
+WHERE component LIKE 'ores.iam.service.%'
+  AND timestamp > now() - interval '1 hour'
+ORDER BY timestamp;
+#+end_src
+
+** Using psql Client
+
+The project includes a helper script for database access:
+
+#+begin_src bash
+cd projects/ores.sql
+./run_sql.sh -c "SELECT * FROM ores_telemetry_logs_tbl LIMIT 10;"
+#+end_src
+
+* Troubleshooting
+
+** Tests Fail to Start
+
+*Symptom*: Tests fail immediately with database connection errors.
+
+*Check*:
+1. Database is running: =pg_isready -h localhost -p 5432=
+2. Environment variables are set correctly
+3. Database exists and has schema: =psql -d ores_dev_local1 -c '\dt'=
+
+** Tenant Provisioning Fails
+
+*Symptom*: =ERROR: function ores_iam_provision_tenant_fn does not exist=
+
+*Fix*: Recreate the database schema:
+#+begin_src bash
+cd projects/ores.sql
+./create_database_direct.sh
+#+end_src
+
+** Tenant Termination Fails
+
+*Symptom*: Test tenants remain with =status='active'= after tests complete.
+
+*Check logs*:
+#+begin_src bash
+grep -i "terminat\|failed" build/output/linux-clang-debug/publish/log/*.tests/*.log
+#+end_src
+
+*Common causes*:
+- Missing =system.tenant_terminated= change reason code
+- Missing =ores_iam_terminate_tenant_fn= function
+
+** RLS Policy Blocks Queries
+
+*Symptom*: Queries return empty results when data exists.
+
+*Check*: Verify tenant context is set:
+#+begin_src sql
+SELECT current_setting('app.current_tenant_id', true);
+#+end_src
+
+*Fix*: Ensure tests use =scoped_database_helper= which sets context automatically.
+
+** Logs Not Appearing
+
+*Symptom*: Log files are empty or missing.
+
+*Check*:
+1. Logging is enabled: grep for =Test logging: ENABLED= in CMake output
+2. Reconfigure CMake with logging options
+3. Rebuild tests
+
+** Parallel Test Failures
+
+*Symptom*: Tests pass individually but fail when run in parallel.
+
+*Common causes*:
+1. Tests not using isolated tenant context
+2. Shared global state between tests
+3. Race conditions in ID generation
+
+*Fix*: Ensure each test uses =scoped_database_helper= for proper isolation.
+
+** Orphaned Test Tenants
+
+To clean up old test tenants manually:
+
+#+begin_src sql
+-- View all test tenants
+SELECT code, status, valid_to
+FROM ores_iam_tenants_tbl
+WHERE type = 'test'
+  AND valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Terminate a specific test tenant
+SELECT set_config('app.current_tenant_id', '00000000-0000-0000-0000-000000000000', false);
+SELECT ores_iam_terminate_tenant_fn('tenant-uuid-here'::uuid);
+#+end_src
+
+* Key Classes Reference
+
+| Class                         | Purpose                                        |
+|-------------------------------+------------------------------------------------|
+| =database_lifecycle_listener= | Catch2 listener for tenant provisioning        |
+| =logging_listener=            | Catch2 listener for Boost.Log initialization   |
+| =test_database_manager=       | Static utilities for tenant management         |
+| =scoped_database_helper=      | RAII wrapper providing database context        |
+| =database_helper=             | Low-level database operations helper           |
+
+* Related Documentation
+
+- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer Skill]] - Test writing conventions and patterns
+- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ORE Studio Testing Component]] - Component architecture overview
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][Testing Component]] |

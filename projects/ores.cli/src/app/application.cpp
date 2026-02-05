@@ -127,7 +127,7 @@ application::application(std::ostream& output_stream,
 
 void application::set_tenant_context(const std::string& tenant) {
     try {
-        database::service::tenant_context::set(context_, tenant);
+        context_ = database::service::tenant_context::with_tenant(context_, tenant);
     } catch (const std::exception& e) {
         BOOST_THROW_EXCEPTION(application_exception(e.what()));
     }

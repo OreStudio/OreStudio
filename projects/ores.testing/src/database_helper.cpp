@@ -36,17 +36,15 @@ database_helper::database_helper()
 }
 
 void database_helper::set_tenant_context() {
-    // Get the test tenant ID from environment (set by lifecycle listener)
     auto tenant_id = test_database_manager::get_test_tenant_id_env();
     if (tenant_id.empty()) {
-        // Fall back to system tenant if no test tenant is provisioned
         tenant_id = test_database_manager::system_tenant_id;
         BOOST_LOG_SEV(lg(), debug) << "No test tenant found, using system tenant";
     } else {
         BOOST_LOG_SEV(lg(), info) << "Using test tenant: " << tenant_id;
     }
 
-    tenant_context::set(context_, tenant_id);
+    context_ = tenant_context::with_tenant(context_, tenant_id);
     BOOST_LOG_SEV(lg(), info) << "Successfully set tenant context";
 }
 

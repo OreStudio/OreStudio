@@ -335,10 +335,11 @@ void publication_service::record_publication(
 
     // Build the INSERT query
     const auto sql = std::format(
-        "INSERT INTO metadata.dq_dataset_publications_tbl ("
-        "dataset_id, dataset_code, mode, target_table, "
+        "INSERT INTO ores_dq_dataset_publications_tbl ("
+        "tenant_id, dataset_id, dataset_code, mode, target_table, "
         "records_inserted, records_updated, records_skipped, records_deleted, published_by"
-        ") VALUES ('{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
+        ") VALUES ('{}', '{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
+        ctx_.tenant_id(),
         boost::uuids::to_string(result.dataset_id),
         result.dataset_code,
         to_string(mode),
@@ -376,7 +377,7 @@ domain::publication_result publication_service::call_populate_function(
         << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
-        "SELECT * FROM metadata.{}('{}'::uuid, '{}'::text)",
+        "SELECT * FROM ores_{}('{}'::uuid, '{}'::text)",
         function_name, dataset_id_str, mode_str);
 
     try {
@@ -436,7 +437,7 @@ messaging::publish_bundle_response publication_service::publish_bundle(
 
     // Call the SQL function
     const auto sql = std::format(
-        "SELECT * FROM metadata.dq_bundles_publish_fn('{}', '{}', '{}', {})",
+        "SELECT * FROM ores_dq_bundles_publish_fn('{}', '{}', '{}', {})",
         bundle_code, mode_str, published_by, atomic ? "true" : "false");
 
     try {

@@ -31,9 +31,9 @@ auth_session_service::get_session(const std::string& remote_address) const {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end() && it->second) {
-        // Return legacy session_info from the full session object
         return session_info{
-            .account_id = it->second->account_id
+            .account_id = it->second->account_id,
+            .tenant_id = it->second->tenant_id
         };
     }
     return std::nullopt;

@@ -202,10 +202,8 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
         const auto tenant_id = test_database_manager::get_test_tenant_id_env();
         if (!tenant_id.empty()) {
             try {
-                // Create context and repository ONCE here, before any logging happens.
-                // This avoids recursive logging issues (make_context uses BOOST_LOG).
-                auto ctx = test_database_manager::make_context();
-                ores::database::service::tenant_context::set(ctx, tenant_id);
+                auto ctx = ores::database::service::tenant_context::with_tenant(
+                    test_database_manager::make_context(), tenant_id);
 
                 auto repo = std::make_shared<
                     ores::telemetry::database::repository::telemetry_repository>(

@@ -329,7 +329,7 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c2a9c-afe4-7292-9efe-a8946411caec
+  Account ID: 019c2b06-42a4-7fe0-9918-2551dbc2d718
   Tenant: System (00000000-0000-0000-0000-000000000000)
   You can now login with the credentials provided.
 ores-shell> Bye!
@@ -511,19 +511,23 @@ ores-shell>
 +--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
 | ID (UUID)                            | Username           | Email                 | Change Reason       | Recorded By | Recorded At                   | Version |
 +--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
-| 019c2a9d-eab1-7d1c-9e3f-dc689236f099 | newuser41          | newuser41@example.com | system.new_record   | postgres    | 2026-02-04 21:45:18.000000000 | 1       |
-| 019c2a9d-ea3a-76f5-a152-cf85f2adce9f | newuser40          | newuser40@example.com | system.new_record   | postgres    | 2026-02-04 21:45:18.000000000 | 1       |
-| 019c2a9c-afe4-7292-9efe-a8946411caec | newuser3           | newuser3@test.com     | system.new_record   | bootstrap   | 2026-02-04 21:43:57.000000000 | 1       |
-| 366aef0f-fa41-4269-bf5f-70466ce6fb29 | ores_test_dml_user | test_dml@system.ores  | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
-| bf91c7f6-dd57-49ae-817b-2ac4f822ca5f | ores_test_ddl_user | test_ddl@system.ores  | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
-| 5e958b97-cd55-4eac-b922-bd15a97a9761 | ores_http_user     | http@system.ores      | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
-| 19a6edb1-0439-4c56-b0d3-212c07996f27 | ores_comms_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
-| 0e505156-746b-4f3e-a2c4-4d995d2f19d4 | ores_wt_user       | wt@system.ores        | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
-| 20d944e2-4b6c-40b7-9c17-13734f4c3a1f | ores_cli_user      | cli@system.ores       | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
-| dcec2342-3f7a-4635-becf-3af109d81af6 | ores_ddl_user      | ddl@system.ores       | system.initial_load | postgres    | 2026-02-04 21:26:57.000000000 | 1       |
+| 019c2b11-f794-717a-9787-7f68b07eb12b | newuser61          | newuser61@acme.com    | system.new_record   | postgres    | 2026-02-04 23:52:03.000000000 | 1       |
+| 019c2b11-f70a-7e84-9c17-6c4eff0cd3f7 | newuser60          | newuser60@acme.com    | system.new_record   | postgres    | 2026-02-04 23:52:03.000000000 | 1       |
+| 019c2b07-df41-70f1-a2ff-f21374c88d4c | newuser41          | newuser41@example.com | system.new_record   | postgres    | 2026-02-04 23:41:02.000000000 | 1       |
+| 019c2b07-dec4-7117-9e98-49851b0bf0bb | newuser40          | newuser40@example.com | system.new_record   | postgres    | 2026-02-04 23:41:02.000000000 | 1       |
+| 019c2b06-42a4-7fe0-9918-2551dbc2d718 | newuser3           | newuser3@test.com     | system.new_record   | bootstrap   | 2026-02-04 23:39:16.000000000 | 1       |
+| d8babe4d-16cf-4ed5-a4db-892ae679eb8a | ores_test_dml_user | test_dml@system.ores  | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
+| d05c8fe8-2746-4ada-b8c4-827f43559431 | ores_test_ddl_user | test_ddl@system.ores  | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
+| b0ae331d-b813-4114-8256-39bfa988f2c5 | ores_http_user     | http@system.ores      | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
+| f6ad6a96-2589-4805-87d2-37be3fcaf45f | ores_comms_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
+| 321dd494-223b-427e-ab62-1c85d6301722 | ores_wt_user       | wt@system.ores        | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
+| fa8439ed-441c-49bf-b533-9804170a1631 | ores_cli_user      | cli@system.ores       | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
+| 958fd40f-427a-4462-a462-7847f5440f09 | ores_ddl_user      | ddl@system.ores       | system.initial_load | postgres    | 2026-02-04 23:37:21.000000000 | 1       |
 +--------------------------------------+--------------------+-----------------------+---------------------+-------------+-------------------------------+---------+
 
 
+
+Page 1 of 1 (12 of 12 total)
 ores-shell> Bye!
 #+end_example
 
@@ -880,18 +884,12 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-+------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+--------+--------------------+---------+
-| Code                                                       | Name                                                       | Type     | Hostname                                                             | Status | Recorded By        | Version |
-+------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+--------+--------------------+---------+
-| ores.database.tests_20260204_210832_2516613_7890           | ores.database.tests_20260204_210832_2516613_7890           | test     | ores.database.tests_20260204_210832_2516613_7890.localhost           | active | ores_test_dml_user | 1       |
-| ores.eventing.tests_20260204_211018_2521337_9377           | ores.eventing.tests_20260204_211018_2521337_9377           | test     | ores.eventing.tests_20260204_211018_2521337_9377.localhost           | active | ores_test_dml_user | 1       |
-| ores.platform.tests_20260204_210826_2515998_4705           | ores.platform.tests_20260204_210826_2515998_4705           | test     | ores.platform.tests_20260204_210826_2515998_4705.localhost           | active | ores_test_dml_user | 1       |
-| ores.telemetry.database.tests_20260204_210848_2517492_5720 | ores.telemetry.database.tests_20260204_210848_2517492_5720 | test     | ores.telemetry.database.tests_20260204_210848_2517492_5720.localhost | active | ores_test_dml_user | 1       |
-| ores.telemetry.tests_20260204_210842_2516971_8464          | ores.telemetry.tests_20260204_210842_2516971_8464          | test     | ores.telemetry.tests_20260204_210842_2516971_8464.localhost          | active | ores_test_dml_user | 1       |
-| ores.utility.tests_20260204_210701_2514547_1836            | ores.utility.tests_20260204_210701_2514547_1836            | test     | ores.utility.tests_20260204_210701_2514547_1836.localhost            | active | ores_test_dml_user | 1       |
-| ores.variability.tests_20260204_210850_2517612_2808        | ores.variability.tests_20260204_210850_2517612_2808        | test     | ores.variability.tests_20260204_210850_2517612_2808.localhost        | active | ores_test_dml_user | 1       |
-| system                                                     | System                                                     | platform | localhost                                                            | active | postgres           | 1       |
-+------------------------------------------------------------+------------------------------------------------------------+----------+----------------------------------------------------------------------+--------+--------------------+---------+
++--------+-----------+--------------+-----------+--------+-------------+---------+
+| Code   | Name      | Type         | Hostname  | Status | Recorded By | Version |
++--------+-----------+--------------+-----------+--------+-------------+---------+
+| acme   | ACME Corp | organisation | acme.com  | active | newuser3    | 1       |
+| system | System    | platform     | localhost | active | postgres    | 1       |
++--------+-----------+--------------+-----------+--------+-------------+---------+
 
 
 ores-shell> Bye!
@@ -917,16 +915,17 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected to :51004
-
-⚠ WARNING: System is in BOOTSTRAP MODE
-  System in BOOTSTRAP MODE - awaiting initial admin account creation
-  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
-
-✗ Auto-login failed: System is in bootstrap mode. Only initial admin account creation is allowed. Please create the initial admin account from localhost.
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✗ Not logged in
+ores-shell>
++------+------+------+----------+--------+-------------+---------+
+| Code | Name | Type | Hostname | Status | Recorded By | Version |
++------+------+------+----------+--------+-------------+---------+
+
+
 ores-shell> Bye!
 #+end_example
 
@@ -937,7 +936,7 @@ Create a new tenant with the specified parameters.
 
 #+name: tenants-add
 #+begin_src ores-shell :exports none
-tenants add acme "ACME Corp" organisation acme.example.com "ACME Corporation tenant"
+tenants add acme "ACME Corp" organisation acme.com "ACME Corporation tenant"
 exit
 #+end_src
 
@@ -957,30 +956,71 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Tenant added successfully!
-  ID: 5da8cae4-9bd3-495a-89d2-7ce8c0d43b37
+  ID: 76bd1fef-6734-4a4e-b894-cfb7445d337f
 ores-shell> Bye!
 #+end_example
 
 *** Create Account on Tenant
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
 
 Creates new user accounts on system tenant.
 
-#+name: create-account
+#+name: create-account-tenant
 #+begin_src ores-shell :exports none
-accounts create newuser40@acme Secure-Password-123 567 newuser40@acme.com
-accounts create newuser41@acme Secure-Password-123 567 newuser41@acme.com
+accounts create newuser60@acme.com Secure-Password-123 567 newuser60@acme.com
+accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
 exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
 ./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<create-account>>
+<<create-account-tenant>>
 EOF
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Account created with ID: 019c2b11-f70a-7e84-9c17-6c4eff0cd3f7
+ores-shell> ✓ Account created with ID: 019c2b11-f794-717a-9787-7f68b07eb12b
+ores-shell> Bye!
+#+end_example
+
+*** List accounts on Tenant
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser60@acme.com"
+    :END:
+
+#+name: list-accounts-tenant
+#+begin_src ores-shell :exports none
+accounts list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<list-accounts-tenant>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser60
+  Tenant: ACME Corp (76bd1fef-6734-4a4e-b894-cfb7445d337f)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✗ Authorization failed
+ores-shell> Bye!
+#+end_example
+
 
 *** Tenant History
 
@@ -1255,7 +1295,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> currencies> Commands available:
@@ -1268,9 +1308,9 @@ ores-shell> currencies> Commands available:
  - ! <history entry index>
 	Exec a command by index in the history
  - get
-	Retrieve all currencies from the server
- - add <string> <string> <string> <string> <string>
-	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+	Retrieve currencies from the server (paginated)
+ - add <string> <string> <string> <string> <string> <string> <string>
+	Add a currency (iso_code name numeric_code symbol fractions reason_code "commentary")
  - delete <string>
 	Delete a currency by ISO code
  - history <string>
@@ -1301,118 +1341,20 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+  Tenant: System (00000000-0000-0000-0000-000000000000)
+ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
 
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
-| ISO Code | Version | Name                                    | Symbol | Type | Fractions/Unit | Precision | Change Reason              | Recorded By | Recorded At                   |
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
-| USD      | 2       | US Dollar                               | $      | fiat | 100            | 1         | common.non_material_update | newuser3    | 2026-01-09 21:05:44.000000000 |
-| CAD      | 1       | Canadian Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MXN      | 1       | Mexican Peso                            | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BRL      | 1       | Brazilian Real                          | R$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| ARS      | 1       | Argentine Peso                          | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| CLP      | 1       | Chilean Peso                            | $      | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| COP      | 1       | Colombian Peso                          | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PEN      | 1       | Peruvian Sol                            | S/     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| UYU      | 1       | Uruguayan Peso                          | $U     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PYG      | 1       | Paraguayan Guarani                      | ₲    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BOB      | 1       | Bolivian Boliviano                      | Bs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| VES      | 1       | Venezuelan Bolivar                      | Bs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| CRC      | 1       | Costa Rican Colon                       | ₡    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PAB      | 1       | Panamanian Balboa                       | B/.    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| GTQ      | 1       | Guatemalan Quetzal                      | Q      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| HNL      | 1       | Honduran Lempira                        | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| NIO      | 1       | Nicaraguan Cordoba                      | C$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| DOP      | 1       | Dominican Peso                          | RD$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| CUP      | 1       | Cuban Peso                              | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| JMD      | 1       | Jamaican Dollar                         | J$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| TTD      | 1       | Trinidad and Tobago Dollar              | TT$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BBD      | 1       | Barbadian Dollar                        | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BSD      | 1       | Bahamian Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| HTG      | 1       | Haitian Gourde                          | G      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| SRD      | 1       | Surinamese Dollar                       | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| GYD      | 1       | Guyanese Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BZD      | 1       | Belize Dollar                           | BZ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| AWG      | 1       | Aruban Florin                           | ƒ     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| ANG      | 1       | Netherlands Antillean Guilder           | ƒ     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| KYD      | 1       | Cayman Islands Dollar                   | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BMD      | 1       | Bermudian Dollar                        | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| FKP      | 1       | Falkland Islands Pound                  | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| XCD      | 1       | East Caribbean Dollar                   | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| EUR      | 1       | Euro                                    | €    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| GBP      | 1       | British Pound Sterling                  | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| CHF      | 1       | Swiss Franc                             | CHF    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| NOK      | 1       | Norwegian Krone                         | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| SEK      | 1       | Swedish Krona                           | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| DKK      | 1       | Danish Krone                            | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| ISK      | 1       | Icelandic Krona                         | kr     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PLN      | 1       | Polish Zloty                            | zł    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| CZK      | 1       | Czech Koruna                            | Kč    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| HUF      | 1       | Hungarian Forint                        | Ft     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| RON      | 1       | Romanian Leu                            | lei    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BGN      | 1       | Bulgarian Lev                           | лв   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| HRK      | 1       | Croatian Kuna                           | kn     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| RSD      | 1       | Serbian Dinar                           | дин | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BAM      | 1       | Bosnia and Herzegovina Convertible Mark | KM     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MKD      | 1       | Macedonian Denar                        | ден | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| ALL      | 1       | Albanian Lek                            | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MDL      | 1       | Moldovan Leu                            | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| UAH      | 1       | Ukrainian Hryvnia                       | ₴    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BYN      | 1       | Belarusian Ruble                        | Br     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| RUB      | 1       | Russian Ruble                           | ₽    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| GEL      | 1       | Georgian Lari                           | ₾    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| AMD      | 1       | Armenian Dram                           | ֏     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| AZN      | 1       | Azerbaijani Manat                       | ₼    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| TRY      | 1       | Turkish Lira                            | ₺    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| GIP      | 1       | Gibraltar Pound                         | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| JPY      | 1       | Japanese Yen                            | ¥     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| CNY      | 1       | Chinese Yuan                            | ¥     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| HKD      | 1       | Hong Kong Dollar                        | HK$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| TWD      | 1       | New Taiwan Dollar                       | NT$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| KRW      | 1       | South Korean Won                        | ₩    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| KPW      | 1       | North Korean Won                        | ₩    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| SGD      | 1       | Singapore Dollar                        | S$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MYR      | 1       | Malaysian Ringgit                       | RM     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| IDR      | 1       | Indonesian Rupiah                       | Rp     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| THB      | 1       | Thai Baht                               | ฿    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| VND      | 1       | Vietnamese Dong                         | ₫    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PHP      | 1       | Philippine Peso                         | ₱    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| INR      | 1       | Indian Rupee                            | ₹    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PKR      | 1       | Pakistani Rupee                         | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BDT      | 1       | Bangladeshi Taka                        | ৳    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| LKR      | 1       | Sri Lankan Rupee                        | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| NPR      | 1       | Nepalese Rupee                          | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MMK      | 1       | Myanmar Kyat                            | K      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| KHR      | 1       | Cambodian Riel                          | ៛    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| LAK      | 1       | Lao Kip                                 | ₭    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MNT      | 1       | Mongolian Tugrik                        | ₮    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| KZT      | 1       | Kazakhstani Tenge                       | ₸    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| UZS      | 1       | Uzbekistani Som                         | сўм | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| KGS      | 1       | Kyrgyzstani Som                         | с     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| TJS      | 1       | Tajikistani Somoni                      | ЅМ   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| TMT      | 1       | Turkmenistani Manat                     | m      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| AFN      | 1       | Afghan Afghani                          | ؋     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| AUD      | 1       | Australian Dollar                       | A$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| NZD      | 1       | New Zealand Dollar                      | NZ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| FJD      | 1       | Fijian Dollar                           | FJ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| PGK      | 1       | Papua New Guinean Kina                  | K      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| SBD      | 1       | Solomon Islands Dollar                  | SI$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| VUV      | 1       | Vanuatu Vatu                            | VT     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| WST      | 1       | Samoan Tala                             | WS$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| TOP      | 1       | Tongan Paanga                           | T$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MOP      | 1       | Macanese Pataca                         | MOP$   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BND      | 1       | Brunei Dollar                           | B$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| BTN      | 1       | Bhutanese Ngultrum                      | Nu.    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| MVR      | 1       | Maldivian Rufiyaa                       | Rf     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| SAR      | 1       | Saudi Riyal                             | ﷼    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-| AED      | 1       | UAE Dirham                              | د.إ  | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
++----------+---------+------+--------+------+----------------+-----------+---------------+-------------+-------------+
+| ISO Code | Version | Name | Symbol | Type | Fractions/Unit | Precision | Change Reason | Recorded By | Recorded At |
++----------+---------+------+--------+------+----------------+-----------+---------------+-------------+-------------+
 
 
 
+
+Page 1 of 1 (0 of 0 total)
 ores-shell> Bye!
 #+end_example
 

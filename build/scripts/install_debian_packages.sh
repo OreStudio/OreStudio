@@ -19,14 +19,14 @@ set -e
 
 with_valgrind=0
 
-for arg in "$@"; do
-    case $arg in
+while [[ $# -gt 0 ]]; do
+    case "$1" in
         --with-valgrind)
             with_valgrind=1
             shift
             ;;
         *)
-            echo "Unknown argument: $arg"
+            echo "Unknown argument: $1"
             echo "Usage: $0 [--with-valgrind]"
             exit 1
             ;;

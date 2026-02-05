@@ -71,16 +71,9 @@ begin
 
     raise notice 'Terminating tenant: % (id: %)', v_tenant_code, p_tenant_id;
 
-    -- Insert a new version with status='terminated'
-    -- The insert trigger will close off the current version and create the new one
-    insert into ores_iam_tenants_tbl (
-        id, type, code, name, description, hostname, status,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        id, type, code, name, description, hostname, 'terminated',
-        current_user, current_user, 'system.tenant_terminated', 'Tenant terminated'
-    from ores_iam_tenants_tbl
+    -- Soft-delete the tenant (triggers delete rule which sets valid_to and status)
+    -- This removes the tenant from "current" queries while preserving history
+    delete from ores_iam_tenants_tbl
     where id = p_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
 

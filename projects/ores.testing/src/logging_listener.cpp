@@ -202,12 +202,12 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
         const auto tenant_id = test_database_manager::get_test_tenant_id_env();
         if (!tenant_id.empty()) {
             try {
-                auto ctx = ores::database::service::tenant_context::with_tenant(
-                    test_database_manager::make_context(), tenant_id);
+                auto ctx = std::make_shared<ores::database::context>(
+                    ores::database::service::tenant_context::with_tenant(
+                        test_database_manager::make_context(), tenant_id));
 
                 auto repo = std::make_shared<
-                    ores::telemetry::database::repository::telemetry_repository>(
-                        std::move(ctx));
+                    ores::telemetry::database::repository::telemetry_repository>();
 
                 // Create resource for telemetry
                 auto resource = std::make_shared<ores::telemetry::domain::resource>(
@@ -217,9 +217,9 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
                 // The handler must not call any functions that log (to avoid recursion).
                 current_test_context.lifecycle_mgr->add_database_sink(
                     resource,
-                    [repo](const ores::telemetry::domain::telemetry_log_entry& entry) {
+                    [repo, ctx](const ores::telemetry::domain::telemetry_log_entry& entry) {
                         try {
-                            repo->create(entry);
+                            repo->create(*ctx, entry);
                         } catch (const std::exception& ex) {
                             // Use cerr, not logging (to avoid recursion)
                             std::cerr << "[Database Sink] Failed to write log: "

@@ -23,6 +23,7 @@
 #include "ores.telemetry/messaging/log_records_protocol.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
 #include "ores.telemetry/domain/telemetry_batch.hpp"
+#include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -30,9 +31,7 @@ using namespace ores::logging;
 
 telemetry_message_handler::telemetry_message_handler(::ores::database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions)
-    : ctx_(std::move(ctx))
-    , sessions_(std::move(sessions))
-    , repo_(ctx_) {}
+    : tenant_aware_handler(std::move(ctx), std::move(sessions)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
@@ -45,9 +44,9 @@ telemetry_message_handler::handle_message(comms::messaging::message_type type,
     case comms::messaging::message_type::submit_log_records_request:
         co_return co_await handle_submit_log_records_request(payload, remote_address);
     case comms::messaging::message_type::get_telemetry_logs_request:
-        co_return co_await handle_get_telemetry_logs_request(payload);
+        co_return co_await handle_get_telemetry_logs_request(payload, remote_address);
     case comms::messaging::message_type::get_telemetry_stats_request:
-        co_return co_await handle_get_telemetry_stats_request(payload);
+        co_return co_await handle_get_telemetry_stats_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown telemetry message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -63,6 +62,18 @@ handle_submit_log_records_request(std::span<const std::byte> payload,
 
     BOOST_LOG_SEV(lg(), debug) << "Processing submit_log_records_request";
 
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Submit telemetry logs");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    database::repository::telemetry_repository repo;
+
     // Deserialize request
     auto request_result = submit_log_records_request::deserialize(payload);
     if (!request_result) {
@@ -74,18 +85,10 @@ handle_submit_log_records_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Received " << request.records.size()
                                << " log records from " << remote_address;
 
-    // Get session info for the client (if available)
-    std::optional<boost::uuids::uuid> session_id;
-    std::optional<boost::uuids::uuid> account_id;
+    // Get session info from authenticated session
+    std::optional<boost::uuids::uuid> session_id = auth->account_id;  // Use account_id as identifier
+    std::optional<boost::uuids::uuid> account_id = auth->account_id;
     std::string source_name = "unknown";
-
-    if (sessions_) {
-        auto session_data = sessions_->get_session_data(remote_address);
-        if (session_data) {
-            session_id = session_data->id;
-            account_id = session_data->account_id;
-        }
-    }
 
     // Convert log_records to telemetry_log_entries
     domain::telemetry_batch batch;
@@ -122,7 +125,7 @@ handle_submit_log_records_request(std::span<const std::byte> payload,
     // Persist to database
     submit_telemetry_response response;
     try {
-        auto count = repo_.create_batch(batch);
+        auto count = repo.create_batch(ctx, batch);
         response.success = true;
         response.entries_accepted = static_cast<std::uint32_t>(count);
         response.message = "Telemetry logged successfully";
@@ -143,9 +146,22 @@ handle_submit_log_records_request(std::span<const std::byte> payload,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 telemetry_message_handler::
-handle_get_telemetry_logs_request(std::span<const std::byte> payload) {
+handle_get_telemetry_logs_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Processing get_telemetry_logs_request";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Query telemetry logs");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    database::repository::telemetry_repository repo;
 
     // Deserialize request
     auto request_result = get_telemetry_logs_request::deserialize(payload);
@@ -167,10 +183,10 @@ handle_get_telemetry_logs_request(std::span<const std::byte> payload) {
     get_telemetry_logs_response response;
     try {
         // Get total count for pagination
-        response.total_count = repo_.count(request.query);
+        response.total_count = repo.count(ctx, request.query);
 
         // Query log entries
-        response.entries = repo_.query(request.query);
+        response.entries = repo.query(ctx, request.query);
         response.success = true;
         response.message = "Query completed successfully";
 
@@ -190,9 +206,22 @@ handle_get_telemetry_logs_request(std::span<const std::byte> payload) {
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 telemetry_message_handler::
-handle_get_telemetry_stats_request(std::span<const std::byte> payload) {
+handle_get_telemetry_stats_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Processing get_telemetry_stats_request";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Query telemetry stats");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    database::repository::telemetry_repository repo;
 
     // Deserialize request
     auto request_result = get_telemetry_stats_request::deserialize(payload);
@@ -208,10 +237,10 @@ handle_get_telemetry_stats_request(std::span<const std::byte> payload) {
         // Query appropriate continuous aggregate based on granularity
         switch (request.query.granularity) {
         case domain::stats_granularity::hourly:
-            response.stats = repo_.read_hourly_stats(request.query);
+            response.stats = repo.read_hourly_stats(ctx, request.query);
             break;
         case domain::stats_granularity::daily:
-            response.stats = repo_.read_daily_stats(request.query);
+            response.stats = repo.read_daily_stats(ctx, request.query);
             break;
         }
 

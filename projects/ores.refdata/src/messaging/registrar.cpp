@@ -20,7 +20,7 @@
 #include "ores.refdata/messaging/registrar.hpp"
 #include "ores.comms/messaging/protocol.hpp"
 
-#include "ores.refdata/messaging/risk_message_handler.hpp"
+#include "ores.refdata/messaging/refdata_message_handler.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -30,17 +30,17 @@ void registrar::register_handlers(comms::net::server& server,
     database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions) {
-    BOOST_LOG_SEV(lg(), info) << "Registering risk subsystem message handlers.";
+    BOOST_LOG_SEV(lg(), info) << "Registering refdata subsystem message handlers.";
 
-    auto handler = std::make_shared<risk_message_handler>(
+    auto handler = std::make_shared<refdata_message_handler>(
         std::move(ctx), std::move(system_flags), std::move(sessions));
-    comms::messaging::message_type_range risk_range{
+    comms::messaging::message_type_range refdata_range{
         .min = comms::messaging::RISK_SUBSYSTEM_MIN,
         .max = comms::messaging::RISK_SUBSYSTEM_MAX
     };
-    server.register_handler(risk_range, std::move(handler));
+    server.register_handler(refdata_range, std::move(handler));
 
-    BOOST_LOG_SEV(lg(), info) << "Risk subsystem message handlers registered successfully.";
+    BOOST_LOG_SEV(lg(), info) << "Refdata subsystem message handlers registered successfully.";
 }
 
 }

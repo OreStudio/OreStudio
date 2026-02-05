@@ -22,11 +22,10 @@
 
 #include <memory>
 #include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/messaging/tenant_aware_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -43,7 +42,7 @@ namespace ores::telemetry::messaging {
  * structures, enriching them with session and account information from the
  * auth_session_service.
  */
-class telemetry_message_handler final : public comms::messaging::message_handler {
+class telemetry_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
     inline static std::string_view logger_name =
         "ores.telemetry.messaging.telemetry_message_handler";
@@ -100,10 +99,12 @@ private:
      * time range, source, level, component, and session/account IDs.
      *
      * @param payload The serialized get_telemetry_logs_request
+     * @param remote_address The client's remote address for session lookup
      * @return The serialized get_telemetry_logs_response
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_telemetry_logs_request(std::span<const std::byte> payload);
+    handle_get_telemetry_logs_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle get_telemetry_stats_request message.
@@ -112,19 +113,17 @@ private:
      * Supports hourly and daily granularity.
      *
      * @param payload The serialized get_telemetry_stats_request
+     * @param remote_address The client's remote address for session lookup
      * @return The serialized get_telemetry_stats_response
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_telemetry_stats_request(std::span<const std::byte> payload);
+    handle_get_telemetry_stats_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Convert severity_level enum to string representation.
      */
     static std::string severity_to_string(logging::severity_level level);
-
-    ::ores::database::context ctx_;
-    std::shared_ptr<comms::service::auth_session_service> sessions_;
-    database::repository::telemetry_repository repo_;
 };
 
 }

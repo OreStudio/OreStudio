@@ -51,7 +51,7 @@ public:
     /**
      * @brief Constructs a feature_flags_service.
      *
-     * @param ctx The database context to be used by the repository.
+     * @param ctx The database context to be used for operations.
      */
     explicit feature_flags_service(database::context ctx);
 
@@ -102,6 +102,7 @@ public:
         const std::string& name);
 
 private:
+    database::context ctx_;
     repository::feature_flags_repository repo_;
 };
 

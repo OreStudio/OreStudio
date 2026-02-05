@@ -36,32 +36,30 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-telemetry_repository::telemetry_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
 std::string telemetry_repository::sql() {
     return generate_create_table_sql<telemetry_entity>(lg());
 }
 
-void telemetry_repository::create(const domain::telemetry_log_entry& entry) {
+void telemetry_repository::create(context ctx,
+    const domain::telemetry_log_entry& entry) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
     // Get tenant_id from context (set by tenant_context::set())
-    const auto& tenant_id = ctx_.tenant_id();
+    const auto& tenant_id = ctx.tenant_id();
     if (tenant_id.empty()) {
         throw std::runtime_error("No tenant context set for telemetry insert");
     }
 
-    const auto r = sqlgen::session(ctx_.connection_pool())
+    const auto r = sqlgen::session(ctx.connection_pool())
         .and_then(begin_transaction)
         .and_then(insert(telemetry_mapper::to_entity(entry, tenant_id)))
         .and_then(commit);
     ensure_success(r, lg());
 }
 
-std::size_t telemetry_repository::create_batch(
+std::size_t telemetry_repository::create_batch(context ctx,
     const domain::telemetry_batch& batch) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
@@ -75,7 +73,7 @@ std::size_t telemetry_repository::create_batch(
                                << batch.source_name;
 
     // Get tenant_id from context (set by tenant_context::set())
-    const auto& tenant_id = ctx_.tenant_id();
+    const auto& tenant_id = ctx.tenant_id();
     if (tenant_id.empty()) {
         throw std::runtime_error("No tenant context set for telemetry batch insert");
     }
@@ -90,7 +88,7 @@ std::size_t telemetry_repository::create_batch(
         entities.push_back(std::move(entity));
     }
 
-    const auto r = sqlgen::session(ctx_.connection_pool())
+    const auto r = sqlgen::session(ctx.connection_pool())
         .and_then(begin_transaction)
         .and_then(insert(entities))
         .and_then(commit);
@@ -191,7 +189,7 @@ std::string build_where_clause(const domain::telemetry_query& q,
 }
 
 std::vector<domain::telemetry_log_entry>
-telemetry_repository::query(const domain::telemetry_query& q) {
+telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
@@ -215,7 +213,7 @@ telemetry_repository::query(const domain::telemetry_query& q) {
     BOOST_LOG_SEV(lg(), trace) << "Executing query: " << sql;
 
     // Use raw SQL execution via bitemporal_operations helper
-    auto rows = execute_raw_multi_column_query(ctx_, sql, lg(), "Querying telemetry logs");
+    auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Querying telemetry logs");
 
     std::vector<domain::telemetry_log_entry> entries;
     entries.reserve(rows.size());
@@ -249,7 +247,8 @@ telemetry_repository::query(const domain::telemetry_query& q) {
     return entries;
 }
 
-std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
+std::uint64_t telemetry_repository::count(context ctx,
+    const domain::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
@@ -265,7 +264,7 @@ std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
     BOOST_LOG_SEV(lg(), trace) << "Executing count: " << sql;
 
     // Use raw SQL execution via bitemporal_operations helper
-    auto results = execute_raw_string_query(ctx_, sql, lg(), "Counting telemetry logs");
+    auto results = execute_raw_string_query(ctx, sql, lg(), "Counting telemetry logs");
 
     if (results.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Count query returned no results";
@@ -278,7 +277,8 @@ std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
 }
 
 std::vector<domain::telemetry_log_entry>
-telemetry_repository::read_by_session(const boost::uuids::uuid& session_id,
+telemetry_repository::read_by_session(context ctx,
+    const boost::uuids::uuid& session_id,
     std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
@@ -291,7 +291,7 @@ telemetry_repository::read_by_session(const boost::uuids::uuid& session_id,
         order_by("timestamp"_c.desc()) |
         sqlgen::limit(static_cast<std::size_t>(limit_count));
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     std::vector<domain::telemetry_log_entry> result;
@@ -305,7 +305,8 @@ telemetry_repository::read_by_session(const boost::uuids::uuid& session_id,
 }
 
 std::vector<domain::telemetry_log_entry>
-telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
+telemetry_repository::read_by_account(context ctx,
+    const boost::uuids::uuid& account_id,
     const std::chrono::system_clock::time_point& start,
     const std::chrono::system_clock::time_point& end,
     std::uint32_t limit_count) {
@@ -324,7 +325,7 @@ telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
         order_by("timestamp"_c.desc()) |
         sqlgen::limit(static_cast<std::size_t>(limit_count));
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     std::vector<domain::telemetry_log_entry> result;
@@ -338,7 +339,8 @@ telemetry_repository::read_by_account(const boost::uuids::uuid& account_id,
 }
 
 std::vector<domain::telemetry_stats>
-telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) {
+telemetry_repository::read_hourly_stats(context ctx,
+    const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
@@ -351,7 +353,7 @@ telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) 
         where("hour"_c >= start_str && "hour"_c < end_str) |
         order_by("hour"_c.desc());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     // Apply in-memory filtering for optional criteria
@@ -377,7 +379,8 @@ telemetry_repository::read_hourly_stats(const domain::telemetry_stats_query& q) 
 }
 
 std::vector<domain::telemetry_stats>
-telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
+telemetry_repository::read_daily_stats(context ctx,
+    const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
@@ -390,7 +393,7 @@ telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
         where("day"_c >= start_str && "day"_c < end_str) |
         order_by("day"_c.desc());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     // Apply in-memory filtering for optional criteria
@@ -419,7 +422,7 @@ telemetry_repository::read_daily_stats(const domain::telemetry_stats_query& q) {
 }
 
 domain::telemetry_summary
-telemetry_repository::get_summary(std::uint32_t hours) {
+telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last "
                                << hours << " hours";
@@ -440,7 +443,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
         where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts) |
         sqlgen::to<count_result>;
 
-    auto total_r = sqlgen::session(ctx_.connection_pool()).and_then(total_query);
+    auto total_r = sqlgen::session(ctx.connection_pool()).and_then(total_query);
     if (total_r) {
         summary.total_logs = static_cast<std::uint64_t>(total_r->count);
     }
@@ -461,7 +464,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
                   "level"_c == level) |
             sqlgen::to<count_result>;
 
-        auto level_r = sqlgen::session(ctx_.connection_pool()).and_then(level_query);
+        auto level_r = sqlgen::session(ctx.connection_pool()).and_then(level_query);
         if (level_r) {
             *target = static_cast<std::uint64_t>(level_r->count);
         }
@@ -472,8 +475,8 @@ telemetry_repository::get_summary(std::uint32_t hours) {
     return summary;
 }
 
-std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
-    std::uint32_t hours) {
+std::uint64_t telemetry_repository::count_errors(context ctx,
+    const std::string& source_name, std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name
@@ -494,14 +497,14 @@ std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
               "source_name"_c == source_name && "level"_c == "error") |
         sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Error count: " << r->count;
     return static_cast<std::uint64_t>(r->count);
 }
 
-std::uint64_t telemetry_repository::delete_old_logs(
+std::uint64_t telemetry_repository::delete_old_logs(context ctx,
     const std::chrono::system_clock::time_point& older_than) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
@@ -511,7 +514,7 @@ std::uint64_t telemetry_repository::delete_old_logs(
     const auto query = sqlgen::delete_from<telemetry_entity> |
         where("timestamp"_c < older_ts);
 
-    execute_delete_query(ctx_, query, lg(), "deleting old telemetry logs");
+    execute_delete_query(ctx, query, lg(), "deleting old telemetry logs");
 
     // Note: We don't easily get the count from sqlgen delete.
     // With TimescaleDB, this should be handled by retention policies anyway.

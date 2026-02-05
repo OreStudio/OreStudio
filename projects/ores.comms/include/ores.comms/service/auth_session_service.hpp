@@ -42,6 +42,7 @@ namespace ores::comms::service {
 struct session_info {
     boost::uuids::uuid account_id;
     boost::uuids::uuid tenant_id;
+    std::string username;
 };
 
 /**

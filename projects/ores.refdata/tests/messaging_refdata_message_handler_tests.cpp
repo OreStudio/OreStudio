@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata/messaging/risk_message_handler.hpp"
+#include "ores.refdata/messaging/refdata_message_handler.hpp"
 
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
@@ -55,12 +55,13 @@ const std::string test_remote_address = "127.0.0.1:12345";
 const std::string test_username = "test_user";
 
 std::shared_ptr<ores::comms::service::auth_session_service>
-make_sessions() {
+make_sessions(const boost::uuids::uuid& tenant_id) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     // Create a test session with a known username
     auto session = std::make_shared<ores::comms::service::session_data>();
     session->id = boost::uuids::random_generator()();
     session->account_id = boost::uuids::random_generator()();
+    session->tenant_id = tenant_id;
     session->username = test_username;
     session->start_time = std::chrono::system_clock::now();
     sessions->store_session_data(test_remote_address, session);
@@ -81,7 +82,7 @@ TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
 
     scoped_database_helper h;
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -121,7 +122,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
 
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -166,7 +167,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     repo.write(h.context(), currencies);
 
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -216,7 +217,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     repo.write(h.context(), currencies);
 
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -276,7 +277,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << original_ccy;
 
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -337,7 +338,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies written to db.";
 
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -381,7 +382,7 @@ TEST_CASE("handle_invalid_message_type",
 
     scoped_database_helper h;
     auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
-    risk_message_handler handler(h.context(), system_flags, make_sessions());
+    refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     std::vector<std::byte> empty_payload;
 

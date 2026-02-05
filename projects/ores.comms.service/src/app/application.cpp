@@ -445,7 +445,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         srv->sessions());
     ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service,
         geo_service, bundle_provider);
-    ores::variability::messaging::registrar::register_handlers(*srv, ctx);
+    ores::variability::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::assets::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::dq::messaging::registrar::register_handlers(*srv, ctx, auth_service);

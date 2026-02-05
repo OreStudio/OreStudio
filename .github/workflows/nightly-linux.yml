@@ -108,11 +108,8 @@ jobs:
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           max-size: 1000M
 
-      - name: Install Valgrind
-        run: sudo apt install valgrind
-
       - name: Install dev packages
-        run: ./build/scripts/install_debian_packages.sh
+        run: ./build/scripts/install_debian_packages.sh --with-valgrind
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4

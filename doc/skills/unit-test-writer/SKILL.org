@@ -21,7 +21,6 @@ license: Complete terms in LICENSE.txt
 When you need to create unit tests for a component following the ORE Studio
 testing patterns and conventions.
 
-
 * How to use this skill
 
 1. Identify the component and layer being tested (domain, repository, service,
@@ -301,6 +300,11 @@ Use appropriate tags for test categorization:
     // Bad: Avoid npos pattern
     CHECK(output.find("expected") != std::string::npos);
     #+end_src
+
+* See Also
+
+See [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] to understand how Unit Tests integrate
+with the database.
 
 * Artefacts                                                        :noexport:
 

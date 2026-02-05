@@ -24,17 +24,9 @@
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/messaging/tenant_aware_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.dq/service/change_management_service.hpp"
-#include "ores.dq/service/data_organization_service.hpp"
-#include "ores.dq/service/dataset_service.hpp"
-#include "ores.dq/service/coding_scheme_service.hpp"
-#include "ores.dq/service/dimension_service.hpp"
-#include "ores.dq/service/publication_service.hpp"
-#include "ores.dq/service/dataset_bundle_service.hpp"
-#include "ores.dq/service/dataset_bundle_member_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -48,7 +40,7 @@ namespace ores::dq::messaging {
  * - Datasets and methodologies CRUD
  * - Coding schemes CRUD
  */
-class dq_message_handler final : public comms::messaging::message_handler {
+class dq_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -527,17 +519,7 @@ private:
         const std::string& remote_address,
         std::string_view operation_name);
 
-    database::context ctx_;
-    std::shared_ptr<comms::service::auth_session_service> sessions_;
     std::shared_ptr<iam::service::authorization_service> auth_service_;
-    service::change_management_service change_management_service_;
-    service::data_organization_service data_organization_service_;
-    service::dataset_service dataset_service_;
-    service::coding_scheme_service coding_scheme_service_;
-    service::dimension_service dimension_service_;
-    service::publication_service publication_service_;
-    service::dataset_bundle_service dataset_bundle_service_;
-    service::dataset_bundle_member_service dataset_bundle_member_service_;
 };
 
 }

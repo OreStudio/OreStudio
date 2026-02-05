@@ -31,6 +31,14 @@
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
+#include "ores.dq/service/change_management_service.hpp"
+#include "ores.dq/service/data_organization_service.hpp"
+#include "ores.dq/service/dataset_service.hpp"
+#include "ores.dq/service/coding_scheme_service.hpp"
+#include "ores.dq/service/dimension_service.hpp"
+#include "ores.dq/service/publication_service.hpp"
+#include "ores.dq/service/dataset_bundle_service.hpp"
+#include "ores.dq/service/dataset_bundle_member_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -40,16 +48,8 @@ using comms::messaging::message_type;
 dq_message_handler::dq_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<iam::service::authorization_service> auth_service)
-    : ctx_(ctx), sessions_(std::move(sessions)),
-      auth_service_(std::move(auth_service)),
-      change_management_service_(ctx),
-      data_organization_service_(ctx),
-      dataset_service_(ctx),
-      coding_scheme_service_(ctx),
-      dimension_service_(ctx),
-      publication_service_(ctx),
-      dataset_bundle_service_(ctx),
-      dataset_bundle_member_service_(ctx) {}
+    : tenant_aware_handler(std::move(ctx), std::move(sessions)),
+      auth_service_(std::move(auth_service)) {}
 
 dq_message_handler::handler_result
 dq_message_handler::handle_message(message_type type,
@@ -279,13 +279,16 @@ handle_get_change_reason_categories_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = get_change_reason_categories_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_categories_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto categories = change_management_service_.list_categories();
+    auto categories = svc.list_categories();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << categories.size()
                               << " change reason categories.";
 
@@ -307,13 +310,16 @@ handle_get_change_reasons_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = get_change_reasons_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reasons_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto reasons = change_management_service_.list_reasons();
+    auto reasons = svc.list_reasons();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << reasons.size()
                               << " change reasons.";
 
@@ -335,6 +341,9 @@ handle_get_change_reasons_by_category_request(std::span<const std::byte> payload
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = get_change_reasons_by_category_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reasons_by_category_request";
@@ -344,7 +353,7 @@ handle_get_change_reasons_by_category_request(std::span<const std::byte> payload
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Filtering by category: " << request.category_code;
 
-    auto reasons = change_management_service_.list_reasons_by_category(
+    auto reasons = svc.list_reasons_by_category(
         request.category_code);
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << reasons.size()
                               << " change reasons for category: "
@@ -368,6 +377,9 @@ handle_save_change_reason_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = save_change_reason_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_change_reason_request";
@@ -379,7 +391,7 @@ handle_save_change_reason_request(std::span<const std::byte> payload,
 
     save_change_reason_response response;
     try {
-        change_management_service_.save_reason(request.reason);
+        svc.save_reason(request.reason);
         response.success = true;
         response.message = "Change reason saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << request.reason.code;
@@ -404,6 +416,9 @@ handle_delete_change_reason_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = delete_change_reason_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_change_reason_request";
@@ -418,7 +433,7 @@ handle_delete_change_reason_request(std::span<const std::byte> payload,
         delete_change_reason_result result;
         result.code = code;
         try {
-            change_management_service_.remove_reason(code);
+            svc.remove_reason(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << code;
@@ -446,6 +461,9 @@ handle_get_change_reason_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = get_change_reason_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_history_request";
@@ -457,7 +475,7 @@ handle_get_change_reason_history_request(std::span<const std::byte> payload,
 
     get_change_reason_history_response response;
     try {
-        response.versions = change_management_service_.get_reason_history(request.code);
+        response.versions = svc.get_reason_history(request.code);
         response.success = true;
         response.message = "";
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
@@ -483,6 +501,9 @@ handle_save_change_reason_category_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = save_change_reason_category_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_change_reason_category_request";
@@ -494,7 +515,7 @@ handle_save_change_reason_category_request(std::span<const std::byte> payload,
 
     save_change_reason_category_response response;
     try {
-        change_management_service_.save_category(request.category);
+        svc.save_category(request.category);
         response.success = true;
         response.message = "Change reason category saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved change reason category: "
@@ -521,6 +542,9 @@ handle_delete_change_reason_category_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = delete_change_reason_category_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_change_reason_category_request";
@@ -535,7 +559,7 @@ handle_delete_change_reason_category_request(std::span<const std::byte> payload,
         delete_change_reason_category_result result;
         result.code = code;
         try {
-            change_management_service_.remove_category(code);
+            svc.remove_category(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << code;
@@ -563,6 +587,9 @@ handle_get_change_reason_category_history_request(std::span<const std::byte> pay
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::change_management_service svc(ctx);
+
     auto request_result = get_change_reason_category_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_category_history_request";
@@ -574,7 +601,7 @@ handle_get_change_reason_category_history_request(std::span<const std::byte> pay
 
     get_change_reason_category_history_response response;
     try {
-        response.versions = change_management_service_.get_category_history(request.code);
+        response.versions = svc.get_category_history(request.code);
         response.success = true;
         response.message = "";
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
@@ -605,13 +632,16 @@ handle_get_catalogs_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_catalogs_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_catalogs_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto catalogs = data_organization_service_.list_catalogs();
+    auto catalogs = svc.list_catalogs();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << catalogs.size() << " catalogs.";
 
     get_catalogs_response response{.catalogs = std::move(catalogs)};
@@ -630,6 +660,9 @@ handle_save_catalog_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = save_catalog_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_catalog_request";
@@ -639,7 +672,7 @@ handle_save_catalog_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_catalog_response response;
     try {
-        data_organization_service_.save_catalog(request.catalog);
+        svc.save_catalog(request.catalog);
         response.success = true;
         response.message = "Catalog saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << request.catalog.name;
@@ -664,6 +697,9 @@ handle_delete_catalog_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = delete_catalog_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_catalog_request";
@@ -676,7 +712,7 @@ handle_delete_catalog_request(std::span<const std::byte> payload,
         delete_catalog_result result;
         result.name = name;
         try {
-            data_organization_service_.remove_catalog(name);
+            svc.remove_catalog(name);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted catalog: " << name;
@@ -704,6 +740,9 @@ handle_get_catalog_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_catalog_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_catalog_history_request";
@@ -713,7 +752,7 @@ handle_get_catalog_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_catalog_history_response response;
     try {
-        response.versions = data_organization_service_.get_catalog_history(request.name);
+        response.versions = svc.get_catalog_history(request.name);
         response.success = true;
         response.message = "";
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
@@ -743,13 +782,16 @@ handle_get_dataset_dependencies_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_dataset_dependencies_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_dependencies_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto dependencies = data_organization_service_.list_dataset_dependencies();
+    auto dependencies = svc.list_dataset_dependencies();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << dependencies.size()
                               << " dataset dependencies.";
 
@@ -772,6 +814,9 @@ handle_get_dataset_dependencies_by_dataset_request(
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result =
         get_dataset_dependencies_by_dataset_request::deserialize(payload);
     if (!request_result) {
@@ -780,7 +825,7 @@ handle_get_dataset_dependencies_by_dataset_request(
     }
 
     const auto& request = *request_result;
-    auto dependencies = data_organization_service_.list_dataset_dependencies_by_dataset(
+    auto dependencies = svc.list_dataset_dependencies_by_dataset(
         request.dataset_code);
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << dependencies.size()
                               << " dataset dependencies for dataset: "
@@ -808,13 +853,16 @@ handle_get_data_domains_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_data_domains_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_data_domains_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto domains = data_organization_service_.list_data_domains();
+    auto domains = svc.list_data_domains();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << domains.size() << " data domains.";
 
     get_data_domains_response response{
@@ -835,6 +883,9 @@ handle_save_data_domain_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = save_data_domain_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_data_domain_request";
@@ -844,7 +895,7 @@ handle_save_data_domain_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_data_domain_response response;
     try {
-        data_organization_service_.save_data_domain(request.domain);
+        svc.save_data_domain(request.domain);
         response.success = true;
         response.message = "Data domain saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << request.domain.name;
@@ -869,6 +920,9 @@ handle_delete_data_domain_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = delete_data_domain_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_data_domain_request";
@@ -881,7 +935,7 @@ handle_delete_data_domain_request(std::span<const std::byte> payload,
         delete_data_domain_result result;
         result.name = name;
         try {
-            data_organization_service_.remove_data_domain(name);
+            svc.remove_data_domain(name);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted data domain: " << name;
@@ -909,6 +963,9 @@ handle_get_data_domain_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_data_domain_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_data_domain_history_request";
@@ -918,7 +975,7 @@ handle_get_data_domain_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_data_domain_history_response response;
     try {
-        response.versions = data_organization_service_.get_data_domain_history(
+        response.versions = svc.get_data_domain_history(
             request.name);
         response.success = true;
         response.message = "";
@@ -949,13 +1006,16 @@ handle_get_subject_areas_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_subject_areas_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_subject_areas_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto subject_areas = data_organization_service_.list_subject_areas();
+    auto subject_areas = svc.list_subject_areas();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << subject_areas.size()
                               << " subject areas.";
 
@@ -975,6 +1035,9 @@ handle_get_subject_areas_by_domain_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_subject_areas_by_domain_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_subject_areas_by_domain_request";
@@ -982,7 +1045,7 @@ handle_get_subject_areas_by_domain_request(std::span<const std::byte> payload,
     }
 
     const auto& request = *request_result;
-    auto subject_areas = data_organization_service_.list_subject_areas_by_domain(
+    auto subject_areas = svc.list_subject_areas_by_domain(
         request.domain_name);
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << subject_areas.size()
                               << " subject areas for domain: " << request.domain_name;
@@ -1005,6 +1068,9 @@ handle_save_subject_area_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = save_subject_area_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_subject_area_request";
@@ -1014,7 +1080,7 @@ handle_save_subject_area_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_subject_area_response response;
     try {
-        data_organization_service_.save_subject_area(request.subject_area);
+        svc.save_subject_area(request.subject_area);
         response.success = true;
         response.message = "Subject area saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved subject area: "
@@ -1040,6 +1106,9 @@ handle_delete_subject_area_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = delete_subject_area_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_subject_area_request";
@@ -1052,7 +1121,7 @@ handle_delete_subject_area_request(std::span<const std::byte> payload,
         delete_subject_area_result result;
         result.key = key;
         try {
-            data_organization_service_.remove_subject_area(key.name, key.domain_name);
+            svc.remove_subject_area(key.name, key.domain_name);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted subject area: " << key.name;
@@ -1080,6 +1149,9 @@ handle_get_subject_area_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::data_organization_service svc(ctx);
+
     auto request_result = get_subject_area_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_subject_area_history_request";
@@ -1089,7 +1161,7 @@ handle_get_subject_area_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_subject_area_history_response response;
     try {
-        response.versions = data_organization_service_.get_subject_area_history(
+        response.versions = svc.get_subject_area_history(
             request.key.name, request.key.domain_name);
         response.success = true;
         response.message = "";
@@ -1121,13 +1193,16 @@ handle_get_datasets_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = get_datasets_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_datasets_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto datasets = dataset_service_.list_datasets();
+    auto datasets = svc.list_datasets();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << datasets.size() << " datasets.";
 
     get_datasets_response response{.datasets = std::move(datasets)};
@@ -1146,6 +1221,9 @@ handle_save_dataset_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = save_dataset_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_dataset_request";
@@ -1155,7 +1233,7 @@ handle_save_dataset_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_dataset_response response;
     try {
-        dataset_service_.save_dataset(request.dataset);
+        svc.save_dataset(request.dataset);
         response.success = true;
         response.message = "Dataset saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << request.dataset.id;
@@ -1180,6 +1258,9 @@ handle_delete_dataset_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = delete_dataset_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_dataset_request";
@@ -1192,7 +1273,7 @@ handle_delete_dataset_request(std::span<const std::byte> payload,
         delete_dataset_result result;
         result.id = id;
         try {
-            dataset_service_.remove_dataset(id);
+            svc.remove_dataset(id);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted dataset: " << id;
@@ -1220,6 +1301,9 @@ handle_get_dataset_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = get_dataset_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_history_request";
@@ -1229,7 +1313,7 @@ handle_get_dataset_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_dataset_history_response response;
     try {
-        response.versions = dataset_service_.get_dataset_history(request.id);
+        response.versions = svc.get_dataset_history(request.id);
         response.success = true;
         response.message = "";
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
@@ -1259,13 +1343,16 @@ handle_get_methodologies_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = get_methodologies_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_methodologies_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto methodologies = dataset_service_.list_methodologies();
+    auto methodologies = svc.list_methodologies();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << methodologies.size()
                               << " methodologies.";
 
@@ -1285,6 +1372,9 @@ handle_save_methodology_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = save_methodology_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_methodology_request";
@@ -1294,7 +1384,7 @@ handle_save_methodology_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_methodology_response response;
     try {
-        dataset_service_.save_methodology(request.methodology);
+        svc.save_methodology(request.methodology);
         response.success = true;
         response.message = "Methodology saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved methodology: "
@@ -1320,6 +1410,9 @@ handle_delete_methodology_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = delete_methodology_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_methodology_request";
@@ -1332,7 +1425,7 @@ handle_delete_methodology_request(std::span<const std::byte> payload,
         delete_methodology_result result;
         result.id = id;
         try {
-            dataset_service_.remove_methodology(id);
+            svc.remove_methodology(id);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted methodology: " << id;
@@ -1360,6 +1453,9 @@ handle_get_methodology_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_service svc(ctx);
+
     auto request_result = get_methodology_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_methodology_history_request";
@@ -1369,7 +1465,7 @@ handle_get_methodology_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_methodology_history_response response;
     try {
-        response.versions = dataset_service_.get_methodology_history(request.id);
+        response.versions = svc.get_methodology_history(request.id);
         response.success = true;
         response.message = "";
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
@@ -1400,13 +1496,16 @@ handle_get_coding_schemes_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = get_coding_schemes_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_schemes_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto schemes = coding_scheme_service_.list_coding_schemes();
+    auto schemes = svc.list_coding_schemes();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << schemes.size()
                               << " coding schemes.";
 
@@ -1427,6 +1526,9 @@ handle_get_coding_schemes_by_authority_type_request(
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result =
         get_coding_schemes_by_authority_type_request::deserialize(payload);
     if (!request_result) {
@@ -1435,7 +1537,7 @@ handle_get_coding_schemes_by_authority_type_request(
     }
 
     const auto& request = *request_result;
-    auto schemes = coding_scheme_service_.list_coding_schemes_by_authority_type(
+    auto schemes = svc.list_coding_schemes_by_authority_type(
         request.authority_type);
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << schemes.size()
                               << " coding schemes for authority type: "
@@ -1459,6 +1561,9 @@ handle_save_coding_scheme_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = save_coding_scheme_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_coding_scheme_request";
@@ -1468,7 +1573,7 @@ handle_save_coding_scheme_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_coding_scheme_response response;
     try {
-        coding_scheme_service_.save_coding_scheme(request.scheme);
+        svc.save_coding_scheme(request.scheme);
         response.success = true;
         response.message = "Coding scheme saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: "
@@ -1494,6 +1599,9 @@ handle_delete_coding_scheme_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = delete_coding_scheme_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_coding_scheme_request";
@@ -1506,7 +1614,7 @@ handle_delete_coding_scheme_request(std::span<const std::byte> payload,
         delete_coding_scheme_result result;
         result.code = code;
         try {
-            coding_scheme_service_.remove_coding_scheme(code);
+            svc.remove_coding_scheme(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted coding scheme: " << code;
@@ -1534,6 +1642,9 @@ handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = get_coding_scheme_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_scheme_history_request";
@@ -1543,7 +1654,7 @@ handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_coding_scheme_history_response response;
     try {
-        response.versions = coding_scheme_service_.get_coding_scheme_history(
+        response.versions = svc.get_coding_scheme_history(
             request.code);
         response.success = true;
         response.message = "";
@@ -1576,13 +1687,16 @@ handle_get_coding_scheme_authority_types_request(std::span<const std::byte> payl
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = get_coding_scheme_authority_types_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_scheme_authority_types_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto authority_types = coding_scheme_service_.list_authority_types();
+    auto authority_types = svc.list_authority_types();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << authority_types.size()
                               << " coding scheme authority types.";
 
@@ -1604,6 +1718,9 @@ handle_save_coding_scheme_authority_type_request(std::span<const std::byte> payl
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = save_coding_scheme_authority_type_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_coding_scheme_authority_type_request";
@@ -1613,7 +1730,7 @@ handle_save_coding_scheme_authority_type_request(std::span<const std::byte> payl
     const auto& request = *request_result;
     save_coding_scheme_authority_type_response response;
     try {
-        coding_scheme_service_.save_authority_type(request.authority_type);
+        svc.save_authority_type(request.authority_type);
         response.success = true;
         response.message = "Coding scheme authority type saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: "
@@ -1641,6 +1758,9 @@ handle_delete_coding_scheme_authority_type_request(std::span<const std::byte> pa
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = delete_coding_scheme_authority_type_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_coding_scheme_authority_type_request";
@@ -1653,7 +1773,7 @@ handle_delete_coding_scheme_authority_type_request(std::span<const std::byte> pa
         delete_coding_scheme_authority_type_result result;
         result.code = code;
         try {
-            coding_scheme_service_.remove_authority_type(code);
+            svc.remove_authority_type(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted coding scheme authority type: " << code;
@@ -1681,6 +1801,9 @@ handle_get_coding_scheme_authority_type_history_request(std::span<const std::byt
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::coding_scheme_service svc(ctx);
+
     auto request_result = get_coding_scheme_authority_type_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_scheme_authority_type_history_request";
@@ -1690,7 +1813,7 @@ handle_get_coding_scheme_authority_type_history_request(std::span<const std::byt
     const auto& request = *request_result;
     get_coding_scheme_authority_type_history_response response;
     try {
-        response.versions = coding_scheme_service_.get_authority_type_history(
+        response.versions = svc.get_authority_type_history(
             request.code);
         response.success = true;
         response.message = "";
@@ -1723,13 +1846,16 @@ handle_get_nature_dimensions_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = get_nature_dimensions_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_nature_dimensions_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto dimensions = dimension_service_.list_nature_dimensions();
+    auto dimensions = svc.list_nature_dimensions();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << dimensions.size()
                               << " nature dimensions.";
 
@@ -1750,6 +1876,9 @@ handle_save_nature_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = save_nature_dimension_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_nature_dimension_request";
@@ -1759,7 +1888,7 @@ handle_save_nature_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_nature_dimension_response response;
     try {
-        dimension_service_.save_nature_dimension(request.dimension);
+        svc.save_nature_dimension(request.dimension);
         response.success = true;
         response.message = "Nature dimension saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: "
@@ -1786,6 +1915,9 @@ handle_delete_nature_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = delete_nature_dimension_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_nature_dimension_request";
@@ -1798,7 +1930,7 @@ handle_delete_nature_dimension_request(std::span<const std::byte> payload,
         delete_nature_dimension_result result;
         result.code = code;
         try {
-            dimension_service_.remove_nature_dimension(code);
+            svc.remove_nature_dimension(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted nature dimension: " << code;
@@ -1826,6 +1958,9 @@ handle_get_nature_dimension_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = get_nature_dimension_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_nature_dimension_history_request";
@@ -1835,7 +1970,7 @@ handle_get_nature_dimension_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_nature_dimension_history_response response;
     try {
-        response.versions = dimension_service_.get_nature_dimension_history(
+        response.versions = svc.get_nature_dimension_history(
             request.code);
         response.success = true;
         response.message = "";
@@ -1868,13 +2003,16 @@ handle_get_origin_dimensions_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = get_origin_dimensions_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_origin_dimensions_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto dimensions = dimension_service_.list_origin_dimensions();
+    auto dimensions = svc.list_origin_dimensions();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << dimensions.size()
                               << " origin dimensions.";
 
@@ -1895,6 +2033,9 @@ handle_save_origin_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = save_origin_dimension_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_origin_dimension_request";
@@ -1904,7 +2045,7 @@ handle_save_origin_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_origin_dimension_response response;
     try {
-        dimension_service_.save_origin_dimension(request.dimension);
+        svc.save_origin_dimension(request.dimension);
         response.success = true;
         response.message = "Origin dimension saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: "
@@ -1931,6 +2072,9 @@ handle_delete_origin_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = delete_origin_dimension_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_origin_dimension_request";
@@ -1943,7 +2087,7 @@ handle_delete_origin_dimension_request(std::span<const std::byte> payload,
         delete_origin_dimension_result result;
         result.code = code;
         try {
-            dimension_service_.remove_origin_dimension(code);
+            svc.remove_origin_dimension(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted origin dimension: " << code;
@@ -1971,6 +2115,9 @@ handle_get_origin_dimension_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = get_origin_dimension_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_origin_dimension_history_request";
@@ -1980,7 +2127,7 @@ handle_get_origin_dimension_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     get_origin_dimension_history_response response;
     try {
-        response.versions = dimension_service_.get_origin_dimension_history(
+        response.versions = svc.get_origin_dimension_history(
             request.code);
         response.success = true;
         response.message = "";
@@ -2013,13 +2160,16 @@ handle_get_treatment_dimensions_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = get_treatment_dimensions_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_treatment_dimensions_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto dimensions = dimension_service_.list_treatment_dimensions();
+    auto dimensions = svc.list_treatment_dimensions();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << dimensions.size()
                               << " treatment dimensions.";
 
@@ -2040,6 +2190,9 @@ handle_save_treatment_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = save_treatment_dimension_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_treatment_dimension_request";
@@ -2049,7 +2202,7 @@ handle_save_treatment_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_treatment_dimension_response response;
     try {
-        dimension_service_.save_treatment_dimension(request.dimension);
+        svc.save_treatment_dimension(request.dimension);
         response.success = true;
         response.message = "Treatment dimension saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: "
@@ -2076,6 +2229,9 @@ handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = delete_treatment_dimension_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_treatment_dimension_request";
@@ -2088,7 +2244,7 @@ handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
         delete_treatment_dimension_result result;
         result.code = code;
         try {
-            dimension_service_.remove_treatment_dimension(code);
+            svc.remove_treatment_dimension(code);
             result.success = true;
             result.message = "Deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted treatment dimension: " << code;
@@ -2116,6 +2272,9 @@ handle_get_treatment_dimension_history_request(std::span<const std::byte> payloa
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dimension_service svc(ctx);
+
     auto request_result = get_treatment_dimension_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_treatment_dimension_history_request";
@@ -2125,7 +2284,7 @@ handle_get_treatment_dimension_history_request(std::span<const std::byte> payloa
     const auto& request = *request_result;
     get_treatment_dimension_history_response response;
     try {
-        response.versions = dimension_service_.get_treatment_dimension_history(
+        response.versions = svc.get_treatment_dimension_history(
             request.code);
         response.success = true;
         response.message = "";
@@ -2158,6 +2317,9 @@ handle_publish_datasets_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::publication_service svc(ctx);
+
     auto request_result = publish_datasets_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize publish_datasets_request";
@@ -2172,7 +2334,7 @@ handle_publish_datasets_request(std::span<const std::byte> payload,
 
     publish_datasets_response response;
     try {
-        response.results = publication_service_.publish(
+        response.results = svc.publish(
             request.dataset_ids,
             request.mode,
             request.published_by,
@@ -2229,14 +2391,17 @@ handle_get_publications_request(std::span<const std::byte> payload,
 
     get_publications_response response;
     try {
+        auto ctx = make_request_context(*auth_result);
+        service::publication_service svc(ctx);
+
         // Check if dataset_id is nil (all zeros)
         const bool filter_by_dataset = !request.dataset_id.is_nil();
 
         if (filter_by_dataset) {
-            response.publications = publication_service_.get_publication_history(
+            response.publications = svc.get_publication_history(
                 request.dataset_id);
         } else {
-            response.publications = publication_service_.get_recent_publications(
+            response.publications = svc.get_recent_publications(
                 request.limit);
         }
 
@@ -2273,10 +2438,13 @@ handle_resolve_dependencies_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Resolving dependencies for "
                                << request.dataset_ids.size() << " datasets";
 
+    auto ctx = make_request_context(*auth_result);
+    service::publication_service svc(ctx);
+
     resolve_dependencies_response response;
     try {
         // Use publication_service to resolve the publication order
-        response.datasets = publication_service_.resolve_publication_order(
+        response.datasets = svc.resolve_publication_order(
             request.dataset_ids);
 
         // Store the originally requested IDs
@@ -2316,9 +2484,12 @@ handle_publish_bundle_request(std::span<const std::byte> payload,
                               << ", mode: " << request.mode
                               << ", atomic: " << request.atomic;
 
+    auto ctx = make_request_context(*auth_result);
+    service::publication_service svc(ctx);
+
     publish_bundle_response response;
     try {
-        response = publication_service_.publish_bundle(
+        response = svc.publish_bundle(
             request.bundle_code,
             request.mode,
             request.published_by,
@@ -2352,13 +2523,16 @@ handle_get_dataset_bundles_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_service svc(ctx);
+
     auto request_result = get_dataset_bundles_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_bundles_request";
         co_return std::unexpected(request_result.error());
     }
 
-    auto bundles = dataset_bundle_service_.list_bundles();
+    auto bundles = svc.list_bundles();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << bundles.size() << " bundles.";
 
     get_dataset_bundles_response response{.bundles = std::move(bundles)};
@@ -2383,9 +2557,12 @@ handle_save_dataset_bundle_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_service svc(ctx);
+
     save_dataset_bundle_response response;
     try {
-        dataset_bundle_service_.save_bundle(request_result->bundle);
+        svc.save_bundle(request_result->bundle);
         response.success = true;
         response.message = "Bundle saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved bundle: " << request_result->bundle.id;
@@ -2416,11 +2593,14 @@ handle_delete_dataset_bundle_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_service svc(ctx);
+
     delete_dataset_bundle_response response;
     for (const auto& id : request_result->ids) {
         delete_dataset_bundle_result result{.id = id};
         try {
-            dataset_bundle_service_.remove_bundle(id);
+            svc.remove_bundle(id);
             result.success = true;
             result.message = "Bundle deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted bundle: " << id;
@@ -2453,9 +2633,12 @@ handle_get_dataset_bundle_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_service svc(ctx);
+
     get_dataset_bundle_history_response response;
     try {
-        response.versions = dataset_bundle_service_.get_bundle_history(request_result->id);
+        response.versions = svc.get_bundle_history(request_result->id);
         response.success = true;
         response.message = "";
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
@@ -2490,7 +2673,10 @@ handle_get_dataset_bundle_members_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    auto members = dataset_bundle_member_service_.list_members();
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_member_service svc(ctx);
+
+    auto members = svc.list_members();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << members.size() << " bundle members.";
 
     get_dataset_bundle_members_response response{.members = std::move(members)};
@@ -2515,7 +2701,10 @@ handle_get_dataset_bundle_members_by_bundle_request(
         co_return std::unexpected(request_result.error());
     }
 
-    auto members = dataset_bundle_member_service_.list_members_by_bundle(
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_member_service svc(ctx);
+
+    auto members = svc.list_members_by_bundle(
         request_result->bundle_code);
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << members.size()
                               << " members for bundle: " << request_result->bundle_code;
@@ -2542,9 +2731,12 @@ handle_save_dataset_bundle_member_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_member_service svc(ctx);
+
     save_dataset_bundle_member_response response;
     try {
-        dataset_bundle_member_service_.save_member(request_result->member);
+        svc.save_member(request_result->member);
         response.success = true;
         response.message = "Bundle member saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved bundle member: "
@@ -2577,6 +2769,9 @@ handle_delete_dataset_bundle_member_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
+    auto ctx = make_request_context(*auth_result);
+    service::dataset_bundle_member_service svc(ctx);
+
     delete_dataset_bundle_member_response response;
     for (const auto& key : request_result->keys) {
         delete_dataset_bundle_member_result result{
@@ -2584,7 +2779,7 @@ handle_delete_dataset_bundle_member_request(std::span<const std::byte> payload,
             .dataset_code = key.dataset_code
         };
         try {
-            dataset_bundle_member_service_.remove_member(key.bundle_code, key.dataset_code);
+            svc.remove_member(key.bundle_code, key.dataset_code);
             result.success = true;
             result.message = "Bundle member deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted bundle member: "

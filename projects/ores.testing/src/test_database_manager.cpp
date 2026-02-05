@@ -130,8 +130,7 @@ std::string test_database_manager::provision_test_tenant(
     BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code
                               << " (" << description << ")";
 
-    // First set system tenant context
-    tenant_context::set_system_tenant(ctx);
+    ctx = tenant_context::with_system_tenant(ctx);
 
     // Call the provisioner function - it returns the new tenant's UUID
     const auto results = execute_parameterized_string_query(ctx,
@@ -161,13 +160,11 @@ void test_database_manager::terminate_test_tenant(
 
     BOOST_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
 
-    // Set system tenant context
     try {
-        tenant_context::set_system_tenant(ctx);
+        ctx = tenant_context::with_system_tenant(ctx);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to set system tenant context for "
                                   << "termination: " << e.what();
-        // Don't throw - cleanup should be best-effort
         return;
     }
 

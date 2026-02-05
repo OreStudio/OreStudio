@@ -51,6 +51,9 @@ public:
      */
     connection_pool_type& connection_pool() { return connection_pool_; }
 
+    /**
+     * @brief Gets the credentials for this context.
+     */
     const sqlgen::postgres::Credentials& credentials() const { return credentials_; }
 
     /**
@@ -59,18 +62,24 @@ public:
     const std::string& tenant_id() const { return connection_pool_.tenant_id(); }
 
     /**
-     * @brief Sets the tenant ID for this context.
+     * @brief Gets the underlying raw connection pool.
      *
-     * Updates the tenant ID used by the connection pool. All subsequent
-     * connection acquisitions will use the new tenant ID.
+     * Useful for creating new contexts with different tenant IDs.
      */
-    void set_tenant_id(std::string tenant_id) {
-        connection_pool_.set_tenant_id(std::move(tenant_id));
+    const sqlgen::ConnectionPool<connection_type>& underlying_pool() const {
+        return connection_pool_.underlying_pool();
+    }
+
+    /**
+     * @brief Creates a new context with a different tenant ID.
+     */
+    [[nodiscard]] context with_tenant(std::string tenant_id) const {
+        return context(connection_pool_.underlying_pool(), credentials_, std::move(tenant_id));
     }
 
 private:
     connection_pool_type connection_pool_;
-    const sqlgen::postgres::Credentials credentials_;
+    sqlgen::postgres::Credentials credentials_;
 };
 
 }

@@ -44,28 +44,32 @@ public:
     tenant_context() = delete;
 
     /**
-     * @brief Sets the tenant context on a database connection.
+     * @brief Creates a new context with the specified tenant.
      *
      * Accepts either a tenant code (e.g., "system", "acme") or a tenant UUID.
      * If a code is provided, looks up the corresponding tenant_id from the
-     * database. Sets the session variable `app.current_tenant_id` which is
-     * used by row-level security policies.
+     * database. The returned context will set the session variable
+     * `app.current_tenant_id` on connection acquisition, which is used by
+     * row-level security policies.
      *
-     * @param ctx The database context to set tenant on.
+     * @param ctx The source context (provides pool and credentials).
      * @param tenant Tenant code or UUID string.
-     * @throws std::runtime_error if tenant not found or context cannot be set.
+     * @return A new context configured for the specified tenant.
+     * @throws std::runtime_error if tenant not found.
      */
-    static void set(context& ctx, const std::string& tenant);
+    [[nodiscard]] static context with_tenant(const context& ctx,
+        const std::string& tenant);
 
     /**
-     * @brief Sets the system tenant context on a database connection.
+     * @brief Creates a new context with the system tenant.
      *
-     * Convenience method that sets the context to the system tenant
+     * Convenience method that creates a context for the system tenant
      * (00000000-0000-0000-0000-000000000000).
      *
-     * @param ctx The database context to set tenant on.
+     * @param ctx The source context (provides pool and credentials).
+     * @return A new context configured for the system tenant.
      */
-    static void set_system_tenant(context& ctx);
+    [[nodiscard]] static context with_system_tenant(const context& ctx);
 
     /**
      * @brief Looks up a tenant ID by its code.

@@ -133,7 +133,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto ctx = make_context(cfg.database);
 
     // Set system tenant context for bootstrap initialization
-    database::service::tenant_context::set_system_tenant(ctx);
+    ctx = database::service::tenant_context::with_system_tenant(ctx);
 
     // Create shared authorization service for RBAC checks
     // (Permissions and roles are seeded via SQL scripts in the database template)

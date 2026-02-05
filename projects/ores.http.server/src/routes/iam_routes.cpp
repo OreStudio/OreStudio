@@ -453,13 +453,13 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         std::string tenant_id_str;
         std::string tenant_name;
         if (hostname.empty()) {
-            database::service::tenant_context::set_system_tenant(ctx_);
+            ctx_ = database::service::tenant_context::with_system_tenant(ctx_);
             tenant_id_str = database::service::tenant_context::system_tenant_id;
             tenant_name = "System";
         } else {
             tenant_id_str =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-            database::service::tenant_context::set(ctx_, tenant_id_str);
+            ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
             tenant_name =
                 database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
         }
@@ -703,11 +703,11 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
 
         // Set tenant context based on hostname
         if (hostname.empty()) {
-            database::service::tenant_context::set_system_tenant(ctx_);
+            ctx_ = database::service::tenant_context::with_system_tenant(ctx_);
         } else {
             const auto tenant_id =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-            database::service::tenant_context::set(ctx_, tenant_id);
+            ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id);
         }
 
         // Create the initial admin account with Admin role

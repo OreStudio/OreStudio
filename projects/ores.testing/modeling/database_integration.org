@@ -79,14 +79,14 @@ When tests complete, =database_lifecycle_listener::testRunEnded()=:
 
 ** Environment Variables
 
-| Variable              | Description                              |
-|-----------------------+------------------------------------------|
-| =ORES_TEST_DB_USER=     | Database user (default: ores_test_dml_user) |
-| =ORES_TEST_DB_PASSWORD= | Database password                        |
-| =ORES_TEST_DB_HOST=     | Database host (default: localhost)       |
-| =ORES_TEST_DB_DATABASE= | Database name (default: ores_default)    |
-| =ORES_TEST_DB_PORT=     | Database port (default: 5432)            |
-| =ORES_TEST_DB_TENANT_ID= | Set automatically during provisioning   |
+| Variable                 | Description                                 |
+|--------------------------+---------------------------------------------|
+| =ORES_TEST_DB_USER=      | Database user (default: ores_test_dml_user) |
+| =ORES_TEST_DB_PASSWORD=  | Database password                           |
+| =ORES_TEST_DB_HOST=      | Database host (default: localhost)          |
+| =ORES_TEST_DB_DATABASE=  | Database name (default: ores_default)       |
+| =ORES_TEST_DB_PORT=      | Database port (default: 5432)               |
+| =ORES_TEST_DB_TENANT_ID= | Set automatically during provisioning       |
 
 * Logging Configuration
 

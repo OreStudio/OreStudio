@@ -71,8 +71,8 @@ SET search_path TO public;
 
 -- Set system tenant context for full visibility across all tenants.
 -- RLS policies restrict access based on app.current_tenant_id; setting it to
--- the system tenant (all zeros) grants read access to all tenant data.
-\set ores_tenant_id '00000000-0000-0000-0000-000000000000'
+-- the system tenant (max UUID) grants read access to all tenant data.
+\set ores_tenant_id 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 \set ores_tenant 'system'
 SET app.current_tenant_id = :'ores_tenant_id';
 

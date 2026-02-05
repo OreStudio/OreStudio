@@ -56,7 +56,7 @@ create table if not exists "ores_iam_tenants_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid or "code" = 'system'),
+    check ("id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'),
     check ("tenant_id" = ores_iam_system_tenant_id_fn()),  -- All tenants owned by system
     check ("change_reason_code" <> ''),
     check ("code" <> ''),

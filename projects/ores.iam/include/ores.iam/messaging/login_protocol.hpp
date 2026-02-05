@@ -49,7 +49,7 @@ struct login_request final {
      * - If the principal contains `@`, everything before the last `@` is the
      *   username and everything after is the hostname used to resolve the tenant.
      * - If no `@` is present, the entire string is treated as the username and
-     *   the system tenant (00000000-0000-0000-0000-000000000000) is used.
+     *   the system tenant (ffffffff-ffff-ffff-ffff-ffffffffffff) is used.
      *
      * Examples:
      * - `admin@localhost` - User "admin" in tenant with hostname "localhost"

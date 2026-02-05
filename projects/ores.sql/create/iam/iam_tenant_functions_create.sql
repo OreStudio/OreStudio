@@ -22,11 +22,12 @@
 -- Tenant Validation and Helper Functions
 -- =============================================================================
 
--- System tenant ID constant (UUID v7 with all zeros for easy identification)
+-- System tenant ID constant (max UUID per RFC 9562 sentinel value)
+-- Using max UUID instead of nil UUID prevents confusion with uninitialized UUIDs
 create or replace function ores_iam_system_tenant_id_fn()
 returns uuid as $$
 begin
-    return '00000000-0000-0000-0000-000000000000'::uuid;
+    return 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid;
 end;
 $$ language plpgsql immutable;
 

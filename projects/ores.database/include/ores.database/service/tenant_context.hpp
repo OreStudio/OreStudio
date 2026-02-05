@@ -36,10 +36,13 @@ namespace ores::database::service {
 class tenant_context final {
 public:
     /**
-     * @brief The UUID of the system tenant (all zeros).
+     * @brief The UUID of the system tenant (max UUID per RFC 9562).
+     *
+     * Uses max UUID instead of nil UUID to prevent confusion with
+     * uninitialized UUIDs (boost::uuids::uuid default-constructs to nil).
      */
     static constexpr const char* system_tenant_id =
-        "00000000-0000-0000-0000-000000000000";
+        "ffffffff-ffff-ffff-ffff-ffffffffffff";
 
     tenant_context() = delete;
 
@@ -64,7 +67,7 @@ public:
      * @brief Creates a new context with the system tenant.
      *
      * Convenience method that creates a context for the system tenant
-     * (00000000-0000-0000-0000-000000000000).
+     * (ffffffff-ffff-ffff-ffff-ffffffffffff, the max UUID).
      *
      * @param ctx The source context (provides pool and credentials).
      * @return A new context configured for the system tenant.
@@ -95,7 +98,7 @@ public:
     /**
      * @brief Looks up a tenant name by its ID.
      *
-     * Returns "System" for the system tenant (nil UUID), otherwise queries
+     * Returns "System" for the system tenant (max UUID), otherwise queries
      * the database for the tenant name.
      *
      * @param ctx The database context to query.

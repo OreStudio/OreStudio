@@ -26,6 +26,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/service/tenant_context.hpp"
 
 namespace {
 
@@ -36,6 +37,7 @@ const std::string tags("[service_account]");
 
 using ores::iam::domain::account;
 using ores::iam::domain::account_type;
+using ores::database::service::tenant_context;
 using namespace ores::logging;
 
 TEST_CASE("create_service_account_with_no_password", tags) {
@@ -45,7 +47,8 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     sut.version = 1;
     sut.recorded_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::nil_uuid(); // System tenant
+    sut.tenant_id = boost::lexical_cast<boost::uuids::uuid>(
+        tenant_context::system_tenant_id); // System tenant (max UUID)
     sut.account_type = "service";
     sut.username = "ores.service.binary";
     sut.password_hash = "";  // Service accounts have no password
@@ -67,7 +70,8 @@ TEST_CASE("create_algorithm_account", tags) {
     sut.version = 1;
     sut.recorded_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::nil_uuid();
+    sut.tenant_id = boost::lexical_cast<boost::uuids::uuid>(
+        tenant_context::system_tenant_id); // System tenant (max UUID)
     sut.account_type = "algorithm";
     sut.username = "algo.risk.calc";
     sut.password_hash = "";
@@ -87,7 +91,8 @@ TEST_CASE("create_llm_account", tags) {
     sut.version = 1;
     sut.recorded_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::nil_uuid();
+    sut.tenant_id = boost::lexical_cast<boost::uuids::uuid>(
+        tenant_context::system_tenant_id); // System tenant (max UUID)
     sut.account_type = "llm";
     sut.username = "claude.agent";
     sut.password_hash = "";

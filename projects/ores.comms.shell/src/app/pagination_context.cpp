@@ -27,6 +27,10 @@ std::uint32_t pagination_context::page_size() const {
 
 void pagination_context::set_page_size(std::uint32_t size) {
     page_size_ = size > 0 ? size : 1;
+    // Reset all entity offsets when page size changes
+    for (auto& [entity_name, state] : entity_states_) {
+        state.current_offset = 0;
+    }
 }
 
 entity_page_state& pagination_context::state_for(const std::string& entity_name) {

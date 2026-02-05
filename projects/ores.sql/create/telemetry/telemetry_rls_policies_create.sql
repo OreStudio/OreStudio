@@ -21,9 +21,9 @@
 -- =============================================================================
 -- Row-Level Security Policies for Telemetry Tables
 -- =============================================================================
--- These policies enforce per-tenant isolation for telemetry data.
--- Each tenant can only see and modify their own logs.
--- The system tenant (tenant 0) can access all tenant data for administration.
+-- These policies enforce strict tenant isolation for telemetry data.
+-- Each tenant can only see and modify their own logs. All tenants are fully
+-- isolated, including the system tenant.
 
 -- -----------------------------------------------------------------------------
 -- Logs
@@ -33,9 +33,7 @@ alter table ores_telemetry_logs_tbl enable row level security;
 create policy ores_telemetry_logs_tbl_tenant_isolation_policy on ores_telemetry_logs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );

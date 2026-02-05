@@ -21,14 +21,12 @@
 -- =============================================================================
 -- Row-Level Security Policies for Data Quality Governance Tables
 -- =============================================================================
--- DQ governance data (catalogs, datasets, methodologies, etc.) is owned by the
--- system tenant but readable by all tenants. This enables shared reference data
--- while maintaining write control at the system level.
--- The system tenant (tenant 0) can access all tenant data for administration.
+-- DQ governance data (catalogs, datasets, methodologies, etc.) uses a shared
+-- data pattern where system tenant data is readable by all tenants.
 --
 -- Pattern:
--- - SELECT: Own tenant OR system tenant data
--- - INSERT/UPDATE/DELETE: Own tenant OR system tenant (for provisioning)
+-- - SELECT: Own tenant data OR system tenant data (shared reference data)
+-- - INSERT/UPDATE/DELETE: Own tenant data only
 
 -- -----------------------------------------------------------------------------
 -- Catalogs
@@ -39,19 +37,12 @@ create policy ores_dq_catalogs_read_policy on ores_dq_catalogs_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_catalogs_modification_policy on ores_dq_catalogs_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Datasets
@@ -62,19 +53,12 @@ create policy ores_dq_datasets_read_policy on ores_dq_datasets_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_datasets_modification_policy on ores_dq_datasets_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Methodologies
@@ -85,19 +69,12 @@ create policy ores_dq_methodologies_read_policy on ores_dq_methodologies_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_methodologies_modification_policy on ores_dq_methodologies_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Subject Areas
@@ -108,19 +85,12 @@ create policy ores_dq_subject_areas_read_policy on ores_dq_subject_areas_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_subject_areas_modification_policy on ores_dq_subject_areas_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Data Domains
@@ -131,19 +101,12 @@ create policy ores_dq_data_domains_read_policy on ores_dq_data_domains_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_data_domains_modification_policy on ores_dq_data_domains_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Coding Schemes
@@ -154,19 +117,12 @@ create policy ores_dq_coding_schemes_read_policy on ores_dq_coding_schemes_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_coding_schemes_modification_policy on ores_dq_coding_schemes_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Coding Scheme Authority Types
@@ -177,19 +133,12 @@ create policy ores_dq_coding_scheme_authority_types_read_policy on ores_dq_codin
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_coding_scheme_authority_types_modification_policy on ores_dq_coding_scheme_authority_types_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Change Reason Categories
@@ -200,19 +149,12 @@ create policy ores_dq_change_reason_categories_read_policy on ores_dq_change_rea
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_change_reason_categories_modification_policy on ores_dq_change_reason_categories_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Change Reasons
@@ -223,19 +165,12 @@ create policy ores_dq_change_reasons_read_policy on ores_dq_change_reasons_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_change_reasons_modification_policy on ores_dq_change_reasons_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Origin Dimensions
@@ -246,19 +181,12 @@ create policy ores_dq_origin_dimensions_read_policy on ores_dq_origin_dimensions
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_origin_dimensions_modification_policy on ores_dq_origin_dimensions_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Nature Dimensions
@@ -269,19 +197,12 @@ create policy ores_dq_nature_dimensions_read_policy on ores_dq_nature_dimensions
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_nature_dimensions_modification_policy on ores_dq_nature_dimensions_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Treatment Dimensions
@@ -292,19 +213,12 @@ create policy ores_dq_treatment_dimensions_read_policy on ores_dq_treatment_dime
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_treatment_dimensions_modification_policy on ores_dq_treatment_dimensions_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Dataset Dependencies
@@ -315,19 +229,12 @@ create policy ores_dq_dataset_dependencies_read_policy on ores_dq_dataset_depend
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_dataset_dependencies_modification_policy on ores_dq_dataset_dependencies_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Dataset Bundles
@@ -338,19 +245,12 @@ create policy ores_dq_dataset_bundles_read_policy on ores_dq_dataset_bundles_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_dataset_bundles_modification_policy on ores_dq_dataset_bundles_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Dataset Bundle Members
@@ -361,16 +261,9 @@ create policy ores_dq_dataset_bundle_members_read_policy on ores_dq_dataset_bund
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_system_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
 );
 
 create policy ores_dq_dataset_bundle_members_modification_policy on ores_dq_dataset_bundle_members_tbl
 for all
-using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_is_system_tenant_fn()
-);
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());

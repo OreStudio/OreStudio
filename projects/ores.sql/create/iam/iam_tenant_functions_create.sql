@@ -85,6 +85,7 @@ end;
 $$ language plpgsql stable;
 
 -- Lookup tenant by hostname (used during login)
+-- SECURITY DEFINER required to bypass RLS when looking up tenants before login
 create or replace function ores_iam_tenant_by_hostname_fn(
     p_hostname text
 ) returns uuid as $$
@@ -104,9 +105,10 @@ begin
 
     return v_tenant_id;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 -- Lookup tenant by code (used by CLI and other tools)
+-- SECURITY DEFINER required to bypass RLS when looking up tenants
 create or replace function ores_iam_tenant_by_code_fn(
     p_code text
 ) returns uuid as $$
@@ -126,10 +128,11 @@ begin
 
     return v_tenant_id;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 -- Lookup tenant name by ID (used for display in login responses)
 -- Returns 'System' for the system tenant, otherwise looks up the tenant name.
+-- SECURITY DEFINER required to bypass RLS when looking up tenants
 create or replace function ores_iam_tenant_name_by_id_fn(
     p_tenant_id uuid
 ) returns text as $$
@@ -153,7 +156,7 @@ begin
 
     return v_name;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 -- Check if current session is in system tenant
 create or replace function ores_iam_is_system_tenant_fn()

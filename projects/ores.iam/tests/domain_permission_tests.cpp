@@ -45,7 +45,7 @@ TEST_CASE("create_permission_with_valid_fields", tags) {
     sut.description = "Allows creating new user accounts";
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
-    CHECK(sut.code == "accounts:create");
+    CHECK(sut.code == "iam::accounts:create");
     CHECK(!sut.description.empty());
 }
 
@@ -71,7 +71,7 @@ TEST_CASE("create_currency_permission", tags) {
     sut.description = "Allows reading currency information";
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
-    CHECK(sut.code == "currencies:read");
+    CHECK(sut.code == "refdata::currencies:read");
 }
 
 TEST_CASE("create_flags_permission", tags) {
@@ -83,7 +83,7 @@ TEST_CASE("create_flags_permission", tags) {
     sut.description = "Allows updating feature flags";
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
-    CHECK(sut.code == "flags:update");
+    CHECK(sut.code == "variability::flags:update");
 }
 
 TEST_CASE("create_roles_permission", tags) {
@@ -95,7 +95,7 @@ TEST_CASE("create_roles_permission", tags) {
     sut.description = "Allows assigning roles to accounts";
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
-    CHECK(sut.code == "roles:assign");
+    CHECK(sut.code == "iam::roles:assign");
 }
 
 TEST_CASE("permission_with_specific_uuid", tags) {
@@ -110,7 +110,7 @@ TEST_CASE("permission_with_specific_uuid", tags) {
     sut.description = "Read account data";
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
-    CHECK(sut.code == "accounts:read");
+    CHECK(sut.code == "iam::accounts:read");
 }
 
 TEST_CASE("permission_serialization_to_json", tags) {
@@ -127,7 +127,7 @@ TEST_CASE("permission_serialization_to_json", tags) {
     const std::string json_output = os.str();
 
     CHECK(!json_output.empty());
-    CHECK(json_output.find("accounts:delete") != std::string::npos);
+    CHECK(json_output.find("iam::accounts:delete") != std::string::npos);
     CHECK(json_output.find("Allows deleting user accounts") != std::string::npos);
 }
 
@@ -173,34 +173,38 @@ TEST_CASE("create_multiple_random_permissions", tags) {
 TEST_CASE("well_known_permission_codes_are_consistent", tags) {
     auto lg(make_logger(test_suite));
 
-    CHECK(std::string(accounts_create) == "accounts:create");
-    CHECK(std::string(accounts_read) == "accounts:read");
-    CHECK(std::string(accounts_update) == "accounts:update");
-    CHECK(std::string(accounts_delete) == "accounts:delete");
-    CHECK(std::string(accounts_lock) == "accounts:lock");
-    CHECK(std::string(accounts_unlock) == "accounts:unlock");
-    CHECK(std::string(accounts_reset_password) == "accounts:reset_password");
+    // IAM component
+    CHECK(std::string(accounts_create) == "iam::accounts:create");
+    CHECK(std::string(accounts_read) == "iam::accounts:read");
+    CHECK(std::string(accounts_update) == "iam::accounts:update");
+    CHECK(std::string(accounts_delete) == "iam::accounts:delete");
+    CHECK(std::string(accounts_lock) == "iam::accounts:lock");
+    CHECK(std::string(accounts_unlock) == "iam::accounts:unlock");
+    CHECK(std::string(accounts_reset_password) == "iam::accounts:reset_password");
 
-    CHECK(std::string(currencies_create) == "currencies:create");
-    CHECK(std::string(currencies_read) == "currencies:read");
-    CHECK(std::string(currencies_update) == "currencies:update");
-    CHECK(std::string(currencies_delete) == "currencies:delete");
-    CHECK(std::string(currencies_history) == "currencies:history");
+    CHECK(std::string(roles_create) == "iam::roles:create");
+    CHECK(std::string(roles_read) == "iam::roles:read");
+    CHECK(std::string(roles_update) == "iam::roles:update");
+    CHECK(std::string(roles_delete) == "iam::roles:delete");
+    CHECK(std::string(roles_assign) == "iam::roles:assign");
+    CHECK(std::string(roles_revoke) == "iam::roles:revoke");
 
-    CHECK(std::string(flags_create) == "flags:create");
-    CHECK(std::string(flags_read) == "flags:read");
-    CHECK(std::string(flags_update) == "flags:update");
-    CHECK(std::string(flags_delete) == "flags:delete");
+    CHECK(std::string(login_info_read) == "iam::login_info:read");
 
-    CHECK(std::string(login_info_read) == "login_info:read");
+    // Refdata component
+    CHECK(std::string(currencies_create) == "refdata::currencies:create");
+    CHECK(std::string(currencies_read) == "refdata::currencies:read");
+    CHECK(std::string(currencies_update) == "refdata::currencies:update");
+    CHECK(std::string(currencies_delete) == "refdata::currencies:delete");
+    CHECK(std::string(currencies_history) == "refdata::currencies:history");
 
-    CHECK(std::string(roles_create) == "roles:create");
-    CHECK(std::string(roles_read) == "roles:read");
-    CHECK(std::string(roles_update) == "roles:update");
-    CHECK(std::string(roles_delete) == "roles:delete");
-    CHECK(std::string(roles_assign) == "roles:assign");
-    CHECK(std::string(roles_revoke) == "roles:revoke");
+    // Variability component
+    CHECK(std::string(flags_create) == "variability::flags:create");
+    CHECK(std::string(flags_read) == "variability::flags:read");
+    CHECK(std::string(flags_update) == "variability::flags:update");
+    CHECK(std::string(flags_delete) == "variability::flags:delete");
 
+    // Wildcards
     CHECK(std::string(all) == "*");
 
     BOOST_LOG_SEV(lg, info) << "All well-known permission codes validated";

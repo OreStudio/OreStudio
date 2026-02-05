@@ -112,8 +112,13 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         co_return read_frame_result{std::move(frame_result), std::nullopt};
 
     } catch (const boost::system::system_error& e) {
-        BOOST_LOG_SEV(lg(), error) << "Network error in read_frame: "
-                                 << e.what();
+        // Operation canceled is expected during shutdown - log at debug level
+        if (e.code() == boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg(), debug) << "Read cancelled due to shutdown.";
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Network error in read_frame: "
+                                       << e.what();
+        }
         co_return read_frame_result{
             std::unexpected(ores::utility::serialization::error_code::network_error),
             std::nullopt};

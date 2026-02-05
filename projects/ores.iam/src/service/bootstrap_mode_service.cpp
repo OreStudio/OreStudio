@@ -52,38 +52,38 @@ bool bootstrap_mode_service::is_in_bootstrap_mode() {
 void bootstrap_mode_service::initialize_bootstrap_state() {
     BOOST_LOG_SEV(lg(), info) << "Initializing bootstrap mode state";
 
-    // Check if any account has the Admin role via RBAC
+    // Check if any account has the SuperAdmin role via RBAC
     auto accounts = account_repo_.read_latest();
-    auto admin_role = auth_service_->find_role_by_name(domain::roles::admin);
-    bool admin_exists = false;
+    auto super_admin_role = auth_service_->find_role_by_name(domain::roles::super_admin);
+    bool super_admin_exists = false;
 
-    if (admin_role) {
-        admin_exists = std::ranges::any_of(accounts,
-            [this, &admin_role](const domain::account& acc) {
+    if (super_admin_role) {
+        super_admin_exists = std::ranges::any_of(accounts,
+            [this, &super_admin_role](const domain::account& acc) {
                 auto roles = auth_service_->get_account_roles(acc.id);
                 return std::ranges::any_of(roles,
-                    [&admin_role](const domain::role& r) {
-                        return r.id == admin_role->id;
+                    [&super_admin_role](const domain::role& r) {
+                        return r.id == super_admin_role->id;
                     });
             });
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();
-    BOOST_LOG_SEV(lg(), debug) << "Admin exists: "
-        << (admin_exists ? "true" : "false");
+    BOOST_LOG_SEV(lg(), debug) << "SuperAdmin exists: "
+        << (super_admin_exists ? "true" : "false");
 
     const bool flag_enabled = system_flags_service_.is_bootstrap_mode_enabled();
     BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: "
         << (flag_enabled ? "true" : "false");
 
-    if (flag_enabled && admin_exists) {
+    if (flag_enabled && super_admin_exists) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Bootstrap flag is enabled but admin accounts exist, "
+            << "Bootstrap flag is enabled but SuperAdmin accounts exist, "
             << "correcting state";
         exit_bootstrap_mode();
-    } else if (!flag_enabled && !admin_exists) {
+    } else if (!flag_enabled && !super_admin_exists) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Bootstrap flag is disabled but no admin accounts exist, "
+            << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
             << "this is inconsistent. Enabling bootstrap mode";
         system_flags_service_.set_bootstrap_mode(true, "system",
             std::string{reason::codes::new_record}, "Bootstrap mode enabled due to inconsistent state - no admin accounts exist");

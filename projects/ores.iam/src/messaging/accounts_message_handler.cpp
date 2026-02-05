@@ -229,19 +229,29 @@ handle_save_account_request(std::span<const std::byte> payload,
         }
 
         try {
-            // Set tenant context based on hostname
-            if (hostname.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                database::service::tenant_context::set_system_tenant(ctx_);
-            } else {
+            // Create a fresh context copy for this request to avoid race conditions
+            // with concurrent requests from different tenants.
+            auto operation_ctx = ctx_;
+
+            // Set tenant context based on hostname if provided.
+            // If no hostname, keep the current context's tenant (don't switch to system).
+            if (!hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
                 const auto tenant_id_str =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                database::service::tenant_context::set(ctx_, tenant_id_str);
+                    database::service::tenant_context::lookup_by_hostname(operation_ctx, hostname);
+                database::service::tenant_context::set(operation_ctx, tenant_id_str);
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
+                                           << operation_ctx.tenant_id();
             }
 
+            // Create temporary services with the correctly-scoped tenant context.
+            // This ensures each concurrent request is isolated.
+            service::account_service temp_account_svc(operation_ctx);
+            service::account_setup_service temp_setup_svc(temp_account_svc, auth_service_);
+
             domain::account account =
-                setup_service_.create_account(username, request.email,
+                temp_setup_svc.create_account(username, request.email,
                 request.password, request.recorded_by, request.change_commentary);
 
             BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
@@ -396,18 +406,25 @@ handle_login_request(std::span<const std::byte> payload,
                                << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
 
     try {
-        // Set tenant context based on hostname
+        // Set tenant context based on hostname if provided.
+        // If no hostname, keep the current context's tenant.
         boost::uuids::uuid tenant_id;
-        if (hostname.empty()) {
-            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-            database::service::tenant_context::set_system_tenant(ctx_);
-            tenant_id = boost::uuids::nil_uuid();  // System tenant
-        } else {
+        if (!hostname.empty()) {
             BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
             const auto tenant_id_str =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
             database::service::tenant_context::set(ctx_, tenant_id_str);
             tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
+        } else {
+            // Use current context's tenant
+            const auto current_tenant = ctx_.tenant_id();
+            BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
+                                       << current_tenant;
+            if (current_tenant.empty()) {
+                tenant_id = boost::uuids::nil_uuid();
+            } else {
+                tenant_id = boost::lexical_cast<boost::uuids::uuid>(current_tenant);
+            }
         }
 
         // Extract the IP address.
@@ -816,15 +833,15 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
         }
 
-        // Create the initial admin account with Admin role
+        // Create the initial admin account with SuperAdmin role
         // This checks role exists BEFORE creating account to avoid orphaned accounts
         domain::account account = setup_service_.create_account_with_role(
             username,
             request.email,
             request.password,
             "bootstrap",
-            domain::roles::admin,
-            "Initial admin account created during system bootstrap"
+            domain::roles::super_admin,
+            "Initial SuperAdmin account created during system bootstrap"
         );
 
         // Exit bootstrap mode - updates database and shared cache
@@ -1745,8 +1762,8 @@ handle_get_tenants_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:read permission
-    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenants");
+    // Requires authentication and iam::tenants:read permission
+    auto auth_result = check_authorization(remote_address, domain::permissions::tenants_read, "Get tenants");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1789,8 +1806,8 @@ handle_save_tenant_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:write permission
-    auto auth_result = check_authorization(remote_address, "tenants:write", "Save tenant");
+    // Requires authentication and iam::tenants:update permission
+    auto auth_result = check_authorization(remote_address, domain::permissions::tenants_update, "Save tenant");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1831,8 +1848,8 @@ handle_delete_tenant_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:delete permission
-    auto auth_result = check_authorization(remote_address, "tenants:delete", "Delete tenant");
+    // Requires authentication and iam::tenants:delete permission
+    auto auth_result = check_authorization(remote_address, domain::permissions::tenants_delete, "Delete tenant");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1902,8 +1919,8 @@ handle_get_tenant_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    // Requires authentication and tenants:read permission
-    auto auth_result = check_authorization(remote_address, "tenants:read", "Get tenant history");
+    // Requires authentication and iam::tenants:read permission
+    auto auth_result = check_authorization(remote_address, domain::permissions::tenants_read, "Get tenant history");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }

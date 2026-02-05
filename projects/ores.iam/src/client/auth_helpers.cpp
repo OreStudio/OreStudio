@@ -103,6 +103,10 @@ logout_result logout(comms::net::client_session& session) {
         return result;
     }
 
+    // Disable auto-reconnect before sending logout to prevent the client
+    // from trying to reconnect when the server closes the connection.
+    session.disable_auto_reconnect();
+
     using iam::messaging::logout_request;
     using iam::messaging::logout_response;
     using comms::messaging::message_type;

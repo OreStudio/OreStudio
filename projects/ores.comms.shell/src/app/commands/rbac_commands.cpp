@@ -96,7 +96,11 @@ void format_string_list(std::ostream& out, std::string_view title,
 }
 
 void rbac_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, client_session& session,
+                  pagination_context& /*pagination*/) {
+    // Note: RBAC protocol doesn't support pagination yet, so pagination_context
+    // is unused but passed for API consistency.
+
     // =========================================================================
     // Permissions submenu
     // =========================================================================

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 3CAA394F-E84C-3434-331B-6E664F7E84D2
+:ROAM_ALIASES: RBAC
+:END:
+#+title: Role-Based Access Control
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Role-based access control (RBAC) is a security method that restricts system
+access to authorised users based on their job roles, rather than individual user
+permissions. By grouping permissions into roles (/e.g./, =admin=, =user=),
+organisations can simplify access management, enforce the principle of least
+privilege, and enhance security.
+
+* Key Components of RBAC
+
+- *Roles*: Collections of permissions defining job functions (/e.g./, "Nurse",
+  "Manager").
+- *Permissions*: Specific rights to view, create, or modify data.
+- *Users*: Individuals assigned one or more roles.
+
+* Core Principles
+
+- *Role-Based Assignment*: Users are assigned roles, and permissions are
+  attached to those roles, not the user directly.
+- *Least Privilege*: Users receive only the minimum permissions necessary for
+  their role.
+- *Separation of Duties (SoD)*: As described in [[https://www.ibm.com/br-pt/think/topics/rbac][IBM's research]], SoD prevents
+  conflicts of interest by requiring multiple people to complete high-risk
+  tasks.
+
+* Benefits of RBAC
+
+- *Simplified Management*: Reduces the overhead of managing permissions for
+  thousands of users.
+- *Increased Security*: According to the [[https://www.cloudflare.com/en-gb/learning/access-management/role-based-access-control-rbac/][Cloudflare website]], it limits
+  unauthorized access and reduces the risk of data leaks.
+- *Compliance*: Facilitates adherence to data protection regulations.

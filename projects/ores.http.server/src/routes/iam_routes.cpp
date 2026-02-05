@@ -173,7 +173,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Create a new user account")
         .tags({"accounts"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .body<iam::messaging::save_account_request>()
         .response<iam::messaging::save_account_response>()
         .handler([this](const http_request& req) { return handle_create_account(req); });
@@ -185,7 +185,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Delete an account by ID")
         .tags({"accounts"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .response<iam::messaging::delete_account_response>()
         .handler([this](const http_request& req) { return handle_delete_account(req); });
     router->add_route(delete_account.build());
@@ -196,7 +196,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Update account details")
         .tags({"accounts"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .body<iam::messaging::save_account_request>()
         .response<iam::messaging::save_account_response>()
         .handler([this](const http_request& req) { return handle_update_account(req); });
@@ -218,7 +218,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Lock one or more accounts")
         .tags({"accounts"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .body<iam::messaging::lock_account_request>()
         .response<iam::messaging::lock_account_response>()
         .handler([this](const http_request& req) { return handle_lock_accounts(req); });
@@ -230,7 +230,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Unlock one or more accounts")
         .tags({"accounts"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .body<iam::messaging::unlock_account_request>()
         .response<iam::messaging::unlock_account_response>()
         .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
@@ -252,7 +252,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Admin-initiated password reset for accounts")
         .tags({"accounts"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .body<iam::messaging::reset_password_request>()
         .response<iam::messaging::reset_password_response>()
         .handler([this](const http_request& req) { return handle_reset_password(req); });
@@ -318,7 +318,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Assign a role to an account")
         .tags({"rbac"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .body<iam::messaging::assign_role_request>()
         .response<iam::messaging::assign_role_response>()
         .handler([this](const http_request& req) { return handle_assign_role(req); });
@@ -330,7 +330,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Revoke a role from an account")
         .tags({"rbac"})
         .auth_required()
-        .roles({"Admin"})
+        .roles({"TenantAdmin", "SuperAdmin"})
         .response<iam::messaging::revoke_role_response>()
         .handler([this](const http_request& req) { return handle_revoke_role(req); });
     router->add_route(revoke_role.build());
@@ -715,7 +715,7 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
             username, admin_req->email, admin_req->password,
-            "bootstrap", iam::domain::roles::admin,
+            "bootstrap", iam::domain::roles::super_admin,
             "Initial admin account created during system bootstrap");
 
         // Exit bootstrap mode - updates database and shared cache

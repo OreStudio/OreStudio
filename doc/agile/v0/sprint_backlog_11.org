@@ -17,39 +17,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-03 Tue 22:24], for Tuesday, February 03, 2026.
-|      | <75>                                 |        |      |      |       |
-| Tags | Headline                             | Time   |      |      |     % |
-|------+--------------------------------------+--------+------+------+-------|
-|      | *Total time*                         | *9:03* |      |      | 100.0 |
-|------+--------------------------------------+--------+------+------+-------|
-|      | Stories                              | 9:03   |      |      | 100.0 |
-|      | Active                               |        | 9:03 |      | 100.0 |
-| code | Add entity types for tenants         |        |      | 4:03 |  44.8 |
-| code | Add sink to log to database directly |        |      | 5:00 |  55.2 |
+#+CAPTION: Clock summary at [2026-02-05 Thu 00:03], for Thursday, February 05, 2026.
+|      | <75>                                          |        |      |      |       |
+| Tags | Headline                                      | Time   |      |      |     % |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                  | *0:02* |      |      | 100.0 |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | Stories                                       | 0:02   |      |      | 100.0 |
+|      | Active                                        |        | 0:02 |      | 100.0 |
+| code | Test shell functionality with tenancy enabled |        |      | 0:02 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-03 Tue 22:24]
-|       | <75>                                        |         |       |       |       |
-| Tags  | Headline                                    | Time    |       |       |     % |
-|-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *43:44* |       |       | 100.0 |
-|-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 43:44   |       |       | 100.0 |
-|       | Active                                      |         | 43:44 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  2:24 |   5.5 |
-| code  | Address past review comments                |         |       |  1:14 |   2.8 |
-| code  | Split "god" admin account                   |         |       | 10:05 |  23.1 |
-| code  | Move all database entities to public schema |         |       |  1:22 |   3.1 |
-| code  | Check directory structure in SQL            |         |       |  0:36 |   1.4 |
-| code  | Add tenancy support                         |         |       |  3:55 |   9.0 |
-| code  | Use tenancy to isolate tests                |         |       |  5:00 |  11.4 |
-| code  | Add NOTICE logging support to sqlgen        |         |       |  0:53 |   2.0 |
-| code  | Update codegen for tenancy                  |         |       |  3:32 |   8.1 |
-| code  | Add entity types for tenants                |         |       |  9:43 |  22.2 |
-| code  | Add sink to log to database directly        |         |       |  5:00 |  11.4 |
+#+CAPTION: Clock summary at [2026-02-05 Thu 00:03]
+|       | <75>                                          |         |       |       |       |
+| Tags  | Headline                                      | Time    |       |       |     % |
+|-------+-----------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                  | *52:54* |       |       | 100.0 |
+|-------+-----------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                       | 52:54   |       |       | 100.0 |
+|       | Active                                        |         | 52:54 |       | 100.0 |
+| agile | Sprint and product backlog refinement         |         |       |  2:24 |   4.5 |
+| code  | Address past review comments                  |         |       |  1:14 |   2.3 |
+| code  | Split "god" admin account                     |         |       | 10:05 |  19.1 |
+| code  | Move all database entities to public schema   |         |       |  1:22 |   2.6 |
+| code  | Check directory structure in SQL              |         |       |  0:36 |   1.1 |
+| code  | Add tenancy support                           |         |       |  3:55 |   7.4 |
+| code  | Use tenancy to isolate tests                  |         |       |  5:00 |   9.5 |
+| code  | Add NOTICE logging support to sqlgen          |         |       |  0:53 |   1.7 |
+| code  | Update codegen for tenancy                    |         |       |  3:32 |   6.7 |
+| code  | Add entity types for tenants                  |         |       |  9:43 |  18.4 |
+| code  | Add sink to log to database directly          |         |       |  5:00 |   9.5 |
+| code  | Add system accounts for services              |         |       |  3:32 |   6.7 |
+| code  | Test shell functionality with tenancy enabled |         |       |  5:38 |  10.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -886,6 +887,115 @@ Highlights:
   reliability of the new database logging and data persistence mechanisms.
 #+end_quote
 
+*** COMPLETED Add system accounts for services                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-04 Wed 09:00]--[2026-02-04 Wed 12:32] =>  3:32
+    :END:
+
+Services should also "login" and start sessions. This is needed so we can
+associate their log files with the session. Use the same account as we use for
+database.
+
+Notes:
+
+- unit tests should also "log in" and create sessions so we can see stats.
+- add performed by as per audit requirements.
+
+#+begin_quote
+This pull request significantly enhances the system's auditing capabilities by
+distinguishing between the database user and the application account responsible
+for changes. It also introduces a robust framework for managing service
+accounts, enabling secure authentication for automated processes. Furthermore,
+it addresses a critical deadlock in the telemetry system and refines several
+core database bootstrap and tenant management processes for improved stability
+and reliability.
+
+Highlights:
+
+- Performed By Audit Field: A new 'performed_by' field has been introduced
+  across all 42 domain tables to track the application account initiating an
+  action, complementing the existing 'modified_by' (database user). This change
+  is propagated through codegen templates for C++ domain classes, mappers,
+  protocol serialization, and Qt UI, ensuring comprehensive auditing.
+- Service Account Management: New 'account_type' classifications (user, service,
+  algorithm, LLM) are now supported, with dedicated service accounts created for
+  non-human entities. Service accounts are designed to authenticate via sessions
+  only, without passwords, and are integrated into the IAM schema and population
+  scripts.
+- Telemetry Deadlock Resolution: A critical fix has been implemented for a
+  telemetry async sink deadlock by introducing a 'skip_telemetry_guard' and
+  applying a filter to prevent recursive logging during database operations,
+  enhancing system stability.
+- SQL Bootstrap and Tenant Fixes: Various issues in SQL bootstrap and population
+  scripts have been resolved, including proper versioning for tenant termination
+  and ensuring system tenant context is set on service startup. A fail-fast
+  validation was also added to 'tenant_aware_pool' acquisition to prevent
+  operations without a defined tenant context.
+#+end_quote
+
+*** STARTED Test shell functionality with tenancy enabled              :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-04 Wed 22:51]--[2026-02-05 Thu 00:02] =>  1:11
+    CLOCK: [2026-02-04 Wed 21:33]--[2026-02-04 Wed 22:50] =>  1:17
+    CLOCK: [2026-02-04 Wed 21:00]--[2026-02-04 Wed 21:32] =>  0:32
+    CLOCK: [2026-02-04 Wed 14:25]--[2026-02-04 Wed 16:26] =>  2:01
+    CLOCK: [2026-02-03 Tue 22:50]--[2026-02-03 Tue 23:27] =>  0:37
+    :END:
+
+Ensure tenancy is working correctly with several scenarios:
+
+- log in as super admin.
+- create tenant admin account and login to tenant.
+- create tenant user account and login.
+
+Notes:
+
+- bootstrap, stop service then start service. System is in bootstrap mode again.
+
+**** Improve Authentication
+
+#+begin_quote
+This pull request significantly enhances the client-side authentication
+experience by introducing dedicated helper functions for login and logout,
+centralizing complex logic and simplifying client implementations. It also
+undertakes a crucial refactoring of core messaging enums into more granular,
+auto-generated headers, which improves code organization and maintainability
+across the communication layer. The changes aim to provide a cleaner, more
+robust API for client interactions with the IAM service.
+
+Highlights:
+
+- Client-Side Authentication Helpers: Introduced a new ores.iam::client
+  namespace with high-level login() and logout() helper functions. These helpers
+  encapsulate the full authentication flow, significantly reducing boilerplate
+  code in client applications like the shell and Qt clients.
+- Messaging Enum Refactoring: The monolithic
+  ores.comms/messaging/message_types.hpp header has been refactored into three
+  distinct headers: message_type.hpp (for message type enum),
+  compression_type.hpp (for compression type enum), and protocol.hpp (for
+  protocol constants like magic and version). This improves modularity and
+  reduces include dependencies.
+- C++ Enum Code Generation: Added a new code generation profile and template
+  (cpp_enum.hpp.mustache) to ores.codegen. This enables automatic generation of
+  C++ enum classes with string conversion and stream output operators from JSON
+  model definitions, as demonstrated by the new compression_type_enum.json and
+  message_type_enum.json.
+- Client Code Simplification: The shell client's auto_login, process_login, and
+  process_logout functions have been refactored to utilize the new client-side
+  authentication helpers, reducing their code footprint and improving
+  maintainability.
+- Dependency Update: The ores.iam project now explicitly links against
+  ores.comms.lib to support the new client-side authentication helpers.
+#+end_quote
+
+*** Generate protocol docs via codegen                                 :code:
+
+At present protocol documentation is very behind. We are not consistently
+generating it. Also, we keep making manual changes to document. We need to split
+it into two documents, the overview document which we maintain manually, and the
+list of versions, messages etc which is automatically generated. We should use
+mustache.
+
 *** Add database support for tests                                     :code:
 
 We could create a schema for logging:
@@ -919,16 +1029,6 @@ Notes:
   coverage as well.
 - Claude can then plug into all of this information. For a given test run, we
   could generate a summary report and then have Claude analyse it.
-
-*** Add system accounts for services                                   :code:
-
-Services should also "login" and start sessions. This is needed so we can
-associate their log files with the session. Use the same account as we use for
-database.
-
-Notes:
-
-- unit tests should also "log in" and create sessions so we can see stats.
 
 *** Instrument components with telemetry context                       :code:
 

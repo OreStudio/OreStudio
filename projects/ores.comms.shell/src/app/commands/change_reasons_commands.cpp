@@ -33,7 +33,10 @@ using comms::messaging::message_type;
 using comms::net::client_session;
 
 void change_reasons_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, client_session& session,
+                  pagination_context& /*pagination*/) {
+    // Note: Change reasons protocol doesn't support pagination yet, so
+    // pagination_context is unused but passed for API consistency.
     auto menu = std::make_unique<cli::Menu>("change-reasons");
 
     menu->Insert("get", [&session](std::ostream& out) {

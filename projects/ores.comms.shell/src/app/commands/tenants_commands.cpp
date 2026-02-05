@@ -47,7 +47,10 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
 }  // anonymous namespace
 
 void tenants_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, client_session& session,
+                  pagination_context& /*pagination*/) {
+    // Note: Tenant protocol doesn't support pagination yet, so pagination_context
+    // is unused but passed for API consistency.
     auto tenants_menu =
         std::make_unique<cli::Menu>("tenants");
 

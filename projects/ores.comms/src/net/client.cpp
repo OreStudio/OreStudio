@@ -610,6 +610,11 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
     notify_shutdown_if_complete();
 }
 
+void client::disable_auto_reconnect() {
+    BOOST_LOG_SEV(lg(), debug) << "Disabling auto-reconnect";
+    shutdown_requested_.store(true, std::memory_order_release);
+}
+
 void client::disconnect() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server";
 
@@ -1107,10 +1112,15 @@ boost::asio::awaitable<void> client::run_message_loop() {
 
             if (!read_result.frame) {
                 const auto ec = read_result.frame.error();
-                BOOST_LOG_SEV(lg(), warn) << "Message loop read error at iteration "
-                                          << loop_iteration << ": "
-                                          << static_cast<int>(ec)
-                                          << " state=" << static_cast<int>(state_.load(std::memory_order_acquire));
+                const bool shutdown = shutdown_requested_.load(std::memory_order_acquire);
+                // During shutdown, read errors are expected - log at debug level
+                if (shutdown) {
+                    BOOST_LOG_SEV(lg(), debug) << "Message loop ended during shutdown: " << ec;
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Message loop read error at iteration "
+                                              << loop_iteration << ": " << ec
+                                              << " state=" << static_cast<int>(state_.load(std::memory_order_acquire));
+                }
 
                 // For CRC errors, fail the specific pending request and reconnect.
                 // CRC errors indicate data corruption which may have affected the

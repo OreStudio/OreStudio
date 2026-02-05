@@ -49,6 +49,13 @@ application::application(
 
 namespace {
 
+inline std::string_view anon_logger_name = "ores.comms.shell.app.application";
+
+auto& anon_lg() {
+    static auto instance = make_logger(anon_logger_name);
+    return instance;
+}
+
 bool auto_connect(client_session& session, std::ostream& out,
     const std::optional<comms::net::client_options>& connection_config) {
     comms::net::client_options config = connection_config
@@ -101,17 +108,22 @@ void check_bootstrap_status(client_session& session, std::ostream& out) {
     auto result = session.process_request(bootstrap_status_request{});
 
     if (!result) {
-        // Silently ignore errors - bootstrap check is optional
+        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed: "
+                                        << to_string(result.error());
         return;
     }
 
     const auto& response = *result;
     if (response.is_in_bootstrap_mode) {
+        BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: "
+                                       << response.message;
         out << std::endl;
         out << "⚠ WARNING: System is in BOOTSTRAP MODE" << std::endl;
         out << "  " << response.message << std::endl;
         out << "  Use 'bootstrap <username> <password> <email>' to create the initial admin account." << std::endl;
         out << std::endl;
+    } else {
+        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status: not in bootstrap mode";
     }
 }
 

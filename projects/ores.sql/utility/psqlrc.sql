@@ -123,6 +123,9 @@ SET app.current_tenant_id = :'ores_tenant_id';
 -- Reload this psqlrc (assumes current directory is ores.sql)
 \set reload '\\i utility/psqlrc.sql'
 
+-- Show all accounts
+\set accounts 'select * from ores_iam_accounts_tbl;'
+
 --------------------------------------------------------------------------------
 -- Finish Setup
 --------------------------------------------------------------------------------
@@ -145,6 +148,7 @@ SET app.current_tenant_id = :'ores_tenant_id';
 \echo '  :locks            - Show blocked queries'
 \echo '  :kill_connections - Terminate other connections to current DB'
 \echo '  :reload           - Reload psqlrc (from ores.sql dir)'
+\echo '  :accounts         - Show all accounts'
 \echo ''
 \echo 'To switch tenant: \\set t ''pattern%''  then  :st'
 \echo ''

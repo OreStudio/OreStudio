@@ -45,7 +45,8 @@ using comms::messaging::message_type;
 using comms::net::client_session;
 
 void accounts_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, client_session& session,
+                  pagination_context& pagination) {
     auto accounts_menu =
         std::make_unique<cli::Menu>("accounts");
 
@@ -58,9 +59,16 @@ register_commands(cli::Menu& root_menu, client_session& session) {
                 std::move(email));
     }, "Create a new account (principal password totp_secret email) - principal is username@hostname or username");
 
-    accounts_menu->Insert("list", [&session](std::ostream& out) {
-        process_list_accounts(std::ref(out), std::ref(session));
-    }, "Retrieve all accounts from the server");
+    accounts_menu->Insert("list", [&session, &pagination](std::ostream& out) {
+        process_list_accounts(std::ref(out), std::ref(session),
+                              std::ref(pagination));
+    }, "Retrieve accounts from the server (paginated)");
+
+    // Register list callback for navigation
+    pagination.register_list_callback("accounts",
+        [&session, &pagination](std::ostream& out) {
+            process_list_accounts(out, session, pagination);
+        });
 
     accounts_menu->Insert("login", [&session](std::ostream& out,
             std::string principal, std::string password) {
@@ -164,24 +172,42 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void accounts_commands::
-process_list_accounts(std::ostream& out, client_session& session) {
+process_list_accounts(std::ostream& out, client_session& session,
+                      pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
+
+    auto& state = pagination.state_for("accounts");
 
     using iam::messaging::get_accounts_request;
     using iam::messaging::get_accounts_response;
     auto result = session.process_authenticated_request<get_accounts_request,
                                                         get_accounts_response,
                                                         message_type::get_accounts_request>
-        (get_accounts_request{});
+        (get_accounts_request{
+            .offset = state.current_offset,
+            .limit = pagination.page_size()
+        });
 
     if (!result) {
         out << "✗ " << to_string(result.error()) << std::endl;
         return;
     }
 
+    state.total_count = result->total_available_count;
+    pagination.set_last_entity("accounts");
+
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << result->accounts.size() << " accounts.";
     out << result->accounts << std::endl;
+
+    // Display pagination info
+    const auto page = (state.current_offset / pagination.page_size()) + 1;
+    const auto total_pages = state.total_count > 0
+        ? ((state.total_count + pagination.page_size() - 1) / pagination.page_size())
+        : 1;
+    out << "\nPage " << page << " of " << total_pages
+        << " (" << result->accounts.size() << " of "
+        << state.total_count << " total)" << std::endl;
 }
 
 void accounts_commands::
@@ -313,9 +339,16 @@ void accounts_commands::process_create_account(std::ostream& out,
         return;
     }
 
+    const auto& response = *result;
+    if (!response.success) {
+        BOOST_LOG_SEV(lg(), warn) << "Account creation failed: " << response.message;
+        out << "✗ " << response.message << std::endl;
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Successfully created account with ID: "
-                              << result->account_id;
-    out << "✓ Account created with ID: " << result->account_id << std::endl;
+                              << response.account_id;
+    out << "✓ Account created with ID: " << response.account_id << std::endl;
 }
 
 void accounts_commands::

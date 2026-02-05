@@ -33,13 +33,21 @@ using comms::messaging::message_type;
 using comms::net::client_session;
 
 void countries_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, client_session& session,
+                  pagination_context& pagination) {
     auto countries_menu =
         std::make_unique<cli::Menu>("countries");
 
-    countries_menu->Insert("get", [&session](std::ostream& out) {
-        process_get_countries(std::ref(out), std::ref(session));
-    }, "Retrieve all countries from the server");
+    countries_menu->Insert("get", [&session, &pagination](std::ostream& out) {
+        process_get_countries(std::ref(out), std::ref(session),
+                              std::ref(pagination));
+    }, "Retrieve countries from the server (paginated)");
+
+    // Register list callback for navigation
+    pagination.register_list_callback("countries",
+        [&session, &pagination](std::ostream& out) {
+            process_get_countries(out, session, pagination);
+        });
 
     countries_menu->Insert("add", [&session](std::ostream& out,
             std::string alpha2_code, std::string alpha3_code,
@@ -69,20 +77,38 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void countries_commands::
-process_get_countries(std::ostream& out, client_session& session) {
+process_get_countries(std::ostream& out, client_session& session,
+                      pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get countries request.";
 
+    auto& state = pagination.state_for("countries");
+
     using refdata::messaging::get_countries_request;
-    auto result = session.process_request(get_countries_request{});
+    auto result = session.process_request(get_countries_request{
+        .offset = state.current_offset,
+        .limit = pagination.page_size()
+    });
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
+    state.total_count = result->total_available_count;
+    pagination.set_last_entity("countries");
+
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << result->countries.size() << " countries.";
     out << result->countries << std::endl;
+
+    // Display pagination info
+    const auto page = (state.current_offset / pagination.page_size()) + 1;
+    const auto total_pages = state.total_count > 0
+        ? ((state.total_count + pagination.page_size() - 1) / pagination.page_size())
+        : 1;
+    out << "\nPage " << page << " of " << total_pages
+        << " (" << result->countries.size() << " of "
+        << state.total_count << " total)" << std::endl;
 }
 
 void countries_commands::

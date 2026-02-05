@@ -48,15 +48,15 @@ TEST_CASE("create_role_with_valid_fields", tags) {
     role sut;
     sut.version = 1;
     sut.id = boost::uuids::random_generator()();
-    sut.name = admin;
-    sut.description = "Administrator role with full system access";
+    sut.name = super_admin;
+    sut.description = "SuperAdmin role with full system access";
     sut.recorded_by = "system";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
     sut.permission_codes = {all};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(sut.name == "Admin");
+    CHECK(sut.name == "SuperAdmin");
     CHECK(!sut.description.empty());
     CHECK(sut.recorded_by == "system");
     CHECK(sut.permission_codes.size() == 1);
@@ -225,7 +225,7 @@ TEST_CASE("create_role_with_faker", tags) {
 TEST_CASE("create_multiple_random_roles", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> role_names = {admin, trading, sales, operations, support};
+    const std::vector<std::string> role_names = {super_admin, trading, sales, operations, support};
 
     for (int i = 0; i < 3; ++i) {
         role sut;
@@ -248,7 +248,8 @@ TEST_CASE("create_multiple_random_roles", tags) {
 TEST_CASE("well_known_role_names_are_consistent", tags) {
     auto lg(make_logger(test_suite));
 
-    CHECK(std::string(admin) == "Admin");
+    CHECK(std::string(super_admin) == "SuperAdmin");
+    CHECK(std::string(tenant_admin) == "TenantAdmin");
     CHECK(std::string(trading) == "Trading");
     CHECK(std::string(sales) == "Sales");
     CHECK(std::string(operations) == "Operations");

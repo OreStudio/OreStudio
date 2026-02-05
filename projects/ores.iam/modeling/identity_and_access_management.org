@@ -23,6 +23,7 @@ Core Responsibilities:
   to perform on specific resources based on assigned roles and policies.
 - *Access Control Enforcement*: Technically enforces authorization decisions
   across the ecosystem, ensuring access rights are adhered to during operation.
+  See [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][RBAC]] for more details.
 
 Operational Scope:
 

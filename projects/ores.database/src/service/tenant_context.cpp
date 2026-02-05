@@ -45,7 +45,8 @@ bool tenant_context::is_uuid(const std::string& str) {
         str[18] == '-' && str[23] == '-';
 }
 
-std::string tenant_context::lookup_by_code(context& ctx, const std::string& code) {
+std::string tenant_context::lookup_by_code(const context& ctx,
+    const std::string& code) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
 
@@ -65,7 +66,7 @@ std::string tenant_context::lookup_by_code(context& ctx, const std::string& code
     return results[0];
 }
 
-std::string tenant_context::lookup_by_hostname(context& ctx,
+std::string tenant_context::lookup_by_hostname(const context& ctx,
     const std::string& hostname) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
@@ -86,7 +87,7 @@ std::string tenant_context::lookup_by_hostname(context& ctx,
     return results[0];
 }
 
-std::string tenant_context::lookup_name(context& ctx,
+std::string tenant_context::lookup_name(const context& ctx,
     const std::string& tenant_id) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
@@ -117,7 +118,7 @@ using namespace ores::logging;
  * If the tenant is already a UUID, returns it directly.
  * Otherwise, looks up the tenant by code.
  */
-std::string resolve_tenant_id(context& ctx, const std::string& tenant) {
+std::string resolve_tenant_id(const context& ctx, const std::string& tenant) {
     if (tenant_context::is_uuid(tenant)) {
         BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant;
         return tenant;
@@ -155,9 +156,8 @@ context tenant_context::with_tenant(const context& ctx, const std::string& tenan
 
     BOOST_LOG_SEV(lg(), debug) << "Creating context with tenant: " << tenant;
 
-    // Use a mutable copy for the lookup (if needed)
-    auto lookup_ctx = ctx.with_tenant(ctx.tenant_id());
-    const auto tenant_id = resolve_tenant_id(lookup_ctx, tenant);
+    // Resolve tenant code to UUID if needed (now accepts const context)
+    const auto tenant_id = resolve_tenant_id(ctx, tenant);
 
     // Create the new context with the resolved tenant ID
     auto result = ctx.with_tenant(tenant_id);

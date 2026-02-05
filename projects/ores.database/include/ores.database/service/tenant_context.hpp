@@ -79,7 +79,7 @@ public:
      * @return The tenant UUID as a string.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_by_code(context& ctx, const std::string& code);
+    static std::string lookup_by_code(const context& ctx, const std::string& code);
 
     /**
      * @brief Looks up a tenant ID by its hostname.
@@ -89,7 +89,8 @@ public:
      * @return The tenant UUID as a string.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_by_hostname(context& ctx, const std::string& hostname);
+    static std::string lookup_by_hostname(const context& ctx,
+        const std::string& hostname);
 
     /**
      * @brief Looks up a tenant name by its ID.
@@ -102,7 +103,7 @@ public:
      * @return The tenant name.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_name(context& ctx, const std::string& tenant_id);
+    static std::string lookup_name(const context& ctx, const std::string& tenant_id);
 
     /**
      * @brief Checks if a string is a valid UUID format.

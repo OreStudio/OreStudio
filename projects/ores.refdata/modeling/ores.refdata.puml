@@ -431,7 +431,7 @@ namespace ores #F2F2F2 {
 
             ' Group: Handler infrastructure
             together {
-                class risk_message_handler
+                class refdata_message_handler
                 class registrar
             }
 
@@ -445,7 +445,7 @@ namespace ores #F2F2F2 {
             delete_country_request -[hidden]down- delete_country_result
             delete_country_result -[hidden]down- delete_country_response
             get_country_history_request -[hidden]down- get_country_history_response
-            risk_message_handler -[hidden]down- registrar
+            refdata_message_handler -[hidden]down- registrar
 
             ' Create row structure
             get_currencies_response -[hidden]down- save_currency_request
@@ -455,7 +455,7 @@ namespace ores #F2F2F2 {
             get_countries_response -[hidden]down- save_country_request
             save_country_response -[hidden]down- delete_country_request
             delete_country_response -[hidden]down- get_country_history_request
-            get_country_history_response -[hidden]down- risk_message_handler
+            get_country_history_response -[hidden]down- refdata_message_handler
 
             '
             ' Class definitions
@@ -742,8 +742,8 @@ namespace ores #F2F2F2 {
 
             get_country_history_response o-- ores::refdata::domain::country
 
-            class risk_message_handler #ECECEC {
-                +risk_message_handler(database::context ctx, std::shared_ptr<system_flags_service> system_flags)
+            class refdata_message_handler #ECECEC {
+                +refdata_message_handler(database::context ctx, std::shared_ptr<system_flags_service> system_flags)
                 +handle_message(message_type type, std::span<const std::byte> payload, const std::string& remote_address) : handler_result
                 -handle_get_currencies_request(std::span<const std::byte> payload) : handler_result
                 -handle_save_currency_request(std::span<const std::byte> payload) : handler_result
@@ -759,7 +759,7 @@ namespace ores #F2F2F2 {
                 -{field} country_service_ : service::country_service
             }
 
-            note top of risk_message_handler
+            note top of refdata_message_handler
             Message handler for risk subsystem messages.
 
             Processes messages in the risk subsystem range (0x1000-0x1FFF).
@@ -768,24 +768,24 @@ namespace ores #F2F2F2 {
             - get/save/delete countries and history
             end note
 
-            risk_message_handler o-- ores::refdata::service::currency_service
-            risk_message_handler o-- ores::refdata::service::country_service
-            risk_message_handler ..> ores::refdata::messaging::get_currencies_request : uses
-            risk_message_handler ..> ores::refdata::messaging::get_currencies_response : uses
-            risk_message_handler ..> ores::refdata::messaging::save_currency_request : uses
-            risk_message_handler ..> ores::refdata::messaging::save_currency_response : uses
-            risk_message_handler ..> ores::refdata::messaging::delete_currency_request : uses
-            risk_message_handler ..> ores::refdata::messaging::delete_currency_response : uses
-            risk_message_handler ..> ores::refdata::messaging::get_currency_history_request : uses
-            risk_message_handler ..> ores::refdata::messaging::get_currency_history_response : uses
-            risk_message_handler ..> ores::refdata::messaging::get_countries_request : uses
-            risk_message_handler ..> ores::refdata::messaging::get_countries_response : uses
-            risk_message_handler ..> ores::refdata::messaging::save_country_request : uses
-            risk_message_handler ..> ores::refdata::messaging::save_country_response : uses
-            risk_message_handler ..> ores::refdata::messaging::delete_country_request : uses
-            risk_message_handler ..> ores::refdata::messaging::delete_country_response : uses
-            risk_message_handler ..> ores::refdata::messaging::get_country_history_request : uses
-            risk_message_handler ..> ores::refdata::messaging::get_country_history_response : uses
+            refdata_message_handler o-- ores::refdata::service::currency_service
+            refdata_message_handler o-- ores::refdata::service::country_service
+            refdata_message_handler ..> ores::refdata::messaging::get_currencies_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_currencies_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::save_currency_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::save_currency_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::delete_currency_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::delete_currency_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_currency_history_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_currency_history_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_countries_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_countries_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::save_country_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::save_country_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::delete_country_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::delete_country_response : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_country_history_request : uses
+            refdata_message_handler ..> ores::refdata::messaging::get_country_history_response : uses
 
             class registrar #ECECEC {
                 +{static} register_handlers(comms::server& server, utility::repository::context ctx) : void
@@ -798,7 +798,7 @@ namespace ores #F2F2F2 {
             Must be called before server.run().
             end note
 
-            registrar ..> ores::refdata::messaging::risk_message_handler : creates
+            registrar ..> ores::refdata::messaging::refdata_message_handler : creates
         }
 
         namespace eventing #F2F2F2 {
@@ -834,7 +834,7 @@ namespace ores #F2F2F2 {
             ' Group: Messaging tests
             together {
                 class messaging_protocol_tests
-                class messaging_risk_message_handler_tests
+                class messaging_refdata_message_handler_tests
             }
 
             ' Group: Other tests
@@ -844,8 +844,8 @@ namespace ores #F2F2F2 {
 
             ' Stack related tests vertically
             domain_currency_tests -[hidden]down- domain_currency_version_tests
-            messaging_protocol_tests -[hidden]down- messaging_risk_message_handler_tests
-            messaging_risk_message_handler_tests -[hidden]down- repository_currency_repository_tests
+            messaging_protocol_tests -[hidden]down- messaging_refdata_message_handler_tests
+            messaging_refdata_message_handler_tests -[hidden]down- repository_currency_repository_tests
 
             '
             ' Class definitions
@@ -912,7 +912,7 @@ namespace ores #F2F2F2 {
             messaging_protocol_tests ..> ores::refdata::messaging::get_currencies_request : tests
             messaging_protocol_tests ..> ores::refdata::messaging::get_currencies_response : tests
 
-            class messaging_risk_message_handler_tests <<test suite>> #C5E1A5 {
+            class messaging_refdata_message_handler_tests <<test suite>> #C5E1A5 {
                 +handle_get_currencies_request_empty() void
                 +handle_get_currencies_request_with_single_currency() void
                 +handle_get_currencies_request_with_multiple_currencies() void
@@ -922,14 +922,14 @@ namespace ores #F2F2F2 {
                 +handle_invalid_message_type() void
             }
 
-            note top of messaging_risk_message_handler_tests
-            Test suite for risk_message_handler.
+            note top of messaging_refdata_message_handler_tests
+            Test suite for refdata_message_handler.
 
             Tests cover currency retrieval scenarios: empty,
             single, multiple, faker data, and error cases.
             end note
 
-            messaging_risk_message_handler_tests ..> ores::refdata::messaging::risk_message_handler : tests
+            messaging_refdata_message_handler_tests ..> ores::refdata::messaging::refdata_message_handler : tests
 
             class repository_currency_repository_tests <<test suite>> #C5E1A5 {
                 +write_single_currency() void

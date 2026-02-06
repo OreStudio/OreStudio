@@ -23,6 +23,7 @@
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/net/client_session.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::client {
 
@@ -39,7 +40,7 @@ struct login_result {
     std::string username;
     std::string email;
     std::string tenant_name;
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     bool password_reset_required = false;
 };
 

@@ -64,12 +64,12 @@ TEST_CASE("create_single_telemetry_entry", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    telemetry_repository repo(h.context());
+    telemetry_repository repo;
 
     auto entry = make_test_entry();
     BOOST_LOG_SEV(lg, debug) << "Entry ID: " << boost::uuids::to_string(entry.id);
 
-    CHECK_NOTHROW(repo.create(entry));
+    CHECK_NOTHROW(repo.create(h.context(), entry));
 
     BOOST_LOG_SEV(lg, debug) << "Telemetry entry created successfully";
 }
@@ -78,7 +78,7 @@ TEST_CASE("create_and_query_telemetry_entry", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    telemetry_repository repo(h.context());
+    telemetry_repository repo;
 
     auto entry = make_test_entry();
     entry.message = "Unique query test message";
@@ -86,7 +86,7 @@ TEST_CASE("create_and_query_telemetry_entry", tags) {
     BOOST_LOG_SEV(lg, debug) << "Creating entry with ID: "
                              << boost::uuids::to_string(entry.id);
 
-    repo.create(entry);
+    repo.create(h.context(), entry);
 
     // Query for the entry
     telemetry_query q;
@@ -95,7 +95,7 @@ TEST_CASE("create_and_query_telemetry_entry", tags) {
     q.tag = "query-test";
     q.limit = 100;
 
-    auto results = repo.query(q);
+    auto results = repo.query(h.context(), q);
     BOOST_LOG_SEV(lg, debug) << "Query returned " << results.size() << " entries";
 
     REQUIRE(results.size() >= 1);
@@ -117,7 +117,7 @@ TEST_CASE("create_batch_telemetry_entries", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    telemetry_repository repo(h.context());
+    telemetry_repository repo;
 
     telemetry_batch batch;
     batch.source = telemetry_source::server;
@@ -133,7 +133,7 @@ TEST_CASE("create_batch_telemetry_entries", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Creating batch of " << batch.size() << " entries";
 
-    auto count = repo.create_batch(batch);
+    auto count = repo.create_batch(h.context(), batch);
 
     CHECK(count == 5);
     BOOST_LOG_SEV(lg, debug) << "Batch created successfully with " << count << " entries";
@@ -143,7 +143,7 @@ TEST_CASE("read_by_session", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    telemetry_repository repo(h.context());
+    telemetry_repository repo;
 
     boost::uuids::random_generator gen;
     auto session_id = gen();
@@ -153,13 +153,13 @@ TEST_CASE("read_by_session", tags) {
         auto entry = make_test_entry();
         entry.session_id = session_id;
         entry.message = "Session test message " + std::to_string(i);
-        repo.create(entry);
+        repo.create(h.context(), entry);
     }
 
     BOOST_LOG_SEV(lg, debug) << "Reading entries for session: "
                              << boost::uuids::to_string(session_id);
 
-    auto results = repo.read_by_session(session_id);
+    auto results = repo.read_by_session(h.context(), session_id);
     BOOST_LOG_SEV(lg, debug) << "Read " << results.size() << " entries";
 
     CHECK(results.size() >= 3);
@@ -176,18 +176,18 @@ TEST_CASE("count_telemetry_entries", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    telemetry_repository repo(h.context());
+    telemetry_repository repo;
 
     auto entry = make_test_entry();
     entry.tag = "count-test";
-    repo.create(entry);
+    repo.create(h.context(), entry);
 
     telemetry_query q;
     q.start_time = entry.timestamp - std::chrono::hours(1);
     q.end_time = entry.timestamp + std::chrono::hours(1);
     q.tag = "count-test";
 
-    auto count = repo.count(q);
+    auto count = repo.count(h.context(), q);
     BOOST_LOG_SEV(lg, debug) << "Count: " << count;
 
     CHECK(count >= 1);
@@ -197,18 +197,18 @@ TEST_CASE("get_telemetry_summary", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    telemetry_repository repo(h.context());
+    telemetry_repository repo;
 
     // Create entries at different levels
     auto info_entry = make_test_entry();
     info_entry.level = "info";
-    repo.create(info_entry);
+    repo.create(h.context(), info_entry);
 
     auto error_entry = make_test_entry();
     error_entry.level = "error";
-    repo.create(error_entry);
+    repo.create(h.context(), error_entry);
 
-    auto summary = repo.get_summary(24);
+    auto summary = repo.get_summary(h.context(), 24);
     BOOST_LOG_SEV(lg, debug) << "Summary: total=" << summary.total_logs
                              << " errors=" << summary.error_count;
 

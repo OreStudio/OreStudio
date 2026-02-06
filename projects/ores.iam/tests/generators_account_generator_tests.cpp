@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.iam/domain/account.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/generators/account_generator.hpp"
@@ -31,9 +32,9 @@ namespace {
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[generators]");
 
-boost::uuids::uuid make_test_tenant_id() {
+ores::utility::uuid::tenant_id make_test_tenant_id() {
     boost::uuids::random_generator gen;
-    return gen();
+    return ores::utility::uuid::tenant_id::from_uuid(gen()).value();
 }
 
 }

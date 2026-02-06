@@ -78,11 +78,16 @@ $$ language plpgsql;
 /**
  * Populate dq_coding_schemes_tbl from a DQ coding schemes dataset.
  *
- * @param p_dataset_id  The DQ dataset to populate from.
- * @param p_mode        Population mode: 'upsert', 'insert_only', or 'replace_all'.
+ * This function uses SECURITY DEFINER to bypass RLS. It reads artefacts from
+ * the system tenant and writes to the target tenant specified by p_target_tenant_id.
+ *
+ * @param p_dataset_id       The DQ dataset to populate from
+ * @param p_target_tenant_id The tenant to publish data to
+ * @param p_mode             Population mode: 'upsert', 'insert_only', or 'replace_all'
  */
 create or replace function ores_dq_coding_schemes_publish_fn(
     p_dataset_id uuid,
+    p_target_tenant_id uuid,
     p_mode text default 'upsert'
 )
 returns table (
@@ -124,7 +129,7 @@ begin
         get diagnostics v_deleted = row_count;
     end if;
 
-    -- Process each record from DQ dataset
+    -- Process each record from DQ dataset (read from system tenant)
     for r in
         select
             dq.code,
@@ -136,11 +141,13 @@ begin
             dq.description
         from ores_dq_coding_schemes_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_iam_system_tenant_id_fn()
     loop
-        -- Check if record already exists
+        -- Check if record already exists in target tenant
         select exists (
             select 1 from ores_dq_coding_schemes_tbl existing
-            where existing.code = r.code
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 
@@ -157,7 +164,7 @@ begin
             uri, description,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            ores_iam_system_tenant_id_fn(),
+            p_target_tenant_id,
             r.code, 0, r.name, r.authority_type, r.subject_area_name, r.domain_name,
             r.uri, r.description,
             current_user, current_user, 'system.external_data_import',
@@ -184,4 +191,4 @@ begin
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;

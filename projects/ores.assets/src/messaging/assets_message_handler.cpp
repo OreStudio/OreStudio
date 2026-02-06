@@ -26,21 +26,27 @@ namespace ores::assets::messaging {
 
 using namespace ores::logging;
 
-assets_message_handler::assets_message_handler(database::context ctx)
-    : ctx_(std::move(ctx)) {}
+assets_message_handler::assets_message_handler(database::context ctx,
+    std::shared_ptr<comms::service::auth_session_service> sessions)
+    : ctx_(std::move(ctx)), sessions_(std::move(sessions)) {}
+
+database::context assets_message_handler::make_request_context(
+    const comms::service::session_info& session) const {
+    return ctx_.with_tenant(session.tenant_id);
+}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 assets_message_handler::handle_message(comms::messaging::message_type type,
-    std::span<const std::byte> payload, [[maybe_unused]] const std::string& remote_address) {
+    std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling assets message type " << type;
 
     switch (type) {
     case comms::messaging::message_type::get_images_request:
-        co_return co_await handle_get_images_request(payload);
+        co_return co_await handle_get_images_request(payload, remote_address);
     case comms::messaging::message_type::list_images_request:
-        co_return co_await handle_list_images_request(payload);
+        co_return co_await handle_list_images_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown assets message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -51,8 +57,17 @@ assets_message_handler::handle_message(comms::messaging::message_type type,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 assets_message_handler::
-handle_get_images_request(std::span<const std::byte> payload) {
+handle_get_images_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_images_request.";
+
+    // Require authentication
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Get images denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
+    }
 
     // Deserialize request
     auto request_result = get_images_request::deserialize(payload);
@@ -64,10 +79,13 @@ handle_get_images_request(std::span<const std::byte> payload) {
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Requested " << request.image_ids.size() << " images";
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+
     get_images_response response;
     try {
         // Read images by IDs from repository
-        response.images = image_repo_.read_latest_by_ids(ctx_, request.image_ids);
+        response.images = image_repo_.read_latest_by_ids(ctx, request.image_ids);
 
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.images.size()
                                   << " images";
@@ -83,8 +101,17 @@ handle_get_images_request(std::span<const std::byte> payload) {
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 assets_message_handler::
-handle_list_images_request(std::span<const std::byte> payload) {
+handle_list_images_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing list_images_request.";
+
+    // Require authentication
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "List images denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
+    }
 
     // Deserialize request
     auto request_result = list_images_request::deserialize(payload);
@@ -94,15 +121,19 @@ handle_list_images_request(std::span<const std::byte> payload) {
     }
 
     const auto& request = *request_result;
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+
     list_images_response response;
     try {
         // Read images from repository - filtered if modified_since is set
         std::vector<domain::image> images;
         if (request.modified_since) {
             BOOST_LOG_SEV(lg(), debug) << "Filtering images modified since timestamp";
-            images = image_repo_.read_latest_since(ctx_, *request.modified_since);
+            images = image_repo_.read_latest_since(ctx, *request.modified_since);
         } else {
-            images = image_repo_.read_latest(ctx_);
+            images = image_repo_.read_latest(ctx);
         }
 
         // Convert to image_info (without SVG data)

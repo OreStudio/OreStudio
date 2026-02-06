@@ -22,30 +22,32 @@
 #include <algorithm>
 
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
 
 namespace ores::variability::messaging {
 
 using namespace ores::logging;
 
-variability_message_handler::variability_message_handler(database::context ctx)
-    : ctx_(ctx), feature_flags_repo_(std::move(ctx)) {}
+variability_message_handler::variability_message_handler(database::context ctx,
+    std::shared_ptr<comms::service::auth_session_service> sessions)
+    : tenant_aware_handler(std::move(ctx), std::move(sessions)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 variability_message_handler::handle_message(comms::messaging::message_type type,
-    std::span<const std::byte> payload, [[maybe_unused]] const std::string& remote_address) {
+    std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling variability message type " << type;
 
     switch (type) {
     case comms::messaging::message_type::get_feature_flags_request:
-        co_return co_await handle_get_feature_flags_request(payload);
+        co_return co_await handle_get_feature_flags_request(payload, remote_address);
     case comms::messaging::message_type::save_feature_flag_request:
-        co_return co_await handle_save_feature_flag_request(payload);
+        co_return co_await handle_save_feature_flag_request(payload, remote_address);
     case comms::messaging::message_type::delete_feature_flag_request:
-        co_return co_await handle_delete_feature_flag_request(payload);
+        co_return co_await handle_delete_feature_flag_request(payload, remote_address);
     case comms::messaging::message_type::get_feature_flag_history_request:
-        co_return co_await handle_get_feature_flag_history_request(payload);
+        co_return co_await handle_get_feature_flag_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown variability message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -56,8 +58,21 @@ variability_message_handler::handle_message(comms::messaging::message_type type,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 variability_message_handler::
-handle_get_feature_flags_request(std::span<const std::byte> payload) {
+handle_get_feature_flags_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_feature_flags_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Get feature flags");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    repository::feature_flags_repository repo;
 
     // Deserialize request
     auto request_result = get_feature_flags_request::deserialize(payload);
@@ -69,7 +84,7 @@ handle_get_feature_flags_request(std::span<const std::byte> payload) {
     get_feature_flags_response response;
     try {
         // Read latest feature flags from repository
-        response.feature_flags = feature_flags_repo_.read_latest();
+        response.feature_flags = repo.read_latest(ctx);
 
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.feature_flags.size()
                                   << " feature flags";
@@ -85,8 +100,21 @@ handle_get_feature_flags_request(std::span<const std::byte> payload) {
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 variability_message_handler::
-handle_save_feature_flag_request(std::span<const std::byte> payload) {
+handle_save_feature_flag_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_feature_flag_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Save feature flag");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    repository::feature_flags_repository repo;
 
     // Deserialize request
     auto request_result = save_feature_flag_request::deserialize(payload);
@@ -99,12 +127,14 @@ handle_save_feature_flag_request(std::span<const std::byte> payload) {
     try {
         // Override tenant_id from server-side context (don't trust client)
         auto flag = request_result->flag;
-        flag.tenant_id = ctx_.tenant_id();
+        flag.tenant_id = ctx.tenant_id().to_string();
+        flag.recorded_by = auth->username;
 
         // Save the feature flag
-        feature_flags_repo_.write(flag);
+        repo.write(ctx, flag);
 
-        BOOST_LOG_SEV(lg(), info) << "Saved feature flag: " << flag.name;
+        BOOST_LOG_SEV(lg(), info) << "Saved feature flag: " << flag.name
+                                  << " by " << auth->username;
 
         response.success = true;
         co_return response.serialize();
@@ -119,8 +149,21 @@ handle_save_feature_flag_request(std::span<const std::byte> payload) {
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 variability_message_handler::
-handle_delete_feature_flag_request(std::span<const std::byte> payload) {
+handle_delete_feature_flag_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_feature_flag_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Delete feature flag");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    repository::feature_flags_repository repo;
 
     // Deserialize request
     auto request_result = delete_feature_flag_request::deserialize(payload);
@@ -132,7 +175,7 @@ handle_delete_feature_flag_request(std::span<const std::byte> payload) {
     delete_feature_flag_response response;
     try {
         // Delete the feature flag
-        feature_flags_repo_.remove(request_result->name);
+        repo.remove(ctx, request_result->name);
 
         BOOST_LOG_SEV(lg(), info) << "Deleted feature flag: " << request_result->name;
 
@@ -149,8 +192,21 @@ handle_delete_feature_flag_request(std::span<const std::byte> payload) {
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 variability_message_handler::
-handle_get_feature_flag_history_request(std::span<const std::byte> payload) {
+handle_get_feature_flag_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_feature_flag_history_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Get feature flag history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request repository
+    repository::feature_flags_repository repo;
 
     // Deserialize request
     auto request_result = get_feature_flag_history_request::deserialize(payload);
@@ -162,7 +218,7 @@ handle_get_feature_flag_history_request(std::span<const std::byte> payload) {
     get_feature_flag_history_response response;
     try {
         // Read all versions of this feature flag
-        auto history = feature_flags_repo_.read_all(request_result->name);
+        auto history = repo.read_all(ctx, request_result->name);
 
         // Sort by version descending (newest first)
         std::ranges::sort(history, [](const auto& a, const auto& b) {

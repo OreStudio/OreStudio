@@ -27,10 +27,12 @@ namespace ores::variability::messaging {
 using namespace ores::logging;
 
 void registrar::register_handlers(comms::net::server& server,
-    database::context ctx) {
+    database::context ctx,
+    std::shared_ptr<comms::service::auth_session_service> sessions) {
     BOOST_LOG_SEV(lg(), info) << "Registering variability subsystem message handlers.";
 
-    auto handler = std::make_shared<variability_message_handler>(std::move(ctx));
+    auto handler = std::make_shared<variability_message_handler>(
+        std::move(ctx), std::move(sessions));
     comms::messaging::message_type_range variability_range{
         .min = comms::messaging::VARIABILITY_SUBSYSTEM_MIN,
         .max = comms::messaging::VARIABILITY_SUBSYSTEM_MAX

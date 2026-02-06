@@ -54,7 +54,7 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     // Database has pre-seeded flags from template
 
     feature_flags flag;
-    flag.tenant_id = boost::uuids::to_string(db_helper.tenant_id());
+    flag.tenant_id = db_helper.tenant_id().to_string();
     flag.name = "test_flag";
     flag.enabled = true;
     flag.description = "Test Description";
@@ -82,7 +82,7 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
 
     // Initial save
     feature_flags flag;
-    flag.tenant_id = boost::uuids::to_string(db_helper.tenant_id());
+    flag.tenant_id = db_helper.tenant_id().to_string();
     flag.name = "update_flag";
     flag.enabled = true;
     flag.description = "Initial Description";
@@ -114,7 +114,7 @@ TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
     // Database has pre-seeded flags from template
 
     feature_flags flag;
-    flag.tenant_id = boost::uuids::to_string(db_helper.tenant_id());
+    flag.tenant_id = db_helper.tenant_id().to_string();
     flag.name = "delete_flag_unique_test";
     flag.enabled = true;
     flag.recorded_by = "deleter";
@@ -138,7 +138,7 @@ TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     // Database has pre-seeded flags from template
 
     feature_flags flag1;
-    flag1.tenant_id = boost::uuids::to_string(db_helper.tenant_id());
+    flag1.tenant_id = db_helper.tenant_id().to_string();
     flag1.name = "unique_flag1_xyz";
     flag1.enabled = true;
     flag1.recorded_by = "tester";
@@ -147,7 +147,7 @@ TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     sut.save_feature_flag(flag1);
 
     feature_flags flag2;
-    flag2.tenant_id = boost::uuids::to_string(db_helper.tenant_id());
+    flag2.tenant_id = db_helper.tenant_id().to_string();
     flag2.name = "unique_flag2_xyz";
     flag2.enabled = false;
     flag2.recorded_by = "tester";

@@ -26,6 +26,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace {
 
@@ -36,6 +37,7 @@ const std::string tags("[service_account]");
 
 using ores::iam::domain::account;
 using ores::iam::domain::account_type;
+using ores::utility::uuid::tenant_id;
 using namespace ores::logging;
 
 TEST_CASE("create_service_account_with_no_password", tags) {
@@ -45,7 +47,7 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     sut.version = 1;
     sut.recorded_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::nil_uuid(); // System tenant
+    sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "service";
     sut.username = "ores.service.binary";
     sut.password_hash = "";  // Service accounts have no password
@@ -67,7 +69,7 @@ TEST_CASE("create_algorithm_account", tags) {
     sut.version = 1;
     sut.recorded_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::nil_uuid();
+    sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "algorithm";
     sut.username = "algo.risk.calc";
     sut.password_hash = "";
@@ -87,7 +89,7 @@ TEST_CASE("create_llm_account", tags) {
     sut.version = 1;
     sut.recorded_by = "system";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::nil_uuid();
+    sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "llm";
     sut.username = "claude.agent";
     sut.password_hash = "";
@@ -107,7 +109,8 @@ TEST_CASE("user_account_requires_password", tags) {
     sut.version = 1;
     sut.recorded_by = "admin";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = boost::uuids::random_generator()();
+    sut.tenant_id = tenant_id::from_uuid(
+        boost::uuids::random_generator()()).value();
     sut.account_type = "user";  // Default type
     sut.username = "john.doe";
     sut.password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";

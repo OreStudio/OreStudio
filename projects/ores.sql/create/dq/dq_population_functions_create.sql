@@ -21,13 +21,14 @@
 /**
  * Data Quality Population Functions
  *
- * These functions copy data from DQ staging tables to production tables.
- * Designed to support a future UI for dataset management.
+ * These functions copy data from DQ staging tables (system tenant) to
+ * production tables (target tenant). Each function uses SECURITY DEFINER
+ * to bypass RLS and explicitly control tenant context.
  *
  * Usage pattern:
  *   1. List available datasets: SELECT * FROM ores_dq_datasets_list_publishable_fn();
- *   2. Preview what will be copied: SELECT * FROM ores_dq_preview_*_population(dataset_id);
- *   3. Execute the copy: SELECT * FROM ores_dq_populate_*(dataset_id, mode);
+ *   2. Preview what will be copied: SELECT * FROM ores_dq_*_preview_fn(dataset_id);
+ *   3. Execute the copy: SELECT * FROM ores_dq_*_publish_fn(dataset_id, target_tenant_id, mode);
  *
  * Modes:
  *   - 'upsert': Insert new records, update existing (default)
@@ -195,6 +196,9 @@ $$ language plpgsql;
  * Populate assets_images_tbl from a DQ images dataset.
  * Returns summary of actions taken.
  *
+ * This function uses SECURITY DEFINER to bypass RLS. It reads artefacts from
+ * the system tenant and writes to the target tenant specified by p_target_tenant_id.
+ *
  * IMPORTANT: Images must be populated before countries/currencies
  * to ensure image_id references are valid.
  *
@@ -204,9 +208,14 @@ $$ language plpgsql;
  *
  * For upsert mode with existing keys, we use the existing image_id to
  * preserve referential integrity with countries/currencies tables.
+ *
+ * @param p_dataset_id       The DQ dataset to populate from
+ * @param p_target_tenant_id The tenant to publish data to
+ * @param p_mode             Population mode: 'upsert', 'insert_only', or 'replace_all'
  */
 create or replace function ores_dq_images_publish_fn(
     p_dataset_id uuid,
+    p_target_tenant_id uuid,
     p_mode text default 'upsert'
 )
 returns table (
@@ -248,7 +257,7 @@ begin
         get diagnostics v_deleted = row_count;
     end if;
 
-    -- Process each image from DQ dataset
+    -- Process each image from DQ dataset (read from system tenant)
     for r in
         select
             dq.image_id,
@@ -257,6 +266,7 @@ begin
             dq.svg_data
         from ores_dq_images_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_iam_system_tenant_id_fn()
     loop
         -- Check if an image with this key already exists
         select image_id into v_existing_image_id
@@ -278,7 +288,7 @@ begin
             image_id, version, key, description, svg_data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            ores_iam_system_tenant_id_fn(),
+            p_target_tenant_id,
             coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
             current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
@@ -304,7 +314,7 @@ begin
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 -- =============================================================================
 -- Countries Population Functions
@@ -347,6 +357,9 @@ $$ language plpgsql;
 /**
  * Populate refdata_countries_tbl from a DQ countries dataset.
  *
+ * This function uses SECURITY DEFINER to bypass RLS. It reads artefacts from
+ * the system tenant and writes to the target tenant specified by p_target_tenant_id.
+ *
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
  *
@@ -355,9 +368,14 @@ $$ language plpgsql;
  * - Existing records are closed (valid_to set) and new version inserted
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
+ *
+ * @param p_dataset_id       The DQ dataset to populate from
+ * @param p_target_tenant_id The tenant to publish data to
+ * @param p_mode             Population mode: 'upsert', 'insert_only', or 'replace_all'
  */
 create or replace function ores_dq_countries_publish_fn(
     p_dataset_id uuid,
+    p_target_tenant_id uuid,
     p_mode text default 'upsert'
 )
 returns table (
@@ -400,7 +418,7 @@ begin
         get diagnostics v_deleted = row_count;
     end if;
 
-    -- Process each country from DQ dataset
+    -- Process each country from DQ dataset (read from system tenant)
     for r in
         select
             dq.alpha2_code,
@@ -411,6 +429,7 @@ begin
             dq.image_id
         from ores_dq_countries_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_iam_system_tenant_id_fn()
     loop
         -- Check if record already exists (for mode handling and reporting)
         select exists (
@@ -449,7 +468,7 @@ begin
             coding_scheme_code, image_id,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            ores_iam_system_tenant_id_fn(),
+            p_target_tenant_id,
             r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name,
             v_coding_scheme_code, v_resolved_image_id,
             current_user, current_user, 'system.external_data_import',
@@ -476,7 +495,7 @@ begin
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 -- =============================================================================
 -- Currencies Population Functions
@@ -521,11 +540,15 @@ $$ language plpgsql;
 /**
  * Populate refdata_currencies_tbl from a DQ currencies dataset.
  *
- * @param p_dataset_id      The DQ dataset to populate from.
- * @param p_mode            Population mode: 'upsert', 'insert_only', or 'replace_all'.
- * @param p_currency_type_filter  Optional filter to only populate currencies with
- *                                matching currency_type (e.g., 'crypto.major').
- *                                If NULL, all currencies from the dataset are processed.
+ * This function uses SECURITY DEFINER to bypass RLS. It reads artefacts from
+ * the system tenant and writes to the target tenant specified by p_target_tenant_id.
+ *
+ * @param p_dataset_id           The DQ dataset to populate from
+ * @param p_target_tenant_id     The tenant to publish data to
+ * @param p_mode                 Population mode: 'upsert', 'insert_only', or 'replace_all'
+ * @param p_currency_type_filter Optional filter to only populate currencies with
+ *                               matching currency_type (e.g., 'crypto.major').
+ *                               If NULL, all currencies from the dataset are processed.
  *
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
@@ -538,6 +561,7 @@ $$ language plpgsql;
  */
 create or replace function ores_dq_currencies_publish_fn(
     p_dataset_id uuid,
+    p_target_tenant_id uuid,
     p_mode text default 'upsert',
     p_currency_type_filter text default null
 )
@@ -581,7 +605,7 @@ begin
         get diagnostics v_deleted = row_count;
     end if;
 
-    -- Process each currency from DQ dataset
+    -- Process each currency from DQ dataset (read from system tenant)
     -- Apply currency_type filter if specified
     for r in
         select
@@ -598,6 +622,7 @@ begin
             dq.image_id
         from ores_dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_iam_system_tenant_id_fn()
           and (p_currency_type_filter is null or dq.currency_type = p_currency_type_filter)
     loop
         -- Check if record already exists (for mode handling and reporting)
@@ -637,7 +662,7 @@ begin
             coding_scheme_code, image_id,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            ores_iam_system_tenant_id_fn(),
+            p_target_tenant_id,
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type,
             v_coding_scheme_code, v_resolved_image_id,
@@ -665,7 +690,7 @@ begin
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 -- =============================================================================
 -- IP to Country Population Functions
@@ -702,17 +727,22 @@ $$ language plpgsql;
 /**
  * Populate geo_ip2country_tbl from a DQ IP to Country dataset.
  *
+ * This function uses SECURITY DEFINER to bypass RLS. It reads artefacts from
+ * the system tenant and writes to the target tenant specified by p_target_tenant_id.
+ *
  * NOTE: This function always uses 'replace_all' behavior due to the nature
  * of IP range data. The entire table is truncated and reloaded because:
  * 1. IP ranges change frequently (iptoasn.com updates hourly)
  * 2. Ranges are not individually identifiable (no unique key)
  * 3. Partial updates would leave stale/overlapping ranges
  *
- * @param p_dataset_id  The DQ dataset to populate from.
- * @param p_mode        Ignored - always performs replace_all.
+ * @param p_dataset_id       The DQ dataset to populate from
+ * @param p_target_tenant_id The tenant to publish data to
+ * @param p_mode             Ignored - always performs replace_all
  */
 create or replace function ores_dq_ip2country_publish_fn(
     p_dataset_id uuid,
+    p_target_tenant_id uuid,
     p_mode text default 'replace_all'
 )
 returns table (
@@ -738,14 +768,15 @@ begin
     select count(*) into v_deleted from ores_geo_ip2country_tbl;
     truncate table ores_geo_ip2country_tbl;
 
-    -- Insert from DQ artefact table, converting to int8range
+    -- Insert from DQ artefact table (read from system tenant), converting to int8range
     insert into ores_geo_ip2country_tbl (tenant_id, ip_range, country_code)
     select
-        ores_iam_system_tenant_id_fn(),
+        p_target_tenant_id,
         int8range(range_start, range_end + 1, '[)'),
         country_code
     from ores_dq_ip2country_artefact_tbl
-    where dataset_id = p_dataset_id;
+    where dataset_id = p_dataset_id
+      and tenant_id = ores_iam_system_tenant_id_fn();
 
     get diagnostics v_inserted = row_count;
 
@@ -758,4 +789,4 @@ begin
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;

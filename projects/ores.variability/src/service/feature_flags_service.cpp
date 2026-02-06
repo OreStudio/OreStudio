@@ -27,13 +27,13 @@ namespace ores::variability::service {
 using namespace ores::logging;
 
 feature_flags_service::feature_flags_service(database::context ctx)
-    : repo_(std::move(ctx)) {}
+    : ctx_(std::move(ctx)) {}
 
 std::optional<domain::feature_flags>
 feature_flags_service::get_feature_flag(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting feature flag: " << name;
 
-    auto flags = repo_.read_latest(name);
+    auto flags = repo_.read_latest(ctx_, name);
     if (flags.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "Feature flag not found: " << name;
         return std::nullopt;
@@ -47,7 +47,7 @@ feature_flags_service::get_feature_flag(const std::string& name) {
 
 std::vector<domain::feature_flags> feature_flags_service::get_all_feature_flags() {
     BOOST_LOG_SEV(lg(), debug) << "Getting all feature flags";
-    return repo_.read_latest();
+    return repo_.read_latest(ctx_);
 }
 
 void feature_flags_service::save_feature_flag(const domain::feature_flags& flag) {
@@ -61,19 +61,19 @@ void feature_flags_service::save_feature_flag(const domain::feature_flags& flag)
     // 1. Remove existing entry (close validity)
     // 2. Write new entry
     // 'remove' is idempotent in the repository (if it doesn't exist, nothing happens).
-    repo_.remove(flag.name);
-    repo_.write(flag);
+    repo_.remove(ctx_, flag.name);
+    repo_.write(ctx_, flag);
 }
 
 void feature_flags_service::delete_feature_flag(const std::string& name) {
     BOOST_LOG_SEV(lg(), info) << "Deleting feature flag: " << name;
-    repo_.remove(name);
+    repo_.remove(ctx_, name);
 }
 
 std::vector<domain::feature_flags>
 feature_flags_service::get_feature_flag_history(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting feature flag history for: " << name;
-    auto history = repo_.read_all(name);
+    auto history = repo_.read_all(ctx_, name);
 
     // Sort by version descending (newest first)
     std::ranges::sort(history, [](const auto& a, const auto& b) {

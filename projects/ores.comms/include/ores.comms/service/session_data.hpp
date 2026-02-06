@@ -26,6 +26,7 @@
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/address.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::comms::service {
 
@@ -78,7 +79,7 @@ struct session_data final {
      * session lifetime. Used to establish the correct database context for
      * all operations performed during this session.
      */
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Timestamp when the session started (login time).

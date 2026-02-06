@@ -33,6 +33,7 @@
  * - Operations: Currency management and account viewing
  * - Support: Read-only access to all resources
  * - Viewer: Basic read-only access (default role for new accounts)
+ * - DataPublisher: Can publish datasets and bundles to production
  *
  * Prerequisites:
  * - permissions_populate.sql must be run first
@@ -48,6 +49,7 @@ select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Sales', 'Sales 
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'Operations - currency management and account viewing');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Support', 'Support - read-only access to all resources and admin screens');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'Viewer', 'Viewer - basic read-only access to domain data');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'Data Publisher - can publish datasets and bundles to production');
 
 -- Assign permissions to SuperAdmin role (platform-level)
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', '*');
@@ -91,6 +93,20 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Supp
 -- Assign permissions to Viewer role (default for new accounts)
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Viewer', 'refdata::currencies:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Viewer', 'variability::flags:read');
+
+-- Assign permissions to DataPublisher role
+-- Read access to browse the data catalog
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::catalogs:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::data_domains:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::subject_areas:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::datasets:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::dataset_bundles:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::dataset_bundle_members:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::coding_schemes:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::methodologies:read');
+-- Write access for publishing datasets and bundles
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::datasets:write');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DataPublisher', 'dq::dataset_bundles:write');
 
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl

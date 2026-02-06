@@ -17,32 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_RISK_MESSAGE_HANDLER_HPP
-#define ORES_REFDATA_MESSAGING_RISK_MESSAGE_HANDLER_HPP
+#ifndef ORES_REFDATA_MESSAGING_REFDATA_MESSAGE_HANDLER_HPP
+#define ORES_REFDATA_MESSAGING_REFDATA_MESSAGE_HANDLER_HPP
 
 #include <memory>
 #include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/messaging/tenant_aware_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
-#include "ores.refdata/service/currency_service.hpp"
-#include "ores.refdata/service/country_service.hpp"
 
 namespace ores::refdata::messaging {
 
 /**
- * @brief Message handler for risk subsystem messages.
+ * @brief Message handler for refdata subsystem messages.
  *
- * Processes messages in the risk subsystem range (0x1000-0x1FFF).
+ * Processes messages in the refdata subsystem range (0x1000-0x1FFF).
  * Currently handles:
  * - get_currencies_request: Retrieves all currencies from the repository
+ * - save_currency_request: Creates or updates a currency
+ * - delete_currency_request: Deletes currencies
+ * - get_currency_history_request: Retrieves currency version history
+ * - get_countries_request: Retrieves all countries from the repository
+ * - save_country_request: Creates or updates a country
+ * - delete_country_request: Deletes countries
+ * - get_country_history_request: Retrieves country version history
  */
-class risk_message_handler final : public comms::messaging::message_handler {
+class refdata_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
     inline static std::string_view logger_name =
-        "ores.refdata.messaging.risk_message_handler";
+        "ores.refdata.messaging.refdata_message_handler";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -52,18 +57,18 @@ private:
 
 public:
     /**
-     * @brief Construct a risk message handler.
+     * @brief Construct a refdata message handler.
      *
      * @param ctx Database context for repository access
      * @param system_flags Shared system flags service for flag access
      * @param sessions Session service for authentication verification
      */
-    risk_message_handler(database::context ctx,
+    refdata_message_handler(database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<comms::service::auth_session_service> sessions);
 
     /**
-     * @brief Handle a risk subsystem message.
+     * @brief Handle a refdata subsystem message.
      *
      * @param type The message type (must be in range 0x1000-0x1FFF)
      * @param payload The message payload
@@ -80,7 +85,8 @@ private:
      * @brief Handle get_currencies_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_currencies_request(std::span<const std::byte> payload);
+    handle_get_currencies_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle save_currency_request message (create or update).
@@ -97,19 +103,22 @@ private:
      * @brief Handle delete_currency_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_delete_currency_request(std::span<const std::byte> payload);
+    handle_delete_currency_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle get_currency_history_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_currency_history_request(std::span<const std::byte> payload);
+    handle_get_currency_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle get_countries_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_countries_request(std::span<const std::byte> payload);
+    handle_get_countries_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle save_country_request message (create or update).
@@ -122,19 +131,17 @@ private:
      * @brief Handle delete_country_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_delete_country_request(std::span<const std::byte> payload);
+    handle_delete_country_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle get_country_history_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_country_history_request(std::span<const std::byte> payload);
+    handle_get_country_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
-    database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
-    std::shared_ptr<comms::service::auth_session_service> sessions_;
-    service::currency_service currency_service_;
-    service::country_service country_service_;
 };
 
 }

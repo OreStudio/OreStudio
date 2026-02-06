@@ -20,11 +20,11 @@
 #ifndef ORES_VARIABILITY_MESSAGING_VARIABILITY_MESSAGE_HANDLER_HPP
 #define ORES_VARIABILITY_MESSAGING_VARIABILITY_MESSAGE_HANDLER_HPP
 
-#include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/messaging/tenant_aware_handler.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.variability/repository/feature_flags_repository.hpp"
 
 namespace ores::variability::messaging {
 
@@ -39,7 +39,7 @@ namespace ores::variability::messaging {
  * - save_feature_flag_request: Creates or updates a feature flag
  * - delete_feature_flag_request: Deletes a feature flag by name
  */
-class variability_message_handler final : public comms::messaging::message_handler {
+class variability_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
     inline static std::string_view logger_name =
         "ores.variability.messaging.variability_message_handler";
@@ -55,8 +55,10 @@ public:
      * @brief Construct a variability message handler.
      *
      * @param ctx Database context for repository access
+     * @param sessions Session service for authentication verification
      */
-    explicit variability_message_handler(database::context ctx);
+    variability_message_handler(database::context ctx,
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 
     /**
      * @brief Handle a variability subsystem message.
@@ -69,35 +71,36 @@ public:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_message(comms::messaging::message_type type,
         std::span<const std::byte> payload,
-        [[maybe_unused]] const std::string& remote_address) override;
+        const std::string& remote_address) override;
 
 private:
     /**
      * @brief Handle get_feature_flags_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_feature_flags_request(std::span<const std::byte> payload);
+    handle_get_feature_flags_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle save_feature_flag_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_save_feature_flag_request(std::span<const std::byte> payload);
+    handle_save_feature_flag_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle delete_feature_flag_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_delete_feature_flag_request(std::span<const std::byte> payload);
+    handle_delete_feature_flag_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle get_feature_flag_history_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_feature_flag_history_request(std::span<const std::byte> payload);
-
-    database::context ctx_;
-    repository::feature_flags_repository feature_flags_repo_;
+    handle_get_feature_flag_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 };
 
 }

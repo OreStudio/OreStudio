@@ -33,7 +33,8 @@ auth_session_service::get_session(const std::string& remote_address) const {
     if (it != sessions_.end() && it->second) {
         return session_info{
             .account_id = it->second->account_id,
-            .tenant_id = it->second->tenant_id
+            .tenant_id = it->second->tenant_id,
+            .username = it->second->username
         };
     }
     return std::nullopt;
@@ -60,6 +61,8 @@ void auth_session_service::store_session(const std::string& remote_address,
     auto session = std::make_shared<session_data>();
     session->id = utility::uuid::uuid_v7_generator{}();
     session->account_id = info.account_id;
+    session->tenant_id = info.tenant_id;
+    session->username = std::move(info.username);
     session->start_time = std::chrono::system_clock::now();
 
     store_session_data(remote_address, std::move(session));

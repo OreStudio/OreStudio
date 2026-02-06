@@ -88,17 +88,22 @@ void assign_admin_role(std::shared_ptr<service::authorization_service> auth,
  * @param sessions The session service to store the session in
  * @param auth_service The auth service to look up the admin role
  * @param endpoint The remote address to associate with the session
+ * @param tenant_id The tenant ID for the session
  * @return The account ID of the test admin user
  */
 boost::uuids::uuid setup_admin_session(
     std::shared_ptr<ores::comms::service::auth_session_service>& sessions,
     std::shared_ptr<service::authorization_service>& auth_service,
-    const std::string& endpoint) {
+    const std::string& endpoint,
+    const ores::utility::uuid::tenant_id& tenant_id) {
     // Create a test admin account ID
     auto account_id = boost::uuids::random_generator()();
 
     // Store session info for this endpoint
-    ores::comms::service::session_info info{.account_id = account_id};
+    ores::comms::service::session_info info{
+        .account_id = account_id,
+        .tenant_id = tenant_id
+    };
     sessions->store_session(endpoint, info);
 
     // Assign admin role to the account
@@ -124,7 +129,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -133,7 +138,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     const std::string admin_endpoint = internet::endpoint();
 
     // Set up authenticated admin session for account creation
-    setup_admin_session(sessions, auth_service, admin_endpoint);
+    setup_admin_session(sessions, auth_service, admin_endpoint, h.tenant_id());
 
     // Create an admin account (to be the requester)
     auto admin_account = generate_synthetic_account(h.tenant_id());
@@ -225,7 +230,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -236,7 +241,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     const std::string user_endpoint = internet::endpoint();
 
     // Set up authenticated admin session for account creation
-    setup_admin_session(sessions, auth_service, admin_endpoint);
+    setup_admin_session(sessions, auth_service, admin_endpoint, h.tenant_id());
 
     // Create two regular (non-admin) accounts
     const auto account1 = generate_synthetic_account(h.tenant_id());
@@ -306,7 +311,7 @@ TEST_CASE("handle_lock_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -315,7 +320,7 @@ TEST_CASE("handle_lock_account_request", tags) {
     const std::string admin_endpoint = internet::endpoint();
 
     // Set up authenticated admin session for account creation
-    setup_admin_session(sessions, auth_service, admin_endpoint);
+    setup_admin_session(sessions, auth_service, admin_endpoint, h.tenant_id());
 
     // Create an admin account (to be the requester)
     auto admin_account = generate_synthetic_account(h.tenant_id());
@@ -400,14 +405,14 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use admin endpoint to create the account
     const std::string admin_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, admin_endpoint);
+    setup_admin_session(sessions, auth_service, admin_endpoint, h.tenant_id());
 
     // Create an account to try to lock
     const auto account = generate_synthetic_account(h.tenant_id());
@@ -451,14 +456,14 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use admin endpoint to create the account
     const std::string admin_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, admin_endpoint);
+    setup_admin_session(sessions, auth_service, admin_endpoint, h.tenant_id());
 
     // Create an account to try to unlock
     const auto account = generate_synthetic_account(h.tenant_id());

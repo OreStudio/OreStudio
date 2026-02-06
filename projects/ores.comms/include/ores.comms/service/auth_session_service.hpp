@@ -27,6 +27,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/service/session_data.hpp"
@@ -41,7 +42,8 @@ namespace ores::comms::service {
  */
 struct session_info {
     boost::uuids::uuid account_id;
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    std::string username;
 };
 
 /**

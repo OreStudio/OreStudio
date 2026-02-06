@@ -23,6 +23,7 @@
 #include <chrono>
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/address.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::domain {
 
@@ -33,7 +34,7 @@ struct login_info final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Timestamp of the last successful login.

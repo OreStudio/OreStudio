@@ -242,22 +242,22 @@ void application::
 export_feature_flags(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting feature flags.";
 
-    variability::repository::feature_flags_repository repo(context_);
+    variability::repository::feature_flags_repository repo;
     std::vector<variability::domain::feature_flags> flags;
 
     if (!cfg.key.empty()) {
         // Export specific feature flag by name
         if (cfg.all_versions) {
-            flags = repo.read_all(cfg.key);
+            flags = repo.read_all(context_, cfg.key);
         } else {
-            flags = repo.read_latest(cfg.key);
+            flags = repo.read_latest(context_, cfg.key);
         }
     } else {
         // Export all feature flags
         if (cfg.all_versions) {
-            flags = repo.read_all();
+            flags = repo.read_all(context_);
         } else {
-            flags = repo.read_latest();
+            flags = repo.read_latest(context_);
         }
     }
 
@@ -588,8 +588,8 @@ delete_account(const config::delete_options& cfg) const {
 void application::
 delete_feature_flag(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting feature flag: " << cfg.key;
-    variability::repository::feature_flags_repository repo(context_);
-    repo.remove(cfg.key);
+    variability::repository::feature_flags_repository repo;
+    repo.remove(context_, cfg.key);
     output_stream_ << "Feature flag deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted feature flag: " << cfg.key;
 }
@@ -773,9 +773,9 @@ add_account(const config::add_account_options& cfg) const {
     using variability::repository::feature_flags_repository;
 
     // Check if password validation is disabled via feature flag
-    feature_flags_repository flag_repo(context_);
+    feature_flags_repository flag_repo;
     const auto disable_validation_flags =
-        flag_repo.read_latest("system.disable_password_validation");
+        flag_repo.read_latest(context_, "system.disable_password_validation");
     const bool enforce_policy = disable_validation_flags.empty() ||
                                 !disable_validation_flags[0].enabled;
 
@@ -853,8 +853,8 @@ add_feature_flag(const config::add_feature_flag_options& cfg) const {
     flag.recorded_by = cfg.modified_by;
 
     // Write to database
-    variability::repository::feature_flags_repository repo(context_);
-    repo.write(flag);
+    variability::repository::feature_flags_repository repo;
+    repo.write(context_, flag);
 
     output_stream_ << "Successfully added feature flag: " << flag.name << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added feature flag: " << flag.name;

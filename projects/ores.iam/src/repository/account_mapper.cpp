@@ -39,7 +39,7 @@ domain::account account_mapper::map(const account_entity& v) {
     r.change_commentary = v.change_commentary;
     r.performed_by = v.performed_by;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.account_type = v.account_type;
     r.username = v.username;
     r.password_hash = v.password_hash;
@@ -57,7 +57,7 @@ account_entity account_mapper::map(const domain::account& v) {
 
     account_entity r;
     r.id = boost::lexical_cast<std::string>(v.id);
-    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.account_type = v.account_type;
     r.username = v.username;

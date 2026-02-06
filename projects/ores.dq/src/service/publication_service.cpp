@@ -339,7 +339,7 @@ void publication_service::record_publication(
         "tenant_id, dataset_id, dataset_code, mode, target_table, "
         "records_inserted, records_updated, records_skipped, records_deleted, published_by"
         ") VALUES ('{}', '{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
-        ctx_.tenant_id(),
+        ctx_.tenant_id().to_string(),
         boost::uuids::to_string(result.dataset_id),
         result.dataset_code,
         to_string(mode),
@@ -377,8 +377,8 @@ domain::publication_result publication_service::call_populate_function(
         << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
-        "SELECT * FROM ores_{}('{}'::uuid, '{}'::text)",
-        function_name, dataset_id_str, mode_str);
+        "SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
+        function_name, dataset_id_str, ctx_.tenant_id().to_string(), mode_str);
 
     try {
         auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
@@ -437,8 +437,9 @@ messaging::publish_bundle_response publication_service::publish_bundle(
 
     // Call the SQL function
     const auto sql = std::format(
-        "SELECT * FROM ores_dq_bundles_publish_fn('{}', '{}', '{}', {})",
-        bundle_code, mode_str, published_by, atomic ? "true" : "false");
+        "SELECT * FROM ores_dq_bundles_publish_fn('{}', '{}'::uuid, '{}', '{}', {})",
+        bundle_code, ctx_.tenant_id().to_string(), mode_str, published_by,
+        atomic ? "true" : "false");
 
     try {
         auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),

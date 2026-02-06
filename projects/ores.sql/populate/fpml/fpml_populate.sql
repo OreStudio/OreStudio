@@ -38,6 +38,7 @@
 \echo '--- Publishing FPML Coding Schemes ---'
 select * from ores_dq_coding_schemes_publish_fn(
     (select id from ores_dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_iam_system_tenant_id_fn(),
     'upsert'
 );
 

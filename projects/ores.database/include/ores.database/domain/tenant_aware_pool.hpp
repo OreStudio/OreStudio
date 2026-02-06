@@ -23,6 +23,7 @@
 #include <string>
 #include <sqlgen/ConnectionPool.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database {
 
@@ -57,7 +58,7 @@ public:
      * @param tenant_id The tenant ID to set on each acquired connection
      */
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
-                      std::string tenant_id)
+                      utility::uuid::tenant_id tenant_id)
         : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)) {}
 
     /**
@@ -66,28 +67,20 @@ public:
      * This method acquires a connection from the underlying pool and
      * executes SET_CONFIG to set the tenant context before returning.
      *
-     * @return A session with tenant context set, or an error if tenant_id is not set
+     * @return A session with tenant context set, or an error on failure
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
-
-        if (tenant_id_.empty()) {
-            BOOST_LOG_SEV(lg(), error)
-                << "acquire() called without tenant context. "
-                << "Create a new context with tenant_id set at construction.";
-            return sqlgen::error(
-                "tenant_aware_pool requires tenant_id to be set at construction. "
-                "Create a new context with the desired tenant_id.");
-        }
 
         auto session_result = pool_.acquire();
         if (!session_result) {
             return session_result;
         }
 
+        const auto tenant_id_str = tenant_id_.to_string();
         const std::string sql =
             "SELECT set_config('app.current_tenant_id', '" +
-            tenant_id_ + "', false)";
+            tenant_id_str + "', false)";
 
         auto exec_result = (*session_result)->execute(sql);
         if (!exec_result) {
@@ -95,7 +88,7 @@ public:
                 std::string(exec_result.error().what()));
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_;
+        BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_str;
 
         return session_result;
     }
@@ -103,7 +96,7 @@ public:
     /**
      * @brief Gets the current tenant ID.
      */
-    const std::string& tenant_id() const { return tenant_id_; }
+    const utility::uuid::tenant_id& tenant_id() const { return tenant_id_; }
 
     /**
      * @brief Gets the underlying connection pool.
@@ -127,7 +120,7 @@ public:
 
 private:
     sqlgen::ConnectionPool<Connection> pool_;
-    std::string tenant_id_;
+    utility::uuid::tenant_id tenant_id_;
 };
 
 }

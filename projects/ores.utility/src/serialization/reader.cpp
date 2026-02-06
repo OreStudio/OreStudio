@@ -159,4 +159,17 @@ reader::read_bool(std::span<const std::byte>& data) {
     return value;
 }
 
+std::expected<uuid::tenant_id, error_code>
+reader::read_tenant_id(std::span<const std::byte>& data) {
+    auto uuid_result = read_uuid(data);
+    if (!uuid_result) {
+        return std::unexpected(uuid_result.error());
+    }
+    auto tenant_result = uuid::tenant_id::from_uuid(*uuid_result);
+    if (!tenant_result) {
+        return std::unexpected(error_code::invalid_request);
+    }
+    return *tenant_result;
+}
+
 }

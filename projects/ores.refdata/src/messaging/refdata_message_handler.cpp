@@ -18,60 +18,59 @@
  *
  */
 #include "ores.utility/rfl/reflectors.hpp" // Must be before rfl/json.hpp
-#include "ores.refdata/messaging/risk_message_handler.hpp"
+#include "ores.refdata/messaging/refdata_message_handler.hpp"
 
 #include <sstream>
 #include <rfl/json.hpp>
 #include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata/service/currency_service.hpp"
+#include "ores.refdata/service/country_service.hpp"
 
 namespace ores::refdata::messaging {
 
 using namespace ores::logging;
 
-risk_message_handler::risk_message_handler(database::context ctx,
+refdata_message_handler::refdata_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions)
-    : ctx_(std::move(ctx))
-    , system_flags_(std::move(system_flags))
-    , sessions_(std::move(sessions))
-    , currency_service_(ctx_)
-    , country_service_(ctx_) {}
+    : tenant_aware_handler(std::move(ctx), std::move(sessions))
+    , system_flags_(std::move(system_flags)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::handle_message(comms::messaging::message_type type,
+refdata_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Handling risk message type " << type;
+    BOOST_LOG_SEV(lg(), debug) << "Handling refdata message type " << type;
 
-    // Block all risk operations when in bootstrap mode
+    // Block all refdata operations when in bootstrap mode
     if (system_flags_->is_bootstrap_mode_enabled()) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Blocked risk operation " << type << " - system in bootstrap mode";
+            << "Blocked refdata operation " << type << " - system in bootstrap mode";
         co_return std::unexpected(ores::utility::serialization::error_code::bootstrap_mode_only);
     }
 
     switch (type) {
     // Currency handlers
     case comms::messaging::message_type::get_currencies_request:
-        co_return co_await handle_get_currencies_request(payload);
+        co_return co_await handle_get_currencies_request(payload, remote_address);
     case comms::messaging::message_type::save_currency_request:
         co_return co_await handle_save_currency_request(payload, remote_address);
     case comms::messaging::message_type::delete_currency_request:
-        co_return co_await handle_delete_currency_request(payload);
+        co_return co_await handle_delete_currency_request(payload, remote_address);
     case comms::messaging::message_type::get_currency_history_request:
-        co_return co_await handle_get_currency_history_request(payload);
+        co_return co_await handle_get_currency_history_request(payload, remote_address);
     // Country handlers
     case comms::messaging::message_type::get_countries_request:
-        co_return co_await handle_get_countries_request(payload);
+        co_return co_await handle_get_countries_request(payload, remote_address);
     case comms::messaging::message_type::save_country_request:
         co_return co_await handle_save_country_request(payload, remote_address);
     case comms::messaging::message_type::delete_country_request:
-        co_return co_await handle_delete_country_request(payload);
+        co_return co_await handle_delete_country_request(payload, remote_address);
     case comms::messaging::message_type::get_country_history_request:
-        co_return co_await handle_get_country_history_request(payload);
+        co_return co_await handle_get_country_history_request(payload, remote_address);
     default:
-        BOOST_LOG_SEV(lg(), error) << "Unknown risk message type " << std::hex
+        BOOST_LOG_SEV(lg(), error) << "Unknown refdata message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
@@ -79,19 +78,22 @@ risk_message_handler::handle_message(comms::messaging::message_type type,
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
+refdata_message_handler::
 handle_save_currency_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_currency_request.";
 
-    // Get authenticated session
-    auto session = sessions_->get_session_data(remote_address);
-    if (!session) {
-        BOOST_LOG_SEV(lg(), warn) << "Save currency denied: no active session for "
-                                  << remote_address;
-        co_return std::unexpected(
-            ores::utility::serialization::error_code::authentication_failed);
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Save currency");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
     }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::currency_service currency_service(ctx);
 
     // Deserialize request
     auto request_result = save_currency_request::deserialize(payload);
@@ -104,16 +106,16 @@ handle_save_currency_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving currency: " << request.currency.iso_code;
 
     // Override recorded_by with authenticated username
-    request.currency.recorded_by = session->username;
+    request.currency.recorded_by = auth->username;
 
     save_currency_response response;
     try {
-        currency_service_.save_currency(request.currency);
+        currency_service.save_currency(request.currency);
         response.success = true;
         response.message = "Currency saved successfully";
         BOOST_LOG_SEV(lg(), info) << "Successfully saved currency: "
                                   << request.currency.iso_code
-                                  << " by " << session->username;
+                                  << " by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
         response.message = std::string("Failed to save currency: ") + e.what();
@@ -126,9 +128,22 @@ handle_save_currency_request(std::span<const std::byte> payload,
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
-handle_get_currencies_request(std::span<const std::byte> payload) {
+refdata_message_handler::
+handle_get_currencies_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currencies_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Get currencies");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::currency_service currency_service(ctx);
 
     // Deserialize request
     auto request_result = get_currencies_request::deserialize(payload);
@@ -150,8 +165,8 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Fetching currencies with offset: "
                                << request.offset << ", limit: " << request.limit;
 
-    auto currencies = currency_service_.list_currencies(request.offset, request.limit);
-    auto total_count = currency_service_.count_currencies();
+    auto currencies = currency_service.list_currencies(request.offset, request.limit);
+    auto total_count = currency_service.count_currencies();
 
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
                               << " currencies (total available: " << total_count << ")";
@@ -173,9 +188,22 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
-handle_delete_currency_request(std::span<const std::byte> payload) {
+refdata_message_handler::
+handle_delete_currency_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_currency_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Delete currency");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::currency_service currency_service(ctx);
 
     // Deserialize request
     auto request_result = delete_currency_request::deserialize(payload);
@@ -196,7 +224,7 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
         result.iso_code = iso_code;
 
         try {
-            currency_service_.delete_currency(iso_code);
+            currency_service.delete_currency(iso_code);
             result.success = true;
             result.message = "Currency deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
@@ -218,9 +246,22 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
-handle_get_currency_history_request(std::span<const std::byte> payload) {
+refdata_message_handler::
+handle_get_currency_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_history_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Get currency history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::currency_service currency_service(ctx);
 
     // Deserialize request
     auto request_result = get_currency_history_request::deserialize(payload);
@@ -234,7 +275,7 @@ handle_get_currency_history_request(std::span<const std::byte> payload) {
 
     get_currency_history_response response;
     try {
-        auto history_opt = currency_service_.get_currency_version_history(request.iso_code);
+        auto history_opt = currency_service.get_currency_version_history(request.iso_code);
 
         if (!history_opt) {
             response.success = false;
@@ -263,9 +304,22 @@ handle_get_currency_history_request(std::span<const std::byte> payload) {
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
-handle_get_countries_request(std::span<const std::byte> payload) {
+refdata_message_handler::
+handle_get_countries_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_countries_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Get countries");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::country_service country_service(ctx);
 
     // Deserialize request
     auto request_result = get_countries_request::deserialize(payload);
@@ -287,8 +341,8 @@ handle_get_countries_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Fetching countries with offset: "
                                << request.offset << ", limit: " << request.limit;
 
-    auto countries = country_service_.list_countries(request.offset, request.limit);
-    auto total_count = country_service_.count_countries();
+    auto countries = country_service.list_countries(request.offset, request.limit);
+    auto total_count = country_service.count_countries();
 
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << countries.size()
                               << " countries (total available: " << total_count << ")";
@@ -303,19 +357,22 @@ handle_get_countries_request(std::span<const std::byte> payload) {
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
+refdata_message_handler::
 handle_save_country_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_country_request.";
 
-    // Get authenticated session
-    auto session = sessions_->get_session_data(remote_address);
-    if (!session) {
-        BOOST_LOG_SEV(lg(), warn) << "Save country denied: no active session for "
-                                  << remote_address;
-        co_return std::unexpected(
-            ores::utility::serialization::error_code::authentication_failed);
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Save country");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
     }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::country_service country_service(ctx);
 
     // Deserialize request
     auto request_result = save_country_request::deserialize(payload);
@@ -328,16 +385,16 @@ handle_save_country_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving country: " << request.country.alpha2_code;
 
     // Override recorded_by with authenticated username
-    request.country.recorded_by = session->username;
+    request.country.recorded_by = auth->username;
 
     save_country_response response;
     try {
-        country_service_.save_country(request.country);
+        country_service.save_country(request.country);
         response.success = true;
         response.message = "Country saved successfully";
         BOOST_LOG_SEV(lg(), info) << "Successfully saved country: "
                                   << request.country.alpha2_code
-                                  << " by " << session->username;
+                                  << " by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
         response.message = std::string("Failed to save country: ") + e.what();
@@ -350,9 +407,22 @@ handle_save_country_request(std::span<const std::byte> payload,
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
-handle_delete_country_request(std::span<const std::byte> payload) {
+refdata_message_handler::
+handle_delete_country_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_country_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Delete country");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::country_service country_service(ctx);
 
     // Deserialize request
     auto request_result = delete_country_request::deserialize(payload);
@@ -373,7 +443,7 @@ handle_delete_country_request(std::span<const std::byte> payload) {
         result.alpha2_code = alpha2_code;
 
         try {
-            country_service_.delete_country(alpha2_code);
+            country_service.delete_country(alpha2_code);
             result.success = true;
             result.message = "Country deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: " << alpha2_code;
@@ -395,9 +465,22 @@ handle_delete_country_request(std::span<const std::byte> payload) {
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
-risk_message_handler::
-handle_get_country_history_request(std::span<const std::byte> payload) {
+refdata_message_handler::
+handle_get_country_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_country_history_request.";
+
+    // Require authentication
+    auto auth = require_authentication(remote_address, "Get country history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth);
+
+    // Create per-request service
+    service::country_service country_service(ctx);
 
     // Deserialize request
     auto request_result = get_country_history_request::deserialize(payload);
@@ -411,7 +494,7 @@ handle_get_country_history_request(std::span<const std::byte> payload) {
 
     get_country_history_response response;
     try {
-        auto history = country_service_.get_country_history(request.alpha2_code);
+        auto history = country_service.get_country_history(request.alpha2_code);
 
         if (history.empty()) {
             response.success = false;
@@ -437,4 +520,3 @@ handle_get_country_history_request(std::span<const std::byte> payload) {
 }
 
 }
-

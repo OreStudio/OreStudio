@@ -21,8 +21,8 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_GENERATOR_HPP
 
 #include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.iam/domain/account.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::generators {
 
@@ -31,7 +31,7 @@ namespace ores::iam::generators {
  *
  * @param tenant_id The tenant to associate with the account.
  */
-domain::account generate_synthetic_account(const boost::uuids::uuid& tenant_id);
+domain::account generate_synthetic_account(const utility::uuid::tenant_id& tenant_id);
 
 /**
  * @brief Generates N synthetic accounts.
@@ -41,7 +41,7 @@ domain::account generate_synthetic_account(const boost::uuids::uuid& tenant_id);
  * @note c++ 23 generators are not supported on all compilers.
  */
 std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, const boost::uuids::uuid& tenant_id);
+generate_synthetic_accounts(std::size_t n, const utility::uuid::tenant_id& tenant_id);
 
 }
 

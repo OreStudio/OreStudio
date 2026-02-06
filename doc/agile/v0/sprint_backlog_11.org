@@ -9,7 +9,7 @@
 
 * Sprint Mission
 
-- Multi-tenant and four-eyes support.
+- Add multi-tenant support.
 
 * Stories
 
@@ -17,42 +17,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-05 Thu 15:39], for Thursday, February 05, 2026.
-|      | <75>                                          |        |      |      |       |
-| Tags | Headline                                      | Time   |      |      |     % |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *4:28* |      |      | 100.0 |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 4:28   |      |      | 100.0 |
-|      | Active                                        |        | 4:28 |      | 100.0 |
-| code | Test shell functionality with tenancy enabled |        |      | 4:08 |  92.5 |
-| code | Fix apt-get failures on nightly build         |        |      | 0:20 |   7.5 |
+#+CAPTION: Clock summary at [2026-02-06 Fri 03:38], for Friday, February 06, 2026.
+|      | <75>                                                     |        |      |      |       |
+| Tags | Headline                                                 | Time   |      |      |     % |
+|------+----------------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                             | *3:35* |      |      | 100.0 |
+|------+----------------------------------------------------------+--------+------+------+-------|
+|      | Stories                                                  | 3:35   |      |      | 100.0 |
+|      | Active                                                   |        | 3:35 |      | 100.0 |
+| code | Refactor message handlers for per-request tenant context |        |      | 1:48 |  50.2 |
+| code | Check that data librarian can publish across tenants     |        |      | 1:47 |  49.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-05 Thu 15:39]
-|       | <75>                                          |         |       |       |       |
-| Tags  | Headline                                      | Time    |       |       |     % |
-|-------+-----------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                  | *57:20* |       |       | 100.0 |
-|-------+-----------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                       | 57:20   |       |       | 100.0 |
-|       | Active                                        |         | 57:20 |       | 100.0 |
-| agile | Sprint and product backlog refinement         |         |       |  2:24 |   4.2 |
-| code  | Address past review comments                  |         |       |  1:14 |   2.2 |
-| code  | Split "god" admin account                     |         |       | 10:05 |  17.6 |
-| code  | Move all database entities to public schema   |         |       |  1:22 |   2.4 |
-| code  | Check directory structure in SQL              |         |       |  0:36 |   1.0 |
-| code  | Add tenancy support                           |         |       |  3:55 |   6.8 |
-| code  | Use tenancy to isolate tests                  |         |       |  5:00 |   8.7 |
-| code  | Add NOTICE logging support to sqlgen          |         |       |  0:53 |   1.5 |
-| code  | Update codegen for tenancy                    |         |       |  3:32 |   6.2 |
-| code  | Add entity types for tenants                  |         |       |  9:43 |  16.9 |
-| code  | Add sink to log to database directly          |         |       |  5:00 |   8.7 |
-| code  | Add system accounts for services              |         |       |  3:32 |   6.2 |
-| code  | Test shell functionality with tenancy enabled |         |       |  9:44 |  17.0 |
-| code  | Fix apt-get failures on nightly build         |         |       |  0:20 |   0.6 |
+#+CAPTION: Clock summary at [2026-02-06 Fri 03:38]
+|       | <75>                                                     |         |       |       |       |
+| Tags  | Headline                                                 | Time    |       |       |     % |
+|-------+----------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                             | *65:01* |       |       | 100.0 |
+|-------+----------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                                  | 65:01   |       |       | 100.0 |
+|       | Active                                                   |         | 65:01 |       | 100.0 |
+| agile | Sprint and product backlog refinement                    |         |       |  2:24 |   3.7 |
+| code  | Address past review comments                             |         |       |  1:14 |   1.9 |
+| code  | Split "god" admin account                                |         |       | 10:05 |  15.5 |
+| code  | Move all database entities to public schema              |         |       |  1:22 |   2.1 |
+| code  | Check directory structure in SQL                         |         |       |  0:36 |   0.9 |
+| code  | Add tenancy support                                      |         |       |  3:55 |   6.0 |
+| code  | Use tenancy to isolate tests                             |         |       |  5:00 |   7.7 |
+| code  | Add NOTICE logging support to sqlgen                     |         |       |  0:53 |   1.4 |
+| code  | Update codegen for tenancy                               |         |       |  3:32 |   5.4 |
+| code  | Add entity types for tenants                             |         |       |  9:43 |  14.9 |
+| code  | Add sink to log to database directly                     |         |       |  5:00 |   7.7 |
+| code  | Add system accounts for services                         |         |       |  3:32 |   5.4 |
+| code  | Test shell functionality with tenancy enabled            |         |       |  9:44 |  15.0 |
+| code  | Fix apt-get failures on nightly build                    |         |       |  0:20 |   0.5 |
+| code  | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.5 |
+| code  | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.6 |
+| code  | Check that data librarian can publish across tenants     |         |       |  1:47 |   2.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -935,7 +938,7 @@ Highlights:
   operations without a defined tenant context.
 #+end_quote
 
-*** STARTED Test shell functionality with tenancy enabled              :code:
+*** COMPLETED Test shell functionality with tenancy enabled            :code:
     :LOGBOOK:
     CLOCK: [2026-02-05 Thu 13:43]--[2026-02-05 Thu 15:39] =>  1:56
     CLOCK: [2026-02-05 Thu 11:10]--[2026-02-05 Thu 12:20] =>  1:10
@@ -1023,7 +1026,36 @@ Highlights:
   new --with-valgrind flag, streamlining the Valgrind installation process.
 #+end_quote
 
-*** Refactor message handlers for per-request tenant context          :code:
+*** COMPLETED Refactor tenant lookup functions to accept const context :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-05 Thu 21:02]--[2026-02-05 Thu 22:00] =>  0:58
+    :END:
+
+The tenant lookup functions (=resolve_tenant_id=, =lookup_by_code=,
+=lookup_by_hostname=) currently take =context&= (non-const reference) even
+though they only perform read operations. This forces callers to create
+unnecessary mutable copies when they have a const context.
+
+Current workaround in =tenant_context.cpp=:
+#+begin_src cpp
+// Creates unnecessary copy just to satisfy non-const parameter
+auto lookup_ctx = ctx.with_tenant(ctx.tenant_id());
+const auto resolved = resolve_tenant_id(lookup_ctx, tenant);
+#+end_src
+
+Refactoring these to accept =const context&= would:
+
+- Eliminate unnecessary context copies
+- Better express the read-only nature of lookups
+- Allow callers to use const contexts directly
+
+*** COMPLETED Refactor message handlers for per-request tenant context :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 00:43]--[2026-02-06 Fri 01:49] =>  1:06
+    CLOCK: [2026-02-05 Thu 23:49]--[2026-02-06 Fri 00:42] =>  0:53
+    CLOCK: [2026-02-05 Thu 22:01]--[2026-02-05 Thu 23:48] =>  1:47
+    CLOCK: [2026-02-05 Thu 17:00]--[2026-02-05 Thu 18:10] =>  1:10
+    :END:
 
 Message handlers currently use a fixed database context that is set at
 construction time (typically with system tenant). When users from different
@@ -1035,6 +1067,41 @@ to create per-request database contexts. This is a security issue that can lead
 to cross-tenant data leakage.
 
 See design document: =doc/design/multi_tenant_message_handling.org=
+
+#+begin_quote
+This pull request significantly enhances the multi-tenancy architecture by
+introducing a type-safe tenant_id wrapper and refactoring message handlers to
+use per-request database contexts. This ensures robust tenant isolation and
+prevents data leakage by explicitly associating each request with its correct
+tenant. The system tenant identifier has also been updated to a more
+semantically appropriate value to avoid conflicts with uninitialized UUIDs.
+
+Highlights:
+
+- Per-Request Tenant Context: Message handlers now create database contexts
+  per-request using the session's tenant_id, ensuring each request executes in
+  the correct tenant's RLS context. This fixes potential cross-tenant data
+  leakage. A new base class, tenant_aware_handler, has been introduced to
+  encapsulate this logic.
+- Type-Safe tenant_id Wrapper: A new strong type, utility::uuid::tenant_id, has
+  been introduced to wrap boost::uuids::uuid. It includes factory methods
+  (system(), from_uuid(), from_string()) that prevent construction with nil
+  UUIDs, query methods (is_system(), is_nil()) for tenant identification, and
+  conversion methods (to_uuid(), to_string()) for interoperability. This
+  enhances type safety and prevents accidental nil UUID usage.
+- System Tenant Change: The system tenant identifier has been changed from the
+  nil UUID (00000000-...) to the max UUID (ffffffff-...) as defined by RFC 9562.
+  This change prevents accidental confusion with uninitialized
+  boost::uuids::uuid values, which default-construct to nil.
+- Serialization Helpers: Serialization helpers have been added for the new
+  tenant_id type in both the binary protocol and JSON (using reflect-cpp),
+  ensuring seamless data transfer and persistence.
+- Refactored Message Handlers and Repositories: Numerous message handlers and
+  repository methods across ores.assets, ores.dq, ores.iam, ores.refdata,
+  ores.telemetry, and ores.variability have been updated to leverage the new
+  tenant_aware_handler base class and accept context objects directly, promoting
+  per-request context creation and improving tenant isolation.
+#+end_quote
 
 **** Acceptance Criteria
 
@@ -1080,28 +1147,43 @@ class handler {
 };
 #+end_src
 
-*** Consider using UUID in the database layer
+*** STARTED Check that data librarian can publish across tenants       :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 01:50]--[2026-02-06 Fri 03:37] =>  1:47
+    :END:
+
+Ensure publication still works as expected.
+
+Errors:
+
+#+begin_quote
+=== Publication Results ===
+
+[FAILED] slovaris.country_flags
+  Target: assets_images_tbl
+Error: Query execution failed: ERROR: duplicate key value violates unique constraint "ores_assets_images_version_uniq_idx" DETAIL: Key (image_id, version)=(14e65ed1-2e75-4f27-8e05-ba13a65a279f, 1) already exists. CONTEXT: SQL statement "insert into ores_assets_images_tbl ( tenant_id, image_id, version, key, description, svg_data, modified_by, performed_by, change_reason_code, change_commentary ) values ( p_target_tenant_id, coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data, current_user, current_user, 'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name ) returning version" PL/pgSQL function ores_dq_images_publish_fn(uuid,uuid,text) line 63 at SQL statement
+
+[SUCCESS] slovaris.currencies
+  Target: refdata_currencies_tbl
+  Records: 100 inserted, 0 updated, 0 skipped, 0 deleted
+
+[FAILED] slovaris.countries
+  Target: refdata_countries_tbl
+Error: Query execution failed: ERROR: duplicate key value violates unique constraint "ores_refdata_countries_version_uniq_idx" DETAIL: Key (alpha2_code, version)=(AL, 1) already exists. CONTEXT: SQL statement "insert into ores_refdata_countries_tbl ( tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, coding_scheme_code, image_id, modified_by, performed_by, change_reason_code, change_commentary ) values ( p_target_tenant_id, r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_coding_scheme_code, v_resolved_image_id, current_user, current_user, 'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name ) returning version" PL/pgSQL function ores_dq_countries_publish_fn(uuid,uuid,text) line 82 at SQL statement
+
+[SUCCESS] geo.ip2country
+  Target: geo_ip2country_tbl
+  Records: 512186 inserted, 0 updated, 0 skipped, 0 deleted
+
+=== Summary ===
+Datasets processed: 4
+Succeeded: 2, Failed: 2
+Total records: 512286 inserted, 0 updated, 0 skipped, 0 deleted
+#+end_quote
+
+*** Consider using UUID in the database layer                          :code:
 
 At present we are using std::string and then mapping to boost UUID.
-
-*** Refactor tenant lookup functions to accept const context           :code:
-
-The tenant lookup functions (=resolve_tenant_id=, =lookup_by_code=,
-=lookup_by_hostname=) currently take =context&= (non-const reference) even
-though they only perform read operations. This forces callers to create
-unnecessary mutable copies when they have a const context.
-
-Current workaround in =tenant_context.cpp=:
-#+begin_src cpp
-// Creates unnecessary copy just to satisfy non-const parameter
-auto lookup_ctx = ctx.with_tenant(ctx.tenant_id());
-const auto resolved = resolve_tenant_id(lookup_ctx, tenant);
-#+end_src
-
-Refactoring these to accept =const context&= would:
-- Eliminate unnecessary context copies
-- Better express the read-only nature of lookups
-- Allow callers to use const contexts directly
 
 *** Generate protocol docs via codegen                                 :code:
 
@@ -1158,7 +1240,7 @@ Tasks:
 - Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
 - Add spans for database operations in ores.database.
 
-*** Create span collection and export infrastructure                    :code:
+*** Create span collection and export infrastructure                   :code:
 
 The telemetry component has span types defined but no infrastructure to collect
 and export completed spans.

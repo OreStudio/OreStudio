@@ -21,11 +21,12 @@
 /**
  * System Tenant Population Script
  *
- * Creates the system (platform) tenant - tenant 0.
+ * Creates the system (platform) tenant.
  * This tenant owns all shared governance data (DQ catalogs, datasets, etc.)
  * and is used for platform administration.
  *
- * The system tenant uses a well-known UUID (all zeros) for easy identification.
+ * The system tenant uses the max UUID (RFC 9562 sentinel value) to prevent
+ * confusion with uninitialized UUIDs (nil UUID is default-constructed value).
  * This script is idempotent.
  */
 
@@ -55,7 +56,7 @@ begin
             change_reason_code,
             change_commentary
         ) values (
-            '00000000-0000-0000-0000-000000000000'::uuid,
+            'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid,
             0,
             'platform',
             'system',

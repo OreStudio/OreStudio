@@ -28,7 +28,7 @@
 
 namespace ores::iam::generators {
 
-domain::account generate_synthetic_account(const boost::uuids::uuid& tenant_id) {
+domain::account generate_synthetic_account(const utility::uuid::tenant_id& tenant_id) {
     domain::account r;
     r.version = 1;
     r.tenant_id = tenant_id;
@@ -55,7 +55,7 @@ domain::account generate_synthetic_account(const boost::uuids::uuid& tenant_id) 
 }
 
 std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, const boost::uuids::uuid& tenant_id) {
+generate_synthetic_accounts(std::size_t n, const utility::uuid::tenant_id& tenant_id) {
     std::vector<domain::account> r;
     r.reserve(n);
     while (r.size() < n)

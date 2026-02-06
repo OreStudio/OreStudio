@@ -23,11 +23,13 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 #include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
@@ -40,6 +42,23 @@ namespace {
 
 const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[messaging][handler]");
+
+const std::string test_remote_address = "127.0.0.1:12345";
+const std::string test_username = "test_user";
+
+std::shared_ptr<ores::comms::service::auth_session_service>
+make_sessions(const ores::utility::uuid::tenant_id& tenant_id) {
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    // Create a test session with a known username
+    auto session = std::make_shared<ores::comms::service::session_data>();
+    session->id = boost::uuids::random_generator()();
+    session->account_id = boost::uuids::random_generator()();
+    session->tenant_id = tenant_id;
+    session->username = test_username;
+    session->start_time = std::chrono::system_clock::now();
+    sessions->store_session_data(test_remote_address, session);
+    return sessions;
+}
 
 ores::variability::domain::feature_flags generate_feature_flag(const std::string& tenant_id) {
     ores::variability::domain::feature_flags flag;
@@ -77,7 +96,7 @@ TEST_CASE("handle_get_feature_flags_request_no_flags_added", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    variability_message_handler sut(h.context());
+    variability_message_handler sut(h.context(), make_sessions(h.tenant_id()));
 
     // Verify handler works correctly without adding any flags in this test
     get_feature_flags_request rq;
@@ -89,7 +108,7 @@ TEST_CASE("handle_get_feature_flags_request_no_flags_added", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::get_feature_flags_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -109,18 +128,18 @@ TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
     scoped_database_helper h;
 
     // Get initial count of pre-seeded flags from template
-    feature_flags_repository repo(h.context());
-    const auto initial_flags = repo.read_latest();
+    feature_flags_repository repo;
+    const auto initial_flags = repo.read_latest(h.context());
     const auto initial_count = initial_flags.size();
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     // Add more flags to the database
     const int additional_count = 5;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " additional feature flags";
-    repo.write(flags);
+    repo.write(h.context(), flags);
 
-    variability_message_handler sut(h.context());
+    variability_message_handler sut(h.context(), make_sessions(h.tenant_id()));
 
     get_feature_flags_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
@@ -131,7 +150,7 @@ TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::get_feature_flags_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -150,17 +169,17 @@ TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
     scoped_database_helper h;
 
     // Get initial count of pre-seeded flags and add more
-    feature_flags_repository repo(h.context());
-    const auto initial_flags = repo.read_latest();
+    feature_flags_repository repo;
+    const auto initial_flags = repo.read_latest(h.context());
     const auto initial_count = initial_flags.size();
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     const int additional_count = 3;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
-    repo.write(flags);
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
+    repo.write(h.context(), flags);
     const auto expected_count = initial_count + additional_count;
 
-    variability_message_handler sut(h.context());
+    variability_message_handler sut(h.context(), make_sessions(h.tenant_id()));
 
     boost::asio::io_context io_ctx;
 
@@ -172,7 +191,7 @@ TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
                 message_type::get_feature_flags_request,
-                payload, "127.0.0.1:12345");
+                payload, test_remote_address);
 
             REQUIRE(r.has_value());
             const auto response_result =
@@ -191,7 +210,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    variability_message_handler sut(h.context());
+    variability_message_handler sut(h.context(), make_sessions(h.tenant_id()));
 
     std::vector<std::byte> empty_payload;
     boost::asio::io_context io_ctx;
@@ -199,7 +218,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
         // Use an invalid message type within the variability range
         auto r = co_await sut.handle_message(
             static_cast<message_type>(0x3FFF),
-            empty_payload, "127.0.0.1:12345");
+            empty_payload, test_remote_address);
 
         CHECK(!r.has_value());
         CHECK(r.error() == error_code::invalid_message_type);
@@ -212,9 +231,9 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     scoped_database_helper h;
 
     // Create flags with specific known values
-    feature_flags_repository repo(h.context());
+    feature_flags_repository repo;
 
-    const auto tenant_id = boost::uuids::to_string(h.tenant_id());
+    const auto tenant_id = h.tenant_id().to_string();
 
     ores::variability::domain::feature_flags flag1;
     flag1.tenant_id = tenant_id;
@@ -234,9 +253,9 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     flag2.change_reason_code = "system.test";
     flag2.change_commentary = "Test data";
 
-    repo.write({flag1, flag2});
+    repo.write(h.context(), {flag1, flag2});
 
-    variability_message_handler sut(h.context());
+    variability_message_handler sut(h.context(), make_sessions(h.tenant_id()));
 
     get_feature_flags_request rq;
     const auto payload = rq.serialize();
@@ -245,7 +264,7 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::get_feature_flags_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -283,18 +302,18 @@ TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
     scoped_database_helper h;
 
     // Get initial count of pre-seeded flags
-    feature_flags_repository repo(h.context());
-    const auto initial_flags = repo.read_latest();
+    feature_flags_repository repo;
+    const auto initial_flags = repo.read_latest(h.context());
     const auto initial_count = initial_flags.size();
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     // Create a larger number of flags
     const int additional_count = 20;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " feature flags";
-    repo.write(flags);
+    repo.write(h.context(), flags);
 
-    variability_message_handler sut(h.context());
+    variability_message_handler sut(h.context(), make_sessions(h.tenant_id()));
 
     get_feature_flags_request rq;
     const auto payload = rq.serialize();
@@ -303,7 +322,7 @@ TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::get_feature_flags_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -323,17 +342,36 @@ TEST_CASE("handle_get_feature_flags_request_from_different_endpoints", tags) {
     scoped_database_helper h;
 
     // Get initial count and add flags
-    feature_flags_repository repo(h.context());
-    const auto initial_flags = repo.read_latest();
+    feature_flags_repository repo;
+    const auto initial_flags = repo.read_latest(h.context());
     const auto initial_count = initial_flags.size();
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     const int additional_count = 3;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
-    repo.write(flags);
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
+    repo.write(h.context(), flags);
     const auto expected_count = initial_count + additional_count;
 
-    variability_message_handler sut(h.context());
+    // Create sessions for multiple endpoints
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    const std::vector<std::string> endpoints = {
+        "127.0.0.1:12345",
+        "192.168.1.100:54321",
+        "10.0.0.1:8080"
+    };
+
+    // Store sessions for all endpoints
+    for (const auto& endpoint : endpoints) {
+        auto session = std::make_shared<ores::comms::service::session_data>();
+        session->id = boost::uuids::random_generator()();
+        session->account_id = boost::uuids::random_generator()();
+        session->tenant_id = h.tenant_id();
+        session->username = test_username;
+        session->start_time = std::chrono::system_clock::now();
+        sessions->store_session_data(endpoint, session);
+    }
+
+    variability_message_handler sut(h.context(), sessions);
 
     get_feature_flags_request rq;
     const auto payload = rq.serialize();
@@ -341,12 +379,6 @@ TEST_CASE("handle_get_feature_flags_request_from_different_endpoints", tags) {
     boost::asio::io_context io_ctx;
 
     // Test from different remote addresses
-    const std::vector<std::string> endpoints = {
-        "127.0.0.1:12345",
-        "192.168.1.100:54321",
-        "10.0.0.1:8080"
-    };
-
     for (const auto& endpoint : endpoints) {
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(

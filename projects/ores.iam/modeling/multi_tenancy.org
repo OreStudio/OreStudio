@@ -1,0 +1,531 @@
+:PROPERTIES:
+:ID: 0FF2B4E7-473D-A754-A893-C4C70E636C76
+:END:
+#+title: Multi-Tenancy Architecture
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+ORE Studio implements a multi-tenant architecture where each tenant's data is
+isolated at the database level using PostgreSQL Row-Level Security (RLS). This
+document describes how tenant context flows through the system from user
+authentication to database queries.
+
+* Core Concepts
+
+** Tenant Identification
+
+Each tenant is identified by a UUID. The =tenant_id= wrapper type provides
+type-safe handling of tenant identifiers:
+
+#+begin_src cpp
+namespace ores::utility::uuid {
+
+class tenant_id {
+public:
+    static tenant_id system();  // Returns system tenant (max UUID)
+    static std::optional<tenant_id> from_string(const std::string& s);
+    static tenant_id generate();
+
+    const boost::uuids::uuid& value() const;
+    std::string to_string() const;
+
+    bool operator==(const tenant_id& other) const;
+    auto operator<=>(const tenant_id& other) const;
+
+private:
+    explicit tenant_id(boost::uuids::uuid id);
+    boost::uuids::uuid id_;
+};
+
+}
+#+end_src
+
+** Tenants Table Structure
+
+The =ores_iam_tenants_tbl= table stores tenant definitions. It has two UUID columns
+that serve different purposes:
+
+| Column      | Purpose                                                    |
+|-------------+------------------------------------------------------------|
+| =id=        | The tenant's unique identifier (used by accounts, etc.)    |
+| =tenant_id= | Always system tenant (FFF...) - the record's owner         |
+
+This design follows a key principle: *the tenants table itself is managed by the
+system tenant*. All tenant records have =tenant_id = system= because the system
+owns and manages the tenant registry.
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ores_iam_tenants_tbl                           │
+├──────────────────────────────┬──────────────────────────────────────┤
+│ id (the tenant's own ID)     │ tenant_id (always system tenant)     │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ 197fae34-...-cfa4            │ ffffffff-ffff-ffff-ffff-ffffffffffff │
+│ (Example Corp)               │ (system owns this record)            │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ b7b302e6-...-c9a9            │ ffffffff-ffff-ffff-ffff-ffffffffffff │
+│ (ACME Corp)                  │ (system owns this record)            │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ ffffffff-ffff-ffff-ffff-fff  │ ffffffff-ffff-ffff-ffff-ffffffffffff │
+│ (System tenant itself)       │ (system owns this record)            │
+└──────────────────────────────┴──────────────────────────────────────┘
+#+end_example
+
+When an account belongs to "Example Corp", its =tenant_id= column references the
+tenant's =id= (not the =tenant_id= column):
+
+#+begin_src sql
+-- Accounts reference tenants.id, not tenants.tenant_id
+SELECT a.username, t.name as tenant_name
+FROM ores_iam_accounts_tbl a
+JOIN ores_iam_tenants_tbl t ON a.tenant_id = t.id  -- Note: t.id, not t.tenant_id
+WHERE a.valid_to = ores_utility_infinity_timestamp_fn()
+  AND t.valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+This pattern applies to all tenant-scoped tables: they reference =tenants.id= to
+identify which tenant owns the record.
+
+** System Tenant
+
+The system tenant is defined as the maximum UUID value:
+
+: ffffffff-ffff-ffff-ffff-ffffffffffff
+
+The system tenant is used for:
+
+- System-level operations that span all tenants
+- SuperAdmin accounts
+- Bootstrap and provisioning operations
+- Default context when no specific tenant is configured
+
+The max UUID was chosen because:
+
+- It is a valid UUID that will not conflict with randomly generated UUIDs
+- It is easily recognizable in logs and debugging
+- It avoids issues with nil UUID (all zeros) which some databases treat as NULL
+
+** Row-Level Security
+
+PostgreSQL RLS policies enforce tenant isolation at the database level. Each
+connection sets a session variable that RLS policies use to filter data:
+
+#+begin_src sql
+SET app.current_tenant_id = 'tenant-uuid-here';
+#+end_src
+
+All queries on tenant-scoped tables automatically filter by this value,
+preventing cross-tenant data access.
+
+* Database Context
+
+** =context= Class
+
+The =database::context= class encapsulates database connectivity with tenant
+awareness:
+
+#+begin_src cpp
+class context {
+public:
+    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
+                     sqlgen::postgres::Credentials credentials,
+                     utility::uuid::tenant_id tenant_id);
+
+    const utility::uuid::tenant_id& tenant_id() const;
+
+    // Create a new context with a different tenant (shares connection pool)
+    context with_tenant(utility::uuid::tenant_id tenant_id) const;
+
+private:
+    tenant_aware_pool<connection_type> connection_pool_;
+    sqlgen::postgres::Credentials credentials_;
+};
+#+end_src
+
+Key properties:
+
+- Tenant ID is mandatory at construction
+- =with_tenant()= creates a lightweight copy with a different tenant
+- The underlying connection pool is shared across contexts
+
+** =tenant_aware_pool=
+
+The =tenant_aware_pool= wraps a connection pool and sets tenant context on each
+connection acquisition:
+
+#+begin_src cpp
+template <class Connection>
+class tenant_aware_pool {
+public:
+    tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
+                      utility::uuid::tenant_id tenant_id)
+        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)) {}
+
+    const utility::uuid::tenant_id& tenant_id() const { return tenant_id_; }
+
+    expected<AcquiredConnection, sqlgen::Error> acquire() {
+        auto conn = pool_.acquire();
+        if (!conn) {
+            return sqlgen::error(conn.error());
+        }
+        // Set PostgreSQL session variable for RLS
+        auto stmt = fmt::format(
+            "SET app.current_tenant_id = '{}'", tenant_id_.to_string());
+        (*conn)->exec(stmt);
+        return conn;
+    }
+
+private:
+    sqlgen::ConnectionPool<Connection> pool_;
+    utility::uuid::tenant_id tenant_id_;
+};
+#+end_src
+
+Key properties:
+
+- Tenant ID is immutable after construction
+- Every =acquire()= sets the PostgreSQL session variable
+- Multiple =tenant_aware_pool= instances share the underlying connection pool
+
+* Connection Pool Architecture
+
+A single connection pool is shared across all tenants. Each request creates a
+lightweight wrapper that sets the appropriate tenant context:
+
+#+begin_example
+                        ┌─────────────────────────────────────┐
+                        │   sqlgen::ConnectionPool            │
+                        │   (shared via rfl::Ref, =10 conns)  │
+                        └─────────────────┬───────────────────┘
+                                          │ shared_ptr semantics
+            ┌─────────────────────────────┼─────────────────────────────┐
+            │                             │                             │
+            ▼                             ▼                             ▼
+  ┌─────────────────────┐   ┌─────────────────────┐   ┌─────────────────────┐
+  │ tenant_aware_pool   │   │ tenant_aware_pool   │   │ tenant_aware_pool   │
+  │ tenant_id = "AAA"   │   │ tenant_id = "BBB"   │   │ tenant_id = "CCC"   │
+  │ (request 1)         │   │ (request 2)         │   │ (request 3)         │
+  └─────────────────────┘   └─────────────────────┘   └─────────────────────┘
+            │                             │                             │
+            ▼                             ▼                             ▼
+  SET app.current_tenant   SET app.current_tenant   SET app.current_tenant
+       = 'AAA'                  = 'BBB'                  = 'CCC'
+#+end_example
+
+This architecture provides:
+
+- Efficient connection utilization (single pool for all tenants)
+- Tenant isolation through RLS (each request sets its own context)
+- Thread safety (each request has its own immutable wrapper)
+
+* Session Management
+
+** Session Data
+
+Each authenticated session stores the tenant ID resolved at login:
+
+#+begin_src cpp
+struct session_data {
+    boost::uuids::uuid id;
+    boost::uuids::uuid account_id;
+    utility::uuid::tenant_id tenant_id;
+    std::string username;
+    std::chrono::system_clock::time_point created_at;
+    std::chrono::system_clock::time_point last_activity;
+};
+#+end_src
+
+The tenant ID is:
+
+- Resolved once at login time
+- Immutable for the session lifetime
+- Used for all subsequent requests in that session
+
+** Session-Tenant Binding
+
+When a user authenticates:
+
+1. The system resolves the tenant from the principal (e.g., =user@hostname=)
+2. The tenant ID is stored in the session
+3. All subsequent requests use the session's tenant context
+
+This ensures that a user's operations are always scoped to their tenant.
+
+* Message Handler Architecture
+
+** =tenant_aware_handler= Base Class
+
+Message handlers inherit from =tenant_aware_handler= which provides common
+tenant-handling functionality:
+
+#+begin_src cpp
+template <class Derived>
+class tenant_aware_handler {
+protected:
+    tenant_aware_handler(database::context ctx,
+        std::shared_ptr<comms::service::auth_session_service> sessions)
+        : ctx_(std::move(ctx)), sessions_(std::move(sessions)) {}
+
+    // Validate authentication and return session data
+    std::expected<comms::service::session_data,
+                  utility::serialization::error_code>
+    require_authentication(const std::string& remote_address,
+                          const std::string& operation);
+
+    // Create per-request context using session's tenant
+    database::context make_request_context(
+        const comms::service::session_data& session);
+
+    database::context ctx_;
+    std::shared_ptr<comms::service::auth_session_service> sessions_;
+};
+#+end_src
+
+** Per-Request Context Creation
+
+The =make_request_context()= method creates a context bound to the session's
+tenant:
+
+#+begin_src cpp
+database::context make_request_context(
+    const comms::service::session_data& session) {
+    return ctx_.with_tenant(session.tenant_id);
+}
+#+end_src
+
+This ensures:
+
+- Each request operates in the correct tenant context
+- The underlying connection pool is shared (lightweight)
+- Tenant context is immutable for the request lifetime
+
+* Request Processing Flow
+
+** Authenticated Requests
+
+For requests from authenticated users:
+
+#+begin_example
+┌─────────────────────┐
+│  Incoming Request   │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ require_            │
+│ authentication()    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Session found with  │
+│ tenant_id           │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ make_request_       │
+│ context(session)    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Execute operation   │
+│ in tenant context   │
+└─────────────────────┘
+#+end_example
+
+Example:
+
+#+begin_src cpp
+auto auth = require_authentication(remote_address, "Get accounts");
+if (!auth) {
+    co_return std::unexpected(auth.error());
+}
+
+auto ctx = make_request_context(*auth);
+repository::accounts_repository repo;
+auto accounts = repo.list(ctx);
+#+end_src
+
+** Pre-Authentication Requests
+
+For requests before authentication (login, signup, account creation):
+
+#+begin_example
+┌─────────────────────┐
+│  Incoming Request   │
+│  (Login/Signup)     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Parse principal     │
+│ user@hostname       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Has hostname?       │
+└──────────┬──────────┘
+           │
+    ┌──────┴──────┐
+    │ Yes         │ No
+    ▼             ▼
+┌─────────┐  ┌───────────┐
+│ Lookup  │  │ Use       │
+│ tenant  │  │ handler's │
+│ by host │  │ tenant    │
+└────┬────┘  └─────┬─────┘
+     │             │
+     └──────┬──────┘
+            │
+            ▼
+┌─────────────────────┐
+│ Execute in resolved │
+│ tenant context      │
+└─────────────────────┘
+#+end_example
+
+Example:
+
+#+begin_src cpp
+database::context operation_ctx = [&]() {
+    if (!hostname.empty()) {
+        const auto tenant_id =
+            database::service::tenant_context::lookup_by_hostname(
+                ctx_, hostname);
+        return database::service::tenant_context::with_tenant(
+            ctx_, tenant_id.to_string());
+    } else {
+        return ctx_.with_tenant(ctx_.tenant_id());
+    }
+}();
+#+end_src
+
+* Tenant Resolution
+
+** By Hostname
+
+Tenants can be associated with hostnames. When a principal includes a hostname
+(/e.g./, =john@acme.example.com=), the system looks up the tenant by that
+hostname:
+
+#+begin_src cpp
+tenant_id lookup_by_hostname(const database::context& ctx,
+                             const std::string& hostname);
+#+end_src
+
+This enables:
+
+- Multi-tenant SaaS deployments where each customer has their own subdomain
+- Automatic tenant resolution without explicit tenant selection
+
+** Default Tenant
+
+When no hostname is provided in the principal:
+
+- In production: uses system tenant for administrative operations
+- In testing: uses the test fixture's tenant for isolation
+
+* Performance Characteristics
+
+** Per-Request Overhead
+
+| Operation                         | Cost          |
+|-----------------------------------+---------------|
+| Copy shared_ptr (pool reference)  | =10 ns        |
+| Copy tenant_id string (=36 chars) | =50 ns        |
+| Create context wrapper            | =20 ns        |
+| SET app.current_tenant_id         | Part of query |
+|-----------------------------------+---------------|
+| Total additional overhead         | < 1 μs        |
+
+** Memory Per Request
+
+| Component               | Size        |
+|-------------------------+-------------|
+| tenant_aware_pool       | =40 bytes   |
+| database::context       | =48 bytes   |
+|-------------------------+-------------|
+| Total (stack allocated) | < 100 bytes |
+
+All request-scoped objects are stack-allocated and freed when the request
+completes.
+
+** Connection Pool
+
+- Single pool shared across all tenants
+- Pool size configured at startup (typically 10-20 connections)
+- No per-tenant connection overhead
+- RLS handles isolation at the query level
+
+* Tenant Isolation Guarantees
+
+** Data Isolation
+
+- All tenant-scoped tables have RLS policies
+- Queries automatically filter by =app.current_tenant_id=
+- Cross-tenant data access is impossible at the SQL level
+
+** Session Isolation
+
+- Each session is bound to exactly one tenant
+- Tenant binding is immutable for the session lifetime
+- Session hijacking cannot change tenant context
+
+** Request Isolation
+
+- Each request creates its own tenant context
+- Contexts are immutable and stack-allocated
+- Concurrent requests cannot interfere with each other's tenant context
+
+* Configuration
+
+** Production
+
+In production, handlers are configured with the system tenant:
+
+#+begin_src cpp
+// context_factory creates context with system tenant by default
+utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+if (!cfg.database_options.tenant.empty()) {
+    auto parsed = utility::uuid::tenant_id::from_string(
+        cfg.database_options.tenant);
+    if (parsed) {
+        tenant_id = *parsed;
+    }
+}
+return context(pool, credentials, tenant_id);
+#+end_src
+
+** Testing
+
+In tests, handlers receive an isolated test tenant:
+
+#+begin_src cpp
+// Test fixture creates context with test tenant
+auto test_tenant = utility::uuid::tenant_id::generate();
+database::context ctx(pool, credentials, test_tenant);
+accounts_message_handler handler(ctx, sessions);
+#+end_src
+
+This provides:
+
+- Isolation between test runs
+- Parallel test execution without interference
+- Clean tenant context for each test
+
+** Related Components
+
+| Component | File                                                  | Purpose                             |
+|-----------+-------------------------------------------------------+-------------------------------------|
+| utility   | include/ores.utility/uuid/tenant_id.hpp               | Tenant ID wrapper type              |
+| database  | include/ores.database/domain/tenant_aware_pool.hpp    | Connection pool with tenant context |
+| database  | include/ores.database/domain/context.hpp              | Database context with tenant        |
+| database  | src/service/context_factory.cpp                       | Context creation from config        |
+| comms     | include/ores.comms/messaging/tenant_aware_handler.hpp | Base class for handlers             |
+| iam       | src/messaging/accounts_message_handler.cpp            | Account operations with tenancy     |

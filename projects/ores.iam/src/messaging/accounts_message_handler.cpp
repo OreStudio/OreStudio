@@ -89,6 +89,11 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
       session_repo_(ctx), tenant_repo_(ctx), geo_service_(std::move(geo_service)),
       bundle_provider_(std::move(bundle_provider)) {}
 
+database::context accounts_message_handler::make_request_context(
+    const comms::service::session_info& session) const {
+    return ctx_.with_tenant(session.tenant_id);
+}
+
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
@@ -231,15 +236,16 @@ handle_save_account_request(std::span<const std::byte> payload,
         try {
             // Create a fresh context for this request to avoid race conditions
             // with concurrent requests from different tenants.
+            // Note: uses hostname if provided, otherwise uses handler's configured tenant.
             database::context operation_ctx = [&]() {
                 if (!hostname.empty()) {
                     BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                    const auto tenant_id_str =
+                    const auto tenant_id =
                         database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                    return database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+                    return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
                 } else {
-                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
-                                               << ctx_.tenant_id();
+                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
+                                               << ctx_.tenant_id().to_string();
                     return ctx_.with_tenant(ctx_.tenant_id());
                 }
             }();
@@ -281,7 +287,11 @@ handle_save_account_request(std::span<const std::byte> payload,
         }
 
         try {
-            bool success = service_.update_account(request.account_id,
+            // Create per-request context with session's tenant
+            auto ctx = make_request_context(*auth_result);
+            service::account_service svc(ctx);
+
+            bool success = svc.update_account(request.account_id,
                 request.email, request.recorded_by,
                 request.change_reason_code, request.change_commentary);
 
@@ -340,9 +350,13 @@ handle_get_accounts_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Fetching accounts with offset: "
                                << request.offset << ", limit: " << request.limit;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    service::account_service svc(ctx);
+
     // Get paginated accounts and total count
-    auto accounts = service_.list_accounts(request.offset, request.limit);
-    auto total_count = service_.get_total_account_count();
+    auto accounts = svc.list_accounts(request.offset, request.limit);
+    auto total_count = svc.get_total_account_count();
 
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size()
                               << " accounts (total available: " << total_count << ").";
@@ -373,7 +387,11 @@ handle_list_login_info_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    auto login_infos = service_.list_login_info();
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    service::account_service svc(ctx);
+
+    auto login_infos = svc.list_login_info();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << login_infos.size()
                               << " login info records.";
 
@@ -407,25 +425,16 @@ handle_login_request(std::span<const std::byte> payload,
     try {
         // Resolve tenant context based on hostname if provided.
         // Create a per-request context to avoid race conditions.
-        boost::uuids::uuid tenant_id;
+        utility::uuid::tenant_id tenant_id = ctx_.tenant_id();
         database::context login_ctx = [&]() {
             if (!hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                const auto tenant_id_str =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
-                return database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+                tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+                return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             } else {
-                // Use current context's tenant
-                const auto current_tenant = ctx_.tenant_id();
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
-                                           << current_tenant;
-                if (current_tenant.empty()) {
-                    tenant_id = boost::uuids::nil_uuid();
-                } else {
-                    tenant_id = boost::lexical_cast<boost::uuids::uuid>(current_tenant);
-                }
-                return ctx_.with_tenant(current_tenant);
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
+                                           << ctx_.tenant_id().to_string();
+                return ctx_.with_tenant(ctx_.tenant_id());
             }
         }();
 
@@ -489,9 +498,10 @@ handle_login_request(std::span<const std::byte> payload,
             }
         }
 
-        // Persist session to database
+        // Persist session to database using per-request context
         try {
-            session_repo_.create(*sess);
+            repository::session_repository login_sess_repo(login_ctx);
+            login_sess_repo.create(*sess);
             BOOST_LOG_SEV(lg(), debug) << "Session persisted to database: "
                                        << boost::uuids::to_string(sess->id);
         } catch (const std::exception& e) {
@@ -506,9 +516,8 @@ handle_login_request(std::span<const std::byte> payload,
             service::session_converter::to_session_data(*sess));
 
         // Look up tenant name
-        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
         const auto tenant_name =
-            database::service::tenant_context::lookup_name(login_ctx, tenant_id_str);
+            database::service::tenant_context::lookup_name(login_ctx, tenant_id);
 
         login_response response{
             .success = true,
@@ -531,7 +540,7 @@ handle_login_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = "",
             .username = username,
             .email = "",
@@ -591,10 +600,14 @@ handle_lock_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    service::account_service svc(ctx);
+
     // Process each account
     lock_account_response response;
     for (const auto& account_id : request.account_ids) {
-        bool success = service_.lock_account(account_id);
+        bool success = svc.lock_account(account_id);
 
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
@@ -664,10 +677,14 @@ handle_unlock_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    service::account_service svc(ctx);
+
     // Process each account
     unlock_account_response response;
     for (const auto& account_id : request.account_ids) {
-        bool success = service_.unlock_account(account_id);
+        bool success = svc.unlock_account(account_id);
 
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
@@ -708,8 +725,12 @@ handle_delete_account_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    service::account_service svc(ctx);
+
     try {
-        service_.delete_account(request.account_id);
+        svc.delete_account(request.account_id);
 
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted account: "
                                   << boost::uuids::to_string(request.account_id);
@@ -789,7 +810,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = "Bootstrap endpoint only accessible from localhost",
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = ""
         };
         co_return response.serialize();
@@ -802,7 +823,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = "System not in bootstrap mode - admin account already exists",
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = ""
         };
         co_return response.serialize();
@@ -825,20 +846,18 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
 
     try {
         // Resolve tenant context based on hostname.
-        // If hostname is empty, use system tenant.
+        // If hostname is empty, use handler's configured tenant.
         // Create a per-request context to avoid race conditions.
-        boost::uuids::uuid tenant_id;
+        utility::uuid::tenant_id tenant_id = ctx_.tenant_id();
         database::context signup_ctx = [&]() {
             if (hostname.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                tenant_id = boost::uuids::nil_uuid();  // System tenant
-                return database::service::tenant_context::with_system_tenant(ctx_);
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
+                                           << ctx_.tenant_id().to_string();
+                return ctx_.with_tenant(ctx_.tenant_id());
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                const auto tenant_id_str =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
-                return database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+                tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+                return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             }
         }();
 
@@ -862,9 +881,8 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
         // Look up tenant name
-        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
         const auto tenant_name =
-            database::service::tenant_context::lookup_name(signup_ctx, tenant_id_str);
+            database::service::tenant_context::lookup_name(signup_ctx, tenant_id);
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -889,7 +907,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = std::string("Failed to create admin account: ") + e.what(),
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = ""
         };
         co_return response.serialize();
@@ -957,8 +975,13 @@ handle_logout_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Logging out account: "
                                << boost::uuids::to_string(account_id);
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    service::account_service svc(ctx);
+    repository::session_repository sess_repo(ctx);
+
     try {
-        service_.logout(account_id);
+        svc.logout(account_id);
 
         // Remove session and persist end state to database
         // Also clean up client info stored during handshake
@@ -967,7 +990,7 @@ handle_logout_request(std::span<const std::byte> payload,
         if (sess) {
             sess->end_time = std::chrono::system_clock::now();
             try {
-                session_repo_.end_session(sess->id, sess->start_time,
+                sess_repo.end_session(sess->id, sess->start_time,
                     *sess->end_time, sess->bytes_sent, sess->bytes_received);
                 BOOST_LOG_SEV(lg(), debug) << "Session end persisted to database: "
                                            << boost::uuids::to_string(sess->id)
@@ -1005,6 +1028,12 @@ handle_get_account_history_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing get_account_history_request from "
                                << remote_address;
 
+    auto auth_result = check_authorization(remote_address,
+        domain::permissions::accounts_read, "Get account history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
     auto request_result = get_account_history_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_account_history_request";
@@ -1014,10 +1043,14 @@ handle_get_account_history_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), info) << "Retrieving history for account: " << request.username;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    service::account_service svc(ctx);
+
     get_account_history_response response;
     try {
         // Get all versions of the account from service
-        auto accounts = service_.get_account_history(request.username);
+        auto accounts = svc.get_account_history(request.username);
 
         if (accounts.empty()) {
             response.success = false;
@@ -1116,16 +1149,20 @@ handle_reset_password_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    service::account_service svc(ctx);
+
     // Process each account
     reset_password_response response;
     for (const auto& account_id : request.account_ids) {
         // Look up username for better logging
         std::string username = "<unknown>";
-        if (auto account = service_.get_account(account_id)) {
+        if (auto account = svc.get_account(account_id)) {
             username = account->username;
         }
 
-        bool success = service_.set_password_reset_required(account_id);
+        bool success = svc.set_password_reset_required(account_id);
 
         if (success) {
             BOOST_LOG_SEV(lg(), info)
@@ -1178,9 +1215,13 @@ handle_change_password_request(std::span<const std::byte> payload,
 
     const auto& account_id = session->account_id;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    service::account_service svc(ctx);
+
     // Look up username for better logging
     std::string username = "<unknown>";
-    if (auto account = service_.get_account(account_id)) {
+    if (auto account = svc.get_account(account_id)) {
         username = account->username;
     }
 
@@ -1190,7 +1231,7 @@ handle_change_password_request(std::span<const std::byte> payload,
 
     try {
         // Call service to change password (validates strength, hashes, clears flag)
-        auto error = service_.change_password(account_id, request.new_password);
+        auto error = svc.change_password(account_id, request.new_password);
 
         if (!error.empty()) {
             BOOST_LOG_SEV(lg(), warn)
@@ -1257,9 +1298,13 @@ handle_update_my_email_request(std::span<const std::byte> payload,
 
     const auto& account_id = session->account_id;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    service::account_service svc(ctx);
+
     // Look up username for better logging
     std::string username = "<unknown>";
-    if (auto account = service_.get_account(account_id)) {
+    if (auto account = svc.get_account(account_id)) {
         username = account->username;
     }
 
@@ -1268,7 +1313,7 @@ handle_update_my_email_request(std::span<const std::byte> payload,
                                << boost::uuids::to_string(account_id) << ")";
 
     try {
-        auto error = service_.update_my_email(account_id, request.new_email);
+        auto error = svc.update_my_email(account_id, request.new_email);
 
         if (!error.empty()) {
             BOOST_LOG_SEV(lg(), warn)
@@ -1634,10 +1679,14 @@ handle_list_sessions_request(std::span<const std::byte> payload,
         co_return std::unexpected(ores::utility::serialization::error_code::authorization_failed);
     }
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    repository::session_repository sess_repo(ctx);
+
     // Query sessions from database
-    auto sessions_list = session_repo_.read_by_account(target_account_id,
+    auto sessions_list = sess_repo.read_by_account(target_account_id,
         request.limit, request.offset);
-    auto total_count = session_repo_.count_by_account(target_account_id);
+    auto total_count = sess_repo.count_by_account(target_account_id);
 
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
                               << " sessions for account "
@@ -1693,14 +1742,18 @@ handle_get_session_statistics_request(std::span<const std::byte> payload,
         }
     }
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    repository::session_repository sess_repo(ctx);
+
     // Query statistics from database
     std::vector<domain::session_statistics> stats;
     if (aggregate_mode) {
         // Admin requesting aggregate stats
-        stats = session_repo_.read_aggregate_daily_statistics(
+        stats = sess_repo.read_aggregate_daily_statistics(
             request.start_time, request.end_time);
     } else {
-        stats = session_repo_.read_daily_statistics(target_account_id,
+        stats = sess_repo.read_daily_statistics(target_account_id,
             request.start_time, request.end_time);
     }
 
@@ -1736,18 +1789,22 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
         co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    repository::session_repository sess_repo(ctx);
+
     std::vector<domain::session> active_sessions;
     const bool is_admin = auth_service_->has_permission(session->account_id,
         domain::permissions::accounts_read);
 
     if (is_admin) {
         // Admin gets all active sessions
-        active_sessions = session_repo_.read_all_active();
+        active_sessions = sess_repo.read_all_active();
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
                                   << " active sessions (admin view)";
     } else {
         // Non-admin gets only their own active sessions
-        active_sessions = session_repo_.read_active_by_account(session->account_id);
+        active_sessions = sess_repo.read_active_by_account(session->account_id);
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
                                   << " active sessions for account "
                                   << boost::uuids::to_string(session->account_id);
@@ -1783,14 +1840,18 @@ handle_get_tenants_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    repository::tenant_repository tenant_repo(ctx);
+
     try {
         std::vector<domain::tenant> tenants;
         if (request.include_deleted) {
-            tenants = tenant_repo_.read_all_latest();
+            tenants = tenant_repo.read_all_latest();
             BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size()
                                       << " tenants (including deleted)";
         } else {
-            tenants = tenant_repo_.read_latest();
+            tenants = tenant_repo.read_latest();
             BOOST_LOG_SEV(lg(), info) << "Retrieved " << tenants.size() << " tenants";
         }
 
@@ -1829,8 +1890,12 @@ handle_save_tenant_request(std::span<const std::byte> payload,
     auto tenant = request.tenant;
     // recorded_by comes from the request; if empty, the database trigger sets it
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    repository::tenant_repository tenant_repo(ctx);
+
     try {
-        tenant_repo_.write(tenant);
+        tenant_repo.write(tenant);
         BOOST_LOG_SEV(lg(), info) << "Saved tenant: " << tenant.name
                                   << " (code: " << tenant.code << ")";
 
@@ -1868,13 +1933,18 @@ handle_delete_tenant_request(std::span<const std::byte> payload,
     }
 
     const auto& request = *request_result;
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    repository::tenant_repository tenant_repo(ctx);
+
     std::vector<delete_tenant_result> results;
     results.reserve(request.ids.size());
 
     for (const auto& id : request.ids) {
         try {
             // Check if tenant exists
-            auto existing = tenant_repo_.read_latest(id);
+            auto existing = tenant_repo.read_latest(id);
             if (existing.empty()) {
                 results.push_back({
                     .id = id,
@@ -1895,7 +1965,7 @@ handle_delete_tenant_request(std::span<const std::byte> payload,
                 continue;
             }
 
-            tenant_repo_.remove(id);
+            tenant_repo.remove(id);
             BOOST_LOG_SEV(lg(), info) << "Deleted tenant: " << id;
 
             results.push_back({
@@ -1940,8 +2010,12 @@ handle_get_tenant_history_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
 
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+    repository::tenant_repository tenant_repo(ctx);
+
     try {
-        auto versions = tenant_repo_.read_history(request.id);
+        auto versions = tenant_repo.read_history(request.id);
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << versions.size()
                                   << " versions for tenant " << request.id;
 

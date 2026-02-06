@@ -24,6 +24,7 @@
 #include <string>
 #include <cstdint>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::utility::serialization {
 
@@ -84,6 +85,14 @@ public:
      */
     static void write_uuid(std::vector<std::byte>& buffer,
         const boost::uuids::uuid& uuid);
+
+    /**
+     * @brief Write a tenant_id (16 bytes UUID).
+     *
+     * Writes the underlying UUID bytes of the tenant_id.
+     */
+    static void write_tenant_id(std::vector<std::byte>& buffer,
+        const uuid::tenant_id& tenant_id);
 };
 
 }

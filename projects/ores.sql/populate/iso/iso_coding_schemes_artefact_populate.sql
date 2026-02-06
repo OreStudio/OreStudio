@@ -27,6 +27,7 @@
  * To publish to production:
  *   SELECT * FROM ores_dq_coding_schemes_publish_fn(
  *       (SELECT id FROM ores_dq_datasets_tbl WHERE code = 'iso.coding_schemes' AND valid_to = ores_utility_infinity_timestamp_fn()),
+ *       ores_iam_system_tenant_id_fn(),
  *       'upsert'
  *   );
  */

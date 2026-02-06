@@ -24,6 +24,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::testing {
 
@@ -60,9 +61,9 @@ public:
     /**
      * @brief Gets the test tenant ID.
      */
-    boost::uuids::uuid tenant_id() {
-        boost::uuids::string_generator gen;
-        return gen(test_database_manager::get_test_tenant_id_env());
+    utility::uuid::tenant_id tenant_id() {
+        return utility::uuid::tenant_id::from_string(
+            test_database_manager::get_test_tenant_id_env()).value();
     }
 
 private:

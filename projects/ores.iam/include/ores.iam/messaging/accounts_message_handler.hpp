@@ -347,6 +347,19 @@ private:
     static bool is_localhost(const std::string& remote_address);
 
     /**
+     * @brief Create a database context for the session's tenant.
+     *
+     * Creates a new context with the tenant ID from the session, ensuring
+     * that database operations use the correct tenant isolation. Each
+     * request should use its own context to avoid race conditions.
+     *
+     * @param session The session containing the tenant ID
+     * @return A new context configured for the session's tenant
+     */
+    [[nodiscard]] database::context
+    make_request_context(const comms::service::session_info& session) const;
+
+    /**
      * @brief Result type for authorization checks.
      *
      * Contains the session info if authorized, or an error code if not.

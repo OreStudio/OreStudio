@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.utility/serialization/error_code.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 
 namespace ores::iam::messaging {
@@ -61,7 +62,7 @@ struct create_initial_admin_request final {
      * - If the principal contains `@`, everything before the last `@` is the
      *   username and everything after is the hostname used to resolve the tenant.
      * - If no `@` is present, the entire string is treated as the username and
-     *   the system tenant (00000000-0000-0000-0000-000000000000) is used.
+     *   the system tenant (ffffffff-ffff-ffff-ffff-ffffffffffff) is used.
      *
      * Examples:
      * - `admin@localhost` - User "admin" in tenant with hostname "localhost"
@@ -101,7 +102,7 @@ struct create_initial_admin_response final {
     bool success;
     std::string error_message;
     boost::uuids::uuid account_id;
-    boost::uuids::uuid tenant_id;      ///< ID of the tenant the account was created in
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();  ///< ID of the tenant the account was created in
     std::string tenant_name;           ///< Name of the tenant the account was created in
 
     /**

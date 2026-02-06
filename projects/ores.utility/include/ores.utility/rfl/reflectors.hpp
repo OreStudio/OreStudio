@@ -31,6 +31,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <rfl.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 // Forward declarations for enum types that need custom reflectors
 // to avoid GCC 15 std::min/max type deduction errors in rfl's
@@ -60,6 +61,28 @@ struct Reflector<boost::uuids::uuid> {
 
     static ReflType from(const boost::uuids::uuid& v) {
         return boost::lexical_cast<std::string>(v);
+    }
+};
+
+/**
+ * @brief Custom reflector for ores::utility::uuid::tenant_id.
+ *
+ * Serializes tenant_id as UUID string representation.
+ */
+template<>
+struct Reflector<ores::utility::uuid::tenant_id> {
+    using ReflType = std::string;
+
+    static ores::utility::uuid::tenant_id to(const ReflType& str) {
+        auto result = ores::utility::uuid::tenant_id::from_string(str);
+        if (!result) {
+            throw std::runtime_error("Invalid tenant_id: " + result.error());
+        }
+        return *result;
+    }
+
+    static ReflType from(const ores::utility::uuid::tenant_id& v) {
+        return v.to_string();
     }
 };
 

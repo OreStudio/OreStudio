@@ -135,6 +135,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionTreatmentDimensions->setIcon(IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
     ui_->ActionCodingSchemeAuthorityTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    ui_->ActionSubjectAreas->setIcon(IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
+    ui_->ActionCatalogs->setIcon(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
     ui_->ActionCodingSchemes->setIcon(IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
     ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
     ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));

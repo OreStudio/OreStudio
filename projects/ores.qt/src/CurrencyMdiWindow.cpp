@@ -1012,7 +1012,8 @@ void CurrencyMdiWindow::generateSynthetic() {
 
     try {
         auto currencies = refdata::generators::generate_fictional_currencies(
-            static_cast<std::size_t>(count));
+            static_cast<std::size_t>(count),
+            utility::uuid::tenant_id::system());
 
         if (currencies.empty()) {
             BOOST_LOG_SEV(lg(), warn) << "No currencies generated";

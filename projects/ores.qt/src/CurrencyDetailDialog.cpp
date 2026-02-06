@@ -1002,7 +1002,8 @@ void CurrencyDetailDialog::onGenerateClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
 
     try {
-        auto currencies = refdata::generators::generate_fictional_currencies();
+        auto currencies = refdata::generators::generate_fictional_currencies(
+            0, utility::uuid::tenant_id::system());
         static std::random_device rd;
         static std::mt19937 gen(rd());
         std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);

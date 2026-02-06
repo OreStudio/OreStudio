@@ -46,8 +46,6 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit feature_flags_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
@@ -58,39 +56,42 @@ public:
      * have unique names.
      */
     /**@{*/
-    void write(const domain::feature_flags& flag);
-    void write(const std::vector<domain::feature_flags>& flags);
+    void write(context ctx, const domain::feature_flags& flag);
+    void write(context ctx, const std::vector<domain::feature_flags>& flags);
     /**@}*/
 
     /**
      * @brief Reads latest feature flags, possibly filtered by name.
      */
     /**@{*/
-    std::vector<domain::feature_flags> read_latest();
-    std::vector<domain::feature_flags> read_latest(const std::string& name);
+    std::vector<domain::feature_flags> read_latest(context ctx);
+    std::vector<domain::feature_flags> read_latest(context ctx, const std::string& name);
     /**@}*/
 
     /**
      * @brief Reads latest feature flags with pagination support.
+     * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @return Vector of feature flags within the specified range
      */
-    std::vector<domain::feature_flags> read_latest(std::uint32_t offset,
+    std::vector<domain::feature_flags> read_latest(context ctx,
+                                                   std::uint32_t offset,
                                                    std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active feature flags.
+     * @param ctx Repository context with database connection
      * @return Total number of feature flags with valid_to == max_timestamp
      */
-    std::uint32_t get_total_feature_flags_count();
+    std::uint32_t get_total_feature_flags_count(context ctx);
 
     /**
      * @brief Reads all feature flags, possibly filtered by name.
      */
     /**@{*/
-    std::vector<domain::feature_flags> read_all();
-    std::vector<domain::feature_flags> read_all(const std::string& name);
+    std::vector<domain::feature_flags> read_all(context ctx);
+    std::vector<domain::feature_flags> read_all(context ctx, const std::string& name);
     /**@}*/
 
     /**
@@ -99,10 +100,7 @@ public:
      * Sets the valid_to timestamp to now, effectively "deleting" the feature flag
      * from the current point in time onwards while preserving history.
      */
-    void remove(const std::string& name);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::string& name);
 };
 
 }

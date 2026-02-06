@@ -24,6 +24,7 @@
 #include <string>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::assets::domain {
 
@@ -39,7 +40,7 @@ struct image final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique identifier for the image (UUID).

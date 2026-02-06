@@ -594,31 +594,346 @@ Advantages:
 - Thread-safe by construction
 - Minimal performance overhead
 
+** Implementation Details
+
+This section documents the actual implementation of the multi-tenant architecture.
+
+*** The tenant_id Wrapper Type
+
+A strongly-typed wrapper for tenant identifiers was introduced in
+~ores.utility/include/ores.utility/uuid/tenant_id.hpp~:
+
+#+begin_src cpp
+namespace ores::utility::uuid {
+
+class tenant_id {
+public:
+    // Factory methods
+    static tenant_id system();  // Returns system tenant (max UUID)
+    static std::optional<tenant_id> from_string(const std::string& s);
+    static std::optional<tenant_id> from_string(std::string_view s);
+    static tenant_id generate();  // Generate new random tenant_id
+
+    // Accessors
+    const boost::uuids::uuid& value() const;
+    std::string to_string() const;
+
+    // Comparisons
+    bool operator==(const tenant_id& other) const;
+    auto operator<=>(const tenant_id& other) const;
+
+private:
+    explicit tenant_id(boost::uuids::uuid id);
+    boost::uuids::uuid id_;
+};
+
+}
+#+end_src
+
+**** System Tenant
+
+The system tenant is defined as the maximum UUID value:
+
+#+begin_example
+ffffffff-ffff-ffff-ffff-ffffffffffff
+#+end_example
+
+This is used for:
+- System-level operations that span all tenants
+- SuperAdmin accounts
+- Bootstrap operations
+- Default tenant context when no specific tenant is configured
+
+The max UUID was chosen because:
+- It's a valid UUID that won't conflict with generated UUIDs
+- It's easily recognizable in logs and debugging
+- Previous nil UUID (all zeros) was problematic because some databases treat it
+  as NULL
+
+*** Mandatory tenant_id in database::context
+
+The ~database::context~ class now requires a ~tenant_id~ at construction:
+
+#+begin_src cpp
+// Before (problematic)
+explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
+                 sqlgen::postgres::Credentials credentials,
+                 std::optional<utility::uuid::tenant_id> tenant_id = std::nullopt);
+
+// After (safe)
+explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
+                 sqlgen::postgres::Credentials credentials,
+                 utility::uuid::tenant_id tenant_id);
+#+end_src
+
+Benefits of mandatory tenant_id:
+- Configuration errors caught at construction, not at first query
+- Eliminates null checks throughout the codebase
+- Makes tenant context explicit and visible
+- Aligns with the reality that ~tenant_aware_pool::acquire()~ already required
+  a tenant (it would fail with an error if not set)
+
+*** tenant_aware_pool Implementation
+
+The ~tenant_aware_pool~ stores an immutable tenant_id:
+
+#+begin_src cpp
+template <class Connection>
+class tenant_aware_pool {
+public:
+    tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
+                      utility::uuid::tenant_id tenant_id)
+        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)) {}
+
+    const utility::uuid::tenant_id& tenant_id() const { return tenant_id_; }
+
+    expected<AcquiredConnection, sqlgen::Error> acquire() {
+        auto conn = pool_.acquire();
+        if (!conn) {
+            return sqlgen::error(conn.error());
+        }
+        // Set PostgreSQL session variable for RLS
+        auto stmt = fmt::format(
+            "SET app.current_tenant_id = '{}'", tenant_id_.to_string());
+        (*conn)->exec(stmt);
+        return conn;
+    }
+
+private:
+    sqlgen::ConnectionPool<Connection> pool_;
+    utility::uuid::tenant_id tenant_id_;  // Immutable
+};
+#+end_src
+
+Key properties:
+- No ~set_tenant_id()~ method - tenant is fixed at construction
+- ~acquire()~ always sets the PostgreSQL session variable
+- Underlying connection pool is shared via ~rfl::Ref~ (shared_ptr semantics)
+
+*** tenant_aware_handler Base Class
+
+A base class was introduced to provide common tenant-handling functionality:
+
+#+begin_src cpp
+template <class Derived>
+class tenant_aware_handler {
+protected:
+    tenant_aware_handler(database::context ctx,
+        std::shared_ptr<comms::service::auth_session_service> sessions)
+        : ctx_(std::move(ctx)), sessions_(std::move(sessions)) {}
+
+    // Validate authentication and return session data
+    std::expected<comms::service::session_data,
+                  utility::serialization::error_code>
+    require_authentication(const std::string& remote_address,
+                          const std::string& operation);
+
+    // Create per-request context using session's tenant
+    database::context make_request_context(
+        const comms::service::session_data& session);
+
+    database::context ctx_;  // Handler's configured context
+    std::shared_ptr<comms::service::auth_session_service> sessions_;
+};
+#+end_src
+
+**** make_request_context Implementation
+
+#+begin_src cpp
+database::context make_request_context(
+    const comms::service::session_data& session) {
+    return ctx_.with_tenant(session.tenant_id);
+}
+#+end_src
+
+This creates a new context that:
+- Shares the underlying connection pool (lightweight)
+- Uses the session's tenant_id (per-request isolation)
+- Is stack-allocated and discarded after the request
+
+*** Tenant Resolution Flow
+
+When a request arrives, tenant resolution follows this flow:
+
+#+begin_example
+                         ┌─────────────────────┐
+                         │   Incoming Request   │
+                         └──────────┬──────────┘
+                                    │
+                         ┌──────────▼──────────┐
+                         │ Is Authenticated?    │
+                         └──────────┬──────────┘
+                                    │
+              ┌─────────────────────┼─────────────────────┐
+              │ No                  │                 Yes │
+              ▼                     │                     ▼
+    ┌─────────────────┐             │        ┌────────────────────┐
+    │ Pre-Auth        │             │        │ Session exists     │
+    │ Operations:     │             │        │ with tenant_id     │
+    │ - Login         │             │        └─────────┬──────────┘
+    │ - Signup        │             │                  │
+    │ - Create        │             │                  ▼
+    └────────┬────────┘             │        ┌────────────────────┐
+             │                      │        │ make_request_      │
+             ▼                      │        │ context(session)   │
+    ┌─────────────────┐             │        └─────────┬──────────┘
+    │ Parse principal │             │                  │
+    │ user@hostname   │             │                  ▼
+    └────────┬────────┘             │        ┌────────────────────┐
+             │                      │        │ Execute with       │
+             ▼                      │        │ session's tenant   │
+    ┌─────────────────┐             │        └────────────────────┘
+    │ Has hostname?   │             │
+    └────────┬────────┘             │
+             │                      │
+    ┌────────┼────────┐             │
+    │ Yes    │     No │             │
+    ▼        │        ▼             │
+┌─────────┐  │  ┌───────────┐       │
+│ Lookup  │  │  │ Use       │       │
+│ tenant  │  │  │ handler's │       │
+│ by host │  │  │ default   │       │
+└────┬────┘  │  │ tenant    │       │
+     │       │  └─────┬─────┘       │
+     │       │        │             │
+     └───────┴────────┘             │
+             │                      │
+             ▼                      │
+    ┌─────────────────┐             │
+    │ Execute with    │             │
+    │ resolved tenant │             │
+    └─────────────────┘             │
+#+end_example
+
+**** Pre-Authentication Operations
+
+For LOGIN, SIGNUP, and CREATE operations (before a session exists):
+
+1. Parse the principal (e.g., ~john@acme.example.com~)
+2. If hostname present → lookup tenant by hostname
+3. If no hostname → use handler's configured tenant (typically test tenant)
+4. Create account/authenticate in that tenant's context
+
+#+begin_src cpp
+// Example from accounts_message_handler
+database::context operation_ctx = [&]() {
+    if (!hostname.empty()) {
+        const auto tenant_id =
+            database::service::tenant_context::lookup_by_hostname(
+                ctx_, hostname);
+        return database::service::tenant_context::with_tenant(
+            ctx_, tenant_id.to_string());
+    } else {
+        return ctx_.with_tenant(ctx_.tenant_id());
+    }
+}();
+#+end_src
+
+**** Authenticated Operations
+
+For all operations after login (GET, UPDATE, DELETE, etc.):
+
+1. Get session data from auth service
+2. Session contains tenant_id (set at login)
+3. Create per-request context with session's tenant
+
+#+begin_src cpp
+// Example from message handler
+auto auth = require_authentication(remote_address, "Get accounts");
+if (!auth) {
+    co_return std::unexpected(auth.error());
+}
+
+auto ctx = make_request_context(*auth);
+// All operations now use session's tenant
+#+end_src
+
+*** Tenant Context in Production vs Testing
+
+**** Production Configuration
+
+In production, handlers are configured with the system tenant:
+
+#+begin_src cpp
+// context_factory creates context with system tenant by default
+utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+if (!cfg.database_options.tenant.empty()) {
+    auto parsed = utility::uuid::tenant_id::from_string(
+        cfg.database_options.tenant);
+    if (parsed) {
+        tenant_id = *parsed;
+    }
+}
+return context(pool, credentials, tenant_id);
+#+end_src
+
+For pre-auth operations without hostname:
+- Uses system tenant
+- Account created in system tenant
+- Suitable for internal/admin operations
+
+**** Test Configuration
+
+In tests, handlers receive the test tenant context:
+
+#+begin_src cpp
+// Test fixture creates context with test tenant
+auto test_tenant = utility::uuid::tenant_id::generate();
+database::context ctx(pool, credentials, test_tenant);
+accounts_message_handler handler(ctx, sessions);
+#+end_src
+
+For pre-auth operations without hostname:
+- Uses test tenant
+- Account created in test tenant
+- Provides tenant isolation between test runs
+
+*** Files Modified
+
+| Component   | File                                                  | Change                              |
+|-------------+-------------------------------------------------------+-------------------------------------|
+| utility     | include/ores.utility/uuid/tenant_id.hpp               | New wrapper type                    |
+| database    | include/ores.database/domain/tenant_aware_pool.hpp    | Mandatory tenant_id                 |
+| database    | include/ores.database/domain/context.hpp              | Mandatory tenant_id                 |
+| database    | src/service/context_factory.cpp                       | Default to system tenant            |
+| database    | src/repository/bitemporal_operations.cpp              | Non-optional tenant_id              |
+| comms       | include/ores.comms/messaging/tenant_aware_handler.hpp | Base class with make_request_context|
+| iam         | src/messaging/accounts_message_handler.cpp            | Per-request tenant context          |
+| dq          | src/service/publication_service.cpp                   | Non-optional tenant_id              |
+| variability | src/messaging/variability_message_handler.cpp         | Per-request tenant context          |
+| telemetry   | src/repository/telemetry_repository.cpp               | Non-optional tenant_id              |
+
 ** Summary
 
-The current architecture has a fundamental flaw: mutable tenant state in shared
-objects leads to race conditions under concurrent multi-tenant load.
+*** Problem Statement
+
+The original architecture had a fundamental flaw: mutable tenant state in shared
+objects could lead to race conditions under concurrent multi-tenant load.
 
 *** Root Cause
 
-~tenant_aware_pool~ has a mutable ~tenant_id_~ field that can be modified by any
-thread via ~set_tenant_id()~. When multiple requests execute concurrently,
-they race to set this field, causing requests to execute in the wrong tenant
-context.
+~tenant_aware_pool~ had a mutable ~tenant_id_~ field that could be modified by
+any thread via ~set_tenant_id()~. When multiple requests execute concurrently,
+they could race to set this field, causing requests to execute in the wrong
+tenant context.
 
-*** Solution
+*** Solution (Implemented)
 
 Share the underlying connection pool (which uses ~shared_ptr~ semantics via
 ~rfl::Ref~) but create lightweight, immutable ~tenant_aware_pool~ wrappers
 per-request. Each wrapper has a fixed tenant_id set at construction.
 
-*** Key Changes
+*** Key Changes (Completed)
 
-1. *Add tenant_id to session_data* - resolved at login, immutable for session
-2. *Remove set_tenant_id()* - make tenant_aware_pool immutable
-3. *Store raw pool in handlers* - no tenant context at handler level
-4. *Create per-request contexts* - each request gets its own tenant wrapper
-5. *Create services per-request* - no cached services with stale context
+1. *Introduced tenant_id wrapper type* - strongly-typed UUID wrapper with
+   factory methods for system tenant and parsing
+2. *Made tenant_id mandatory in database::context* - no optional, errors caught
+   at construction
+3. *Add tenant_id to session_data* - resolved at login, immutable for session
+4. *Removed set_tenant_id()* - made tenant_aware_pool immutable
+5. *Created tenant_aware_handler base class* - provides ~make_request_context()~
+   helper for creating per-request contexts
+6. *Refactored message handlers* - use per-request contexts from session
 
 *** Performance Impact
 
@@ -637,4 +952,14 @@ per-request. Each wrapper has a fixed tenant_id set at construction.
 
 Note: Services and repositories do NOT need interface changes. They continue
 to accept ~database::context~ - only the handlers change how they create contexts.
+
+*** Implementation Status
+
+| Phase | Description                     | Status    |
+|-------+---------------------------------+-----------|
+|     1 | Add tenant_id to Sessions       | Complete  |
+|     2 | Store tenant_id at Login        | Complete  |
+|     3 | Make tenant_aware_pool Immutable| Complete  |
+|     4 | Refactor Message Handlers       | Complete  |
+|     5 | Testing and Verification        | Ongoing   |
 

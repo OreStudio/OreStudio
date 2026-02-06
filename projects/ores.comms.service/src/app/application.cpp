@@ -33,6 +33,7 @@
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.dq/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
+#include "ores.iam/eventing/tenant_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_category_changed_event.hpp"
 #include "ores.dq/eventing/origin_dimension_changed_event.hpp"
@@ -188,6 +189,10 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         event_source, "ores.iam.account", "ores_accounts",
         *channel_registry, "Account data modified");
     eventing::service::registrar::register_mapping<
+        iam::eventing::tenant_changed_event>(
+        event_source, "ores.iam.tenant", "ores_tenants",
+        *channel_registry, "Tenant data modified");
+    eventing::service::registrar::register_mapping<
         dq::eventing::change_reason_changed_event>(
         event_source, "ores.dq.change_reason", "ores_change_reasons",
         *channel_registry, "Change reason data modified");
@@ -282,6 +287,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 iam::eventing::account_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.account_ids, e.tenant_id);
+        });
+
+    auto tenant_sub = event_bus.subscribe<iam::eventing::tenant_changed_event>(
+        [&subscription_mgr](const iam::eventing::tenant_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::tenant_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.tenant_ids);
         });
 
     auto assets_sub = event_bus.subscribe<assets::eventing::assets_changed_event>(

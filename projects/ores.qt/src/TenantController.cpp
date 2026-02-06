@@ -31,11 +31,20 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.iam/eventing/tenant_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    // Get the event name from the event traits
+    constexpr std::string_view tenant_event_name =
+        eventing::domain::event_traits<
+            iam::eventing::tenant_changed_event>::name;
+}
 
 TenantController::TenantController(
     QMainWindow* mainWindow,
@@ -43,7 +52,8 @@ TenantController::TenantController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+                       tenant_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Tenant controller created";

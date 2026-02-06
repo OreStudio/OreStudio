@@ -2312,7 +2312,7 @@ handle_publish_datasets_request(std::span<const std::byte> payload,
                                << remote_address;
 
     auto auth_result = check_authorization(remote_address,
-        "datasets:publish", "Publish datasets");
+        iam::domain::permissions::datasets_write, "Publish datasets");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -2468,7 +2468,7 @@ handle_publish_bundle_request(std::span<const std::byte> payload,
                                << remote_address;
 
     auto auth_result = check_authorization(remote_address,
-        "bundles:publish", "Publish bundle");
+        iam::domain::permissions::dataset_bundles_write, "Publish bundle");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }

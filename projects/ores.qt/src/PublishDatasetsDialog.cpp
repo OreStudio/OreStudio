@@ -272,7 +272,12 @@ void ReviewPage::resolveDependencies() {
             wizard_->requestedIds().push_back(ds.id);
         }
         resolved_ = true;
-        statusLabel_->setText(tr("Failed to resolve dependencies. Will publish selected datasets only."));
+        // Include the actual error message from the server
+        QString errorDetail = result.error().message.empty()
+            ? tr("unknown error")
+            : QString::fromStdString(result.error().message);
+        statusLabel_->setText(tr("Failed to resolve dependencies (%1). Will publish selected datasets only.")
+            .arg(errorDetail));
         updatePublicationOrder();
         emit completeChanged();
         return;
@@ -427,7 +432,11 @@ void ProgressPage::performPublish() {
 
     if (!result) {
         statusLabel_->setText(tr("Publication failed!"));
-        currentDatasetLabel_->setText(tr("Failed to communicate with server."));
+        // Extract and display the actual error message from the server
+        QString errorMsg = result.error().message.empty()
+            ? tr("Failed to communicate with server.")
+            : QString::fromStdString(result.error().message);
+        currentDatasetLabel_->setText(errorMsg);
         publishComplete_ = true;
         publishSuccess_ = false;
         emit completeChanged();

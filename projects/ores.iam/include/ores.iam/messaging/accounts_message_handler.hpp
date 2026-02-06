@@ -339,6 +339,17 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle suggest_role_commands_request message.
+     *
+     * Requires authentication. Generates shell commands to assign all roles
+     * to a specified account. The account is identified by username and
+     * either hostname or tenant_id.
+     */
+    handler_result
+    handle_suggest_role_commands_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Check if a remote address is localhost.
      *
      * @param remote_address The remote endpoint address

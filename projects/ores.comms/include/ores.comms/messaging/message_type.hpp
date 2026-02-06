@@ -113,6 +113,8 @@ enum class message_type : std::uint16_t {
     get_account_permissions_response = 0x202B,
     get_role_request = 0x202C,
     get_role_response = 0x202D,
+    suggest_role_commands_request = 0x202E,
+    suggest_role_commands_response = 0x202F,
     // IAM subsystem - Signup
     signup_request = 0x2030,
     signup_response = 0x2031,
@@ -401,6 +403,8 @@ enum class message_type : std::uint16_t {
     case message_type::get_account_permissions_response: return "get_account_permissions_response";
     case message_type::get_role_request: return "get_role_request";
     case message_type::get_role_response: return "get_role_response";
+    case message_type::suggest_role_commands_request: return "suggest_role_commands_request";
+    case message_type::suggest_role_commands_response: return "suggest_role_commands_response";
     case message_type::signup_request: return "signup_request";
     case message_type::signup_response: return "signup_response";
     case message_type::list_sessions_request: return "list_sessions_request";

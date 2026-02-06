@@ -341,7 +341,7 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c30e2-dbb6-7585-afc4-fcdf49c87eb1
+  Account ID: 019c31f7-1064-7d42-b7d7-ac16d08d62aa
   Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
   You can now login with the credentials provided.
 ores-shell> Bye!
@@ -1000,6 +1000,7 @@ Create a new tenant with the specified parameters.
 
 #+name: tenants-add
 #+begin_src ores-shell :exports none
+tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
 tenants add example "Example Corp" organisation example.com "Example Corporation tenant"
 exit
 #+end_src
@@ -1031,7 +1032,7 @@ Creates new user accounts on system tenant.
 #+name: create-account-tenant
 #+begin_src ores-shell :exports none
 accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
-accounts create newuser61@example.com Secure-Password-123 567 newuser61@example.com
+accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
 exit
 #+end_src
 
@@ -1768,6 +1769,24 @@ ores-shell>
 
 ores-shell> Bye!
 #+end_example
+
+*** Suggest Role Commands
+
+Generate shell commands to assign all roles to an account. The second argument
+can be either a hostname or a tenant UUID.
+
+#+name: permissions-suggest
+#+begin_src ores-shell :exports none
+permissions suggest admin example.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<permissions-suggest>>
+EOF
+#+end_src
 
 ** Events
    :PROPERTIES:

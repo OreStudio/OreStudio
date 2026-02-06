@@ -427,6 +427,70 @@ struct get_role_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_role_response& v);
 
+// ============================================================================
+// Suggest Role Commands
+// ============================================================================
+
+/**
+ * @brief Request to generate shell commands for assigning all roles to an account.
+ *
+ * This is an administrative helper that generates ores.shell commands to assign
+ * roles to a user. The account is identified by username and either hostname
+ * or tenant_id.
+ */
+struct suggest_role_commands_request final {
+    std::string username;
+    std::string hostname;  ///< Optional: lookup tenant by hostname
+    std::string tenant_id; ///< Optional: direct tenant UUID (used if hostname empty)
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: username length
+     * - N bytes: username (UTF-8)
+     * - 2 bytes: hostname length
+     * - N bytes: hostname (UTF-8)
+     * - 2 bytes: tenant_id length
+     * - N bytes: tenant_id (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<suggest_role_commands_request, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const suggest_role_commands_request& v);
+
+/**
+ * @brief Response containing suggested shell commands.
+ */
+struct suggest_role_commands_response final {
+    std::vector<std::string> commands;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 4 bytes: count (number of commands)
+     * - For each command:
+     *   - 2 bytes: command length
+     *   - N bytes: command (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<suggest_role_commands_response, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -506,6 +570,17 @@ struct message_traits<iam::messaging::get_role_request> {
     using response_type = iam::messaging::get_role_response;
     static constexpr message_type request_message_type =
         message_type::get_role_request;
+};
+
+/**
+ * @brief Message traits specialization for suggest_role_commands_request.
+ */
+template<>
+struct message_traits<iam::messaging::suggest_role_commands_request> {
+    using request_type = iam::messaging::suggest_role_commands_request;
+    using response_type = iam::messaging::suggest_role_commands_response;
+    static constexpr message_type request_message_type =
+        message_type::suggest_role_commands_request;
 };
 
 }

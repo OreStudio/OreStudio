@@ -19,10 +19,12 @@
  */
 #include "ores.iam/messaging/accounts_message_handler.hpp"
 
+#include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
@@ -171,6 +173,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_roles_request(payload, remote_address);
     case message_type::get_account_permissions_request:
         co_return co_await handle_get_account_permissions_request(payload, remote_address);
+    case message_type::suggest_role_commands_request:
+        co_return co_await handle_suggest_role_commands_request(payload, remote_address);
     // Tenant management messages
     case message_type::get_tenants_request:
         co_return co_await handle_get_tenants_request(payload, remote_address);
@@ -1639,6 +1643,59 @@ handle_get_account_permissions_request(std::span<const std::byte> payload,
 
     get_account_permissions_response response{.permission_codes = std::move(permissions)};
     co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_suggest_role_commands_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing suggest_role_commands_request from "
+                               << remote_address;
+
+    auto request_result = suggest_role_commands_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize suggest_role_commands_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Suggesting role commands for user: "
+                               << request.username
+                               << ", hostname: " << request.hostname
+                               << ", tenant_id: " << request.tenant_id;
+
+    // Build the SQL query
+    std::string sql;
+    if (!request.tenant_id.empty()) {
+        sql = std::format(
+            "SELECT command FROM ores_iam_generate_role_commands_fn('{}', NULL, '{}'::uuid)",
+            request.username, request.tenant_id);
+    } else if (!request.hostname.empty()) {
+        sql = std::format(
+            "SELECT command FROM ores_iam_generate_role_commands_fn('{}', '{}')",
+            request.username, request.hostname);
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Neither hostname nor tenant_id provided";
+        suggest_role_commands_response response{
+            .commands = {"# ERROR: Must provide either hostname or tenant_id"}
+        };
+        co_return response.serialize();
+    }
+
+    try {
+        auto rows = database::repository::execute_raw_string_query(
+            ctx_, sql, lg(), "Generating role commands");
+
+        suggest_role_commands_response response{.commands = std::move(rows)};
+        BOOST_LOG_SEV(lg(), info) << "Generated " << response.commands.size()
+                                  << " role commands for " << request.username;
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error generating role commands: " << e.what();
+        suggest_role_commands_response response{
+            .commands = {std::string("# ERROR: ") + e.what()}
+        };
+        co_return response.serialize();
+    }
 }
 
 accounts_message_handler::handler_result accounts_message_handler::

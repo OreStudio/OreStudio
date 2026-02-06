@@ -535,4 +535,72 @@ std::ostream& operator<<(std::ostream& s, const get_role_response& v) {
     return s;
 }
 
+// ============================================================================
+// Suggest Role Commands
+// ============================================================================
+
+std::vector<std::byte> suggest_role_commands_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, username);
+    writer::write_string(buffer, hostname);
+    writer::write_string(buffer, tenant_id);
+    return buffer;
+}
+
+std::expected<suggest_role_commands_request, ores::utility::serialization::error_code>
+suggest_role_commands_request::deserialize(std::span<const std::byte> data) {
+    suggest_role_commands_request request;
+
+    auto username_result = reader::read_string(data);
+    if (!username_result) return std::unexpected(username_result.error());
+    request.username = *username_result;
+
+    auto hostname_result = reader::read_string(data);
+    if (!hostname_result) return std::unexpected(hostname_result.error());
+    request.hostname = *hostname_result;
+
+    auto tenant_id_result = reader::read_string(data);
+    if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+    request.tenant_id = *tenant_id_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const suggest_role_commands_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> suggest_role_commands_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(commands.size()));
+    for (const auto& command : commands) {
+        writer::write_string(buffer, command);
+    }
+    return buffer;
+}
+
+std::expected<suggest_role_commands_response, ores::utility::serialization::error_code>
+suggest_role_commands_response::deserialize(std::span<const std::byte> data) {
+    suggest_role_commands_response response;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
+
+    response.commands.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto command_result = reader::read_string(data);
+        if (!command_result) return std::unexpected(command_result.error());
+        response.commands.push_back(*command_result);
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

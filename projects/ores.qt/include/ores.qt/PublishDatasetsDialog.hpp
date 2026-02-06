@@ -102,6 +102,7 @@ public:
     std::vector<dq::domain::dataset>& resolvedDatasets() { return resolvedDatasets_; }
     std::vector<boost::uuids::uuid>& requestedIds() { return requestedIds_; }
     std::vector<dq::domain::publication_result>& results() { return results_; }
+    QString& lastError() { return lastError_; }
 
     // State accessors
     dq::domain::publication_mode selectedMode() const;
@@ -116,6 +117,7 @@ private:
     std::vector<dq::domain::dataset> resolvedDatasets_;  // Full list including deps
     std::vector<boost::uuids::uuid> requestedIds_;  // IDs explicitly requested
     std::vector<dq::domain::publication_result> results_;  // Publication results
+    QString lastError_;  // Error message from failed publication attempt
 };
 
 // Forward declarations of page classes

@@ -387,6 +387,7 @@ void ProgressPage::initializePage() {
     publishSuccess_ = false;
     statusLabel_->setText(tr("Starting publication..."));
     currentDatasetLabel_->clear();
+    wizard_->lastError().clear();  // Clear any previous error
 
     // Start publishing after a short delay
     QTimer::singleShot(100, this, &ProgressPage::performPublish);
@@ -437,6 +438,8 @@ void ProgressPage::performPublish() {
             ? tr("Failed to communicate with server.")
             : QString::fromStdString(result.error().message);
         currentDatasetLabel_->setText(errorMsg);
+        // Store error for ResultsPage to display
+        wizard_->lastError() = errorMsg;
         publishComplete_ = true;
         publishSuccess_ = false;
         emit completeChanged();
@@ -569,7 +572,13 @@ void ResultsPage::initializePage() {
     // Update summary
     QString summary;
     if (results.empty()) {
-        summary = tr("No datasets were published.");
+        // Check if we have an error from the publication attempt
+        const QString& lastError = wizard_->lastError();
+        if (!lastError.isEmpty()) {
+            summary = tr("Publication failed: %1").arg(lastError);
+        } else {
+            summary = tr("No datasets were published.");
+        }
     } else if (failureCount == 0) {
         summary = tr("Successfully published %1 dataset(s).\n"
                      "Total: %2 inserted, %3 updated, %4 skipped, %5 deleted.")

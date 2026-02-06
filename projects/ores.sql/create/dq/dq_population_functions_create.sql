@@ -448,12 +448,12 @@ begin
         -- the corresponding image in the target tenant's assets table.
         -- This handles the case where the image may have a different UUID in
         -- the target tenant (e.g., from a previous import).
+        -- Note: Don't filter by dataset_id since images may be in a different dataset.
         if r.image_id is not null then
             select assets.image_id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
             join ores_assets_images_tbl assets on assets.key = dq_img.key
             where dq_img.image_id = r.image_id
-              and dq_img.dataset_id = p_dataset_id
               and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
               and assets.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -647,12 +647,12 @@ begin
         -- the corresponding image in the target tenant's assets table.
         -- This handles the case where the image may have a different UUID in
         -- the target tenant (e.g., from a previous import).
+        -- Note: Don't filter by dataset_id since images may be in a different dataset.
         if r.image_id is not null then
             select assets.image_id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
             join ores_assets_images_tbl assets on assets.key = dq_img.key
             where dq_img.image_id = r.image_id
-              and dq_img.dataset_id = p_dataset_id
               and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
               and assets.valid_to = ores_utility_infinity_timestamp_fn();
 

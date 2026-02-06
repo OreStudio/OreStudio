@@ -135,10 +135,11 @@ void ImageCache::clear() {
     image_icons_.clear();
     pending_image_ids_.clear();
     pending_image_requests_.clear();
-    available_images_.clear();
+    // Don't clear available_images_ - it's metadata used for placeholder lookup
+    // and will be refreshed by loadImageList() if needed
     last_load_time_.reset();
 
-    BOOST_LOG_SEV(lg(), debug) << "All caches cleared and last_load_time reset.";
+    BOOST_LOG_SEV(lg(), debug) << "Caches cleared and last_load_time reset.";
 }
 
 void ImageCache::loadCurrencyImageIds() {

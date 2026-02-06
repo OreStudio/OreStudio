@@ -341,7 +341,7 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c31f7-1064-7d42-b7d7-ac16d08d62aa
+  Account ID: 019c3245-5f29-7b86-8630-28988275db8a
   Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
   You can now login with the credentials provided.
 ores-shell> Bye!
@@ -490,9 +490,9 @@ EOF
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c30e2-fb61-77ee-b245-5faf3c415506
-ores-shell> ✓ Account created with ID: 019c30e2-fbda-7d5d-9759-78725f71a388
-ores-shell> ✓ Account created with ID: 019c30e2-fc53-7aac-a94b-a03f48eac318
+ores-shell> ✓ Account created with ID: 019c3245-8c98-742f-a1e5-4746ed74fa05
+ores-shell> ✓ Account created with ID: 019c3245-8d12-7cae-9315-470f8a5c3839
+ores-shell> ✓ Account created with ID: 019c3245-8d8e-7a18-a5d4-4e1b316e542a
 ores-shell> Bye!
 #+end_example
 
@@ -1021,7 +1021,9 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Tenant added successfully!
-  ID: 197fae34-e54e-463b-bc02-6c99cde3cfa4
+  ID: ea8ee6fb-17e7-4bff-ad4f-cb2be4ed8e6c
+ores-shell> ✓ Tenant added successfully!
+  ID: a45224a2-9350-4f13-aba6-a7610b0530a6
 ores-shell> Bye!
 #+end_example
 
@@ -1051,8 +1053,8 @@ EOF
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c30f9-acbc-77e7-aad3-762feb646641
-ores-shell> ✓ Account created with ID: 019c30f9-ad4b-71ed-b1e6-e2341ab1cc51
+ores-shell> ✓ Account created with ID: 019c3245-e0d3-7fd2-9883-c335b920b797
+ores-shell> ✓ Account created with ID: 019c3245-e15f-73dc-b843-3c131b96872f
 ores-shell> Bye!
 #+end_example
 
@@ -1777,7 +1779,8 @@ can be either a hostname or a tenant UUID.
 
 #+name: permissions-suggest
 #+begin_src ores-shell :exports none
-permissions suggest admin example.com
+permissions suggest newuser60 example.com
+permissions suggest newuser61 acme.com
 exit
 #+end_src
 
@@ -1787,6 +1790,39 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 <<permissions-suggest>>
 EOF
 #+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> # Role assignment commands for: newuser60@example.com
+# Account ID: 019c3245-e0d3-7fd2-9883-c335b920b797
+
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 e1dc5f65-9010-4d7b-be52-c5d07247c095  # DataPublisher
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 25b2d945-db76-48be-a16b-4964c4287abc  # Operations
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 a8dc1f14-332a-443a-85af-da2fbf927ff7  # Sales
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 6d583a15-3c34-4522-8bd8-569e7d448225  # SuperAdmin
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 49eb7984-800e-460c-b5a0-7a0ce5c94b0a  # Support
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 40224d84-446b-4cae-8fb8-86b16accd5e6  # TenantAdmin
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 36f85405-e037-46db-8f98-fe03c402081d  # Trading
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 e8e20a73-bb66-466c-8b11-8583341217f3  # Viewer
+ores-shell> # Role assignment commands for: newuser61@acme.com
+# Account ID: 019c3245-e15f-73dc-b843-3c131b96872f
+
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f e1dc5f65-9010-4d7b-be52-c5d07247c095  # DataPublisher
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 25b2d945-db76-48be-a16b-4964c4287abc  # Operations
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f a8dc1f14-332a-443a-85af-da2fbf927ff7  # Sales
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 6d583a15-3c34-4522-8bd8-569e7d448225  # SuperAdmin
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 49eb7984-800e-460c-b5a0-7a0ce5c94b0a  # Support
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 40224d84-446b-4cae-8fb8-86b16accd5e6  # TenantAdmin
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 36f85405-e037-46db-8f98-fe03c402081d  # Trading
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f e8e20a73-bb66-466c-8b11-8583341217f3  # Viewer
+ores-shell> Bye!
+#+end_example
 
 ** Events
    :PROPERTIES:

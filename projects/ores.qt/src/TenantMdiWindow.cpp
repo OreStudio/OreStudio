@@ -29,11 +29,10 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 TenantMdiWindow::TenantMdiWindow(ClientManager* clientManager,
@@ -291,64 +290,30 @@ void TenantMdiWindow::deleteSelected() {
     using DeleteResult = std::vector<iam::messaging::delete_tenant_result>;
 
     auto task = [self, tenant_ids]() -> DeleteResult {
-        if (!self) return {};
+        if (!self) {
+            return {};
+        }
 
         BOOST_LOG_SEV(lg(), debug) << "Deleting " << tenant_ids.size() << " tenants";
 
         iam::messaging::delete_tenant_request request{tenant_ids};
-        auto payload = request.serialize();
+        auto response = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
-        comms::messaging::frame request_frame(
-            message_type::delete_tenant_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
-            DeleteResult error_results;
-            for (const auto& id : tenant_ids) {
-                error_results.push_back({id, false, "Failed to communicate with server"});
-            }
-            return error_results;
+        if (response) {
+            return std::move(response->results);
         }
 
-        // Check for error response
-        if (auto err = exception_helper::check_error_response(*response_result)) {
-            BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
-                                       << err->message.toStdString();
-            DeleteResult error_results;
-            for (const auto& id : tenant_ids) {
-                error_results.push_back({id, false, err->message.toStdString()});
-            }
-            return error_results;
+        // Handle error from process_authenticated_request
+        const auto error_string = comms::net::to_string(response.error());
+        BOOST_LOG_SEV(lg(), error) << "Failed to delete tenants: " << error_string;
+
+        DeleteResult error_results;
+        const auto error_message = "Failed to delete tenants: " + error_string;
+        for (const auto& id : tenant_ids) {
+            error_results.push_back({id, false, error_message});
         }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            DeleteResult error_results;
-            for (const auto& id : tenant_ids) {
-                error_results.push_back({id, false, "Failed to decompress server response"});
-            }
-            return error_results;
-        }
-
-        auto response = iam::messaging::delete_tenant_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            DeleteResult error_results;
-            for (const auto& id : tenant_ids) {
-                error_results.push_back({id, false, "Invalid server response"});
-            }
-            return error_results;
-        }
-
-        return response->results;
+        return error_results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

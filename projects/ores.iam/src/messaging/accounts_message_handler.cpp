@@ -243,9 +243,8 @@ handle_save_account_request(std::span<const std::byte> payload,
                         database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
                     return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
                 } else {
-                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
-                                               << ctx_.tenant_id();
-                    return ctx_.with_tenant(ctx_.tenant_id());
+                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+                    return ctx_.with_tenant(utility::uuid::tenant_id::system());
                 }
             }();
 
@@ -431,12 +430,9 @@ handle_login_request(std::span<const std::byte> payload,
                 tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
                 return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             } else {
-                // Use current context's tenant
-                const auto& current_tenant = ctx_.tenant_id();
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
-                                           << current_tenant.to_string();
-                tenant_id = current_tenant;
-                return ctx_.with_tenant(current_tenant);
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
+                tenant_id = utility::uuid::tenant_id::system();
+                return ctx_.with_tenant(tenant_id);
             }
         }();
 

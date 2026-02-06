@@ -144,6 +144,7 @@ public:
 
     // Expansion state (for folder icons)
     void setFolderExpanded(const QModelIndex& index, bool expanded);
+    const std::unordered_set<boost::uuids::uuid>& expandedFolders() const { return expandedFolders_; }
 
     // Get domain objects from selection
     std::optional<connections::domain::folder> getFolderFromIndex(

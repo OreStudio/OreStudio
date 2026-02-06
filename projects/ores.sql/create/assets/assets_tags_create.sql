@@ -45,7 +45,7 @@ create table if not exists "ores_assets_tags_tbl" (
 );
 
 create unique index if not exists ores_assets_tags_version_uniq_idx
-on "ores_assets_tags_tbl" (tag_id, version)
+on "ores_assets_tags_tbl" (tenant_id, tag_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_assets_tags_name_uniq_idx

@@ -53,7 +53,7 @@ create table if not exists "ores_dq_catalogs_tbl" (
 );
 
 create unique index if not exists ores_dq_catalogs_version_uniq_idx
-on "ores_dq_catalogs_tbl" (name, version)
+on "ores_dq_catalogs_tbl" (tenant_id, name, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_dq_catalogs_name_uniq_idx

@@ -247,12 +247,13 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode: delete all existing images first
+    -- Handle replace_all mode: delete all existing images IN THE TARGET TENANT first
     if p_mode = 'replace_all' then
         -- Soft delete by setting valid_to
         update ores_assets_images_tbl
         set valid_to = current_timestamp
-        where valid_to = ores_utility_infinity_timestamp_fn();
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -268,10 +269,11 @@ begin
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_iam_system_tenant_id_fn()
     loop
-        -- Check if an image with this key already exists
+        -- Check if an image with this key already exists IN THE TARGET TENANT
         select image_id into v_existing_image_id
         from ores_assets_images_tbl existing
         where existing.key = r.key
+          and existing.tenant_id = p_target_tenant_id
           and existing.valid_to = ores_utility_infinity_timestamp_fn();
 
         -- In insert_only mode, skip existing records
@@ -409,11 +411,12 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode
+    -- Handle replace_all mode for TARGET TENANT only
     if p_mode = 'replace_all' then
         update ores_refdata_countries_tbl
         set valid_to = current_timestamp
-        where valid_to = ores_utility_infinity_timestamp_fn();
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -444,14 +447,20 @@ begin
             continue;
         end if;
 
-        -- Resolve image_id: check if image exists in assets_images_tbl
+        -- Resolve image_id by looking up the key from DQ images, then finding
+        -- the corresponding image in the target tenant's assets table.
+        -- This handles the case where the image may have a different UUID in
+        -- the target tenant (e.g., from a previous import).
+        -- Note: Don't filter by dataset_id since images may be in a different dataset.
         if r.image_id is not null then
-            select image_id into v_resolved_image_id
-            from ores_assets_images_tbl
-            where image_id = r.image_id
-              and valid_to = ores_utility_infinity_timestamp_fn();
+            select assets.image_id into v_resolved_image_id
+            from ores_dq_images_artefact_tbl dq_img
+            join ores_assets_images_tbl assets on assets.key = dq_img.key
+              and assets.tenant_id = p_target_tenant_id
+            where dq_img.image_id = r.image_id
+              and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
+              and assets.valid_to = ores_utility_infinity_timestamp_fn();
 
-            -- If not found by ID, image hasn't been populated yet
             if v_resolved_image_id is null then
                 raise warning 'Image % not found in assets_images_tbl for country %. Populate images first.',
                     r.image_id, r.alpha2_code;
@@ -596,11 +605,12 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode
+    -- Handle replace_all mode for TARGET TENANT only
     if p_mode = 'replace_all' then
         update ores_refdata_currencies_tbl
         set valid_to = current_timestamp
-        where valid_to = ores_utility_infinity_timestamp_fn();
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -638,12 +648,19 @@ begin
             continue;
         end if;
 
-        -- Resolve image_id
+        -- Resolve image_id by looking up the key from DQ images, then finding
+        -- the corresponding image in the target tenant's assets table.
+        -- This handles the case where the image may have a different UUID in
+        -- the target tenant (e.g., from a previous import).
+        -- Note: Don't filter by dataset_id since images may be in a different dataset.
         if r.image_id is not null then
-            select image_id into v_resolved_image_id
-            from ores_assets_images_tbl
-            where image_id = r.image_id
-              and valid_to = ores_utility_infinity_timestamp_fn();
+            select assets.image_id into v_resolved_image_id
+            from ores_dq_images_artefact_tbl dq_img
+            join ores_assets_images_tbl assets on assets.key = dq_img.key
+              and assets.tenant_id = p_target_tenant_id
+            where dq_img.image_id = r.image_id
+              and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
+              and assets.valid_to = ores_utility_infinity_timestamp_fn();
 
             if v_resolved_image_id is null then
                 raise warning 'Image % not found in assets_images_tbl for currency %. Populate images first.',

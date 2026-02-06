@@ -110,6 +110,12 @@ register_commands(cli::Menu& root_menu, client_session& session,
         process_list_permissions(std::ref(out), std::ref(session));
     }, "List all permissions in the system");
 
+    permissions_menu->Insert("suggest", [&session](std::ostream& out,
+            std::string username, std::string identifier) {
+        process_suggest_role_commands(std::ref(out), std::ref(session),
+            std::move(username), std::move(identifier));
+    }, "Generate role assignment commands (username hostname_or_tenant_id)");
+
     root_menu.Insert(std::move(permissions_menu));
 
     // =========================================================================
@@ -380,6 +386,46 @@ process_get_account_permissions(std::ostream& out, client_session& session,
 
     std::string title = "Effective Permissions for Account: " + account_id;
     format_string_list(out, title, result->permission_codes, "(no permissions)");
+}
+
+void rbac_commands::
+process_suggest_role_commands(std::ostream& out, client_session& session,
+    std::string username, std::string identifier) {
+    BOOST_LOG_SEV(lg(), debug) << "Generating role commands for: "
+                               << username << "@" << identifier;
+
+    using iam::messaging::suggest_role_commands_request;
+    using iam::messaging::suggest_role_commands_response;
+
+    // Try to determine if identifier is a UUID (tenant_id) or hostname
+    suggest_role_commands_request request{.username = username};
+
+    // Check if identifier looks like a UUID
+    try {
+        boost::lexical_cast<boost::uuids::uuid>(identifier);
+        // It's a valid UUID, use as tenant_id
+        request.tenant_id = identifier;
+    } catch (const boost::bad_lexical_cast&) {
+        // Not a UUID, treat as hostname
+        request.hostname = identifier;
+    }
+
+    auto result = session.process_authenticated_request<suggest_role_commands_request,
+                                                        suggest_role_commands_response,
+                                                        message_type::suggest_role_commands_request>
+        (request);
+
+    if (!result) {
+        out << "X " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Generated " << result->commands.size()
+                              << " role commands.";
+
+    for (const auto& command : result->commands) {
+        out << command << std::endl;
+    }
 }
 
 }

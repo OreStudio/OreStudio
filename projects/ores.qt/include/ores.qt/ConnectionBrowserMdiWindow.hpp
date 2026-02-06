@@ -120,6 +120,7 @@ private:
     void setupUI();
     void updateActionStates();
     void updateDetailPanel();
+    void restoreExpansionState();
 
     QVBoxLayout* layout_;
     QSplitter* splitter_;

@@ -72,7 +72,7 @@ on "ores_dq_datasets_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_dq_datasets_version_uniq_idx
-on "ores_dq_datasets_tbl" (id, version)
+on "ores_dq_datasets_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_dq_datasets_tenant_idx

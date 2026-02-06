@@ -253,12 +253,22 @@ void ConnectionBrowserMdiWindow::updateDetailPanel() {
     }
 }
 
+void ConnectionBrowserMdiWindow::restoreExpansionState() {
+    // Restore expansion state for folders that were previously expanded
+    for (const auto& folderId : model_->expandedFolders()) {
+        QModelIndex index = model_->indexFromUuid(folderId);
+        if (index.isValid()) {
+            treeView_->expand(index);
+        }
+    }
+}
+
 void ConnectionBrowserMdiWindow::reload() {
     using namespace ores::logging;
     BOOST_LOG_SEV(lg(), debug) << "Reloading connection browser";
 
     model_->refresh();
-    treeView_->expandAll();
+    restoreExpansionState();
     emit statusChanged(tr("Connections reloaded"));
 }
 
@@ -290,12 +300,12 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
     // Connect signals for refresh
     connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
         model_->refresh();
-        treeView_->expandAll();
+        restoreExpansionState();
         emit statusChanged(tr("Folder created: %1").arg(name));
     });
     connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
         model_->refresh();
-        treeView_->expandAll();
+        restoreExpansionState();
         emit statusChanged(tr("Connection created: %1").arg(name));
     });
     connect(dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
@@ -367,7 +377,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
         connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
             model_->refresh();
-            treeView_->expandAll();
+            restoreExpansionState();
             emit statusChanged(tr("Folder updated: %1").arg(name));
         });
     } else if (node->type == ConnectionTreeNode::Type::Environment) {
@@ -395,7 +405,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
         connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
             model_->refresh();
-            treeView_->expandAll();
+            restoreExpansionState();
             emit statusChanged(tr("Connection updated: %1").arg(name));
         });
     } else {
@@ -483,7 +493,7 @@ void ConnectionBrowserMdiWindow::deleteSelected() {
         }
 
         model_->refresh();
-        treeView_->expandAll();
+        restoreExpansionState();
         emit statusChanged(tr("%1 deleted: %2").arg(itemType, itemName));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to delete " << itemType.toStdString()

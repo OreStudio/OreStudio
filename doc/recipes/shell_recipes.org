@@ -341,7 +341,7 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c30e2-dbb6-7585-afc4-fcdf49c87eb1
+  Account ID: 019c3245-5f29-7b86-8630-28988275db8a
   Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
   You can now login with the credentials provided.
 ores-shell> Bye!
@@ -490,9 +490,9 @@ EOF
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c30e2-fb61-77ee-b245-5faf3c415506
-ores-shell> ✓ Account created with ID: 019c30e2-fbda-7d5d-9759-78725f71a388
-ores-shell> ✓ Account created with ID: 019c30e2-fc53-7aac-a94b-a03f48eac318
+ores-shell> ✓ Account created with ID: 019c3245-8c98-742f-a1e5-4746ed74fa05
+ores-shell> ✓ Account created with ID: 019c3245-8d12-7cae-9315-470f8a5c3839
+ores-shell> ✓ Account created with ID: 019c3245-8d8e-7a18-a5d4-4e1b316e542a
 ores-shell> Bye!
 #+end_example
 
@@ -1000,6 +1000,7 @@ Create a new tenant with the specified parameters.
 
 #+name: tenants-add
 #+begin_src ores-shell :exports none
+tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
 tenants add example "Example Corp" organisation example.com "Example Corporation tenant"
 exit
 #+end_src
@@ -1020,7 +1021,9 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Tenant added successfully!
-  ID: 197fae34-e54e-463b-bc02-6c99cde3cfa4
+  ID: ea8ee6fb-17e7-4bff-ad4f-cb2be4ed8e6c
+ores-shell> ✓ Tenant added successfully!
+  ID: a45224a2-9350-4f13-aba6-a7610b0530a6
 ores-shell> Bye!
 #+end_example
 
@@ -1031,7 +1034,7 @@ Creates new user accounts on system tenant.
 #+name: create-account-tenant
 #+begin_src ores-shell :exports none
 accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
-accounts create newuser61@example.com Secure-Password-123 567 newuser61@example.com
+accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
 exit
 #+end_src
 
@@ -1050,8 +1053,8 @@ EOF
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c30f9-acbc-77e7-aad3-762feb646641
-ores-shell> ✓ Account created with ID: 019c30f9-ad4b-71ed-b1e6-e2341ab1cc51
+ores-shell> ✓ Account created with ID: 019c3245-e0d3-7fd2-9883-c335b920b797
+ores-shell> ✓ Account created with ID: 019c3245-e15f-73dc-b843-3c131b96872f
 ores-shell> Bye!
 #+end_example
 
@@ -1766,6 +1769,58 @@ ores-shell>
 +--------------------------------------+-------------------------+---------------------------------------+
 
 
+ores-shell> Bye!
+#+end_example
+
+*** Suggest Role Commands
+
+Generate shell commands to assign all roles to an account. The second argument
+can be either a hostname or a tenant UUID.
+
+#+name: permissions-suggest
+#+begin_src ores-shell :exports none
+permissions suggest newuser60 example.com
+permissions suggest newuser61 acme.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<permissions-suggest>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> # Role assignment commands for: newuser60@example.com
+# Account ID: 019c3245-e0d3-7fd2-9883-c335b920b797
+
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 e1dc5f65-9010-4d7b-be52-c5d07247c095  # DataPublisher
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 25b2d945-db76-48be-a16b-4964c4287abc  # Operations
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 a8dc1f14-332a-443a-85af-da2fbf927ff7  # Sales
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 6d583a15-3c34-4522-8bd8-569e7d448225  # SuperAdmin
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 49eb7984-800e-460c-b5a0-7a0ce5c94b0a  # Support
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 40224d84-446b-4cae-8fb8-86b16accd5e6  # TenantAdmin
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 36f85405-e037-46db-8f98-fe03c402081d  # Trading
+accounts assign-role 019c3245-e0d3-7fd2-9883-c335b920b797 e8e20a73-bb66-466c-8b11-8583341217f3  # Viewer
+ores-shell> # Role assignment commands for: newuser61@acme.com
+# Account ID: 019c3245-e15f-73dc-b843-3c131b96872f
+
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f e1dc5f65-9010-4d7b-be52-c5d07247c095  # DataPublisher
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 25b2d945-db76-48be-a16b-4964c4287abc  # Operations
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f a8dc1f14-332a-443a-85af-da2fbf927ff7  # Sales
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 6d583a15-3c34-4522-8bd8-569e7d448225  # SuperAdmin
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 49eb7984-800e-460c-b5a0-7a0ce5c94b0a  # Support
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 40224d84-446b-4cae-8fb8-86b16accd5e6  # TenantAdmin
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f 36f85405-e037-46db-8f98-fe03c402081d  # Trading
+accounts assign-role 019c3245-e15f-73dc-b843-3c131b96872f e8e20a73-bb66-466c-8b11-8583341217f3  # Viewer
 ores-shell> Bye!
 #+end_example
 
@@ -2733,6 +2788,87 @@ ores-shell>
 +--------+-------------------------------------------------------------------------+-------------+---------+
 
 
+ores-shell> Bye!
+#+end_example
+
+
+** Setup a new System
+
+Useful commands to setup a new system.
+
+#+name: setup-new-system
+#+begin_src ores-shell :exports none
+connect localhost 51004 test
+bootstrap newuser3 Secure-Password-123 newuser3@test.com
+accounts login newuser3 Secure-Password-123
+tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
+accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
+tenants add example "Example Corp" organisation example.com "Example Corporation tenant"
+accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
+permissions suggest newuser60 example.com
+permissions suggest newuser61 acme.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<setup-new-system>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+  Use 'bootstrap <username> <password> <email>' to create the initial admin account.
+
+✗ Auto-login failed: System is in bootstrap mode. Only initial admin account creation is allowed. Please create the initial admin account from localhost.
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Connected to :51004
+
+⚠ WARNING: System is in BOOTSTRAP MODE
+  System in BOOTSTRAP MODE - awaiting initial admin account creation
+
+ores-shell> ✓ Initial admin account created successfully!
+  Account ID: 019c32c0-d177-7328-8287-5877bddbe572
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+  You can now login with the credentials provided.
+ores-shell> ✓ Login successful!
+  User: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ores-shell> ✓ Tenant added successfully!
+  ID: d4e4717a-444f-4a9e-b61a-3955c50ecdec
+ores-shell> ✓ Account created with ID: 019c32c0-d2cc-71ea-ba7e-3486ff79b69d
+ores-shell> ✓ Tenant added successfully!
+  ID: fce9980a-91c1-4fce-af74-f1a4be32c9a4
+ores-shell> ✓ Account created with ID: 019c32c0-d374-7029-86aa-e2dce4b7b631
+ores-shell> # Role assignment commands for: newuser60@example.com
+# Account ID: 019c32c0-d374-7029-86aa-e2dce4b7b631
+
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 65449fd0-f712-4a8d-9cc8-c1c2a45a526e  # DataPublisher
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 1c861ebb-6d65-48c2-9f61-16fd5341886a  # Operations
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 71fea5eb-3b63-4d7f-8f67-2e6d1076cee4  # Sales
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 8ee5922b-8e6c-405b-a192-9640a4de2c8e  # SuperAdmin
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 a1c366f8-7974-4646-a2e0-8872845b1783  # Support
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 ee817971-c045-4695-a933-2a6c9cd9b8cf  # TenantAdmin
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 ed378a78-158a-4e9b-aa9b-4d87605c7412  # Trading
+accounts assign-role 019c32c0-d374-7029-86aa-e2dce4b7b631 9bb04780-bda5-44a9-b8c4-26dda518c2e5  # Viewer
+ores-shell> # Role assignment commands for: newuser61@acme.com
+# Account ID: 019c32c0-d2cc-71ea-ba7e-3486ff79b69d
+
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d 65449fd0-f712-4a8d-9cc8-c1c2a45a526e  # DataPublisher
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d 1c861ebb-6d65-48c2-9f61-16fd5341886a  # Operations
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d 71fea5eb-3b63-4d7f-8f67-2e6d1076cee4  # Sales
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d 8ee5922b-8e6c-405b-a192-9640a4de2c8e  # SuperAdmin
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d a1c366f8-7974-4646-a2e0-8872845b1783  # Support
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d ee817971-c045-4695-a933-2a6c9cd9b8cf  # TenantAdmin
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d ed378a78-158a-4e9b-aa9b-4d87605c7412  # Trading
+accounts assign-role 019c32c0-d2cc-71ea-ba7e-3486ff79b69d 9bb04780-bda5-44a9-b8c4-26dda518c2e5  # Viewer
 ores-shell> Bye!
 #+end_example
 

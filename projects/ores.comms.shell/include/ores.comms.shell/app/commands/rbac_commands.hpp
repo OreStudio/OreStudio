@@ -165,6 +165,21 @@ public:
     static void process_get_account_permissions(std::ostream& out,
         comms::net::client_session& session,
         std::string account_id);
+
+    /**
+     * @brief Process a suggest role commands request.
+     *
+     * Generates shell commands to assign all roles to an account.
+     * The account is identified by username and either hostname or tenant_id.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param username The username of the account.
+     * @param identifier Either a hostname or tenant_id UUID.
+     */
+    static void process_suggest_role_commands(std::ostream& out,
+        comms::net::client_session& session,
+        std::string username, std::string identifier);
 };
 
 }

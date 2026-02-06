@@ -47,7 +47,7 @@ create table if not exists "ores_assets_images_tbl" (
 );
 
 create unique index if not exists ores_assets_images_version_uniq_idx
-on "ores_assets_images_tbl" (image_id, version)
+on "ores_assets_images_tbl" (tenant_id, image_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_assets_images_key_uniq_idx

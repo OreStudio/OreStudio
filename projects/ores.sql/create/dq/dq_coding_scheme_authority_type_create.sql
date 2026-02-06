@@ -54,7 +54,7 @@ create table if not exists "ores_dq_coding_scheme_authority_types_tbl" (
 );
 
 create unique index if not exists ores_dq_coding_scheme_authority_types_version_uniq_idx
-on "ores_dq_coding_scheme_authority_types_tbl" (code, version)
+on "ores_dq_coding_scheme_authority_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_dq_coding_scheme_authority_types_code_uniq_idx

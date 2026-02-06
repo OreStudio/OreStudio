@@ -17,43 +17,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 01:49], for Friday, February 06, 2026.
+#+CAPTION: Clock summary at [2026-02-06 Fri 03:38], for Friday, February 06, 2026.
 |      | <75>                                                     |        |      |      |       |
 | Tags | Headline                                                 | Time   |      |      |     % |
 |------+----------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                             | *1:48* |      |      | 100.0 |
+|      | *Total time*                                             | *3:35* |      |      | 100.0 |
 |------+----------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                                  | 1:48   |      |      | 100.0 |
-|      | Active                                                   |        | 1:48 |      | 100.0 |
-| code | Refactor message handlers for per-request tenant context |        |      | 1:48 | 100.0 |
+|      | Stories                                                  | 3:35   |      |      | 100.0 |
+|      | Active                                                   |        | 3:35 |      | 100.0 |
+| code | Refactor message handlers for per-request tenant context |        |      | 1:48 |  50.2 |
+| code | Check that data librarian can publish across tenants     |        |      | 1:47 |  49.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 01:49]
+#+CAPTION: Clock summary at [2026-02-06 Fri 03:38]
 |       | <75>                                                     |         |       |       |       |
 | Tags  | Headline                                                 | Time    |       |       |     % |
 |-------+----------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                             | *63:14* |       |       | 100.0 |
+|       | *Total time*                                             | *65:01* |       |       | 100.0 |
 |-------+----------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                  | 63:14   |       |       | 100.0 |
-|       | Active                                                   |         | 63:14 |       | 100.0 |
-| agile | Sprint and product backlog refinement                    |         |       |  2:24 |   3.8 |
-| code  | Address past review comments                             |         |       |  1:14 |   2.0 |
-| code  | Split "god" admin account                                |         |       | 10:05 |  15.9 |
-| code  | Move all database entities to public schema              |         |       |  1:22 |   2.2 |
+|       | Stories                                                  | 65:01   |       |       | 100.0 |
+|       | Active                                                   |         | 65:01 |       | 100.0 |
+| agile | Sprint and product backlog refinement                    |         |       |  2:24 |   3.7 |
+| code  | Address past review comments                             |         |       |  1:14 |   1.9 |
+| code  | Split "god" admin account                                |         |       | 10:05 |  15.5 |
+| code  | Move all database entities to public schema              |         |       |  1:22 |   2.1 |
 | code  | Check directory structure in SQL                         |         |       |  0:36 |   0.9 |
-| code  | Add tenancy support                                      |         |       |  3:55 |   6.2 |
-| code  | Use tenancy to isolate tests                             |         |       |  5:00 |   7.9 |
+| code  | Add tenancy support                                      |         |       |  3:55 |   6.0 |
+| code  | Use tenancy to isolate tests                             |         |       |  5:00 |   7.7 |
 | code  | Add NOTICE logging support to sqlgen                     |         |       |  0:53 |   1.4 |
-| code  | Update codegen for tenancy                               |         |       |  3:32 |   5.6 |
-| code  | Add entity types for tenants                             |         |       |  9:43 |  15.4 |
-| code  | Add sink to log to database directly                     |         |       |  5:00 |   7.9 |
-| code  | Add system accounts for services                         |         |       |  3:32 |   5.6 |
-| code  | Test shell functionality with tenancy enabled            |         |       |  9:44 |  15.4 |
+| code  | Update codegen for tenancy                               |         |       |  3:32 |   5.4 |
+| code  | Add entity types for tenants                             |         |       |  9:43 |  14.9 |
+| code  | Add sink to log to database directly                     |         |       |  5:00 |   7.7 |
+| code  | Add system accounts for services                         |         |       |  3:32 |   5.4 |
+| code  | Test shell functionality with tenancy enabled            |         |       |  9:44 |  15.0 |
 | code  | Fix apt-get failures on nightly build                    |         |       |  0:20 |   0.5 |
 | code  | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.5 |
-| code  | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.8 |
+| code  | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.6 |
+| code  | Check that data librarian can publish across tenants     |         |       |  1:47 |   2.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1144,6 +1146,13 @@ class handler {
     }
 };
 #+end_src
+
+*** COMPLETED Check that data librarian can publish across tenants     :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 01:50]--[2026-02-06 Fri 03:37] =>  1:47
+    :END:
+
+Ensure publication still works as expected.
 
 *** Consider using UUID in the database layer                          :code:
 

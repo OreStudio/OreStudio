@@ -1147,12 +1147,39 @@ class handler {
 };
 #+end_src
 
-*** COMPLETED Check that data librarian can publish across tenants     :code:
+*** STARTED Check that data librarian can publish across tenants       :code:
     :LOGBOOK:
     CLOCK: [2026-02-06 Fri 01:50]--[2026-02-06 Fri 03:37] =>  1:47
     :END:
 
 Ensure publication still works as expected.
+
+Errors:
+
+#+begin_quote
+=== Publication Results ===
+
+[FAILED] slovaris.country_flags
+  Target: assets_images_tbl
+Error: Query execution failed: ERROR: duplicate key value violates unique constraint "ores_assets_images_version_uniq_idx" DETAIL: Key (image_id, version)=(14e65ed1-2e75-4f27-8e05-ba13a65a279f, 1) already exists. CONTEXT: SQL statement "insert into ores_assets_images_tbl ( tenant_id, image_id, version, key, description, svg_data, modified_by, performed_by, change_reason_code, change_commentary ) values ( p_target_tenant_id, coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data, current_user, current_user, 'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name ) returning version" PL/pgSQL function ores_dq_images_publish_fn(uuid,uuid,text) line 63 at SQL statement
+
+[SUCCESS] slovaris.currencies
+  Target: refdata_currencies_tbl
+  Records: 100 inserted, 0 updated, 0 skipped, 0 deleted
+
+[FAILED] slovaris.countries
+  Target: refdata_countries_tbl
+Error: Query execution failed: ERROR: duplicate key value violates unique constraint "ores_refdata_countries_version_uniq_idx" DETAIL: Key (alpha2_code, version)=(AL, 1) already exists. CONTEXT: SQL statement "insert into ores_refdata_countries_tbl ( tenant_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, coding_scheme_code, image_id, modified_by, performed_by, change_reason_code, change_commentary ) values ( p_target_tenant_id, r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_coding_scheme_code, v_resolved_image_id, current_user, current_user, 'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name ) returning version" PL/pgSQL function ores_dq_countries_publish_fn(uuid,uuid,text) line 82 at SQL statement
+
+[SUCCESS] geo.ip2country
+  Target: geo_ip2country_tbl
+  Records: 512186 inserted, 0 updated, 0 skipped, 0 deleted
+
+=== Summary ===
+Datasets processed: 4
+Succeeded: 2, Failed: 2
+Total records: 512286 inserted, 0 updated, 0 skipped, 0 deleted
+#+end_quote
 
 *** Consider using UUID in the database layer                          :code:
 

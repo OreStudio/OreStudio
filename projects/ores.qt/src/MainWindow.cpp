@@ -128,7 +128,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
     ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
     ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
-    ui_->ActionTenants->setIcon(IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor));
+    ui_->ActionTenants->setIcon(IconUtils::createRecoloredIcon(Icon::Building, IconUtils::DefaultIconColor));
     ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionChangeReasonCategories->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(Icon::NoteEdit, IconUtils::DefaultIconColor));

@@ -21,6 +21,7 @@
     <file>icons/fluentui/filled/ic_fluent_arrow_upload_fpml_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_arrow_upload_ore_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_book_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_building_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_checkmark_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clipboard_number_123_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clock_16_filled.svg</file>
@@ -77,6 +78,7 @@
     <file>icons/fluentui/regular/ic_fluent_arrow_upload_fpml_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_arrow_upload_ore_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_book_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_building_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_checkmark_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clipboard_number_123_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clock_16_regular.svg</file>
@@ -128,6 +130,7 @@
     <file>icons/solarized/Bold/add-circle.svg</file>
     <file>icons/solarized/Bold/arrow-left.svg</file>
     <file>icons/solarized/Bold/arrow-right.svg</file>
+    <file>icons/solarized/Bold/buildings.svg</file>
     <file>icons/solarized/Bold/check-circle.svg</file>
     <file>icons/solarized/Bold/clipboard-list.svg</file>
     <file>icons/solarized/Bold/clock-circle.svg</file>
@@ -180,6 +183,7 @@
     <file>icons/solarized/Linear/add-circle.svg</file>
     <file>icons/solarized/Linear/arrow-left.svg</file>
     <file>icons/solarized/Linear/arrow-right.svg</file>
+    <file>icons/solarized/Linear/buildings.svg</file>
     <file>icons/solarized/Linear/check-circle.svg</file>
     <file>icons/solarized/Linear/clipboard-list.svg</file>
     <file>icons/solarized/Linear/clock-circle.svg</file>

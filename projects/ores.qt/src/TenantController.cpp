@@ -96,7 +96,7 @@ void TenantController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Tenants");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Server, IconUtils::DefaultIconColor));
+        Icon::Building, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(listMdiSubWindow_);
@@ -366,7 +366,7 @@ void TenantController::showDetailWindow(const iam::domain::tenant* tenant,
     }
     detailWindow->setWindowTitle(title);
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Server, IconUtils::DefaultIconColor));
+        Icon::Building, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

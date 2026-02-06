@@ -110,7 +110,7 @@ begin
     where r.valid_to = ores_utility_infinity_timestamp_fn()
     order by r.name;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 comment on function ores_iam_generate_role_commands_fn(text, text, uuid) is
 'Generate ores.shell commands to assign all roles to an account.

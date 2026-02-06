@@ -53,7 +53,7 @@ create table if not exists "ores_refdata_countries_tbl" (
 );
 
 create unique index if not exists ores_refdata_countries_version_uniq_idx
-on "ores_refdata_countries_tbl" (alpha2_code, version)
+on "ores_refdata_countries_tbl" (tenant_id, alpha2_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_refdata_countries_code_uniq_idx

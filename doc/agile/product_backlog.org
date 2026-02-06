@@ -67,6 +67,1512 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Redesign Qt ImageCache invalidation strategy                       :code:
+
+The current ImageCache invalidation approach is brittle and error-prone. When
+datasets are published, the cache reload is triggered by pattern-matching
+dataset codes (e.g., checking for "flag", "icon", "currenc", "countr" in the
+code string). This is fragile because:
+
+- New dataset types require updating the pattern matching logic
+- The relationship between datasets and cached data is implicit
+- Cache invalidation relies on string matching rather than proper metadata
+
+Proposed improvements:
+
+- Use artefact_type metadata instead of code string matching to determine if
+  cache invalidation is needed
+- Consider a more general cache invalidation framework that can be extended to
+  other caches (ChangeReasonCache, etc.)
+- Investigate using server-side notifications to trigger cache invalidation
+  (similar to the notification system already in place)
+- Document the caching strategy and invalidation rules
+
+Acceptance criteria:
+
+- Cache invalidation is based on structured metadata, not string patterns
+- Adding new image-related datasets doesn't require code changes
+- Cache invalidation logic is documented and maintainable
+
+*** Stop and start service does not trigger ores.qt reconnection       :code:
+
+We seem to just remain in a weird disconnected state. Clicking disconnect seems
+to freeze UI.
+
+*** Consider using UUID in the database layer                          :code:
+
+At present we are using std::string and then mapping to boost UUID.
+
+*** Generate protocol docs via codegen                                 :code:
+
+At present protocol documentation is very behind. We are not consistently
+generating it. Also, we keep making manual changes to document. We need to split
+it into two documents, the overview document which we maintain manually, and the
+list of versions, messages etc which is automatically generated. We should use
+mustache.
+
+*** Add database support for tests                                     :code:
+
+We could create a schema for logging:
+
+- test suite, test case. contain the names of test suites and test cases.
+- test suite run, test case run. specific runs. useful to get details of timing.
+  Is logging enabled, etc. Tenant ID. Debug or release.
+- time series for test duration, test suite duration.
+- we could add a simple UI to ores.qt to see what the tests are doing over time.
+- test count charts.
+
+Notes:
+
+- if we keep destroying the environment to test scripts we will lose valuable
+  historical test data. Maybe we should have a "test database" which we destroy
+  infrequently. In truth we just care about the test tables. So we use the test
+  database for telemetry etc but the environment database to exercise the tests.
+  Or perhaps we just need to capture some data into a time series DB.
+  For example =ores_test_local1=.
+- however, we want the service to be able to connect to the test database, so
+  that we can display test related information in the UI.
+- test database should link back to tenant ID in case we want to inspect data.
+- test failures are much easier to investigate, we can just browse the UI for
+  failed test and see it's log.
+- also upload information from Catch2 XML including exceptions etc.
+- group tests by component.
+- ideally we want all environments to write to the same test database. We want
+  to compare data across environments. But we need to know which run is which.
+- log the git commit version and if it's dirty or not.
+- we probably need a separate story for this but we should look into adding code
+  coverage as well.
+- Claude can then plug into all of this information. For a given test run, we
+  could generate a summary report and then have Claude analyse it.
+
+*** Instrument components with telemetry context                       :code:
+
+Now that logging has been integrated with telemetry, the next step is to
+instrument key components with the =TLOG_SEV= macro to enable trace correlation.
+
+Tasks:
+
+- Instrument =server_session= with root span on connection, child spans per
+  request.
+- Instrument =client_session= with spans for outgoing requests.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
+- Add spans for database operations in ores.database.
+
+*** Create span collection and export infrastructure                   :code:
+
+The telemetry component has span types defined but no infrastructure to collect
+and export completed spans.
+
+Tasks:
+
+- Create =span_collector= interface for accumulating completed spans.
+- Implement =span_exporter= interface (similar to =log_exporter=).
+- Create =file_span_exporter= that writes spans as JSON Lines.
+- Integrate span export with =lifecycle_manager= or create =telemetry_provider=.
+
+*** Add tenant CRUD commands to CLI                                    :code:
+
+We need to be able to add new tenants, list tenants, etc.
+
+*** Add a sample set of gravatars for profiles                         :code:
+
+We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled
+(img123.jpg etc). There are also too many of them. We need to label them so we
+can use them to generate synthetic profiles to test the system and to ensure
+diversity. We probably need the following classes: race (course approximation is
+fine), gender, age (again course approximation - kid, teenager, adult, senior or
+some such classification). Then we need to create a subset of the dataset which
+is a representative sample.
+
+Gemini script that uses ollama:
+
+#+begin_src python
+import ollama
+import os
+import pandas as pd
+import json
+
+# Configuration
+IMAGE_FOLDER = './human-profile-photos' # Path to your dataset
+OUTPUT_FILE = 'labeled_dataset.csv'
+MODEL = 'llama3.2-vision'
+
+# Prompt designed for structured output
+PROMPT = """
+Analyze the person in this image and provide a JSON response with exactly these keys:
+- "race": (e.g., White, Black, Asian, Hispanic, etc.)
+- "gender": (Male, Female)
+- "age_group": (Kid, Teenager, Adult, Senior)
+
+Return ONLY the JSON object.
+"""
+
+def label_images():
+    results = []
+    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+
+    print(f"Starting labeling for {len(image_files)} images...")
+
+    for filename in image_files:
+        path = os.path.join(IMAGE_FOLDER, filename)
+
+        try:
+            response = ollama.chat(
+                model=MODEL,
+                format='json', # Forces the model to output valid JSON
+                messages=[{
+                    'role': 'user',
+                    'content': PROMPT,
+                    'images': [path]
+                }]
+            )
+
+            # Parse the response
+            data = json.loads(response['message']['content'])
+            data['filename'] = filename
+            results.append(data)
+            print(f"Labeled: {filename}")
+
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+
+    # Save to CSV
+    df = pd.DataFrame(results)
+    df.to_csv(OUTPUT_FILE, index=False)
+    print(f"Done! Results saved to {OUTPUT_FILE}")
+
+if __name__ == "__main__":
+    label_images()
+#+end_src
+
+
+*** Add staging support                                                :code:
+
+We need to add support for staging for all entities, in preparation of
+authorisation queue. We probably should just call this "authq" rather than
+staging.
+
+Notes:
+
+- server side writes to staging table instead of production table. Write
+  contains signature.
+- user opens authq for an entity and sees entry. Authorises, which signs the
+  row. If there are enough signatures, row is promoted into production with the
+  last signature. This happens via stored proc which checks where we are in the
+  state machine. If we have finished, we mark the row in staging as completed
+  and copy it into production.
+- end users open the entity dialog. This shows all live rows (e.g. those in
+  production) plus recent deletes, plus "pre-live" rows which are rows waiting
+  for authorisation.
+
+*** Add support for row signing                                        :code:
+
+It would be good to have users sign the changes they make.
+
+Gemini:
+
+#+begin_src markdown
+# Specification: Zero-Knowledge Row-Level Data Signing
+
+## 1. Objective
+
+Implement a system within PostgreSQL and a Client-side application to ensure
+row-level data integrity using digital signatures. The system must support
+,**schema evolution** (changing which columns are signed) and **zero-knowledge
+key management** (the server never sees the user's plain-text private key).
+
+## 2. Core Components
+
+### A. The Signature Registry (The "Recipe")
+
+To handle schema changes, we use a versioned registry.
+
+- **Table:** `signature_registry`
+- **Purpose:** Defines which columns constitute the "canonical payload" for a
+  specific version.
+- **Mechanism:** A function/query that takes a table row, filters it by the
+  versioned column list, and produces a **Deterministic Canonical JSON**
+  (alphabetically sorted keys, consistent date formats).
+
+### B. Zero-Knowledge Key Management
+
+- **Storage:** A table (e.g., `user_keys`) stores the user's **Public Key** and
+  an **Encrypted Private Key** (the "Blob").
+- **Process:** The client encrypts the Private Key using a key derived from the
+  user's password before upload.
+- **Temporal Logic:** This table is **Temporal** (using System-Period
+  Versioning). This ensures that every historical Public Key is preserved,
+  allowing us to verify old signatures even after a user rotates their keys.
+
+### C. The Signing Workflow
+
+- 1. **Client** retrieves the "Active" Registry Version and their Encrypted
+  Private Key.
+- 2. **Client** decrypts the Private Key locally.
+- 3. **Client** constructs the Canonical JSON from the row data based on the
+  Registry Recipe.
+- 4. **Client** signs the JSON and sends the record to the DB along with the
+  `signature` and `registry_version_id`.
+
+## 3. Data Integrity Schema
+
+The target data tables must include:
+
+- `signature` (BYTEA/TEXT): The cryptographic result.
+- `sig_version_id` (FK): Links to `signature_registry`.
+- `key_version_id` (FK): Links to the specific version in the **Temporal Key
+  Table** to prevent clock-drift issues during verification.
+
+## Point 4: Unified Identity & System Signing
+
+While users sign with asymmetric keys (RSA/ECDSA), system processes—like
+automated batch updates or background tasks—use a high-speed **HMAC (Hash-based
+Message Authentication Code)** approach. This allows "System Accounts" to
+participate in the same signature infrastructure without the overhead of
+public/private key pairs.
+
+- **The Machine Secret:** The system uses a 256-bit secret key (stored as an
+  environment variable or a database configuration parameter).
+- **The "Secret" Signature:** When a system account updates a row, it generates
+  a signature using `HMAC_SHA256(canonical_json, system_secret)`.
+- **Verification:** The verification query treats the "Signature" column as
+  polymorphic. If the row belongs to a user, it uses the **Public Key**; if it
+  belongs to a system account, it re-calculates the **HMAC** using the internal
+  secret to verify integrity.
+
+## Point 5: The Checkpointed Merkle Chain (Timeline Lock)
+
+To prevent "Ghost Deletions" (where an attacker deletes an entire row) or
+"History Rewriting," the system implements a Merkle-style chain. This creates a
+mathematical dependency between rows, making it impossible to change one record
+without breaking every subsequent record.
+
+- **Row Chaining:** Every row includes a `row_hash` (generated by the fast
+  ,**XXH3** 64-bit algorithm). This hash is a combination of:
+  `Hash(Current_Data + Current_Signature + Previous_Row_Hash)`.
+- **The Genesis Salt:** The very first row in the database uses a well-known
+  value (`0xFFFFFFFFFFFFFFFF`) as its "Previous Hash" to start the chain.
+- **Periodic Checkpointing:** Every 1,000 records (or every hour), a background
+  service calculates a **Master Checkpoint Hash** (an HMAC of all `row_hash`
+  values in that block).
+- **The Audit Log:** This Master Hash is stored in a separate, append-only
+  `audit_checkpoints` table. This acts as a "Timeline Lock"—once a checkpoint is
+  written, the previous 1,000 rows are effectively "sealed" and cannot be
+  modified or deleted without the system detecting a break in the chain.
+
+## 6. Implementation Requirements for Claude
+
+- 1. **Database Layer:** * Create the `signature_registry` and temporal `user_keys` tables.
+  - Provide a PostgreSQL function to generate a sorted Canonical JSON string
+    from a record given a `version_id`.
+- 2. **Client Layer (JS/Node/Python):** * Logic to derive an encryption key from
+  a password (PBKDF2/Argon2).
+  - Logic to sign the Canonical JSON using the decrypted Private Key.
+- 3. **Verification Layer:**
+  - A query that joins the Data Table with the Temporal Key History and the
+    Registry to re-generate the hash and verify it against the stored signature.
+
+### The Final "Story" Summary for Claude:
+
+> "I am building a PostgreSQL-based row-level integrity system. Users sign rows
+> using an **E2EE Private Key** stored as an encrypted blob. System accounts use
+> an **HMAC secret** to sign their changes. To prevent row deletion or tampering
+> with history, I am using an **XXH3-based Merkle Chain** where each row points
+> to the hash of the previous row. Finally, a background service creates **HMAC
+> Checkpoints** of these hashes to provide a verifiable audit trail of the
+> database timeline. Please implement the SQL triggers and the verification
+> logic for this architecture."
+
+#+end_src
+
+Notes:
+
+- the system should be designed in such a way that any table which requires
+  signing can also require multiple signatures. For example, the query includes
+  the signature field itself. Then the next signature has a "parent ID" (look
+  for proper technical term). The main table just joins against the last
+  signature but we can follow the trail back. The state machine determines how
+  many signatures are required to promote from staging to main table.
+
+*** Add FSM support to postgres                                        :code:
+
+In order to manage aspects such as trade life-cycles, authorisation, etc. We
+will need to support finite state machines. We should probably implement this
+directly in postgres.
+
+Links:
+
+- [[https://raphael.medaer.me/2019/06/12/pgfsm.html][Versioned FSM (Finite-State Machine) with Postgresql]]
+- [[https://felixge.de/2017/07/27/implementing-state-machines-in-postgresql/][Implementing State Machines in PostgreSQL]]
+- [[https://github.com/michelp/pgfsm/blob/master/pgfsm--0.0.1.sql][pgfsm--0.0.1.sql]]
+
+*** Add pg_cron extension for scheduling                               :code:
+
+We should install pg_cron extension:
+
+#+begin_quote
+pg_cron is a simple cron-based job scheduler for PostgreSQL (10 or higher) that
+runs inside the database as an extension.
+#+end_quote
+
+Links:
+
+- [[https://github.com/citusdata/pg_cron][GH: pg_cron]]
+
+*** System provisioner needs an icon                                   :code:
+
+Dialog is using default ORE icon.
+
+*** Add "system" account                                               :code:
+
+Modified by must always map to an existing account. We need to create an account
+that cannot login and which is used for all of the initial population.
+
+Publication should be done using the new admin account, not the system account.
+
+*** Add roles for Super Admin                                          :code:
+
+We need to distinguish between the tenant admin and the "super" admin. These
+should have different roles.
+
+*** Split create schemas from main populate script                     :code:
+
+We should probably add a create schemas script.
+
+*** Message handlers are not scalable                                  :code:
+
+Claude just mentioned this in passing:
+
+#+begin_quote
+Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
+  ⎿  Error: File content (25665 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.
+● Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
+  ⎿  Read 200 lines
+#+end_quote
+
+This will not work when we have hundreds of types in a component. We need to
+split these files by message type.
+
+*** Generate C++ code for FPML                                         :code:
+
+We need to fix any limitations we may have in xsdcpp.
+
+*** Clicking save on connections causes exit                           :code:
+
+Asks if we want to exit. Also clicking save several times creates folders with
+the same name.
+
+*** Analysis on database name service                                  :code:
+
+Is this used? If so, the service should not be connecting to the admin database.
+
+*** External data issues                                               :code:
+
+Problems observed:
+
+- missing =downloaded_at= for a lot of data.
+- spurious =manifest.txt=, we should only have =manifest.json=.
+- duplication of data in catalog and main manifest. The manifest is the catalog.
+  Remove duplication.
+- for github downloads, add git commit.
+- not clear who "owner" is. It has to map to an account or group in the system.
+- datasets have a catalog, but they shoud be forced to use the catalog of the
+  manifest:
+
+:             "catalog": "Open Source Risk Engine",
+
+- need a domain for data such as XML Schemas.
+- we should ensure the methodology is one of the defined methodologies in the
+  file.
+- since datasets refer to data in subdirectories, we should add the directory to
+  the manifest. Not needed in DB.
+
+*** Make the icon theme "configurable"                                 :code:
+
+While we are trying to find a good icon theme, it should be possible to change
+the icons without having to rebuild. Ideally without having to restart, but if
+we have to restart that's not too bad.
+
+*** Listener error in comms service                                    :code:
+
+Investigate this:
+
+#+begin_src logview
+2026-01-22 20:40:20.194383 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2026-01-22 20:40:20.194413 [INFO] [ores.comms.net.server_session] Sent notification for event type 'ores.refdata.currency_changed' with 1 entity IDs to 127.0.0.1:49354
+2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
+2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
+#+end_src
+
+*** Implement party related entities at database level                 :code:
+
+The first step of this work is to get the entities to work at the database
+schema level.
+
+**** Table Structure: party
+
+| Field Name           | Data Type   | Constraints     | Commentary                                                                                        |
+|----------------------+-------------+-----------------+---------------------------------------------------------------------------------------------------|
+| =party_id=           | Integer     | PK, Auto-Inc    | Internal surrogate key for database performance and foreign key stability.                        |
+| =tenant_id=          | Integer     | FK (tenant)     | The "Owner" of this record. Ensures GigaBank's client list isn't visible to AlphaHedge.           |
+| =party_name=         | String(255) | Not Null        | The full legal name of the entity (e.g., "Barclays Bank PLC").                                    |
+| =short_name=         | String(50)  | Unique          | A mnemonic or "Ticker" style name used for quick UI displays (e.g., "BARC-LDN").                  |
+| =lei=                | String(20)  | Unique/Null     | The ISO 17442 Legal Entity Identifier. Critical for regulatory reporting and GLEIF integration.   |
+| =is_internal=        | Boolean     | Default: False  | Flag: If TRUE, this party represents a branch or entity belonging to the Tenant (The Bank).       |
+| =party_type_id=      | Integer     | FK (scheme)     | Categorizes the entity: Bank, Hedge Fund, Corporate, Central Bank, or Exchange.                   |
+| =postal_address=     | Text        |                 | Used for generating legal confirmations and settlement instructions.                              |
+| =business_center_id= | Integer     | FK (scheme)     | Links to an FpML Business Center (e.g., GBLO, USNY). Determines holiday calendars for settlement. |
+| =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
+| =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
+
+
+*** Add party entity                                                   :code:
+
+Party analysis.
+
+| Field             | Type | Description                                | Foreign Key Reference      |
+|-------------------+------+--------------------------------------------+----------------------------|
+| party_id          | UUID | Primary key (globally unique identifier)   | —                          |
+| full_name         | TEXT | Legal or registered name                   | —                          |
+| short code        | TEXT | Short code for the party.                  |                            |
+| organization_type | INT  | Type of organization                       | → organization_type_scheme |
+| parent_party_id   | INT  | References parent party (self-referencing) | → party_id (nullable)      |
+
+*** Add party identifier entity                                        :code:
+
+Allows a party to have multiple external identifiers (e.g., LEI, BIC).
+
+| Field       | Type | Description                               | Foreign Key Reference |
+|-------------+------+-------------------------------------------+-----------------------|
+| party_id    | UUID | References party.party_id                 | → party               |
+| id_value    | TEXT | Identifier value, e.g., "549300..."       | —                     |
+| id_scheme   | TEXT | Scheme defining identifier type, e.g. LEI | → party_id_scheme     |
+| Description | TEXT | Additional information about the party    |                       |
+
+Primary key: composite (party_id, id_scheme)
+
+*** Contact information entity                                         :code:
+
+Contact Information is a container that groups various ways to reach an entity.
+
+Contact Information can be associated with either a Party (at the legal entity
+level) or a BusinessUnit (at the desk/operational level). To build a robust
+trading system, your database should support a polymorphic or flexible link to
+handle this.
+
+The Logic of the Link:
+
+- Link to Party: Used for Legal and Regulatory contact details. This is the
+  "Head Office" address, the legal service of process address, or the general
+  firm-wide contact for the LEI.
+- Link to Business Unit: Used for Execution and Operational contact details.
+  This is where your "Machine" or "Human" actually lives. It links the trader or
+  algo to a specific desk's phone number, email, and—most importantly—its
+  Business Center (Holiday Calendar).
+
+**** Type: Contact Information
+
+This is the main container for how to reach a party or person.
+
+- address (Complex): The physical location.
+- phone (String): Multiple entries allowed (Work, Mobile, Fax).
+- email (String): Electronic mail addresses.
+- webPage (String): The entity's URL.
+
+**** Type: Address
+
+The physical street address structure.
+
+- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
+- city (String): The city or municipality.
+- state (String): The state, province, or region.
+- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
+- postalCode (String): The ZIP or Postcode.
+
+*** Add a organisation type scheme entity                              :code:
+
+Indicates a type of organization.
+
+- Obtained on 2016-06-13
+- Version 2-0
+- URL: http://www.fpml.org/coding-scheme/organization-type-2-0.xml
+
+- Code: MSP
+- Name: Major Swap Participant
+- Description: A significant participant in the swaps market, for example as
+  defined by the Dodd-Frank Act.
+
+- Code: NaturalPerson
+- Name: Natural Person
+- Description: A human being.
+
+- Code: non-SD/MSP
+- Name: Non Swap Dealer or Major Swap Participant
+- Description: A firm that is neither a swap dealer nor a major swaps participant under the Dodd-Frank Act.
+
+- Code: SD
+- Name: Swap Dealer
+- Description: Registered swap dealer.
+
+*** Business unit entity                                               :code:
+
+Represents internal organizational units (e.g., desks, departments, branches).
+Supports hierarchical structure.
+
+| Field                   | Type | Description                                   | Foreign Key Reference              |
+|-------------------------+------+-----------------------------------------------+------------------------------------|
+| unit_id                 | INT  | Primary key                                   | —                                  |
+| party_id                | UUID | Top-level legal entity this unit belongs to   | → party                            |
+| parent_business_unit_id | INT  | References parent unit (self-referencing)     | → business_unit.unit_id (nullable) |
+| unit_name               | TEXT | Human-readable name (e.g., "FX Options Desk") | —                                  |
+| unit_id_code            | TEXT | Optional internal code or alias               | —                                  |
+| business_centre         | TEXT | Business centre for the unit                  | → business centre scheme           |
+
+business_centre may be null (for example, we may want to have global desk and
+then London desk.
+
+*** Book and Portfolio entities                                        :code:
+
+Support a single, unified hierarchical tree for risk aggregation and reporting
+(Portfolios) while maintaining operational accountability and legal/bookkeeping
+boundaries at the leaf level (Books).
+
+**** Portfolio
+
+Logical Aggregation Nodes. Represents organizational, risk, or reporting
+groupings. Never holds trades directly.
+
+| Field               | Type      | Description                                                                           |
+|---------------------+-----------+---------------------------------------------------------------------------------------|
+| portfolio_id (PK)   | UUID      | Globally unique identifier.                                                           |
+| parent_portfolio_id | UUID (FK) | Self-referencing FK. NULL = root node.                                                |
+| name                | TEXT      | Human-readable name (e.g., "Global Rates", "APAC Credit").                            |
+| owner_unit_id       | INT (FK)  | Business unit (desk/branch) responsible for management.                               |
+| purpose_type        | ENUM      | 'Risk', 'Regulatory', 'ClientReporting', 'Internal'.                                  |
+| aggregation_ccy     | CHAR(3)   | Currency for P&L/risk aggregation at this node (ISO 4217).                            |
+| is_virtual          | BOOLEAN   | If true, node is purely for on-demand reporting (not persisted in trade attribution). |
+| created_at          | TIMESTAMP | Audit trail.                                                                          |
+
+Note: Portfolios do not have a legal_entity_id. Legal context is derived from
+descendant Books.
+
+**** Book
+
+Operational Ledger Leaves. The only entity that holds trades. Serves as the
+basis for accounting, ownership, and regulatory capital treatment.
+
+| Field               | Type      | Description                                                                         |
+|---------------------+-----------+-------------------------------------------------------------------------------------|
+| book_id (PK)        | UUID      | Globally unique identifier.                                                         |
+| parent_portfolio_id | UUID (FK) | Mandatory: Links to exactly one portfolio.                                          |
+| name                | TEXT      | Must be unique within legal entity (e.g., "FXO_EUR_VOL_01").                        |
+| legal_entity_id     | UUID (FK) | Mandatory: References party.party_id (must be an LEI-mapped legal entity).          |
+| ledger_ccy          | CHAR(3)   | Functional/accounting currency (ISO 4217).                                          |
+| gl_account_ref      | TEXT      | Reference to external GL (e.g., "GL-10150-FXO"). May be nullable if not integrated. |
+| cost_center         | TEXT      | Internal finance code for P&L attribution.                                          |
+| book_status         | ENUM      | 'Active', 'Closed', 'Frozen'.                                                       |
+| is_trading_book     | BOOLEAN   | Critical for Basel III/IV: distinguishes Trading vs. Banking Book.                  |
+| created_at          | TIMESTAMP | For audit.                                                                          |
+| closed_at           | TIMESTAMP | When book_status = 'Closed'.                                                        |
+
+Objectives:
+
+- Strict separation: Portfolios = logical; Books = operational
+- Legal ownership at Book level → critical for regulatory capital, legal netting, tax
+- Hierarchy via parent_portfolio_id
+- Trading vs. Banking book flag → Basel requirement
+
+Hierarchy Integrity Constraints:
+
+- Rule: A Portfolio must not directly contain another Portfolio and a Book at
+  the same level if that violates business policy.
+  - Enforce via application logic or DB constraint (e.g., CHECK that a Portfolio
+    is either "container-only" or "leaf-container", but typically Portfolios can
+    contain both sub-Portfolios and Books—this is normal).
+- Cycle Prevention: Ensure no circular references (parent → child → parent). Use
+  triggers or application validation.
+
+- Multi-Legal Entity Support: Your model allows Books under the same Portfolio
+  to belong to different legal entities. Is this intentional?
+  - Allowed in some firms (for consolidated risk views).
+  - Forbidden in others (e.g., regulatory ring-fencing).
+  - Recommendation: Add a validation rule (application-level): If a Portfolio
+    contains any Books, all descendant Books must belong to the same
+    legal_entity_id.” Or, if mixed entities are allowed, flag the Portfolio as
+    'MultiEntity' in purpose_type.
+
+- Trade Ownership: Explicitly state: Every trade must have a book_id (FK). No
+  trade exists outside a Book. This is implied but should be documented as a
+  core invariant.
+
+- Lifecycle & Governance: Add version or valid_from/valid_to if Books/Portfolios
+  evolve over time (e.g., name changes, reorgs).
+  - Especially important for audit and historical P&L.
+
+- Consider owner_person_id (trader or book manager) for Books.
+
+- Naming & Uniqueness:
+  Enforce: (legal_entity_id, name) must be unique for Books.
+  - Prevents ambiguous book names like "RatesDesk" used by two entities.
+
+- Book Closure Policy: When a Book is Closed, should existing trades remain?
+  - Yes (typical). But no new trades allowed.
+  - Your book_status covers this
+
+Combined Hierarchy Rules (Refined):
+
+| Rule                | Description                                                                                                   |
+|---------------------+---------------------------------------------------------------------------------------------------------------|
+| Leaf Invariant      | Only Books may hold trades. Portfolios are purely aggregators.                                                |
+| Single Parent       | Every Book and non-root Portfolio has exactly one parent.                                                     |
+| Legal Entity Scope  | A Book declares its legal owner. A Portfolio’s legal scope is the union of its Books’ entities.               |
+| Permissioning       | Trade permission → granted on book_id. View/Analyze permission → granted on portfolio_id (includes subtree)   |
+| Accounting Boundary | P&L, capital, and ledger entries are computed per Book, then rolled up through Portfolios in aggregation_ccy. |
+
+*** Add business centre scheme entity                                  :code:
+
+The following is the analysis for adding support to party schemes.
+
+Note: add a foreign key to the country table, which may be null in some cases.
+
+The coding-scheme accepts a 4 character code of the real geographical business
+calendar location or FpML format of the rate publication calendar. While the 4
+character codes of the business calendar location are implicitly locatable and
+used for identifying a bad business day for the purpose of payment and rate
+calculation day adjustments, the rate publication calendar codes are used in the
+context of the fixing day offsets. The 4 character codes are based on the
+business calendar location some of which based on the ISO country code or
+exchange code, or some other codes. Additional business day calendar location
+codes could be built according to the following rules: the first two characters
+represent the ISO 3166 country code [https://www.iso.org/obp/ui/#search/code/],
+the next two characters represent either a) the first two letters of the
+location, if the location name is one word, b) the first letter of the first
+word followed by the first letter of the second word, if the location name
+consists of at least two words. Note: for creating new city codes for US and
+Canada: the two-letter combinations used in postal US states
+(http://pe.usps.gov/text/pub28/28apb.htm ) and Canadian provinces
+(http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp) abbreviations cannot
+be utilized (e.g. the code for Denver, United States is USDN and not USDE,
+because of the DE is the abbreviation for Delaware state ). Exchange codes could
+be added based on the ISO 10383 MIC code
+[https://www.iso20022.org/sites/default/files/ISO10383_MIC/ISO10383_MIC.xls]
+according to the following rules: 1. it would be the acronym of the MIC. If
+acronym is not available, 2. it would be the MIC code. If the MIC code starts
+with an 'X', 3. the FpML AWG will compose the code. 'Publication Calendar Day',
+per 2021 ISDA Interest Rate Derivatives Definitions, means, in respect of a
+benchmark, any day on which the Administrator is due to publish the rate for
+such benchmark pursuant to its publication calendar, as updated from time to
+time. FpML format of the rate publication calendar. The construct: CCY-[short
+codes to identify the publisher], e.g. GBP-ICESWAP. The FpML XAPWG will compose
+the code.
+
+- Obtained on 2025-04-25
+- Version 9-4
+- URL: http://www.fpml.org/coding-scheme/business-center-9-4.xml
+
+- Code: The unique string/code identifying the business center, usually a
+  4-character code based on a 2-character ISO country code and a 2 character
+  code for the city, but with exceptions for special cases such as index
+  publication calendars, as described above.
+
+- Code: AEAB
+- Description: Abu Dhabi, Business Day (as defined in 2021 ISDA Definitions
+  Section 2.1.10 (ii))
+
+- Code: AEAD
+- Description: Abu Dhabi, Settlement Day (as defined in 2021 ISDA Definitions
+  Section 2.1.10 (i))
+
+- Code: AEDU
+- Description: Dubai, United Arab Emirates
+
+- Code: AMYE
+- Description: Yerevan, Armenia
+
+- Code: AOLU
+- Description: Luanda, Angola
+
+- Code: ARBA
+- Description: Buenos Aires, Argentina
+
+- Code: ATVI
+- Description: Vienna, Austria
+
+- Code: AUAD
+- Description: Adelaide, Australia
+
+- Code: AUBR
+- Description: Brisbane, Australia
+
+- Code: AUCA
+- Description: Canberra, Australia
+
+- Code: AUDA
+- Description: Darwin, Australia
+
+- Code: AUME
+- Description: Melbourne, Australia
+
+- Code: AUPE
+- Description: Perth, Australia
+
+- Code: AUSY
+- Description: Sydney, Australia
+
+- Code: AZBA
+- Description: Baku, Azerbaijan
+
+- Code: BBBR
+- Description: Bridgetown, Barbados
+
+- Code: BDDH
+- Description: Dhaka, Bangladesh
+
+- Code: BEBR
+- Description: Brussels, Belgium
+
+- Code: BGSO
+- Description: Sofia, Bulgaria
+
+- Code: BHMA
+- Description: Manama, Bahrain
+
+- Code: BMHA
+- Description: Hamilton, Bermuda
+
+- Code: BNBS
+- Description: Bandar Seri Begawan, Brunei
+
+- Code: BOLP
+- Description: La Paz, Bolivia
+
+- Code: BRBD
+- Description: Brazil Business Day. This means a business day in all of Sao
+  Paulo, Rio de Janeiro or Brasilia not otherwise declared as a financial market
+  holiday by the Bolsa de Mercadorias &amp; Futuros (BM&F). BRBD should not be
+  used for setting fixing time, instead the city centers (e.g. BRBR, BRRJ, BRSP)
+  should be used, because they are locatable places.
+
+- Code: BSNA
+- Description: Nassau, Bahamas
+
+- Code: BWGA
+- Description: Gaborone, Botswana
+
+- Code: BYMI
+- Description: Minsk, Belarus
+
+- Code: CACL
+- Description: Calgary, Canada
+
+- Code: Covers
+- Description: all New Brunswick province.
+
+- Code: CAFR
+- Description: Fredericton, Canada.
+
+- Code: CAMO
+- Description: Montreal, Canada
+
+- Code: CAOT
+- Description: Ottawa, Canada
+
+- Code: CATO
+- Description: Toronto, Canada
+
+- Code: CAVA
+- Description: Vancouver, Canada
+
+- Code: CAWI
+- Description: Winnipeg, Canada
+
+- Code: CHBA
+- Description: Basel, Switzerland
+
+- Code: CHGE
+- Description: Geneva, Switzerland
+
+- Code: CHZU
+- Description: Zurich, Switzerland
+
+- Code: CIAB
+- Description: Abidjan, Cote d'Ivoire
+
+- Code: CLSA
+- Description: Santiago, Chile
+
+- Code: CMYA
+- Description: Yaounde, Cameroon
+
+- Code: CNBE
+- Description: Beijing, China
+
+- Code: CNSH
+- Description: Shanghai, China
+
+- Code: COBO
+- Description: Bogota, Colombia
+
+- Code: CRSJ
+- Description: San Jose, Costa Rica
+
+- Code: CWWI
+- Description: Willemstad, Curacao
+
+- Code: CYNI
+- Description: Nicosia, Cyprus
+
+- Code: CZPR
+- Description: Prague, Czech Republic
+
+- Code: DECO
+- Description: Cologne, Germany
+
+- Code: DEDU
+- Description: Dusseldorf, Germany
+
+- Code: DEFR
+- Description: Frankfurt, Germany
+
+- Code: DEHA
+- Description: Hannover, Germany
+
+- Code: DEHH
+- Description: Hamburg, Germany
+
+- Code: DELE
+- Description: Leipzig, Germany
+
+- Code: DEMA
+- Description: Mainz, Germany
+
+- Code: DEMU
+- Description: Munich, Germany
+
+- Code: DEST
+- Description: Stuttgart, Germany
+
+- Code: DKCO
+- Description: Copenhagen, Denmark
+
+- Code: DOSD
+- Description: Santo Domingo, Dominican Republic
+
+- Code: DZAL
+- Description: Algiers, Algeria
+
+- Code: ECGU
+- Description: Guayaquil, Ecuador
+
+- Code: EETA
+- Description: Tallinn, Estonia
+
+- Code: EGCA
+- Description: Cairo, Egypt
+
+- Code: ESAS
+- Description: ESAS Settlement Day (as defined in 2006 ISDA Definitions Section
+  7.1 and Supplement Number 15 to the 2000 ISDA Definitions)
+
+- Code: ESBA
+- Description: Barcelona, Spain
+
+- Code: ESMA
+- Description: Madrid, Spain
+
+- Code: ESSS
+- Description: San Sebastian, Spain
+
+- Code: ETAA
+- Description: Addis Ababa, Ethiopia
+
+- Code: EUR
+- Description: -ICESWAP Publication dates for ICE Swap rates based on
+  EUR-EURIBOR rates
+
+- Code: EUTA
+- Description: TARGET Settlement Day
+
+- Code: FIHE
+- Description: Helsinki, Finland
+
+- Code: FRPA
+- Description: Paris, France
+
+- Code: GBED
+- Description: Edinburgh, Scotland
+
+- Code: GBLO
+- Description: London, United Kingdom
+
+- Code: GBP
+- Description: -ICESWAP Publication dates for GBP ICE Swap rates
+
+- Code: GETB
+- Description: Tbilisi, Georgia
+
+- Code: GGSP
+- Description: Saint Peter Port, Guernsey
+
+- Code: GHAC
+- Description: Accra, Ghana
+
+- Code: GIGI
+- Description: Gibraltar, Gibraltar
+
+- Code: GMBA
+- Description: Banjul, Gambia
+
+- Code: GNCO
+- Description: Conakry, Guinea
+
+- Code: GRAT
+- Description: Athens, Greece
+
+- Code: GTGC
+- Description: Guatemala City, Guatemala
+
+- Code: HKHK
+- Description: Hong Kong, Hong Kong
+
+- Code: HNTE
+- Description: Tegucigalpa, Honduras
+
+- Code: HRZA
+- Description: Zagreb, Republic of Croatia
+
+- Code: HUBU
+- Description: Budapest, Hungary
+
+- Code: IDJA
+- Description: Jakarta, Indonesia
+
+- Code: IEDU
+- Description: Dublin, Ireland
+
+- Code: ILJE
+- Description: Jerusalem, Israel
+
+- Code: ILS
+- Description: -SHIR Publication dates of the ILS-SHIR index.
+
+- Code: ILS
+- Description: -TELBOR Publication dates of the ILS-TELBOR index.
+
+- Code: ILTA
+- Description: Tel Aviv, Israel
+
+- Code: INAH
+- Description: Ahmedabad, India
+
+- Code: INBA
+- Description: Bangalore, India
+
+- Code: INCH
+- Description: Chennai, India
+
+- Code: INHY
+- Description: Hyderabad, India
+
+- Code: INKO
+- Description: Kolkata, India
+
+- Code: INMU
+- Description: Mumbai, India
+
+- Code: INND
+- Description: New Delhi, India
+
+- Code: IQBA
+- Description: Baghdad, Iraq
+
+- Code: IRTE
+- Description: Teheran, Iran
+
+- Code: ISRE
+- Description: Reykjavik, Iceland
+
+- Code: ITMI
+- Description: Milan, Italy
+
+- Code: ITRO
+- Description: Rome, Italy
+
+- Code: ITTU
+- Description: Turin, Italy
+
+- Code: JESH
+- Description: St. Helier, Channel Islands, Jersey
+
+- Code: JMKI
+- Description: Kingston, Jamaica
+
+- Code: JOAM
+- Description: Amman, Jordan
+
+- Code: JPTO
+- Description: Tokyo, Japan
+
+- Code: KENA
+- Description: Nairobi, Kenya
+
+- Code: KHPP
+- Description: Phnom Penh, Cambodia
+
+- Code: KRSE
+- Description: Seoul, Republic of Korea
+
+- Code: KWKC
+- Description: Kuwait City, Kuwait
+
+- Code: KYGE
+- Description: George Town, Cayman Islands
+
+- Code: KZAL
+- Description: Almaty, Kazakhstan
+
+- Code: LAVI
+- Description: Vientiane, Laos
+
+- Code: LBBE
+- Description: Beirut, Lebanon
+
+- Code: LKCO
+- Description: Colombo, Sri Lanka
+
+- Code: LULU
+- Description: Luxembourg, Luxembourg
+
+- Code: LVRI
+- Description: Riga, Latvia
+
+- Code: MACA
+- Description: Casablanca, Morocco
+
+- Code: MARA
+- Description: Rabat, Morocco
+
+- Code: MCMO
+- Description: Monaco, Monaco
+
+- Code: MNUB
+- Description: Ulan Bator, Mongolia
+
+- Code: MOMA
+- Description: Macau, Macao
+
+- Code: MTVA
+- Description: Valletta, Malta
+
+- Code: MUPL
+- Description: Port Louis, Mauritius
+
+- Code: MVMA
+- Description: Male, Maldives
+
+- Code: MWLI
+- Description: Lilongwe, Malawi
+
+- Code: MXMC
+- Description: Mexico City, Mexico
+
+- Code: MYKL
+- Description: Kuala Lumpur, Malaysia
+
+- Code: MYLA
+- Description: Labuan, Malaysia
+
+- Code: MZMA
+- Description: Maputo, Mozambique
+
+- Code: NAWI
+- Description: Windhoek, Namibia
+
+- Code: NGAB
+- Description: Abuja, Nigeria
+
+- Code: NGLA
+- Description: Lagos, Nigeria
+
+- Code: NLAM
+- Description: Amsterdam, Netherlands
+
+- Code: NLRO
+- Description: Rotterdam, Netherlands
+
+- Code: NOOS
+- Description: Oslo, Norway
+
+- Code: NPKA
+- Description: Kathmandu, Nepal
+
+- Code: NYFD
+- Description: New York Fed Business Day (as defined in 2006 ISDA Definitions
+  Section 1.9, 2000 ISDA Definitions Section 1.9, and 2021 ISDA Definitions
+  Section 2.1.7)
+
+- Code: NYSE
+- Description: New York Stock Exchange Business Day (as defined in 2006 ISDA
+  Definitions Section 1.10, 2000 ISDA Definitions Section 1.10, and 2021 ISDA
+  Definitions Section 2.1.8)
+
+- Code: NZAU
+- Description: Auckland, New Zealand
+
+- Code: New
+- Description: Zealand Business Day (proposed effective date: 2025-10-06)
+
+- Code: NZBD
+- Description: New Zealand Business Day (proposed effective date: 2025-10-06)
+
+- Code: NZWE
+- Description: Wellington, New Zealand
+
+- Code: OMMU
+- Description: Muscat, Oman
+
+- Code: PAPC
+- Description: Panama City, Panama
+
+- Code: PELI
+- Description: Lima, Peru
+
+- Code: PHMA
+- Description: Manila, Philippines
+
+- Code: PHMK
+- Description: Makati, Philippines
+
+- Code: PKKA
+- Description: Karachi, Pakistan
+
+- Code: PLWA
+- Description: Warsaw, Poland
+
+- Code: PRSJ
+- Description: San Juan, Puerto Rico
+
+- Code: PTLI
+- Description: Lisbon, Portugal
+
+- Code: QADO
+- Description: Doha, Qatar
+
+- Code: ROBU
+- Description: Bucharest, Romania
+
+- Code: RSBE
+- Description: Belgrade, Serbia
+
+- Code: RUMO
+- Description: Moscow, Russian Federation
+
+- Code: SAAB
+- Description: Abha, Saudi Arabia
+
+- Code: SAJE
+- Description: Jeddah, Saudi Arabia
+
+- Code: SARI
+- Description: Riyadh, Saudi Arabia
+
+- Code: SEST
+- Description: Stockholm, Sweden
+
+- Code: SGSI
+- Description: Singapore, Singapore
+
+- Code: SILJ
+- Description: Ljubljana, Slovenia
+
+- Code: SKBR
+- Description: Bratislava, Slovakia
+
+- Code: SLFR
+- Description: Freetown, Sierra Leone
+
+- Code: SNDA
+- Description: Dakar, Senegal
+
+- Code: SVSS
+- Description: San Salvador, El Salvador
+
+- Code: THBA
+- Description: Bangkok, Thailand
+
+- Code: TNTU
+- Description: Tunis, Tunisia
+
+- Code: TRAN
+- Description: Ankara, Turkey
+
+- Code: TRIS
+- Description: Istanbul, Turkey
+
+- Code: TTPS
+- Description: Port of Spain, Trinidad and Tobago
+
+- Code: TWTA
+- Description: Taipei, Taiwan
+
+- Code: TZDA
+- Description: Dar es Salaam, Tanzania
+
+- Code: TZDO
+- Description: Dodoma, Tanzania
+
+- Code: UAKI
+- Description: Kiev, Ukraine
+
+- Code: UGKA
+- Description: Kampala, Uganda
+
+- Code: USBO
+- Description: Boston, Massachusetts, United States
+
+- Code: USCH
+- Description: Chicago, United States
+
+- Code: USCR
+- Description: Charlotte, North Carolina, United States
+
+- Code: USDC
+- Description: Washington, District of Columbia, United States
+
+- Code: USD
+- Description: -ICESWAP Publication dates for ICE Swap rates based on USD-LIBOR
+  rates
+
+- Code: USD
+- Description: -MUNI Publication dates for the USD-Municipal Swap Index
+
+- Code: USDN
+- Description: Denver, United States
+
+- Code: USDT
+- Description: Detroit, Michigan, United States
+
+- Code: USGS
+- Description: U.S. Government Securities Business Day (as defined in 2006 ISDA
+  Definitions Section 1.11 and 2000 ISDA Definitions Section 1.11)
+
+- Code: USHL
+- Description: Honolulu, Hawaii, United States
+
+- Code: USHO
+- Description: Houston, United States
+
+- Code: USLA
+- Description: Los Angeles, United States
+
+- Code: USMB
+- Description: Mobile, Alabama, United States
+
+- Code: USMN
+- Description: Minneapolis, United States
+
+- Code: USNY
+- Description: New York, United States
+
+- Code: USPO
+- Description: Portland, Oregon, United States
+
+- Code: USSA
+- Description: Sacramento, California, United States
+
+- Code: USSE
+- Description: Seattle, United States
+
+- Code: USSF
+- Description: San Francisco, United States
+
+- Code: USWT
+- Description: Wichita, United States
+
+- Code: UYMO
+- Description: Montevideo, Uruguay
+
+- Code: UZTA
+- Description: Tashkent, Uzbekistan
+
+- Code: VECA
+- Description: Caracas, Venezuela
+
+- Code: VGRT
+- Description: Road Town, Virgin Islands (British)
+
+- Code: VNHA
+- Description: Hanoi, Vietnam
+
+- Code: VNHC
+- Description: Ho Chi Minh (formerly Saigon), Vietnam
+
+- Code: YEAD
+- Description: Aden, Yemen
+
+- Code: ZAJO
+- Description: Johannesburg, South Africa
+
+- Code: ZMLU
+- Description: Lusaka, Zambia
+
+- Code: ZWHA
+- Description: Harare, Zimbabwe
+
+
+*** Methodology screen review                                          :code:
+
+- make name column bigger.
+- do not show description and URI by default.
+- use tabs in detail window
+- show all meta-data in details window.
+
+*** Librarian errors                                                   :code:
+
+When there is a failure publishing a dataset we just see "failed" in the wizard
+without any further details. Server log file says:
+
+#+begin_src logview
+2026-01-21 22:21:07.676351 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.currencies with artefact_type: Solvaris Currencies
+2026-01-21 22:21:07.676381 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Currencies for dataset: slovaris.currencies
+2026-01-21 22:21:07.676412 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.currencies: Unknown artefact_type: Solvaris Currencies
+2026-01-21 22:21:07.676437 [INFO] [ores.dq.service.publication_service] Publishing dataset: slovaris.country_flags (Solvaris Country Flag Images)
+2026-01-21 22:21:07.676460 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.country_flags with artefact_type: Solvaris Country Flag Images
+2026-01-21 22:21:07.676491 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Country Flag Images for dataset: slovaris.country_flags
+2026-01-21 22:21:07.676518 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.country_flags: Unknown artefact_type: Solvaris Country Flag Images
+2026-01-21 22:21:07.676542 [INFO] [ores.dq.service.publication_service] Publishing dataset: slovaris.countries (Solvaris Countries)
+2026-01-21 22:21:07.676566 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.countries with artefact_type: Solvaris Countries
+2026-01-21 22:21:07.676592 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Countries for dataset: slovaris.countries
+2026-01-21 22:21:07.676618 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.countries: Unknown artefact_type: Solvaris Countries
+#+end_src
+
+To reproduce, change artefact type in codegen back to "Solvaris Currencies".
+
+*** General session dialog                                             :code:
+
+At present we can't see a dialog with sessions for all users. We need to go to
+accounts to see a specific user session. We need to modify this dialog to be
+able to show either all sessions or sessions for a specific user.
+
+Notes:
+
+- it should be possible to kick out a user or selection of users.
+- it should be possible to send a message to a user or all users.
+- session icon is just a circle
+- add paging support.
+
+*** Issues with event viewer                                           :code:
+
+- no icon.
+- can't filter by event type.
+- always collect events in ring buffer. Search for story on this.
+
+*** Add action type to trades                                          :code:
+
+Seems like FPML has some kind of trade activity like actions:
+
+- https://www.fpml.org/coding-scheme/action-type-1-0.xml
+
+*** Improve tag support                                                :code:
+
+At present we are not tagging DQ entities very well. For example, crypto
+currencies should be tagged as both crypto and currencies, etc.
+
+Also tags have duplicates, and versioning does not seem to be working:
+
+#+begin_src sql
+ores_frosty_leaf=> select * from dq_tags_artefact_tbl;
+              dataset_id              |                tag_id                | version |      name      |              description
+--------------------------------------+--------------------------------------+---------+----------------+---------------------------------------
+ 93d187a9-fa26-4569-ab26-18154b58c5c7 | 65bd2824-bd43-4090-9f1a-a97dfef529ca |       0 | flag           | Country and region flag images
+ c8912e75-9238-4f97-b8da-065a11b8bcc8 | 75ee83a7-2c54-448c-b073-8d68107d136e |       0 | cryptocurrency | Cryptocurrency icon images
+ 30c0e0b8-c486-4bc1-a6f4-19db8fa691c9 | 2d3eace5-733c-47b3-b328-f99a358fe2a8 |       0 | currency       | Currency reference data
+ d8093e17-8954-4928-a705-4fc03e400eee | 71e0c456-94fb-4e44-83f1-33ae1139e333 |       0 | currency       | Non-ISO currency reference data
+ d3a4e751-ae30-497c-96b1-f727201d536b | c57ee434-bbc2-48c1-9a59-c9799e701288 |       0 | cryptocurrency | Cryptocurrency reference data
+ 44ff5afd-a1b7-42d2-84a7-432092616c40 | d6453cf6-f23b-4f97-b600-51fcad21c8aa |       0 | geolocation    | IP address geolocation reference data
+#+end_src
+
+We need a generic tags table and then a junction between say datasets and tags,
+etc. Delete all of the existing half-baked tags implementations. Also have a
+look at the story in backlog about tags and labels.
+
+*** Authentication failed dialog does not have details                 :code:
+
+At present we show the C++ exception:
+
+#+begin_quote
+Authentication failed: Failed to connect to server: Connection refused [system:111 at /home/marco/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/vcpkg_installed/x64-linux/include/boost/asio/detail/reactive_socket_connect_op.hpp:97:37 in function 'static void boost::asio::detail::reactive_socket_connect_op<boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, boost::asio::any_io_executor>::do_complete(void *, operation *, const boost::system::error_code &, std::size_t) [Handler = boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, IoExecutor = boost::asio::any_io_executor]']
+#+end_quote
+
+Add details button.
+
+*** Ensure DQ dataset checks use code                                  :code:
+
+We are still checking for Name:
+
+#+begin_src sql
+    -- Get the flags dataset ID (for linking images)
+    select id into v_flags_dataset_id
+    from ores.dq_datasets_tbl
+    where name = 'Country Flag Images'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is null then
+        raise exception 'Dataset not found: Country Flag Images';
+    end if;
+#+end_src
+
+*** Create subsets of datasets                                         :code:
+
+In some cases we may just want to publish a subset of a dataset. For example,
+Majors, G11, etc. Or maybe these are just separate datasets?
+
+In fact that is what they are. Break apart the larger sets - in particular
+currencies, countries, cryptos.
+
+*** Management of roles                                                :code:
+
+At present we have system level roles. This is not ideal, you may want to delete
+roles, add them etc. Do some analysis on the best way to implement these. We
+could have curated datasets for roles as well. Admin is the exception.
+
+Notes:
+
+- should be possible to see which accounts have what roles.
+
+*** Publish history dialog is non-standard                             :code:
+
+- always on top.
+- no paging.
+
+*** Add purge button to all entities                                   :code:
+
+We should be able to completely trash all data. We probably need a special
+permission for this but admin should be able to do it. Ideally all entity
+dialogs should have a purge action.
+
+We should also have a "purge all" button which purges all data from all tables -
+ignores roles etc. This could be available on the data librarian.
+
+*** Improve icon for methodology and dimensions                        :code:
+
+At present we have icons which are not very sensible. For methodology we could
+use something that reminds one of a laboratory.
+
+*** Clicking on connection should provide info                         :code:
+
+- when never connected: nothing.
+- when connected: server, bytes sent, received, status of connection.
+- when disconnected: retries, disconnected since.
+
+*** Add coloured icons                                                 :code:
+
+At present we are using black and white icons. These are a bit hard to see. We
+should try the coloured ones and see if it improves readability.
+
+
 *** Add ores.compute or ores.grid                                      :code:
 
 Analysis with Gemini:

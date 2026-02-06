@@ -193,8 +193,15 @@ std::size_t subscription_manager::notify(const std::string& event_type,
                                 << " != event tenant " << tenant_id << ")";
                             continue;
                         }
+                    } else {
+                        // Pre-login sessions should not receive
+                        // tenant-specific notifications.
+                        BOOST_LOG_SEV(lg(), debug)
+                            << "Skipping pre-login session '" << sid
+                            << "' for tenant-specific event '"
+                            << event_type << "'";
+                        continue;
                     }
-                    // If no session found (pre-login), include in broadcast
                 }
                 callbacks_to_invoke.emplace_back(
                     sid, session_it->second.callback);

@@ -416,7 +416,7 @@ TEST_CASE("subscription_manager notify skips sessions with different tenant", ta
     REQUIRE(session2_calls == 0);
 }
 
-TEST_CASE("subscription_manager pre-login sessions receive all notifications", tags) {
+TEST_CASE("subscription_manager pre-login sessions do not receive tenant notifications", tags) {
     subscription_manager mgr;
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     mgr.set_sessions_service(sessions);
@@ -431,12 +431,12 @@ TEST_CASE("subscription_manager pre-login sessions receive all notifications", t
 
     mgr.subscribe("session_prelogin", "test.event");
 
-    // Notify with acme tenant - pre-login session should still receive
+    // Notify with acme tenant - pre-login session should NOT receive
     auto notified = mgr.notify("test.event", std::chrono::system_clock::now(),
                                {}, acme_tenant);
 
-    REQUIRE(notified == 1);
-    REQUIRE(prelogin_calls == 1);
+    REQUIRE(notified == 0);
+    REQUIRE(prelogin_calls == 0);
 }
 
 TEST_CASE("subscription_manager without sessions_service broadcasts to all", tags) {

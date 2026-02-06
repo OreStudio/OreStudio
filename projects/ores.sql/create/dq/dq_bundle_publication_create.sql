@@ -31,8 +31,8 @@
  *   -- Preview what will be published
  *   SELECT * FROM ores_dq_bundle_preview_fn('base');
  *
- *   -- Publish a bundle
- *   SELECT * FROM ores_dq_bundles_publish_fn('base', 'upsert', 'admin');
+ *   -- Publish a bundle (with target tenant)
+ *   SELECT * FROM ores_dq_bundles_publish_fn('base', '<target-tenant-uuid>', 'upsert', 'admin');
  */
 
 -- =============================================================================
@@ -41,6 +41,7 @@
 
 create table if not exists "ores_dq_bundle_publications_tbl" (
     "id" uuid not null default gen_random_uuid(),
+    "tenant_id" uuid not null,
     "bundle_code" text not null,
     "bundle_name" text not null,
     "mode" text not null,
@@ -200,17 +201,22 @@ $$ language plpgsql;
  * Each dataset is published individually, and failures are logged but don't
  * stop the overall bundle publication (unless p_atomic is true).
  *
- * @param p_bundle_code  The bundle to publish (e.g., 'base', 'solvaris', 'crypto')
- * @param p_mode         Publication mode: 'upsert', 'insert_only', or 'replace_all'
- * @param p_published_by User/system publishing the bundle
- * @param p_atomic       If true, any failure causes entire bundle to rollback
+ * This function uses SECURITY DEFINER to bypass RLS and explicitly control
+ * tenant context. It reads artefacts from the system tenant (staging) and
+ * writes to the target tenant specified by p_target_tenant_id.
+ *
+ * @param p_bundle_code      The bundle to publish (e.g., 'base', 'solvaris', 'crypto')
+ * @param p_target_tenant_id The tenant to publish data to (user's tenant)
+ * @param p_mode             Publication mode: 'upsert', 'insert_only', or 'replace_all'
+ * @param p_published_by     User/system publishing the bundle
+ * @param p_atomic           If true, any failure causes entire bundle to rollback
  *
  * @returns Summary of publication results per dataset
  *
  * Note: This function dynamically calls populate functions registered in
  * dq_artefact_types_tbl. All populate functions must conform to this signature:
  *
- *   function(dataset_id uuid, mode text)
+ *   function(dataset_id uuid, target_tenant_id uuid, mode text)
  *   RETURNS TABLE (action text, record_count bigint)
  *
  * Where action is one of: 'inserted', 'updated', 'skipped', 'deleted'
@@ -218,6 +224,7 @@ $$ language plpgsql;
  */
 create or replace function ores_dq_bundles_publish_fn(
     p_bundle_code text,
+    p_target_tenant_id uuid,
     p_mode text default 'upsert',
     p_published_by text default current_user,
     p_atomic boolean default true
@@ -271,9 +278,9 @@ begin
 
     -- Create bundle publication audit record
     insert into ores_dq_bundle_publications_tbl (
-        bundle_code, bundle_name, mode, atomic, published_by
+        tenant_id, bundle_code, bundle_name, mode, atomic, published_by
     ) values (
-        p_bundle_code, v_bundle_name, p_mode, p_atomic, p_published_by
+        p_target_tenant_id, p_bundle_code, v_bundle_name, p_mode, p_atomic, p_published_by
     ) returning id into v_bundle_pub_id;
 
     raise notice 'Starting bundle publication: % (%)', p_bundle_code, v_bundle_name;
@@ -368,9 +375,10 @@ begin
         -- Call the populate function dynamically
         begin
             v_sql := format(
-                'SELECT * FROM %I(%L::uuid, %L::text)',
+                'SELECT * FROM %I(%L::uuid, %L::uuid, %L::text)',
                 v_artefact_type.populate_function,
                 v_dataset.dataset_id,
+                p_target_tenant_id,
                 p_mode
             );
 
@@ -389,11 +397,11 @@ begin
 
             -- Record individual dataset publication
             insert into ores_dq_dataset_publications_tbl (
-                dataset_id, dataset_code, mode, target_table,
+                tenant_id, dataset_id, dataset_code, mode, target_table,
                 records_inserted, records_updated, records_skipped, records_deleted,
                 published_by
             ) values (
-                v_dataset.dataset_id, v_dataset.dataset_code, p_mode,
+                p_target_tenant_id, v_dataset.dataset_id, v_dataset.dataset_code, p_mode,
                 coalesce(v_artefact_type.target_table, 'unknown'),
                 v_row_inserted, v_row_updated, v_row_skipped, v_row_deleted,
                 p_published_by
@@ -464,7 +472,7 @@ begin
     raise notice 'Bundle publication complete: % datasets processed, % succeeded, % failed, % skipped',
         v_datasets_processed, v_datasets_succeeded, v_datasets_failed, v_datasets_skipped;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 /**
  * Gets publication history for a specific bundle.

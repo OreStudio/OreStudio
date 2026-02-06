@@ -20,6 +20,8 @@
 #define ORES_UTILITY_UUID_TENANT_ID_HPP
 
 #include <string>
+#include <ostream>
+#include <optional>
 #include <expected>
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
@@ -146,6 +148,31 @@ private:
 
     boost::uuids::uuid uuid_;
 };
+
+/**
+ * @brief Stream insertion operator for tenant_id.
+ *
+ * @param os The output stream.
+ * @param id The tenant_id to output.
+ * @return The output stream.
+ */
+inline std::ostream& operator<<(std::ostream& os, const tenant_id& id) {
+    return os << id.to_string();
+}
+
+/**
+ * @brief Stream insertion operator for optional tenant_id.
+ *
+ * @param os The output stream.
+ * @param id The optional tenant_id to output.
+ * @return The output stream.
+ */
+inline std::ostream& operator<<(std::ostream& os, const std::optional<tenant_id>& id) {
+    if (id.has_value()) {
+        return os << id->to_string();
+    }
+    return os << "(none)";
+}
 
 }
 

@@ -27,6 +27,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/serialization/error_code.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::utility::serialization {
 
@@ -112,6 +113,15 @@ public:
      */
     static std::expected<boost::uuids::uuid, error_code>
     read_uuid(std::span<const std::byte>& data);
+
+    /**
+     * @brief Read a tenant_id (16 bytes UUID with validation).
+     *
+     * Reads a UUID and converts it to a tenant_id. Returns invalid_request
+     * error if the UUID is nil (which is rejected by tenant_id::from_uuid).
+     */
+    static std::expected<uuid::tenant_id, error_code>
+    read_tenant_id(std::span<const std::byte>& data);
 
     /**
      * @brief Read a boolean (1 byte).

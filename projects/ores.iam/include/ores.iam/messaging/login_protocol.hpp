@@ -28,6 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.utility/serialization/error_code.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.iam/domain/login_info.hpp"
 
@@ -89,7 +90,7 @@ struct login_response final {
     bool success = false;
     std::string error_message;
     boost::uuids::uuid account_id;
-    boost::uuids::uuid tenant_id;  ///< ID of authenticated tenant
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();  ///< ID of authenticated tenant
     std::string tenant_name;       ///< Name of authenticated tenant
     std::string username;
     std::string email;

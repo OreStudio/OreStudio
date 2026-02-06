@@ -38,7 +38,7 @@ using namespace ores::logging;
 TEST_CASE("generate_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currency = generate_synthetic_currency();
+    auto currency = generate_synthetic_currency(ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated currency: " << currency;
 
     CHECK(!currency.iso_code.empty());
@@ -51,7 +51,7 @@ TEST_CASE("generate_single_currency", tags) {
 TEST_CASE("generate_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_synthetic_currencies(3);
+    auto currencies = generate_synthetic_currencies(3, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated currencies: " << currencies;
 
     CHECK(currencies.size() == 3);
@@ -60,7 +60,7 @@ TEST_CASE("generate_multiple_currencies", tags) {
 TEST_CASE("generate_unique_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_unique_synthetic_currencies(3);
+    auto currencies = generate_unique_synthetic_currencies(3, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated unique currencies: " << currencies;
 
     CHECK(currencies.size() == 3);
@@ -76,7 +76,7 @@ TEST_CASE("generate_unique_currencies", tags) {
 TEST_CASE("generate_unicode_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_synthetic_unicode_currencies();
+    auto currencies = generate_synthetic_unicode_currencies(ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated unicode currencies: " << currencies;
 
     CHECK(currencies.size() == 7);
@@ -96,7 +96,7 @@ TEST_CASE("generate_unicode_currencies", tags) {
 TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies();
+    auto currencies = generate_fictional_currencies(0, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies: " << currencies;
 
     CHECK(currencies.size() == 50);
@@ -105,7 +105,7 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
 TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies(5);
+    auto currencies = generate_fictional_currencies(5, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional currencies: " << currencies;
 
     CHECK(currencies.size() == 5);
@@ -114,7 +114,7 @@ TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
 TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies(100);
+    auto currencies = generate_fictional_currencies(100, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies with large count: " << currencies;
 
     CHECK(currencies.size() == 50);
@@ -123,7 +123,7 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_availabl
 TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies();
+    auto currencies = generate_fictional_currencies(0, ores::utility::uuid::tenant_id::system());
 
     std::set<std::string> codes;
     for (const auto& c : currencies)
@@ -135,7 +135,7 @@ TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
 TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies();
+    auto currencies = generate_fictional_currencies(0, ores::utility::uuid::tenant_id::system());
 
     std::set<std::string> codes;
     for (const auto& c : currencies)
@@ -147,7 +147,7 @@ TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
 TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies(1);
+    auto currencies = generate_fictional_currencies(1, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "First fictional currency: " << currencies;
 
     REQUIRE(currencies.size() == 1);
@@ -160,7 +160,7 @@ TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
 TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    auto currencies = generate_fictional_currencies();
+    auto currencies = generate_fictional_currencies(0, ores::utility::uuid::tenant_id::system());
 
     std::set<std::string> codes;
     for (const auto& c : currencies)

@@ -34,7 +34,7 @@ domain::role role_mapper::map(const role_entity& v) {
 
     domain::role r;
     r.version = v.version;
-    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
     r.description = v.description;
@@ -53,7 +53,7 @@ role_entity role_mapper::map(const domain::role& v) {
 
     role_entity r;
     r.id = boost::lexical_cast<std::string>(v.id);
-    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

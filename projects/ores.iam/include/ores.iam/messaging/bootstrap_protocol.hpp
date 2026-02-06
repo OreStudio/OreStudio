@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.utility/serialization/error_code.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 
 namespace ores::iam::messaging {
@@ -101,7 +102,7 @@ struct create_initial_admin_response final {
     bool success;
     std::string error_message;
     boost::uuids::uuid account_id;
-    boost::uuids::uuid tenant_id;      ///< ID of the tenant the account was created in
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();  ///< ID of the tenant the account was created in
     std::string tenant_name;           ///< Name of the tenant the account was created in
 
     /**

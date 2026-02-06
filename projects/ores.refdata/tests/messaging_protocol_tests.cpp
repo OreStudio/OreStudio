@@ -73,7 +73,7 @@ TEST_CASE("get_currencies_response_with_single_currency", tags) {
 
     get_currencies_response resp;
 
-    auto ccy = *generate_synthetic_currencies(1).begin();
+    auto ccy = *generate_synthetic_currencies(1, ores::utility::uuid::tenant_id::system()).begin();
     resp.currencies.push_back(ccy);
     BOOST_LOG_SEV(lg, debug) << "Response with 1 currency: " << resp;
 
@@ -87,7 +87,7 @@ TEST_CASE("get_currencies_response_serialize_deserialize", tags) {
 
     get_currencies_response original;
 
-    auto currencies = generate_synthetic_currencies(5);
+    auto currencies = generate_synthetic_currencies(5, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     original.currencies = currencies;
 
@@ -128,7 +128,7 @@ TEST_CASE("get_currencies_response_large_dataset", tags) {
     auto lg(make_logger(test_suite));
 
     get_currencies_response original;
-    auto currencies = generate_unique_synthetic_currencies(50);
+    auto currencies = generate_unique_synthetic_currencies(50, ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     original.currencies = currencies;
 
@@ -154,7 +154,7 @@ TEST_CASE("get_currencies_response_with_special_characters", tags) {
     auto lg(make_logger(test_suite));
 
     get_currencies_response resp;
-    resp.currencies = generate_synthetic_unicode_currencies();
+    resp.currencies = generate_synthetic_unicode_currencies(ores::utility::uuid::tenant_id::system());
     BOOST_LOG_SEV(lg, debug) << "Response with special character symbols";
 
     const auto serialized = resp.serialize();

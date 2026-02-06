@@ -22,6 +22,7 @@
 
 #include <string>
 #include "ores.database/domain/context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database::service {
 
@@ -79,20 +80,21 @@ public:
      *
      * @param ctx The database context to query.
      * @param code The tenant code (e.g., "system", "acme").
-     * @return The tenant UUID as a string.
+     * @return The tenant ID.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_by_code(const context& ctx, const std::string& code);
+    static utility::uuid::tenant_id lookup_by_code(const context& ctx,
+        const std::string& code);
 
     /**
      * @brief Looks up a tenant ID by its hostname.
      *
      * @param ctx The database context to query.
      * @param hostname The tenant hostname (e.g., "localhost", "acme.example.com").
-     * @return The tenant UUID as a string.
+     * @return The tenant ID.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_by_hostname(const context& ctx,
+    static utility::uuid::tenant_id lookup_by_hostname(const context& ctx,
         const std::string& hostname);
 
     /**
@@ -102,11 +104,12 @@ public:
      * the database for the tenant name.
      *
      * @param ctx The database context to query.
-     * @param tenant_id The tenant UUID as a string.
+     * @param tenant_id The tenant ID.
      * @return The tenant name.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_name(const context& ctx, const std::string& tenant_id);
+    static std::string lookup_name(const context& ctx,
+        const utility::uuid::tenant_id& tenant_id);
 
     /**
      * @brief Checks if a string is a valid UUID format.

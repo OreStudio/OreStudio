@@ -23,6 +23,7 @@
 #include <libpq-fe.h>
 #include <stdexcept>
 #include <sstream>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database::repository {
 
@@ -71,17 +72,20 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
  * This mirrors what tenant_aware_pool does when acquiring a connection.
  * Must be called after connecting but before executing queries.
  */
-void set_tenant_context(PGconn* conn, const std::string& tenant_id,
+void set_tenant_context(PGconn* conn,
+    const std::optional<utility::uuid::tenant_id>& tenant_id,
     logging::logger_t& lg) {
 
-    if (tenant_id.empty()) {
+    if (!tenant_id.has_value()) {
         BOOST_LOG_SEV(lg, trace) << "No tenant_id provided, skipping context set";
         return;
     }
 
+    const auto tenant_id_str = tenant_id->to_string();
+
     // Use parameterized query to prevent SQL injection
-    std::array<const char*, 1> param_values = {tenant_id.c_str()};
-    std::array<int, 1> param_lengths = {static_cast<int>(tenant_id.length())};
+    std::array<const char*, 1> param_values = {tenant_id_str.c_str()};
+    std::array<int, 1> param_lengths = {static_cast<int>(tenant_id_str.length())};
     std::array<int, 1> param_formats = {0}; // text format
 
     const std::string sql = "SELECT set_config('app.current_tenant_id', $1, false)";
@@ -94,7 +98,7 @@ void set_tenant_context(PGconn* conn, const std::string& tenant_id,
         throw std::runtime_error("Failed to set tenant context: " + err_msg);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Set tenant context to: " << tenant_id;
+    BOOST_LOG_SEV(lg, debug) << "Set tenant context to: " << tenant_id_str;
 }
 
 } // anonymous namespace

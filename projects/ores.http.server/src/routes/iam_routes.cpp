@@ -450,18 +450,17 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
                                    << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
 
         // Set tenant context based on hostname and track tenant info
-        std::string tenant_id_str;
+        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
         std::string tenant_name;
         if (hostname.empty()) {
             ctx_ = database::service::tenant_context::with_system_tenant(ctx_);
-            tenant_id_str = database::service::tenant_context::system_tenant_id;
             tenant_name = "System";
         } else {
-            tenant_id_str =
+            tenant_id =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-            ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+            ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             tenant_name =
-                database::service::tenant_context::lookup_name(ctx_, tenant_id_str);
+                database::service::tenant_context::lookup_name(ctx_, tenant_id);
         }
 
         auto ip_address = boost::asio::ip::make_address(req.remote_address);
@@ -545,7 +544,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         std::ostringstream oss;
         oss << R"({"success":true,"account_id":")"
             << boost::uuids::to_string(account.id) << R"(","tenant_id":")"
-            << tenant_id_str << R"(","tenant_name":")"
+            << tenant_id.to_string() << R"(","tenant_name":")"
             << tenant_name << R"(","username":")"
             << account.username << R"(","email":")"
             << account.email << R"(","password_reset_required":)"
@@ -707,7 +706,7 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
         } else {
             const auto tenant_id =
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-            ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id);
+            ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
         }
 
         // Create the initial admin account with Admin role

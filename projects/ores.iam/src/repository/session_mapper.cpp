@@ -68,7 +68,7 @@ domain::session session_mapper::map(const session_entity& v) {
     using boost::uuids::uuid;
     using namespace boost::asio;
 
-    r.tenant_id = boost::lexical_cast<uuid>(v.tenant_id);
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<uuid>(v.id.value());
     r.account_id = boost::lexical_cast<uuid>(v.account_id);
     r.start_time = timestamp_to_timepoint(v.start_time.value());
@@ -90,7 +90,7 @@ session_entity session_mapper::map(const domain::session& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     session_entity r;
-    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
+    r.tenant_id = v.tenant_id.to_string();
     r.id = boost::lexical_cast<std::string>(v.id);
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
     r.start_time = timepoint_to_timestamp(v.start_time, lg());

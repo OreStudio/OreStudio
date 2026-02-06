@@ -85,7 +85,7 @@ protected:
      */
     [[nodiscard]] database::context
     make_request_context(const service::session_info& session) const {
-        return ctx_.with_tenant(boost::uuids::to_string(session.tenant_id));
+        return ctx_.with_tenant(session.tenant_id);
     }
 
     /**

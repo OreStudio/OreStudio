@@ -91,7 +91,7 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
 
 database::context accounts_message_handler::make_request_context(
     const comms::service::session_info& session) const {
-    return ctx_.with_tenant(boost::uuids::to_string(session.tenant_id));
+    return ctx_.with_tenant(session.tenant_id);
 }
 
 accounts_message_handler::handler_result
@@ -239,13 +239,16 @@ handle_save_account_request(std::span<const std::byte> payload,
             database::context operation_ctx = [&]() {
                 if (!hostname.empty()) {
                     BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                    const auto tenant_id_str =
+                    const auto tenant_id =
                         database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                    return database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+                    return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
                 } else {
                     BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
                                                << ctx_.tenant_id();
-                    return ctx_.with_tenant(ctx_.tenant_id());
+                    if (ctx_.tenant_id().has_value()) {
+                        return ctx_.with_tenant(*ctx_.tenant_id());
+                    }
+                    return ctx_.with_tenant(utility::uuid::tenant_id::system());
                 }
             }();
 
@@ -424,25 +427,24 @@ handle_login_request(std::span<const std::byte> payload,
     try {
         // Resolve tenant context based on hostname if provided.
         // Create a per-request context to avoid race conditions.
-        boost::uuids::uuid tenant_id;
+        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
         database::context login_ctx = [&]() {
             if (!hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                const auto tenant_id_str =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
-                return database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+                tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+                return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             } else {
                 // Use current context's tenant
                 const auto current_tenant = ctx_.tenant_id();
                 BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using current context tenant: "
-                                           << current_tenant;
-                if (current_tenant.empty()) {
-                    tenant_id = boost::uuids::nil_uuid();
+                                           << (current_tenant ? current_tenant->to_string() : "(none)");
+                if (current_tenant.has_value()) {
+                    tenant_id = *current_tenant;
+                    return ctx_.with_tenant(*current_tenant);
                 } else {
-                    tenant_id = boost::lexical_cast<boost::uuids::uuid>(current_tenant);
+                    tenant_id = utility::uuid::tenant_id::system();
+                    return ctx_.with_tenant(tenant_id);
                 }
-                return ctx_.with_tenant(current_tenant);
             }
         }();
 
@@ -524,9 +526,8 @@ handle_login_request(std::span<const std::byte> payload,
             service::session_converter::to_session_data(*sess));
 
         // Look up tenant name
-        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
         const auto tenant_name =
-            database::service::tenant_context::lookup_name(login_ctx, tenant_id_str);
+            database::service::tenant_context::lookup_name(login_ctx, tenant_id);
 
         login_response response{
             .success = true,
@@ -549,7 +550,7 @@ handle_login_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = "",
             .username = username,
             .email = "",
@@ -819,7 +820,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = "Bootstrap endpoint only accessible from localhost",
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = ""
         };
         co_return response.serialize();
@@ -832,7 +833,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = "System not in bootstrap mode - admin account already exists",
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = ""
         };
         co_return response.serialize();
@@ -857,18 +858,16 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         // Resolve tenant context based on hostname.
         // If hostname is empty, use system tenant.
         // Create a per-request context to avoid race conditions.
-        boost::uuids::uuid tenant_id;
+        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
         database::context signup_ctx = [&]() {
             if (hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                tenant_id = boost::uuids::nil_uuid();  // System tenant
+                tenant_id = utility::uuid::tenant_id::system();
                 return database::service::tenant_context::with_system_tenant(ctx_);
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                const auto tenant_id_str =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                tenant_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id_str);
-                return database::service::tenant_context::with_tenant(ctx_, tenant_id_str);
+                tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+                return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             }
         }();
 
@@ -892,9 +891,8 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
         // Look up tenant name
-        const auto tenant_id_str = boost::uuids::to_string(tenant_id);
         const auto tenant_name =
-            database::service::tenant_context::lookup_name(signup_ctx, tenant_id_str);
+            database::service::tenant_context::lookup_name(signup_ctx, tenant_id);
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -919,7 +917,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             .success = false,
             .error_message = std::string("Failed to create admin account: ") + e.what(),
             .account_id = boost::uuids::nil_uuid(),
-            .tenant_id = boost::uuids::nil_uuid(),
+            .tenant_id = utility::uuid::tenant_id::system(),
             .tenant_name = ""
         };
         co_return response.serialize();

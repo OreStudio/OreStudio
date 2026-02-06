@@ -55,7 +55,7 @@ const std::string test_remote_address = "127.0.0.1:12345";
 const std::string test_username = "test_user";
 
 std::shared_ptr<ores::comms::service::auth_session_service>
-make_sessions(const boost::uuids::uuid& tenant_id) {
+make_sessions(const ores::utility::uuid::tenant_id& tenant_id) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     // Create a test session with a known username
     auto session = std::make_shared<ores::comms::service::session_data>();
@@ -81,7 +81,7 @@ TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
@@ -116,12 +116,12 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto ccy = generate_synthetic_currency();
+    auto ccy = generate_synthetic_currency(h.tenant_id());
     refdata::repository::currency_repository repo;
     repo.write(h.context(), {ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
 
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
@@ -162,11 +162,11 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     // Create multiple test currencies
     refdata::repository::currency_repository repo;
 
-    auto currencies = generate_unique_synthetic_currencies(5);
+    auto currencies = generate_unique_synthetic_currencies(5, h.tenant_id());
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     repo.write(h.context(), currencies);
 
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
@@ -212,11 +212,11 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
 
     // Create random currencies
     const int new_currencies = 10;
-    auto currencies = generate_unique_synthetic_currencies(new_currencies);
+    auto currencies = generate_unique_synthetic_currencies(new_currencies, h.tenant_id());
 
     repo.write(h.context(), currencies);
 
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
@@ -276,7 +276,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     repo.write(h.context(), {original_ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << original_ccy;
 
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
@@ -330,14 +330,14 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
 
     scoped_database_helper h;
 
-    auto currencies = generate_synthetic_unicode_currencies();
+    auto currencies = generate_synthetic_unicode_currencies(h.tenant_id());
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     refdata::repository::currency_repository repo;
     repo.write(h.context(), currencies);
     BOOST_LOG_SEV(lg, debug) << "Currencies written to db.";
 
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     get_currencies_request req;
@@ -381,7 +381,7 @@ TEST_CASE("handle_invalid_message_type",
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto system_flags = make_system_flags(h.context(), boost::uuids::to_string(h.tenant_id()));
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
     refdata_message_handler handler(h.context(), system_flags, make_sessions(h.tenant_id()));
 
     std::vector<std::byte> empty_payload;

@@ -70,7 +70,7 @@ TEST_CASE("write_single_feature_flag", tags) {
     scoped_database_helper h;
 
     feature_flags_repository repo;
-    auto flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
+    auto flag = generate_feature_flag(h.tenant_id().to_string());
 
     BOOST_LOG_SEV(lg, debug) << "Feature flag: " << flag;
     CHECK_NOTHROW(repo.write(h.context(), flag));
@@ -89,7 +89,7 @@ TEST_CASE("write_multiple_feature_flags", tags) {
     scoped_database_helper h;
 
     feature_flags_repository repo;
-    auto flags = generate_feature_flags(5, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(5, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, debug) << "Generated " << flags.size() << " feature flags";
 
     const auto initial_count = repo.read_latest(h.context()).size();
@@ -110,7 +110,7 @@ TEST_CASE("read_latest_feature_flags", tags) {
     const auto initial_count = repo.read_latest(h.context()).size();
     BOOST_LOG_SEV(lg, debug) << "Initial feature flags count: " << initial_count;
 
-    auto written_flags = generate_feature_flags(3, boost::uuids::to_string(h.tenant_id()));
+    auto written_flags = generate_feature_flags(3, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, debug) << "Writing " << written_flags.size() << " feature flags";
 
     repo.write(h.context(), written_flags);
@@ -128,7 +128,7 @@ TEST_CASE("read_latest_feature_flag_by_name", tags) {
     scoped_database_helper h;
 
     feature_flags_repository repo;
-    auto flags = generate_feature_flags(5, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(5, h.tenant_id().to_string());
 
     const auto target = flags.front();
     BOOST_LOG_SEV(lg, debug) << "Write feature flags, target: " << target.name;
@@ -154,7 +154,7 @@ TEST_CASE("read_all_feature_flags", tags) {
     const auto initial_count = repo.read_all(h.context()).size();
     BOOST_LOG_SEV(lg, debug) << "Initial feature flags count (all versions): " << initial_count;
 
-    auto written_flags = generate_feature_flags(5, boost::uuids::to_string(h.tenant_id()));
+    auto written_flags = generate_feature_flags(5, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, debug) << "Writing " << written_flags.size() << " feature flags";
 
     repo.write(h.context(), written_flags);
@@ -174,7 +174,7 @@ TEST_CASE("read_all_feature_flags_by_name", tags) {
     feature_flags_repository repo;
 
     // Create a flag and write multiple versions
-    auto flag1 = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
+    auto flag1 = generate_feature_flag(h.tenant_id().to_string());
     const std::string test_name = flag1.name;
     BOOST_LOG_SEV(lg, debug) << "Flag version 1: " << flag1;
 
@@ -229,7 +229,7 @@ TEST_CASE("remove_feature_flag", tags) {
     feature_flags_repository repo;
 
     // Write a flag
-    auto flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
+    auto flag = generate_feature_flag(h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, debug) << "Feature flag: " << flag;
     repo.write(h.context(), flag);
 
@@ -254,7 +254,7 @@ TEST_CASE("write_and_read_enabled_feature_flag", tags) {
     feature_flags_repository repo;
 
     // Create enabled flag
-    auto enabled_flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
+    auto enabled_flag = generate_feature_flag(h.tenant_id().to_string());
     enabled_flag.enabled = true;
     BOOST_LOG_SEV(lg, debug) << "Enabled flag: " << enabled_flag;
 
@@ -277,7 +277,7 @@ TEST_CASE("write_and_read_disabled_feature_flag", tags) {
     feature_flags_repository repo;
 
     // Create disabled flag
-    auto disabled_flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
+    auto disabled_flag = generate_feature_flag(h.tenant_id().to_string());
     disabled_flag.enabled = false;
     BOOST_LOG_SEV(lg, debug) << "Disabled flag: " << disabled_flag;
 
@@ -300,7 +300,7 @@ TEST_CASE("feature_flag_version_increment", tags) {
     feature_flags_repository repo;
 
     // Create initial version
-    auto flag = generate_feature_flag(boost::uuids::to_string(h.tenant_id()));
+    auto flag = generate_feature_flag(h.tenant_id().to_string());
     flag.version = 0;
     const std::string flag_name = flag.name;
     BOOST_LOG_SEV(lg, debug) << "Initial flag: " << flag;

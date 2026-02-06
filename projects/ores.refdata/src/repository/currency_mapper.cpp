@@ -34,7 +34,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
 
     domain::currency r;
     r.version = v.version;
-    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
                                << " -> domain.version=" << r.version;
     r.iso_code = v.iso_code.value();
@@ -63,7 +63,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
 
     currency_entity r;
     r.iso_code = v.iso_code;
-    r.tenant_id = boost::lexical_cast<std::string>(v.tenant_id);
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.name = v.name;
     r.numeric_code = v.numeric_code;

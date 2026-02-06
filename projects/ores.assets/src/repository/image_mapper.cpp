@@ -33,7 +33,7 @@ domain::image image_mapper::map(const image_entity& v) {
 
     domain::image r;
     r.version = v.version;
-    r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
     r.key = v.key;
     r.description = v.description;
@@ -52,7 +52,7 @@ image_entity image_mapper::map(const domain::image& v) {
 
     image_entity r;
     r.image_id = boost::uuids::to_string(v.image_id);
-    r.tenant_id = boost::uuids::to_string(v.tenant_id);
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.key = v.key;
     r.description = v.description;

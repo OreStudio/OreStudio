@@ -45,7 +45,7 @@ bool tenant_context::is_uuid(const std::string& str) {
         str[18] == '-' && str[23] == '-';
 }
 
-std::string tenant_context::lookup_by_code(const context& ctx,
+utility::uuid::tenant_id tenant_context::lookup_by_code(const context& ctx,
     const std::string& code) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
@@ -63,10 +63,15 @@ std::string tenant_context::lookup_by_code(const context& ctx,
 
     BOOST_LOG_SEV(lg(), debug) << "Resolved tenant code '" << code
                                << "' to ID: " << results[0];
-    return results[0];
+
+    auto result = utility::uuid::tenant_id::from_string(results[0]);
+    if (!result) {
+        throw std::runtime_error("Invalid tenant ID from database: " + result.error());
+    }
+    return *result;
 }
 
-std::string tenant_context::lookup_by_hostname(const context& ctx,
+utility::uuid::tenant_id tenant_context::lookup_by_hostname(const context& ctx,
     const std::string& hostname) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
@@ -84,26 +89,32 @@ std::string tenant_context::lookup_by_hostname(const context& ctx,
 
     BOOST_LOG_SEV(lg(), debug) << "Resolved tenant hostname '" << hostname
                                << "' to ID: " << results[0];
-    return results[0];
+
+    auto result = utility::uuid::tenant_id::from_string(results[0]);
+    if (!result) {
+        throw std::runtime_error("Invalid tenant ID from database: " + result.error());
+    }
+    return *result;
 }
 
 std::string tenant_context::lookup_name(const context& ctx,
-    const std::string& tenant_id) {
+    const utility::uuid::tenant_id& tenant_id) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
 
-    BOOST_LOG_SEV(lg(), debug) << "Looking up tenant name by ID: " << tenant_id;
+    const auto tenant_id_str = tenant_id.to_string();
+    BOOST_LOG_SEV(lg(), debug) << "Looking up tenant name by ID: " << tenant_id_str;
 
     const auto results = execute_parameterized_string_query(ctx,
         "SELECT ores_iam_tenant_name_by_id_fn($1::uuid)",
-        {tenant_id},
+        {tenant_id_str},
         lg(), "Looking up tenant name by ID");
 
     if (results.empty()) {
-        throw std::runtime_error("No active tenant found with ID: " + tenant_id);
+        throw std::runtime_error("No active tenant found with ID: " + tenant_id_str);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolved tenant ID '" << tenant_id
+    BOOST_LOG_SEV(lg(), debug) << "Resolved tenant ID '" << tenant_id_str
                                << "' to name: " << results[0];
     return results[0];
 }
@@ -113,32 +124,28 @@ namespace {
 using namespace ores::logging;
 
 /**
- * @brief Resolves a tenant identifier to a UUID string.
+ * @brief Resolves a tenant identifier to a tenant_id.
  *
- * If the tenant is already a UUID, returns it directly.
+ * If the tenant is already a UUID, validates and returns it.
  * Otherwise, looks up the tenant by code.
  */
-std::string resolve_tenant_id(const context& ctx, const std::string& tenant) {
+utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string& tenant) {
     if (tenant_context::is_uuid(tenant)) {
         BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant;
-        return tenant;
+        auto result = utility::uuid::tenant_id::from_string(tenant);
+        if (!result) {
+            throw std::runtime_error("Invalid tenant ID: " + result.error());
+        }
+        return *result;
     }
 
-    auto tenant_id = tenant_context::lookup_by_code(ctx, tenant);
-
-    // Validate tenant_id is a proper UUID format to prevent injection
-    if (!tenant_context::is_uuid(tenant_id)) {
-        throw std::runtime_error(
-            "Invalid tenant ID format (must be UUID): " + tenant_id);
-    }
-
-    return tenant_id;
+    return tenant_context::lookup_by_code(ctx, tenant);
 }
 
 /**
  * @brief Verifies that a tenant context works by acquiring a connection.
  */
-void verify_tenant_context(context& ctx, const std::string& tenant_id) {
+void verify_tenant_context(context& ctx, const utility::uuid::tenant_id& tenant_id) {
     const auto r = sqlgen::session(ctx.connection_pool());
     if (!r) {
         BOOST_LOG_SEV(lg(), error) << "Failed to verify tenant context: "
@@ -146,7 +153,7 @@ void verify_tenant_context(context& ctx, const std::string& tenant_id) {
         throw std::runtime_error("Failed to set tenant context: " +
             std::string(r.error().what()));
     }
-    BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id;
+    BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id.to_string();
 }
 
 }  // anonymous namespace
@@ -156,7 +163,7 @@ context tenant_context::with_tenant(const context& ctx, const std::string& tenan
 
     BOOST_LOG_SEV(lg(), debug) << "Creating context with tenant: " << tenant;
 
-    // Resolve tenant code to UUID if needed (now accepts const context)
+    // Resolve tenant code to tenant_id
     const auto tenant_id = resolve_tenant_id(ctx, tenant);
 
     // Create the new context with the resolved tenant ID

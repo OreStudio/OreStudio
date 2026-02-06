@@ -32,7 +32,7 @@ assets_message_handler::assets_message_handler(database::context ctx,
 
 database::context assets_message_handler::make_request_context(
     const comms::service::session_info& session) const {
-    return ctx_.with_tenant(boost::uuids::to_string(session.tenant_id));
+    return ctx_.with_tenant(session.tenant_id);
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,

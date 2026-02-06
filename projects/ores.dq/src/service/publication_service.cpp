@@ -339,7 +339,7 @@ void publication_service::record_publication(
         "tenant_id, dataset_id, dataset_code, mode, target_table, "
         "records_inserted, records_updated, records_skipped, records_deleted, published_by"
         ") VALUES ('{}', '{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
-        ctx_.tenant_id(),
+        ctx_.tenant_id() ? ctx_.tenant_id()->to_string() : "",
         boost::uuids::to_string(result.dataset_id),
         result.dataset_code,
         to_string(mode),

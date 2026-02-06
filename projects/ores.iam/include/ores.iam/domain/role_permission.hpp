@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ROLE_PERMISSION_HPP
 
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::domain {
 
@@ -35,7 +36,7 @@ struct role_permission final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief The role to which the permission is granted.

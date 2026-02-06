@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <rfl/json.hpp>
 #include "ores.database/domain/database_options.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database {
 
@@ -52,7 +53,19 @@ context context_factory::make_context(const configuration& cfg) {
             std::string(pool_result.error().what()));
     }
 
-    context r(std::move(*pool_result), credentials, cfg.database_options.tenant);
+    // Convert string tenant to tenant_id if provided
+    std::optional<utility::uuid::tenant_id> tenant_id_opt;
+    if (!cfg.database_options.tenant.empty()) {
+        auto tenant_result = utility::uuid::tenant_id::from_string(
+            cfg.database_options.tenant);
+        if (!tenant_result) {
+            throw std::runtime_error("Invalid tenant ID in configuration: " +
+                tenant_result.error());
+        }
+        tenant_id_opt = *tenant_result;
+    }
+
+    context r(std::move(*pool_result), credentials, std::move(tenant_id_opt));
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

@@ -47,7 +47,7 @@ const std::string test_remote_address = "127.0.0.1:12345";
 const std::string test_username = "test_user";
 
 std::shared_ptr<ores::comms::service::auth_session_service>
-make_sessions(const boost::uuids::uuid& tenant_id) {
+make_sessions(const ores::utility::uuid::tenant_id& tenant_id) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     // Create a test session with a known username
     auto session = std::make_shared<ores::comms::service::session_data>();
@@ -135,7 +135,7 @@ TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
 
     // Add more flags to the database
     const int additional_count = 5;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " additional feature flags";
     repo.write(h.context(), flags);
 
@@ -175,7 +175,7 @@ TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     const int additional_count = 3;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
     repo.write(h.context(), flags);
     const auto expected_count = initial_count + additional_count;
 
@@ -233,7 +233,7 @@ TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     // Create flags with specific known values
     feature_flags_repository repo;
 
-    const auto tenant_id = boost::uuids::to_string(h.tenant_id());
+    const auto tenant_id = h.tenant_id().to_string();
 
     ores::variability::domain::feature_flags flag1;
     flag1.tenant_id = tenant_id;
@@ -309,7 +309,7 @@ TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
 
     // Create a larger number of flags
     const int additional_count = 20;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " feature flags";
     repo.write(h.context(), flags);
 
@@ -348,7 +348,7 @@ TEST_CASE("handle_get_feature_flags_request_from_different_endpoints", tags) {
     BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
 
     const int additional_count = 3;
-    auto flags = generate_feature_flags(additional_count, boost::uuids::to_string(h.tenant_id()));
+    auto flags = generate_feature_flags(additional_count, h.tenant_id().to_string());
     repo.write(h.context(), flags);
     const auto expected_count = initial_count + additional_count;
 

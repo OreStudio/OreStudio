@@ -23,6 +23,7 @@
 #include <string>
 #include <chrono>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::domain {
 
@@ -37,7 +38,7 @@ struct account_role final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    boost::uuids::uuid tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief The account to which the role is assigned.

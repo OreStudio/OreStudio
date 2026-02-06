@@ -453,6 +453,7 @@ begin
             select assets.image_id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
             join ores_assets_images_tbl assets on assets.key = dq_img.key
+              and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
               and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
               and assets.valid_to = ores_utility_infinity_timestamp_fn();
@@ -652,6 +653,7 @@ begin
             select assets.image_id into v_resolved_image_id
             from ores_dq_images_artefact_tbl dq_img
             join ores_assets_images_tbl assets on assets.key = dq_img.key
+              and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
               and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
               and assets.valid_to = ores_utility_infinity_timestamp_fn();

@@ -236,6 +236,7 @@ handle_save_account_request(std::span<const std::byte> payload,
         try {
             // Create a fresh context for this request to avoid race conditions
             // with concurrent requests from different tenants.
+            // Note: uses hostname if provided, otherwise uses handler's configured tenant.
             database::context operation_ctx = [&]() {
                 if (!hostname.empty()) {
                     BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
@@ -243,8 +244,9 @@ handle_save_account_request(std::span<const std::byte> payload,
                         database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
                     return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
                 } else {
-                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                    return ctx_.with_tenant(utility::uuid::tenant_id::system());
+                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
+                                               << ctx_.tenant_id().to_string();
+                    return ctx_.with_tenant(ctx_.tenant_id());
                 }
             }();
 
@@ -423,16 +425,16 @@ handle_login_request(std::span<const std::byte> payload,
     try {
         // Resolve tenant context based on hostname if provided.
         // Create a per-request context to avoid race conditions.
-        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+        utility::uuid::tenant_id tenant_id = ctx_.tenant_id();
         database::context login_ctx = [&]() {
             if (!hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
                 tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
                 return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
             } else {
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                tenant_id = utility::uuid::tenant_id::system();
-                return ctx_.with_tenant(tenant_id);
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
+                                           << ctx_.tenant_id().to_string();
+                return ctx_.with_tenant(ctx_.tenant_id());
             }
         }();
 
@@ -844,14 +846,14 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
 
     try {
         // Resolve tenant context based on hostname.
-        // If hostname is empty, use system tenant.
+        // If hostname is empty, use handler's configured tenant.
         // Create a per-request context to avoid race conditions.
-        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+        utility::uuid::tenant_id tenant_id = ctx_.tenant_id();
         database::context signup_ctx = [&]() {
             if (hostname.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using system tenant";
-                tenant_id = utility::uuid::tenant_id::system();
-                return database::service::tenant_context::with_system_tenant(ctx_);
+                BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
+                                           << ctx_.tenant_id().to_string();
+                return ctx_.with_tenant(ctx_.tenant_id());
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
                 tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);

@@ -1663,16 +1663,16 @@ handle_suggest_role_commands_request(std::span<const std::byte> payload,
                                << ", hostname: " << request.hostname
                                << ", tenant_id: " << request.tenant_id;
 
-    // Build the SQL query
+    // Build the parameterized SQL query to prevent SQL injection
     std::string sql;
+    std::vector<std::string> params;
+
     if (!request.tenant_id.empty()) {
-        sql = std::format(
-            "SELECT command FROM ores_iam_generate_role_commands_fn('{}', NULL, '{}'::uuid)",
-            request.username, request.tenant_id);
+        sql = "SELECT command FROM ores_iam_generate_role_commands_fn($1, NULL, $2::uuid)";
+        params = {request.username, request.tenant_id};
     } else if (!request.hostname.empty()) {
-        sql = std::format(
-            "SELECT command FROM ores_iam_generate_role_commands_fn('{}', '{}')",
-            request.username, request.hostname);
+        sql = "SELECT command FROM ores_iam_generate_role_commands_fn($1, $2)";
+        params = {request.username, request.hostname};
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Neither hostname nor tenant_id provided";
         suggest_role_commands_response response{
@@ -1682,8 +1682,8 @@ handle_suggest_role_commands_request(std::span<const std::byte> payload,
     }
 
     try {
-        auto rows = database::repository::execute_raw_string_query(
-            ctx_, sql, lg(), "Generating role commands");
+        auto rows = database::repository::execute_parameterized_string_query(
+            ctx_, sql, params, lg(), "Generating role commands");
 
         suggest_role_commands_response response{.commands = std::move(rows)};
         BOOST_LOG_SEV(lg(), info) << "Generated " << response.commands.size()

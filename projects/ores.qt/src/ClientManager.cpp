@@ -389,9 +389,11 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         session_.set_notification_callback(
             [this](const std::string& event_type,
                    std::chrono::system_clock::time_point timestamp,
-                   const std::vector<std::string>& entity_ids) {
+                   const std::vector<std::string>& entity_ids,
+                   const std::string& tenant_id) {
                 BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type
-                                           << " with " << entity_ids.size() << " entity IDs";
+                                           << " with " << entity_ids.size() << " entity IDs"
+                                           << ", tenant: " << tenant_id;
                 // Convert to Qt types and emit on main thread
                 auto qEventType = QString::fromStdString(event_type);
                 auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -402,9 +404,11 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
                 for (const auto& id : entity_ids) {
                     qEntityIds.append(QString::fromStdString(id));
                 }
+                auto qTenantId = QString::fromStdString(tenant_id);
 
-                QMetaObject::invokeMethod(this, [this, qEventType, qTimestamp, qEntityIds]() {
-                    emit notificationReceived(qEventType, qTimestamp, qEntityIds);
+                QMetaObject::invokeMethod(this,
+                    [this, qEventType, qTimestamp, qEntityIds, qTenantId]() {
+                    emit notificationReceived(qEventType, qTimestamp, qEntityIds, qTenantId);
                 }, Qt::QueuedConnection);
             });
 

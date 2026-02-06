@@ -71,7 +71,7 @@ private slots:
     void onOpenCountryVersion(const refdata::domain::country& country, int versionNumber);
     void onRevertCountry(const refdata::domain::country& country);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     ImageCache* imageCache_;

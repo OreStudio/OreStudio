@@ -379,7 +379,7 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 
 void CurrencyController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+    const QStringList& entityIds, const QString& /*tenantId*/) {
     // Check if this is a currency change event
     if (eventType != QString::fromStdString(std::string{currency_event_name})) {
         return;

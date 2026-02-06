@@ -266,7 +266,7 @@ void FeatureFlagController::refreshListWindow() {
 
 void FeatureFlagController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+    const QStringList& entityIds, const QString& /*tenantId*/) {
     // Check if this is a feature flag change event
     if (eventType != QString::fromStdString(std::string{feature_flag_event_name})) {
         return;

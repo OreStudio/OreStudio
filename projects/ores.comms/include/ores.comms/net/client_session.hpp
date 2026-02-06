@@ -71,6 +71,7 @@ struct pending_notification {
     std::string event_type;
     std::chrono::system_clock::time_point timestamp;
     std::vector<std::string> entity_ids;
+    std::string tenant_id;
 };
 
 /**
@@ -536,7 +537,8 @@ public:
     using notification_callback_t = std::function<void(
         const std::string& event_type,
         std::chrono::system_clock::time_point timestamp,
-        const std::vector<std::string>& entity_ids)>;
+        const std::vector<std::string>& entity_ids,
+        const std::string& tenant_id)>;
 
     /**
      * @brief Set an external notification callback.
@@ -559,7 +561,8 @@ private:
      */
     void on_notification(const std::string& event_type,
         std::chrono::system_clock::time_point timestamp,
-        const std::vector<std::string>& entity_ids);
+        const std::vector<std::string>& entity_ids,
+        const std::string& tenant_id);
 
     std::shared_ptr<client> client_;
     std::unique_ptr<service::remote_event_adapter> event_adapter_;

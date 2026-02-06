@@ -1192,10 +1192,12 @@ boost::asio::awaitable<void> client::run_message_loop() {
                         BOOST_LOG_SEV(lg(), debug) << "Invoking notification callback for "
                                                    << notification_result->event_type
                                                    << " with " << notification_result->entity_ids.size()
-                                                   << " entity IDs";
+                                                   << " entity IDs, tenant: "
+                                                   << notification_result->tenant_id;
                         callback(notification_result->event_type,
                                  notification_result->timestamp,
-                                 notification_result->entity_ids);
+                                 notification_result->entity_ids,
+                                 notification_result->tenant_id);
                     } else {
                         BOOST_LOG_SEV(lg(), trace) << "No notification callback registered, "
                                                    << "ignoring notification for "

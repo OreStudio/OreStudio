@@ -178,7 +178,7 @@ private slots:
      * @param entityIds ISO codes of currencies that changed (may be empty)
      */
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     /**

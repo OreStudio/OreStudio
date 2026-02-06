@@ -148,7 +148,8 @@ private slots:
     void onReasonsLoaded();
     void onCategoriesLoaded();
     void onNotificationReceived(const QString& eventType,
-        const QDateTime& timestamp, const QStringList& entityIds);
+        const QDateTime& timestamp, const QStringList& entityIds,
+        const QString& tenantId);
 
 private:
     void loadReasons();

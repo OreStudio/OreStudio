@@ -70,7 +70,7 @@ private slots:
     void onFeatureFlagSaved(const QString& name);
     void onFeatureFlagDeleted(const QString& name);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
+                                const QStringList& entityIds, const QString& tenantId);
     void onOpenFeatureFlagVersion(const variability::domain::feature_flags& flag,
                                   int versionNumber);
     void onRevertFeatureFlag(const variability::domain::feature_flags& flag);

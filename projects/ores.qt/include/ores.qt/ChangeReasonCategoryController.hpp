@@ -66,7 +66,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const QString& code);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
+                                const QStringList& entityIds, const QString& tenantId);
     void onOpenVersion(const dq::domain::change_reason_category& category, int versionNumber);
     void onRevertVersion(const dq::domain::change_reason_category& category);
 

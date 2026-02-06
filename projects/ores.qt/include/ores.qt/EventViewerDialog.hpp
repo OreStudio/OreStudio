@@ -133,7 +133,8 @@ private slots:
     void onClearClicked();
     void onNotificationReceived(const QString& eventType,
                                 const QDateTime& timestamp,
-                                const QStringList& entityIds);
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     void setupUi();

@@ -377,7 +377,7 @@ domain::publication_result publication_service::call_populate_function(
         << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
-        "SELECT * FROM ores_{}('{}'::uuid, '{}'::uuid, '{}'::text)",
+        "SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
         function_name, dataset_id_str, ctx_.tenant_id().to_string(), mode_str);
 
     try {

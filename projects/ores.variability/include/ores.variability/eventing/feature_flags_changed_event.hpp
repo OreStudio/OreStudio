@@ -51,6 +51,11 @@ struct feature_flags_changed_event final {
      * May contain multiple names for batch operations.
      */
     std::vector<std::string> flag_names;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

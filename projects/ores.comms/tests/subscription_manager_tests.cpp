@@ -20,6 +20,8 @@
 #include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.comms/service/subscription_manager.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace {
 
@@ -290,6 +292,175 @@ TEST_CASE("subscription_manager callback exception is handled gracefully", tags)
 
     REQUIRE(notified == 1); // Only session2 succeeded
     REQUIRE(good_callback_count == 1);
+}
+
+TEST_CASE("subscription_manager notify with tenant_id only delivers to matching tenant", tags) {
+    subscription_manager mgr;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    mgr.set_sessions_service(sessions);
+
+    const std::string acme_tenant = "a0000000-0000-0000-0000-000000000001";
+    const std::string example_tenant = "b0000000-0000-0000-0000-000000000002";
+
+    auto acme_tid = ores::utility::uuid::tenant_id::from_string(acme_tenant);
+    auto example_tid = ores::utility::uuid::tenant_id::from_string(example_tenant);
+    REQUIRE(acme_tid.has_value());
+    REQUIRE(example_tid.has_value());
+
+    // Store sessions for both tenants
+    sessions->store_session("session_acme", {
+        .account_id = {},
+        .tenant_id = *acme_tid,
+        .username = "user@acme"
+    });
+    sessions->store_session("session_example", {
+        .account_id = {},
+        .tenant_id = *example_tid,
+        .username = "user@example"
+    });
+
+    int acme_calls = 0;
+    int example_calls = 0;
+
+    mgr.register_session("session_acme",
+        [&](const std::string&, auto, auto) { ++acme_calls; return true; });
+    mgr.register_session("session_example",
+        [&](const std::string&, auto, auto) { ++example_calls; return true; });
+
+    mgr.subscribe("session_acme", "test.event");
+    mgr.subscribe("session_example", "test.event");
+
+    // Notify with acme tenant - only acme session should receive
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(),
+                               {}, acme_tenant);
+
+    REQUIRE(notified == 1);
+    REQUIRE(acme_calls == 1);
+    REQUIRE(example_calls == 0);
+}
+
+TEST_CASE("subscription_manager notify with empty tenant_id broadcasts to all", tags) {
+    subscription_manager mgr;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    mgr.set_sessions_service(sessions);
+
+    const std::string acme_tenant = "a0000000-0000-0000-0000-000000000001";
+    auto acme_tid = ores::utility::uuid::tenant_id::from_string(acme_tenant);
+    REQUIRE(acme_tid.has_value());
+
+    sessions->store_session("session1", {
+        .account_id = {},
+        .tenant_id = *acme_tid,
+        .username = "user@acme"
+    });
+
+    int session1_calls = 0;
+    int session2_calls = 0;
+
+    mgr.register_session("session1",
+        [&](const std::string&, auto, auto) { ++session1_calls; return true; });
+    mgr.register_session("session2",
+        [&](const std::string&, auto, auto) { ++session2_calls; return true; });
+
+    mgr.subscribe("session1", "test.event");
+    mgr.subscribe("session2", "test.event");
+
+    // Empty tenant_id - broadcast to all
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now());
+
+    REQUIRE(notified == 2);
+    REQUIRE(session1_calls == 1);
+    REQUIRE(session2_calls == 1);
+}
+
+TEST_CASE("subscription_manager notify skips sessions with different tenant", tags) {
+    subscription_manager mgr;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    mgr.set_sessions_service(sessions);
+
+    const std::string acme_tenant = "a0000000-0000-0000-0000-000000000001";
+    const std::string example_tenant = "b0000000-0000-0000-0000-000000000002";
+
+    auto acme_tid = ores::utility::uuid::tenant_id::from_string(acme_tenant);
+    auto example_tid = ores::utility::uuid::tenant_id::from_string(example_tenant);
+
+    // Both sessions belong to example tenant
+    sessions->store_session("session1", {
+        .account_id = {},
+        .tenant_id = *example_tid,
+        .username = "user1@example"
+    });
+    sessions->store_session("session2", {
+        .account_id = {},
+        .tenant_id = *example_tid,
+        .username = "user2@example"
+    });
+
+    int session1_calls = 0;
+    int session2_calls = 0;
+
+    mgr.register_session("session1",
+        [&](const std::string&, auto, auto) { ++session1_calls; return true; });
+    mgr.register_session("session2",
+        [&](const std::string&, auto, auto) { ++session2_calls; return true; });
+
+    mgr.subscribe("session1", "test.event");
+    mgr.subscribe("session2", "test.event");
+
+    // Notify with acme tenant - no sessions should receive
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(),
+                               {}, acme_tenant);
+
+    REQUIRE(notified == 0);
+    REQUIRE(session1_calls == 0);
+    REQUIRE(session2_calls == 0);
+}
+
+TEST_CASE("subscription_manager pre-login sessions receive all notifications", tags) {
+    subscription_manager mgr;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    mgr.set_sessions_service(sessions);
+
+    const std::string acme_tenant = "a0000000-0000-0000-0000-000000000001";
+
+    // Do NOT store any auth session for "session_prelogin" - simulates pre-login
+    int prelogin_calls = 0;
+
+    mgr.register_session("session_prelogin",
+        [&](const std::string&, auto, auto) { ++prelogin_calls; return true; });
+
+    mgr.subscribe("session_prelogin", "test.event");
+
+    // Notify with acme tenant - pre-login session should still receive
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(),
+                               {}, acme_tenant);
+
+    REQUIRE(notified == 1);
+    REQUIRE(prelogin_calls == 1);
+}
+
+TEST_CASE("subscription_manager without sessions_service broadcasts to all", tags) {
+    subscription_manager mgr;
+    // Deliberately NOT calling set_sessions_service
+
+    int session1_calls = 0;
+    int session2_calls = 0;
+
+    mgr.register_session("session1",
+        [&](const std::string&, auto, auto) { ++session1_calls; return true; });
+    mgr.register_session("session2",
+        [&](const std::string&, auto, auto) { ++session2_calls; return true; });
+
+    mgr.subscribe("session1", "test.event");
+    mgr.subscribe("session2", "test.event");
+
+    // Even with tenant_id, without sessions service, broadcast to all
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(),
+                               {}, "some-tenant-id");
+
+    REQUIRE(notified == 2);
+    REQUIRE(session1_calls == 1);
+    REQUIRE(session2_calls == 1);
 }
 
 }

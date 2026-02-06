@@ -13,17 +13,21 @@ declare
     entity_name text := 'ores.{{entity.component}}.{{entity.entity_singular}}';
     change_timestamp timestamptz := NOW();
     changed_{{entity.primary_key.column}} {{entity.primary_key.type}};
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_{{entity.primary_key.column}} := OLD.{{entity.primary_key.column}};
+        changed_tenant_id := OLD.tenant_id::text;
     else
         changed_{{entity.primary_key.column}} := NEW.{{entity.primary_key.column}};
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_{{entity.primary_key.column}})
+        'entity_ids', jsonb_build_array(changed_{{entity.primary_key.column}}),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_{{entity.entity_plural}}', notification_payload::text);

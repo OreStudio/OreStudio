@@ -53,6 +53,11 @@ struct permission_changed_event final {
      * updated, or deleted. May contain multiple IDs for batch operations.
      */
     std::vector<std::string> permission_ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

@@ -50,6 +50,11 @@ struct catalog_changed_event final {
      * or deleted. May contain multiple names for batch operations.
      */
     std::vector<std::string> names;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

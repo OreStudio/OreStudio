@@ -50,6 +50,11 @@ struct origin_dimension_changed_event final {
      * or deleted. May contain multiple codes for batch operations.
      */
     std::vector<std::string> codes;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

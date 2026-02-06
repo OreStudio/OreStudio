@@ -57,6 +57,11 @@ struct account_permissions_changed_event final {
      * @brief The timestamp of when the change occurred (in UTC).
      */
     std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

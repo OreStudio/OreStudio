@@ -50,6 +50,11 @@ struct change_reason_category_changed_event final {
      * or deleted. May contain multiple codes for batch operations.
      */
     std::vector<std::string> category_codes;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

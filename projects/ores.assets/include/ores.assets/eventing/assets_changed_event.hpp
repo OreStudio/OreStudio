@@ -50,6 +50,11 @@ struct assets_changed_event final {
      * had their image mappings created, updated, or deleted.
      */
     std::vector<std::string> iso_codes;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 } // namespace ores::assets::eventing

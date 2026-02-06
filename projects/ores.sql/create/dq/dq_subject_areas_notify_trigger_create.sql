@@ -24,6 +24,7 @@ declare
     entity_name text := 'ores.dq.subject_area';
     change_timestamp timestamptz := NOW();
     changed_key text;
+    changed_tenant_id text;
 begin
     -- Subject areas have a composite key (name, domain_name)
     if TG_OP = 'DELETE' then
@@ -35,7 +36,8 @@ begin
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_key)
+        'entity_ids', jsonb_build_array(changed_key),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_subject_areas', notification_payload::text);

@@ -24,17 +24,21 @@ declare
     entity_name text := 'ores.iam.role';
     change_timestamp timestamptz := NOW();
     changed_id text;
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_id := OLD.id::text;
+        changed_tenant_id := OLD.tenant_id::text;
     else
         changed_id := NEW.id::text;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_id)
+        'entity_ids', jsonb_build_array(changed_id),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_roles', notification_payload::text);

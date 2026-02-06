@@ -49,6 +49,14 @@ struct entity_change_event final {
      * May be empty if the trigger doesn't provide specific IDs.
      */
     std::vector<std::string> entity_ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     *
+     * Used for multi-tenancy isolation: notifications are only delivered
+     * to sessions belonging to the same tenant.
+     */
+    std::string tenant_id;
 };
 
 }

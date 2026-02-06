@@ -265,7 +265,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 refdata::eventing::currency_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.iso_codes);
+                                     e.iso_codes, e.tenant_id);
         });
 
     auto country_sub = event_bus.subscribe<refdata::eventing::country_changed_event>(
@@ -273,7 +273,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 refdata::eventing::country_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.alpha2_codes);
+                                     e.alpha2_codes, e.tenant_id);
         });
 
     auto account_sub = event_bus.subscribe<iam::eventing::account_changed_event>(
@@ -281,7 +281,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 iam::eventing::account_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.account_ids);
+                                     e.account_ids, e.tenant_id);
         });
 
     auto assets_sub = event_bus.subscribe<assets::eventing::assets_changed_event>(
@@ -289,7 +289,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 assets::eventing::assets_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.iso_codes);
+                                     e.iso_codes, e.tenant_id);
         });
 
     auto change_reason_sub = event_bus.subscribe<dq::eventing::change_reason_changed_event>(
@@ -297,7 +297,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::change_reason_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.reason_codes);
+                                     e.reason_codes, e.tenant_id);
         });
 
     auto change_reason_category_sub = event_bus.subscribe<dq::eventing::change_reason_category_changed_event>(
@@ -305,7 +305,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::change_reason_category_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.category_codes);
+                                     e.category_codes, e.tenant_id);
         });
 
     auto origin_dimension_sub = event_bus.subscribe<dq::eventing::origin_dimension_changed_event>(
@@ -313,7 +313,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::origin_dimension_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.codes);
+                                     e.codes, e.tenant_id);
         });
 
     auto nature_dimension_sub = event_bus.subscribe<dq::eventing::nature_dimension_changed_event>(
@@ -321,7 +321,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::nature_dimension_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.codes);
+                                     e.codes, e.tenant_id);
         });
 
     auto treatment_dimension_sub = event_bus.subscribe<dq::eventing::treatment_dimension_changed_event>(
@@ -329,7 +329,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::treatment_dimension_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.codes);
+                                     e.codes, e.tenant_id);
         });
 
     auto catalog_sub = event_bus.subscribe<dq::eventing::catalog_changed_event>(
@@ -337,7 +337,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::catalog_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.names);
+                                     e.names, e.tenant_id);
         });
 
     auto dataset_sub = event_bus.subscribe<dq::eventing::dataset_changed_event>(
@@ -345,7 +345,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::dataset_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.ids);
+                                     e.ids, e.tenant_id);
         });
 
     auto methodology_sub = event_bus.subscribe<dq::eventing::methodology_changed_event>(
@@ -353,7 +353,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::methodology_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.ids);
+                                     e.ids, e.tenant_id);
         });
 
     auto coding_scheme_sub = event_bus.subscribe<dq::eventing::coding_scheme_changed_event>(
@@ -361,7 +361,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::coding_scheme_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.codes);
+                                     e.codes, e.tenant_id);
         });
 
     auto coding_scheme_authority_type_sub = event_bus.subscribe<dq::eventing::coding_scheme_authority_type_changed_event>(
@@ -369,7 +369,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::coding_scheme_authority_type_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.codes);
+                                     e.codes, e.tenant_id);
         });
 
     auto data_domain_sub = event_bus.subscribe<dq::eventing::data_domain_changed_event>(
@@ -377,7 +377,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::data_domain_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.names);
+                                     e.names, e.tenant_id);
         });
 
     auto subject_area_sub = event_bus.subscribe<dq::eventing::subject_area_changed_event>(
@@ -385,7 +385,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 dq::eventing::subject_area_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.keys);
+                                     e.keys, e.tenant_id);
         });
 
     auto role_sub = event_bus.subscribe<iam::eventing::role_changed_event>(
@@ -393,7 +393,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 iam::eventing::role_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.role_ids);
+                                     e.role_ids, e.tenant_id);
         });
 
     auto permission_sub = event_bus.subscribe<iam::eventing::permission_changed_event>(
@@ -401,7 +401,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 iam::eventing::permission_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.permission_ids);
+                                     e.permission_ids, e.tenant_id);
         });
 
     // Subscribe to feature flag changes to refresh system_flags cache.
@@ -417,11 +417,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 variability::eventing::feature_flags_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.flag_names);
+                                     e.flag_names, e.tenant_id);
         });
 
     // Create server with subscription manager
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server, subscription_mgr);
+
+    // Wire sessions service into subscription manager for tenant-aware filtering
+    subscription_mgr->set_sessions_service(srv->sessions());
 
     // Create geolocation service using PostgreSQL geoip tables
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);

@@ -79,7 +79,11 @@ void LoginDialog::setSavedConnections(const QStringList& connectionNames) {
 
     savedConnectionsButton_->setVisible(true);
 
-    for (const QString& name : connectionNames) {
+    // Sort connections alphabetically (case-insensitive)
+    QStringList sortedNames = connectionNames;
+    sortedNames.sort(Qt::CaseInsensitive);
+
+    for (const QString& name : sortedNames) {
         auto* action = savedConnectionsMenu_->addAction(name);
         connect(action, &QAction::triggered, this, [this, name]() {
             emit savedConnectionSelected(name);

@@ -73,15 +73,10 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
  * Must be called after connecting but before executing queries.
  */
 void set_tenant_context(PGconn* conn,
-    const std::optional<utility::uuid::tenant_id>& tenant_id,
+    const utility::uuid::tenant_id& tenant_id,
     logging::logger_t& lg) {
 
-    if (!tenant_id.has_value()) {
-        BOOST_LOG_SEV(lg, trace) << "No tenant_id provided, skipping context set";
-        return;
-    }
-
-    const auto tenant_id_str = tenant_id->to_string();
+    const auto tenant_id_str = tenant_id.to_string();
 
     // Use parameterized query to prevent SQL injection
     std::array<const char*, 1> param_values = {tenant_id_str.c_str()};

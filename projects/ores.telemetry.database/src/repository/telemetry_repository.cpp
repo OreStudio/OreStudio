@@ -46,15 +46,9 @@ void telemetry_repository::create(context ctx,
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
-    // Get tenant_id from context (set by tenant_context::set())
-    const auto& tenant_id = ctx.tenant_id();
-    if (!tenant_id.has_value()) {
-        throw std::runtime_error("No tenant context set for telemetry insert");
-    }
-
     const auto r = sqlgen::session(ctx.connection_pool())
         .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(entry, tenant_id->to_string())))
+        .and_then(insert(telemetry_mapper::to_entity(entry, ctx.tenant_id().to_string())))
         .and_then(commit);
     ensure_success(r, lg());
 }
@@ -72,16 +66,11 @@ std::size_t telemetry_repository::create_batch(context ctx,
                                << " telemetry log entries from "
                                << batch.source_name;
 
-    // Get tenant_id from context (set by tenant_context::set())
-    const auto& tenant_id = ctx.tenant_id();
-    if (!tenant_id.has_value()) {
-        throw std::runtime_error("No tenant context set for telemetry batch insert");
-    }
-
+    const auto tenant_id_str = ctx.tenant_id().to_string();
     std::vector<telemetry_entity> entities;
     entities.reserve(batch.size());
     for (const auto& entry : batch.entries) {
-        auto entity = telemetry_mapper::to_entity(entry, tenant_id->to_string());
+        auto entity = telemetry_mapper::to_entity(entry, tenant_id_str);
         // Override source info from batch
         entity.source = std::string(domain::to_string(batch.source));
         entity.source_name = batch.source_name;

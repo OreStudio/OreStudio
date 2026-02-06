@@ -53,8 +53,8 @@ context context_factory::make_context(const configuration& cfg) {
             std::string(pool_result.error().what()));
     }
 
-    // Convert string tenant to tenant_id if provided
-    std::optional<utility::uuid::tenant_id> tenant_id_opt;
+    // Convert string tenant to tenant_id, defaulting to system tenant
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     if (!cfg.database_options.tenant.empty()) {
         auto tenant_result = utility::uuid::tenant_id::from_string(
             cfg.database_options.tenant);
@@ -62,10 +62,10 @@ context context_factory::make_context(const configuration& cfg) {
             throw std::runtime_error("Invalid tenant ID in configuration: " +
                 tenant_result.error());
         }
-        tenant_id_opt = *tenant_result;
+        tenant_id = *tenant_result;
     }
 
-    context r(std::move(*pool_result), credentials, std::move(tenant_id_opt));
+    context r(std::move(*pool_result), credentials, std::move(tenant_id));
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

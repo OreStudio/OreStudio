@@ -20,7 +20,6 @@
 #ifndef ORES_DATABASE_CONTEXT_HPP
 #define ORES_DATABASE_CONTEXT_HPP
 
-#include <optional>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -41,7 +40,7 @@ public:
 
     explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
                      sqlgen::postgres::Credentials credentials,
-                     std::optional<utility::uuid::tenant_id> tenant_id = std::nullopt)
+                     utility::uuid::tenant_id tenant_id)
     : connection_pool_(std::move(connection_pool), std::move(tenant_id)),
       credentials_(std::move(credentials)) {}
 
@@ -61,7 +60,7 @@ public:
     /**
      * @brief Gets the tenant ID for this context.
      */
-    const std::optional<utility::uuid::tenant_id>& tenant_id() const {
+    const utility::uuid::tenant_id& tenant_id() const {
         return connection_pool_.tenant_id();
     }
 

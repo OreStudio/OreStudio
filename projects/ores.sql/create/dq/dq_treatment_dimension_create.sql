@@ -46,7 +46,7 @@ create table if not exists "ores_dq_treatment_dimensions_tbl" (
 );
 
 create unique index if not exists ores_dq_treatment_dimensions_version_uniq_idx
-on "ores_dq_treatment_dimensions_tbl" (code, version)
+on "ores_dq_treatment_dimensions_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_dq_treatment_dimensions_code_uniq_idx

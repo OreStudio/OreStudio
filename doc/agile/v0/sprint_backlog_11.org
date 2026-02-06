@@ -17,47 +17,47 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 10:41], for Friday, February 06, 2026.
+#+CAPTION: Clock summary at [2026-02-06 Fri 11:47], for Friday, February 06, 2026.
 |          | <75>                                                     |        |      |      |       |
 | Tags     | Headline                                                 | Time   |      |      |     % |
 |----------+----------------------------------------------------------+--------+------+------+-------|
-|          | *Total time*                                             | *5:16* |      |      | 100.0 |
+|          | *Total time*                                             | *6:20* |      |      | 100.0 |
 |----------+----------------------------------------------------------+--------+------+------+-------|
-|          | Stories                                                  | 5:16   |      |      | 100.0 |
-|          | Active                                                   |        | 5:16 |      | 100.0 |
-| code     | Refactor message handlers for per-request tenant context |        |      | 1:48 |  34.2 |
-| code     | Check that data librarian can publish across tenants     |        |      | 1:47 |  33.9 |
-| analysis | Review DQ metadata tables for multi-tenancy support      |        |      | 1:41 |  32.0 |
+|          | Stories                                                  | 6:20   |      |      | 100.0 |
+|          | Active                                                   |        | 6:20 |      | 100.0 |
+| code     | Refactor message handlers for per-request tenant context |        |      | 1:48 |  28.4 |
+| analysis | Review DQ metadata tables for multi-tenancy support      |        |      | 1:41 |  26.6 |
+| code     | Check that data librarian can publish across tenants     |        |      | 2:51 |  45.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 10:41]
+#+CAPTION: Clock summary at [2026-02-06 Fri 11:47]
 |          | <75>                                                     |         |       |       |       |
 | Tags     | Headline                                                 | Time    |       |       |     % |
 |----------+----------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                             | *66:42* |       |       | 100.0 |
+|          | *Total time*                                             | *67:46* |       |       | 100.0 |
 |----------+----------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                  | 66:42   |       |       | 100.0 |
-|          | Active                                                   |         | 66:42 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                    |         |       |  2:24 |   3.6 |
+|          | Stories                                                  | 67:46   |       |       | 100.0 |
+|          | Active                                                   |         | 67:46 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                    |         |       |  2:24 |   3.5 |
 | code     | Address past review comments                             |         |       |  1:14 |   1.8 |
-| code     | Split "god" admin account                                |         |       | 10:05 |  15.1 |
+| code     | Split "god" admin account                                |         |       | 10:05 |  14.9 |
 | code     | Move all database entities to public schema              |         |       |  1:22 |   2.0 |
 | code     | Check directory structure in SQL                         |         |       |  0:36 |   0.9 |
-| code     | Add tenancy support                                      |         |       |  3:55 |   5.9 |
-| code     | Use tenancy to isolate tests                             |         |       |  5:00 |   7.5 |
+| code     | Add tenancy support                                      |         |       |  3:55 |   5.8 |
+| code     | Use tenancy to isolate tests                             |         |       |  5:00 |   7.4 |
 | code     | Add NOTICE logging support to sqlgen                     |         |       |  0:53 |   1.3 |
-| code     | Update codegen for tenancy                               |         |       |  3:32 |   5.3 |
-| code     | Add entity types for tenants                             |         |       |  9:43 |  14.6 |
-| code     | Add sink to log to database directly                     |         |       |  5:00 |   7.5 |
-| code     | Add system accounts for services                         |         |       |  3:32 |   5.3 |
-| code     | Test shell functionality with tenancy enabled            |         |       |  9:44 |  14.6 |
+| code     | Update codegen for tenancy                               |         |       |  3:32 |   5.2 |
+| code     | Add entity types for tenants                             |         |       |  9:43 |  14.3 |
+| code     | Add sink to log to database directly                     |         |       |  5:00 |   7.4 |
+| code     | Add system accounts for services                         |         |       |  3:32 |   5.2 |
+| code     | Test shell functionality with tenancy enabled            |         |       |  9:44 |  14.4 |
 | code     | Fix apt-get failures on nightly build                    |         |       |  0:20 |   0.5 |
 | code     | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.4 |
-| code     | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.4 |
-| code     | Check that data librarian can publish across tenants     |         |       |  1:47 |   2.7 |
+| code     | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.3 |
 | analysis | Review DQ metadata tables for multi-tenancy support      |         |       |  1:41 |   2.5 |
+| code     | Check that data librarian can publish across tenants     |         |       |  2:51 |   4.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1149,8 +1149,81 @@ class handler {
 };
 #+end_src
 
+*** COMPLETED Review DQ metadata tables for multi-tenancy support  :analysis:
+    :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 09:00]--[2026-02-06 Fri 10:41] =>  1:41
+    :END:
+
+Several DQ metadata tables have unique version indexes without =tenant_id=,
+which prevents different tenants from having the same metadata entries:
+
+Affected tables:
+- =ores_dq_catalogs_tbl= (name, version)
+- =ores_dq_change_reason_categories_tbl= (code, version)
+- =ores_dq_change_reasons_tbl= (code, version)
+- =ores_dq_coding_scheme_authority_types_tbl= (code, version)
+- =ores_dq_data_domains_tbl= (name, version)
+- =ores_dq_datasets_tbl= (id, version)
+- =ores_dq_methodologies_tbl= (id, version)
+- =ores_dq_nature_dimensions_tbl= (code, version)
+- =ores_dq_origin_dimensions_tbl= (code, version)
+- =ores_dq_subject_areas_tbl= (name, domain_name, version)
+- =ores_dq_treatment_dimensions_tbl= (code, version)
+
+Needs analysis to determine:
+- Should DQ metadata be global (shared across tenants) or tenant-specific?
+- If global, how should publishing work for DQ metadata tables?
+- If tenant-specific, add =tenant_id= to all version unique indexes
+
+Note: =ores_dq_coding_schemes_tbl= was fixed as part of the immediate publish
+bug, but the broader design question remains.
+
+#+begin_quote
+This pull request significantly enhances the application's multi-tenancy
+capabilities and improves the user experience in the Qt client. It introduces
+robust mechanisms for tenant-specific data management in the database, refines
+data publishing logic for images, and delivers several quality-of-life
+improvements to the connection browser and login dialog. Additionally, a new
+administrative shell command streamlines role assignment, and underlying
+database functions are secured for proper cross-tenant operations.
+
+Highlights:
+
+- Multi-tenant Data Publishing: The database schema has been updated to support
+  multi-tenant data publishing by adding tenant_id to unique version indexes
+  across numerous tables, including assets (images, tags), DQ metadata
+  (catalogs, change reasons, data domains, datasets, methodologies, dimensions),
+  and reference data (countries). This ensures data uniqueness within each
+  tenant's context.
+- Image ID Resolution Fix: Publishing functions for currency and country data
+  now correctly resolve image_id by looking up the image key from DQ images and
+  then finding the corresponding image in the target tenant's assets table. This
+  addresses issues where image UUIDs might differ across datasets or tenants
+  during publishing.
+- UI Usability Improvements: Several enhancements have been made to the Qt UI,
+  particularly in the connection browser. Connections and folders are now sorted
+  alphabetically, the tree expansion state is preserved after modifications
+  (save, edit, delete), inline editing fields display existing names, and
+  dialogs close the MDI sub-window instead of the main application window.
+- New Shell Command for Role Assignment: A new permissions suggest command has
+  been added to the ORE Studio Shell. This command generates a series of
+  accounts assign-role commands, simplifying the process of assigning all
+  available roles to a specified user account, identified by username and either
+  hostname or tenant ID.
+- Image Cache Management: The ImageCache now includes a clear() method, which is
+  called before reloading the cache after an image dataset is published. This
+  ensures a full refresh of image data, preventing potential issues with stale
+  or incorrectly mapped image UUIDs following publishing operations.
+- Database Security Enhancements: The ores_iam_generate_role_commands_fn
+  PostgreSQL function has been updated with SECURITY DEFINER. This allows the
+  function to execute with the privileges of the user who created it, enabling
+  necessary cross-tenant access for administrative utility functions related to
+  role assignment.
+#+end_quote
+
 *** STARTED Check that data librarian can publish across tenants       :code:
     :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 10:41]--[2026-02-06 Fri 11:45] =>  1:04
     CLOCK: [2026-02-06 Fri 01:50]--[2026-02-06 Fri 03:37] =>  1:47
     :END:
 
@@ -1183,34 +1256,33 @@ Succeeded: 2, Failed: 2
 Total records: 512286 inserted, 0 updated, 0 skipped, 0 deleted
 #+end_quote
 
-*** STARTED Review DQ metadata tables for multi-tenancy support    :analysis:
-    :LOGBOOK:
-    CLOCK: [2026-02-06 Fri 09:00]--[2026-02-06 Fri 10:41] =>  1:41
-    :END:
+*** Redesign Qt ImageCache invalidation strategy                       :code:
 
-Several DQ metadata tables have unique version indexes without =tenant_id=,
-which prevents different tenants from having the same metadata entries:
+The current ImageCache invalidation approach is brittle and error-prone. When
+datasets are published, the cache reload is triggered by pattern-matching
+dataset codes (e.g., checking for "flag", "icon", "currenc", "countr" in the
+code string). This is fragile because:
 
-Affected tables:
-- =ores_dq_catalogs_tbl= (name, version)
-- =ores_dq_change_reason_categories_tbl= (code, version)
-- =ores_dq_change_reasons_tbl= (code, version)
-- =ores_dq_coding_scheme_authority_types_tbl= (code, version)
-- =ores_dq_data_domains_tbl= (name, version)
-- =ores_dq_datasets_tbl= (id, version)
-- =ores_dq_methodologies_tbl= (id, version)
-- =ores_dq_nature_dimensions_tbl= (code, version)
-- =ores_dq_origin_dimensions_tbl= (code, version)
-- =ores_dq_subject_areas_tbl= (name, domain_name, version)
-- =ores_dq_treatment_dimensions_tbl= (code, version)
+- New dataset types require updating the pattern matching logic
+- The relationship between datasets and cached data is implicit
+- Cache invalidation relies on string matching rather than proper metadata
 
-Needs analysis to determine:
-- Should DQ metadata be global (shared across tenants) or tenant-specific?
-- If global, how should publishing work for DQ metadata tables?
-- If tenant-specific, add =tenant_id= to all version unique indexes
+Proposed improvements:
 
-Note: =ores_dq_coding_schemes_tbl= was fixed as part of the immediate publish
-bug, but the broader design question remains.
+- Use artefact_type metadata instead of code string matching to determine if
+  cache invalidation is needed
+- Consider a more general cache invalidation framework that can be extended to
+  other caches (ChangeReasonCache, etc.)
+- Investigate using server-side notifications to trigger cache invalidation
+  (similar to the notification system already in place)
+- Document the caching strategy and invalidation rules
+
+Acceptance criteria:
+
+- Cache invalidation is based on structured metadata, not string patterns
+- Adding new image-related datasets doesn't require code changes
+- Cache invalidation logic is documented and maintainable
+
 
 *** Consider using UUID in the database layer                          :code:
 

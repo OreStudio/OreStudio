@@ -143,10 +143,11 @@ begin
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_iam_system_tenant_id_fn()
     loop
-        -- Check if record already exists
+        -- Check if record already exists in target tenant
         select exists (
             select 1 from ores_dq_coding_schemes_tbl existing
-            where existing.code = r.code
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 

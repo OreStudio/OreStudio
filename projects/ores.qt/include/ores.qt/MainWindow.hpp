@@ -54,6 +54,7 @@ class CurrencyController;
 class CountryController;
 class AccountController;
 class RoleController;
+class TenantController;
 class FeatureFlagController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
@@ -404,6 +405,14 @@ private:
      * Only accessible to admin users.
      */
     std::unique_ptr<RoleController> roleController_;
+
+    /**
+     * @brief Controller managing all tenant-related windows and operations.
+     *
+     * Created after successful login, handles tenant list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<TenantController> tenantController_;
 
     /**
      * @brief Controller managing all feature flag windows and operations.

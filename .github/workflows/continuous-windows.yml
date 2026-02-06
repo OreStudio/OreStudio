@@ -18,7 +18,7 @@
 name: Continuous Windows
 
 env:
-  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -131,6 +131,14 @@ jobs:
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.2.3
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11

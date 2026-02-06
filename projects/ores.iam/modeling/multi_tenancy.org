@@ -43,6 +43,52 @@ private:
 }
 #+end_src
 
+** Tenants Table Structure
+
+The =ores_iam_tenants_tbl= table stores tenant definitions. It has two UUID columns
+that serve different purposes:
+
+| Column      | Purpose                                                    |
+|-------------+------------------------------------------------------------|
+| =id=        | The tenant's unique identifier (used by accounts, etc.)    |
+| =tenant_id= | Always system tenant (FFF...) - the record's owner         |
+
+This design follows a key principle: *the tenants table itself is managed by the
+system tenant*. All tenant records have =tenant_id = system= because the system
+owns and manages the tenant registry.
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ores_iam_tenants_tbl                           │
+├──────────────────────────────┬──────────────────────────────────────┤
+│ id (the tenant's own ID)     │ tenant_id (always system tenant)     │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ 197fae34-...-cfa4            │ ffffffff-ffff-ffff-ffff-ffffffffffff │
+│ (Example Corp)               │ (system owns this record)            │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ b7b302e6-...-c9a9            │ ffffffff-ffff-ffff-ffff-ffffffffffff │
+│ (ACME Corp)                  │ (system owns this record)            │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ ffffffff-ffff-ffff-ffff-fff  │ ffffffff-ffff-ffff-ffff-ffffffffffff │
+│ (System tenant itself)       │ (system owns this record)            │
+└──────────────────────────────┴──────────────────────────────────────┘
+#+end_example
+
+When an account belongs to "Example Corp", its =tenant_id= column references the
+tenant's =id= (not the =tenant_id= column):
+
+#+begin_src sql
+-- Accounts reference tenants.id, not tenants.tenant_id
+SELECT a.username, t.name as tenant_name
+FROM ores_iam_accounts_tbl a
+JOIN ores_iam_tenants_tbl t ON a.tenant_id = t.id  -- Note: t.id, not t.tenant_id
+WHERE a.valid_to = ores_utility_infinity_timestamp_fn()
+  AND t.valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+This pattern applies to all tenant-scoped tables: they reference =tenants.id= to
+identify which tenant owns the record.
+
 ** System Tenant
 
 The system tenant is defined as the maximum UUID value:

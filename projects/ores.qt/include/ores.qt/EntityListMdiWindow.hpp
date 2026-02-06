@@ -44,7 +44,7 @@ namespace ores::qt {
  * @code
  * void MyEntityMdiWindow::setupToolbar() {
  *     refreshAction_ = toolbar_->addAction(...);
- *     initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+ *     initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
  * }
  *
  * void MyEntityMdiWindow::reload() {

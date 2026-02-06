@@ -116,9 +116,9 @@ QString IconUtils::iconPath(Icon icon) {
 
     switch (activeTheme) {
         case IconTheme::FluentUIRegular:
-            return QString(":/icons/%1_regular.svg").arg(def.fluent);
+            return QString(":/icons/fluentui/regular/%1_regular.svg").arg(def.fluent);
         case IconTheme::FluentUIFilled:
-            return QString(":/icons/%1_filled.svg").arg(def.fluent);
+            return QString(":/icons/fluentui/filled/%1_filled.svg").arg(def.fluent);
         case IconTheme::SolarizedLinear:
             return QString(":/icons/solarized/Linear/%1").arg(def.solar);
         case IconTheme::SolarizedBold:

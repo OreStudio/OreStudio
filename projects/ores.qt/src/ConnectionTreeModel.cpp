@@ -20,6 +20,7 @@
 #include "ores.qt/ConnectionTreeModel.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.connections/service/connection_manager.hpp"
+#include <algorithm>
 #include <QMimeData>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -115,6 +116,7 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
 
     switch (role) {
     case Qt::DisplayRole:
+    case Qt::EditRole:
         switch (index.column()) {
         case Name:
             return node->name;
@@ -446,11 +448,18 @@ QModelIndex ConnectionTreeModel::findNodeIndex(ConnectionTreeNode* searchNode,
 }
 
 void ConnectionTreeModel::refresh() {
+    // Preserve expansion state across refresh
+    auto savedExpandedFolders = expandedFolders_;
+
     beginResetModel();
     rootNode_->children.clear();
     expandedFolders_.clear();
     buildTree();
     endResetModel();
+
+    // Restore expansion state
+    expandedFolders_ = savedExpandedFolders;
+
     emit dataRefreshed();
 }
 
@@ -495,6 +504,12 @@ void ConnectionTreeModel::buildFolderNodes(ConnectionTreeNode* parentNode,
     else
         folders = manager_->get_root_folders();
 
+    // Sort folders alphabetically by name (case-insensitive)
+    std::sort(folders.begin(), folders.end(), [](const auto& a, const auto& b) {
+        return QString::fromStdString(a.name).compare(
+            QString::fromStdString(b.name), Qt::CaseInsensitive) < 0;
+    });
+
     BOOST_LOG_SEV(lg(), debug) << "Building " << folders.size()
                                << " folder nodes for parent: "
                                << (parentId ? boost::uuids::to_string(*parentId) : "root");
@@ -524,6 +539,12 @@ void ConnectionTreeModel::buildEnvironmentNodes(ConnectionTreeNode* parentNode,
     using namespace ores::logging;
 
     auto environments = manager_->get_environments_in_folder(folderId);
+
+    // Sort environments alphabetically by name (case-insensitive)
+    std::sort(environments.begin(), environments.end(), [](const auto& a, const auto& b) {
+        return QString::fromStdString(a.name).compare(
+            QString::fromStdString(b.name), Qt::CaseInsensitive) < 0;
+    });
 
     BOOST_LOG_SEV(lg(), debug) << "Building " << environments.size()
                                << " environment nodes for folder: "

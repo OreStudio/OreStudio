@@ -481,9 +481,10 @@ void AddItemDialog::saveFolder() {
         emit statusMessage(tr("Folder saved: %1").arg(QString::fromStdString(folder.name)));
         emit folderSaved(folder.id, QString::fromStdString(folder.name));
 
-        // Close the window
-        if (auto* parentWidget = window()) {
-            parentWidget->close();
+        // Close the MDI sub-window (parentWidget() returns the sub-window, not window()
+        // which returns the top-level MainWindow and would trigger exit confirmation)
+        if (auto* parent = parentWidget()) {
+            parent->close();
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to save folder: " << e.what();
@@ -522,9 +523,10 @@ void AddItemDialog::saveConnection() {
         emit statusMessage(tr("Connection saved: %1").arg(QString::fromStdString(env.name)));
         emit connectionSaved(env.id, QString::fromStdString(env.name));
 
-        // Close the window
-        if (auto* parentWidget = window()) {
-            parentWidget->close();
+        // Close the MDI sub-window (parentWidget() returns the sub-window, not window()
+        // which returns the top-level MainWindow and would trigger exit confirmation)
+        if (auto* parent = parentWidget()) {
+            parent->close();
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to save connection: " << e.what();

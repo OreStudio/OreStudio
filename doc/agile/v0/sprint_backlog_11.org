@@ -17,49 +17,51 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 14:55], for Friday, February 06, 2026.
-|          | <75>                                                     |        |      |      |       |
-| Tags     | Headline                                                 | Time   |      |      |     % |
-|----------+----------------------------------------------------------+--------+------+------+-------|
-|          | *Total time*                                             | *7:45* |      |      | 100.0 |
-|----------+----------------------------------------------------------+--------+------+------+-------|
-|          | Stories                                                  | 7:45   |      |      | 100.0 |
-|          | Active                                                   |        | 7:45 |      | 100.0 |
-| code     | Refactor message handlers for per-request tenant context |        |      | 1:48 |  23.2 |
-| analysis | Review DQ metadata tables for multi-tenancy support      |        |      | 1:41 |  21.7 |
-| code     | vcpkg is still not caching correctly                     |        |      | 1:25 |  18.3 |
-| code     | Check that data librarian can publish across tenants     |        |      | 2:51 |  36.8 |
+#+CAPTION: Clock summary at [2026-02-06 Fri 18:09], for Friday, February 06, 2026.
+|          | <75>                                                     |         |       |      |       |
+| Tags     | Headline                                                 | Time    |       |      |     % |
+|----------+----------------------------------------------------------+---------+-------+------+-------|
+|          | *Total time*                                             | *10:55* |       |      | 100.0 |
+|----------+----------------------------------------------------------+---------+-------+------+-------|
+|          | Stories                                                  | 10:55   |       |      | 100.0 |
+|          | Active                                                   |         | 10:55 |      | 100.0 |
+| code     | Refactor message handlers for per-request tenant context |         |       | 1:48 |  16.5 |
+| analysis | Review DQ metadata tables for multi-tenancy support      |         |       | 1:41 |  15.4 |
+| code     | vcpkg is still not caching correctly                     |         |       | 1:25 |  13.0 |
+| code     | Check that data librarian can publish across tenants     |         |       | 2:51 |  26.1 |
+| code     | Check that eventing works correctly across tenants       |         |       | 3:10 |  29.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 14:55]
+#+CAPTION: Clock summary at [2026-02-06 Fri 18:09]
 |          | <75>                                                     |         |       |       |       |
 | Tags     | Headline                                                 | Time    |       |       |     % |
 |----------+----------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                             | *69:11* |       |       | 100.0 |
+|          | *Total time*                                             | *72:21* |       |       | 100.0 |
 |----------+----------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                  | 69:11   |       |       | 100.0 |
-|          | Active                                                   |         | 69:11 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                    |         |       |  2:24 |   3.5 |
-| code     | Address past review comments                             |         |       |  1:14 |   1.8 |
-| code     | Split "god" admin account                                |         |       | 10:05 |  14.6 |
-| code     | Move all database entities to public schema              |         |       |  1:22 |   2.0 |
-| code     | Check directory structure in SQL                         |         |       |  0:36 |   0.9 |
-| code     | Add tenancy support                                      |         |       |  3:55 |   5.7 |
-| code     | Use tenancy to isolate tests                             |         |       |  5:00 |   7.2 |
-| code     | Add NOTICE logging support to sqlgen                     |         |       |  0:53 |   1.3 |
-| code     | Update codegen for tenancy                               |         |       |  3:32 |   5.1 |
-| code     | Add entity types for tenants                             |         |       |  9:43 |  14.0 |
-| code     | Add sink to log to database directly                     |         |       |  5:00 |   7.2 |
-| code     | Add system accounts for services                         |         |       |  3:32 |   5.1 |
-| code     | Test shell functionality with tenancy enabled            |         |       |  9:44 |  14.1 |
+|          | Stories                                                  | 72:21   |       |       | 100.0 |
+|          | Active                                                   |         | 72:21 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                    |         |       |  2:24 |   3.3 |
+| code     | Address past review comments                             |         |       |  1:14 |   1.7 |
+| code     | Split "god" admin account                                |         |       | 10:05 |  13.9 |
+| code     | Move all database entities to public schema              |         |       |  1:22 |   1.9 |
+| code     | Check directory structure in SQL                         |         |       |  0:36 |   0.8 |
+| code     | Add tenancy support                                      |         |       |  3:55 |   5.4 |
+| code     | Use tenancy to isolate tests                             |         |       |  5:00 |   6.9 |
+| code     | Add NOTICE logging support to sqlgen                     |         |       |  0:53 |   1.2 |
+| code     | Update codegen for tenancy                               |         |       |  3:32 |   4.9 |
+| code     | Add entity types for tenants                             |         |       |  9:43 |  13.4 |
+| code     | Add sink to log to database directly                     |         |       |  5:00 |   6.9 |
+| code     | Add system accounts for services                         |         |       |  3:32 |   4.9 |
+| code     | Test shell functionality with tenancy enabled            |         |       |  9:44 |  13.5 |
 | code     | Fix apt-get failures on nightly build                    |         |       |  0:20 |   0.5 |
-| code     | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.4 |
-| code     | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.1 |
-| analysis | Review DQ metadata tables for multi-tenancy support      |         |       |  1:41 |   2.4 |
+| code     | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.3 |
+| code     | Refactor message handlers for per-request tenant context |         |       |  4:56 |   6.8 |
+| analysis | Review DQ metadata tables for multi-tenancy support      |         |       |  1:41 |   2.3 |
 | code     | vcpkg is still not caching correctly                     |         |       |  1:25 |   2.0 |
-| code     | Check that data librarian can publish across tenants     |         |       |  2:51 |   4.1 |
+| code     | Check that data librarian can publish across tenants     |         |       |  2:51 |   3.9 |
+| code     | Check that eventing works correctly across tenants       |         |       |  3:10 |   4.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1231,13 +1233,73 @@ Highlights:
 
 Investigate the issue.
 
-*** STARTED Check that data librarian can publish across tenants       :code:
+#+begin_quote
+- Replace the removed x-gha vcpkg binary caching backend with the files provider
+  backed by actions/cache@v4 across all 5 CI workflow files
+- The x-gha backend was silently removed from vcpkg, causing all 120 packages to
+  be rebuilt from source on every run (~21 min wasted per build)
+- First run will populate the cache (cold start); subsequent runs should see
+  vcpkg install drop from ~21 min to seconds
+
+Affected workflows:
+
+- canary-linux.yml (PR trigger - will run immediately)
+- continuous-linux.yml (push to main - after merge)
+- continuous-windows.yml (push to main - after merge)
+- continuous-macos.yml (push to main - after merge)
+- nightly-linux.yml (scheduled - after merge)
+#+end_quote
+
+*** COMPLETED Check that data librarian can publish across tenants     :code:
     :LOGBOOK:
     CLOCK: [2026-02-06 Fri 10:41]--[2026-02-06 Fri 11:45] =>  1:04
     CLOCK: [2026-02-06 Fri 01:50]--[2026-02-06 Fri 03:37] =>  1:47
     :END:
 
 Ensure publication still works as expected.
+
+#+begin_quote
+This pull request significantly enhances the application's multi-tenancy
+capabilities and improves the user experience in the Qt client. It introduces
+robust mechanisms for tenant-specific data management in the database, refines
+data publishing logic for images, and delivers several quality-of-life
+improvements to the connection browser and login dialog. Additionally, a new
+administrative shell command streamlines role assignment, and underlying
+database functions are secured for proper cross-tenant operations.
+
+Highlights:
+
+- Multi-tenant Data Publishing: The database schema has been updated to support
+  multi-tenant data publishing by adding tenant_id to unique version indexes
+  across numerous tables, including assets (images, tags), DQ metadata
+  (catalogs, change reasons, data domains, datasets, methodologies, dimensions),
+  and reference data (countries). This ensures data uniqueness within each
+  tenant's context.
+- Image ID Resolution Fix: Publishing functions for currency and country data
+  now correctly resolve image_id by looking up the image key from DQ images and
+  then finding the corresponding image in the target tenant's assets table. This
+  addresses issues where image UUIDs might differ across datasets or tenants
+  during publishing.
+- UI Usability Improvements: Several enhancements have been made to the Qt UI,
+  particularly in the connection browser. Connections and folders are now sorted
+  alphabetically, the tree expansion state is preserved after modifications
+  (save, edit, delete), inline editing fields display existing names, and
+  dialogs close the MDI sub-window instead of the main application window.
+- New Shell Command for Role Assignment: A new permissions suggest command has
+  been added to the ORE Studio Shell. This command generates a series of
+  accounts assign-role commands, simplifying the process of assigning all
+  available roles to a specified user account, identified by username and either
+  hostname or tenant ID.
+- Image Cache Management: The ImageCache now includes a clear() method, which is
+  called before reloading the cache after an image dataset is published. This
+  ensures a full refresh of image data, preventing potential issues with stale
+  or incorrectly mapped image UUIDs following publishing operations.
+- Database Security Enhancements: The ores_iam_generate_role_commands_fn
+  PostgreSQL function has been updated with SECURITY DEFINER. This allows the
+  function to execute with the privileges of the user who created it, enabling
+  necessary cross-tenant access for administrative utility functions related to
+  role assignment.
+#+end_quote
 
 Errors:
 
@@ -1264,6 +1326,43 @@ Error: Query execution failed: ERROR: duplicate key value violates unique constr
 Datasets processed: 4
 Succeeded: 2, Failed: 2
 Total records: 512286 inserted, 0 updated, 0 skipped, 0 deleted
+#+end_quote
+
+*** STARTED Check that eventing works correctly across tenants         :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 18:07]--[2026-02-06 Fri 18:33] =>  0:26
+    CLOCK: [2026-02-06 Fri 14:56]--[2026-02-06 Fri 18:06] =>  3:10
+    :END:
+
+Create events from different tenants and ensure they are processed correctly.
+
+#+begin_quote
+This pull request significantly enhances the multi-tenancy isolation within the
+notification system. By integrating tenant_id across the entire notification
+flow—from database triggers generating events, through the event bus, and
+finally to the subscription manager—it ensures that sensitive entity change
+notifications are strictly confined to their respective tenant boundaries. This
+change is crucial for maintaining data segregation and security in a
+multi-tenant environment, while also preserving backward compatibility for
+existing broadcast mechanisms.
+
+Highlights:
+
+- Tenant ID Propagation: The tenant_id is now consistently passed through the
+  entire notification pipeline, from SQL triggers to domain events and the
+  subscription manager.
+- SQL Trigger Enhancement: SQL triggers have been updated to embed the tenant_id
+  within their JSONB notification payloads, enabling tenant-specific event
+  sourcing.
+- Subscription Manager Filtering: The subscription_manager::notify() method now
+  incorporates tenant-aware filtering, ensuring that notifications are only
+  delivered to sessions associated with the relevant tenant.
+- Backward Compatibility: The system gracefully handles cases where tenant_id is
+  empty or the session service is not configured, falling back to broadcasting
+  notifications to all subscribers.
+- Comprehensive Testing: Five new test cases have been added to validate tenant
+  matching, broadcast behavior, cross-tenant isolation, pre-login session
+  handling, and scenarios without a configured session service.
 #+end_quote
 
 *** Redesign Qt ImageCache invalidation strategy                       :code:
@@ -1293,6 +1392,10 @@ Acceptance criteria:
 - Adding new image-related datasets doesn't require code changes
 - Cache invalidation logic is documented and maintainable
 
+*** Stop and start service does not trigger ores.qt reconnection       :code:
+
+We seem to just remain in a weird disconnected state. Clicking disconnect seems
+to freeze UI.
 
 *** Consider using UUID in the database layer                          :code:
 

@@ -247,12 +247,13 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode: delete all existing images first
+    -- Handle replace_all mode: delete all existing images IN THE TARGET TENANT first
     if p_mode = 'replace_all' then
         -- Soft delete by setting valid_to
         update ores_assets_images_tbl
         set valid_to = current_timestamp
-        where valid_to = ores_utility_infinity_timestamp_fn();
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -268,10 +269,11 @@ begin
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_iam_system_tenant_id_fn()
     loop
-        -- Check if an image with this key already exists
+        -- Check if an image with this key already exists IN THE TARGET TENANT
         select image_id into v_existing_image_id
         from ores_assets_images_tbl existing
         where existing.key = r.key
+          and existing.tenant_id = p_target_tenant_id
           and existing.valid_to = ores_utility_infinity_timestamp_fn();
 
         -- In insert_only mode, skip existing records
@@ -409,11 +411,12 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode
+    -- Handle replace_all mode for TARGET TENANT only
     if p_mode = 'replace_all' then
         update ores_refdata_countries_tbl
         set valid_to = current_timestamp
-        where valid_to = ores_utility_infinity_timestamp_fn();
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;
@@ -602,11 +605,12 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode
+    -- Handle replace_all mode for TARGET TENANT only
     if p_mode = 'replace_all' then
         update ores_refdata_currencies_tbl
         set valid_to = current_timestamp
-        where valid_to = ores_utility_infinity_timestamp_fn();
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;

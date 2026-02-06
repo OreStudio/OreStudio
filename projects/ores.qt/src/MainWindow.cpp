@@ -495,12 +495,15 @@ MainWindow::MainWindow(QWidget* parent) :
                 });
 
         // Reload image cache when image-related datasets are published
+        // This includes: images (any source), currencies, countries (they have image_id refs)
         connect(librarianWindow, &DataLibrarianWindow::datasetsPublished,
                 this, [this](const QStringList& datasetCodes) {
-                    // Only reload if an image-related dataset was published
                     for (const QString& code : datasetCodes) {
-                        if (code.startsWith("assets.")) {
-                            BOOST_LOG_SEV(lg(), info) << "Image dataset published ("
+                        // Check for image datasets (any source: assets.*, slovaris.*, etc.)
+                        // or entities that reference images (currencies, countries)
+                        if (code.contains("flag") || code.contains("icon") ||
+                            code.contains("currenc") || code.contains("countr")) {
+                            BOOST_LOG_SEV(lg(), info) << "Image-related dataset published ("
                                 << code.toStdString() << "), clearing and reloading image cache";
                             // Clear cache first to ensure full reload (not incremental)
                             // since publishing may change image UUIDs
@@ -510,7 +513,7 @@ MainWindow::MainWindow(QWidget* parent) :
                         }
                     }
                     BOOST_LOG_SEV(lg(), debug) << "Published datasets don't include "
-                        "image assets, skipping image cache reload";
+                        "image-related data, skipping image cache reload";
                 });
 
         // Track window destruction

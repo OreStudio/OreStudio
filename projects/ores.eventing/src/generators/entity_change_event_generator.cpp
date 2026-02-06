@@ -1,6 +1,7 @@
 #include "ores.eventing/generators/entity_change_event_generator.hpp"
 
 #include <faker-cxx/word.h>
+#include <faker-cxx/string.h>
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::eventing::generators {
@@ -9,6 +10,7 @@ ores::eventing::domain::entity_change_event entity_change_event_generator::gener
     ores::eventing::domain::entity_change_event n;
     n.entity = std::string(faker::word::noun()) + "." + std::string(faker::word::noun());
     n.timestamp = utility::faker::datetime::past_timepoint();
+    n.tenant_id = std::string(faker::string::uuidV4());
     return n;
 }
 

@@ -29,18 +29,19 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "ores.logging/make_logger.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 
 namespace ores::comms::service {
 
 /**
  * @brief Callback type for pushing notifications to clients.
  *
- * Takes event_type, timestamp, and entity_ids. Returns true if notification
- * was sent successfully, false otherwise (e.g., connection closed).
+ * Takes event_type, timestamp, entity_ids, and tenant_id. Returns true if
+ * notification was sent successfully, false otherwise (e.g., connection closed).
  */
 using notification_callback =
     std::function<bool(const std::string&, std::chrono::system_clock::time_point,
-                       const std::vector<std::string>&)>;
+                       const std::vector<std::string>&, const std::string&)>;
 
 /**
  * @brief Unique identifier for a client session.
@@ -99,6 +100,15 @@ public:
     subscription_manager() = default;
     ~subscription_manager() = default;
 
+    /**
+     * @brief Set the auth session service for tenant-aware filtering.
+     *
+     * Must be called before notify() is used with tenant_id filtering.
+     * Supports deferred binding since the server (which owns sessions)
+     * may be created after the subscription manager.
+     */
+    void set_sessions_service(std::shared_ptr<auth_session_service> sessions);
+
     subscription_manager(const subscription_manager&) = delete;
     subscription_manager& operator=(const subscription_manager&) = delete;
     subscription_manager(subscription_manager&&) = delete;
@@ -147,17 +157,19 @@ public:
      * @brief Notify all subscribers of an event.
      *
      * Invokes the notification callback for each session subscribed to the
-     * given event type. Failed notifications (callback returns false) are
-     * logged but do not affect other subscribers.
+     * given event type. Only sessions belonging to the same tenant receive
+     * the notification (multi-tenancy isolation).
      *
      * @param event_type The event type that occurred.
      * @param timestamp The timestamp of the event.
      * @param entity_ids Identifiers of entities that changed.
+     * @param tenant_id The tenant that owns the changed entity (required).
      * @return The number of successful notifications sent.
      */
     std::size_t notify(const std::string& event_type,
                        std::chrono::system_clock::time_point timestamp,
-                       const std::vector<std::string>& entity_ids = {});
+                       const std::vector<std::string>& entity_ids,
+                       const std::string& tenant_id);
 
     /**
      * @brief Get the number of subscribers for an event type.
@@ -184,6 +196,7 @@ public:
 
 private:
     mutable std::mutex mutex_;
+    std::shared_ptr<auth_session_service> sessions_service_;
     std::unordered_map<session_id, session_info> sessions_;
     std::unordered_map<std::string, std::unordered_set<session_id>> event_subscribers_;
 };

@@ -533,9 +533,10 @@ signals:
      * @param eventType The event type name (e.g., "ores.refdata.currency_changed_event")
      * @param timestamp When the event occurred
      * @param entityIds Identifiers of entities that changed (e.g., currency ISO codes)
+     * @param tenantId The tenant that owns the changed entities
      */
     void notificationReceived(const QString& eventType, const QDateTime& timestamp,
-                              const QStringList& entityIds);
+                              const QStringList& entityIds, const QString& tenantId);
 
     /**
      * @brief Emitted when session recording starts.

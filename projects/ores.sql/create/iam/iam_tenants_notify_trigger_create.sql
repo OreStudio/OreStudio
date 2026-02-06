@@ -27,20 +27,24 @@ create or replace function ores_iam_tenants_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.iam.tenant';
+    entity_name text := 'ores.iam.tenant';
     change_timestamp timestamptz := now();
     changed_id text;
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := old.tenant_id::text;
+        changed_id := old.id::text;
+        changed_tenant_id := old.tenant_id::text;
     else
-        changed_id := new.tenant_id::text;
+        changed_id := new.id::text;
+        changed_tenant_id := new.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_id)
+        'entity_ids', jsonb_build_array(changed_id),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_tenants', notification_payload::text);

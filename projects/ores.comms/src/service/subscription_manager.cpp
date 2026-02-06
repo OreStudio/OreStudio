@@ -23,6 +23,14 @@ namespace ores::comms::service {
 
 using namespace ores::logging;
 
+void subscription_manager::set_sessions_service(
+    std::shared_ptr<auth_session_service> sessions) {
+    std::lock_guard lock(mutex_);
+    sessions_service_ = std::move(sessions);
+    BOOST_LOG_SEV(lg(), info)
+        << "Sessions service configured for tenant-aware filtering";
+}
+
 void subscription_manager::register_session(const session_id& id,
                                             notification_callback callback) {
     std::lock_guard lock(mutex_);
@@ -147,7 +155,8 @@ bool subscription_manager::unsubscribe(const session_id& id,
 
 std::size_t subscription_manager::notify(const std::string& event_type,
     std::chrono::system_clock::time_point timestamp,
-    const std::vector<std::string>& entity_ids) {
+    const std::vector<std::string>& entity_ids,
+    const std::string& tenant_id) {
 
     // Copy the data we need while holding the lock
     std::vector<std::pair<session_id, notification_callback>> callbacks_to_invoke;
@@ -166,13 +175,36 @@ std::size_t subscription_manager::notify(const std::string& event_type,
         BOOST_LOG_SEV(lg(), info)
             << "Notifying " << event_it->second.size()
             << " subscriber(s) of event type '" << event_type
-            << "' with " << entity_ids.size() << " entity IDs";
+            << "' with " << entity_ids.size() << " entity IDs"
+            << " (tenant: " << (tenant_id.empty() ? "(broadcast)" : tenant_id) << ")";
 
-        for (const auto& session_id : event_it->second) {
-            auto session_it = sessions_.find(session_id);
+        for (const auto& sid : event_it->second) {
+            auto session_it = sessions_.find(sid);
             if (session_it != sessions_.end()) {
+                // Filter by tenant if event has a tenant_id
+                if (!tenant_id.empty() && sessions_service_) {
+                    auto session = sessions_service_->get_session(sid);
+                    if (session) {
+                        auto session_tenant = session->tenant_id.to_string();
+                        if (session_tenant != tenant_id) {
+                            BOOST_LOG_SEV(lg(), debug)
+                                << "Skipping session '" << sid
+                                << "' (tenant " << session_tenant
+                                << " != event tenant " << tenant_id << ")";
+                            continue;
+                        }
+                    } else {
+                        // Pre-login sessions should not receive
+                        // tenant-specific notifications.
+                        BOOST_LOG_SEV(lg(), debug)
+                            << "Skipping pre-login session '" << sid
+                            << "' for tenant-specific event '"
+                            << event_type << "'";
+                        continue;
+                    }
+                }
                 callbacks_to_invoke.emplace_back(
-                    session_id, session_it->second.callback);
+                    sid, session_it->second.callback);
             }
         }
     }
@@ -181,7 +213,7 @@ std::size_t subscription_manager::notify(const std::string& event_type,
     std::size_t success_count = 0;
     for (const auto& [id, callback] : callbacks_to_invoke) {
         try {
-            if (callback(event_type, timestamp, entity_ids)) {
+            if (callback(event_type, timestamp, entity_ids, tenant_id)) {
                 ++success_count;
                 BOOST_LOG_SEV(lg(), debug)
                     << "Successfully notified session '" << id

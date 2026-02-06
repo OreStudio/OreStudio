@@ -51,6 +51,11 @@ struct currency_changed_event final {
      * batch operations.
      */
     std::vector<std::string> iso_codes;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

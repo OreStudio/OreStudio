@@ -95,7 +95,7 @@ void EntityController::teardownEventSubscription() {
 
 void EntityController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+    const QStringList& entityIds, const QString& tenantId) {
 
     if (eventType != QString::fromStdString(eventName_)) {
         return;
@@ -103,7 +103,8 @@ void EntityController::onNotificationReceived(
 
     BOOST_LOG_SEV(lg(), info) << "Received " << eventName_ << " notification at "
                               << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " entities";
+                              << " with " << entityIds.size() << " entities"
+                              << ", tenant: " << tenantId.toStdString();
 
     if (auto* window = listWindow(); window != nullptr) {
         window->markAsStale();

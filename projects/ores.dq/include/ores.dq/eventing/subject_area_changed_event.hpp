@@ -50,6 +50,11 @@ struct subject_area_changed_event final {
      * created, updated, or deleted. May contain multiple keys for batch operations.
      */
     std::vector<std::string> keys;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

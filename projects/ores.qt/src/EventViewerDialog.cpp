@@ -594,7 +594,8 @@ void EventViewerWindow::onClearClicked() {
 
 void EventViewerWindow::onNotificationReceived(const QString& eventType,
                                                 const QDateTime& timestamp,
-                                                const QStringList& entityIds) {
+                                                const QStringList& entityIds,
+                                                const QString& tenantId) {
     QJsonObject json;
     json["event_type"] = eventType;
     json["timestamp"] = timestamp.toString(Qt::ISODateWithMs);
@@ -603,6 +604,7 @@ void EventViewerWindow::onNotificationReceived(const QString& eventType,
         ids.append(id);
     }
     json["entity_ids"] = ids;
+    json["tenant_id"] = tenantId;
 
     QString summary;
     if (entityIds.isEmpty()) {

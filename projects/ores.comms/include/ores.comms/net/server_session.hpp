@@ -61,6 +61,7 @@ public:
         std::string event_type;
         std::chrono::system_clock::time_point timestamp;
         std::vector<std::string> entity_ids;
+        std::string tenant_id;
     };
 
     /**
@@ -111,11 +112,13 @@ public:
      * @param event_type The event type that occurred.
      * @param timestamp The timestamp of the event.
      * @param entity_ids Identifiers of entities that changed.
+     * @param tenant_id The tenant that owns the changed entities.
      * @return true if queued successfully, false if session is not active.
      */
     bool queue_notification(const std::string& event_type,
         std::chrono::system_clock::time_point timestamp,
-        const std::vector<std::string>& entity_ids = {});
+        const std::vector<std::string>& entity_ids,
+        const std::string& tenant_id);
 
     /**
      * @brief Queue a database status notification to be sent to this client.

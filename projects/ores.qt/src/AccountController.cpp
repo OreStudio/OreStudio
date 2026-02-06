@@ -184,7 +184,7 @@ void AccountController::reloadListWindow() {
 
 void AccountController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+    const QStringList& entityIds, const QString& /*tenantId*/) {
     // Check if this is an account change event
     if (eventType != QString::fromStdString(std::string{account_event_name})) {
         return;

@@ -24,17 +24,21 @@ declare
     entity_name text := 'ores.refdata.currency';
     change_timestamp timestamptz := NOW();
     changed_iso_code text;
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_iso_code := OLD.iso_code;
+        changed_tenant_id := OLD.tenant_id::text;
     else
         changed_iso_code := NEW.iso_code;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_iso_code)
+        'entity_ids', jsonb_build_array(changed_iso_code),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_currencies', notification_payload::text);

@@ -50,6 +50,11 @@ struct dataset_changed_event final {
      * or deleted. May contain multiple IDs for batch operations.
      */
     std::vector<std::string> ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
 };
 
 }

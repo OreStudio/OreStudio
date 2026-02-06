@@ -296,7 +296,7 @@ void ChangeReasonController::showDetailWindow(
 
 void ChangeReasonController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+    const QStringList& entityIds, const QString& /*tenantId*/) {
 
     if (eventType != QString::fromStdString(std::string{reason_event_name})) {
         return;

@@ -149,6 +149,9 @@ std::vector<std::byte> notification_message::serialize() const {
         writer::write_string(buffer, id);
     }
 
+    // Serialize tenant_id (for debugging multi-tenancy)
+    writer::write_string(buffer, tenant_id);
+
     return buffer;
 }
 
@@ -176,6 +179,11 @@ notification_message::deserialize(std::span<const std::byte> data) {
         msg.entity_ids.push_back(*id);
     }
 
+    // Deserialize tenant_id (for debugging multi-tenancy)
+    auto tenant_id = reader::read_string(data);
+    if (!tenant_id) return std::unexpected(tenant_id.error());
+    msg.tenant_id = *tenant_id;
+
     return msg;
 }
 
@@ -188,7 +196,8 @@ std::ostream& operator<<(std::ostream& s, const notification_message& v) {
         if (i > 0) s << ", ";
         s << v.entity_ids[i];
     }
-    return s << "]}";
+    s << "], tenant_id=" << v.tenant_id << "}";
+    return s;
 }
 
 // database_status_message

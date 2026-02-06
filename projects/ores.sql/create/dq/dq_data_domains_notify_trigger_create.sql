@@ -24,17 +24,21 @@ declare
     entity_name text := 'ores.dq.data_domain';
     change_timestamp timestamptz := NOW();
     changed_name text;
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_name := OLD.name;
+        changed_tenant_id := OLD.tenant_id::text;
     else
         changed_name := NEW.name;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_name)
+        'entity_ids', jsonb_build_array(changed_name),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_data_domains', notification_payload::text);

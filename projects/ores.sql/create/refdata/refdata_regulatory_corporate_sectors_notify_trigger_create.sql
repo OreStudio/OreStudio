@@ -25,17 +25,21 @@ declare
     entity_name text := 'ores.refdata.regulatory_corporate_sector';
     change_timestamp timestamptz := NOW();
     changed_code text;
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_code := OLD.code;
+        changed_tenant_id := OLD.tenant_id::text;
     else
         changed_code := NEW.code;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_code)
+        'entity_ids', jsonb_build_array(changed_code),
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_regulatory_corporate_sectors', notification_payload::text);

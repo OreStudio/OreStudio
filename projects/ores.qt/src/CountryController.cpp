@@ -362,7 +362,7 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
 
 void CountryController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+    const QStringList& entityIds, const QString& /*tenantId*/) {
     // Check if this is a country change event
     if (eventType != QString::fromStdString(std::string{country_event_name})) {
         return;

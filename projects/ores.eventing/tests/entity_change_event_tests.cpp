@@ -54,12 +54,14 @@ TEST_CASE("entity_change_event_table_serialization", tags) {
 TEST_CASE("entity_change_event_generator", tags) {
     auto n = entity_change_event_generator::generate();
     REQUIRE_FALSE(n.entity.empty());
+    REQUIRE_FALSE(n.tenant_id.empty());
     // REQUIRE(n.timestamp.time_since_epoch().count() != 0);  // FIXME
 
     auto events = entity_change_event_generator::generate_set(5);
     REQUIRE(events.size() == 5);
     for (const auto& e : events) {
         REQUIRE_FALSE(e.entity.empty());
+        REQUIRE_FALSE(e.tenant_id.empty());
         // REQUIRE(e.timestamp.time_since_epoch().count() != 0); // FIXME
     }
 }

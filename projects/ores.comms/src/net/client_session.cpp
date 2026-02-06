@@ -60,8 +60,9 @@ client_session::connect(client_options options) {
         event_adapter_->set_notification_callback(
             [this](const std::string& event_type,
                    std::chrono::system_clock::time_point timestamp,
-                   const std::vector<std::string>& entity_ids) {
-                on_notification(event_type, timestamp, entity_ids);
+                   const std::vector<std::string>& entity_ids,
+                   const std::string& tenant_id) {
+                on_notification(event_type, timestamp, entity_ids, tenant_id);
             });
 
         BOOST_LOG_SEV(lg(), info) << "Successfully connected.";
@@ -110,8 +111,9 @@ client_session::attach_client(std::shared_ptr<client> external_client) {
     event_adapter_->set_notification_callback(
         [this](const std::string& event_type,
                std::chrono::system_clock::time_point timestamp,
-               const std::vector<std::string>& entity_ids) {
-            on_notification(event_type, timestamp, entity_ids);
+               const std::vector<std::string>& entity_ids,
+               const std::string& tenant_id) {
+            on_notification(event_type, timestamp, entity_ids, tenant_id);
         });
 
     BOOST_LOG_SEV(lg(), info) << "External client attached successfully";
@@ -222,17 +224,19 @@ bool client_session::has_pending_notifications() const {
 
 void client_session::on_notification(const std::string& event_type,
     std::chrono::system_clock::time_point timestamp,
-    const std::vector<std::string>& entity_ids) {
-    BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
+    const std::vector<std::string>& entity_ids,
+    const std::string& tenant_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type
+                               << ", tenant: " << tenant_id;
 
     // If external callback is set, use it instead of internal queuing
     if (external_notification_callback_) {
-        external_notification_callback_(event_type, timestamp, entity_ids);
+        external_notification_callback_(event_type, timestamp, entity_ids, tenant_id);
         return;
     }
 
     std::lock_guard lock(notifications_mutex_);
-    pending_notifications_.push_back({event_type, timestamp, entity_ids});
+    pending_notifications_.push_back({event_type, timestamp, entity_ids, tenant_id});
 }
 
 void client_session::set_notification_callback(notification_callback_t callback) {

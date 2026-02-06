@@ -174,6 +174,15 @@ struct notification_message final {
     std::vector<std::string> entity_ids;
 
     /**
+     * @brief The tenant that owns the changed entities.
+     *
+     * Useful for debugging multi-tenancy issues. The server already filters
+     * notifications by tenant before sending, but including it helps verify
+     * correct tenant isolation.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Serialize notification to bytes.
      *
      * Format:
@@ -184,6 +193,8 @@ struct notification_message final {
      * - For each entity_id:
      *   - 2 bytes: length
      *   - N bytes: entity_id (UTF-8)
+     * - 2 bytes: tenant_id length
+     * - N bytes: tenant_id (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

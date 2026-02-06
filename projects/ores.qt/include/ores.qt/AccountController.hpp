@@ -184,7 +184,7 @@ private slots:
      * @param entityIds Account IDs that changed (may be empty)
      */
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     /**

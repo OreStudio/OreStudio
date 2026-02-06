@@ -29,14 +29,14 @@ std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header
-          << "Entity" << "Timestamp" << fort::endr;
+          << "Entity" << "Timestamp" << "Tenant ID" << fort::endr;
 
     for (const auto& item : v) {
         using platform::time::datetime;
         auto timestamp_str = datetime::format_time_point(item.timestamp,
                 "%Y-%m-%d %H:%M:%S");
 
-        table << item.entity << timestamp_str << fort::endr;
+        table << item.entity << timestamp_str << item.tenant_id << fort::endr;
     }
 
     return s << table.to_string();

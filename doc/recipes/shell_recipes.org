@@ -341,8 +341,8 @@ ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019c2e56-c881-72cf-a444-e60ae115cf74
-  Tenant: System (00000000-0000-0000-0000-000000000000)
+  Account ID: 019c30e2-dbb6-7585-afc4-fcdf49c87eb1
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example
@@ -471,6 +471,7 @@ Creates new user accounts on system tenant.
 #+begin_src ores-shell :exports none
 accounts create newuser40 Secure-Password-123 567 newuser40@example.com
 accounts create newuser41 Secure-Password-123 567 newuser41@example.com
+accounts create newuser42 Secure-Password-123 567 newuser42@example.com
 exit
 #+end_src
 
@@ -485,14 +486,45 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c2d93-20bf-7750-acdb-2b34d97ecfca
-ores-shell> ✓ Account created with ID: 019c2d93-213a-7800-a9e3-9093a7af2d5d
+ores-shell> ✓ Account created with ID: 019c30e2-fb61-77ee-b245-5faf3c415506
+ores-shell> ✓ Account created with ID: 019c30e2-fbda-7d5d-9759-78725f71a388
+ores-shell> ✓ Account created with ID: 019c30e2-fc53-7aac-a94b-a03f48eac318
 ores-shell> Bye!
 #+end_example
+
+*** Info
+
+Get all info for an existing account.
+
+#+name: list-account
+#+begin_src ores-shell :exports none
+accounts info newuser60@acme.com
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<list-account>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :51004
+✓ Logged in as: newuser3
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
+ORE Studio Shell REPL v0.0.11
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✗ Account not found: newuser60@acme.com
+ores-shell> Bye!
+#+end_example
+
 
 *** List
 
@@ -901,18 +933,17 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-+-------------------------------------------------+-------------------------------------------------+----------+-----------------------------------------------------------+--------+-------------+---------+
-| Code                                            | Name                                            | Type     | Hostname                                                  | Status | Recorded By | Version |
-+-------------------------------------------------+-------------------------------------------------+----------+-----------------------------------------------------------+--------+-------------+---------+
-| ores.cli.tests_20260205_151503_3078096_5254     | ores.cli.tests_20260205_151503_3078096_5254     | test     | ores.cli.tests_20260205_151503_3078096_5254.localhost     | active | postgres    | 1       |
-| ores.utility.tests_20260205_150615_3063963_9208 | ores.utility.tests_20260205_150615_3063963_9208 | test     | ores.utility.tests_20260205_150615_3063963_9208.localhost | active | postgres    | 1       |
-| system                                          | System                                          | platform | localhost                                                 | active | postgres    | 1       |
-+-------------------------------------------------+-------------------------------------------------+----------+-----------------------------------------------------------+--------+-------------+---------+
++--------+-----------+--------------+-----------+--------+-------------+---------+
+| Code   | Name      | Type         | Hostname  | Status | Recorded By | Version |
++--------+-----------+--------------+-----------+--------+-------------+---------+
+| acme   | ACME Corp | organisation | acme.com  | active | newuser3    | 1       |
+| system | System    | platform     | localhost | active | postgres    | 1       |
++--------+-----------+--------------+-----------+--------+-------------+---------+
 
 
 ores-shell> Bye!
@@ -969,7 +1000,7 @@ Create a new tenant with the specified parameters.
 
 #+name: tenants-add
 #+begin_src ores-shell :exports none
-tenants add acme "ACME Corp" organisation acme.com "ACME Corporation tenant"
+tenants add example "Example Corp" organisation example.com "Example Corporation tenant"
 exit
 #+end_src
 
@@ -984,12 +1015,12 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Tenant added successfully!
-  ID: 063aef21-df76-4517-bac8-a9f444428fec
+  ID: 197fae34-e54e-463b-bc02-6c99cde3cfa4
 ores-shell> Bye!
 #+end_example
 
@@ -999,8 +1030,8 @@ Creates new user accounts on system tenant.
 
 #+name: create-account-tenant
 #+begin_src ores-shell :exports none
-accounts create newuser60@acme.com Secure-Password-123 567 newuser60@acme.com
-accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
+accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
+accounts create newuser61@example.com Secure-Password-123 567 newuser61@example.com
 exit
 #+end_src
 
@@ -1015,12 +1046,12 @@ EOF
 #+begin_example
 ✓ Connected to :51004
 ✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
+  Tenant: System (ffffffff-ffff-ffff-ffff-ffffffffffff)
 ORE Studio Shell REPL v0.0.11
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019c2e6b-7c24-7c6e-bf2d-ebeb968af729
-ores-shell> ✓ Account created with ID: 019c2e6b-7d39-7c80-be6a-614372c57142
+ores-shell> ✓ Account created with ID: 019c30f9-acbc-77e7-aad3-762feb646641
+ores-shell> ✓ Account created with ID: 019c30f9-ad4b-71ed-b1e6-e2341ab1cc51
 ores-shell> Bye!
 #+end_example
 

@@ -1605,6 +1605,32 @@ Acceptance criteria:
 - Regular users should only be able to view accounts in their own tenant
 - Clear error message when user lacks cross-tenant permissions
 
+*** Review DQ metadata tables for multi-tenancy support              :analysis:
+
+Several DQ metadata tables have unique version indexes without =tenant_id=,
+which prevents different tenants from having the same metadata entries:
+
+Affected tables:
+- =ores_dq_catalogs_tbl= (name, version)
+- =ores_dq_change_reason_categories_tbl= (code, version)
+- =ores_dq_change_reasons_tbl= (code, version)
+- =ores_dq_coding_scheme_authority_types_tbl= (code, version)
+- =ores_dq_data_domains_tbl= (name, version)
+- =ores_dq_datasets_tbl= (id, version)
+- =ores_dq_methodologies_tbl= (id, version)
+- =ores_dq_nature_dimensions_tbl= (code, version)
+- =ores_dq_origin_dimensions_tbl= (code, version)
+- =ores_dq_subject_areas_tbl= (name, domain_name, version)
+- =ores_dq_treatment_dimensions_tbl= (code, version)
+
+Needs analysis to determine:
+- Should DQ metadata be global (shared across tenants) or tenant-specific?
+- If global, how should publishing work for DQ metadata tables?
+- If tenant-specific, add =tenant_id= to all version unique indexes
+
+Note: =ores_dq_coding_schemes_tbl= was fixed as part of the immediate publish
+bug, but the broader design question remains.
+
 *** Improve error message when server is not running                   :code:
 
 At present we get:

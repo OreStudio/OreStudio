@@ -40,7 +40,7 @@ TEST_CASE("subscription_manager can register and unregister sessions", tags) {
     subscription_manager mgr;
 
     // Register a session with a no-op callback
-    mgr.register_session("session1", [](const std::string&, auto, auto) { return true; });
+    mgr.register_session("session1", [](const std::string&, auto, auto, auto) { return true; });
 
     REQUIRE(mgr.session_count() == 1);
 
@@ -52,7 +52,7 @@ TEST_CASE("subscription_manager can register and unregister sessions", tags) {
 TEST_CASE("subscription_manager can subscribe session to event", tags) {
     subscription_manager mgr;
 
-    mgr.register_session("session1", [](const std::string&, auto, auto) { return true; });
+    mgr.register_session("session1", [](const std::string&, auto, auto, auto) { return true; });
 
     REQUIRE(mgr.subscribe("session1", "test.event"));
     REQUIRE(mgr.subscriber_count("test.event") == 1);
@@ -72,7 +72,7 @@ TEST_CASE("subscription_manager subscribe fails for unknown session", tags) {
 TEST_CASE("subscription_manager can unsubscribe session from event", tags) {
     subscription_manager mgr;
 
-    mgr.register_session("session1", [](const std::string&, auto, auto) { return true; });
+    mgr.register_session("session1", [](const std::string&, auto, auto, auto) { return true; });
     mgr.subscribe("session1", "test.event");
 
     REQUIRE(mgr.unsubscribe("session1", "test.event"));
@@ -85,7 +85,7 @@ TEST_CASE("subscription_manager can unsubscribe session from event", tags) {
 TEST_CASE("subscription_manager unsubscribe returns false when not subscribed", tags) {
     subscription_manager mgr;
 
-    mgr.register_session("session1", [](const std::string&, auto, auto) { return true; });
+    mgr.register_session("session1", [](const std::string&, auto, auto, auto) { return true; });
 
     REQUIRE_FALSE(mgr.unsubscribe("session1", "test.event"));
 }
@@ -93,7 +93,7 @@ TEST_CASE("subscription_manager unsubscribe returns false when not subscribed", 
 TEST_CASE("subscription_manager unregistering session removes subscriptions", tags) {
     subscription_manager mgr;
 
-    mgr.register_session("session1", [](const std::string&, auto, auto) { return true; });
+    mgr.register_session("session1", [](const std::string&, auto, auto, auto) { return true; });
     mgr.subscribe("session1", "event1");
     mgr.subscribe("session1", "event2");
 
@@ -114,7 +114,7 @@ TEST_CASE("subscription_manager notify invokes callback for subscribers", tags) 
     std::chrono::system_clock::time_point received_timestamp;
 
     mgr.register_session("session1",
-        [&](const std::string& event_type, auto ts, auto) {
+        [&](const std::string& event_type, auto ts, auto, auto) {
             ++callback_count;
             received_event_type = event_type;
             received_timestamp = ts;
@@ -124,7 +124,7 @@ TEST_CASE("subscription_manager notify invokes callback for subscribers", tags) 
     mgr.subscribe("session1", "test.event");
 
     auto now = std::chrono::system_clock::now();
-    auto notified = mgr.notify("test.event", now);
+    auto notified = mgr.notify("test.event", now, {}, "");
 
     REQUIRE(notified == 1);
     REQUIRE(callback_count == 1);
@@ -137,14 +137,14 @@ TEST_CASE("subscription_manager notify does not invoke for unsubscribed events",
 
     int callback_count = 0;
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) {
+        [&](const std::string&, auto, auto, auto) {
             ++callback_count;
             return true;
         });
 
     mgr.subscribe("session1", "subscribed.event");
 
-    auto notified = mgr.notify("other.event", std::chrono::system_clock::now());
+    auto notified = mgr.notify("other.event", std::chrono::system_clock::now(), {}, "");
 
     REQUIRE(notified == 0);
     REQUIRE(callback_count == 0);
@@ -157,13 +157,13 @@ TEST_CASE("subscription_manager notify returns count of successful notifications
     int session2_calls = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) {
+        [&](const std::string&, auto, auto, auto) {
             ++session1_calls;
             return true;
         });
 
     mgr.register_session("session2",
-        [&](const std::string&, auto, auto) {
+        [&](const std::string&, auto, auto, auto) {
             ++session2_calls;
             return false; // Simulate failed notification
         });
@@ -171,7 +171,7 @@ TEST_CASE("subscription_manager notify returns count of successful notifications
     mgr.subscribe("session1", "test.event");
     mgr.subscribe("session2", "test.event");
 
-    auto notified = mgr.notify("test.event", std::chrono::system_clock::now());
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(), {}, "");
 
     // Only session1 succeeded
     REQUIRE(notified == 1);
@@ -185,11 +185,11 @@ TEST_CASE("subscription_manager multiple sessions can subscribe to same event", 
     int total_calls = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++total_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++total_calls; return true; });
     mgr.register_session("session2",
-        [&](const std::string&, auto, auto) { ++total_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++total_calls; return true; });
     mgr.register_session("session3",
-        [&](const std::string&, auto, auto) { ++total_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++total_calls; return true; });
 
     mgr.subscribe("session1", "shared.event");
     mgr.subscribe("session2", "shared.event");
@@ -197,7 +197,7 @@ TEST_CASE("subscription_manager multiple sessions can subscribe to same event", 
 
     REQUIRE(mgr.subscriber_count("shared.event") == 3);
 
-    auto notified = mgr.notify("shared.event", std::chrono::system_clock::now());
+    auto notified = mgr.notify("shared.event", std::chrono::system_clock::now(), {}, "");
 
     REQUIRE(notified == 3);
     REQUIRE(total_calls == 3);
@@ -209,7 +209,7 @@ TEST_CASE("subscription_manager session can subscribe to multiple events", tags)
     int total_calls = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++total_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++total_calls; return true; });
 
     mgr.subscribe("session1", "event1");
     mgr.subscribe("session1", "event2");
@@ -218,9 +218,9 @@ TEST_CASE("subscription_manager session can subscribe to multiple events", tags)
     auto subs = mgr.get_subscriptions("session1");
     REQUIRE(subs.size() == 3);
 
-    mgr.notify("event1", std::chrono::system_clock::now());
-    mgr.notify("event2", std::chrono::system_clock::now());
-    mgr.notify("event3", std::chrono::system_clock::now());
+    mgr.notify("event1", std::chrono::system_clock::now(), {}, "");
+    mgr.notify("event2", std::chrono::system_clock::now(), {}, "");
+    mgr.notify("event3", std::chrono::system_clock::now(), {}, "");
 
     REQUIRE(total_calls == 3);
 }
@@ -232,14 +232,14 @@ TEST_CASE("subscription_manager re-registering session updates callback", tags) 
     int second_callback_count = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++first_callback_count; return true; });
+        [&](const std::string&, auto, auto, auto) { ++first_callback_count; return true; });
     mgr.subscribe("session1", "test.event");
 
     // Re-register with new callback
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++second_callback_count; return true; });
+        [&](const std::string&, auto, auto, auto) { ++second_callback_count; return true; });
 
-    mgr.notify("test.event", std::chrono::system_clock::now());
+    mgr.notify("test.event", std::chrono::system_clock::now(), {}, "");
 
     // Only second callback should be invoked
     REQUIRE(first_callback_count == 0);
@@ -249,7 +249,7 @@ TEST_CASE("subscription_manager re-registering session updates callback", tags) 
 TEST_CASE("subscription_manager duplicate subscription is idempotent", tags) {
     subscription_manager mgr;
 
-    mgr.register_session("session1", [](const std::string&, auto, auto) { return true; });
+    mgr.register_session("session1", [](const std::string&, auto, auto, auto) { return true; });
 
     REQUIRE(mgr.subscribe("session1", "test.event"));
     REQUIRE(mgr.subscribe("session1", "test.event")); // Should succeed (idempotent)
@@ -274,12 +274,12 @@ TEST_CASE("subscription_manager callback exception is handled gracefully", tags)
     int good_callback_count = 0;
 
     mgr.register_session("session1",
-        [](const std::string&, auto, auto) -> bool {
+        [](const std::string&, auto, auto, auto) -> bool {
             throw std::runtime_error("test exception");
         });
 
     mgr.register_session("session2",
-        [&](const std::string&, auto, auto) {
+        [&](const std::string&, auto, auto, auto) {
             ++good_callback_count;
             return true;
         });
@@ -288,7 +288,7 @@ TEST_CASE("subscription_manager callback exception is handled gracefully", tags)
     mgr.subscribe("session2", "test.event");
 
     // Should not throw, and should continue to invoke other callbacks
-    auto notified = mgr.notify("test.event", std::chrono::system_clock::now());
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(), {}, "");
 
     REQUIRE(notified == 1); // Only session2 succeeded
     REQUIRE(good_callback_count == 1);
@@ -323,9 +323,9 @@ TEST_CASE("subscription_manager notify with tenant_id only delivers to matching 
     int example_calls = 0;
 
     mgr.register_session("session_acme",
-        [&](const std::string&, auto, auto) { ++acme_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++acme_calls; return true; });
     mgr.register_session("session_example",
-        [&](const std::string&, auto, auto) { ++example_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++example_calls; return true; });
 
     mgr.subscribe("session_acme", "test.event");
     mgr.subscribe("session_example", "test.event");
@@ -358,15 +358,15 @@ TEST_CASE("subscription_manager notify with empty tenant_id broadcasts to all", 
     int session2_calls = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++session1_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++session1_calls; return true; });
     mgr.register_session("session2",
-        [&](const std::string&, auto, auto) { ++session2_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++session2_calls; return true; });
 
     mgr.subscribe("session1", "test.event");
     mgr.subscribe("session2", "test.event");
 
     // Empty tenant_id - broadcast to all
-    auto notified = mgr.notify("test.event", std::chrono::system_clock::now());
+    auto notified = mgr.notify("test.event", std::chrono::system_clock::now(), {}, "");
 
     REQUIRE(notified == 2);
     REQUIRE(session1_calls == 1);
@@ -400,9 +400,9 @@ TEST_CASE("subscription_manager notify skips sessions with different tenant", ta
     int session2_calls = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++session1_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++session1_calls; return true; });
     mgr.register_session("session2",
-        [&](const std::string&, auto, auto) { ++session2_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++session2_calls; return true; });
 
     mgr.subscribe("session1", "test.event");
     mgr.subscribe("session2", "test.event");
@@ -427,7 +427,7 @@ TEST_CASE("subscription_manager pre-login sessions do not receive tenant notific
     int prelogin_calls = 0;
 
     mgr.register_session("session_prelogin",
-        [&](const std::string&, auto, auto) { ++prelogin_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++prelogin_calls; return true; });
 
     mgr.subscribe("session_prelogin", "test.event");
 
@@ -447,9 +447,9 @@ TEST_CASE("subscription_manager without sessions_service broadcasts to all", tag
     int session2_calls = 0;
 
     mgr.register_session("session1",
-        [&](const std::string&, auto, auto) { ++session1_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++session1_calls; return true; });
     mgr.register_session("session2",
-        [&](const std::string&, auto, auto) { ++session2_calls; return true; });
+        [&](const std::string&, auto, auto, auto) { ++session2_calls; return true; });
 
     mgr.subscribe("session1", "test.event");
     mgr.subscribe("session2", "test.event");

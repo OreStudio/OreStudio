@@ -213,7 +213,7 @@ std::size_t subscription_manager::notify(const std::string& event_type,
     std::size_t success_count = 0;
     for (const auto& [id, callback] : callbacks_to_invoke) {
         try {
-            if (callback(event_type, timestamp, entity_ids)) {
+            if (callback(event_type, timestamp, entity_ids, tenant_id)) {
                 ++success_count;
                 BOOST_LOG_SEV(lg(), debug)
                     << "Successfully notified session '" << id

@@ -66,7 +66,8 @@ void server_session::stop() {
 
 bool server_session::queue_notification(const std::string& event_type,
     std::chrono::system_clock::time_point timestamp,
-    const std::vector<std::string>& entity_ids) {
+    const std::vector<std::string>& entity_ids,
+    const std::string& tenant_id) {
     if (!active_) {
         BOOST_LOG_SEV(lg(), debug)
             << "Cannot queue notification - session not active";
@@ -75,7 +76,7 @@ bool server_session::queue_notification(const std::string& event_type,
 
     {
         std::lock_guard lock(notification_mutex_);
-        pending_notifications_.push({event_type, timestamp, entity_ids});
+        pending_notifications_.push({event_type, timestamp, entity_ids, tenant_id});
     }
 
     // Signal the notification writer by cancelling the timer
@@ -84,7 +85,8 @@ bool server_session::queue_notification(const std::string& event_type,
 
     BOOST_LOG_SEV(lg(), debug)
         << "Queued notification for event type '" << event_type
-        << "' with " << entity_ids.size() << " entity IDs";
+        << "' with " << entity_ids.size() << " entity IDs"
+        << " (tenant: " << tenant_id << ")";
     return true;
 }
 
@@ -386,7 +388,8 @@ boost::asio::awaitable<void> server_session::send_pending_notifications() {
             messaging::notification_message msg{
                 .event_type = notification.event_type,
                 .timestamp = notification.timestamp,
-                .entity_ids = notification.entity_ids
+                .entity_ids = notification.entity_ids,
+                .tenant_id = notification.tenant_id
             };
 
             auto payload = msg.serialize();
@@ -474,8 +477,9 @@ void server_session::register_with_subscription_manager() {
     subscription_mgr_->register_session(remote_addr,
         [this](const std::string& event_type,
                std::chrono::system_clock::time_point timestamp,
-               const std::vector<std::string>& entity_ids) {
-            return queue_notification(event_type, timestamp, entity_ids);
+               const std::vector<std::string>& entity_ids,
+               const std::string& tenant_id) {
+            return queue_notification(event_type, timestamp, entity_ids, tenant_id);
         });
 }
 

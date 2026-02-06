@@ -294,7 +294,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             using traits = eventing::domain::event_traits<
                 iam::eventing::tenant_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
-                                     e.tenant_ids);
+                                     e.tenant_ids, e.tenant_id);
         });
 
     auto assets_sub = event_bus.subscribe<assets::eventing::assets_changed_event>(

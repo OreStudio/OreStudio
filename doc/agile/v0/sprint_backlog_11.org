@@ -17,43 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 00:42], for Friday, February 06, 2026.
+#+CAPTION: Clock summary at [2026-02-06 Fri 01:49], for Friday, February 06, 2026.
 |      | <75>                                                     |        |      |      |       |
 | Tags | Headline                                                 | Time   |      |      |     % |
 |------+----------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                             | *0:42* |      |      | 100.0 |
+|      | *Total time*                                             | *1:48* |      |      | 100.0 |
 |------+----------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                                  | 0:42   |      |      | 100.0 |
-|      | Active                                                   |        | 0:42 |      | 100.0 |
-| code | Refactor message handlers for per-request tenant context |        |      | 0:42 | 100.0 |
+|      | Stories                                                  | 1:48   |      |      | 100.0 |
+|      | Active                                                   |        | 1:48 |      | 100.0 |
+| code | Refactor message handlers for per-request tenant context |        |      | 1:48 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 00:42]
+#+CAPTION: Clock summary at [2026-02-06 Fri 01:49]
 |       | <75>                                                     |         |       |       |       |
 | Tags  | Headline                                                 | Time    |       |       |     % |
 |-------+----------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                             | *62:08* |       |       | 100.0 |
+|       | *Total time*                                             | *63:14* |       |       | 100.0 |
 |-------+----------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                  | 62:08   |       |       | 100.0 |
-|       | Active                                                   |         | 62:08 |       | 100.0 |
-| agile | Sprint and product backlog refinement                    |         |       |  2:24 |   3.9 |
+|       | Stories                                                  | 63:14   |       |       | 100.0 |
+|       | Active                                                   |         | 63:14 |       | 100.0 |
+| agile | Sprint and product backlog refinement                    |         |       |  2:24 |   3.8 |
 | code  | Address past review comments                             |         |       |  1:14 |   2.0 |
-| code  | Split "god" admin account                                |         |       | 10:05 |  16.2 |
+| code  | Split "god" admin account                                |         |       | 10:05 |  15.9 |
 | code  | Move all database entities to public schema              |         |       |  1:22 |   2.2 |
-| code  | Check directory structure in SQL                         |         |       |  0:36 |   1.0 |
-| code  | Add tenancy support                                      |         |       |  3:55 |   6.3 |
-| code  | Use tenancy to isolate tests                             |         |       |  5:00 |   8.0 |
+| code  | Check directory structure in SQL                         |         |       |  0:36 |   0.9 |
+| code  | Add tenancy support                                      |         |       |  3:55 |   6.2 |
+| code  | Use tenancy to isolate tests                             |         |       |  5:00 |   7.9 |
 | code  | Add NOTICE logging support to sqlgen                     |         |       |  0:53 |   1.4 |
-| code  | Update codegen for tenancy                               |         |       |  3:32 |   5.7 |
-| code  | Add entity types for tenants                             |         |       |  9:43 |  15.6 |
-| code  | Add sink to log to database directly                     |         |       |  5:00 |   8.0 |
-| code  | Add system accounts for services                         |         |       |  3:32 |   5.7 |
-| code  | Test shell functionality with tenancy enabled            |         |       |  9:44 |  15.7 |
+| code  | Update codegen for tenancy                               |         |       |  3:32 |   5.6 |
+| code  | Add entity types for tenants                             |         |       |  9:43 |  15.4 |
+| code  | Add sink to log to database directly                     |         |       |  5:00 |   7.9 |
+| code  | Add system accounts for services                         |         |       |  3:32 |   5.6 |
+| code  | Test shell functionality with tenancy enabled            |         |       |  9:44 |  15.4 |
 | code  | Fix apt-get failures on nightly build                    |         |       |  0:20 |   0.5 |
-| code  | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.6 |
-| code  | Refactor message handlers for per-request tenant context |         |       |  3:50 |   6.2 |
+| code  | Refactor tenant lookup functions to accept const context |         |       |  0:58 |   1.5 |
+| code  | Refactor message handlers for per-request tenant context |         |       |  4:56 |   7.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1049,6 +1049,7 @@ Refactoring these to accept =const context&= would:
 
 *** COMPLETED Refactor message handlers for per-request tenant context :code:
     :LOGBOOK:
+    CLOCK: [2026-02-06 Fri 00:43]--[2026-02-06 Fri 01:49] =>  1:06
     CLOCK: [2026-02-05 Thu 23:49]--[2026-02-06 Fri 00:42] =>  0:53
     CLOCK: [2026-02-05 Thu 22:01]--[2026-02-05 Thu 23:48] =>  1:47
     CLOCK: [2026-02-05 Thu 17:00]--[2026-02-05 Thu 18:10] =>  1:10
@@ -1064,6 +1065,41 @@ to create per-request database contexts. This is a security issue that can lead
 to cross-tenant data leakage.
 
 See design document: =doc/design/multi_tenant_message_handling.org=
+
+#+begin_quote
+This pull request significantly enhances the multi-tenancy architecture by
+introducing a type-safe tenant_id wrapper and refactoring message handlers to
+use per-request database contexts. This ensures robust tenant isolation and
+prevents data leakage by explicitly associating each request with its correct
+tenant. The system tenant identifier has also been updated to a more
+semantically appropriate value to avoid conflicts with uninitialized UUIDs.
+
+Highlights:
+
+- Per-Request Tenant Context: Message handlers now create database contexts
+  per-request using the session's tenant_id, ensuring each request executes in
+  the correct tenant's RLS context. This fixes potential cross-tenant data
+  leakage. A new base class, tenant_aware_handler, has been introduced to
+  encapsulate this logic.
+- Type-Safe tenant_id Wrapper: A new strong type, utility::uuid::tenant_id, has
+  been introduced to wrap boost::uuids::uuid. It includes factory methods
+  (system(), from_uuid(), from_string()) that prevent construction with nil
+  UUIDs, query methods (is_system(), is_nil()) for tenant identification, and
+  conversion methods (to_uuid(), to_string()) for interoperability. This
+  enhances type safety and prevents accidental nil UUID usage.
+- System Tenant Change: The system tenant identifier has been changed from the
+  nil UUID (00000000-...) to the max UUID (ffffffff-...) as defined by RFC 9562.
+  This change prevents accidental confusion with uninitialized
+  boost::uuids::uuid values, which default-construct to nil.
+- Serialization Helpers: Serialization helpers have been added for the new
+  tenant_id type in both the binary protocol and JSON (using reflect-cpp),
+  ensuring seamless data transfer and persistence.
+- Refactored Message Handlers and Repositories: Numerous message handlers and
+  repository methods across ores.assets, ores.dq, ores.iam, ores.refdata,
+  ores.telemetry, and ores.variability have been updated to leverage the new
+  tenant_aware_handler base class and accept context objects directly, promoting
+  per-request context creation and improving tenant isolation.
+#+end_quote
 
 **** Acceptance Criteria
 

@@ -217,6 +217,22 @@ public:
     static void process_get_account_history(std::ostream& out,
         comms::net::client_session& session,
         std::string username);
+
+    /**
+     * @brief Process an account info request.
+     *
+     * Displays comprehensive account information including:
+     * - Account details (ID, username, email, status, tenant)
+     * - Assigned roles
+     * - Effective permissions
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param username Username of the account to display
+     */
+    static void process_account_info(std::ostream& out,
+        comms::net::client_session& session,
+        std::string username);
 };
 
 }

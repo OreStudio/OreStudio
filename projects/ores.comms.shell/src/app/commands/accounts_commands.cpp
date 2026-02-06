@@ -20,6 +20,7 @@
 #include "ores.comms.shell/app/commands/accounts_commands.hpp"
 
 #include <iomanip>
+#include <map>
 #include <ostream>
 #include <sstream>
 #include <functional>
@@ -32,6 +33,7 @@
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/messaging/account_history_protocol.hpp"
+#include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/account_version_table_io.hpp"  // IWYU pragma: keep.
@@ -149,6 +151,12 @@ register_commands(cli::Menu& root_menu, client_session& session,
         process_get_account_history(std::ref(out), std::ref(session),
             std::move(username));
     }, "Get version history for an account by username");
+
+    accounts_menu->Insert("info", [&session](std::ostream& out,
+            std::string username) {
+        process_account_info(std::ref(out), std::ref(session),
+            std::move(username));
+    }, "Show comprehensive account info (username) - details, roles, permissions");
 
     root_menu.Insert(std::move(accounts_menu));
 
@@ -680,6 +688,150 @@ process_get_account_history(std::ostream& out, client_session& session,
                               << response.history.versions.size()
                               << " history records.";
     out << std::endl << response.history.versions << std::endl;
+}
+
+void accounts_commands::
+process_account_info(std::ostream& out, client_session& session,
+    std::string username) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting comprehensive account info for: "
+                               << username;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to view account info." << std::endl;
+        return;
+    }
+
+    // Step 1: Get account details via history request
+    using iam::messaging::get_account_history_request;
+    using iam::messaging::get_account_history_response;
+    auto history_result = session.process_authenticated_request<
+        get_account_history_request, get_account_history_response,
+        message_type::get_account_history_request>
+        (get_account_history_request{.username = username});
+
+    if (!history_result) {
+        out << "✗ " << comms::net::to_string(history_result.error()) << std::endl;
+        return;
+    }
+
+    if (!history_result->success) {
+        out << "✗ " << history_result->message << std::endl;
+        return;
+    }
+
+    if (history_result->history.versions.empty()) {
+        out << "✗ Account not found: " << username << std::endl;
+        return;
+    }
+
+    // Get the current version (first in list, most recent)
+    const auto& current = history_result->history.versions.front();
+    const auto& account = current.data;
+
+    // Display account header
+    out << std::endl;
+    out << "Account Information: " << username << std::endl;
+    out << std::string(50, '=') << std::endl;
+
+    // Display account details
+    out << std::endl;
+    out << "Details" << std::endl;
+    out << "-------" << std::endl;
+    out << "  ID:        " << boost::uuids::to_string(account.id) << std::endl;
+    out << "  Username:  " << account.username << std::endl;
+    out << "  Email:     " << (account.email.empty() ? "(not set)" : account.email) << std::endl;
+    out << "  Tenant ID: " << account.tenant_id << std::endl;
+    out << "  Type:      " << account.account_type << std::endl;
+    out << "  Version:   " << current.version_number << std::endl;
+    out << "  Recorded:  " << format_time(current.recorded_at)
+        << " by " << current.recorded_by << std::endl;
+
+    // Step 2: Get roles for this account
+    using iam::messaging::get_account_roles_request;
+    using iam::messaging::get_account_roles_response;
+    auto roles_result = session.process_authenticated_request<
+        get_account_roles_request, get_account_roles_response,
+        message_type::get_account_roles_request>
+        (get_account_roles_request{.account_id = account.id});
+
+    out << std::endl;
+    out << "Roles" << std::endl;
+    out << "-----" << std::endl;
+    if (!roles_result) {
+        out << "  (failed to retrieve roles: "
+            << comms::net::to_string(roles_result.error()) << ")" << std::endl;
+    } else if (roles_result->roles.empty()) {
+        out << "  (no roles assigned)" << std::endl;
+    } else {
+        for (const auto& role : roles_result->roles) {
+            out << "  - " << role.name;
+            if (!role.description.empty()) {
+                out << " (" << role.description << ")";
+            }
+            out << std::endl;
+        }
+    }
+
+    // Step 3: Get effective permissions for this account
+    using iam::messaging::get_account_permissions_request;
+    using iam::messaging::get_account_permissions_response;
+    auto perms_result = session.process_authenticated_request<
+        get_account_permissions_request, get_account_permissions_response,
+        message_type::get_account_permissions_request>
+        (get_account_permissions_request{.account_id = account.id});
+
+    out << std::endl;
+    out << "Effective Permissions" << std::endl;
+    out << "---------------------" << std::endl;
+    if (!perms_result) {
+        out << "  (failed to retrieve permissions: "
+            << comms::net::to_string(perms_result.error()) << ")" << std::endl;
+    } else if (perms_result->permission_codes.empty()) {
+        out << "  (no permissions)" << std::endl;
+    } else {
+        // Check for wildcard
+        bool has_wildcard = false;
+        for (const auto& code : perms_result->permission_codes) {
+            if (code == "*") {
+                has_wildcard = true;
+                break;
+            }
+        }
+
+        if (has_wildcard) {
+            out << "  * (all permissions - superuser)" << std::endl;
+        }
+
+        // Group permissions by component
+        std::map<std::string, std::vector<std::string>> by_component;
+        for (const auto& code : perms_result->permission_codes) {
+            if (code == "*") continue;
+
+            auto sep_pos = code.find("::");
+            if (sep_pos != std::string::npos) {
+                auto component = code.substr(0, sep_pos);
+                by_component[component].push_back(code);
+            } else {
+                by_component["other"].push_back(code);
+            }
+        }
+
+        for (const auto& [component, codes] : by_component) {
+            out << "  [" << component << "]" << std::endl;
+            for (const auto& code : codes) {
+                out << "    - " << code << std::endl;
+            }
+        }
+
+        out << std::endl;
+        out << "  Total: " << perms_result->permission_codes.size()
+            << " permission(s)" << std::endl;
+    }
+
+    out << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Successfully displayed account info for: "
+                              << username;
 }
 
 }

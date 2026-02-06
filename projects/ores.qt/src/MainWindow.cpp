@@ -501,7 +501,10 @@ MainWindow::MainWindow(QWidget* parent) :
                     for (const QString& code : datasetCodes) {
                         if (code.startsWith("assets.")) {
                             BOOST_LOG_SEV(lg(), info) << "Image dataset published ("
-                                << code.toStdString() << "), reloading image cache";
+                                << code.toStdString() << "), clearing and reloading image cache";
+                            // Clear cache first to ensure full reload (not incremental)
+                            // since publishing may change image UUIDs
+                            imageCache_->clear();
                             imageCache_->reload();
                             return;
                         }

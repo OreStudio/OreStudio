@@ -113,6 +113,16 @@ public:
     bool isLoading() const { return is_loading_images_; }
 
     /**
+     * @brief Clear all caches and reset load state.
+     *
+     * Call this before reload() when data has changed significantly
+     * (e.g., after publishing to a different tenant or after major data
+     * changes). This ensures the next reload() does a full refresh
+     * instead of an incremental update.
+     */
+    void clear();
+
+    /**
      * @brief Load list of all available images from the server.
      *
      * Fetches metadata for all images (without SVG data).

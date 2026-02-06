@@ -128,6 +128,19 @@ void ImageCache::reload() {
     loadAll();
 }
 
+void ImageCache::clear() {
+    BOOST_LOG_SEV(lg(), info) << "clear() called - resetting all caches and load state.";
+
+    image_svg_cache_.clear();
+    image_icons_.clear();
+    pending_image_ids_.clear();
+    pending_image_requests_.clear();
+    available_images_.clear();
+    last_load_time_.reset();
+
+    BOOST_LOG_SEV(lg(), debug) << "All caches cleared and last_load_time reset.";
+}
+
 void ImageCache::loadCurrencyImageIds() {
     BOOST_LOG_SEV(lg(), debug) << "loadCurrencyImageIds() called.";
 

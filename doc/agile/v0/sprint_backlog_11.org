@@ -17,7 +17,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 22:34], for Friday, February 06, 2026.
+#+CAPTION: Clock summary at [2026-02-06 Fri 23:04], for Friday, February 06, 2026.
 |          | <75>                                                     |         |       |      |       |
 | Tags     | Headline                                                 | Time    |       |      |     % |
 |----------+----------------------------------------------------------+---------+-------+------+-------|
@@ -35,7 +35,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 22:34]
+#+CAPTION: Clock summary at [2026-02-06 Fri 23:04]
 |          | <75>                                                     |         |       |       |       |
 | Tags     | Headline                                                 | Time    |       |       |     % |
 |----------+----------------------------------------------------------+---------+-------+-------+-------|

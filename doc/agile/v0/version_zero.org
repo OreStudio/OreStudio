@@ -166,6 +166,8 @@ Backlogs]]. The last entry is the active sprint.
    :resource_id: s12
    :END:
 
+- [[id:1B387E8C-8EC1-4C2A-A321-1593C35A9A77][Sprint Backlog 12]] | Tenants Qt entity.
+
 ** Sprint 13
    :PROPERTIES:
    :resource_id: s13

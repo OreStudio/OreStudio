@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QApplication>
+#include <QTextEdit>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
@@ -488,29 +489,20 @@ ResultsPage::ResultsPage(PublishDatasetsDialog* wizard)
 
     layout->addSpacing(10);
 
-    resultsTable_ = new QTableWidget(this);
-    resultsTable_->setColumnCount(7);
-    resultsTable_->setHorizontalHeaderLabels({
-        tr("Dataset"),
-        tr("Target Table"),
-        tr("Inserted"),
-        tr("Updated"),
-        tr("Skipped"),
-        tr("Deleted"),
-        tr("Status")
-    });
-    resultsTable_->horizontalHeader()->setStretchLastSection(true);
-    resultsTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    resultsTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    resultsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    resultsTable_->setAlternatingRowColors(true);
-    layout->addWidget(resultsTable_, 1);
+    // Log-style output for publication results
+    logOutput_ = new QTextEdit(this);
+    logOutput_->setReadOnly(true);
+    logOutput_->setMinimumHeight(200);
+    logOutput_->setStyleSheet(
+        "QTextEdit { background-color: #1e1e1e; color: #d4d4d4; "
+        "font-family: monospace; font-size: 11px; }");
+    layout->addWidget(logOutput_, 1);
 }
 
 void ResultsPage::initializePage() {
+    logOutput_->clear();
     const auto& results = wizard_->results();
-
-    resultsTable_->setRowCount(static_cast<int>(results.size()));
+    const QString& lastError = wizard_->lastError();
 
     std::uint64_t totalInserted = 0;
     std::uint64_t totalUpdated = 0;
@@ -519,86 +511,105 @@ void ResultsPage::initializePage() {
     int successCount = 0;
     int failureCount = 0;
 
-    for (int row = 0; row < static_cast<int>(results.size()); ++row) {
-        const auto& r = results[row];
+    // Check for publication error first
+    if (!lastError.isEmpty()) {
+        appendLog(tr("=== Publication Failed ==="));
+        appendError(tr("Publication error: %1").arg(lastError));
+        summaryLabel_->setText(tr("Publication failed due to an error."));
+        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #dc3545;");
+        return;
+    }
 
-        auto* codeItem = new QTableWidgetItem(
-            QString::fromStdString(r.dataset_code));
-        resultsTable_->setItem(row, 0, codeItem);
+    if (results.empty()) {
+        appendLog(tr("No datasets were published."));
+        summaryLabel_->setText(tr("No datasets were published."));
+        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px;");
+        return;
+    }
 
-        auto* tableItem = new QTableWidgetItem(
-            QString::fromStdString(r.target_table));
-        resultsTable_->setItem(row, 1, tableItem);
+    // Log each dataset result
+    appendLog(tr("=== Publication Results ==="));
+    appendLog("");
 
-        auto* insertedItem = new QTableWidgetItem(
-            QString::number(r.records_inserted));
-        insertedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsTable_->setItem(row, 2, insertedItem);
+    for (const auto& r : results) {
+        QString datasetCode = QString::fromStdString(r.dataset_code);
+        QString targetTable = QString::fromStdString(r.target_table);
 
-        auto* updatedItem = new QTableWidgetItem(
-            QString::number(r.records_updated));
-        updatedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsTable_->setItem(row, 3, updatedItem);
-
-        auto* skippedItem = new QTableWidgetItem(
-            QString::number(r.records_skipped));
-        skippedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsTable_->setItem(row, 4, skippedItem);
-
-        auto* deletedItem = new QTableWidgetItem(
-            QString::number(r.records_deleted));
-        deletedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsTable_->setItem(row, 5, deletedItem);
-
-        QString statusText = r.success ? tr("Success") : tr("Failed");
-        auto* statusItem = new QTableWidgetItem(statusText);
-        if (!r.success) {
-            statusItem->setToolTip(QString::fromStdString(r.error_message));
-        }
-        resultsTable_->setItem(row, 6, statusItem);
-
-        // Accumulate totals
         if (r.success) {
             ++successCount;
             totalInserted += r.records_inserted;
             totalUpdated += r.records_updated;
             totalSkipped += r.records_skipped;
             totalDeleted += r.records_deleted;
+
+            appendSuccess(tr("[SUCCESS] %1").arg(datasetCode));
+            appendLog(tr("  Target: %1").arg(targetTable));
+            appendLog(tr("  Records: %1 inserted, %2 updated, %3 skipped, %4 deleted")
+                .arg(r.records_inserted)
+                .arg(r.records_updated)
+                .arg(r.records_skipped)
+                .arg(r.records_deleted));
         } else {
             ++failureCount;
+            appendError(tr("[FAILED] %1").arg(datasetCode));
+            appendLog(tr("  Target: %1").arg(targetTable));
+            if (!r.error_message.empty()) {
+                appendError(tr("  Error: %1").arg(QString::fromStdString(r.error_message)));
+            }
         }
+        appendLog("");
     }
 
-    // Update summary
+    // Log summary
+    appendLog(tr("=== Summary ==="));
+    appendLog(tr("Datasets processed: %1").arg(results.size()));
+    appendLog(tr("Succeeded: %1, Failed: %2").arg(successCount).arg(failureCount));
+    appendLog(tr("Total records: %1 inserted, %2 updated, %3 skipped, %4 deleted")
+        .arg(totalInserted)
+        .arg(totalUpdated)
+        .arg(totalSkipped)
+        .arg(totalDeleted));
+
+    // Update summary label
     QString summary;
-    if (results.empty()) {
-        // Check if we have an error from the publication attempt
-        const QString& lastError = wizard_->lastError();
-        if (!lastError.isEmpty()) {
-            summary = tr("Publication failed: %1").arg(lastError);
-        } else {
-            summary = tr("No datasets were published.");
-        }
-    } else if (failureCount == 0) {
-        summary = tr("Successfully published %1 dataset(s).\n"
-                     "Total: %2 inserted, %3 updated, %4 skipped, %5 deleted.")
-            .arg(successCount)
-            .arg(totalInserted)
-            .arg(totalUpdated)
-            .arg(totalSkipped)
-            .arg(totalDeleted);
+    if (failureCount == 0) {
+        summary = tr("Successfully published %1 dataset(s).").arg(successCount);
+        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #28a745;");
+    } else if (successCount == 0) {
+        summary = tr("Publication failed for all %1 dataset(s).").arg(failureCount);
+        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #dc3545;");
     } else {
-        summary = tr("Published %1 dataset(s): %2 succeeded, %3 failed.\n"
-                     "Total: %4 inserted, %5 updated, %6 skipped, %7 deleted.")
-            .arg(results.size())
+        summary = tr("Published %1 of %2 dataset(s) (%3 failed).")
             .arg(successCount)
-            .arg(failureCount)
-            .arg(totalInserted)
-            .arg(totalUpdated)
-            .arg(totalSkipped)
-            .arg(totalDeleted);
+            .arg(results.size())
+            .arg(failureCount);
+        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #ffc107;");
     }
     summaryLabel_->setText(summary);
+}
+
+void ResultsPage::appendLog(const QString& message) {
+    logOutput_->append(message);
+    // Scroll to bottom
+    auto cursor = logOutput_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logOutput_->setTextCursor(cursor);
+}
+
+void ResultsPage::appendError(const QString& message) {
+    // Use HTML for red error text
+    logOutput_->append(QString("<span style='color: #ff6b6b;'>%1</span>").arg(message.toHtmlEscaped()));
+    auto cursor = logOutput_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logOutput_->setTextCursor(cursor);
+}
+
+void ResultsPage::appendSuccess(const QString& message) {
+    // Use HTML for green success text
+    logOutput_->append(QString("<span style='color: #69db7c;'>%1</span>").arg(message.toHtmlEscaped()));
+    auto cursor = logOutput_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logOutput_->setTextCursor(cursor);
 }
 
 }

@@ -27,6 +27,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QTableWidget>
+#include <QTextEdit>
 #include <QLabel>
 #include <QProgressBar>
 #include <boost/uuid/uuid.hpp>
@@ -217,8 +218,12 @@ public:
     void initializePage() override;
 
 private:
+    void appendLog(const QString& message);
+    void appendError(const QString& message);
+    void appendSuccess(const QString& message);
+
     PublishDatasetsDialog* wizard_;
-    QTableWidget* resultsTable_;
+    QTextEdit* logOutput_;
     QLabel* summaryLabel_;
 };
 

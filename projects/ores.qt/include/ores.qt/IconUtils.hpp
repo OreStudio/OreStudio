@@ -43,6 +43,7 @@ enum class Icon {
     ArrowRotateCounterclockwise,
     ArrowSync,
     Book,
+    Building,
     Checkmark,
     Clock,
     Code,

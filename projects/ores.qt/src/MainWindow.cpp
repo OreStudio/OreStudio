@@ -49,6 +49,7 @@
 #include "ores.qt/CountryController.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
+#include "ores.qt/TenantController.hpp"
 #include "ores.qt/FeatureFlagController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
@@ -127,6 +128,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
     ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
     ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
+    ui_->ActionTenants->setIcon(IconUtils::createRecoloredIcon(Icon::Building, IconUtils::DefaultIconColor));
     ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionChangeReasonCategories->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(Icon::NoteEdit, IconUtils::DefaultIconColor));
@@ -353,6 +355,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionRoles, &QAction::triggered, this, [this]() {
         if (roleController_)
             roleController_->showListWindow();
+    });
+
+    // Connect Tenants action to controller (admin only)
+    connect(ui_->ActionTenants, &QAction::triggered, this, [this]() {
+        if (tenantController_)
+            tenantController_->showListWindow();
     });
 
     // Connect Feature Flags action to controller (admin only)
@@ -725,6 +733,7 @@ void MainWindow::updateMenuState() {
     ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);
     ui_->ActionAccounts->setEnabled(isLoggedIn);
     ui_->ActionRoles->setEnabled(isLoggedIn);
+    ui_->ActionTenants->setEnabled(isLoggedIn);
     ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
     ui_->ActionOriginDimensions->setEnabled(isLoggedIn);
     ui_->ActionNatureDimensions->setEnabled(isLoggedIn);
@@ -838,6 +847,24 @@ void MainWindow::createControllers() {
     connect(roleController_.get(), &RoleController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(roleController_.get(), &RoleController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create tenant controller (admin only functionality)
+    tenantController_ = std::make_unique<TenantController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    // Connect tenant controller signals to status bar and window lifecycle
+    connect(tenantController_.get(), &TenantController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(tenantController_.get(), &TenantController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(tenantController_.get(), &TenantController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(tenantController_.get(), &TenantController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create feature flag controller (admin only functionality)

@@ -1246,7 +1246,7 @@ Errors:
 
 [FAILED] slovaris.country_flags
   Target: assets_images_tbl
-Error: Query execution failed: ERROR: duplicate key value violates unique constraint "ores_assets_images_version_uniq_idx" DETAIL: Key (image_id, version)=(14e65ed1-2e75-4f27-8e05-ba13a65a279f, 1) already exists. CONTEXT: SQL statement "insert into ores_assets_images_tbl ( tenant_id, image_id, version, key, description, svg_data, modified_by, performed_by, change_reason_code, change_commentary ) values ( p_target_tenant_id, coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data, current_user, current_user, 'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name ) returning version" PL/pgSQL function ores_dq_images_publish_fn(uuid,uuid,text) line 63 at SQL statement
+  Error: Query execution failed: ERROR: duplicate key value violates unique constraint "ores_assets_images_version_uniq_idx" DETAIL: Key (image_id, version)=(14e65ed1-2e75-4f27-8e05-ba13a65a279f, 1) already exists. CONTEXT: SQL statement "insert into ores_assets_images_tbl ( tenant_id, image_id, version, key, description, svg_data, modified_by, performed_by, change_reason_code, change_commentary ) values ( p_target_tenant_id, coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data, current_user, current_user, 'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name ) returning version" PL/pgSQL function ores_dq_images_publish_fn(uuid,uuid,text) line 63 at SQL statement
 
 [SUCCESS] slovaris.currencies
   Target: refdata_currencies_tbl

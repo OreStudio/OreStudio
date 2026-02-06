@@ -27,6 +27,7 @@ authentication and authorization. Key features include:
 - Temporal database support: version tracking with =valid_from= and =valid_to=
   fields
 - Synthetic data generation: test account generation for development
+- Multi-tenancy support via the [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]].
 
 The module is organised into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]]
 and persistence), service (business logic), messaging (API handlers), security

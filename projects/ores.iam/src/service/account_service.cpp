@@ -425,6 +425,18 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     return true;
 }
 
+std::optional<domain::account>
+account_service::find_account_by_username(const std::string& username) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding account by username: " << username;
+
+    auto accounts = account_repo_.read_latest_by_username(username);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "No account found for username: " << username;
+        return std::nullopt;
+    }
+    return accounts.front();
+}
+
 std::vector<domain::account>
 account_service::get_account_history(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account history for username: "

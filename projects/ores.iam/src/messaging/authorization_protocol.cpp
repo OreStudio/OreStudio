@@ -603,4 +603,66 @@ std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& 
     return s;
 }
 
+// ============================================================================
+// Assign Role By Name
+// ============================================================================
+
+std::vector<std::byte> assign_role_by_name_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, principal);
+    writer::write_string(buffer, role_name);
+    return buffer;
+}
+
+std::expected<assign_role_by_name_request, ores::utility::serialization::error_code>
+assign_role_by_name_request::deserialize(std::span<const std::byte> data) {
+    assign_role_by_name_request request;
+
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
+
+    auto role_name_result = reader::read_string(data);
+    if (!role_name_result) return std::unexpected(role_name_result.error());
+    request.role_name = *role_name_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const assign_role_by_name_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// Revoke Role By Name
+// ============================================================================
+
+std::vector<std::byte> revoke_role_by_name_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, principal);
+    writer::write_string(buffer, role_name);
+    return buffer;
+}
+
+std::expected<revoke_role_by_name_request, ores::utility::serialization::error_code>
+revoke_role_by_name_request::deserialize(std::span<const std::byte> data) {
+    revoke_role_by_name_request request;
+
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
+
+    auto role_name_result = reader::read_string(data);
+    if (!role_name_result) return std::unexpected(role_name_result.error());
+    request.role_name = *role_name_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const revoke_role_by_name_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

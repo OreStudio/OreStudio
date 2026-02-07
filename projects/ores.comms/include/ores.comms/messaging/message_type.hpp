@@ -115,6 +115,11 @@ enum class message_type : std::uint16_t {
     get_role_response = 0x202D,
     suggest_role_commands_request = 0x202E,
     suggest_role_commands_response = 0x202F,
+    // IAM subsystem - RBAC (name-based)
+    assign_role_by_name_request = 0x2032,
+    assign_role_by_name_response = 0x2033,
+    revoke_role_by_name_request = 0x2034,
+    revoke_role_by_name_response = 0x2035,
     // IAM subsystem - Signup
     signup_request = 0x2030,
     signup_response = 0x2031,
@@ -405,6 +410,10 @@ enum class message_type : std::uint16_t {
     case message_type::get_role_response: return "get_role_response";
     case message_type::suggest_role_commands_request: return "suggest_role_commands_request";
     case message_type::suggest_role_commands_response: return "suggest_role_commands_response";
+    case message_type::assign_role_by_name_request: return "assign_role_by_name_request";
+    case message_type::assign_role_by_name_response: return "assign_role_by_name_response";
+    case message_type::revoke_role_by_name_request: return "revoke_role_by_name_request";
+    case message_type::revoke_role_by_name_response: return "revoke_role_by_name_response";
     case message_type::signup_request: return "signup_request";
     case message_type::signup_response: return "signup_response";
     case message_type::list_sessions_request: return "list_sessions_request";

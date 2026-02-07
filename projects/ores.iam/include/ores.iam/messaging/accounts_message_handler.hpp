@@ -350,6 +350,28 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle assign_role_by_name_request message.
+     *
+     * Requires authentication and roles:assign permission. Resolves
+     * principal (username@hostname) to account ID and role name to role ID,
+     * then delegates to assign_role.
+     */
+    handler_result
+    handle_assign_role_by_name_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle revoke_role_by_name_request message.
+     *
+     * Requires authentication and roles:revoke permission. Resolves
+     * principal (username@hostname) to account ID and role name to role ID,
+     * then delegates to revoke_role.
+     */
+    handler_result
+    handle_revoke_role_by_name_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Check if a remote address is localhost.
      *
      * @param remote_address The remote endpoint address

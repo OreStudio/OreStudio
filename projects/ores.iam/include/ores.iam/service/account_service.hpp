@@ -224,6 +224,18 @@ public:
         const std::string& change_commentary);
 
     /**
+     * @brief Finds an account by username.
+     *
+     * Returns the latest version of the account matching the given username,
+     * or std::nullopt if no account is found.
+     *
+     * @param username The username to search for
+     * @return The account if found, std::nullopt otherwise
+     */
+    std::optional<domain::account> find_account_by_username(
+        const std::string& username);
+
+    /**
      * @brief Retrieves all historical versions of an account by username.
      *
      * Returns all versions of the account from the temporal history,

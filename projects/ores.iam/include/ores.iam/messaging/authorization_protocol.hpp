@@ -491,6 +491,80 @@ struct suggest_role_commands_response final {
 
 std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& v);
 
+// ============================================================================
+// Assign Role By Name
+// ============================================================================
+
+/**
+ * @brief Request to assign a role to an account using principal and role name.
+ *
+ * The principal is in the format `username@hostname` or just `username`.
+ * The server resolves the principal to an account ID and the role name to a
+ * role ID before performing the assignment.
+ *
+ * Requires admin privileges or roles:assign permission.
+ */
+struct assign_role_by_name_request final {
+    std::string principal;
+    std::string role_name;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
+     * - 2 bytes: role_name length
+     * - N bytes: role_name (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<assign_role_by_name_request, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const assign_role_by_name_request& v);
+
+// ============================================================================
+// Revoke Role By Name
+// ============================================================================
+
+/**
+ * @brief Request to revoke a role from an account using principal and role name.
+ *
+ * The principal is in the format `username@hostname` or just `username`.
+ * The server resolves the principal to an account ID and the role name to a
+ * role ID before performing the revocation.
+ *
+ * Requires admin privileges or roles:revoke permission.
+ */
+struct revoke_role_by_name_request final {
+    std::string principal;
+    std::string role_name;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
+     * - 2 bytes: role_name length
+     * - N bytes: role_name (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<revoke_role_by_name_request, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const revoke_role_by_name_request& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -581,6 +655,28 @@ struct message_traits<iam::messaging::suggest_role_commands_request> {
     using response_type = iam::messaging::suggest_role_commands_response;
     static constexpr message_type request_message_type =
         message_type::suggest_role_commands_request;
+};
+
+/**
+ * @brief Message traits specialization for assign_role_by_name_request.
+ */
+template<>
+struct message_traits<iam::messaging::assign_role_by_name_request> {
+    using request_type = iam::messaging::assign_role_by_name_request;
+    using response_type = iam::messaging::assign_role_response;
+    static constexpr message_type request_message_type =
+        message_type::assign_role_by_name_request;
+};
+
+/**
+ * @brief Message traits specialization for revoke_role_by_name_request.
+ */
+template<>
+struct message_traits<iam::messaging::revoke_role_by_name_request> {
+    using request_type = iam::messaging::revoke_role_by_name_request;
+    using response_type = iam::messaging::revoke_role_response;
+    static constexpr message_type request_message_type =
+        message_type::revoke_role_by_name_request;
 };
 
 }

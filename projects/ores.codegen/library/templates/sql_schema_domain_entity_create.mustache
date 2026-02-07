@@ -20,7 +20,7 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     "{{column}}" {{type}} not null,
 {{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
-    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/domain_entity.columns}}
     "modified_by" text not null,
     "performed_by" text not null,

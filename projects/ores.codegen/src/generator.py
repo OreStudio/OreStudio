@@ -338,8 +338,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
         entity_pascal = snake_to_pascal(entity_singular)
 
         result = result.replace('{component}', component)
-        result = result.replace('{entity}', entity_singular)
         result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
 
     elif model_type == 'junction' and 'junction' in model_data:

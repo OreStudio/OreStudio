@@ -1702,6 +1702,51 @@ handle_suggest_role_commands_request(std::span<const std::byte> payload,
     }
 }
 
+accounts_message_handler::resolve_result
+accounts_message_handler::resolve_role_target(
+    const std::string& principal, const std::string& role_name) {
+
+    // Parse principal into username and hostname
+    const auto [username, hostname] = parse_principal(principal);
+    BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
+                               << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
+
+    // Resolve tenant context based on hostname
+    database::context resolve_ctx = [&]() {
+        if (!hostname.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+            const auto tenant_id =
+                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
+        } else {
+            return ctx_.with_tenant(ctx_.tenant_id());
+        }
+    }();
+
+    // Resolve username to account
+    service::account_service acct_svc(resolve_ctx);
+    auto account = acct_svc.find_account_by_username(username);
+    if (!account) {
+        assign_role_response err{
+            .success = false,
+            .error_message = "Account not found: " + username
+        };
+        return std::unexpected(err.serialize());
+    }
+
+    // Resolve role name to role
+    auto role = auth_service_->find_role_by_name(role_name);
+    if (!role) {
+        assign_role_response err{
+            .success = false,
+            .error_message = "Role not found: " + role_name
+        };
+        return std::unexpected(err.serialize());
+    }
+
+    return resolved_role_target{.account_id = account->id, .role_id = role->id};
+}
+
 accounts_message_handler::handler_result accounts_message_handler::
 handle_assign_role_by_name_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
@@ -1717,7 +1762,6 @@ handle_assign_role_by_name_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
-    // Get the requester's session from shared session service
     auto session = sessions_->get_session(remote_address);
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Assign role by name denied: no active session for "
@@ -1729,7 +1773,6 @@ handle_assign_role_by_name_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has permission to assign roles
     if (!auth_service_->has_permission(session->account_id,
             domain::permissions::roles_assign)) {
         BOOST_LOG_SEV(lg(), warn) << "Assign role by name denied: requester "
@@ -1743,45 +1786,12 @@ handle_assign_role_by_name_request(std::span<const std::byte> payload,
     }
 
     try {
-        // Parse principal into username and hostname
-        const auto [username, hostname] = parse_principal(request.principal);
-        BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
-                                   << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
-
-        // Resolve tenant context based on hostname
-        database::context resolve_ctx = [&]() {
-            if (!hostname.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                const auto tenant_id =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
-            } else {
-                return ctx_.with_tenant(ctx_.tenant_id());
-            }
-        }();
-
-        // Resolve username to account
-        service::account_service acct_svc(resolve_ctx);
-        auto account = acct_svc.find_account_by_username(username);
-        if (!account) {
-            assign_role_response response{
-                .success = false,
-                .error_message = "Account not found: " + username
-            };
-            co_return response.serialize();
+        auto target = resolve_role_target(request.principal, request.role_name);
+        if (!target) {
+            co_return std::move(target.error());
         }
 
-        // Resolve role name to role
-        auto role = auth_service_->find_role_by_name(request.role_name);
-        if (!role) {
-            assign_role_response response{
-                .success = false,
-                .error_message = "Role not found: " + request.role_name
-            };
-            co_return response.serialize();
-        }
-
-        auth_service_->assign_role(account->id, role->id,
+        auth_service_->assign_role(target->account_id, target->role_id,
             boost::uuids::to_string(session->account_id));
 
         BOOST_LOG_SEV(lg(), info) << "Assigned role " << request.role_name
@@ -1815,7 +1825,6 @@ handle_revoke_role_by_name_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
-    // Get the requester's session from shared session service
     auto session = sessions_->get_session(remote_address);
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Revoke role by name denied: no active session for "
@@ -1827,7 +1836,6 @@ handle_revoke_role_by_name_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has permission to revoke roles
     if (!auth_service_->has_permission(session->account_id,
             domain::permissions::roles_revoke)) {
         BOOST_LOG_SEV(lg(), warn) << "Revoke role by name denied: requester "
@@ -1841,45 +1849,12 @@ handle_revoke_role_by_name_request(std::span<const std::byte> payload,
     }
 
     try {
-        // Parse principal into username and hostname
-        const auto [username, hostname] = parse_principal(request.principal);
-        BOOST_LOG_SEV(lg(), debug) << "Parsed principal - username: " << username
-                                   << ", hostname: " << (hostname.empty() ? "(system)" : hostname);
-
-        // Resolve tenant context based on hostname
-        database::context resolve_ctx = [&]() {
-            if (!hostname.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
-                const auto tenant_id =
-                    database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
-                return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
-            } else {
-                return ctx_.with_tenant(ctx_.tenant_id());
-            }
-        }();
-
-        // Resolve username to account
-        service::account_service acct_svc(resolve_ctx);
-        auto account = acct_svc.find_account_by_username(username);
-        if (!account) {
-            revoke_role_response response{
-                .success = false,
-                .error_message = "Account not found: " + username
-            };
-            co_return response.serialize();
+        auto target = resolve_role_target(request.principal, request.role_name);
+        if (!target) {
+            co_return std::move(target.error());
         }
 
-        // Resolve role name to role
-        auto role = auth_service_->find_role_by_name(request.role_name);
-        if (!role) {
-            revoke_role_response response{
-                .success = false,
-                .error_message = "Role not found: " + request.role_name
-            };
-            co_return response.serialize();
-        }
-
-        auth_service_->revoke_role(account->id, role->id);
+        auth_service_->revoke_role(target->account_id, target->role_id);
 
         BOOST_LOG_SEV(lg(), info) << "Revoked role " << request.role_name
                                   << " from account " << request.principal;

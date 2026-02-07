@@ -492,19 +492,19 @@ struct suggest_role_commands_response final {
 std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& v);
 
 // ============================================================================
-// Assign Role By Name
+// Role By Name Requests (Assign / Revoke)
 // ============================================================================
 
 /**
- * @brief Request to assign a role to an account using principal and role name.
+ * @brief Base type for name-based role operation requests.
  *
- * The principal is in the format `username@hostname` or just `username`.
- * The server resolves the principal to an account ID and the role name to a
- * role ID before performing the assignment.
+ * Contains a principal (`username@hostname` or just `username`) and a role
+ * name. The server resolves both to IDs before performing the operation.
  *
- * Requires admin privileges or roles:assign permission.
+ * @tparam Tag Empty tag type used to make assign and revoke distinct types.
  */
-struct assign_role_by_name_request final {
+template<typename Tag>
+struct role_by_name_request_base final {
     std::string principal;
     std::string role_name;
 
@@ -522,48 +522,18 @@ struct assign_role_by_name_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<assign_role_by_name_request, ores::utility::serialization::error_code>
+    static std::expected<role_by_name_request_base, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const assign_role_by_name_request& v);
+template<typename Tag>
+std::ostream& operator<<(std::ostream& s, const role_by_name_request_base<Tag>& v);
 
-// ============================================================================
-// Revoke Role By Name
-// ============================================================================
+struct assign_role_by_name_tag {};
+struct revoke_role_by_name_tag {};
 
-/**
- * @brief Request to revoke a role from an account using principal and role name.
- *
- * The principal is in the format `username@hostname` or just `username`.
- * The server resolves the principal to an account ID and the role name to a
- * role ID before performing the revocation.
- *
- * Requires admin privileges or roles:revoke permission.
- */
-struct revoke_role_by_name_request final {
-    std::string principal;
-    std::string role_name;
-
-    /**
-     * @brief Serialize request to bytes.
-     *
-     * Format:
-     * - 2 bytes: principal length
-     * - N bytes: principal (UTF-8)
-     * - 2 bytes: role_name length
-     * - N bytes: role_name (UTF-8)
-     */
-    std::vector<std::byte> serialize() const;
-
-    /**
-     * @brief Deserialize request from bytes.
-     */
-    static std::expected<revoke_role_by_name_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const revoke_role_by_name_request& v);
+using assign_role_by_name_request = role_by_name_request_base<assign_role_by_name_tag>;
+using revoke_role_by_name_request = role_by_name_request_base<revoke_role_by_name_tag>;
 
 }
 

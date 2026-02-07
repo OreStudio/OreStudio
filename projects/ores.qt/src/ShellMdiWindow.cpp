@@ -233,8 +233,11 @@ void ShellMdiWindow::on_command_entered() {
     auto text = input_line_->text();
     input_line_->clear();
 
-    // Echo the command to the output area so the user can see what was typed
-    output_area_->appendPlainText(text);
+    // Echo the command after the prompt, then newline
+    auto cursor = output_area_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    output_area_->setTextCursor(cursor);
+    output_area_->insertPlainText(text + "\n");
 
     if (input_buf_)
         input_buf_->feed_line(text.toStdString());

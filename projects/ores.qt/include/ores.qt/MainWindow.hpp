@@ -574,6 +574,9 @@ private:
     /** @brief Data Librarian MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* dataLibrarianWindow_{nullptr};
 
+    /** @brief Shell MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* shellWindow_{nullptr};
+
     /** @brief Name of the connection used for current login (empty if manual) */
     QString activeConnectionName_;
 

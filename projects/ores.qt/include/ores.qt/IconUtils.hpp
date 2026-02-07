@@ -95,6 +95,7 @@ enum class Icon {
     Star,
     Table,
     Tag,
+    Terminal,
     Wand,
     Warning
 };

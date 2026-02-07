@@ -99,6 +99,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Star: return {"ic_fluent_star_20", "star-circle.svg"};
         case Icon::Table: return {"ic_fluent_table_20", "document-add.svg"};
         case Icon::Tag: return {"ic_fluent_tag_20", "tag.svg"};
+        case Icon::Terminal: return {"ic_fluent_window_console_20", "programming.svg"};
         case Icon::Wand: return {"ic_fluent_wand_20", "magic-stick-3.svg"};
         case Icon::Warning: return {"ic_fluent_warning_20", "danger-circle.svg"};
     }

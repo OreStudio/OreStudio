@@ -20,6 +20,7 @@
 #ifndef ORES_COMMS_SHELL_APP_REPL_HPP
 #define ORES_COMMS_SHELL_APP_REPL_HPP
 
+#include <iosfwd>
 #include <memory>
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -28,6 +29,7 @@
 namespace cli {
 
 class Cli;
+class CliSession;
 class Menu;
 
 }
@@ -65,12 +67,20 @@ public:
     repl& operator=(repl&&) = delete;
 
     /**
-     * @brief Run the REPL session.
+     * @brief Run the REPL session using std::cin and std::cout.
      *
      * Starts the I/O thread, displays the welcome message, and enters
      * the interactive command loop. Blocks until the user exits.
      */
     void run();
+
+    /**
+     * @brief Run the REPL session with custom streams.
+     *
+     * @param in Input stream to read commands from.
+     * @param out Output stream to write responses to.
+     */
+    void run(std::istream& in, std::ostream& out);
 
 private:
     /**
@@ -84,8 +94,10 @@ private:
 
     /**
      * @brief Display the welcome message.
+     *
+     * @param out Output stream to write to.
      */
-    void display_welcome() const;
+    void display_welcome(std::ostream& out) const;
 
     /**
      * @brief Perform cleanup on REPL exit.
@@ -97,6 +109,7 @@ private:
 
     comms::net::client_session& session_;
     pagination_context pagination_;
+    ::cli::CliSession* active_session_{nullptr};
 };
 
 }

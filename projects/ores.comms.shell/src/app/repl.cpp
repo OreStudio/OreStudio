@@ -39,6 +39,7 @@
 #include "ores.comms.shell/app/commands/rbac_commands.hpp"
 #include "ores.comms.shell/app/commands/tenants_commands.hpp"
 #include "ores.comms.shell/app/commands/navigation_commands.hpp"
+#include "ores.comms.shell/app/commands/script_commands.hpp"
 
 namespace ores::comms::shell::app {
 
@@ -50,12 +51,18 @@ repl::repl(comms::net::client_session& session)
 }
 
 void repl::run() {
+    run(std::cin, std::cout);
+}
+
+void repl::run(std::istream& in, std::ostream& out) {
     BOOST_LOG_SEV(lg(), info) << "REPL session started.";
 
-    display_welcome();
+    display_welcome(out);
     auto cli_instance = setup_menus();
-    cli::CliFileSession session(*cli_instance, std::cin, std::cout);
+    cli::CliFileSession session(*cli_instance, in, out);
+    active_session_ = &session;
     session.Start();
+    active_session_ = nullptr;
 
     cleanup();
 
@@ -79,6 +86,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     rbac_commands::register_commands(*root, session_, pagination_);
     tenants_commands::register_commands(*root, session_, pagination_);
     navigation_commands::register_commands(*root, pagination_);
+    script_commands::register_commands(*root, active_session_);
 
     auto cli_instance =
         std::make_unique<cli::Cli>(std::move(root));
@@ -89,10 +97,10 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     return cli_instance;
 }
 
-void repl::display_welcome() const {
-    std::cout << "ORE Studio Shell REPL v" << ORES_VERSION << std::endl;
-    std::cout << "Type 'help' for available commands, 'exit' to quit." << std::endl;
-    std::cout << std::endl;
+void repl::display_welcome(std::ostream& out) const {
+    out << "ORE Studio Shell REPL v" << ORES_VERSION << std::endl;
+    out << "Type 'help' for available commands, 'exit' to quit." << std::endl;
+    out << std::endl;
 }
 
 void repl::cleanup() {

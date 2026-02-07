@@ -136,6 +136,16 @@ Favorite, bookmark, rate.
 
 *Usage*: Regular for "not favorited", filled for "favorited" state.
 
+*** Terminal
+Interactive command shell, console, REPL.
+
+- Fluent Regular: ic_fluent_window_console_20_regular.svg
+- Fluent Filled: ic_fluent_window_console_20_filled.svg
+- Solar Linear: programming.svg
+- Solar Bold: programming.svg
+
+*Usage*: Shell widget, console windows, command-line interfaces.
+
 *** Wand
 Generate synthetic data, auto-fill, magic create.
 
@@ -599,6 +609,7 @@ Text validation, spell check, language processing.
 | Export FPML          | arrow_upload_fpml_20             | Default | Active |
 | Export ORE           | arrow_upload_ore_20              | Default | Active |
 | Publish              | arrow_upload_20                  | Default | Active |
+| Terminal             | window_console_20                | Default | Active |
 
 * Adding New Icons
 

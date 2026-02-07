@@ -69,6 +69,96 @@ enum class message_type : std::uint16_t {
     delete_country_response = 0x100E,
     get_country_history_request = 0x100F,
     get_country_history_response = 0x1010,
+    // Refdata subsystem - Party types
+    get_party_types_request = 0x1011,
+    get_party_types_response = 0x1012,
+    save_party_type_request = 0x1013,
+    save_party_type_response = 0x1014,
+    delete_party_type_request = 0x1015,
+    delete_party_type_response = 0x1016,
+    get_party_type_history_request = 0x1017,
+    get_party_type_history_response = 0x1018,
+    // Refdata subsystem - Party statuses
+    get_party_statuses_request = 0x1019,
+    get_party_statuses_response = 0x101A,
+    save_party_status_request = 0x101B,
+    save_party_status_response = 0x101C,
+    delete_party_status_request = 0x101D,
+    delete_party_status_response = 0x101E,
+    get_party_status_history_request = 0x101F,
+    get_party_status_history_response = 0x1020,
+    // Refdata subsystem - Party ID schemes
+    get_party_id_schemes_request = 0x1021,
+    get_party_id_schemes_response = 0x1022,
+    save_party_id_scheme_request = 0x1023,
+    save_party_id_scheme_response = 0x1024,
+    delete_party_id_scheme_request = 0x1025,
+    delete_party_id_scheme_response = 0x1026,
+    get_party_id_scheme_history_request = 0x1027,
+    get_party_id_scheme_history_response = 0x1028,
+    // Refdata subsystem - Contact types
+    get_contact_types_request = 0x1029,
+    get_contact_types_response = 0x102A,
+    save_contact_type_request = 0x102B,
+    save_contact_type_response = 0x102C,
+    delete_contact_type_request = 0x102D,
+    delete_contact_type_response = 0x102E,
+    get_contact_type_history_request = 0x102F,
+    get_contact_type_history_response = 0x1030,
+    // Refdata subsystem - Parties
+    get_parties_request = 0x1031,
+    get_parties_response = 0x1032,
+    save_party_request = 0x1033,
+    save_party_response = 0x1034,
+    delete_party_request = 0x1035,
+    delete_party_response = 0x1036,
+    get_party_history_request = 0x1037,
+    get_party_history_response = 0x1038,
+    // Refdata subsystem - Counterparties
+    get_counterparties_request = 0x1039,
+    get_counterparties_response = 0x103A,
+    save_counterparty_request = 0x103B,
+    save_counterparty_response = 0x103C,
+    delete_counterparty_request = 0x103D,
+    delete_counterparty_response = 0x103E,
+    get_counterparty_history_request = 0x103F,
+    get_counterparty_history_response = 0x1040,
+    // Refdata subsystem - Party identifiers
+    get_party_identifiers_request = 0x1041,
+    get_party_identifiers_response = 0x1042,
+    save_party_identifier_request = 0x1043,
+    save_party_identifier_response = 0x1044,
+    delete_party_identifier_request = 0x1045,
+    delete_party_identifier_response = 0x1046,
+    get_party_identifier_history_request = 0x1047,
+    get_party_identifier_history_response = 0x1048,
+    // Refdata subsystem - Counterparty identifiers
+    get_counterparty_identifiers_request = 0x1049,
+    get_counterparty_identifiers_response = 0x104A,
+    save_counterparty_identifier_request = 0x104B,
+    save_counterparty_identifier_response = 0x104C,
+    delete_counterparty_identifier_request = 0x104D,
+    delete_counterparty_identifier_response = 0x104E,
+    get_counterparty_identifier_history_request = 0x104F,
+    get_counterparty_identifier_history_response = 0x1050,
+    // Refdata subsystem - Party contact informations
+    get_party_contact_informations_request = 0x1051,
+    get_party_contact_informations_response = 0x1052,
+    save_party_contact_information_request = 0x1053,
+    save_party_contact_information_response = 0x1054,
+    delete_party_contact_information_request = 0x1055,
+    delete_party_contact_information_response = 0x1056,
+    get_party_contact_information_history_request = 0x1057,
+    get_party_contact_information_history_response = 0x1058,
+    // Refdata subsystem - Counterparty contact informations
+    get_counterparty_contact_informations_request = 0x1059,
+    get_counterparty_contact_informations_response = 0x105A,
+    save_counterparty_contact_information_request = 0x105B,
+    save_counterparty_contact_information_response = 0x105C,
+    delete_counterparty_contact_information_request = 0x105D,
+    delete_counterparty_contact_information_response = 0x105E,
+    get_counterparty_contact_information_history_request = 0x105F,
+    get_counterparty_contact_information_history_response = 0x1060,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -157,6 +247,15 @@ enum class message_type : std::uint16_t {
     delete_tenant_status_response = 0x2065,
     get_tenant_status_history_request = 0x2066,
     get_tenant_status_history_response = 0x2067,
+    // IAM subsystem - Account parties
+    get_account_parties_request = 0x2068,
+    get_account_parties_response = 0x2069,
+    get_account_parties_by_account_request = 0x206A,
+    get_account_parties_by_account_response = 0x206B,
+    save_account_party_request = 0x206C,
+    save_account_party_response = 0x206D,
+    delete_account_party_request = 0x206E,
+    delete_account_party_response = 0x206F,
     // Variability subsystem
     get_feature_flags_request = 0x3000,
     get_feature_flags_response = 0x3001,
@@ -366,6 +465,86 @@ enum class message_type : std::uint16_t {
     case message_type::delete_country_response: return "delete_country_response";
     case message_type::get_country_history_request: return "get_country_history_request";
     case message_type::get_country_history_response: return "get_country_history_response";
+    case message_type::get_party_types_request: return "get_party_types_request";
+    case message_type::get_party_types_response: return "get_party_types_response";
+    case message_type::save_party_type_request: return "save_party_type_request";
+    case message_type::save_party_type_response: return "save_party_type_response";
+    case message_type::delete_party_type_request: return "delete_party_type_request";
+    case message_type::delete_party_type_response: return "delete_party_type_response";
+    case message_type::get_party_type_history_request: return "get_party_type_history_request";
+    case message_type::get_party_type_history_response: return "get_party_type_history_response";
+    case message_type::get_party_statuses_request: return "get_party_statuses_request";
+    case message_type::get_party_statuses_response: return "get_party_statuses_response";
+    case message_type::save_party_status_request: return "save_party_status_request";
+    case message_type::save_party_status_response: return "save_party_status_response";
+    case message_type::delete_party_status_request: return "delete_party_status_request";
+    case message_type::delete_party_status_response: return "delete_party_status_response";
+    case message_type::get_party_status_history_request: return "get_party_status_history_request";
+    case message_type::get_party_status_history_response: return "get_party_status_history_response";
+    case message_type::get_party_id_schemes_request: return "get_party_id_schemes_request";
+    case message_type::get_party_id_schemes_response: return "get_party_id_schemes_response";
+    case message_type::save_party_id_scheme_request: return "save_party_id_scheme_request";
+    case message_type::save_party_id_scheme_response: return "save_party_id_scheme_response";
+    case message_type::delete_party_id_scheme_request: return "delete_party_id_scheme_request";
+    case message_type::delete_party_id_scheme_response: return "delete_party_id_scheme_response";
+    case message_type::get_party_id_scheme_history_request: return "get_party_id_scheme_history_request";
+    case message_type::get_party_id_scheme_history_response: return "get_party_id_scheme_history_response";
+    case message_type::get_contact_types_request: return "get_contact_types_request";
+    case message_type::get_contact_types_response: return "get_contact_types_response";
+    case message_type::save_contact_type_request: return "save_contact_type_request";
+    case message_type::save_contact_type_response: return "save_contact_type_response";
+    case message_type::delete_contact_type_request: return "delete_contact_type_request";
+    case message_type::delete_contact_type_response: return "delete_contact_type_response";
+    case message_type::get_contact_type_history_request: return "get_contact_type_history_request";
+    case message_type::get_contact_type_history_response: return "get_contact_type_history_response";
+    case message_type::get_parties_request: return "get_parties_request";
+    case message_type::get_parties_response: return "get_parties_response";
+    case message_type::save_party_request: return "save_party_request";
+    case message_type::save_party_response: return "save_party_response";
+    case message_type::delete_party_request: return "delete_party_request";
+    case message_type::delete_party_response: return "delete_party_response";
+    case message_type::get_party_history_request: return "get_party_history_request";
+    case message_type::get_party_history_response: return "get_party_history_response";
+    case message_type::get_counterparties_request: return "get_counterparties_request";
+    case message_type::get_counterparties_response: return "get_counterparties_response";
+    case message_type::save_counterparty_request: return "save_counterparty_request";
+    case message_type::save_counterparty_response: return "save_counterparty_response";
+    case message_type::delete_counterparty_request: return "delete_counterparty_request";
+    case message_type::delete_counterparty_response: return "delete_counterparty_response";
+    case message_type::get_counterparty_history_request: return "get_counterparty_history_request";
+    case message_type::get_counterparty_history_response: return "get_counterparty_history_response";
+    case message_type::get_party_identifiers_request: return "get_party_identifiers_request";
+    case message_type::get_party_identifiers_response: return "get_party_identifiers_response";
+    case message_type::save_party_identifier_request: return "save_party_identifier_request";
+    case message_type::save_party_identifier_response: return "save_party_identifier_response";
+    case message_type::delete_party_identifier_request: return "delete_party_identifier_request";
+    case message_type::delete_party_identifier_response: return "delete_party_identifier_response";
+    case message_type::get_party_identifier_history_request: return "get_party_identifier_history_request";
+    case message_type::get_party_identifier_history_response: return "get_party_identifier_history_response";
+    case message_type::get_counterparty_identifiers_request: return "get_counterparty_identifiers_request";
+    case message_type::get_counterparty_identifiers_response: return "get_counterparty_identifiers_response";
+    case message_type::save_counterparty_identifier_request: return "save_counterparty_identifier_request";
+    case message_type::save_counterparty_identifier_response: return "save_counterparty_identifier_response";
+    case message_type::delete_counterparty_identifier_request: return "delete_counterparty_identifier_request";
+    case message_type::delete_counterparty_identifier_response: return "delete_counterparty_identifier_response";
+    case message_type::get_counterparty_identifier_history_request: return "get_counterparty_identifier_history_request";
+    case message_type::get_counterparty_identifier_history_response: return "get_counterparty_identifier_history_response";
+    case message_type::get_party_contact_informations_request: return "get_party_contact_informations_request";
+    case message_type::get_party_contact_informations_response: return "get_party_contact_informations_response";
+    case message_type::save_party_contact_information_request: return "save_party_contact_information_request";
+    case message_type::save_party_contact_information_response: return "save_party_contact_information_response";
+    case message_type::delete_party_contact_information_request: return "delete_party_contact_information_request";
+    case message_type::delete_party_contact_information_response: return "delete_party_contact_information_response";
+    case message_type::get_party_contact_information_history_request: return "get_party_contact_information_history_request";
+    case message_type::get_party_contact_information_history_response: return "get_party_contact_information_history_response";
+    case message_type::get_counterparty_contact_informations_request: return "get_counterparty_contact_informations_request";
+    case message_type::get_counterparty_contact_informations_response: return "get_counterparty_contact_informations_response";
+    case message_type::save_counterparty_contact_information_request: return "save_counterparty_contact_information_request";
+    case message_type::save_counterparty_contact_information_response: return "save_counterparty_contact_information_response";
+    case message_type::delete_counterparty_contact_information_request: return "delete_counterparty_contact_information_request";
+    case message_type::delete_counterparty_contact_information_response: return "delete_counterparty_contact_information_response";
+    case message_type::get_counterparty_contact_information_history_request: return "get_counterparty_contact_information_history_request";
+    case message_type::get_counterparty_contact_information_history_response: return "get_counterparty_contact_information_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";
@@ -446,6 +625,14 @@ enum class message_type : std::uint16_t {
     case message_type::delete_tenant_status_response: return "delete_tenant_status_response";
     case message_type::get_tenant_status_history_request: return "get_tenant_status_history_request";
     case message_type::get_tenant_status_history_response: return "get_tenant_status_history_response";
+    case message_type::get_account_parties_request: return "get_account_parties_request";
+    case message_type::get_account_parties_response: return "get_account_parties_response";
+    case message_type::get_account_parties_by_account_request: return "get_account_parties_by_account_request";
+    case message_type::get_account_parties_by_account_response: return "get_account_parties_by_account_response";
+    case message_type::save_account_party_request: return "save_account_party_request";
+    case message_type::save_account_party_response: return "save_account_party_response";
+    case message_type::delete_account_party_request: return "delete_account_party_request";
+    case message_type::delete_account_party_response: return "delete_account_party_response";
     case message_type::get_feature_flags_request: return "get_feature_flags_request";
     case message_type::get_feature_flags_response: return "get_feature_flags_response";
     case message_type::save_feature_flag_request: return "save_feature_flag_request";

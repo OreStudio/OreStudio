@@ -1,0 +1,75 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "refdata",
+    "entity_singular": "contact_type",
+    "entity_plural": "contact_types",
+    "entity_title": "Contact Type",
+    "brief": "Classification of contact information purpose.",
+    "description": "Reference data table defining valid contact type classifications.\nExamples: 'Legal', 'Operations', 'Settlement', 'Billing'.\n\nContact types are managed by the system tenant and are used to\ncategorise contact information records for parties and counterparties.",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique contact type code.",
+      "detail": "Examples: 'Legal', 'Operations', 'Settlement'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the contact type.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" Contact\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the contact type.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_contact_types_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "type",
+      "entity_plural_short": "types",
+      "entity_singular_words": "contact type",
+      "entity_plural_words": "contact types"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "ct",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

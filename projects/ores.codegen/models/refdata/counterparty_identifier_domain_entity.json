@@ -1,28 +1,88 @@
 {
   "domain_entity": {
+    "schema": "public",
     "product": "ores",
     "component": "refdata",
     "has_tenant_id": true,
     "entity_singular": "counterparty_identifier",
     "entity_plural": "counterparty_identifiers",
     "entity_title": "Counterparty Identifier",
+    "brief": "An external identifier for a counterparty under a specific scheme.",
     "description": "External identifiers for counterparties, such as LEI codes, BIC/SWIFT codes,\nnational registration numbers, and tax identifiers. Each counterparty can have\nmultiple identifiers across different schemes.",
+
     "primary_key": {
       "column": "id",
-      "type": "uuid"
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this counterparty identifier.",
+      "detail": "Surrogate key for the counterparty identifier record."
     },
-    "natural_keys": [],
+
+    "natural_keys": [
+      {
+        "column": "counterparty_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "The counterparty this identifier belongs to.",
+        "detail": "References the parent counterparty record.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "column": "id_scheme",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "The identification scheme for this identifier.",
+        "detail": "References the party_id_scheme lookup table (e.g. LEI, BIC).",
+        "generator_expr": "std::string(\"LEI\")"
+      }
+    ],
+
     "columns": [
-      {"name": "counterparty_id", "type": "uuid", "nullable": false},
-      {"name": "id_scheme", "type": "text", "nullable": false},
-      {"name": "id_value", "type": "text", "nullable": false},
-      {"name": "description", "type": "text", "nullable": true}
+      {
+        "name": "id_value",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "The identifier value.",
+        "detail": "The actual identifier string within the scheme.",
+        "generator_expr": "std::string(faker::string::alphanumeric(20))"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional description of this identifier.",
+        "detail": "Free text description providing additional context.",
+        "generator_expr": "std::string(\"Test identifier\")"
+      }
     ],
-    "validations": [
-      {"column": "id_scheme", "validation_function": "ores_refdata_validate_party_id_scheme_fn"}
-    ],
-    "indexes": [
-      {"name": "counterparty_scheme_uniq", "columns": "tenant_id, counterparty_id, id_scheme", "unique": true, "current_only": true}
-    ]
+
+    "sql": {
+      "tablename": "ores_refdata_counterparty_identifiers_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "counterparty_identifier",
+      "entity_plural_short": "counterparty_identifiers",
+      "entity_singular_words": "counterparty identifier",
+      "entity_plural_words": "counterparty identifiers"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "ci",
+      "table_display": [
+        {"column": "counterparty_id", "header": "Counterparty"},
+        {"column": "id_scheme", "header": "Scheme"},
+        {"column": "id_value", "header": "Value"},
+        {"column": "description", "header": "Description"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
   }
 }

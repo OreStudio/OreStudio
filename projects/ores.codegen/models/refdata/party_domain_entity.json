@@ -1,30 +1,107 @@
 {
   "domain_entity": {
+    "schema": "public",
     "product": "ores",
     "component": "refdata",
     "has_tenant_id": true,
     "entity_singular": "party",
     "entity_plural": "parties",
     "entity_title": "Party",
+    "brief": "An internal legal entity participating in financial transactions.",
     "description": "Internal legal entities (the organisation and its subsidiaries) that participate\nin financial transactions. Parties form a hierarchy through parent_party_id,\nwith exactly one root party per tenant representing the organisation itself.",
+
     "primary_key": {
       "column": "id",
-      "type": "uuid"
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this party.",
+      "detail": "Surrogate key for the party record."
     },
+
     "natural_keys": [
-      {"column": "full_name", "type": "text"},
-      {"column": "short_code", "type": "text"}
+      {
+        "column": "full_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Full legal name of the party.",
+        "detail": "The official registered name of the entity.",
+        "generator_expr": "std::string(faker::company::name())"
+      },
+      {
+        "column": "short_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Short code for quick reference.",
+        "detail": "A brief mnemonic code used in trading systems.",
+        "generator_expr": "std::string(faker::string::alpha(6))"
+      }
     ],
+
     "columns": [
-      {"name": "party_type", "type": "text", "nullable": false},
-      {"name": "parent_party_id", "type": "uuid", "nullable": true},
-      {"name": "business_center_code", "type": "text", "nullable": true},
-      {"name": "status", "type": "text", "nullable": false, "default": "'Active'"}
+      {
+        "name": "party_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Classification of this party.",
+        "detail": "References the party_type lookup table.",
+        "generator_expr": "std::string(\"Corporate\")"
+      },
+      {
+        "name": "parent_party_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Parent party for hierarchy.",
+        "detail": "References the parent party record for group structures. Null for root parties.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "business_center_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Business center location code.",
+        "detail": "FpML business center code indicating primary location.",
+        "generator_expr": "std::string(\"GBLO\")"
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Current lifecycle status.",
+        "detail": "References the party_status lookup table.",
+        "generator_expr": "std::string(\"Active\")"
+      }
     ],
-    "validations": [
-      {"column": "party_type", "validation_function": "ores_refdata_validate_party_type_fn"},
-      {"column": "status", "validation_function": "ores_refdata_validate_party_status_fn"}
-    ],
-    "indexes": []
+
+    "sql": {
+      "tablename": "ores_refdata_parties_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "party",
+      "entity_plural_short": "parties",
+      "entity_singular_words": "party",
+      "entity_plural_words": "parties"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<optional>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "<optional>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "p",
+      "table_display": [
+        {"column": "short_code", "header": "Code"},
+        {"column": "full_name", "header": "Name"},
+        {"column": "party_type", "header": "Type"},
+        {"column": "status", "header": "Status"},
+        {"column": "business_center_code", "header": "Business Center"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
   }
 }

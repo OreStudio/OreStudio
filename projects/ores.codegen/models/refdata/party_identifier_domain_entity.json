@@ -1,28 +1,88 @@
 {
   "domain_entity": {
+    "schema": "public",
     "product": "ores",
     "component": "refdata",
     "has_tenant_id": true,
     "entity_singular": "party_identifier",
     "entity_plural": "party_identifiers",
     "entity_title": "Party Identifier",
+    "brief": "An external identifier for a party under a specific scheme.",
     "description": "External identifiers for parties, such as LEI codes, BIC/SWIFT codes,\nnational registration numbers, and tax identifiers. Each party can have\nmultiple identifiers across different schemes.",
+
     "primary_key": {
       "column": "id",
-      "type": "uuid"
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this party identifier.",
+      "detail": "Surrogate key for the party identifier record."
     },
-    "natural_keys": [],
+
+    "natural_keys": [
+      {
+        "column": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "The party this identifier belongs to.",
+        "detail": "References the parent party record.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "column": "id_scheme",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "The identification scheme for this identifier.",
+        "detail": "References the party_id_scheme lookup table (e.g. LEI, BIC).",
+        "generator_expr": "std::string(\"LEI\")"
+      }
+    ],
+
     "columns": [
-      {"name": "party_id", "type": "uuid", "nullable": false},
-      {"name": "id_scheme", "type": "text", "nullable": false},
-      {"name": "id_value", "type": "text", "nullable": false},
-      {"name": "description", "type": "text", "nullable": true}
+      {
+        "name": "id_value",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "The identifier value.",
+        "detail": "The actual identifier string within the scheme.",
+        "generator_expr": "std::string(faker::string::alphanumeric(20))"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional description of this identifier.",
+        "detail": "Free text description providing additional context.",
+        "generator_expr": "std::string(\"Test identifier\")"
+      }
     ],
-    "validations": [
-      {"column": "id_scheme", "validation_function": "ores_refdata_validate_party_id_scheme_fn"}
-    ],
-    "indexes": [
-      {"name": "party_scheme_uniq", "columns": "tenant_id, party_id, id_scheme", "unique": true, "current_only": true}
-    ]
+
+    "sql": {
+      "tablename": "ores_refdata_party_identifiers_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "party_identifier",
+      "entity_plural_short": "party_identifiers",
+      "entity_singular_words": "party identifier",
+      "entity_plural_words": "party identifiers"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pi",
+      "table_display": [
+        {"column": "party_id", "header": "Party"},
+        {"column": "id_scheme", "header": "Scheme"},
+        {"column": "id_value", "header": "Value"},
+        {"column": "description", "header": "Description"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
   }
 }

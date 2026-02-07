@@ -62,18 +62,6 @@
 \ir ../dq/dq_change_reasons_populate.sql
 
 -- =============================================================================
--- Reference Data Lookup Tables
--- =============================================================================
-
-\echo ''
-\echo '--- Reference Data Lookup Tables ---'
-\ir ../refdata/refdata_rounding_types_populate.sql
-\ir ../refdata/refdata_party_types_populate.sql
-\ir ../refdata/refdata_party_statuses_populate.sql
-\ir ../refdata/refdata_party_id_schemes_populate.sql
-\ir ../refdata/refdata_contact_types_populate.sql
-
--- =============================================================================
 -- Data Governance Framework
 -- =============================================================================
 
@@ -91,6 +79,18 @@
 
 -- Coding schemes (depends on subject areas and authority types)
 \ir ../dq/dq_coding_scheme_populate.sql
+
+-- =============================================================================
+-- Reference Data Lookup Tables (after DQ - party_id_schemes FK to coding_schemes)
+-- =============================================================================
+
+\echo ''
+\echo '--- Reference Data Lookup Tables ---'
+\ir ../refdata/refdata_rounding_types_populate.sql
+\ir ../refdata/refdata_party_types_populate.sql
+\ir ../refdata/refdata_party_statuses_populate.sql
+\ir ../refdata/refdata_party_id_schemes_populate.sql
+\ir ../refdata/refdata_contact_types_populate.sql
 
 -- =============================================================================
 -- IAM (Identity and Access Management)

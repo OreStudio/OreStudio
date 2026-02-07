@@ -350,6 +350,53 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle assign_role_by_name_request message.
+     *
+     * Requires authentication and roles:assign permission. Resolves
+     * principal (username@hostname) to account ID and role name to role ID,
+     * then delegates to assign_role.
+     */
+    handler_result
+    handle_assign_role_by_name_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle revoke_role_by_name_request message.
+     *
+     * Requires authentication and roles:revoke permission. Resolves
+     * principal (username@hostname) to account ID and role name to role ID,
+     * then delegates to revoke_role.
+     */
+    handler_result
+    handle_revoke_role_by_name_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Resolved account and role IDs from a principal + role name.
+     */
+    struct resolved_role_target {
+        boost::uuids::uuid account_id;
+        boost::uuids::uuid role_id;
+    };
+
+    /**
+     * @brief Resolve principal and role name to account and role IDs.
+     *
+     * Parses the principal, resolves tenant context from hostname,
+     * looks up the account by username and the role by name.
+     *
+     * @param principal The principal string (username or username@hostname)
+     * @param role_name The role name to resolve
+     * @return Resolved IDs on success, or a serialized error response
+     */
+    using resolve_result = std::expected<
+        resolved_role_target,
+        std::vector<std::byte>
+    >;
+    resolve_result resolve_role_target(
+        const std::string& principal, const std::string& role_name);
+
+    /**
      * @brief Check if a remote address is localhost.
      *
      * @param remote_address The remote endpoint address

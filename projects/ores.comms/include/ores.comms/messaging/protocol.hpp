@@ -227,8 +227,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 26.1 adds include_deleted optional field to get_tenants_request.
 // When true, returns the latest version of all tenants including soft-deleted.
 // Backward compatible: old clients sending empty payload get default (false).
+//
+// Version 26.2 adds assign_role_by_name_request/response and
+// revoke_role_by_name_request/response for name-based role assignment.
+// Allows using principal (username@hostname) and role name instead of UUIDs.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 26;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

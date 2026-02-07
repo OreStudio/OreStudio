@@ -110,13 +110,13 @@ register_commands(cli::Menu& root_menu, client_session& session,
             std::string account_id, std::string role_id) {
         rbac_commands::process_assign_role(std::ref(out), std::ref(session),
             std::move(account_id), std::move(role_id));
-    }, "Assign a role to an account (account_id role_id)");
+    }, "Assign a role to an account (account_id role_id | principal role_name)");
 
     accounts_menu->Insert("revoke-role", [&session](std::ostream& out,
             std::string account_id, std::string role_id) {
         rbac_commands::process_revoke_role(std::ref(out), std::ref(session),
             std::move(account_id), std::move(role_id));
-    }, "Revoke a role from an account (account_id role_id)");
+    }, "Revoke a role from an account (account_id role_id | principal role_name)");
 
     accounts_menu->Insert("permissions", [&session](std::ostream& out,
             std::string account_id) {

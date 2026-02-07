@@ -603,4 +603,43 @@ std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& 
     return s;
 }
 
+// ============================================================================
+// Role By Name Requests (Assign / Revoke)
+// ============================================================================
+
+template<typename Tag>
+std::vector<std::byte> role_by_name_request_base<Tag>::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, principal);
+    writer::write_string(buffer, role_name);
+    return buffer;
+}
+
+template<typename Tag>
+std::expected<role_by_name_request_base<Tag>, ores::utility::serialization::error_code>
+role_by_name_request_base<Tag>::deserialize(std::span<const std::byte> data) {
+    role_by_name_request_base request;
+
+    auto principal_result = reader::read_string(data);
+    if (!principal_result) return std::unexpected(principal_result.error());
+    request.principal = *principal_result;
+
+    auto role_name_result = reader::read_string(data);
+    if (!role_name_result) return std::unexpected(role_name_result.error());
+    request.role_name = *role_name_result;
+
+    return request;
+}
+
+template<typename Tag>
+std::ostream& operator<<(std::ostream& s, const role_by_name_request_base<Tag>& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+template struct role_by_name_request_base<assign_role_by_name_tag>;
+template struct role_by_name_request_base<revoke_role_by_name_tag>;
+template std::ostream& operator<<(std::ostream&, const assign_role_by_name_request&);
+template std::ostream& operator<<(std::ostream&, const revoke_role_by_name_request&);
+
 }

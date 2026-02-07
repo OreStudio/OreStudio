@@ -237,9 +237,9 @@ ores-shell> accounts> Commands available:
  - roles <string>
 	List roles assigned to an account (account_id)
  - assign-role <string> <string>
-	Assign a role to an account (account_id role_id)
+	Assign a role to an account (account_id role_id | principal role_name)
  - revoke-role <string> <string>
-	Revoke a role from an account (account_id role_id)
+	Revoke a role from an account (account_id role_id | principal role_name)
  - permissions <string>
 	List effective permissions for an account (account_id)
  - sessions
@@ -827,6 +827,43 @@ ores-shell> V Role revoked successfully!
   Role ID:    24a02cd6-1a74-4bdf-9169-408227402106
 ores-shell> Bye!
 #+end_example
+
+*** Assign Role By Name
+
+Assign a role to an account using a principal (=username@hostname=) and role
+name instead of UUIDs. The server resolves the principal to an account and
+the role name to a role ID.
+
+#+name: assign-role-by-name
+#+begin_src ores-shell :exports none
+accounts assign-role newuser60@example.com DataPublisher
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<assign-role-by-name>>
+EOF
+#+END_SRC
+
+*** Revoke Role By Name
+
+Revoke a role from an account using a principal (=username@hostname=) and
+role name instead of UUIDs.
+
+#+name: revoke-role-by-name
+#+begin_src ores-shell :exports none
+accounts revoke-role newuser60@example.com DataPublisher
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<revoke-role-by-name>>
+EOF
+#+END_SRC
 
 *** History
 

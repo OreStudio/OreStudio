@@ -491,6 +491,50 @@ struct suggest_role_commands_response final {
 
 std::ostream& operator<<(std::ostream& s, const suggest_role_commands_response& v);
 
+// ============================================================================
+// Role By Name Requests (Assign / Revoke)
+// ============================================================================
+
+/**
+ * @brief Base type for name-based role operation requests.
+ *
+ * Contains a principal (`username@hostname` or just `username`) and a role
+ * name. The server resolves both to IDs before performing the operation.
+ *
+ * @tparam Tag Empty tag type used to make assign and revoke distinct types.
+ */
+template<typename Tag>
+struct role_by_name_request_base final {
+    std::string principal;
+    std::string role_name;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: principal length
+     * - N bytes: principal (UTF-8)
+     * - 2 bytes: role_name length
+     * - N bytes: role_name (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<role_by_name_request_base, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+template<typename Tag>
+std::ostream& operator<<(std::ostream& s, const role_by_name_request_base<Tag>& v);
+
+struct assign_role_by_name_tag {};
+struct revoke_role_by_name_tag {};
+
+using assign_role_by_name_request = role_by_name_request_base<assign_role_by_name_tag>;
+using revoke_role_by_name_request = role_by_name_request_base<revoke_role_by_name_tag>;
+
 }
 
 namespace ores::comms::messaging {
@@ -581,6 +625,28 @@ struct message_traits<iam::messaging::suggest_role_commands_request> {
     using response_type = iam::messaging::suggest_role_commands_response;
     static constexpr message_type request_message_type =
         message_type::suggest_role_commands_request;
+};
+
+/**
+ * @brief Message traits specialization for assign_role_by_name_request.
+ */
+template<>
+struct message_traits<iam::messaging::assign_role_by_name_request> {
+    using request_type = iam::messaging::assign_role_by_name_request;
+    using response_type = iam::messaging::assign_role_response;
+    static constexpr message_type request_message_type =
+        message_type::assign_role_by_name_request;
+};
+
+/**
+ * @brief Message traits specialization for revoke_role_by_name_request.
+ */
+template<>
+struct message_traits<iam::messaging::revoke_role_by_name_request> {
+    using request_type = iam::messaging::revoke_role_by_name_request;
+    using response_type = iam::messaging::revoke_role_response;
+    static constexpr message_type request_message_type =
+        message_type::revoke_role_by_name_request;
 };
 
 }

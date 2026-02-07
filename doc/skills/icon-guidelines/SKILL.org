@@ -139,8 +139,10 @@ Favorite, bookmark, rate.
 *** Terminal
 Interactive command shell, console, REPL.
 
-- Regular: ic_fluent_window_console_20_regular.svg
-- Filled: ic_fluent_window_console_20_filled.svg
+- Fluent Regular: ic_fluent_window_console_20_regular.svg
+- Fluent Filled: ic_fluent_window_console_20_filled.svg
+- Solar Linear: programming.svg
+- Solar Bold: programming.svg
 
 *Usage*: Shell widget, console windows, command-line interfaces.
 

@@ -182,6 +182,7 @@
    <addaction name="ActionFeatureFlags"/>
    <addaction name="separator"/>
    <addaction name="ActionDataLibrarian"/>
+   <addaction name="ActionShell"/>
   </widget>
   <action name="ExitAction">
    <property name="text">

@@ -153,6 +153,7 @@ void ShellMdiWindow::start_shell() {
     opts.host = client_manager_->connectedHost();
     opts.port = client_manager_->connectedPort();
     opts.client_identifier = "ores-qt-shell";
+    opts.verify_certificate = false;
     opts.heartbeat_enabled = false;
 
     auto connect_result = shell_session_->connect(opts);

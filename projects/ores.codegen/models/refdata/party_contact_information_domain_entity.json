@@ -1,0 +1,35 @@
+{
+  "domain_entity": {
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "party_contact_information",
+    "entity_plural": "party_contact_informations",
+    "entity_title": "Party Contact Information",
+    "description": "Contact details for parties organised by purpose (Legal, Operations,\nSettlement, Billing). Each party can have one contact record per type.",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [],
+    "columns": [
+      {"name": "party_id", "type": "uuid", "nullable": false},
+      {"name": "contact_type", "type": "text", "nullable": false},
+      {"name": "street_line_1", "type": "text", "nullable": true},
+      {"name": "street_line_2", "type": "text", "nullable": true},
+      {"name": "city", "type": "text", "nullable": true},
+      {"name": "state", "type": "text", "nullable": true},
+      {"name": "country_code", "type": "text", "nullable": true},
+      {"name": "postal_code", "type": "text", "nullable": true},
+      {"name": "phone", "type": "text", "nullable": true},
+      {"name": "email", "type": "text", "nullable": true},
+      {"name": "web_page", "type": "text", "nullable": true}
+    ],
+    "validations": [
+      {"column": "contact_type", "validation_function": "ores_refdata_validate_contact_type_fn"}
+    ],
+    "indexes": [
+      {"name": "party_contact_type_uniq", "columns": "tenant_id, party_id, contact_type", "unique": true, "current_only": true}
+    ]
+  }
+}

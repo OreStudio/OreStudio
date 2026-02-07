@@ -74,3 +74,15 @@
 \ir ./refdata_parties_notify_trigger_create.sql
 \ir ./refdata_counterparties_create.sql
 \ir ./refdata_counterparties_notify_trigger_create.sql
+
+-- Party and counterparty identifiers
+\ir ./refdata_party_identifiers_create.sql
+\ir ./refdata_party_identifiers_notify_trigger_create.sql
+\ir ./refdata_counterparty_identifiers_create.sql
+\ir ./refdata_counterparty_identifiers_notify_trigger_create.sql
+
+-- Party and counterparty contact information
+\ir ./refdata_party_contact_informations_create.sql
+\ir ./refdata_party_contact_informations_notify_trigger_create.sql
+\ir ./refdata_counterparty_contact_informations_create.sql
+\ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql

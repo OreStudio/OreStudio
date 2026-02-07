@@ -18,7 +18,19 @@
  *
  */
 
--- Party and counterparty tables (must drop before reference data they depend on)
+-- Party and counterparty contact information (drop first, depends on parties/counterparties)
+\ir ./refdata_counterparty_contact_informations_notify_trigger_drop.sql
+\ir ./refdata_counterparty_contact_informations_drop.sql
+\ir ./refdata_party_contact_informations_notify_trigger_drop.sql
+\ir ./refdata_party_contact_informations_drop.sql
+
+-- Party and counterparty identifiers
+\ir ./refdata_counterparty_identifiers_notify_trigger_drop.sql
+\ir ./refdata_counterparty_identifiers_drop.sql
+\ir ./refdata_party_identifiers_notify_trigger_drop.sql
+\ir ./refdata_party_identifiers_drop.sql
+
+-- Party and counterparty tables
 \ir ./refdata_counterparties_notify_trigger_drop.sql
 \ir ./refdata_counterparties_drop.sql
 \ir ./refdata_parties_notify_trigger_drop.sql

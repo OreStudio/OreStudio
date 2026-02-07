@@ -1,0 +1,28 @@
+{
+  "domain_entity": {
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "counterparty_identifier",
+    "entity_plural": "counterparty_identifiers",
+    "entity_title": "Counterparty Identifier",
+    "description": "External identifiers for counterparties, such as LEI codes, BIC/SWIFT codes,\nnational registration numbers, and tax identifiers. Each counterparty can have\nmultiple identifiers across different schemes.",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [],
+    "columns": [
+      {"name": "counterparty_id", "type": "uuid", "nullable": false},
+      {"name": "id_scheme", "type": "text", "nullable": false},
+      {"name": "id_value", "type": "text", "nullable": false},
+      {"name": "description", "type": "text", "nullable": true}
+    ],
+    "validations": [
+      {"column": "id_scheme", "validation_function": "ores_refdata_validate_party_id_scheme_fn"}
+    ],
+    "indexes": [
+      {"name": "counterparty_scheme_uniq", "columns": "tenant_id, counterparty_id, id_scheme", "unique": true, "current_only": true}
+    ]
+  }
+}

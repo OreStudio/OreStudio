@@ -29,6 +29,7 @@
 namespace cli {
 
 class Cli;
+class CliSession;
 class Menu;
 
 }
@@ -108,6 +109,7 @@ private:
 
     comms::net::client_session& session_;
     pagination_context pagination_;
+    ::cli::CliSession* active_session_{nullptr};
 };
 
 }

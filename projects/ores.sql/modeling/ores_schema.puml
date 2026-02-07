@@ -732,6 +732,7 @@ package "refdata" #FFF3E0 {
         * version : integer <<unique>>
         * name : text
         * description : text
+          coding_scheme_code : text <<FK>>
         * display_order : integer
         * modified_by : text
         * performed_by : text
@@ -743,7 +744,10 @@ package "refdata" #FFF3E0 {
 
     note right of ores_refdata_party_id_schemes_tbl
     Identifier scheme types for parties.
-    Values: LEI, BIC, NationalId, TaxId, InternalCode.
+    Cross-references dq_coding_schemes for provenance.
+    Values: LEI, BIC, MIC, NATIONAL_ID, CEDB,
+    NATURAL_PERSON, ACER, DTCC_PARTICIPANT_ID,
+    MPID, INTERNAL.
     end note
 
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {
@@ -1727,6 +1731,7 @@ ores_refdata_parties_tbl }o--o| ores_refdata_business_centres_tbl : "business ce
 ores_refdata_party_identifiers_tbl }o--|| ores_refdata_party_id_schemes_tbl : "scheme"
 ores_refdata_party_contact_informations_tbl }o--|| ores_refdata_contact_types_tbl : "type"
 ores_refdata_party_contact_informations_tbl }o--o| ores_refdata_countries_tbl : "country"
+ores_refdata_party_id_schemes_tbl }o--o| ores_dq_coding_schemes_tbl : "coding scheme"
 
 ' --- Counterparty reference data ---
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl : "has"

@@ -25,7 +25,7 @@
 set schema 'public';
 
 -- =============================================================================
--- Party Identifier Schemes - Classification of external identifier types (LEI, BIC, TaxId, etc.)
+-- Party Identifier Schemes - Classification of external identifier types (LEI, BIC, MIC, etc.) with cross-reference to DQ coding schemes.
 -- =============================================================================
 
 create table if not exists "ores_refdata_party_id_schemes_tbl" (
@@ -34,6 +34,7 @@ create table if not exists "ores_refdata_party_id_schemes_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
+    "coding_scheme_code" text null,
     "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -74,6 +75,20 @@ begin
 
     -- Validate change_reason_code
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    -- Validate coding_scheme_code (nullable soft FK against dq_coding_schemes)
+    if new.coding_scheme_code is not null and new.coding_scheme_code != '' then
+        if not exists (
+            select 1 from ores_dq_coding_schemes_tbl
+            where tenant_id = ores_iam_system_tenant_id_fn()
+              and code = new.coding_scheme_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid coding_scheme_code: %. Must be a valid coding scheme.',
+                new.coding_scheme_code
+                using errcode = '23503';
+        end if;
+    end if;
 
     select version into current_version
     from "public"."ores_refdata_party_id_schemes_tbl"

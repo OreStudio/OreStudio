@@ -24,31 +24,49 @@
  * Populates the classification of external identifier types used to
  * identify parties and counterparties across systems and jurisdictions.
  *
+ * Codes are aligned with ores_dq_coding_schemes_tbl (subject_area 'Parties')
+ * and cross-referenced via coding_scheme_code.
+ *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
 
 \echo '--- Party Identifier Schemes ---'
 
 insert into ores_refdata_party_id_schemes_tbl (
-    tenant_id, code, version, name, description, display_order,
+    tenant_id, code, version, name, description, coding_scheme_code, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
     (ores_iam_system_tenant_id_fn(), 'LEI', 0, 'Legal Entity Identifier',
-     'ISO 17442 Legal Entity Identifier - a 20-character alphanumeric code assigned by Local Operating Units of the Global LEI System.',
-     1, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+     'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.',
+     'LEI', 1, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
     (ores_iam_system_tenant_id_fn(), 'BIC', 0, 'Business Identifier Code',
-     'ISO 9362 Business Identifier Code (SWIFT code) - an 8 or 11 character code identifying financial institutions.',
-     2, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
-    (ores_iam_system_tenant_id_fn(), 'NationalId', 0, 'National Identifier',
-     'A national registration or company identifier issued by a government authority (e.g., Companies House number, SEC CIK).',
-     3, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
-    (ores_iam_system_tenant_id_fn(), 'TaxId', 0, 'Tax Identifier',
-     'A tax identification number issued by a revenue authority (e.g., EIN, TIN, VAT number).',
-     4, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
-    (ores_iam_system_tenant_id_fn(), 'InternalCode', 0, 'Internal Code',
-     'An organisation-specific internal identifier used within proprietary systems.',
-     5, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes')
+     'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.',
+     'BIC', 2, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'MIC', 0, 'Market Identifier Code',
+     'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Often linked to party context in trade reports.',
+     'MIC', 3, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'NATIONAL_ID', 0, 'National Identifier',
+     'National identifiers (e.g., passport number, tax ID, SIREN, ORI, national ID card). Covers MiFID II client identification requirements.',
+     'NATIONAL_ID', 4, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'CEDB', 0, 'CFTC Entity Directory',
+     'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.',
+     'CEDB', 5, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'NATURAL_PERSON', 0, 'Natural Person',
+     'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.',
+     'NATURAL_PERSON', 6, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'ACER', 0, 'EU Agency for Energy Regulation',
+     'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.',
+     'ACER', 7, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'DTCC_PARTICIPANT_ID', 0, 'DTCC Participant ID',
+     'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems.',
+     'DTCC_PARTICIPANT_ID', 8, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'MPID', 0, 'Market Participant ID',
+     'Also known as AII (ATS Identification Indicator). A four-character alphanumeric code assigned by FINRA to broker-dealers and alternative trading systems (ATSs) operating in U.S. equities markets.',
+     'MPID', 9, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_iam_system_tenant_id_fn(), 'INTERNAL', 0, 'Internal',
+     'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).',
+     'INTERNAL', 10, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

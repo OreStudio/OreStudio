@@ -17,28 +17,33 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 23:28], for Friday, February 06, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:27* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:27   |      |      | 100.0 |
-|       | Active                                |        | 0:27 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:27 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-07 Sat 18:32], for Saturday, February 07, 2026.
+|      | <75>                                               |        |      |      |       |
+| Tags | Headline                                           | Time   |      |      |     % |
+|------+----------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                       | *5:48* |      |      | 100.0 |
+|------+----------------------------------------------------+--------+------+------+-------|
+|      | Stories                                            | 5:48   |      |      | 100.0 |
+|      | Active                                             |        | 5:48 |      | 100.0 |
+| code | Add bound parameters to sqlgen                     |        |      | 0:51 |  14.7 |
+| code | Add roles to account via codes                     |        |      | 0:34 |   9.8 |
+| code | Implement party related entities at database level |        |      | 4:23 |  75.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-06 Fri 23:28]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:27* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:27   |      |      | 100.0 |
-|       | Active                                |        | 0:27 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:27 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-07 Sat 18:32]
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *6:15* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 6:15   |      |      | 100.0 |
+|       | Active                                             |        | 6:15 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |        |      | 0:27 |   7.2 |
+| code  | Add bound parameters to sqlgen                     |        |      | 0:51 |  13.6 |
+| code  | Add roles to account via codes                     |        |      | 0:34 |   9.1 |
+| code  | Implement party related entities at database level |        |      | 4:23 |  70.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -191,6 +196,200 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_12_tags.png]]
 
+*** BLOCKED Add bound parameters to sqlgen                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-07 Sat 09:40]--[2026-02-07 Sat 10:31] =>  0:51
+    :END:
+
+At present we are using libpq for assorted queries to avoid issues with SQL
+injection. We should extend sqlgen to support this.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
+
+*** Add shell widget to ores.qt                                        :code:
+
+It would be nice if we could login as super admin and add all the tenants,
+accounts etc in one go instead of having to go through different tools.
+
+Merged stories:
+
+*Add REPL to Qt*
+
+Users should be able to interact with the system directly via the REPL. Add a
+simple widget for this.
+
+*** STARTED Add roles to account via codes                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-07 Sat 15:35]--[2026-02-07 Sat 16:09] =>  0:34
+    :END:
+
+At present you can only add roles to an account via UUIDs. These keep changing
+so we can't just have a "setup system" script. However, if you could specify the
+account by name and the role by name it would be stable across DB refreshes.
+
+#+begin_quote
+This pull request significantly enhances the usability of role management within
+the IAM system by introducing a more intuitive, name-based approach for
+assigning and revoking roles. Instead of requiring users to work with internal
+UUIDs, administrators can now use human-readable principals and role names,
+streamlining operations and reducing potential for error. The changes are
+implemented across the protocol, server-side logic, and client-side shell
+commands, ensuring a consistent and user-friendly experience.
+
+Highlights:
+
+- Name-Based Role Management: Introduced new protocol messages
+  (assign_role_by_name_request, revoke_role_by_name_request) that allow
+  assigning and revoking roles using a principal (e.g., username@hostname) and
+  role name, instead of requiring UUIDs.
+- Server-Side Resolution: Implemented server-side handlers that automatically
+  resolve the provided principal to an account ID and the role name to a role
+  ID, then delegate to the existing UUID-based role assignment/revocation logic.
+- Enhanced Shell Commands: The assign-role and revoke-role commands in the
+  ores-shell now intelligently detect whether the arguments are UUIDs or names,
+  supporting both existing UUID-based and new name-based workflows.
+- Protocol Version Update: The communication protocol minor version has been
+  bumped to 26.2 to reflect the addition of these new name-based role management
+  messages.
+- Documentation and Utilities: Updated shell recipes to include examples for
+  name-based role assignment/revocation and added a find_account_by_username
+  utility function to the account service for principal resolution.
+#+end_quote
+
+*** STARTED Implement party related entities at database level         :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-07 Sat 17:01]--[2026-02-07 Sat 18:32] =>  1:31
+    CLOCK: [2026-02-07 Sat 12:00]--[2026-02-07 Sat 14:52] =>  2:52
+    :END:
+
+The first step of this work is to get the entities to work at the database
+schema level.
+
+**** Table Structure: party
+
+| Field Name           | Data Type   | Constraints     | Commentary                                                                                        |
+|----------------------+-------------+-----------------+---------------------------------------------------------------------------------------------------|
+| =party_id=           | Integer     | PK, Auto-Inc    | Internal surrogate key for database performance and foreign key stability.                        |
+| =tenant_id=          | Integer     | FK (tenant)     | The "Owner" of this record. Ensures GigaBank's client list isn't visible to AlphaHedge.           |
+| =party_name=         | String(255) | Not Null        | The full legal name of the entity (e.g., "Barclays Bank PLC").                                    |
+| =short_name=         | String(50)  | Unique          | A mnemonic or "Ticker" style name used for quick UI displays (e.g., "BARC-LDN").                  |
+| =lei=                | String(20)  | Unique/Null     | The ISO 17442 Legal Entity Identifier. Critical for regulatory reporting and GLEIF integration.   |
+| =is_internal=        | Boolean     | Default: False  | Flag: If TRUE, this party represents a branch or entity belonging to the Tenant (The Bank).       |
+| =party_type_id=      | Integer     | FK (scheme)     | Categorizes the entity: Bank, Hedge Fund, Corporate, Central Bank, or Exchange.                   |
+| =postal_address=     | Text        |                 | Used for generating legal confirmations and settlement instructions.                              |
+| =business_center_id= | Integer     | FK (scheme)     | Links to an FpML Business Center (e.g., GBLO, USNY). Determines holiday calendars for settlement. |
+| =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
+| =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
+
+*** Fix security bug with shell                                        :code:
+
+As reported by Gemini:
+
+#+begin_quote
+projects/ores.qt/include/ores.qt/ClientManager.hpp
+Comment on lines +302 to +305
+    /**
+     * @brief Get the stored password used for the current session.
+     */
+    std::string storedPassword() const { return stored_password_; }
+Contributor
+@gemini-code-assist
+gemini-code-assist bot
+2 hours ago
+security-critical critical
+
+Exposing the stored password via a public getter storedPassword() introduces a
+significant security risk. Storing raw passwords in memory after authentication
+is already a sensitive practice, but providing a public accessor increases the
+attack surface within the application. Any component that can access the
+ClientManager can now retrieve the user's password in plain text.
+
+A more secure approach should be considered:
+
+Token-based Authentication: The main session could request a short-lived,
+single-purpose token from the server, which the shell window can then use to
+authenticate its own session. This avoids passing the raw password around.
+Session Management within ClientManager: Instead of the ShellMdiWindow creating
+its own session, ClientManager could be responsible for creating and providing a
+fully authenticated client_session object to the shell window, without ever
+exposing the credentials used to create it.
+
+#+end_quote
+
+*** Investigate how performed by is being set                          :code:
+
+It should just be the database account.
+
+*** Add sub-menus to shell                                             :code:
+
+There are a lot of entries in the shell main menu, we need to group them. These
+could be based on the component.
+
+*** Add party entity                                                   :code:
+
+Party analysis.
+
+| Field             | Type | Description                                | Foreign Key Reference      |
+|-------------------+------+--------------------------------------------+----------------------------|
+| party_id          | UUID | Primary key (globally unique identifier)   | —                          |
+| full_name         | TEXT | Legal or registered name                   | —                          |
+| short code        | TEXT | Short code for the party.                  |                            |
+| organization_type | INT  | Type of organization                       | → organization_type_scheme |
+| parent_party_id   | INT  | References parent party (self-referencing) | → party_id (nullable)      |
+
+*** Add party identifier entity                                        :code:
+
+Allows a party to have multiple external identifiers (e.g., LEI, BIC).
+
+| Field       | Type | Description                               | Foreign Key Reference |
+|-------------+------+-------------------------------------------+-----------------------|
+| party_id    | UUID | References party.party_id                 | → party               |
+| id_value    | TEXT | Identifier value, e.g., "549300..."       | —                     |
+| id_scheme   | TEXT | Scheme defining identifier type, e.g. LEI | → party_id_scheme     |
+| Description | TEXT | Additional information about the party    |                       |
+
+Primary key: composite (party_id, id_scheme)
+
+*** Contact information entity                                         :code:
+
+Contact Information is a container that groups various ways to reach an entity.
+
+Contact Information can be associated with either a Party (at the legal entity
+level) or a BusinessUnit (at the desk/operational level). To build a robust
+trading system, your database should support a polymorphic or flexible link to
+handle this.
+
+The Logic of the Link:
+
+- Link to Party: Used for Legal and Regulatory contact details. This is the
+  "Head Office" address, the legal service of process address, or the general
+  firm-wide contact for the LEI.
+- Link to Business Unit: Used for Execution and Operational contact details.
+  This is where your "Machine" or "Human" actually lives. It links the trader or
+  algo to a specific desk's phone number, email, and—most importantly—its
+  Business Center (Holiday Calendar).
+
+**** Type: Contact Information
+
+This is the main container for how to reach a party or person.
+
+- address (Complex): The physical location.
+- phone (String): Multiple entries allowed (Work, Mobile, Fax).
+- email (String): Electronic mail addresses.
+- webPage (String): The entity's URL.
+
+**** Type: Address
+
+The physical street address structure.
+
+- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
+- city (String): The city or municipality.
+- state (String): The state, province, or region.
+- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
+- postalCode (String): The ZIP or Postcode.
+
 *** Redesign Qt ImageCache invalidation strategy                       :code:
 
 The current ImageCache invalidation approach is brittle and error-prone. When
@@ -217,6 +416,36 @@ Acceptance criteria:
 - Cache invalidation is based on structured metadata, not string patterns
 - Adding new image-related datasets doesn't require code changes
 - Cache invalidation logic is documented and maintainable
+
+*** Add output option to repl                                          :code:
+
+It should be possible to set the "output type" or format in the shell, from json
+to table. Find the correct terminology for this.
+
+
+
+*** Support tenant specification in shell account commands             :code:
+
+Currently, shell commands like =accounts info <username>= only search within the
+current session's tenant. This creates a UX gap for SuperAdmins who need to
+manage accounts across multiple tenants.
+
+Affected commands:
+
+- =accounts info=
+- =accounts roles=
+- =accounts permissions=
+- =accounts assign-role=
+- =accounts revoke-role=
+
+Acceptance criteria:
+
+- Commands should accept an optional tenant identifier (hostname or tenant ID)
+- Format could be =accounts info user1@acme.localhost= or =accounts info user1 --tenant acme.localhost=
+- SuperAdmins should be able to view/manage accounts in any tenant
+- Regular users should only be able to view accounts in their own tenant
+- Clear error message when user lacks cross-tenant permissions
+
 
 *** Stop and start service does not trigger ores.qt reconnection       :code:
 
@@ -627,91 +856,6 @@ Investigate this:
 2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
 2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
 #+end_src
-
-*** Implement party related entities at database level                 :code:
-
-The first step of this work is to get the entities to work at the database
-schema level.
-
-**** Table Structure: party
-
-| Field Name           | Data Type   | Constraints     | Commentary                                                                                        |
-|----------------------+-------------+-----------------+---------------------------------------------------------------------------------------------------|
-| =party_id=           | Integer     | PK, Auto-Inc    | Internal surrogate key for database performance and foreign key stability.                        |
-| =tenant_id=          | Integer     | FK (tenant)     | The "Owner" of this record. Ensures GigaBank's client list isn't visible to AlphaHedge.           |
-| =party_name=         | String(255) | Not Null        | The full legal name of the entity (e.g., "Barclays Bank PLC").                                    |
-| =short_name=         | String(50)  | Unique          | A mnemonic or "Ticker" style name used for quick UI displays (e.g., "BARC-LDN").                  |
-| =lei=                | String(20)  | Unique/Null     | The ISO 17442 Legal Entity Identifier. Critical for regulatory reporting and GLEIF integration.   |
-| =is_internal=        | Boolean     | Default: False  | Flag: If TRUE, this party represents a branch or entity belonging to the Tenant (The Bank).       |
-| =party_type_id=      | Integer     | FK (scheme)     | Categorizes the entity: Bank, Hedge Fund, Corporate, Central Bank, or Exchange.                   |
-| =postal_address=     | Text        |                 | Used for generating legal confirmations and settlement instructions.                              |
-| =business_center_id= | Integer     | FK (scheme)     | Links to an FpML Business Center (e.g., GBLO, USNY). Determines holiday calendars for settlement. |
-| =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
-| =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
-
-
-*** Add party entity                                                   :code:
-
-Party analysis.
-
-| Field             | Type | Description                                | Foreign Key Reference      |
-|-------------------+------+--------------------------------------------+----------------------------|
-| party_id          | UUID | Primary key (globally unique identifier)   | —                          |
-| full_name         | TEXT | Legal or registered name                   | —                          |
-| short code        | TEXT | Short code for the party.                  |                            |
-| organization_type | INT  | Type of organization                       | → organization_type_scheme |
-| parent_party_id   | INT  | References parent party (self-referencing) | → party_id (nullable)      |
-
-*** Add party identifier entity                                        :code:
-
-Allows a party to have multiple external identifiers (e.g., LEI, BIC).
-
-| Field       | Type | Description                               | Foreign Key Reference |
-|-------------+------+-------------------------------------------+-----------------------|
-| party_id    | UUID | References party.party_id                 | → party               |
-| id_value    | TEXT | Identifier value, e.g., "549300..."       | —                     |
-| id_scheme   | TEXT | Scheme defining identifier type, e.g. LEI | → party_id_scheme     |
-| Description | TEXT | Additional information about the party    |                       |
-
-Primary key: composite (party_id, id_scheme)
-
-*** Contact information entity                                         :code:
-
-Contact Information is a container that groups various ways to reach an entity.
-
-Contact Information can be associated with either a Party (at the legal entity
-level) or a BusinessUnit (at the desk/operational level). To build a robust
-trading system, your database should support a polymorphic or flexible link to
-handle this.
-
-The Logic of the Link:
-
-- Link to Party: Used for Legal and Regulatory contact details. This is the
-  "Head Office" address, the legal service of process address, or the general
-  firm-wide contact for the LEI.
-- Link to Business Unit: Used for Execution and Operational contact details.
-  This is where your "Machine" or "Human" actually lives. It links the trader or
-  algo to a specific desk's phone number, email, and—most importantly—its
-  Business Center (Holiday Calendar).
-
-**** Type: Contact Information
-
-This is the main container for how to reach a party or person.
-
-- address (Complex): The physical location.
-- phone (String): Multiple entries allowed (Work, Mobile, Fax).
-- email (String): Electronic mail addresses.
-- webPage (String): The entity's URL.
-
-**** Type: Address
-
-The physical street address structure.
-
-- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
-- city (String): The city or municipality.
-- state (String): The state, province, or region.
-- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
-- postalCode (String): The ZIP or Postcode.
 
 *** Add a organisation type scheme entity                              :code:
 

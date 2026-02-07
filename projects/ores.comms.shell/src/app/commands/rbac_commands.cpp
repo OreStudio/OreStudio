@@ -247,6 +247,108 @@ process_get_role(std::ostream& out, client_session& session,
     out << std::endl;
 }
 
+namespace {
+
+/**
+ * @brief Process a role operation (assign or revoke) with auto-detection of
+ * UUID vs name-based arguments.
+ *
+ * If both arguments parse as UUIDs, uses the UUID-based request type.
+ * Otherwise, uses the name-based request type with principal and role name.
+ *
+ * @tparam UuidRequest UUID-based request type (e.g., assign_role_request)
+ * @tparam ByNameRequest Name-based request type (e.g., assign_role_by_name_request)
+ * @tparam Response Response type (e.g., assign_role_response)
+ * @tparam uuid_msg_type Message type enum for the UUID-based request
+ * @tparam name_msg_type Message type enum for the name-based request
+ * @param out Output stream for results
+ * @param session Client session for connectivity
+ * @param account_id_or_principal First argument (UUID or principal)
+ * @param role_id_or_name Second argument (UUID or role name)
+ * @param operation_verb Verb for log/output messages (e.g., "assigned", "revoked")
+ */
+template<typename UuidRequest, typename ByNameRequest, typename Response,
+         message_type uuid_msg_type, message_type name_msg_type>
+void process_role_operation(std::ostream& out, client_session& session,
+    const std::string& account_id_or_principal,
+    const std::string& role_id_or_name,
+    std::string_view operation_verb) {
+    auto& lg = parse_uuid_lg();
+
+    auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
+    auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
+
+    if (parsed_account_id && parsed_role_id) {
+        // Both are UUIDs - use the UUID-based path
+        BOOST_LOG_SEV(lg, debug) << "Role " << operation_verb << " (UUID): "
+                                 << role_id_or_name << " / "
+                                 << account_id_or_principal;
+
+        auto result = session.process_authenticated_request<UuidRequest,
+                                                            Response,
+                                                            uuid_msg_type>
+            (UuidRequest{
+                .account_id = *parsed_account_id,
+                .role_id = *parsed_role_id
+            });
+
+        if (!result) {
+            out << "X " << comms::net::to_string(result.error()) << std::endl;
+            return;
+        }
+
+        const auto& response = *result;
+        if (response.success) {
+            BOOST_LOG_SEV(lg, info) << "Successfully " << operation_verb
+                                    << " role " << role_id_or_name
+                                    << " for account " << account_id_or_principal;
+            out << "V Role " << operation_verb << " successfully!" << std::endl;
+            out << "  Account ID: " << account_id_or_principal << std::endl;
+            out << "  Role ID:    " << role_id_or_name << std::endl;
+        } else {
+            BOOST_LOG_SEV(lg, warn) << "Failed to " << operation_verb
+                                    << " role: " << response.error_message;
+            out << "X Failed to " << operation_verb << " role: "
+                << response.error_message << std::endl;
+        }
+    } else {
+        // At least one argument is not a UUID - use name-based path
+        BOOST_LOG_SEV(lg, debug) << "Role " << operation_verb << " (name): "
+                                 << role_id_or_name << " / "
+                                 << account_id_or_principal;
+
+        auto result = session.process_authenticated_request<ByNameRequest,
+                                                            Response,
+                                                            name_msg_type>
+            (ByNameRequest{
+                .principal = account_id_or_principal,
+                .role_name = role_id_or_name
+            });
+
+        if (!result) {
+            out << "X " << comms::net::to_string(result.error()) << std::endl;
+            return;
+        }
+
+        const auto& response = *result;
+        if (response.success) {
+            BOOST_LOG_SEV(lg, info) << "Successfully " << operation_verb
+                                    << " role " << role_id_or_name
+                                    << " for " << account_id_or_principal;
+            out << "V Role " << operation_verb << " successfully!" << std::endl;
+            out << "  Principal: " << account_id_or_principal << std::endl;
+            out << "  Role:      " << role_id_or_name << std::endl;
+        } else {
+            BOOST_LOG_SEV(lg, warn) << "Failed to " << operation_verb
+                                    << " role: " << response.error_message;
+            out << "X Failed to " << operation_verb << " role: "
+                << response.error_message << std::endl;
+        }
+    }
+}
+
+}
+
 // =============================================================================
 // Account-Role Assignment Commands Implementation
 // =============================================================================
@@ -254,153 +356,27 @@ process_get_role(std::ostream& out, client_session& session,
 void rbac_commands::
 process_assign_role(std::ostream& out, client_session& session,
     std::string account_id_or_principal, std::string role_id_or_name) {
+    using iam::messaging::assign_role_request;
+    using iam::messaging::assign_role_by_name_request;
     using iam::messaging::assign_role_response;
-
-    auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
-    auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
-
-    if (parsed_account_id && parsed_role_id) {
-        // Both are UUIDs - use the existing UUID-based path
-        BOOST_LOG_SEV(lg(), debug) << "Assigning role " << role_id_or_name
-                                   << " to account " << account_id_or_principal;
-
-        using iam::messaging::assign_role_request;
-        auto result = session.process_authenticated_request<assign_role_request,
-                                                            assign_role_response,
-                                                            message_type::assign_role_request>
-            (assign_role_request{
-                .account_id = *parsed_account_id,
-                .role_id = *parsed_role_id
-            });
-
-        if (!result) {
-            out << "X " << comms::net::to_string(result.error()) << std::endl;
-            return;
-        }
-
-        const auto& response = *result;
-        if (response.success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully assigned role "
-                                      << role_id_or_name << " to account "
-                                      << account_id_or_principal;
-            out << "V Role assigned successfully!" << std::endl;
-            out << "  Account ID: " << account_id_or_principal << std::endl;
-            out << "  Role ID:    " << role_id_or_name << std::endl;
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to assign role: "
-                                      << response.error_message;
-            out << "X Failed to assign role: " << response.error_message << std::endl;
-        }
-    } else {
-        // At least one argument is not a UUID - use name-based path
-        BOOST_LOG_SEV(lg(), debug) << "Assigning role by name: "
-                                   << role_id_or_name << " to "
-                                   << account_id_or_principal;
-
-        using iam::messaging::assign_role_by_name_request;
-        auto result = session.process_authenticated_request<assign_role_by_name_request,
-                                                            assign_role_response,
-                                                            message_type::assign_role_by_name_request>
-            (assign_role_by_name_request{
-                .principal = account_id_or_principal,
-                .role_name = role_id_or_name
-            });
-
-        if (!result) {
-            out << "X " << comms::net::to_string(result.error()) << std::endl;
-            return;
-        }
-
-        const auto& response = *result;
-        if (response.success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully assigned role "
-                                      << role_id_or_name << " to "
-                                      << account_id_or_principal;
-            out << "V Role assigned successfully!" << std::endl;
-            out << "  Principal: " << account_id_or_principal << std::endl;
-            out << "  Role:      " << role_id_or_name << std::endl;
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to assign role: "
-                                      << response.error_message;
-            out << "X Failed to assign role: " << response.error_message << std::endl;
-        }
-    }
+    process_role_operation<assign_role_request, assign_role_by_name_request,
+                           assign_role_response,
+                           message_type::assign_role_request,
+                           message_type::assign_role_by_name_request>
+        (out, session, account_id_or_principal, role_id_or_name, "assigned");
 }
 
 void rbac_commands::
 process_revoke_role(std::ostream& out, client_session& session,
     std::string account_id_or_principal, std::string role_id_or_name) {
+    using iam::messaging::revoke_role_request;
+    using iam::messaging::revoke_role_by_name_request;
     using iam::messaging::revoke_role_response;
-
-    auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
-    auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
-
-    if (parsed_account_id && parsed_role_id) {
-        // Both are UUIDs - use the existing UUID-based path
-        BOOST_LOG_SEV(lg(), debug) << "Revoking role " << role_id_or_name
-                                   << " from account " << account_id_or_principal;
-
-        using iam::messaging::revoke_role_request;
-        auto result = session.process_authenticated_request<revoke_role_request,
-                                                            revoke_role_response,
-                                                            message_type::revoke_role_request>
-            (revoke_role_request{
-                .account_id = *parsed_account_id,
-                .role_id = *parsed_role_id
-            });
-
-        if (!result) {
-            out << "X " << comms::net::to_string(result.error()) << std::endl;
-            return;
-        }
-
-        const auto& response = *result;
-        if (response.success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully revoked role "
-                                      << role_id_or_name << " from account "
-                                      << account_id_or_principal;
-            out << "V Role revoked successfully!" << std::endl;
-            out << "  Account ID: " << account_id_or_principal << std::endl;
-            out << "  Role ID:    " << role_id_or_name << std::endl;
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to revoke role: "
-                                      << response.error_message;
-            out << "X Failed to revoke role: " << response.error_message << std::endl;
-        }
-    } else {
-        // At least one argument is not a UUID - use name-based path
-        BOOST_LOG_SEV(lg(), debug) << "Revoking role by name: "
-                                   << role_id_or_name << " from "
-                                   << account_id_or_principal;
-
-        using iam::messaging::revoke_role_by_name_request;
-        auto result = session.process_authenticated_request<revoke_role_by_name_request,
-                                                            revoke_role_response,
-                                                            message_type::revoke_role_by_name_request>
-            (revoke_role_by_name_request{
-                .principal = account_id_or_principal,
-                .role_name = role_id_or_name
-            });
-
-        if (!result) {
-            out << "X " << comms::net::to_string(result.error()) << std::endl;
-            return;
-        }
-
-        const auto& response = *result;
-        if (response.success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully revoked role "
-                                      << role_id_or_name << " from "
-                                      << account_id_or_principal;
-            out << "V Role revoked successfully!" << std::endl;
-            out << "  Principal: " << account_id_or_principal << std::endl;
-            out << "  Role:      " << role_id_or_name << std::endl;
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to revoke role: "
-                                      << response.error_message;
-            out << "X Failed to revoke role: " << response.error_message << std::endl;
-        }
-    }
+    process_role_operation<revoke_role_request, revoke_role_by_name_request,
+                           revoke_role_response,
+                           message_type::revoke_role_request,
+                           message_type::revoke_role_by_name_request>
+        (out, session, account_id_or_principal, role_id_or_name, "revoked");
 }
 
 void rbac_commands::

@@ -240,6 +240,25 @@ package "iam" #E8F4FD {
     organisation or the system platform tenant.
     end note
 
+    entity ores_iam_account_parties_tbl <<junction>> #ECECEC {
+        * account_id : uuid <<PK, FK>>
+        * party_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_parties_tbl
+    Many-to-many: accounts to parties.
+    Controls which parties a user can act on behalf of.
+    end note
+
 }
 
 '
@@ -661,6 +680,242 @@ package "refdata" #FFF3E0 {
 
     note right of ores_refdata_supervisory_bodies_tbl
     Contains a code representing a supervisory-body that may be supervising this transaction.
+    end note
+
+    entity ores_refdata_party_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer <<unique>>
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_party_types_tbl
+    Party Types - Classification of parties.
+    Values: Bank, CorporateGroup, HedgeFund,
+    Corporate, CentralBank, Exchange, Individual.
+    end note
+
+    entity ores_refdata_party_statuses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer <<unique>>
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_party_statuses_tbl
+    Party Statuses - Lifecycle status of parties.
+    Values: Active, Inactive, Suspended.
+    end note
+
+    entity ores_refdata_party_id_schemes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer <<unique>>
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_party_id_schemes_tbl
+    Identifier scheme types for parties.
+    Values: LEI, BIC, NationalId, TaxId, InternalCode.
+    end note
+
+    entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer <<unique>>
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_contact_types_tbl
+    Contact information categories.
+    Values: Legal, Operations, Settlement, Billing.
+    end note
+
+    entity ores_refdata_parties_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * full_name : text <<unique>>
+        * short_code : text <<unique>>
+        * party_type : text <<FK>>
+          parent_party_id : uuid <<FK>>
+          business_center_code : text <<FK>>
+        * status : text <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_parties_tbl
+    Internal legal entities (own organisation).
+    Hierarchical via parent_party_id.
+    Root party (parent_party_id IS NULL) unique per tenant.
+    end note
+
+    entity ores_refdata_counterparties_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * full_name : text <<unique>>
+        * short_code : text <<unique>>
+        * party_type : text <<FK>>
+          parent_counterparty_id : uuid <<FK>>
+          business_center_code : text <<FK>>
+        * status : text <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_counterparties_tbl
+    External trading partners.
+    Hierarchical via parent_counterparty_id.
+    end note
+
+    entity ores_refdata_party_identifiers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * id_scheme : text <<FK>>
+        * id_value : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_party_identifiers_tbl
+    External identifiers for parties (LEI, BIC, etc.).
+    Unique on (party_id, id_scheme) for active records.
+    end note
+
+    entity ores_refdata_counterparty_identifiers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * counterparty_id : uuid <<FK>>
+        * id_scheme : text <<FK>>
+        * id_value : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_counterparty_identifiers_tbl
+    External identifiers for counterparties (LEI, BIC, etc.).
+    Unique on (counterparty_id, id_scheme) for active records.
+    end note
+
+    entity ores_refdata_party_contact_informations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * contact_type : text <<FK>>
+          street_line_1 : text
+          street_line_2 : text
+          city : text
+          state : text
+          country_code : text <<FK>>
+          postal_code : text
+          phone : text
+          email : text
+          web_page : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_party_contact_informations_tbl
+    Contact details for parties by purpose.
+    Unique on (party_id, contact_type) for active records.
+    end note
+
+    entity ores_refdata_counterparty_contact_informations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * counterparty_id : uuid <<FK>>
+        * contact_type : text <<FK>>
+          street_line_1 : text
+          street_line_2 : text
+          city : text
+          state : text
+          country_code : text <<FK>>
+          postal_code : text
+          phone : text
+          email : text
+          web_page : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_counterparty_contact_informations_tbl
+    Contact details for counterparties by purpose.
+    Unique on (counterparty_id, contact_type) for active records.
     end note
 
 }
@@ -1462,6 +1717,30 @@ package "geo" #FFF9C4 {
 '
 ' ==================== Relationships ====================
 '
+
+' --- Party reference data ---
+ores_refdata_parties_tbl ||--o{ ores_refdata_party_identifiers_tbl : "has"
+ores_refdata_parties_tbl ||--o{ ores_refdata_party_contact_informations_tbl : "has"
+ores_refdata_parties_tbl }o--|| ores_refdata_party_types_tbl : "type"
+ores_refdata_parties_tbl }o--|| ores_refdata_party_statuses_tbl : "status"
+ores_refdata_parties_tbl }o--o| ores_refdata_business_centres_tbl : "business center"
+ores_refdata_party_identifiers_tbl }o--|| ores_refdata_party_id_schemes_tbl : "scheme"
+ores_refdata_party_contact_informations_tbl }o--|| ores_refdata_contact_types_tbl : "type"
+ores_refdata_party_contact_informations_tbl }o--o| ores_refdata_countries_tbl : "country"
+
+' --- Counterparty reference data ---
+ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl : "has"
+ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_contact_informations_tbl : "has"
+ores_refdata_counterparties_tbl }o--|| ores_refdata_party_types_tbl : "type"
+ores_refdata_counterparties_tbl }o--|| ores_refdata_party_statuses_tbl : "status"
+ores_refdata_counterparties_tbl }o--o| ores_refdata_business_centres_tbl : "business center"
+ores_refdata_counterparty_identifiers_tbl }o--|| ores_refdata_party_id_schemes_tbl : "scheme"
+ores_refdata_counterparty_contact_informations_tbl }o--|| ores_refdata_contact_types_tbl : "type"
+ores_refdata_counterparty_contact_informations_tbl }o--o| ores_refdata_countries_tbl : "country"
+
+' --- Account-party association ---
+ores_iam_account_parties_tbl }o--|| ores_iam_accounts_tbl : "account"
+ores_iam_account_parties_tbl }o--|| ores_refdata_parties_tbl : "party"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"

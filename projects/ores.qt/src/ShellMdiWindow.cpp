@@ -19,7 +19,7 @@
  */
 #include "ores.qt/ShellMdiWindow.hpp"
 
-#include <QFont>
+#include <QFontDatabase>
 #include <QLabel>
 #include "ores.comms/net/client_options.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
@@ -114,8 +114,7 @@ void ShellMdiWindow::setup_ui() {
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(10000);
 
-    QFont mono("Monospace");
-    mono.setStyleHint(QFont::Monospace);
+    QFont mono = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     mono.setPointSize(10);
     output_area_->setFont(mono);
 
@@ -233,6 +232,9 @@ void ShellMdiWindow::on_repl_finished() {
 void ShellMdiWindow::on_command_entered() {
     auto text = input_line_->text();
     input_line_->clear();
+
+    // Echo the command to the output area so the user can see what was typed
+    output_area_->appendPlainText(text);
 
     if (input_buf_)
         input_buf_->feed_line(text.toStdString());

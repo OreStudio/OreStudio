@@ -18,6 +18,12 @@
  *
  */
 
+-- Party and counterparty tables (must drop before reference data they depend on)
+\ir ./refdata_counterparties_notify_trigger_drop.sql
+\ir ./refdata_counterparties_drop.sql
+\ir ./refdata_parties_notify_trigger_drop.sql
+\ir ./refdata_parties_drop.sql
+
 -- Party reference data tables
 \ir ./refdata_contact_types_notify_trigger_drop.sql
 \ir ./refdata_contact_types_drop.sql

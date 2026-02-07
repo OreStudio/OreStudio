@@ -1,0 +1,30 @@
+{
+  "domain_entity": {
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "counterparty",
+    "entity_plural": "counterparties",
+    "entity_title": "Counterparty",
+    "description": "External trading partners and counterparties that participate in financial\ntransactions with the organisation. Counterparties form a hierarchy through\nparent_counterparty_id for group structures.",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [
+      {"column": "full_name", "type": "text"},
+      {"column": "short_code", "type": "text"}
+    ],
+    "columns": [
+      {"name": "party_type", "type": "text", "nullable": false},
+      {"name": "parent_counterparty_id", "type": "uuid", "nullable": true},
+      {"name": "business_center_code", "type": "text", "nullable": true},
+      {"name": "status", "type": "text", "nullable": false, "default": "'Active'"}
+    ],
+    "validations": [
+      {"column": "party_type", "validation_function": "ores_refdata_validate_party_type_fn"},
+      {"column": "status", "validation_function": "ores_refdata_validate_party_status_fn"}
+    ],
+    "indexes": []
+  }
+}

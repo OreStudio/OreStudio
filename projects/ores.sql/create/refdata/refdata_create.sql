@@ -68,3 +68,9 @@
 \ir ./refdata_party_id_schemes_notify_trigger_create.sql
 \ir ./refdata_contact_types_create.sql
 \ir ./refdata_contact_types_notify_trigger_create.sql
+
+-- Party and counterparty tables
+\ir ./refdata_parties_create.sql
+\ir ./refdata_parties_notify_trigger_create.sql
+\ir ./refdata_counterparties_create.sql
+\ir ./refdata_counterparties_notify_trigger_create.sql

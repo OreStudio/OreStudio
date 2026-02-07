@@ -69,6 +69,42 @@ enum class message_type : std::uint16_t {
     delete_country_response = 0x100E,
     get_country_history_request = 0x100F,
     get_country_history_response = 0x1010,
+    // Refdata subsystem - Party types
+    get_party_types_request = 0x1011,
+    get_party_types_response = 0x1012,
+    save_party_type_request = 0x1013,
+    save_party_type_response = 0x1014,
+    delete_party_type_request = 0x1015,
+    delete_party_type_response = 0x1016,
+    get_party_type_history_request = 0x1017,
+    get_party_type_history_response = 0x1018,
+    // Refdata subsystem - Party statuses
+    get_party_statuses_request = 0x1019,
+    get_party_statuses_response = 0x101A,
+    save_party_status_request = 0x101B,
+    save_party_status_response = 0x101C,
+    delete_party_status_request = 0x101D,
+    delete_party_status_response = 0x101E,
+    get_party_status_history_request = 0x101F,
+    get_party_status_history_response = 0x1020,
+    // Refdata subsystem - Party ID schemes
+    get_party_id_schemes_request = 0x1021,
+    get_party_id_schemes_response = 0x1022,
+    save_party_id_scheme_request = 0x1023,
+    save_party_id_scheme_response = 0x1024,
+    delete_party_id_scheme_request = 0x1025,
+    delete_party_id_scheme_response = 0x1026,
+    get_party_id_scheme_history_request = 0x1027,
+    get_party_id_scheme_history_response = 0x1028,
+    // Refdata subsystem - Contact types
+    get_contact_types_request = 0x1029,
+    get_contact_types_response = 0x102A,
+    save_contact_type_request = 0x102B,
+    save_contact_type_response = 0x102C,
+    delete_contact_type_request = 0x102D,
+    delete_contact_type_response = 0x102E,
+    get_contact_type_history_request = 0x102F,
+    get_contact_type_history_response = 0x1030,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -366,6 +402,38 @@ enum class message_type : std::uint16_t {
     case message_type::delete_country_response: return "delete_country_response";
     case message_type::get_country_history_request: return "get_country_history_request";
     case message_type::get_country_history_response: return "get_country_history_response";
+    case message_type::get_party_types_request: return "get_party_types_request";
+    case message_type::get_party_types_response: return "get_party_types_response";
+    case message_type::save_party_type_request: return "save_party_type_request";
+    case message_type::save_party_type_response: return "save_party_type_response";
+    case message_type::delete_party_type_request: return "delete_party_type_request";
+    case message_type::delete_party_type_response: return "delete_party_type_response";
+    case message_type::get_party_type_history_request: return "get_party_type_history_request";
+    case message_type::get_party_type_history_response: return "get_party_type_history_response";
+    case message_type::get_party_statuses_request: return "get_party_statuses_request";
+    case message_type::get_party_statuses_response: return "get_party_statuses_response";
+    case message_type::save_party_status_request: return "save_party_status_request";
+    case message_type::save_party_status_response: return "save_party_status_response";
+    case message_type::delete_party_status_request: return "delete_party_status_request";
+    case message_type::delete_party_status_response: return "delete_party_status_response";
+    case message_type::get_party_status_history_request: return "get_party_status_history_request";
+    case message_type::get_party_status_history_response: return "get_party_status_history_response";
+    case message_type::get_party_id_schemes_request: return "get_party_id_schemes_request";
+    case message_type::get_party_id_schemes_response: return "get_party_id_schemes_response";
+    case message_type::save_party_id_scheme_request: return "save_party_id_scheme_request";
+    case message_type::save_party_id_scheme_response: return "save_party_id_scheme_response";
+    case message_type::delete_party_id_scheme_request: return "delete_party_id_scheme_request";
+    case message_type::delete_party_id_scheme_response: return "delete_party_id_scheme_response";
+    case message_type::get_party_id_scheme_history_request: return "get_party_id_scheme_history_request";
+    case message_type::get_party_id_scheme_history_response: return "get_party_id_scheme_history_response";
+    case message_type::get_contact_types_request: return "get_contact_types_request";
+    case message_type::get_contact_types_response: return "get_contact_types_response";
+    case message_type::save_contact_type_request: return "save_contact_type_request";
+    case message_type::save_contact_type_response: return "save_contact_type_response";
+    case message_type::delete_contact_type_request: return "delete_contact_type_request";
+    case message_type::delete_contact_type_response: return "delete_contact_type_response";
+    case message_type::get_contact_type_history_request: return "get_contact_type_history_request";
+    case message_type::get_contact_type_history_response: return "get_contact_type_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

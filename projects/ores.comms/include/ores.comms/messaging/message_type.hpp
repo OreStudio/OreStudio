@@ -247,6 +247,15 @@ enum class message_type : std::uint16_t {
     delete_tenant_status_response = 0x2065,
     get_tenant_status_history_request = 0x2066,
     get_tenant_status_history_response = 0x2067,
+    // IAM subsystem - Account parties
+    get_account_parties_request = 0x2068,
+    get_account_parties_response = 0x2069,
+    get_account_parties_by_account_request = 0x206A,
+    get_account_parties_by_account_response = 0x206B,
+    save_account_party_request = 0x206C,
+    save_account_party_response = 0x206D,
+    delete_account_party_request = 0x206E,
+    delete_account_party_response = 0x206F,
     // Variability subsystem
     get_feature_flags_request = 0x3000,
     get_feature_flags_response = 0x3001,
@@ -616,6 +625,14 @@ enum class message_type : std::uint16_t {
     case message_type::delete_tenant_status_response: return "delete_tenant_status_response";
     case message_type::get_tenant_status_history_request: return "get_tenant_status_history_request";
     case message_type::get_tenant_status_history_response: return "get_tenant_status_history_response";
+    case message_type::get_account_parties_request: return "get_account_parties_request";
+    case message_type::get_account_parties_response: return "get_account_parties_response";
+    case message_type::get_account_parties_by_account_request: return "get_account_parties_by_account_request";
+    case message_type::get_account_parties_by_account_response: return "get_account_parties_by_account_response";
+    case message_type::save_account_party_request: return "save_account_party_request";
+    case message_type::save_account_party_response: return "save_account_party_response";
+    case message_type::delete_account_party_request: return "delete_account_party_request";
+    case message_type::delete_account_party_response: return "delete_account_party_response";
     case message_type::get_feature_flags_request: return "get_feature_flags_request";
     case message_type::get_feature_flags_response: return "get_feature_flags_response";
     case message_type::save_feature_flag_request: return "save_feature_flag_request";

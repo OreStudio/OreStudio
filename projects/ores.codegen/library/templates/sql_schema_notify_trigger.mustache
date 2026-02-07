@@ -6,11 +6,11 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_notify_fn()
+create or replace function {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.{{entity.component}}.{{entity.entity_singular}}';
+    entity_name text := '{{entity.product}}.{{entity.component}}.{{entity.entity_singular}}';
     change_timestamp timestamptz := NOW();
     changed_{{entity.primary_key.column}} {{entity.primary_key.type}};
     changed_tenant_id text;
@@ -30,12 +30,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_{{entity.entity_plural}}', notification_payload::text);
+    perform pg_notify('{{entity.product}}_{{entity.entity_plural}}', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger {{entity.component}}_{{entity.entity_plural}}_notify_trg
-after insert or update or delete on {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_tbl
-for each row execute function {{entity.schema}}.{{entity.component}}_{{entity.entity_plural}}_notify_fn();
+create or replace trigger {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_notify_trg
+after insert or update or delete on {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
+for each row execute function {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_notify_fn();

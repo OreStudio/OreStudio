@@ -187,6 +187,9 @@ void ShellMdiWindow::start_shell() {
     opts.port = client_manager_->connectedPort();
     opts.client_identifier = "ores-qt-shell";
     opts.verify_certificate = false;
+    // Heartbeat disabled: the shell session is short-lived and tied to the
+    // main connection's lifetime. If the main connection drops, the shell
+    // window is closed as part of disconnect cleanup.
     opts.heartbeat_enabled = false;
 
     auto connect_result = shell_session_->connect(opts);

@@ -105,6 +105,24 @@ enum class message_type : std::uint16_t {
     delete_contact_type_response = 0x102E,
     get_contact_type_history_request = 0x102F,
     get_contact_type_history_response = 0x1030,
+    // Refdata subsystem - Parties
+    get_parties_request = 0x1031,
+    get_parties_response = 0x1032,
+    save_party_request = 0x1033,
+    save_party_response = 0x1034,
+    delete_party_request = 0x1035,
+    delete_party_response = 0x1036,
+    get_party_history_request = 0x1037,
+    get_party_history_response = 0x1038,
+    // Refdata subsystem - Counterparties
+    get_counterparties_request = 0x1039,
+    get_counterparties_response = 0x103A,
+    save_counterparty_request = 0x103B,
+    save_counterparty_response = 0x103C,
+    delete_counterparty_request = 0x103D,
+    delete_counterparty_response = 0x103E,
+    get_counterparty_history_request = 0x103F,
+    get_counterparty_history_response = 0x1040,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -434,6 +452,22 @@ enum class message_type : std::uint16_t {
     case message_type::delete_contact_type_response: return "delete_contact_type_response";
     case message_type::get_contact_type_history_request: return "get_contact_type_history_request";
     case message_type::get_contact_type_history_response: return "get_contact_type_history_response";
+    case message_type::get_parties_request: return "get_parties_request";
+    case message_type::get_parties_response: return "get_parties_response";
+    case message_type::save_party_request: return "save_party_request";
+    case message_type::save_party_response: return "save_party_response";
+    case message_type::delete_party_request: return "delete_party_request";
+    case message_type::delete_party_response: return "delete_party_response";
+    case message_type::get_party_history_request: return "get_party_history_request";
+    case message_type::get_party_history_response: return "get_party_history_response";
+    case message_type::get_counterparties_request: return "get_counterparties_request";
+    case message_type::get_counterparties_response: return "get_counterparties_response";
+    case message_type::save_counterparty_request: return "save_counterparty_request";
+    case message_type::save_counterparty_response: return "save_counterparty_response";
+    case message_type::delete_counterparty_request: return "delete_counterparty_request";
+    case message_type::delete_counterparty_response: return "delete_counterparty_response";
+    case message_type::get_counterparty_history_request: return "get_counterparty_history_request";
+    case message_type::get_counterparty_history_response: return "get_counterparty_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

@@ -1,35 +1,153 @@
 {
   "domain_entity": {
+    "schema": "public",
     "product": "ores",
     "component": "refdata",
     "has_tenant_id": true,
     "entity_singular": "counterparty_contact_information",
     "entity_plural": "counterparty_contact_informations",
     "entity_title": "Counterparty Contact Information",
+    "brief": "Contact details for a counterparty organised by purpose.",
     "description": "Contact details for counterparties organised by purpose (Legal, Operations,\nSettlement, Billing). Each counterparty can have one contact record per type.",
+
     "primary_key": {
       "column": "id",
-      "type": "uuid"
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this contact information record.",
+      "detail": "Surrogate key for the counterparty contact information record."
     },
-    "natural_keys": [],
+
+    "natural_keys": [
+      {
+        "column": "counterparty_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "The counterparty this contact information belongs to.",
+        "detail": "References the parent counterparty record.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "column": "contact_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "The type or purpose of this contact.",
+        "detail": "References the contact_type lookup table (e.g. Legal, Operations).",
+        "generator_expr": "std::string(\"Legal\")"
+      }
+    ],
+
     "columns": [
-      {"name": "counterparty_id", "type": "uuid", "nullable": false},
-      {"name": "contact_type", "type": "text", "nullable": false},
-      {"name": "street_line_1", "type": "text", "nullable": true},
-      {"name": "street_line_2", "type": "text", "nullable": true},
-      {"name": "city", "type": "text", "nullable": true},
-      {"name": "state", "type": "text", "nullable": true},
-      {"name": "country_code", "type": "text", "nullable": true},
-      {"name": "postal_code", "type": "text", "nullable": true},
-      {"name": "phone", "type": "text", "nullable": true},
-      {"name": "email", "type": "text", "nullable": true},
-      {"name": "web_page", "type": "text", "nullable": true}
+      {
+        "name": "street_line_1",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "First line of the street address.",
+        "detail": "Primary address line.",
+        "generator_expr": "std::string(\"456 Test Avenue\")"
+      },
+      {
+        "name": "street_line_2",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Second line of the street address.",
+        "detail": "Additional address line (suite, floor, etc.).",
+        "generator_expr": "std::string(\"Floor 10\")"
+      },
+      {
+        "name": "city",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "City name.",
+        "detail": "City or town of the address.",
+        "generator_expr": "std::string(\"New York\")"
+      },
+      {
+        "name": "state",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "State or province.",
+        "detail": "State, province, or region.",
+        "generator_expr": "std::string(\"NY\")"
+      },
+      {
+        "name": "country_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "ISO 3166-1 alpha-2 country code.",
+        "detail": "References the countries table (soft FK).",
+        "generator_expr": "std::string(\"US\")"
+      },
+      {
+        "name": "postal_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Postal or ZIP code.",
+        "detail": "Postal code for the address.",
+        "generator_expr": "std::string(\"10001\")"
+      },
+      {
+        "name": "phone",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Phone number.",
+        "detail": "Contact phone number in international format.",
+        "generator_expr": "std::string(\"+1 212 555 0100\")"
+      },
+      {
+        "name": "email",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Email address.",
+        "detail": "Contact email address.",
+        "generator_expr": "std::string(\"info@example.com\")"
+      },
+      {
+        "name": "web_page",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Web page URL.",
+        "detail": "Contact web page address.",
+        "generator_expr": "std::string(\"https://example.com\")"
+      }
     ],
-    "validations": [
-      {"column": "contact_type", "validation_function": "ores_refdata_validate_contact_type_fn"}
-    ],
-    "indexes": [
-      {"name": "counterparty_contact_type_uniq", "columns": "tenant_id, counterparty_id, contact_type", "unique": true, "current_only": true}
-    ]
+
+    "sql": {
+      "tablename": "ores_refdata_counterparty_contact_informations_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "counterparty_contact_information",
+      "entity_plural_short": "counterparty_contact_informations",
+      "entity_singular_words": "counterparty contact information",
+      "entity_plural_words": "counterparty contact informations"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "cci",
+      "table_display": [
+        {"column": "counterparty_id", "header": "Counterparty"},
+        {"column": "contact_type", "header": "Type"},
+        {"column": "city", "header": "City"},
+        {"column": "country_code", "header": "Country"},
+        {"column": "phone", "header": "Phone"},
+        {"column": "email", "header": "Email"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
   }
 }

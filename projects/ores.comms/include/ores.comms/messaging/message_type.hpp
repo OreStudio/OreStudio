@@ -123,6 +123,42 @@ enum class message_type : std::uint16_t {
     delete_counterparty_response = 0x103E,
     get_counterparty_history_request = 0x103F,
     get_counterparty_history_response = 0x1040,
+    // Refdata subsystem - Party identifiers
+    get_party_identifiers_request = 0x1041,
+    get_party_identifiers_response = 0x1042,
+    save_party_identifier_request = 0x1043,
+    save_party_identifier_response = 0x1044,
+    delete_party_identifier_request = 0x1045,
+    delete_party_identifier_response = 0x1046,
+    get_party_identifier_history_request = 0x1047,
+    get_party_identifier_history_response = 0x1048,
+    // Refdata subsystem - Counterparty identifiers
+    get_counterparty_identifiers_request = 0x1049,
+    get_counterparty_identifiers_response = 0x104A,
+    save_counterparty_identifier_request = 0x104B,
+    save_counterparty_identifier_response = 0x104C,
+    delete_counterparty_identifier_request = 0x104D,
+    delete_counterparty_identifier_response = 0x104E,
+    get_counterparty_identifier_history_request = 0x104F,
+    get_counterparty_identifier_history_response = 0x1050,
+    // Refdata subsystem - Party contact informations
+    get_party_contact_informations_request = 0x1051,
+    get_party_contact_informations_response = 0x1052,
+    save_party_contact_information_request = 0x1053,
+    save_party_contact_information_response = 0x1054,
+    delete_party_contact_information_request = 0x1055,
+    delete_party_contact_information_response = 0x1056,
+    get_party_contact_information_history_request = 0x1057,
+    get_party_contact_information_history_response = 0x1058,
+    // Refdata subsystem - Counterparty contact informations
+    get_counterparty_contact_informations_request = 0x1059,
+    get_counterparty_contact_informations_response = 0x105A,
+    save_counterparty_contact_information_request = 0x105B,
+    save_counterparty_contact_information_response = 0x105C,
+    delete_counterparty_contact_information_request = 0x105D,
+    delete_counterparty_contact_information_response = 0x105E,
+    get_counterparty_contact_information_history_request = 0x105F,
+    get_counterparty_contact_information_history_response = 0x1060,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -468,6 +504,38 @@ enum class message_type : std::uint16_t {
     case message_type::delete_counterparty_response: return "delete_counterparty_response";
     case message_type::get_counterparty_history_request: return "get_counterparty_history_request";
     case message_type::get_counterparty_history_response: return "get_counterparty_history_response";
+    case message_type::get_party_identifiers_request: return "get_party_identifiers_request";
+    case message_type::get_party_identifiers_response: return "get_party_identifiers_response";
+    case message_type::save_party_identifier_request: return "save_party_identifier_request";
+    case message_type::save_party_identifier_response: return "save_party_identifier_response";
+    case message_type::delete_party_identifier_request: return "delete_party_identifier_request";
+    case message_type::delete_party_identifier_response: return "delete_party_identifier_response";
+    case message_type::get_party_identifier_history_request: return "get_party_identifier_history_request";
+    case message_type::get_party_identifier_history_response: return "get_party_identifier_history_response";
+    case message_type::get_counterparty_identifiers_request: return "get_counterparty_identifiers_request";
+    case message_type::get_counterparty_identifiers_response: return "get_counterparty_identifiers_response";
+    case message_type::save_counterparty_identifier_request: return "save_counterparty_identifier_request";
+    case message_type::save_counterparty_identifier_response: return "save_counterparty_identifier_response";
+    case message_type::delete_counterparty_identifier_request: return "delete_counterparty_identifier_request";
+    case message_type::delete_counterparty_identifier_response: return "delete_counterparty_identifier_response";
+    case message_type::get_counterparty_identifier_history_request: return "get_counterparty_identifier_history_request";
+    case message_type::get_counterparty_identifier_history_response: return "get_counterparty_identifier_history_response";
+    case message_type::get_party_contact_informations_request: return "get_party_contact_informations_request";
+    case message_type::get_party_contact_informations_response: return "get_party_contact_informations_response";
+    case message_type::save_party_contact_information_request: return "save_party_contact_information_request";
+    case message_type::save_party_contact_information_response: return "save_party_contact_information_response";
+    case message_type::delete_party_contact_information_request: return "delete_party_contact_information_request";
+    case message_type::delete_party_contact_information_response: return "delete_party_contact_information_response";
+    case message_type::get_party_contact_information_history_request: return "get_party_contact_information_history_request";
+    case message_type::get_party_contact_information_history_response: return "get_party_contact_information_history_response";
+    case message_type::get_counterparty_contact_informations_request: return "get_counterparty_contact_informations_request";
+    case message_type::get_counterparty_contact_informations_response: return "get_counterparty_contact_informations_response";
+    case message_type::save_counterparty_contact_information_request: return "save_counterparty_contact_information_request";
+    case message_type::save_counterparty_contact_information_response: return "save_counterparty_contact_information_response";
+    case message_type::delete_counterparty_contact_information_request: return "delete_counterparty_contact_information_request";
+    case message_type::delete_counterparty_contact_information_response: return "delete_counterparty_contact_information_response";
+    case message_type::get_counterparty_contact_information_history_request: return "get_counterparty_contact_information_history_request";
+    case message_type::get_counterparty_contact_information_history_response: return "get_counterparty_contact_information_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

@@ -18,6 +18,16 @@
  *
  */
 
+-- Party reference data tables
+\ir ./refdata_contact_types_notify_trigger_drop.sql
+\ir ./refdata_contact_types_drop.sql
+\ir ./refdata_party_id_schemes_notify_trigger_drop.sql
+\ir ./refdata_party_id_schemes_drop.sql
+\ir ./refdata_party_statuses_notify_trigger_drop.sql
+\ir ./refdata_party_statuses_drop.sql
+\ir ./refdata_party_types_notify_trigger_drop.sql
+\ir ./refdata_party_types_drop.sql
+
 -- Currencies
 \ir ./refdata_currencies_notify_trigger_drop.sql
 \ir ./refdata_currencies_drop.sql

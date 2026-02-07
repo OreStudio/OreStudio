@@ -31,6 +31,12 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+constexpr int max_shell_output_lines = 10000;
+
+}
+
 // --- qt_output_streambuf ---
 
 qt_output_streambuf::qt_output_streambuf(QObject* parent)
@@ -140,7 +146,7 @@ void ShellMdiWindow::setup_ui() {
     // Output area
     output_area_ = new QPlainTextEdit(this);
     output_area_->setReadOnly(true);
-    output_area_->setMaximumBlockCount(10000);
+    output_area_->setMaximumBlockCount(max_shell_output_lines);
     output_area_->setStyleSheet(
         "QPlainTextEdit { font-family: monospace; font-size: 11px; }");
 

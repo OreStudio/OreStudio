@@ -20,6 +20,7 @@
 #include "ores.qt/ShellMdiWindow.hpp"
 
 #include <QLabel>
+#include <QTextCharFormat>
 #include "ores.comms/net/client_options.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
 
@@ -231,22 +232,30 @@ void ShellMdiWindow::on_command_entered() {
     auto text = input_line_->text();
     input_line_->clear();
 
-    // Echo the command after the prompt, then newline
+    // Echo the command in input color after the prompt, then newline
+    QTextCharFormat fmt;
+    fmt.setForeground(input_color_);
     auto cursor = output_area_->textCursor();
     cursor.movePosition(QTextCursor::End);
-    output_area_->setTextCursor(cursor);
-    output_area_->insertPlainText(text + "\n");
+    cursor.insertText(text + "\n", fmt);
+    output_area_->ensureCursorVisible();
 
     if (input_buf_)
         input_buf_->feed_line(text.toStdString());
 }
 
 void ShellMdiWindow::on_output_ready(const QString& text) {
-    // Move cursor to end before inserting to ensure text appears at bottom
     auto cursor = output_area_->textCursor();
     cursor.movePosition(QTextCursor::End);
-    output_area_->setTextCursor(cursor);
-    output_area_->insertPlainText(text);
+
+    // Detect prompt: short text without newlines ending with "> "
+    const bool is_prompt = !text.contains('\n') && text.endsWith("> ");
+
+    QTextCharFormat fmt;
+    if (is_prompt)
+        fmt.setForeground(prompt_color_);
+
+    cursor.insertText(text, fmt);
     output_area_->ensureCursorVisible();
 }
 

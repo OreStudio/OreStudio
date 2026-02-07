@@ -26,6 +26,7 @@
 #include <memory>
 #include <streambuf>
 #include <condition_variable>
+#include <QColor>
 #include <QWidget>
 #include <QLineEdit>
 #include <QPlainTextEdit>
@@ -147,6 +148,10 @@ private:
     std::unique_ptr<comms::net::client_session> shell_session_;
     std::unique_ptr<comms::shell::app::repl> shell_repl_;
     std::unique_ptr<std::thread> worker_thread_;
+
+    // Soft violet for prompt, teal-blue for user input
+    QColor prompt_color_{0xB4, 0x8E, 0xAD};
+    QColor input_color_{0x88, 0xC0, 0xD0};
 };
 
 }

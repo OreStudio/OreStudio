@@ -19,7 +19,6 @@
  */
 #include "ores.qt/ShellMdiWindow.hpp"
 
-#include <QFontDatabase>
 #include <QLabel>
 #include "ores.comms/net/client_options.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
@@ -113,13 +112,12 @@ void ShellMdiWindow::setup_ui() {
     output_area_ = new QPlainTextEdit(this);
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(10000);
-
-    QFont mono = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    mono.setPointSize(10);
-    output_area_->setFont(mono);
+    output_area_->setStyleSheet(
+        "QPlainTextEdit { font-family: monospace; font-size: 11px; }");
 
     input_line_ = new QLineEdit(this);
-    input_line_->setFont(mono);
+    input_line_->setStyleSheet(
+        "QLineEdit { font-family: monospace; font-size: 11px; }");
     input_line_->setPlaceholderText("Enter command...");
 
     layout->addWidget(output_area_);

@@ -1,0 +1,443 @@
+:PROPERTIES:
+:ID: 9a726128-0e7e-4a82-a61b-c6b1c5cfc070
+:END:
+#+title: Party & Counterparty SQL Support Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Add database-level support for parties (internal legal entities) and
+counterparties (external trading partners). This is the foundational data model
+for trade booking, regulatory reporting, and exposure management.
+
+** Key Domain Concepts
+
+- *Party* ("the house"): An internal legal entity managed by the tenant. A tenant
+  must have at least one party (the "root party") for the system to function.
+  Parties form an arbitrary-depth hierarchy representing corporate group
+  structures (e.g., BigCorp Group Ltd -> BigCorp Finance Ltd -> BigCorp Bank UK).
+- *Counterparty*: An external legal entity that the tenant trades against.
+  Counterparties also support hierarchy for exposure aggregation at the group
+  level. Structurally identical to parties but semantically separate.
+- *Party Identifier*: External identifiers attached to parties or counterparties
+  (LEI, BIC, National ID, Tax ID, etc.).
+- *Contact Information*: Address, phone, email, and web page for a party or
+  counterparty. Typed by contact type (Legal, Operations, Settlement, Billing).
+- *Account-Party Association*: Links user accounts to parties, enabling users to
+  select which party context to work in on login.
+
+** Design Decisions
+
+- *Separate tables for party and counterparty*: Though structurally identical
+  today, parties and counterparties serve different business purposes. Parties are
+  internal and tightly coupled to IAM (account association, root party
+  constraint). Counterparties are external and may diverge in structure over time
+  (e.g., credit ratings, exposure limits). Separate tables provide clean data
+  isolation.
+- *Arbitrary hierarchy depth*: Both parties and counterparties use a
+  self-referencing =parent_party_id= / =parent_counterparty_id= for hierarchy.
+  No depth limitation is imposed at the schema level.
+- *Root party constraint*: A tenant must have exactly one root party
+  (=parent_party_id IS NULL=), enforced via a partial unique index.
+  Counterparties have no such constraint.
+- *Status as coding scheme*: Party/counterparty status (Active, Inactive,
+  Suspended) is a reference data table rather than a check constraint, to support
+  future state machine evolution.
+- *Identifiers as separate table*: LEI, BIC, and other identifiers are extracted
+  into a dedicated table rather than inline columns. This is more extensible and
+  follows FpML patterns.
+- *Contact type scheme*: Contact information includes a =contact_type= column
+  (Legal, Operations, Settlement, Billing) to support multiple addresses per
+  party. When business units are added later, a =business_unit_id= column can be
+  added to the same table.
+- *Soft FK validation*: Foreign key references to reference data tables
+  (party_type, status, business_centre, country) are validated in the insert
+  trigger rather than via hard FK constraints. This follows the established
+  codebase pattern.
+- *Codegen first*: All tables will be generated from JSON models using
+  =ores.codegen=. The =domain_entity= template needs enhancement to support
+  =validations[]= and =indexes[]=, which the older =table_create= template
+  already provides.
+
+* Stories
+
+Stories are listed in dependency order. Each story produces a PR.
+
+** Story 0: Add validations and custom indexes to domain entity codegen template
+
+The =sql_schema_domain_entity_create.mustache= template currently lacks two
+features that =sql_schema_table_create.mustache= already has:
+
+- =validations[]=: Soft FK validation calls in the insert trigger function.
+  Allows the model to declare columns that should be validated against reference
+  data tables.
+- =indexes[]=: Custom index definitions beyond the auto-generated natural key and
+  version indexes. Supports unique, non-unique, and filtered indexes.
+
+Both features are needed for the party/counterparty tables to validate
+=party_type=, =status=, and =business_center_code= via soft FKs, and to create
+the root party uniqueness constraint.
+
+*** Scope
+
+Port these two features from =sql_schema_table_create.mustache= (lines 121-126
+for indexes, lines 162-166 for validations) into
+=sql_schema_domain_entity_create.mustache=.
+
+*** Acceptance Criteria
+
+- Domain entity models can declare =validations[]= with =column= and
+  =validation_function= fields.
+- Domain entity models can declare =indexes[]= with =name=, =columns=, =unique=,
+  and =current_only= fields.
+- Existing domain entity models continue to generate identical output.
+- Template changes are tested by generating an existing model and diffing output.
+
+** Story 1: Add party-related reference data tables
+
+Create reference data tables for party type, party status, party identifier
+scheme, and contact type. These are prerequisites for the party and counterparty
+tables.
+
+*** ores_refdata_party_types_tbl
+
+Categorises parties and counterparties by organisation type.
+
+| Code           | Description                        |
+|----------------+------------------------------------|
+| Bank           | Banking institution                |
+| CorporateGroup | Corporate holding group            |
+| HedgeFund      | Hedge fund                         |
+| Corporate      | Non-financial corporate            |
+| CentralBank    | Central bank / monetary authority  |
+| Exchange       | Exchange or trading venue          |
+| Individual     | Individual / personal account      |
+
+Uses =table_create= codegen template (text PK). Generates
+=ores_refdata_validate_party_type_fn()=. Populated via dataset.
+
+*** ores_refdata_party_statuses_tbl
+
+Lookup table for party/counterparty status values. Designed to evolve into a more
+complex state machine over time.
+
+| Code      | Description                          |
+|-----------+--------------------------------------|
+| Active    | Party is active, trades can be booked |
+| Inactive  | Party is deactivated                 |
+| Suspended | Party is temporarily suspended       |
+
+Uses =table_create= codegen template. Generates
+=ores_refdata_validate_party_status_fn()=. Populated via dataset.
+
+*** ores_refdata_party_id_schemes_tbl
+
+Defines what kinds of external identifiers can be attached to parties and
+counterparties.
+
+| Code         | Description                              |
+|--------------+------------------------------------------|
+| LEI          | ISO 17442 Legal Entity Identifier        |
+| BIC          | ISO 9362 Business Identifier Code        |
+| NationalId   | National identification number           |
+| TaxId        | Tax identification number                |
+| InternalCode | Internal system code                     |
+
+Uses =table_create= codegen template. Generates
+=ores_refdata_validate_party_id_scheme_fn()=. Populated via dataset.
+
+*** ores_refdata_contact_types_tbl
+
+Coding scheme for contact/address types. Supports multiple addresses per party.
+
+| Code       | Description                       |
+|------------+-----------------------------------|
+| Legal      | Legal / registered address        |
+| Operations | Operational / trading address     |
+| Settlement | Settlement instructions address   |
+| Billing    | Billing address                   |
+
+Uses =table_create= codegen template. Generates
+=ores_refdata_validate_contact_type_fn()=. Populated via dataset.
+
+*** Acceptance Criteria
+
+- All four tables created with full temporal support, triggers, notification,
+  soft delete.
+- Validation functions generated and working.
+- Population scripts seed initial values.
+- pgTAP tests verify trigger behaviour and validation.
+- Orchestration scripts updated (create, drop, populate).
+
+** Story 2: Add party table
+
+=ores_refdata_parties_tbl= - internal parties ("the house").
+
+*** Table Structure
+
+| Column                | Type | Constraints                                    |
+|-----------------------+------+------------------------------------------------|
+| =id=                  | UUID | PK                                             |
+| =tenant_id=           | UUID | not null                                       |
+| =full_name=           | text | not null, natural key                          |
+| =short_code=          | text | not null, natural key                          |
+| =party_type=          | text | not null, soft FK -> party_types               |
+| =parent_party_id=     | UUID | nullable (NULL = root party)                   |
+| =business_center_code= | text | nullable, soft FK -> business_centres         |
+| =status=              | text | not null, default 'Active', soft FK -> statuses |
+| + audit columns       |      | version, modified_by, etc.                     |
+
+*** Validations (in insert trigger)
+
+- =party_type= -> =ores_refdata_validate_party_type_fn()=
+- =status= -> =ores_refdata_validate_party_status_fn()=
+- =business_center_code= -> =ores_refdata_validate_business_centre_fn()= (exists)
+- =parent_party_id= -> custom validation: must reference a valid current party in
+  the same tenant, or be NULL
+
+*** Custom Indexes
+
+Root party uniqueness constraint:
+
+#+begin_src sql
+create unique index ores_refdata_parties_root_party_uniq_idx
+on ores_refdata_parties_tbl (tenant_id)
+where parent_party_id is null
+and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+*** Codegen
+
+Uses =domain_entity= template (with Story 0 enhancements). Model file:
+=projects/ores.codegen/models/refdata/party_domain_entity.json=.
+
+*** Acceptance Criteria
+
+- Table created with full temporal support, triggers, notification, soft delete.
+- Root party constraint enforced (one per tenant).
+- Parent party validation rejects invalid/cross-tenant references.
+- Business centre, party type, and status soft FK validation working.
+- Notification trigger on =ores_parties= channel.
+- pgTAP tests for all validation rules and constraints.
+- Orchestration scripts updated.
+
+** Story 3: Add counterparty table
+
+=ores_refdata_counterparties_tbl= - structurally identical to party table, minus
+the root party uniqueness constraint.
+
+*** Table Structure
+
+| Column                     | Type | Constraints                                    |
+|----------------------------+------+------------------------------------------------|
+| =id=                       | UUID | PK                                             |
+| =tenant_id=                | UUID | not null                                       |
+| =full_name=                | text | not null, natural key                          |
+| =short_code=               | text | not null, natural key                          |
+| =party_type=               | text | not null, soft FK -> party_types               |
+| =parent_counterparty_id=   | UUID | nullable (NULL = top-level counterparty)       |
+| =business_center_code=     | text | nullable, soft FK -> business_centres          |
+| =status=                   | text | not null, default 'Active', soft FK -> statuses |
+| + audit columns            |      | version, modified_by, etc.                     |
+
+*** Validations
+
+Same as party table, except:
+
+- =parent_counterparty_id= validates against =ores_refdata_counterparties_tbl=
+  (self-referencing within counterparties, not parties).
+- No root counterparty constraint.
+
+*** Codegen
+
+Uses =domain_entity= template. Model file:
+=projects/ores.codegen/models/refdata/counterparty_domain_entity.json=.
+
+*** Acceptance Criteria
+
+- Table created with full temporal support, triggers, notification, soft delete.
+- Parent counterparty validation rejects invalid/cross-tenant references.
+- Counterparty hierarchy supports arbitrary depth.
+- Notification trigger on =ores_counterparties= channel.
+- pgTAP tests.
+- Orchestration scripts updated.
+
+** Story 4: Add party and counterparty identifier tables
+
+Two structurally identical tables for external identifiers.
+
+*** Table Structure (both tables)
+
+=ores_refdata_party_identifiers_tbl= / =ores_refdata_counterparty_identifiers_tbl=
+
+| Column                       | Type | Constraints                             |
+|------------------------------+------+-----------------------------------------|
+| =id=                         | UUID | PK                                      |
+| =tenant_id=                  | UUID | not null                                |
+| =party_id= / =counterparty_id= | UUID | not null, soft FK                    |
+| =id_scheme=                  | text | not null, soft FK -> party_id_schemes   |
+| =id_value=                   | text | not null                                |
+| =description=                | text | nullable                                |
+| + audit columns              |      | version, modified_by, etc.              |
+
+*** Custom Indexes
+
+Unique constraint: one identifier of each scheme per party:
+
+#+begin_src sql
+create unique index ores_refdata_party_identifiers_party_scheme_uniq_idx
+on ores_refdata_party_identifiers_tbl (tenant_id, party_id, id_scheme)
+where valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+*** Codegen
+
+Uses =domain_entity= template. Model files:
+- =projects/ores.codegen/models/refdata/party_identifier_domain_entity.json=
+- =projects/ores.codegen/models/refdata/counterparty_identifier_domain_entity.json=
+
+*** Acceptance Criteria
+
+- Both tables created with full temporal support, triggers, notification.
+- Scheme validation working.
+- Uniqueness constraint prevents duplicate schemes per party.
+- pgTAP tests.
+- Orchestration scripts updated.
+
+** Story 5: Add party and counterparty contact information tables
+
+Two structurally identical tables for contact information with inline addresses.
+
+*** Table Structure (both tables)
+
+=ores_refdata_party_contact_informations_tbl= /
+=ores_refdata_counterparty_contact_informations_tbl=
+
+| Column                       | Type | Constraints                              |
+|------------------------------+------+------------------------------------------|
+| =id=                         | UUID | PK                                       |
+| =tenant_id=                  | UUID | not null                                 |
+| =party_id= / =counterparty_id= | UUID | not null, soft FK                     |
+| =contact_type=               | text | not null, soft FK -> contact_types       |
+| =street_line_1=              | text | nullable                                 |
+| =street_line_2=              | text | nullable                                 |
+| =city=                       | text | nullable                                 |
+| =state=                      | text | nullable                                 |
+| =country_code=               | text | nullable, soft FK -> countries           |
+| =postal_code=                | text | nullable                                 |
+| =phone=                      | text | nullable                                 |
+| =email=                      | text | nullable                                 |
+| =web_page=                   | text | nullable                                 |
+| + audit columns              |      | version, modified_by, etc.               |
+
+*** Custom Indexes
+
+One contact of each type per party:
+
+#+begin_src sql
+create unique index ores_refdata_party_contact_informations_type_uniq_idx
+on ores_refdata_party_contact_informations_tbl (tenant_id, party_id, contact_type)
+where valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+*** Future Extension
+
+When business units are added, a nullable =business_unit_id= column will be
+added to this table and the unique constraint adjusted to include it. The
+existing structure and all address/phone/email fields remain unchanged.
+
+*** Codegen
+
+Uses =domain_entity= template. Model files:
+- =projects/ores.codegen/models/refdata/party_contact_information_domain_entity.json=
+- =projects/ores.codegen/models/refdata/counterparty_contact_information_domain_entity.json=
+
+*** Acceptance Criteria
+
+- Both tables created with full temporal support, triggers, notification.
+- Contact type and country code validation working.
+- Uniqueness constraint prevents duplicate contact types per party.
+- pgTAP tests.
+- Orchestration scripts updated.
+
+** Story 6: Add account-party association table
+
+=ores_iam_account_parties_tbl= - many-to-many link between user accounts and
+internal parties. Enables users to select which party context to work in on
+login.
+
+*** Table Structure
+
+| Column       | Type | Constraints       |
+|--------------+------+-------------------|
+| =account_id= | UUID | left FK (junction) |
+| =party_id=   | UUID | right FK (junction) |
+| =tenant_id=  | UUID | not null          |
+| + audit columns |   |                   |
+
+*** Business Rules
+
+- An account can be associated with zero or more parties.
+- Zero associations = admin-only account (tenant management, no trade context).
+- When a user logs in with multiple party associations, they must select a party
+  context.
+- A user with exactly one party association is automatically placed in that
+  context.
+
+*** Codegen
+
+Uses =junction= codegen template. Model file:
+=projects/ores.codegen/models/iam/account_party_junction.json=.
+
+Note: Lives in =ores_iam_= component since it extends the IAM model, not in
+=ores_refdata_=.
+
+*** Acceptance Criteria
+
+- Junction table created with temporal support.
+- Both account_id and party_id validated.
+- Notification trigger on =ores_account_parties= channel.
+- pgTAP tests.
+- Orchestration scripts updated.
+
+* Dependency Graph
+
+#+begin_example
+Story 0 (codegen enhancement)
+    |
+    v
+Story 1 (reference data: party_types, party_statuses, party_id_schemes, contact_types)
+    |
+    +---> Story 2 (party table)
+    |         |
+    |         +---> Story 4 (party identifiers)
+    |         +---> Story 5 (party contact information)
+    |         +---> Story 6 (account-party junction)
+    |
+    +---> Story 3 (counterparty table)
+              |
+              +---> Story 4 (counterparty identifiers)
+              +---> Story 5 (counterparty contact information)
+#+end_example
+
+Stories 2 and 3 can be developed in parallel once Story 1 is complete. Stories 4
+and 5 can be developed in parallel once their parent (2 or 3) is complete. Story
+6 depends only on Story 2.
+
+* Existing Dependencies
+
+The following existing database objects are referenced:
+
+| Object                                      | Status  |
+|---------------------------------------------+---------|
+| =ores_iam_validate_tenant_fn()=             | Exists  |
+| =ores_dq_validate_change_reason_fn()=       | Exists  |
+| =ores_refdata_validate_business_centre_fn()= | Exists |
+| =ores_refdata_countries_tbl=                | Exists  |
+| =ores_iam_accounts_tbl=                     | Exists  |
+
+* Open Questions
+
+None at this time. All design decisions have been validated.

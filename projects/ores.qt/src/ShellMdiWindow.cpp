@@ -19,8 +19,11 @@
  */
 #include "ores.qt/ShellMdiWindow.hpp"
 
+#include <fstream>
 #include <QLabel>
+#include <QFileDialog>
 #include <QTextCharFormat>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
 
@@ -63,8 +66,7 @@ void qt_output_streambuf::flush_buffer() {
 
 void qt_input_streambuf::feed_line(const std::string& line) {
     std::lock_guard lock(mutex_);
-    buffer_ = line + "\n";
-    setg(buffer_.data(), buffer_.data(), buffer_.data() + buffer_.size());
+    pending_.push_back(line + "\n");
     cv_.notify_one();
 }
 
@@ -79,15 +81,18 @@ qt_input_streambuf::int_type qt_input_streambuf::underflow() {
         return traits_type::to_int_type(*gptr());
 
     std::unique_lock lock(mutex_);
-    buffer_.clear();
+    current_.clear();
     setg(nullptr, nullptr, nullptr);
 
-    cv_.wait(lock, [this]() { return !buffer_.empty() || closed_; });
+    cv_.wait(lock, [this]() { return !pending_.empty() || closed_; });
 
-    if (closed_ && buffer_.empty())
+    if (pending_.empty() && closed_)
         return traits_type::eof();
 
-    setg(buffer_.data(), buffer_.data(), buffer_.data() + buffer_.size());
+    current_ = std::move(pending_.front());
+    pending_.pop_front();
+
+    setg(current_.data(), current_.data(), current_.data() + current_.size());
     return traits_type::to_int_type(*gptr());
 }
 
@@ -110,12 +115,36 @@ void ShellMdiWindow::setup_ui() {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
+    // Toolbar
+    toolbar_ = new QToolBar(this);
+    toolbar_->setIconSize(QSize(16, 16));
+
+    auto* loadAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::FolderOpen,
+            IconUtils::DefaultIconColor),
+        "Load Script...");
+    loadAction->setToolTip("Load and execute a .ores script file");
+    connect(loadAction, &QAction::triggered,
+        this, &ShellMdiWindow::on_load_script);
+
+    auto* saveAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Save,
+            IconUtils::DefaultIconColor),
+        "Save Script...");
+    saveAction->setToolTip("Save session commands as a .ores script file");
+    connect(saveAction, &QAction::triggered,
+        this, &ShellMdiWindow::on_save_script);
+
+    layout->addWidget(toolbar_);
+
+    // Output area
     output_area_ = new QPlainTextEdit(this);
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(10000);
     output_area_->setStyleSheet(
         "QPlainTextEdit { font-family: monospace; font-size: 11px; }");
 
+    // Input line
     input_line_ = new QLineEdit(this);
     input_line_->setStyleSheet(
         "QLineEdit { font-family: monospace; font-size: 11px; }");
@@ -232,6 +261,11 @@ void ShellMdiWindow::on_command_entered() {
     auto text = input_line_->text();
     input_line_->clear();
 
+    // Track command for Save
+    auto cmd = text.toStdString();
+    if (!cmd.empty())
+        command_history_.push_back(cmd);
+
     // Echo the command in input color after the prompt, then newline
     QTextCharFormat fmt;
     fmt.setForeground(input_color_);
@@ -241,7 +275,7 @@ void ShellMdiWindow::on_command_entered() {
     output_area_->ensureCursorVisible();
 
     if (input_buf_)
-        input_buf_->feed_line(text.toStdString());
+        input_buf_->feed_line(cmd);
 }
 
 void ShellMdiWindow::on_output_ready(const QString& text) {
@@ -257,6 +291,81 @@ void ShellMdiWindow::on_output_ready(const QString& text) {
 
     cursor.insertText(text, fmt);
     output_area_->ensureCursorVisible();
+}
+
+void ShellMdiWindow::on_load_script() {
+    auto filename = QFileDialog::getOpenFileName(
+        this, "Load Shell Script", QString(),
+        "ORE Shell Scripts (*.ores);;All Files (*)");
+
+    if (filename.isEmpty())
+        return;
+
+    std::ifstream file(filename.toStdString());
+    if (!file.is_open()) {
+        output_area_->appendPlainText(
+            QString("Error: cannot open file: %1").arg(filename));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Loading script: "
+                              << filename.toStdString();
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty())
+            continue;
+        if (line[0] == '#')
+            continue;
+
+        // Strip leading/trailing whitespace
+        auto start = line.find_first_not_of(" \t");
+        if (start == std::string::npos)
+            continue;
+        auto end = line.find_last_not_of(" \t\r");
+        auto trimmed = line.substr(start, end - start + 1);
+
+        command_history_.push_back(trimmed);
+
+        if (input_buf_)
+            input_buf_->feed_line(trimmed);
+    }
+
+    emit statusChanged(QString("Script loaded: %1").arg(filename));
+}
+
+void ShellMdiWindow::on_save_script() {
+    if (command_history_.empty()) {
+        emit statusChanged("No commands to save.");
+        return;
+    }
+
+    auto filename = QFileDialog::getSaveFileName(
+        this, "Save Shell Script", QString(),
+        "ORE Shell Scripts (*.ores);;All Files (*)");
+
+    if (filename.isEmpty())
+        return;
+
+    // Ensure .ores extension
+    if (!filename.endsWith(".ores"))
+        filename += ".ores";
+
+    std::ofstream file(filename.toStdString());
+    if (!file.is_open()) {
+        output_area_->appendPlainText(
+            QString("Error: cannot write to file: %1").arg(filename));
+        return;
+    }
+
+    file << "# ORE Studio shell script\n";
+    for (const auto& cmd : command_history_)
+        file << cmd << "\n";
+
+    BOOST_LOG_SEV(lg(), info) << "Saved " << command_history_.size()
+                              << " commands to " << filename.toStdString();
+    emit statusChanged(QString("Script saved: %1 (%2 commands)")
+        .arg(filename).arg(command_history_.size()));
 }
 
 void ShellMdiWindow::closeEvent(QCloseEvent* event) {

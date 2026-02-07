@@ -20,14 +20,17 @@
 #ifndef ORES_QT_SHELL_MDI_WINDOW_HPP
 #define ORES_QT_SHELL_MDI_WINDOW_HPP
 
+#include <deque>
 #include <mutex>
 #include <thread>
 #include <string>
+#include <vector>
 #include <memory>
 #include <streambuf>
 #include <condition_variable>
 #include <QColor>
 #include <QWidget>
+#include <QToolBar>
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
@@ -68,8 +71,8 @@ private:
 /**
  * @brief Stream buffer that blocks on read until data is fed from the UI.
  *
- * underflow() blocks on a condition variable until feed_line() provides
- * data or close() sets the EOF flag.
+ * Uses a queue of lines. underflow() blocks on a condition variable until
+ * feed_line() provides data or close() sets the EOF flag.
  */
 class qt_input_streambuf : public std::streambuf {
 public:
@@ -91,16 +94,17 @@ protected:
 private:
     std::mutex mutex_;
     std::condition_variable cv_;
-    std::string buffer_;
+    std::deque<std::string> pending_;
+    std::string current_;
     bool closed_{false};
 };
 
 /**
  * @brief MDI window embedding the ores.comms.shell REPL.
  *
- * Provides a read-only output area and a command input line. Maintains
- * its own independent server connection, auto-connecting and logging in
- * using credentials from the active Qt session.
+ * Provides a toolbar, read-only output area, and a command input line.
+ * Maintains its own independent server connection, auto-connecting and
+ * logging in using credentials from the active Qt session.
  */
 class ShellMdiWindow : public QWidget {
     Q_OBJECT
@@ -129,6 +133,8 @@ protected:
 private slots:
     void on_command_entered();
     void on_output_ready(const QString& text);
+    void on_load_script();
+    void on_save_script();
 
 private:
     void setup_ui();
@@ -137,6 +143,7 @@ private:
     void on_repl_finished();
 
     ClientManager* client_manager_;
+    QToolBar* toolbar_;
     QPlainTextEdit* output_area_;
     QLineEdit* input_line_;
 
@@ -152,6 +159,9 @@ private:
     // Soft violet for prompt, teal-blue for user input
     QColor prompt_color_{0xB4, 0x8E, 0xAD};
     QColor input_color_{0x88, 0xC0, 0xD0};
+
+    // History of commands entered by the user for Save
+    std::vector<std::string> command_history_;
 };
 
 }

@@ -71,6 +71,7 @@
 #include "ores.qt/AboutDialog.hpp"
 #include "ores.qt/EventViewerDialog.hpp"
 #include "ores.qt/TelemetryMdiWindow.hpp"
+#include "ores.qt/ShellMdiWindow.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
@@ -157,6 +158,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
     ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
     ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
+    ui_->ActionShell->setIcon(IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -268,6 +270,47 @@ MainWindow::MainWindow(QWidget* parent) :
         mdiArea_->addSubWindow(telemetryViewerWindow_);
         allDetachableWindows_.append(telemetryViewerWindow_);
         telemetryViewerWindow_->show();
+    });
+
+    // Connect Shell action
+    connect(ui_->ActionShell, &QAction::triggered, this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Shell action triggered";
+
+        // If window already exists, just activate it
+        if (shellWindow_) {
+            shellWindow_->showNormal();
+            mdiArea_->setActiveSubWindow(shellWindow_);
+            return;
+        }
+
+        // Create the shell widget
+        auto* shellWidget = new ShellMdiWindow(clientManager_, this);
+
+        // Wrap in MDI sub-window
+        shellWindow_ = new DetachableMdiSubWindow();
+        shellWindow_->setWidget(shellWidget);
+        shellWindow_->setWindowTitle("Shell");
+        shellWindow_->setAttribute(Qt::WA_DeleteOnClose);
+        shellWindow_->resize(800, 500);
+
+        shellWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+            Icon::Terminal, IconUtils::DefaultIconColor));
+
+        // Track window destruction
+        connect(shellWindow_, &QObject::destroyed, this, [this]() {
+            allDetachableWindows_.removeOne(shellWindow_);
+            shellWindow_ = nullptr;
+        });
+
+        // Connect status messages to status bar
+        connect(shellWidget, &ShellMdiWindow::statusChanged, this,
+            [this](const QString& message) {
+                ui_->statusbar->showMessage(message, 5000);
+            });
+
+        mdiArea_->addSubWindow(shellWindow_);
+        allDetachableWindows_.append(shellWindow_);
+        shellWindow_->show();
     });
 
     // Connect recording signals
@@ -753,6 +796,9 @@ void MainWindow::updateMenuState() {
 
     // Telemetry viewer needs authentication to load sessions/logs
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
+
+    // Shell requires authentication for auto-login
+    ui_->ActionShell->setEnabled(isLoggedIn);
 
     // Protocol recording can be enabled before connection (will start on connect)
     // Only disable when disconnecting if we were recording

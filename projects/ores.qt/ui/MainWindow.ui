@@ -122,6 +122,7 @@
      </widget>
      <addaction name="ActionTelemetryViewer"/>
      <addaction name="ActionEventViewer"/>
+     <addaction name="ActionShell"/>
      <addaction name="separator"/>
      <addaction name="menuProtocol"/>
      <addaction name="separator"/>
@@ -317,6 +318,14 @@
    </property>
    <property name="toolTip">
     <string>View telemetry logs by session</string>
+   </property>
+  </action>
+  <action name="ActionShell">
+   <property name="text">
+    <string>&amp;Shell...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an interactive command shell</string>
    </property>
   </action>
   <action name="ActionChangeReasonCategories">

@@ -59,6 +59,7 @@
     <file>icons/fluentui/filled/ic_fluent_table_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_tag_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_text_abc_underline_double_32_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_window_console_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_wand_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_warning_20_filled.svg</file>
     <file>icons/fluentui/regular/ic_fluent_add_20_regular.svg</file>
@@ -119,6 +120,7 @@
     <file>icons/fluentui/regular/ic_fluent_table_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_tag_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_text_abc_underline_double_32_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_window_console_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_wand_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_warning_20_regular.svg</file>
     <file>icons/solarized/Bold/export_csv.svg</file>
@@ -166,6 +168,7 @@
     <file>icons/solarized/Bold/server-square.svg</file>
     <file>icons/solarized/Bold/settings.svg</file>
     <file>icons/solarized/Bold/star-circle.svg</file>
+    <file>icons/solarized/Bold/command.svg</file>
     <file>icons/solarized/Bold/tag.svg</file>
     <file>icons/solarized/Bold/text-underline.svg</file>
     <file>icons/solarized/Bold/trash-bin-trash.svg</file>
@@ -219,6 +222,7 @@
     <file>icons/solarized/Linear/server-square.svg</file>
     <file>icons/solarized/Linear/settings.svg</file>
     <file>icons/solarized/Linear/star-circle.svg</file>
+    <file>icons/solarized/Linear/command.svg</file>
     <file>icons/solarized/Linear/tag.svg</file>
     <file>icons/solarized/Linear/text-underline.svg</file>
     <file>icons/solarized/Linear/trash-bin-trash.svg</file>

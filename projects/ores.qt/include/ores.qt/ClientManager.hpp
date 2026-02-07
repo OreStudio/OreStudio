@@ -295,6 +295,16 @@ public:
     }
 
     /**
+     * @brief Get the stored username used for the current session.
+     */
+    std::string storedUsername() const { return stored_username_; }
+
+    /**
+     * @brief Get the stored password used for the current session.
+     */
+    std::string storedPassword() const { return stored_password_; }
+
+    /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send

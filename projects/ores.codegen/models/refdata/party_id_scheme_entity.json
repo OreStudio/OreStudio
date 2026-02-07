@@ -1,0 +1,31 @@
+{
+  "entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "entity_singular": "party_id_scheme",
+    "entity_plural": "party_id_schemes",
+    "description": "Party Identifier Schemes - Classification of external identifier types (LEI, BIC, MIC, etc.) with cross-reference to DQ coding schemes.",
+    "has_tenant_id": true,
+    "system_tenant_validation": true,
+    "has_display_order": true,
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "is_text": true
+    },
+    "columns": [
+      {"name": "name", "type": "text", "nullable": false},
+      {"name": "description", "type": "text", "nullable": false},
+      {"name": "coding_scheme_code", "type": "text", "nullable": true},
+      {"name": "display_order", "type": "integer", "nullable": false, "default": "0"}
+    ],
+    "validations": [
+      {
+        "column": "change_reason_code",
+        "validation_function": "ores_dq_validate_change_reason_fn"
+      }
+    ],
+    "indexes": []
+  }
+}

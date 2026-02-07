@@ -1,0 +1,30 @@
+{
+  "domain_entity": {
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "party",
+    "entity_plural": "parties",
+    "entity_title": "Party",
+    "description": "Internal legal entities (the organisation and its subsidiaries) that participate\nin financial transactions. Parties form a hierarchy through parent_party_id,\nwith exactly one root party per tenant representing the organisation itself.",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [
+      {"column": "full_name", "type": "text"},
+      {"column": "short_code", "type": "text"}
+    ],
+    "columns": [
+      {"name": "party_type", "type": "text", "nullable": false},
+      {"name": "parent_party_id", "type": "uuid", "nullable": true},
+      {"name": "business_center_code", "type": "text", "nullable": true},
+      {"name": "status", "type": "text", "nullable": false, "default": "'Active'"}
+    ],
+    "validations": [
+      {"column": "party_type", "validation_function": "ores_refdata_validate_party_type_fn"},
+      {"column": "status", "validation_function": "ores_refdata_validate_party_status_fn"}
+    ],
+    "indexes": []
+  }
+}

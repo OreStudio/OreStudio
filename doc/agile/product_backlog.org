@@ -265,6 +265,35 @@ Notes:
 
 - could tell client if registration / sign-up is supported.
 
+*** Remove bootstrap guards from validation functions                  :code:
+
+The codegen template =sql_schema_table_create.mustache= generates a bootstrap
+guard in every validation function:
+
+#+begin_src sql
+if not exists (select 1 from X limit 1) then
+    return p_value;
+end if;
+#+end_src
+
+This pattern silently skips validation when the lookup table is empty, which was
+originally intended to avoid errors during initial population. However, correct
+population ordering in =foundation_populate.sql= makes these guards unnecessary.
+Worse, they mask real errors: if a lookup table is accidentally empty, inserts
+silently succeed with invalid data instead of failing loudly.
+
+There are 20 instances across the codebase (16 in refdata, 1 in dq, 3 in iam).
+
+Tasks:
+
+- Update =sql_schema_table_create.mustache= to stop generating the bootstrap
+  guard in the validation function template.
+- Regenerate all affected SQL files.
+- Remove bootstrap guards from any hand-written validation functions.
+- Verify =foundation_populate.sql= ordering ensures all lookup tables are seeded
+  before any dependent table triggers fire.
+- Run full schema recreation and pgTAP tests to confirm nothing breaks.
+
 *** Change reason and categories need permissions                      :code:
 
 We need some very specific permissions as these are reg-sensitive.
@@ -628,11 +657,6 @@ At present it is easy to see new rows or modified rows in an entity dialog. It
 is not possible to see deleted rows. One way to do this is to preserve state
 from before reload by key. Any entities which are not present after reload can
 be shown as red. History then allows users to re-instate deleted entities.
-
-*** Add REPL to Qt                                                     :code:
-
-Users should be able to interact with the system directly via the REPL. Add a
-simple widget for this.
 
 *** Add entity messages should not set modified by                     :code:
 
@@ -1569,11 +1593,6 @@ forced to look at the result.
 After we do the import into the database, we need to read the currencies again
 to get the valid from/to.
 
-*** Add output option to repl                                          :code:
-
-It should be possible to set the "output type" or format in the shell, from json
-to table. Find the correct terminology for this.
-
 *** Add more account commands                                          :code:
 
 See the azeroth account commands for inspiration.
@@ -1581,28 +1600,6 @@ See the azeroth account commands for inspiration.
 Links:
 
 - [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
-
-*** Support tenant specification in shell account commands             :code:
-
-Currently, shell commands like =accounts info <username>= only search within the
-current session's tenant. This creates a UX gap for SuperAdmins who need to
-manage accounts across multiple tenants.
-
-Affected commands:
-
-- =accounts info=
-- =accounts roles=
-- =accounts permissions=
-- =accounts assign-role=
-- =accounts revoke-role=
-
-Acceptance criteria:
-
-- Commands should accept an optional tenant identifier (hostname or tenant ID)
-- Format could be =accounts info user1@acme.localhost= or =accounts info user1 --tenant acme.localhost=
-- SuperAdmins should be able to view/manage accounts in any tenant
-- Regular users should only be able to view accounts in their own tenant
-- Clear error message when user lacks cross-tenant permissions
 
 *** Improve error message when server is not running                   :code:
 

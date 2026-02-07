@@ -58,3 +58,31 @@
 \ir ./refdata_reporting_regimes_notify_trigger_create.sql
 \ir ./refdata_supervisory_bodies_create.sql
 \ir ./refdata_supervisory_bodies_notify_trigger_create.sql
+
+-- Party reference data tables
+\ir ./refdata_party_types_create.sql
+\ir ./refdata_party_types_notify_trigger_create.sql
+\ir ./refdata_party_statuses_create.sql
+\ir ./refdata_party_statuses_notify_trigger_create.sql
+\ir ./refdata_party_id_schemes_create.sql
+\ir ./refdata_party_id_schemes_notify_trigger_create.sql
+\ir ./refdata_contact_types_create.sql
+\ir ./refdata_contact_types_notify_trigger_create.sql
+
+-- Party and counterparty tables
+\ir ./refdata_parties_create.sql
+\ir ./refdata_parties_notify_trigger_create.sql
+\ir ./refdata_counterparties_create.sql
+\ir ./refdata_counterparties_notify_trigger_create.sql
+
+-- Party and counterparty identifiers
+\ir ./refdata_party_identifiers_create.sql
+\ir ./refdata_party_identifiers_notify_trigger_create.sql
+\ir ./refdata_counterparty_identifiers_create.sql
+\ir ./refdata_counterparty_identifiers_notify_trigger_create.sql
+
+-- Party and counterparty contact information
+\ir ./refdata_party_contact_informations_create.sql
+\ir ./refdata_party_contact_informations_notify_trigger_create.sql
+\ir ./refdata_counterparty_contact_informations_create.sql
+\ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql

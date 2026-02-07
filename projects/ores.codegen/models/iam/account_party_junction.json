@@ -1,0 +1,40 @@
+{
+  "junction": {
+    "schema": "public",
+    "product": "ores",
+    "component": "iam",
+    "has_tenant_id": true,
+    "name": "account_parties",
+    "name_singular": "account_party",
+    "name_title": "Account Party",
+    "name_singular_words": "account party association",
+    "brief": "Links an IAM account to a party.",
+    "description": "Junction table linking IAM accounts to parties. Each account can be\nassociated with one or more parties, controlling which parties a user\ncan act on behalf of.",
+
+    "left": {
+      "column": "account_id",
+      "column_short": "account",
+      "column_title": "Account",
+      "type": "uuid",
+      "index_comment": "Index for looking up parties for an account",
+      "description": "ID of the IAM account.",
+      "detail": "References ores_iam_accounts_tbl.id (soft FK)."
+    },
+
+    "right": {
+      "column": "party_id",
+      "column_short": "party",
+      "column_title": "Party",
+      "type": "uuid",
+      "index_comment": "Index for finding accounts associated with a party",
+      "description": "ID of the party this account is associated with.",
+      "detail": "References ores_refdata_parties_tbl.id (soft FK)."
+    },
+
+    "columns": [],
+
+    "sql": {
+      "tablename": "ores_iam_account_parties_tbl"
+    }
+  }
+}

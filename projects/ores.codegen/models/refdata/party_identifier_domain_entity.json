@@ -1,0 +1,28 @@
+{
+  "domain_entity": {
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "party_identifier",
+    "entity_plural": "party_identifiers",
+    "entity_title": "Party Identifier",
+    "description": "External identifiers for parties, such as LEI codes, BIC/SWIFT codes,\nnational registration numbers, and tax identifiers. Each party can have\nmultiple identifiers across different schemes.",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [],
+    "columns": [
+      {"name": "party_id", "type": "uuid", "nullable": false},
+      {"name": "id_scheme", "type": "text", "nullable": false},
+      {"name": "id_value", "type": "text", "nullable": false},
+      {"name": "description", "type": "text", "nullable": true}
+    ],
+    "validations": [
+      {"column": "id_scheme", "validation_function": "ores_refdata_validate_party_id_scheme_fn"}
+    ],
+    "indexes": [
+      {"name": "party_scheme_uniq", "columns": "tenant_id, party_id, id_scheme", "unique": true, "current_only": true}
+    ]
+  }
+}

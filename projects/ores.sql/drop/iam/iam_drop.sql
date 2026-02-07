@@ -22,6 +22,9 @@
 \ir ./iam_tenant_deprovisioner_drop.sql
 \ir ./iam_tenant_provisioner_drop.sql
 
+-- Account-party association (dropped before accounts and RBAC)
+\ir ./iam_account_party_drop.sql
+
 -- RBAC
 \ir ./iam_rbac_functions_drop.sql
 \ir ./iam_account_roles_drop.sql

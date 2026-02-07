@@ -20,7 +20,7 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     "{{column}}" {{type}} not null,
 {{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
-    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/domain_entity.columns}}
     "modified_by" text not null,
     "performed_by" text not null,
@@ -80,6 +80,12 @@ create unique index if not exists {{domain_entity.product}}_{{domain_entity.comp
 on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
+{{#domain_entity.indexes}}
+
+create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_{{name}}_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
+where valid_to = ores_utility_infinity_timestamp_fn(){{/current_only}};
+{{/domain_entity.indexes}}
 
 create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
 returns trigger as $$
@@ -91,6 +97,11 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
 {{/domain_entity.has_tenant_id}}
+{{#domain_entity.validations}}
+    -- Validate {{column}}
+    NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
+
+{{/domain_entity.validations}}
     -- Version management
     select version into current_version
     from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"

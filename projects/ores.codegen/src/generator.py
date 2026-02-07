@@ -338,8 +338,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
         entity_pascal = snake_to_pascal(entity_singular)
 
         result = result.replace('{component}', component)
-        result = result.replace('{entity}', entity_singular)
         result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
 
     elif model_type == 'junction' and 'junction' in model_data:
@@ -1079,6 +1079,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Add iterator_var to natural_keys for protocol serialization
             for key in domain_entity['natural_keys']:
                 key['iter_var'] = iter_var
+        if 'indexes' in domain_entity:
+            _mark_last_item(domain_entity['indexes'])
+        if 'validations' in domain_entity:
+            _mark_last_item(domain_entity['validations'])
         # Format description as comment block lines (for SQL)
         if 'description' in domain_entity:
             domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])

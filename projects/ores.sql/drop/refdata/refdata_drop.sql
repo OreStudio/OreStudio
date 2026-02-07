@@ -18,6 +18,34 @@
  *
  */
 
+-- Party and counterparty contact information (drop first, depends on parties/counterparties)
+\ir ./refdata_counterparty_contact_informations_notify_trigger_drop.sql
+\ir ./refdata_counterparty_contact_informations_drop.sql
+\ir ./refdata_party_contact_informations_notify_trigger_drop.sql
+\ir ./refdata_party_contact_informations_drop.sql
+
+-- Party and counterparty identifiers
+\ir ./refdata_counterparty_identifiers_notify_trigger_drop.sql
+\ir ./refdata_counterparty_identifiers_drop.sql
+\ir ./refdata_party_identifiers_notify_trigger_drop.sql
+\ir ./refdata_party_identifiers_drop.sql
+
+-- Party and counterparty tables
+\ir ./refdata_counterparties_notify_trigger_drop.sql
+\ir ./refdata_counterparties_drop.sql
+\ir ./refdata_parties_notify_trigger_drop.sql
+\ir ./refdata_parties_drop.sql
+
+-- Party reference data tables
+\ir ./refdata_contact_types_notify_trigger_drop.sql
+\ir ./refdata_contact_types_drop.sql
+\ir ./refdata_party_id_schemes_notify_trigger_drop.sql
+\ir ./refdata_party_id_schemes_drop.sql
+\ir ./refdata_party_statuses_notify_trigger_drop.sql
+\ir ./refdata_party_statuses_drop.sql
+\ir ./refdata_party_types_notify_trigger_drop.sql
+\ir ./refdata_party_types_drop.sql
+
 -- Currencies
 \ir ./refdata_currencies_notify_trigger_drop.sql
 \ir ./refdata_currencies_drop.sql

@@ -6,7 +6,7 @@
       "templates": [
         {
           "template": "sql_schema_domain_entity_create.mustache",
-          "output": "projects/ores.sql/create/{component}/{component}_{entity}_create.sql",
+          "output": "projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql",
           "model_types": ["domain_entity"]
         },
         {

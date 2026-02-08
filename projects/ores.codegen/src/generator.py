@@ -1156,6 +1156,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Mark last item in columns for template iteration
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])
+                # Compute has_description_column flag
+                qt['has_description_column'] = any(
+                    c.get('enum_name') == 'Description'
+                    for c in qt['columns']
+                )
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
         data['domain_entity'] = domain_entity

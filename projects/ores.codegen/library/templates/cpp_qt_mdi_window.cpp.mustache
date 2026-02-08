@@ -219,7 +219,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected() {
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
         BOOST_LOG_SEV(lg(), debug) << "Emitting show{{domain_entity.entity_pascal_short}}History for code: "
-                                   << {{domain_entity.qt.item_var}}->code;
+                                   << {{domain_entity.qt.item_var}}->{{domain_entity.qt.key_field}};
         emit show{{domain_entity.entity_pascal_short}}History(*{{domain_entity.qt.item_var}});
     }
 }
@@ -244,7 +244,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
             ids.push_back({{domain_entity.qt.item_var}}->id);
-            codes.push_back({{domain_entity.qt.item_var}}->code);
+            codes.push_back({{domain_entity.qt.item_var}}->{{domain_entity.qt.key_field}});
         }
     }
 
@@ -270,7 +270,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
-            codes.push_back({{domain_entity.qt.item_var}}->code);
+            codes.push_back({{domain_entity.qt.item_var}}->{{domain_entity.qt.key_field}});
         }
     }
 
@@ -585,9 +585,11 @@ void {{domain_entity.entity_pascal}}MdiWindow::restoreSettings() {
         header->restoreState(settings.value("headerState").toByteArray());
         BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
     } else {
-        // Apply default column visibility (hide Description by default)
+        // Apply default column visibility
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
+{{#domain_entity.qt.has_description_column}}
         header->setSectionHidden(Client{{domain_entity.entity_pascal}}Model::Description, true);
+{{/domain_entity.qt.has_description_column}}
     }
 
     // Restore window size if saved

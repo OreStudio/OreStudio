@@ -320,7 +320,6 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
-    ui_->performedByValue->setText(QString::fromStdString(version.performed_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(
         QString::fromStdString(version.change_commentary));

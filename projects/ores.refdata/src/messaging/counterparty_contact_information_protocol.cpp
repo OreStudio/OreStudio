@@ -43,7 +43,7 @@ void write_counterparty_contact_information(std::vector<std::byte>& buffer,
     const domain::counterparty_contact_information& cci) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(cci.version));
     writer::write_uuid(buffer, cci.id);
-    writer::write_string(buffer, cci.counterparty_id);
+    writer::write_uuid(buffer, cci.counterparty_id);
     writer::write_string(buffer, cci.contact_type);
     writer::write_string(buffer, cci.street_line_1);
     writer::write_string(buffer, cci.street_line_2);
@@ -74,7 +74,7 @@ read_counterparty_contact_information(std::span<const std::byte>& data) {
     if (!id_result) return std::unexpected(id_result.error());
     cci.id = *id_result;
 
-    auto counterparty_id_result = reader::read_string(data);
+    auto counterparty_id_result = reader::read_uuid(data);
     if (!counterparty_id_result) return std::unexpected(counterparty_id_result.error());
     cci.counterparty_id = *counterparty_id_result;
 

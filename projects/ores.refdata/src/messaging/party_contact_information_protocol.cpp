@@ -43,7 +43,7 @@ void write_party_contact_information(std::vector<std::byte>& buffer,
     const domain::party_contact_information& pci) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(pci.version));
     writer::write_uuid(buffer, pci.id);
-    writer::write_string(buffer, pci.party_id);
+    writer::write_uuid(buffer, pci.party_id);
     writer::write_string(buffer, pci.contact_type);
     writer::write_string(buffer, pci.street_line_1);
     writer::write_string(buffer, pci.street_line_2);
@@ -74,7 +74,7 @@ read_party_contact_information(std::span<const std::byte>& data) {
     if (!id_result) return std::unexpected(id_result.error());
     pci.id = *id_result;
 
-    auto party_id_result = reader::read_string(data);
+    auto party_id_result = reader::read_uuid(data);
     if (!party_id_result) return std::unexpected(party_id_result.error());
     pci.party_id = *party_id_result;
 

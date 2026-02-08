@@ -43,7 +43,7 @@ void write_counterparty_identifier(std::vector<std::byte>& buffer,
     const domain::counterparty_identifier& ci) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(ci.version));
     writer::write_uuid(buffer, ci.id);
-    writer::write_string(buffer, ci.counterparty_id);
+    writer::write_uuid(buffer, ci.counterparty_id);
     writer::write_string(buffer, ci.id_scheme);
     writer::write_string(buffer, ci.id_value);
     writer::write_string(buffer, ci.description);
@@ -67,7 +67,7 @@ read_counterparty_identifier(std::span<const std::byte>& data) {
     if (!id_result) return std::unexpected(id_result.error());
     ci.id = *id_result;
 
-    auto counterparty_id_result = reader::read_string(data);
+    auto counterparty_id_result = reader::read_uuid(data);
     if (!counterparty_id_result) return std::unexpected(counterparty_id_result.error());
     ci.counterparty_id = *counterparty_id_result;
 

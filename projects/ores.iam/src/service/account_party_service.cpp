@@ -20,6 +20,7 @@
 #include "ores.iam/service/account_party_service.hpp"
 
 #include <stdexcept>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::service {
 

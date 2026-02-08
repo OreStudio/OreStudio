@@ -42,8 +42,8 @@ namespace {
 void write_account_party(std::vector<std::byte>& buffer,
     const domain::account_party& ap) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(ap.version));
-    writer::write_string(buffer, ap.account_id);
-    writer::write_string(buffer, ap.party_id);
+    writer::write_uuid(buffer, ap.account_id);
+    writer::write_uuid(buffer, ap.party_id);
     writer::write_string(buffer, ap.recorded_by);
     writer::write_string(buffer, ap.performed_by);
     writer::write_string(buffer, ap.change_reason_code);
@@ -60,11 +60,11 @@ read_account_party(std::span<const std::byte>& data) {
     if (!version_result) return std::unexpected(version_result.error());
     ap.version = static_cast<int>(*version_result);
 
-    auto account_id_result = reader::read_string(data);
+    auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     ap.account_id = *account_id_result;
 
-    auto party_id_result = reader::read_string(data);
+    auto party_id_result = reader::read_uuid(data);
     if (!party_id_result) return std::unexpected(party_id_result.error());
     ap.party_id = *party_id_result;
 
@@ -152,7 +152,7 @@ std::ostream& operator<<(std::ostream& s, const get_account_parties_response& v)
 
 std::vector<std::byte> get_account_parties_by_account_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_string(buffer, account_id);
+    writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
@@ -160,7 +160,7 @@ std::expected<get_account_parties_by_account_request, error_code>
 get_account_parties_by_account_request::deserialize(std::span<const std::byte> data) {
     get_account_parties_by_account_request request;
 
-    auto account_id_result = reader::read_string(data);
+    auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     request.account_id = *account_id_result;
 
@@ -267,8 +267,8 @@ std::vector<std::byte> delete_account_party_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(keys.size()));
     for (const auto& k : keys) {
-        writer::write_string(buffer, k.account_id);
-        writer::write_string(buffer, k.party_id);
+        writer::write_uuid(buffer, k.account_id);
+        writer::write_uuid(buffer, k.party_id);
     }
     return buffer;
 }
@@ -285,11 +285,11 @@ delete_account_party_request::deserialize(std::span<const std::byte> data) {
     for (std::uint32_t i = 0; i < count; ++i) {
         account_party_key k;
 
-        auto account_id_result = reader::read_string(data);
+        auto account_id_result = reader::read_uuid(data);
         if (!account_id_result) return std::unexpected(account_id_result.error());
         k.account_id = *account_id_result;
 
-        auto party_id_result = reader::read_string(data);
+        auto party_id_result = reader::read_uuid(data);
         if (!party_id_result) return std::unexpected(party_id_result.error());
         k.party_id = *party_id_result;
 
@@ -308,8 +308,8 @@ std::vector<std::byte> delete_account_party_response::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
     for (const auto& r : results) {
-        writer::write_string(buffer, r.account_id);
-        writer::write_string(buffer, r.party_id);
+        writer::write_uuid(buffer, r.account_id);
+        writer::write_uuid(buffer, r.party_id);
         writer::write_bool(buffer, r.success);
         writer::write_string(buffer, r.message);
     }
@@ -328,11 +328,11 @@ delete_account_party_response::deserialize(std::span<const std::byte> data) {
     for (std::uint32_t i = 0; i < count; ++i) {
         delete_account_party_result r;
 
-        auto account_id_result = reader::read_string(data);
+        auto account_id_result = reader::read_uuid(data);
         if (!account_id_result) return std::unexpected(account_id_result.error());
         r.account_id = *account_id_result;
 
-        auto party_id_result = reader::read_string(data);
+        auto party_id_result = reader::read_uuid(data);
         if (!party_id_result) return std::unexpected(party_id_result.error());
         r.party_id = *party_id_result;
 

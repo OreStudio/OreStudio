@@ -43,7 +43,7 @@ void write_party_identifier(std::vector<std::byte>& buffer,
     const domain::party_identifier& pi) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(pi.version));
     writer::write_uuid(buffer, pi.id);
-    writer::write_string(buffer, pi.party_id);
+    writer::write_uuid(buffer, pi.party_id);
     writer::write_string(buffer, pi.id_scheme);
     writer::write_string(buffer, pi.id_value);
     writer::write_string(buffer, pi.description);
@@ -67,7 +67,7 @@ read_party_identifier(std::span<const std::byte>& data) {
     if (!id_result) return std::unexpected(id_result.error());
     pi.id = *id_result;
 
-    auto party_id_result = reader::read_string(data);
+    auto party_id_result = reader::read_uuid(data);
     if (!party_id_result) return std::unexpected(party_id_result.error());
     pi.party_id = *party_id_result;
 

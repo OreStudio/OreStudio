@@ -19,6 +19,7 @@
  */
 #include "ores.iam/domain/account_party_table.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::iam::domain {
@@ -30,7 +31,7 @@ std::string convert_to_table(const std::vector<account_party>& v) {
     table << fort::header << "Account" << "Party" << "Recorded By" << "Version" << fort::endr;
 
     for (const auto& ap : v) {
-        table << ap.account_id << ap.party_id << ap.recorded_by << ap.version << fort::endr;
+        table << boost::uuids::to_string(ap.account_id) << boost::uuids::to_string(ap.party_id) << ap.recorded_by << ap.version << fort::endr;
     }
     return table.to_string();
 }

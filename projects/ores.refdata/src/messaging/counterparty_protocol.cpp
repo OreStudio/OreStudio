@@ -46,7 +46,10 @@ void write_counterparty(std::vector<std::byte>& buffer,
     writer::write_string(buffer, cp.full_name);
     writer::write_string(buffer, cp.short_code);
     writer::write_string(buffer, cp.party_type);
-    writer::write_string(buffer, cp.parent_counterparty_id);
+    writer::write_bool(buffer, cp.parent_counterparty_id.has_value());
+    if (cp.parent_counterparty_id.has_value()) {
+        writer::write_uuid(buffer, *cp.parent_counterparty_id);
+    }
     writer::write_string(buffer, cp.business_center_code);
     writer::write_string(buffer, cp.status);
     writer::write_string(buffer, cp.recorded_by);
@@ -81,9 +84,13 @@ read_counterparty(std::span<const std::byte>& data) {
     if (!party_type_result) return std::unexpected(party_type_result.error());
     cp.party_type = *party_type_result;
 
-    auto parent_counterparty_id_result = reader::read_string(data);
-    if (!parent_counterparty_id_result) return std::unexpected(parent_counterparty_id_result.error());
-    cp.parent_counterparty_id = *parent_counterparty_id_result;
+    auto has_parent_counterparty_id_result = reader::read_bool(data);
+    if (!has_parent_counterparty_id_result) return std::unexpected(has_parent_counterparty_id_result.error());
+    if (*has_parent_counterparty_id_result) {
+        auto parent_counterparty_id_result = reader::read_uuid(data);
+        if (!parent_counterparty_id_result) return std::unexpected(parent_counterparty_id_result.error());
+        cp.parent_counterparty_id = *parent_counterparty_id_result;
+    }
 
     auto business_center_code_result = reader::read_string(data);
     if (!business_center_code_result) return std::unexpected(business_center_code_result.error());

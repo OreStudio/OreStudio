@@ -16,9 +16,11 @@
       "column_short": "account",
       "column_title": "Account",
       "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
       "index_comment": "Index for looking up parties for an account",
       "description": "ID of the IAM account.",
-      "detail": "References ores_iam_accounts_tbl.id (soft FK)."
+      "detail": "References ores_iam_accounts_tbl.id (soft FK).",
+      "generator_expr": "uuid_gen()"
     },
 
     "right": {
@@ -26,15 +28,39 @@
       "column_short": "party",
       "column_title": "Party",
       "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
       "index_comment": "Index for finding accounts associated with a party",
       "description": "ID of the party this account is associated with.",
-      "detail": "References ores_refdata_parties_tbl.id (soft FK)."
+      "detail": "References ores_refdata_parties_tbl.id (soft FK).",
+      "generator_expr": "uuid_gen()"
     },
 
     "columns": [],
 
     "sql": {
       "tablename": "ores_iam_account_parties_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "account_party",
+      "name_short": "account_parties",
+      "name_singular_words": "account party",
+      "name_words": "account parties",
+      "order_column": "account_id"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "ap",
+      "table_display": [
+        {"column": "account_id", "header": "Account"},
+        {"column": "party_id", "header": "Party"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
     }
   }
 }

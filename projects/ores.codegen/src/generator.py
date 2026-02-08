@@ -758,22 +758,30 @@ def _format_description_as_comment(description):
     return '\n'.join(formatted_lines)
 
 
-def _prepare_table_display(cpp_section):
+def _prepare_table_display(cpp_section, uuid_columns=None):
     """
-    Prepare table_display items by adding iterator_var to each item.
+    Prepare table_display items by adding iterator_var and is_uuid to each item.
 
     Mustache can't access parent context variables from within a loop,
-    so we add the iterator_var to each table_display item.
+    so we add the iterator_var to each table_display item. We also flag
+    UUID columns so the table template can wrap them with to_string().
 
     Args:
         cpp_section (dict): The 'cpp' section of the model
+        uuid_columns (set): Set of column names that are UUID type
     """
     if 'table_display' not in cpp_section:
         return
 
+    uuid_columns = uuid_columns or set()
     iter_var = cpp_section.get('iterator_var', 'e')
+    has_uuid = False
     for item in cpp_section['table_display']:
         item['iter_var'] = iter_var
+        item['is_uuid'] = item['column'] in uuid_columns
+        if item['is_uuid']:
+            has_uuid = True
+    cpp_section['has_uuid_table_display'] = has_uuid
 
 
 def _format_detail_for_doxygen(detail):
@@ -1070,15 +1078,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'columns' in domain_entity:
             _mark_last_item(domain_entity['columns'])
             _format_columns_for_doxygen(domain_entity['columns'])
-            # Add is_int flag and iterator_var for protocol serialization
+            # Add type flags and iterator_var for protocol serialization
             for col in domain_entity['columns']:
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
+                is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
+                col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
+                col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
-            # Add iterator_var to natural_keys for protocol serialization
+            # Add iterator_var and is_uuid to natural_keys for protocol serialization
             for key in domain_entity['natural_keys']:
                 key['iter_var'] = iter_var
+                key['is_uuid'] = key.get('type') == 'uuid' or 'boost::uuids::uuid' in key.get('cpp_type', '')
         if 'indexes' in domain_entity:
             _mark_last_item(domain_entity['indexes'])
         if 'validations' in domain_entity:
@@ -1109,7 +1121,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['entity_title_lower'] = domain_entity['entity_title'].lower()
         # Prepare table display items for C++ templates
         if 'cpp' in domain_entity:
-            _prepare_table_display(domain_entity['cpp'])
+            # Collect UUID column names for table display
+            uuid_columns = set()
+            if 'primary_key' in domain_entity and domain_entity['primary_key'].get('is_uuid'):
+                uuid_columns.add(domain_entity['primary_key']['column'])
+            if 'natural_keys' in domain_entity:
+                for key in domain_entity['natural_keys']:
+                    if key.get('is_uuid'):
+                        uuid_columns.add(key['column'])
+            if 'columns' in domain_entity:
+                for col in domain_entity['columns']:
+                    if col.get('is_uuid') or col.get('is_optional_uuid'):
+                        uuid_columns.add(col['name'])
+            _prepare_table_display(domain_entity['cpp'], uuid_columns)
         # Copy repository section fields to top level for template access
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
@@ -1144,15 +1168,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'columns' in junction:
             _mark_last_item(junction['columns'])
             _format_columns_for_doxygen(junction['columns'])
-            # Add is_int flag and iterator_var for protocol serialization
+            # Add type flags and iterator_var for protocol serialization
             for col in junction['columns']:
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
+                is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
+                col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
+                col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['iter_var'] = iter_var
-        # Add lowercase versions for left/right columns
-        if 'left' in junction and 'column_title' in junction['left']:
-            junction['left']['column_title_lower'] = junction['left']['column_title'].lower()
-        if 'right' in junction and 'column_title' in junction['right']:
-            junction['right']['column_title_lower'] = junction['right']['column_title'].lower()
+        # Add lowercase versions and UUID flags for left/right columns
+        if 'left' in junction:
+            if 'column_title' in junction['left']:
+                junction['left']['column_title_lower'] = junction['left']['column_title'].lower()
+            junction['left']['is_uuid'] = junction['left'].get('type') == 'uuid'
+        if 'right' in junction:
+            if 'column_title' in junction['right']:
+                junction['right']['column_title_lower'] = junction['right']['column_title'].lower()
+            junction['right']['is_uuid'] = junction['right'].get('type') == 'uuid'
+        junction['has_uuid_left_or_right'] = (
+            junction.get('left', {}).get('is_uuid', False) or
+            junction.get('right', {}).get('is_uuid', False)
+        )
         # Format description as comment block lines (for SQL)
         if 'description' in junction:
             junction['description_formatted'] = _format_description_as_comment(junction['description'])
@@ -1173,7 +1208,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction['name_title_lower'] = junction['name_title'].lower()
         # Prepare table display items for C++ templates
         if 'cpp' in junction:
-            _prepare_table_display(junction['cpp'])
+            # Collect UUID column names for table display
+            uuid_columns = set()
+            if junction.get('left', {}).get('is_uuid'):
+                uuid_columns.add(junction['left']['column'])
+            if junction.get('right', {}).get('is_uuid'):
+                uuid_columns.add(junction['right']['column'])
+            if 'columns' in junction:
+                for col in junction['columns']:
+                    if col.get('is_uuid'):
+                        uuid_columns.add(col['name'])
+            _prepare_table_display(junction['cpp'], uuid_columns)
         # Copy repository section fields to top level for template access
         if 'repository' in junction:
             for key, value in junction['repository'].items():

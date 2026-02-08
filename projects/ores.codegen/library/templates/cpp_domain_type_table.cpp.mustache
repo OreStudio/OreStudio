@@ -14,7 +14,7 @@ std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
     table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
 
     for (const auto& {{cpp.iterator_var}} : v) {
-        table{{#cpp.table_display}} << {{iter_var}}.{{column}}{{/cpp.table_display}} << fort::endr;
+        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}} << {{iter_var}}.{{column}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
     }
     return table.to_string();
 }
@@ -24,6 +24,9 @@ std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
 {{#junction}}
 #include "ores.{{component}}/domain/{{name_singular}}_table.hpp"
 
+{{#cpp.has_uuid_table_display}}
+#include <boost/uuid/uuid_io.hpp>
+{{/cpp.has_uuid_table_display}}
 #include <fort.hpp>
 
 namespace ores::{{component}}::domain {
@@ -35,7 +38,7 @@ std::string convert_to_table(const std::vector<{{name_singular}}>& v) {
     table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
 
     for (const auto& {{cpp.iterator_var}} : v) {
-        table{{#cpp.table_display}} << {{iter_var}}.{{column}}{{/cpp.table_display}} << fort::endr;
+        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}} << {{iter_var}}.{{column}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
     }
     return table.to_string();
 }

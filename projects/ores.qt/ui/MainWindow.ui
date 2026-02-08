@@ -51,8 +51,22 @@
      <property name="title">
       <string>&amp;Reference Data</string>
      </property>
+     <widget class="QMenu" name="menuParties">
+      <property name="title">
+       <string>&amp;Parties</string>
+      </property>
+      <addaction name="ActionParties"/>
+      <addaction name="ActionCounterparties"/>
+      <addaction name="separator"/>
+      <addaction name="ActionPartyTypes"/>
+      <addaction name="ActionPartyStatuses"/>
+      <addaction name="ActionPartyIdSchemes"/>
+      <addaction name="ActionContactTypes"/>
+     </widget>
      <addaction name="CurrenciesAction"/>
      <addaction name="CountriesAction"/>
+     <addaction name="separator"/>
+     <addaction name="menuParties"/>
     </widget>
     <widget class="QMenu" name="menuAssets">
      <property name="title">
@@ -439,6 +453,54 @@
    </property>
    <property name="toolTip">
     <string>Manage dataset bundles - collections of related datasets</string>
+   </property>
+  </action>
+  <action name="ActionPartyTypes">
+   <property name="text">
+    <string>Party &amp;Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage party type classifications</string>
+   </property>
+  </action>
+  <action name="ActionPartyStatuses">
+   <property name="text">
+    <string>Party &amp;Statuses</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage party status values</string>
+   </property>
+  </action>
+  <action name="ActionPartyIdSchemes">
+   <property name="text">
+    <string>Party &amp;ID Schemes</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage party identifier scheme types</string>
+   </property>
+  </action>
+  <action name="ActionContactTypes">
+   <property name="text">
+    <string>&amp;Contact Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage contact type classifications</string>
+   </property>
+  </action>
+  <action name="ActionParties">
+   <property name="text">
+    <string>&amp;Parties</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage internal parties</string>
+   </property>
+  </action>
+  <action name="ActionCounterparties">
+   <property name="text">
+    <string>C&amp;ounterparties</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage external counterparties</string>
    </property>
   </action>
  </widget>

@@ -26,6 +26,8 @@
     <file>icons/fluentui/filled/ic_fluent_clipboard_number_123_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clock_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_code_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_column_triple_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_contact_card_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_currency_dollar_euro_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_database_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_delete_20_filled.svg</file>
@@ -35,15 +37,20 @@
     <file>icons/fluentui/filled/ic_fluent_document_table_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_edit_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_error_circle_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_flag_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_folder_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_globe_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_handshake_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_folder_open_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_history_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_info_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_key_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_key_multiple_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_library_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_lock_closed_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_lock_open_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_note_edit_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_organization_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_password_reset_48_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_person_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_person_accounts_20_filled.svg</file>
@@ -55,6 +62,7 @@
     <file>icons/fluentui/filled/ic_fluent_record_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_save_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_server_link_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_settings_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_star_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_table_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_tag_20_filled.svg</file>
@@ -84,6 +92,8 @@
     <file>icons/fluentui/regular/ic_fluent_clipboard_number_123_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clock_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_code_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_column_triple_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_contact_card_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_currency_dollar_euro_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_database_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_delete_20_regular.svg</file>
@@ -97,13 +107,16 @@
     <file>icons/fluentui/regular/ic_fluent_folder_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_folder_open_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_globe_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_handshake_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_history_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_info_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_key_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_key_multiple_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_library_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_lock_closed_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_lock_open_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_note_edit_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_organization_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_password_reset_48_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_person_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_person_accounts_20_regular.svg</file>
@@ -133,6 +146,9 @@
     <file>icons/solarized/Bold/arrow-left.svg</file>
     <file>icons/solarized/Bold/arrow-right.svg</file>
     <file>icons/solarized/Bold/buildings.svg</file>
+    <file>icons/solarized/Bold/buildings-2.svg</file>
+    <file>icons/solarized/Bold/chart-square.svg</file>
+    <file>icons/solarized/Bold/chat-round.svg</file>
     <file>icons/solarized/Bold/check-circle.svg</file>
     <file>icons/solarized/Bold/clipboard-list.svg</file>
     <file>icons/solarized/Bold/clock-circle.svg</file>
@@ -147,6 +163,7 @@
     <file>icons/solarized/Bold/download-square.svg</file>
     <file>icons/solarized/Bold/earth.svg</file>
     <file>icons/solarized/Bold/flag.svg</file>
+    <file>icons/solarized/Bold/hand-shake.svg</file>
     <file>icons/solarized/Bold/folder-open.svg</file>
     <file>icons/solarized/Bold/folder.svg</file>
     <file>icons/solarized/Bold/forbidden-circle.svg</file>
@@ -187,6 +204,9 @@
     <file>icons/solarized/Linear/arrow-left.svg</file>
     <file>icons/solarized/Linear/arrow-right.svg</file>
     <file>icons/solarized/Linear/buildings.svg</file>
+    <file>icons/solarized/Linear/buildings-2.svg</file>
+    <file>icons/solarized/Linear/chart-square.svg</file>
+    <file>icons/solarized/Linear/chat-round.svg</file>
     <file>icons/solarized/Linear/check-circle.svg</file>
     <file>icons/solarized/Linear/clipboard-list.svg</file>
     <file>icons/solarized/Linear/clock-circle.svg</file>
@@ -201,6 +221,7 @@
     <file>icons/solarized/Linear/download-square.svg</file>
     <file>icons/solarized/Linear/earth.svg</file>
     <file>icons/solarized/Linear/flag.svg</file>
+    <file>icons/solarized/Linear/hand-shake.svg</file>
     <file>icons/solarized/Linear/folder-open.svg</file>
     <file>icons/solarized/Linear/folder.svg</file>
     <file>icons/solarized/Linear/forbidden-circle.svg</file>

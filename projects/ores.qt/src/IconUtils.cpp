@@ -51,6 +51,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Checkmark: return {"ic_fluent_checkmark_20", "check-circle.svg"};
         case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
         case Icon::Code: return {"ic_fluent_code_20", "code-file.svg"};
+        case Icon::ContactCard: return {"ic_fluent_contact_card_20", "chat-round.svg"};
         case Icon::Currency: return {"ic_fluent_currency_dollar_euro_20", "dollar-minimalistic.svg"};
         case Icon::Histogram: return {"ic_fluent_column_triple_20", "chart-square.svg"};
         case Icon::Database: return {"ic_fluent_database_20", "server-square.svg"};
@@ -68,6 +69,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Folder: return {"ic_fluent_folder_20", "folder.svg"};
         case Icon::FolderOpen: return {"ic_fluent_folder_open_20", "folder-open.svg"};
         case Icon::Globe: return {"ic_fluent_globe_20", "earth.svg"};
+        case Icon::Handshake: return {"ic_fluent_handshake_20", "hand-shake.svg"};
         case Icon::History: return {"ic_fluent_history_20", "history.svg"};
         case Icon::ImportCsv: return {"ic_fluent_arrow_download_csv_20", "import_csv.svg"};
         case Icon::ImportFpml: return {"ic_fluent_arrow_download_fpml_20", "import_fpml.svg"};
@@ -80,6 +82,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::LockOpen: return {"ic_fluent_lock_unlocked_20", "lock-unlocked.svg"};
         case Icon::NoteEdit: return {"ic_fluent_note_edit_20", "notes-minimalistic.svg"};
         case Icon::Open: return {"ic_fluent_open_20", "folder-open.svg"};
+        case Icon::Organization: return {"ic_fluent_organization_20", "buildings-2.svg"};
         case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};
         case Icon::Person: return {"ic_fluent_person_20", "user-circle.svg"};
         case Icon::PersonAccounts: return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};

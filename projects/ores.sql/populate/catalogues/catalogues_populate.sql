@@ -100,6 +100,14 @@
 \echo '--- Cryptocurrency ---'
 \ir ../crypto/crypto_populate.sql
 
+-- =============================================================================
+-- GLEIF LEI (Legal Entity Identifier reference data)
+-- =============================================================================
+
+\echo ''
+\echo '--- GLEIF LEI ---'
+\ir ../lei/lei_populate.sql
+
 \echo ''
 \echo '=== Data Catalogues Layer Population Complete ==='
 

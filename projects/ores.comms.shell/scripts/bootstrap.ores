@@ -1,0 +1,10 @@
+connect localhost 51004 test
+bootstrap newuser3 Secure-Password-123 newuser3@test.com
+accounts login newuser3 Secure-Password-123
+tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
+accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
+tenants add example "Example Corp" organisation example.com "Example Corporation tenant"
+accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
+permissions suggest newuser60 example.com
+permissions suggest newuser61 acme.com
+exit

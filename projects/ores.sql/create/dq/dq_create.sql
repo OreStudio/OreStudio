@@ -91,6 +91,10 @@
 \ir ./dq_reporting_regimes_artefact_create.sql
 \ir ./dq_supervisory_bodies_artefact_create.sql
 
+-- GLEIF LEI artefact tables
+\ir ./dq_lei_entities_artefact_create.sql
+\ir ./dq_lei_relationships_artefact_create.sql
+
 -- DQ functions
 \ir ./dq_functions_create.sql
 \ir ./dq_population_functions_create.sql

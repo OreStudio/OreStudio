@@ -97,6 +97,12 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_iam_system_tenant_id_fn(), 'supervisory_bodies', 0, 'Supervisory Bodies', 'FpML supervisory body codes',
      'dq_supervisory_bodies_artefact_tbl', 'refdata_supervisory_bodies_tbl', 'ores_dq_supervisory_bodies_publish_fn', 24,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'lei_entities', 0, 'LEI Entities', 'GLEIF LEI entity master data',
+     'dq_lei_entities_artefact_tbl', null, null, 25,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'lei_relationships', 0, 'LEI Relationships', 'GLEIF LEI corporate hierarchy relationships',
+     'dq_lei_relationships_artefact_tbl', null, null, 26,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

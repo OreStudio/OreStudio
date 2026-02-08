@@ -1,0 +1,48 @@
+{
+  "entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "dq",
+    "entity_singular": "lei_entity",
+    "entity_plural": "lei_entities",
+    "description": "GLEIF LEI entity master data from LEI2 golden copy files",
+    "has_tenant_id": true,
+    "has_image_id": false,
+    "has_coding_scheme": false,
+    "has_artefact_insert_fn": true,
+    "primary_key": {
+      "column": "lei",
+      "type": "text",
+      "is_text": true
+    },
+    "columns": [
+      {"name": "entity_legal_name", "type": "text", "nullable": false},
+      {"name": "entity_entity_category", "type": "text", "nullable": false},
+      {"name": "entity_entity_sub_category", "type": "text", "nullable": true},
+      {"name": "entity_entity_status", "type": "text", "nullable": false},
+      {"name": "entity_legal_form_entity_legal_form_code", "type": "text", "nullable": true},
+      {"name": "entity_legal_form_other_legal_form", "type": "text", "nullable": true},
+      {"name": "entity_legal_jurisdiction", "type": "text", "nullable": true},
+      {"name": "entity_legal_address_first_address_line", "type": "text", "nullable": true},
+      {"name": "entity_legal_address_city", "type": "text", "nullable": true},
+      {"name": "entity_legal_address_region", "type": "text", "nullable": true},
+      {"name": "entity_legal_address_country", "type": "text", "nullable": false},
+      {"name": "entity_legal_address_postal_code", "type": "text", "nullable": true},
+      {"name": "entity_headquarters_address_first_address_line", "type": "text", "nullable": true},
+      {"name": "entity_headquarters_address_city", "type": "text", "nullable": true},
+      {"name": "entity_headquarters_address_region", "type": "text", "nullable": true},
+      {"name": "entity_headquarters_address_country", "type": "text", "nullable": true},
+      {"name": "entity_headquarters_address_postal_code", "type": "text", "nullable": true},
+      {"name": "entity_entity_creation_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_initial_registration_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_last_update_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_next_renewal_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_registration_status", "type": "text", "nullable": true}
+    ],
+    "artefact_indexes": [
+      {"name": "entity_legal_address_country", "columns": "entity_legal_address_country"},
+      {"name": "entity_entity_category", "columns": "entity_entity_category"}
+    ],
+    "indexes": []
+  }
+}

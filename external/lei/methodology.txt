@@ -77,13 +77,36 @@ Large (~50K entities):
   per_country=60, per_depth=30, per_sector=40
   per_category=60, per_fund_type=30, per_legal_form=10
 
-FUTURE STEPS (NOT YET IMPLEMENTED)
-----------------------------------
-4. GENERATE SQL FILES
-   - Parser to read LEI subset CSV and generate SQL
-   - Output: Schema and populate SQL files for LEI entities
+4. GENERATE SQL POPULATE FILES
+   Script: projects/ores.codegen/scripts/generate_lei_metadata.sh
+   Command: ./generate_lei_metadata.sh
+   Or directly: python3 projects/ores.codegen/src/lei_generate_metadata_sql.py
+
+   The generator reads CSV subset files and the manifest (external/lei/manifest.json)
+   to produce SQL populate scripts in projects/ores.sql/populate/lei/:
+
+   Source file types and their target artefact tables:
+   - LEI2 (lei2-golden-copy) CSV → ores_dq_lei_entities_artefact_tbl
+     Entity master data: LEI code, legal name, entity category, legal form,
+     jurisdiction, legal and headquarters addresses, registration metadata.
+   - RR (rr-golden-copy) CSV → ores_dq_lei_relationships_artefact_tbl
+     Corporate hierarchy: parent-child relationships (IS_DIRECTLY_CONSOLIDATED_BY,
+     IS_ULTIMATELY_CONSOLIDATED_BY), relationship status and period dates.
+
+   Generated files:
+   - lei_catalog_populate.sql          - GLEIF catalog registration
+   - lei_methodology_populate.sql      - Methodology registration
+   - lei_dataset_populate.sql          - 4 dataset registrations (entities/relationships x small/large)
+   - lei_dataset_dependency_populate.sql - 2 dataset dependencies
+   - lei_entities_small_artefact_populate.sql  - Entity artefact data (~6K rows)
+   - lei_entities_large_artefact_populate.sql  - Entity artefact data (~15K rows)
+   - lei_relationships_small_artefact_populate.sql - Relationship artefact data (~2K rows)
+   - lei_relationships_large_artefact_populate.sql - Relationship artefact data (~4K rows)
+   - lei_populate.sql                  - Master include in dependency order
+
+   Each artefact populate file uses PL/pgSQL with VALUES clauses for idempotent
+   bulk insertion: lookup dataset_id, DELETE existing, INSERT from VALUES.
 
 5. COMMIT GENERATED SQL
-   - git add projects/ores.sql/create/refdata_lei*.sql
-   - git add projects/ores.sql/populate/lei*.sql
-   - git commit -m "[sql] Generate LEI reference data files"
+   git add projects/ores.sql/populate/lei/
+   git commit -m "[sql] Generate LEI populate files"

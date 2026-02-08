@@ -1,0 +1,37 @@
+{
+  "entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "dq",
+    "entity_singular": "lei_relationship",
+    "entity_plural": "lei_relationships",
+    "description": "GLEIF LEI corporate hierarchy relationships from RR golden copy files",
+    "has_tenant_id": true,
+    "has_image_id": false,
+    "has_coding_scheme": false,
+    "has_artefact_insert_fn": true,
+    "primary_key": {
+      "column": "relationship_start_node_node_id",
+      "type": "text",
+      "is_text": true
+    },
+    "columns": [
+      {"name": "relationship_start_node_node_id_type", "type": "text", "nullable": false},
+      {"name": "relationship_end_node_node_id", "type": "text", "nullable": false},
+      {"name": "relationship_end_node_node_id_type", "type": "text", "nullable": false},
+      {"name": "relationship_relationship_type", "type": "text", "nullable": false},
+      {"name": "relationship_relationship_status", "type": "text", "nullable": false},
+      {"name": "relationship_period_1_start_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "relationship_period_1_end_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_initial_registration_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_last_update_date", "type": "timestamp with time zone", "nullable": true},
+      {"name": "registration_registration_status", "type": "text", "nullable": true},
+      {"name": "registration_validation_sources", "type": "text", "nullable": true}
+    ],
+    "artefact_indexes": [
+      {"name": "relationship_end_node_node_id", "columns": "relationship_end_node_node_id"},
+      {"name": "relationship_relationship_type", "columns": "relationship_relationship_type"}
+    ],
+    "indexes": []
+  }
+}

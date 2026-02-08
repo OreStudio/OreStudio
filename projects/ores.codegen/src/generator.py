@@ -1167,9 +1167,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if 'detail_fields' not in qt:
                 key_field = qt.get('key_field', 'code')
                 qt['detail_fields'] = [
-                    {'field': key_field, 'label': 'Code', 'widget': 'codeEdit',
+                    {'field': key_field, 'label': key_field.replace('_', ' ').title(),
+                     'widget': 'codeEdit',
                      'type': 'line_edit', 'is_key': True, 'is_required': True,
-                     'placeholder': 'Enter ' + domain_entity.get('entity_singular_words', 'item') + ' code'},
+                     'placeholder': 'Enter ' + domain_entity.get('entity_singular_words', 'item') + ' ' + key_field.replace('_', ' ')},
                     {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
                      'type': 'line_edit', 'is_required': True,
                      'placeholder': 'Enter display name'},

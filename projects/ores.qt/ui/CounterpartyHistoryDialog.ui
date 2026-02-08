@@ -150,7 +150,7 @@
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
-                <widget class="QLabel" name="codeLabel">
+                <widget class="QLabel" name="codeValueLabel">
                  <property name="text">
                   <string>Short Code:</string>
                  </property>
@@ -164,7 +164,7 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="nameLabel">
+                <widget class="QLabel" name="nameValueLabel">
                  <property name="text">
                   <string>Full Name:</string>
                  </property>
@@ -178,7 +178,7 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="partyTypeLabel">
+                <widget class="QLabel" name="partyTypeValueLabel">
                  <property name="text">
                   <string>Party Type:</string>
                  </property>
@@ -192,7 +192,7 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="statusLabel">
+                <widget class="QLabel" name="statusValueLabel">
                  <property name="text">
                   <string>Status:</string>
                  </property>
@@ -206,7 +206,7 @@
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="businessCenterLabel">
+                <widget class="QLabel" name="businessCenterValueLabel">
                  <property name="text">
                   <string>Business Center:</string>
                  </property>

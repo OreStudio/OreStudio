@@ -19,473 +19,338 @@
  */
 #include "ores.qt/TenantHistoryDialog.hpp"
 
-#include <QIcon>
-#include <QDateTime>
-#include <QScrollBar>
 #include <QVBoxLayout>
+#include <QHeaderView>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
 #include "ui_TenantHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-
-struct HistoryResult {
-    bool success;
-    std::vector<iam::domain::tenant> versions;
-    QString error_message;
-    QString error_details;
-};
-
-}
-
-const QIcon& TenantHistoryDialog::getHistoryIcon() const {
-    static const QIcon historyIcon = IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor);
-    return historyIcon;
-}
-
-TenantHistoryDialog::TenantHistoryDialog(const QString& tenantCode,
-    ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), ui_(new Ui::TenantHistoryDialog),
-      clientManager_(clientManager), tenantCode_(tenantCode),
-      toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr) {
-
-    BOOST_LOG_SEV(lg(), info) << "Creating tenant history widget for: "
-                              << tenantCode_.toStdString();
+TenantHistoryDialog::TenantHistoryDialog(
+    const boost::uuids::uuid& id,
+    const QString& code,
+    ClientManager* clientManager,
+    QWidget* parent)
+    : QWidget(parent),
+      ui_(new Ui::TenantHistoryDialog),
+      id_(id),
+      code_(code),
+      clientManager_(clientManager),
+      toolbar_(nullptr),
+      openVersionAction_(nullptr),
+      revertAction_(nullptr) {
 
     ui_->setupUi(this);
-
+    setupUi();
     setupToolbar();
-
-    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
-            this, [this](int currentRow, int, int, int) {
-        onVersionSelected(currentRow);
-    });
-
-    // Double-click opens the version in read-only mode
-    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
-            this, [this](int, int) {
-        onOpenClicked();
-    });
-
-    ui_->versionListWidget->setAlternatingRowColors(true);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->resizeRowsToContents();
-
-    QHeaderView* versionVerticalHeader = ui_->versionListWidget->verticalHeader();
-    QHeaderView* versionHorizontalHeader = ui_->versionListWidget->horizontalHeader();
-    versionVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-    versionHorizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->changesTableWidget->setColumnWidth(0, 200);
-    ui_->changesTableWidget->setColumnWidth(1, 200);
-
-    updateButtonStates();
+    setupConnections();
 }
 
 TenantHistoryDialog::~TenantHistoryDialog() {
-    BOOST_LOG_SEV(lg(), info) << "Destroying tenant history widget";
+    delete ui_;
+}
 
-    // Disconnect and cancel any active QFutureWatcher objects
-    const auto watchers = findChildren<QFutureWatcherBase*>();
-    for (auto* watcher : watchers) {
-        disconnect(watcher, nullptr, this, nullptr);
-        watcher->cancel();
-        watcher->waitForFinished();
+void TenantHistoryDialog::setupUi() {
+    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
+
+    // Setup version list table
+    ui_->versionListWidget->setColumnCount(5);
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {"Version", "Recorded At", "Recorded By", "Performed By", "Commentary"});
+    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
+    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    // Setup changes table
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {"Field", "Old Value", "New Value"});
+    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+}
+
+void TenantHistoryDialog::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
+
+    openVersionAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
+        tr("Open"));
+    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
+    openVersionAction_->setEnabled(false);
+
+    revertAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
+        tr("Revert"));
+    revertAction_->setToolTip(tr("Revert to this version"));
+    revertAction_->setEnabled(false);
+
+    // Insert toolbar at the top of the layout
+    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
+    if (layout) {
+        layout->insertWidget(0, toolbar_);
     }
+}
+
+void TenantHistoryDialog::setupConnections() {
+    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
+            this, &TenantHistoryDialog::onVersionSelected);
+    connect(openVersionAction_, &QAction::triggered,
+            this, &TenantHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_, &QAction::triggered,
+            this, &TenantHistoryDialog::onRevertClicked);
 }
 
 void TenantHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading tenant history for: "
-                              << tenantCode_.toStdString();
-
     if (!clientManager_ || !clientManager_->isConnected()) {
-        onHistoryLoadError("Not connected to server");
+        emit errorOccurred("Not connected to server");
         return;
     }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for tenant: " << code_.toStdString();
+    emit statusChanged(tr("Loading history..."));
 
     QPointer<TenantHistoryDialog> self = this;
 
-    // First we need to get the tenant ID from the code
-    // For now, we'll need to find the tenant by code in the list
-    // The history request requires a UUID
+    struct HistoryResult {
+        bool success;
+        std::string message;
+        std::vector<iam::domain::tenant> versions;
+    };
 
-    QFuture<HistoryResult> future = QtConcurrent::run([self]() -> HistoryResult {
-        return exception_helper::wrap_async_fetch<HistoryResult>([&]() -> HistoryResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .versions = {},
-                        .error_message = "Dialog closed",
-                        .error_details = {}};
-            }
-
-            // First get all tenants to find the ID for this code
-            iam::messaging::get_tenants_request tenants_request;
-            tenants_request.include_deleted = true;  // Include historical versions
-
-            auto tenants_result = self->clientManager_->
-                process_authenticated_request(std::move(tenants_request));
-
-            if (!tenants_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch tenants: "
-                                           << comms::net::to_string(tenants_result.error());
-                return {.success = false, .versions = {},
-                        .error_message = QString::fromStdString(
-                            "Failed to fetch tenants: " +
-                            comms::net::to_string(tenants_result.error())),
-                        .error_details = {}};
-            }
-
-            // Find the tenant with matching code
-            boost::uuids::uuid tenant_id;
-            bool found = false;
-            for (const auto& tenant : tenants_result->tenants) {
-                if (tenant.code == self->tenantCode_.toStdString()) {
-                    tenant_id = tenant.id;
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                return {.success = false, .versions = {},
-                        .error_message = QString("Tenant with code '%1' not found")
-                            .arg(self->tenantCode_),
-                        .error_details = {}};
-            }
-
-            // Now get the history
-            iam::messaging::get_tenant_history_request history_request;
-            history_request.id = tenant_id;
-
-            auto history_result = self->clientManager_->
-                process_authenticated_request(std::move(history_request));
-
-            if (!history_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch tenant history: "
-                                           << comms::net::to_string(history_result.error());
-                return {.success = false, .versions = {},
-                        .error_message = QString::fromStdString(
-                            "Failed to fetch tenant history: " +
-                            comms::net::to_string(history_result.error())),
-                        .error_details = {}};
-            }
-
-            if (!history_result->success) {
-                return {.success = false, .versions = {},
-                        .error_message = QString::fromStdString(history_result->message),
-                        .error_details = {}};
-            }
-
-            return {.success = true, .versions = std::move(history_result->versions),
-                    .error_message = {}, .error_details = {}};
-        }, "tenant history");
-    });
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
-        [self, watcher]() {
-        if (!self) return;
-
-        const auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!result.success) {
-            self->onHistoryLoadError(result.error_message);
-            return;
+    auto task = [self, id = id_]() -> HistoryResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed", {}};
         }
 
-        self->history_ = std::move(result.versions);
-        self->onHistoryLoaded();
+        iam::messaging::get_tenant_history_request request;
+        request.id = id;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_tenant_history_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server", {}};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, "Failed to decompress response", {}};
+        }
+
+        auto response = iam::messaging::get_tenant_history_response::
+            deserialize(*payload_result);
+
+        if (!response) {
+            return {false, "Invalid server response", {}};
+        }
+
+        return {response->success, response->message,
+                std::move(response->versions)};
+    };
+
+    auto* watcher = new QFutureWatcher<HistoryResult>(self);
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            self->versions_ = std::move(result.versions);
+            self->updateVersionList();
+            emit self->statusChanged(
+                QString("Loaded %1 versions").arg(self->versions_.size()));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
+            emit self->errorOccurred(QString::fromStdString(result.message));
+        }
     });
 
+    QFuture<HistoryResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void TenantHistoryDialog::onHistoryLoaded() {
-    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
-                              << history_.size() << " versions";
-
-    const QIcon& cachedIcon = getHistoryIcon();
+void TenantHistoryDialog::updateVersionList() {
     ui_->versionListWidget->setRowCount(0);
-    ui_->versionListWidget->setRowCount(static_cast<int>(history_.size()));
 
-    for (int i = 0; i < static_cast<int>(history_.size()); ++i) {
-        const auto& version = history_[i];
+    for (const auto& version : versions_) {
+        int row = ui_->versionListWidget->rowCount();
+        ui_->versionListWidget->insertRow(row);
 
-        auto* versionItem =
-            new QTableWidgetItem(QString::number(version.version));
-        auto* recordedAtItem =
-            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
+        versionItem->setTextAlignment(Qt::AlignCenter);
+        ui_->versionListWidget->setItem(row, 0, versionItem);
 
-        versionItem->setIcon(cachedIcon);
+        auto* recordedAtItem = new QTableWidgetItem(
+            relative_time_helper::format(version.recorded_at));
+        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        ui_->versionListWidget->setItem(i, 0, versionItem);
-        ui_->versionListWidget->setItem(i, 1, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        auto* recordedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.recorded_by));
+        ui_->versionListWidget->setItem(row, 2, recordedByItem);
+
+        auto* performedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.performed_by));
+        ui_->versionListWidget->setItem(row, 3, performedByItem);
+
+        auto* commentaryItem = new QTableWidgetItem(
+            QString::fromStdString(version.change_commentary));
+        ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
-    if (!history_.empty())
+    // Select the first (most recent) version
+    if (!versions_.empty()) {
         ui_->versionListWidget->selectRow(0);
+    }
+}
 
-    if (!history_.empty()) {
-        const auto& latest = history_[0];
-        ui_->titleLabel->setText(QString("Tenant History: %1")
-            .arg(QString::fromStdString(latest.code)));
+void TenantHistoryDialog::onVersionSelected() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    if (selected.isEmpty()) {
+        updateActionStates();
+        return;
     }
 
-    updateButtonStates();
-
-    emit statusChanged(QString("Loaded %1 versions")
-        .arg(history_.size()));
+    int row = selected.first()->row();
+    updateChangesTable(row);
+    updateFullDetails(row);
+    updateActionStates();
 }
 
-void TenantHistoryDialog::onHistoryLoadError(const QString& error_msg) {
-    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
-                               << error_msg.toStdString();
-
-    emit errorOccurred(QString("Failed to load tenant history: %1")
-        .arg(error_msg));
-    MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load tenant history:\n%1")
-        .arg(error_msg));
-}
-
-void TenantHistoryDialog::onVersionSelected(int index) {
-    if (index < 0 || index >= static_cast<int>(history_.size()))
-        return;
-
-    BOOST_LOG_SEV(lg(), trace) << "Version selected: " << index;
-
-    displayChangesTab(index);
-    displayFullDetailsTab(index);
-}
-
-void TenantHistoryDialog::displayChangesTab(int version_index) {
+void TenantHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (version_index >= static_cast<int>(history_.size()))
+    if (currentVersionIndex < 0 ||
+        static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
         return;
+    }
 
-    const auto& current = history_[version_index];
-
-    // If this is the first (oldest) version, there's nothing to diff against
-    if (version_index == static_cast<int>(history_.size()) - 1)
+    // Get the next older version to compare against
+    int previousVersionIndex = currentVersionIndex + 1;
+    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
+        // This is the first version, no changes to show
+        ui_->changesTableWidget->insertRow(0);
+        ui_->changesTableWidget->setItem(0, 0,
+            new QTableWidgetItem("(Initial version)"));
+        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
+        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
         return;
+    }
 
-    // Calculate diff with previous version
-    const auto& previous = history_[version_index + 1];
-    auto diffs = calculateDiff(current, previous);
+    const auto& current = versions_[currentVersionIndex];
+    const auto& previous = versions_[previousVersionIndex];
 
-    ui_->changesTableWidget->setRowCount(diffs.size());
+    auto addChange = [this](const QString& field,
+                            const QString& oldVal, const QString& newVal) {
+        int row = ui_->changesTableWidget->rowCount();
+        ui_->changesTableWidget->insertRow(row);
+        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
+        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
+        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
+    };
 
-    for (int i = 0; i < diffs.size(); ++i) {
-        const auto& [field, values] = diffs[i];
-        const auto& [old_val, new_val] = values;
+    if (current.code != previous.code) {
+        addChange("Code",
+                  QString::fromStdString(previous.code),
+                  QString::fromStdString(current.code));
+    }
 
-        auto* fieldItem = new QTableWidgetItem(field);
-        auto* oldItem = new QTableWidgetItem(old_val);
-        auto* newItem = new QTableWidgetItem(new_val);
+    if (current.name != previous.name) {
+        addChange("Name",
+                  QString::fromStdString(previous.name),
+                  QString::fromStdString(current.name));
+    }
 
-        ui_->changesTableWidget->setItem(i, 0, fieldItem);
-        ui_->changesTableWidget->setItem(i, 1, oldItem);
-        ui_->changesTableWidget->setItem(i, 2, newItem);
+    if (current.type != previous.type) {
+        addChange("Type",
+                  QString::fromStdString(previous.type),
+                  QString::fromStdString(current.type));
+    }
+
+    if (current.hostname != previous.hostname) {
+        addChange("Hostname",
+                  QString::fromStdString(previous.hostname),
+                  QString::fromStdString(current.hostname));
+    }
+
+    if (current.status != previous.status) {
+        addChange("Status",
+                  QString::fromStdString(previous.status),
+                  QString::fromStdString(current.status));
+    }
+
+
+    if (ui_->changesTableWidget->rowCount() == 0) {
+        ui_->changesTableWidget->insertRow(0);
+        ui_->changesTableWidget->setItem(0, 0,
+            new QTableWidgetItem("(No field changes)"));
+        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
+        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
     }
 }
 
-void TenantHistoryDialog::displayFullDetailsTab(int version_index) {
-    if (version_index >= static_cast<int>(history_.size()))
+void TenantHistoryDialog::updateFullDetails(int versionIndex) {
+    if (versionIndex < 0 ||
+        static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
-
-    const auto& tenant = history_[version_index];
-
-    ui_->codeValue->setText(QString::fromStdString(tenant.code));
-    ui_->nameValue->setText(QString::fromStdString(tenant.name));
-    ui_->typeValue->setText(QString::fromStdString(tenant.type));
-    ui_->hostnameValue->setText(QString::fromStdString(tenant.hostname));
-    ui_->statusValue->setText(QString::fromStdString(tenant.status));
-    ui_->descriptionValue->setText(QString::fromStdString(tenant.description));
-    ui_->versionNumberValue->setText(QString::number(tenant.version));
-    ui_->recordedByValue->setText(QString::fromStdString(tenant.recorded_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(tenant.recorded_at));
-}
-
-#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
-    if (current.FIELD != previous.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::fromStdString(previous.FIELD), \
-            QString::fromStdString(current.FIELD) \
-        }}); \
     }
 
-TenantHistoryDialog::DiffResult TenantHistoryDialog::
-calculateDiff(const iam::domain::tenant& current,
-    const iam::domain::tenant& previous) {
+    const auto& version = versions_[versionIndex];
 
-    DiffResult diffs;
-
-    CHECK_DIFF_STRING("Code", code);
-    CHECK_DIFF_STRING("Name", name);
-    CHECK_DIFF_STRING("Type", type);
-    CHECK_DIFF_STRING("Hostname", hostname);
-    CHECK_DIFF_STRING("Status", status);
-    CHECK_DIFF_STRING("Description", description);
-
-    return diffs;
+    ui_->codeValue->setText(QString::fromStdString(version.code));
+    ui_->nameValue->setText(QString::fromStdString(version.name));
+    ui_->typeValue->setText(QString::fromStdString(version.type));
+    ui_->hostnameValue->setText(QString::fromStdString(version.hostname));
+    ui_->statusValue->setText(QString::fromStdString(version.status));
+    ui_->versionNumberValue->setText(QString::number(version.version));
+    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
-#undef CHECK_DIFF_STRING
+void TenantHistoryDialog::updateActionStates() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    bool hasSelection = !selected.isEmpty();
+    bool isNotLatest = hasSelection && selected.first()->row() > 0;
 
-void TenantHistoryDialog::setupToolbar() {
-    toolBar_ = new QToolBar(this);
-    toolBar_->setMovable(false);
-    toolBar_->setFloatable(false);
-
-    // Create Reload action
-    reloadAction_ = new QAction("Reload", this);
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
-    reloadAction_->setToolTip("Reload history from server");
-    connect(reloadAction_, &QAction::triggered, this,
-        &TenantHistoryDialog::onReloadClicked);
-    toolBar_->addAction(reloadAction_);
-
-    toolBar_->addSeparator();
-
-    // Create Open action
-    openAction_ = new QAction("Open", this);
-    openAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Edit, IconUtils::DefaultIconColor));
-    openAction_->setToolTip("Open this version in read-only mode");
-    connect(openAction_, &QAction::triggered, this,
-        &TenantHistoryDialog::onOpenClicked);
-    toolBar_->addAction(openAction_);
-
-    // Create Revert action
-    revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
-    revertAction_->setToolTip("Revert tenant to this version");
-    connect(revertAction_, &QAction::triggered, this,
-        &TenantHistoryDialog::onRevertClicked);
-    toolBar_->addAction(revertAction_);
-
-    // Add toolbar to layout
-    auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
-    if (mainLayout)
-        mainLayout->insertWidget(0, toolBar_);
+    openVersionAction_->setEnabled(hasSelection);
+    revertAction_->setEnabled(isNotLatest);
 }
 
-void TenantHistoryDialog::updateButtonStates() {
-    const int index = selectedVersionIndex();
-    const bool hasSelection = index >= 0 &&
-        index < static_cast<int>(history_.size());
+void TenantHistoryDialog::onOpenVersionClicked() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    if (selected.isEmpty()) return;
 
-    if (openAction_)
-        openAction_->setEnabled(hasSelection);
+    int row = selected.first()->row();
+    if (static_cast<size_t>(row) >= versions_.size()) return;
 
-    if (revertAction_)
-        revertAction_->setEnabled(hasSelection);
-}
-
-int TenantHistoryDialog::selectedVersionIndex() const {
-    return ui_->versionListWidget->currentRow();
-}
-
-void TenantHistoryDialog::onOpenClicked() {
-    const int index = selectedVersionIndex();
-    if (index < 0 || index >= static_cast<int>(history_.size()))
-        return;
-
-    const auto& tenant = history_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening tenant version "
-                              << tenant.version << " in read-only mode";
-
-    emit openVersionRequested(tenant, tenant.version);
+    emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void TenantHistoryDialog::onRevertClicked() {
-    const int index = selectedVersionIndex();
-    if (index < 0 || index >= static_cast<int>(history_.size()))
-        return;
+    auto selected = ui_->versionListWidget->selectedItems();
+    if (selected.isEmpty()) return;
 
-    const auto& current = history_[index];
+    int row = selected.first()->row();
+    if (static_cast<size_t>(row) >= versions_.size()) return;
 
-    // If this is the oldest version, there's no previous version to revert to
-    if (index == static_cast<int>(history_.size()) - 1) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
-        MessageBoxHelper::information(this, "Cannot Revert",
-            "This is the oldest version. There is no previous version to revert to.");
-        return;
-    }
-
-    // The "previous" version is the one we want to revert TO
-    const auto& previous = history_[index + 1];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
-                              << current.version << " to version "
-                              << previous.version;
-
-    // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Tenant",
-        QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
-                "This will create a new version with the data from version %3.")
-            .arg(tenantCode_)
-            .arg(current.version)
-            .arg(previous.version),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (reply != QMessageBox::Yes) {
-        BOOST_LOG_SEV(lg(), debug) << "Revert cancelled by user";
-        return;
-    }
-
-    // Use the PREVIOUS version's data with the latest version number
-    iam::domain::tenant tenant = previous;
-    tenant.version = history_[0].version;
-    emit revertVersionRequested(tenant);
-}
-
-void TenantHistoryDialog::onReloadClicked() {
-    BOOST_LOG_SEV(lg(), info) << "Reload requested for tenant history: "
-                              << tenantCode_.toStdString();
-    emit statusChanged(QString("Reloading history for %1...").arg(tenantCode_));
-    loadHistory();
-}
-
-QSize TenantHistoryDialog::sizeHint() const {
-    QSize baseSize = QWidget::sizeHint();
-
-    const int minimumWidth = 900;
-    const int minimumHeight = 600;
-
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
-}
-
-void TenantHistoryDialog::markAsStale() {
-    BOOST_LOG_SEV(lg(), info) << "Tenant history marked as stale for: "
-                              << tenantCode_.toStdString() << ", reloading...";
-
-    emit statusChanged(QString("Tenant %1 was modified - reloading history...")
-        .arg(tenantCode_));
-
-    loadHistory();
+    emit revertVersionRequested(versions_[row]);
 }
 
 }

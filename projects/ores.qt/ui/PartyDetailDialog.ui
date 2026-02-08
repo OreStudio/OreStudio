@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>480</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -33,7 +33,7 @@
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="labelCode">
+       <widget class="QLabel" name="label_codeEdit">
         <property name="text">
          <string>Short Code:</string>
         </property>
@@ -47,7 +47,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labelName">
+       <widget class="QLabel" name="label_nameEdit">
         <property name="text">
          <string>Full Name:</string>
         </property>
@@ -56,12 +56,12 @@
       <item row="1" column="1">
        <widget class="QLineEdit" name="nameEdit">
         <property name="placeholderText">
-         <string>Enter full legal name</string>
+         <string>Enter full name</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="labelPartyType">
+       <widget class="QLabel" name="label_partyTypeEdit">
         <property name="text">
          <string>Party Type:</string>
         </property>
@@ -75,7 +75,7 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="labelStatus">
+       <widget class="QLabel" name="label_statusEdit">
         <property name="text">
          <string>Status:</string>
         </property>
@@ -89,7 +89,7 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="labelBusinessCenter">
+       <widget class="QLabel" name="label_businessCenterEdit">
         <property name="text">
          <string>Business Center:</string>
         </property>

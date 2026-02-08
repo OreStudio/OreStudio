@@ -143,10 +143,10 @@ void PartyTypeDetailDialog::updateSaveButtonState() {
 }
 
 bool PartyTypeDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void PartyTypeDetailDialog::onSaveClicked() {
@@ -158,7 +158,7 @@ void PartyTypeDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+            "Please fill in all required fields.");
         return;
     }
 

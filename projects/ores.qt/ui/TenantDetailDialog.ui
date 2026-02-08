@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>550</height>
+    <width>500</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -16,18 +16,24 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>450</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Tenant Details</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="tenantInfoGroup">
+    <widget class="QGroupBox" name="basicInfoGroup">
      <property name="title">
-      <string>Tenant Information</string>
+      <string>Basic Information</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="labelCode">
+       <widget class="QLabel" name="label_codeEdit">
         <property name="text">
          <string>Code:</string>
         </property>
@@ -36,12 +42,12 @@
       <item row="0" column="1">
        <widget class="QLineEdit" name="codeEdit">
         <property name="placeholderText">
-         <string>Enter unique tenant code (e.g., acme)</string>
+         <string>Enter tenant code</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labelName">
+       <widget class="QLabel" name="label_nameEdit">
         <property name="text">
          <string>Name:</string>
         </property>
@@ -50,26 +56,26 @@
       <item row="1" column="1">
        <widget class="QLineEdit" name="nameEdit">
         <property name="placeholderText">
-         <string>Enter tenant name</string>
+         <string>Enter display name</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="labelType">
+       <widget class="QLabel" name="label_typeEdit">
         <property name="text">
          <string>Type:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="typeCombo">
-        <property name="editable">
-         <bool>false</bool>
+       <widget class="QLineEdit" name="typeEdit">
+        <property name="placeholderText">
+         <string>Enter tenant type</string>
         </property>
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="labelHostname">
+       <widget class="QLabel" name="label_hostnameEdit">
         <property name="text">
          <string>Hostname:</string>
         </property>
@@ -78,41 +84,21 @@
       <item row="3" column="1">
        <widget class="QLineEdit" name="hostnameEdit">
         <property name="placeholderText">
-         <string>Enter unique hostname for tenant routing</string>
+         <string>Enter hostname</string>
         </property>
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="labelStatus">
+       <widget class="QLabel" name="label_statusEdit">
         <property name="text">
          <string>Status:</string>
         </property>
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QComboBox" name="statusCombo">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="labelDescription">
-        <property name="text">
-         <string>Description:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QPlainTextEdit" name="descriptionEdit">
+       <widget class="QLineEdit" name="statusEdit">
         <property name="placeholderText">
-         <string>Enter tenant description</string>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>80</height>
-         </size>
+         <string>Enter status</string>
         </property>
        </widget>
       </item>
@@ -168,36 +154,16 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="labelChangeReason">
+       <widget class="QLabel" name="labelCommentary">
         <property name="text">
-         <string>Change Reason:</string>
+         <string>Commentary:</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="changeReasonEdit">
+       <widget class="QLineEdit" name="commentaryEdit">
         <property name="readOnly">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="labelChangeCommentary">
-        <property name="text">
-         <string>Change Commentary:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QPlainTextEdit" name="changeCommentaryEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>80</height>
-         </size>
         </property>
        </widget>
       </item>
@@ -216,6 +182,40 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

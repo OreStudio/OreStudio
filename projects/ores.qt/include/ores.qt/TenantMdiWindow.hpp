@@ -20,30 +20,29 @@
 #ifndef ORES_QT_TENANT_MDI_WINDOW_HPP
 #define ORES_QT_TENANT_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QVBoxLayout>
 #include <QToolBar>
+#include <QTableView>
 #include <QSortFilterProxyModel>
-#include <memory>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientTenantModel.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam/domain/tenant.hpp"
 
 namespace ores::qt {
 
 /**
  * @brief MDI window for displaying and managing tenants.
  *
- * This window provides functionality for viewing, creating, editing, and
- * deleting tenants. Tenants are the core multi-tenancy entities representing
- * isolated organisations.
+ * Provides a table view of tenants with toolbar actions
+ * for reload, add, edit, delete, and viewing history.
  */
-class TenantMdiWindow : public EntityListMdiWindow {
+class TenantMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.tenant_mdi_window";
+    inline static std::string_view logger_name =
+        "ores.qt.tenant_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,61 +51,69 @@ private:
     }
 
 public:
-    explicit TenantMdiWindow(ClientManager* clientManager,
-                             const QString& username,
-                             QWidget* parent = nullptr);
-    ~TenantMdiWindow() override;
+    explicit TenantMdiWindow(
+        ClientManager* clientManager,
+        const QString& username,
+        QWidget* parent = nullptr);
+    ~TenantMdiWindow() override = default;
 
-    ClientTenantModel* tenantModel() const { return tenantModel_.get(); }
+    QSize sizeHint() const override;
 
-    QSize sizeHint() const override { return QSize(900, 500); }
+public slots:
+    void reload() override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void selectionChanged(int selection_count);
-    void addNewRequested();
     void showTenantDetails(const iam::domain::tenant& tenant);
-    void showTenantHistory(const QString& code);
+    void addNewRequested();
     void tenantDeleted(const QString& code);
+    void showTenantHistory(const iam::domain::tenant& tenant);
 
 public slots:
-    void reload() override;
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+private slots:
+    void onDataLoaded();
+    void onLoadError(const QString& error_message, const QString& details = {});
+    void onSelectionChanged();
+    void onDoubleClicked(const QModelIndex& index);
+
+private slots:
+    void showHeaderContextMenu(const QPoint& pos);
 
 protected:
     QString normalRefreshTooltip() const override {
         return tr("Refresh tenants");
     }
 
-private slots:
-    void onDataLoaded();
-    void onLoadError(const QString& error_message, const QString& details = {});
-    void onRowDoubleClicked(const QModelIndex& index);
-    void onSelectionChanged();
-    void onConnectionStateChanged();
-
 private:
+    void setupUi();
+    void setupToolbar();
+    void setupTable();
+    void setupColumnVisibility();
+    void setupConnections();
     void updateActionStates();
-    void setupReloadAction();
+    void saveSettings();
+    void restoreSettings();
 
-    QVBoxLayout* verticalLayout_;
-    QTableView* tenantTableView_;
-    QToolBar* toolBar_;
+    ClientManager* clientManager_;
+    QString username_;
 
+    QToolBar* toolbar_;
+    QTableView* tableView_;
+    ClientTenantModel* model_;
+    QSortFilterProxyModel* proxyModel_;
+
+    // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
-
-    std::unique_ptr<ClientTenantModel> tenantModel_;
-    QSortFilterProxyModel* proxyModel_;
-    ClientManager* clientManager_;
-    QString username_;
 };
 
 }

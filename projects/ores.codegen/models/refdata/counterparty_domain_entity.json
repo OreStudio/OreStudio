@@ -125,6 +125,18 @@
       "history_request_class": "refdata::messaging::get_counterparty_history_request",
       "history_response_class": "refdata::messaging::get_counterparty_history_response",
       "history_message_type": "get_counterparty_history_request",
+      "detail_fields": [
+        {"field": "short_code", "label": "Short Code", "widget": "codeEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter short code"},
+        {"field": "full_name", "label": "Full Name", "widget": "nameEdit", "type": "line_edit",
+         "is_required": true, "placeholder": "Enter full name"},
+        {"field": "party_type", "label": "Party Type", "widget": "partyTypeEdit", "type": "line_edit",
+         "placeholder": "Enter party type"},
+        {"field": "status", "label": "Status", "widget": "statusEdit", "type": "line_edit",
+         "placeholder": "Enter status"},
+        {"field": "business_center_code", "label": "Business Center", "widget": "businessCenterEdit",
+         "type": "line_edit", "placeholder": "Enter business center code"}
+      ],
       "columns": [
         {"enum_name": "ShortCode", "field": "short_code", "header": "Code", "is_string": true, "width": 120},
         {"enum_name": "FullName", "field": "full_name", "header": "Name", "is_string": true, "width": 250},

@@ -463,7 +463,7 @@ void PartyTypeMdiWindow::restoreSettings() {
         header->restoreState(settings.value("headerState").toByteArray());
         BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
     } else {
-        // Apply default column visibility (hide Description by default)
+        // Apply default column visibility
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
         header->setSectionHidden(ClientPartyTypeModel::Description, true);
     }

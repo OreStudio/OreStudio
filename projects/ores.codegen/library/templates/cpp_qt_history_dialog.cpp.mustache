@@ -280,23 +280,14 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-    if (current.code != previous.code) {
-        addChange("Code",
-                  QString::fromStdString(previous.code),
-                  QString::fromStdString(current.code));
+{{#domain_entity.qt.detail_fields}}
+    if (current.{{field}} != previous.{{field}}) {
+        addChange("{{label}}",
+                  QString::fromStdString(previous.{{field}}),
+                  QString::fromStdString(current.{{field}}));
     }
 
-    if (current.name != previous.name) {
-        addChange("Name",
-                  QString::fromStdString(previous.name),
-                  QString::fromStdString(current.name));
-    }
-
-    if (current.description != previous.description) {
-        addChange("Description",
-                  QString::fromStdString(previous.description),
-                  QString::fromStdString(current.description));
-    }
+{{/domain_entity.qt.detail_fields}}
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -315,9 +306,9 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
 
     const auto& version = versions_[versionIndex];
 
-    ui_->codeValue->setText(QString::fromStdString(version.code));
-    ui_->nameValue->setText(QString::fromStdString(version.name));
-    ui_->descriptionValue->setText(QString::fromStdString(version.description));
+{{#domain_entity.qt.detail_fields}}
+    ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
+{{/domain_entity.qt.detail_fields}}
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

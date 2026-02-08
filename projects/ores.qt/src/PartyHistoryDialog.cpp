@@ -294,6 +294,7 @@ void PartyHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.business_center_code));
     }
 
+
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
         ui_->changesTableWidget->setItem(0, 0,

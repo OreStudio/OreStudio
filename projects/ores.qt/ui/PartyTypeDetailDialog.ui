@@ -33,7 +33,7 @@
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="labelCode">
+       <widget class="QLabel" name="label_codeEdit">
         <property name="text">
          <string>Code:</string>
         </property>
@@ -47,7 +47,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labelName">
+       <widget class="QLabel" name="label_nameEdit">
         <property name="text">
          <string>Name:</string>
         </property>
@@ -61,7 +61,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="labelDescription">
+       <widget class="QLabel" name="label_descriptionEdit">
         <property name="text">
          <string>Description:</string>
         </property>

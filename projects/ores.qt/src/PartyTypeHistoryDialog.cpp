@@ -280,6 +280,7 @@ void PartyTypeHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.description));
     }
 
+
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
         ui_->changesTableWidget->setItem(0, 0,

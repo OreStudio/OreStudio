@@ -20,17 +20,13 @@
 #ifndef ORES_QT_TENANT_HISTORY_DIALOG_HPP
 #define ORES_QT_TENANT_HISTORY_DIALOG_HPP
 
-#include <memory>
-#include <vector>
-#include <QPair>
 #include <QWidget>
-#include <QString>
-#include <QVector>
 #include <QToolBar>
-#include <QAction>
+#include <QTableWidget>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.iam/domain/tenant.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam/domain/tenant.hpp"
 
 namespace Ui {
 class TenantHistoryDialog;
@@ -39,12 +35,12 @@ class TenantHistoryDialog;
 namespace ores::qt {
 
 /**
- * @brief Widget for displaying tenant version history.
+ * @brief Dialog for viewing the version history of a tenant.
  *
- * Shows all versions of a tenant with ability to view changes between
- * versions and revert to previous versions.
+ * Shows all historical versions of a tenant with ability
+ * to view details or revert to a previous version.
  */
-class TenantHistoryDialog : public QWidget {
+class TenantHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
@@ -57,82 +53,45 @@ private:
         return instance;
     }
 
-    const QIcon& getHistoryIcon() const;
-
 public:
-    explicit TenantHistoryDialog(const QString& tenantCode,
+    explicit TenantHistoryDialog(
+        const boost::uuids::uuid& id,
+        const QString& code,
         ClientManager* clientManager,
         QWidget* parent = nullptr);
     ~TenantHistoryDialog() override;
 
     void loadHistory();
 
-    QSize sizeHint() const override;
-
-    /**
-     * @brief Mark the history data as stale and reload.
-     *
-     * Called when a notification is received indicating this tenant has
-     * changed on the server. Automatically reloads the history data.
-     */
-    void markAsStale();
-
-    /**
-     * @brief Returns the code of the tenant.
-     */
-    [[nodiscard]] const QString& tenantCode() const { return tenantCode_; }
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-
-    /**
-     * @brief Emitted when user requests to open a version in read-only mode.
-     * @param tenant The tenant data at the selected version.
-     * @param versionNumber The version number being viewed.
-     */
-    void openVersionRequested(const iam::domain::tenant& tenant, int versionNumber);
-
-    /**
-     * @brief Emitted when user requests to revert to a selected version.
-     * @param tenant The tenant data to revert to.
-     */
+    void openVersionRequested(const iam::domain::tenant& tenant,
+                              int versionNumber);
     void revertVersionRequested(const iam::domain::tenant& tenant);
 
 private slots:
-    void onVersionSelected(int index);
-    void onHistoryLoaded();
-    void onHistoryLoadError(const QString& error);
-    void onOpenClicked();
+    void onVersionSelected();
+    void onOpenVersionClicked();
     void onRevertClicked();
-    void onReloadClicked();
 
 private:
-    void displayChangesTab(int version_index);
-    void displayFullDetailsTab(int version_index);
-
-    /**
-     * @brief Calculate differences between two tenant versions.
-     *
-     * @return Vector of (field_name, (old_value, new_value)) pairs.
-     */
-    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(
-        const iam::domain::tenant& current,
-        const iam::domain::tenant& previous);
-
+    void setupUi();
     void setupToolbar();
-    void updateButtonStates();
-    int selectedVersionIndex() const;
+    void setupConnections();
+    void updateVersionList();
+    void updateChangesTable(int currentVersionIndex);
+    void updateFullDetails(int versionIndex);
+    void updateActionStates();
 
-    std::unique_ptr<Ui::TenantHistoryDialog> ui_;
+    Ui::TenantHistoryDialog* ui_;
+    boost::uuids::uuid id_;
+    QString code_;
     ClientManager* clientManager_;
-    QString tenantCode_;
-    std::vector<iam::domain::tenant> history_;
+    std::vector<iam::domain::tenant> versions_;
 
-    QToolBar* toolBar_;
-    QAction* reloadAction_;
-    QAction* openAction_;
+    QToolBar* toolbar_;
+    QAction* openVersionAction_;
     QAction* revertAction_;
 };
 

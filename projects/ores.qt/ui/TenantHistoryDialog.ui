@@ -66,6 +66,11 @@
         <string>Recorded By</string>
        </property>
       </column>
+      <column>
+       <property name="text">
+        <string>Commentary</string>
+       </property>
+      </column>
      </widget>
      <widget class="QWidget" name="detailWidget">
       <layout class="QVBoxLayout" name="detailLayout">
@@ -145,7 +150,7 @@
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
-                <widget class="QLabel" name="codeLabel">
+                <widget class="QLabel" name="codeValueLabel">
                  <property name="text">
                   <string>Code:</string>
                  </property>
@@ -159,7 +164,7 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="nameLabel">
+                <widget class="QLabel" name="nameValueLabel">
                  <property name="text">
                   <string>Name:</string>
                  </property>
@@ -173,7 +178,7 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="typeLabel">
+                <widget class="QLabel" name="typeValueLabel">
                  <property name="text">
                   <string>Type:</string>
                  </property>
@@ -187,7 +192,7 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="hostnameLabel">
+                <widget class="QLabel" name="hostnameValueLabel">
                  <property name="text">
                   <string>Hostname:</string>
                  </property>
@@ -201,7 +206,7 @@
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="statusLabel">
+                <widget class="QLabel" name="statusValueLabel">
                  <property name="text">
                   <string>Status:</string>
                  </property>
@@ -215,61 +220,61 @@
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="descriptionLabel">
-                 <property name="text">
-                  <string>Description:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QLabel" name="descriptionValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
                 <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
                   <string>Version:</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="recordedByLabel">
                  <property name="text">
                   <string>Recorded By:</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="6" column="1">
                 <widget class="QLabel" name="recordedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
                   <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="7" column="1">
                 <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="changeCommentaryLabel">
+                 <property name="text">
+                  <string>Change Commentary:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QLabel" name="changeCommentaryValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>

@@ -57,12 +57,7 @@ protected:
 private slots:
     void onShowDetails(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
     void onAddNewRequested();
-{{#domain_entity.qt.has_uuid_primary_key}}
     void onShowHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
-{{/domain_entity.qt.has_uuid_primary_key}}
-{{^domain_entity.qt.has_uuid_primary_key}}
-    void onShowHistory(const QString& code);
-{{/domain_entity.qt.has_uuid_primary_key}}
     void onRevertVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
     void onOpenVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}},
                        int versionNumber);

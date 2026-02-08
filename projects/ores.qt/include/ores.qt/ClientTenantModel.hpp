@@ -24,22 +24,25 @@
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/tenant.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Model for displaying tenants fetched from the server via client.
+ * @brief Model for displaying tenants fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches tenant data
- * asynchronously using the ores.comms client.
+ * This model extends QAbstractTableModel and fetches tenant
+ * data asynchronously using the ores.comms client.
  */
 class ClientTenantModel final : public QAbstractTableModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.client_tenant_model";
+    inline static std::string_view logger_name =
+        "ores.qt.client_tenant_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -60,11 +63,11 @@ public:
         Version,
         RecordedBy,
         RecordedAt,
-        ColumnCount  // Must be last
+        ColumnCount
     };
 
     explicit ClientTenantModel(ClientManager* clientManager,
-                               QObject* parent = nullptr);
+                                       QObject* parent = nullptr);
     ~ClientTenantModel() override = default;
 
     // QAbstractTableModel interface
@@ -72,7 +75,12 @@ public:
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
+        int role = Qt::DisplayRole) const override;
+
+    /**
+     * @brief Refresh tenant data from server asynchronously.
+     */
+    void refresh();
 
     /**
      * @brief Get tenant at the specified row.
@@ -81,16 +89,6 @@ public:
      * @return The tenant, or nullptr if row is invalid.
      */
     const iam::domain::tenant* getTenant(int row) const;
-
-    /**
-     * @brief Refresh tenant data from server asynchronously.
-     */
-    void refresh();
-
-    /**
-     * @brief Clear all data from the model.
-     */
-    void clear();
 
 signals:
     /**
@@ -105,8 +103,12 @@ signals:
 
 private slots:
     void onTenantsLoaded();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
+    QVariant recency_foreground_color(const std::string& code) const;
+
     struct FetchResult {
         bool success;
         std::vector<iam::domain::tenant> tenants;
@@ -114,12 +116,14 @@ private:
         QString error_details;
     };
 
-    void fetch_tenants();
-
     ClientManager* clientManager_;
     std::vector<iam::domain::tenant> tenants_;
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
+
+    using TenantKeyExtractor = std::string(*)(const iam::domain::tenant&);
+    RecencyTracker<iam::domain::tenant, TenantKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

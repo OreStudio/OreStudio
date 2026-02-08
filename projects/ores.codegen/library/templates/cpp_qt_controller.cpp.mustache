@@ -104,7 +104,7 @@ void {{domain_entity.entity_pascal}}Controller::reloadListWindow() {
 
 void {{domain_entity.entity_pascal}}Controller::onShowDetails(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << {{domain_entity.qt.item_var}}.code;
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
     showDetailWindow({{domain_entity.qt.item_var}});
 }
 
@@ -116,14 +116,15 @@ void {{domain_entity.entity_pascal}}Controller::onAddNewRequested() {
 {{#domain_entity.qt.has_uuid_primary_key}}
 void {{domain_entity.entity_pascal}}Controller::onShowHistory(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << {{domain_entity.qt.item_var}}.code;
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
     showHistoryWindow({{domain_entity.qt.item_var}});
 }
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
-void {{domain_entity.entity_pascal}}Controller::onShowHistory(const QString& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << code.toStdString();
-    showHistoryWindow(code);
+void {{domain_entity.entity_pascal}}Controller::onShowHistory(
+    const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
+    showHistoryWindow(QString::fromStdString({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}}));
 }
 {{/domain_entity.qt.has_uuid_primary_key}}
 
@@ -162,7 +163,7 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
 void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
 
-    const QString identifier = QString::fromStdString({{domain_entity.qt.item_var}}.code);
+    const QString identifier = QString::fromStdString({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}});
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -170,7 +171,7 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << {{domain_entity.qt.item_var}}.code;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -221,21 +222,21 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
 {{#domain_entity.qt.has_uuid_primary_key}}
 void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
-    const QString code = QString::fromStdString({{domain_entity.qt.item_var}}.code);
+    const QString code = QString::fromStdString({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}});
     BOOST_LOG_SEV(lg(), info) << "Opening history window for {{domain_entity.entity_singular_words}}: "
-                              << {{domain_entity.qt.item_var}}.code;
+                              << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << {{domain_entity.qt.item_var}}.code;
+                                  << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << {{domain_entity.qt.item_var}}.code;
+                              << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
 
     auto* historyDialog = new {{domain_entity.entity_pascal}}HistoryDialog(
         {{domain_entity.qt.item_var}}.id, code, clientManager_, mainWindow_);
@@ -303,9 +304,9 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString&
 void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}.code;
+                              << " for {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}};
 
-    const QString code = QString::fromStdString({{domain_entity.qt.item_var}}.code);
+    const QString code = QString::fromStdString({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}});
     const QString windowKey = build_window_key("version", QString("%1_v%2")
         .arg(code).arg(versionNumber));
 
@@ -383,7 +384,7 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert {{domain_entity.entity_title}}: %1")
-        .arg(QString::fromStdString({{domain_entity.qt.item_var}}.code)));
+        .arg(QString::fromStdString({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}})));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 

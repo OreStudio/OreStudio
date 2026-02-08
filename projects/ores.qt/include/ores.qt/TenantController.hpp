@@ -20,34 +20,26 @@
 #ifndef ORES_QT_TENANT_CONTROLLER_HPP
 #define ORES_QT_TENANT_CONTROLLER_HPP
 
-#include <QPointer>
-#include <QDateTime>
+#include <QMdiArea>
+#include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/tenant.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
 
-class DetachableMdiSubWindow;
 class TenantMdiWindow;
+class DetachableMdiSubWindow;
 
 /**
- * @brief Controller managing all tenant-related windows and operations.
+ * @brief Controller for managing tenant windows and operations.
  *
- * The TenantController encapsulates all tenant management functionality,
- * including:
- *
- * - Tenant list window showing all tenants in the system
- * - Tenant detail dialogs for creating/editing tenants
- * - Tenant history dialogs for viewing version history
- * - Window lifecycle management (creation, tracking, cleanup)
- *
- * This controller follows the entity controller pattern where MainWindow
- * delegates all tenant operations to this controller.
- *
- * @note Tenant management is only available to admin users.
+ * Manages the lifecycle of tenant list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
  */
-class TenantController : public EntityController {
+class TenantController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -61,46 +53,39 @@ private:
     }
 
 public:
-    /**
-     * @brief Constructs the tenant controller.
-     *
-     * @param mainWindow Parent main window (for dialog ownership)
-     * @param mdiArea MDI area where windows will be displayed
-     * @param clientManager Client manager for network operations
-     * @param username Username of logged-in user (for audit trails)
-     * @param parent QObject parent (for Qt ownership)
-     */
-    explicit TenantController(
+    TenantController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
         QObject* parent = nullptr);
 
-    ~TenantController() override;
-
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+
+signals:
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
+    void onShowDetails(const iam::domain::tenant& tenant);
     void onAddNewRequested();
-    void onShowTenantDetails(const iam::domain::tenant& tenant);
-    void onShowTenantHistory(const QString& code);
-    void onTenantDeleted(const QString& code);
-    void onOpenTenantVersion(const iam::domain::tenant& tenant, int versionNumber);
-    void onRevertTenant(const iam::domain::tenant& tenant);
+    void onShowHistory(const iam::domain::tenant& tenant);
+    void onRevertVersion(const iam::domain::tenant& tenant);
+    void onOpenVersion(const iam::domain::tenant& tenant,
+                       int versionNumber);
 
 private:
-    void showDetailWindow(const iam::domain::tenant* tenant,
-                          bool createMode, bool readOnly = false,
-                          int versionNumber = 0);
+    void showAddWindow();
+    void showDetailWindow(const iam::domain::tenant& tenant);
+    void showHistoryWindow(const iam::domain::tenant& tenant);
 
-    QPointer<TenantMdiWindow> listWindow_;
-    QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
+    TenantMdiWindow* listWindow_;
+    DetachableMdiSubWindow* listMdiSubWindow_;
 };
 
 }

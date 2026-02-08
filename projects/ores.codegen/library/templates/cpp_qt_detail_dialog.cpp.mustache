@@ -45,12 +45,24 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+{{#domain_entity.qt.detail_fields}}
+{{#is_key}}
+{{#is_line_edit}}
+    connect(ui_->{{widget}}, &QLineEdit::textChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+{{/is_line_edit}}
+{{/is_key}}
+{{^is_key}}
+{{#is_line_edit}}
+    connect(ui_->{{widget}}, &QLineEdit::textChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+{{/is_line_edit}}
+{{#is_text_edit}}
+    connect(ui_->{{widget}}, &QTextEdit::textChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_text_edit}}
+{{/is_key}}
+{{/domain_entity.qt.detail_fields}}
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager* clientManager) {
@@ -82,31 +94,52 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
 
 void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
-    ui_->descriptionEdit->setReadOnly(readOnly);
+{{#domain_entity.qt.detail_fields}}
+{{#is_key}}
+    ui_->{{widget}}->setReadOnly(true);
+{{/is_key}}
+{{^is_key}}
+    ui_->{{widget}}->setReadOnly(readOnly);
+{{/is_key}}
+{{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.entity_pascal_short}}() {
-    ui_->codeEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.code));
-    ui_->nameEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString({{domain_entity.qt.item_var}}_.description));
+{{#domain_entity.qt.detail_fields}}
+{{#is_line_edit}}
+    ui_->{{widget}}->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
+{{/is_line_edit}}
+{{#is_text_edit}}
+    ui_->{{widget}}->setPlainText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
+{{/is_text_edit}}
+{{/domain_entity.qt.detail_fields}}
 
     ui_->versionEdit->setText(QString::number({{domain_entity.qt.item_var}}_.version));
     ui_->recordedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.recorded_by));
-    ui_->performedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format({{domain_entity.qt.item_var}}_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.change_commentary));
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_pascal_short}}FromUi() {
+{{#domain_entity.qt.detail_fields}}
+{{#is_key}}
     if (createMode_) {
-        {{domain_entity.qt.item_var}}_.code = ui_->codeEdit->text().trimmed().toStdString();
+{{#is_line_edit}}
+        {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->text().trimmed().toStdString();
+{{/is_line_edit}}
     }
-    {{domain_entity.qt.item_var}}_.name = ui_->nameEdit->text().trimmed().toStdString();
-    {{domain_entity.qt.item_var}}_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+{{/is_key}}
+{{^is_key}}
+{{#is_line_edit}}
+    {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->text().trimmed().toStdString();
+{{/is_line_edit}}
+{{#is_text_edit}}
+    {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->toPlainText().trimmed().toStdString();
+{{/is_text_edit}}
+{{/is_key}}
+{{/domain_entity.qt.detail_fields}}
     {{domain_entity.qt.item_var}}_.recorded_by = username_;
     {{domain_entity.qt.item_var}}_.performed_by = username_;
 }
@@ -127,10 +160,11 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateSaveButtonState() {
 }
 
 bool {{domain_entity.entity_pascal}}DetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+{{#domain_entity.qt.required_fields}}
+    const QString {{field}}_val = ui_->{{widget}}->text().trimmed();
+{{/domain_entity.qt.required_fields}}
 
-    return !code.isEmpty() && !name.isEmpty();
+    return {{#domain_entity.qt.required_fields}}!{{field}}_val.isEmpty(){{^_is_last}} && {{/_is_last}}{{/domain_entity.qt.required_fields}};
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
@@ -142,13 +176,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+            "Please fill in all required fields.");
         return;
     }
 
     update{{domain_entity.entity_pascal_short}}FromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}};
 
     QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
 
@@ -201,7 +235,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} saved successfully";
-            QString code = QString::fromStdString(self->{{domain_entity.qt.item_var}}_.code);
+            QString code = QString::fromStdString(self->{{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
             emit self->{{domain_entity.qt.item_var}}Saved(code);
             self->notifySaveSuccess(tr("{{domain_entity.entity_title}} '%1' saved").arg(code));
         } else {
@@ -223,7 +257,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString({{domain_entity.qt.item_var}}_.code);
+    QString code = QString::fromStdString({{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
     auto reply = MessageBoxHelper::question(this, "Delete {{domain_entity.entity_title}}",
         QString("Are you sure you want to delete {{domain_entity.entity_singular_words}} '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
@@ -232,7 +266,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}};
 
     QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
 
@@ -252,7 +286,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
         auto payload = request.serialize();
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
-    auto task = [self, code = {{domain_entity.qt.item_var}}_.code]() -> DeleteResult {
+    auto task = [self, code = {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}}]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }

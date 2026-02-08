@@ -19,32 +19,18 @@
  */
 #include "ores.qt/TenantController.hpp"
 
+#include <QMdiSubWindow>
+#include <QMessageBox>
 #include <QPointer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenantMdiWindow.hpp"
 #include "ores.qt/TenantDetailDialog.hpp"
 #include "ores.qt/TenantHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.iam/messaging/tenant_protocol.hpp"
-#include "ores.iam/eventing/tenant_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-
-namespace {
-    // Get the event name from the event traits
-    constexpr std::string_view tenant_event_name =
-        eventing::domain::event_traits<
-            iam::eventing::tenant_changed_event>::name;
-}
 
 TenantController::TenantController(
     QMainWindow* mainWindow,
@@ -53,76 +39,62 @@ TenantController::TenantController(
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-                       tenant_event_name, parent),
+          std::string_view{}, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
-    BOOST_LOG_SEV(lg(), debug) << "Tenant controller created";
-}
 
-TenantController::~TenantController() {
-    BOOST_LOG_SEV(lg(), debug) << "Tenant controller destroyed";
-}
-
-EntityListMdiWindow* TenantController::listWindow() const {
-    return listWindow_;
+    BOOST_LOG_SEV(lg(), debug) << "TenantController created";
 }
 
 void TenantController::showListWindow() {
-    // Reuse existing window if it exists
-    if (listMdiSubWindow_) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing tenants window";
-        bring_window_to_front(listMdiSubWindow_);
+    BOOST_LOG_SEV(lg(), debug) << "showListWindow called";
+
+    const QString key = build_window_key("list", "tenants");
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing list window";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new tenants MDI window";
+    // Create new window
+    listWindow_ = new TenantMdiWindow(clientManager_, username_);
 
-    listWindow_ = new TenantMdiWindow(clientManager_, username_, mainWindow_);
-
-    // Connect status signals
+    // Connect signals
     connect(listWindow_, &TenantMdiWindow::statusChanged,
-            this, [self = QPointer<TenantController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
+            this, &TenantController::statusMessage);
     connect(listWindow_, &TenantMdiWindow::errorOccurred,
-            this, [self = QPointer<TenantController>(this)](const QString& err_msg) {
-        if (!self) return;
-        emit self->errorMessage("Error: " + err_msg);
-    });
-
-    // Connect tenant operations
+            this, &TenantController::errorMessage);
+    connect(listWindow_, &TenantMdiWindow::showTenantDetails,
+            this, &TenantController::onShowDetails);
     connect(listWindow_, &TenantMdiWindow::addNewRequested,
             this, &TenantController::onAddNewRequested);
-    connect(listWindow_, &TenantMdiWindow::showTenantDetails,
-            this, &TenantController::onShowTenantDetails);
     connect(listWindow_, &TenantMdiWindow::showTenantHistory,
-            this, &TenantController::onShowTenantHistory);
-    connect(listWindow_, &TenantMdiWindow::tenantDeleted,
-            this, &TenantController::onTenantDeleted);
+            this, &TenantController::onShowHistory);
 
-    listMdiSubWindow_ = new DetachableMdiSubWindow();
-    listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    // Create MDI subwindow
+    listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Tenants");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::Building, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    listMdiSubWindow_->resize(listWindow_->sizeHint());
 
-    // Track window for detach/reattach operations
+    mdiArea_->addSubWindow(listMdiSubWindow_);
+    listMdiSubWindow_->show();
+
+    // Track window
+    track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this,
-        [self = QPointer<TenantController>(this)]() {
+    // Cleanup when closed
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<TenantController>(this), key]() {
         if (!self) return;
+        self->untrack_window(key);
         self->listWindow_ = nullptr;
         self->listMdiSubWindow_ = nullptr;
     });
 
-    mdiArea_->addSubWindow(listMdiSubWindow_);
-    listMdiSubWindow_->adjustSize();
-    listMdiSubWindow_->show();
-
-    listWindow_->reload();
+    BOOST_LOG_SEV(lg(), debug) << "Tenant list window created";
 }
 
 void TenantController::closeAllWindows() {
@@ -137,10 +109,6 @@ void TenantController::closeAllWindows() {
     }
     managed_windows_.clear();
 
-    if (listMdiSubWindow_) {
-        listMdiSubWindow_->close();
-    }
-
     listWindow_ = nullptr;
     listMdiSubWindow_ = nullptr;
 }
@@ -151,37 +119,152 @@ void TenantController::reloadListWindow() {
     }
 }
 
+void TenantController::onShowDetails(
+    const iam::domain::tenant& tenant) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << tenant.code;
+    showDetailWindow(tenant);
+}
+
 void TenantController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new tenant requested";
-    showDetailWindow(nullptr, true);
+    showAddWindow();
 }
 
-void TenantController::onShowTenantDetails(const iam::domain::tenant& tenant) {
-    BOOST_LOG_SEV(lg(), info) << "Show tenant details requested for: " << tenant.code;
-    showDetailWindow(&tenant, false);
+void TenantController::onShowHistory(
+    const iam::domain::tenant& tenant) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << tenant.code;
+    showHistoryWindow(tenant);
 }
 
-void TenantController::onShowTenantHistory(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Show tenant history requested for: "
-                              << code.toStdString();
+void TenantController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenant";
 
-    const QString windowKey = build_window_key("history", code);
+    auto* detailDialog = new TenantDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(true);
 
-    if (try_reuse_window(windowKey)) {
+    connect(detailDialog, &TenantDetailDialog::statusMessage,
+            this, &TenantController::statusMessage);
+    connect(detailDialog, &TenantDetailDialog::errorMessage,
+            this, &TenantController::errorMessage);
+    connect(detailDialog, &TenantDetailDialog::tenantSaved,
+            this, [self = QPointer<TenantController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Tenant saved: " << code.toStdString();
+        self->handleEntitySaved();
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle("New Tenant");
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Building, IconUtils::DefaultIconColor));
+
+    register_detachable_window(detailWindow);
+
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void TenantController::showDetailWindow(
+    const iam::domain::tenant& tenant) {
+
+    const QString identifier = QString::fromStdString(tenant.code);
+    const QString key = build_window_key("details", identifier);
+
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing detail window";
         return;
     }
 
-    auto* historyDialog = new TenantHistoryDialog(code, clientManager_, mainWindow_);
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << tenant.code;
 
-    // Connect signals
-    connect(historyDialog, &TenantHistoryDialog::statusChanged,
+    auto* detailDialog = new TenantDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(false);
+    detailDialog->setTenant(tenant);
+
+    connect(detailDialog, &TenantDetailDialog::statusMessage,
             this, &TenantController::statusMessage);
-    connect(historyDialog, &TenantHistoryDialog::errorOccurred,
+    connect(detailDialog, &TenantDetailDialog::errorMessage,
             this, &TenantController::errorMessage);
-    connect(historyDialog, &TenantHistoryDialog::openVersionRequested,
-            this, &TenantController::onOpenTenantVersion);
+    connect(detailDialog, &TenantDetailDialog::tenantSaved,
+            this, [self = QPointer<TenantController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Tenant saved: " << code.toStdString();
+        self->handleEntitySaved();
+    });
+    connect(detailDialog, &TenantDetailDialog::tenantDeleted,
+            this, [self = QPointer<TenantController>(this), key](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Tenant deleted: " << code.toStdString();
+        self->handleEntityDeleted();
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Tenant: %1").arg(identifier));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Building, IconUtils::DefaultIconColor));
+
+    // Track window
+    track_window(key, detailWindow);
+    register_detachable_window(detailWindow);
+
+    QPointer<TenantController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, key]() {
+        if (self) {
+            self->untrack_window(key);
+        }
+    });
+
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void TenantController::showHistoryWindow(
+    const iam::domain::tenant& tenant) {
+    const QString code = QString::fromStdString(tenant.code);
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for tenant: "
+                              << tenant.code;
+
+    const QString windowKey = build_window_key("history", code);
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << tenant.code;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << tenant.code;
+
+    auto* historyDialog = new TenantHistoryDialog(
+        tenant.id, code, clientManager_, mainWindow_);
+
+    connect(historyDialog, &TenantHistoryDialog::statusChanged,
+            this, [self = QPointer<TenantController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
+    });
+    connect(historyDialog, &TenantHistoryDialog::errorOccurred,
+            this, [self = QPointer<TenantController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
+    });
     connect(historyDialog, &TenantHistoryDialog::revertVersionRequested,
-            this, &TenantController::onRevertTenant);
+            this, &TenantController::onRevertVersion);
+    connect(historyDialog, &TenantHistoryDialog::openVersionRequested,
+            this, &TenantController::onOpenVersion);
+
+    // Load history data
+    historyDialog->loadHistory();
 
     auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -190,207 +273,116 @@ void TenantController::onShowTenantHistory(const QString& code) {
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::History, IconUtils::DefaultIconColor));
 
+    // Track this history window
+    track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
-    connect(historyWindow, &QObject::destroyed, this,
-            [self = QPointer<TenantController>(this), windowKey]() {
-        if (!self) return;
-        self->managed_windows_.remove(windowKey);
-    });
-
-    managed_windows_[windowKey] = historyWindow;
-
-    show_managed_window(historyWindow, listMdiSubWindow_);
-
-    historyDialog->loadHistory();
-}
-
-void TenantController::onTenantDeleted(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Tenant deleted: " << code.toStdString();
-
-    // Close any open detail or history windows for this tenant
-    const QString detailKey = build_window_key("details", code);
-    const QString historyKey = build_window_key("history", code);
-
-    if (auto* window = managed_windows_.value(detailKey)) {
-        window->close();
-    }
-    if (auto* window = managed_windows_.value(historyKey)) {
-        window->close();
-    }
-}
-
-void TenantController::onOpenTenantVersion(const iam::domain::tenant& tenant,
-                                            int versionNumber) {
-    BOOST_LOG_SEV(lg(), info) << "Open tenant version " << versionNumber
-                              << " in read-only mode for: " << tenant.code;
-    showDetailWindow(&tenant, false, true, versionNumber);
-}
-
-void TenantController::onRevertTenant(const iam::domain::tenant& tenant) {
-    BOOST_LOG_SEV(lg(), info) << "Revert tenant requested for: " << tenant.code;
-
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorMessage("Not connected to server");
-        return;
-    }
-
     QPointer<TenantController> self = this;
-    const QString code = QString::fromStdString(tenant.code);
-
-    struct SaveResult {
-        bool success;
-        QString error_message;
-        QString error_details;
-    };
-
-    QFuture<SaveResult> future = QtConcurrent::run([self, tenant]() -> SaveResult {
-        return exception_helper::wrap_async_fetch<SaveResult>([&]() -> SaveResult {
-            if (!self || !self->clientManager_) {
-                return {false, "Controller closed"};
-            }
-
-            iam::messaging::save_tenant_request request;
-            request.tenant = tenant;
-
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!result) {
-                return {false, QString::fromStdString(
-                    comms::net::to_string(result.error()))};
-            }
-
-            if (!result->success) {
-                return {false, QString::fromStdString(result->message)};
-            }
-
-            return {true, {}};
-        }, "tenant revert");
-    });
-
-    auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self,
-        [self, watcher, code]() {
-        if (!self) return;
-
-        const auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Tenant reverted successfully";
-            emit self->statusMessage(QString("Tenant '%1' reverted successfully").arg(code));
-
-            // Reload list window
-            if (self->listWindow_) {
-                self->listWindow_->reload();
-            }
-
-            // Reload any open history window
-            const QString historyKey = self->build_window_key("history", code);
-            if (auto* window = self->managed_windows_.value(historyKey)) {
-                if (auto* dialog = qobject_cast<TenantHistoryDialog*>(window->widget())) {
-                    dialog->loadHistory();
-                }
-            }
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Tenant revert failed: "
-                                       << result.error_message.toStdString();
-            emit self->errorMessage(QString("Failed to revert tenant: %1")
-                .arg(result.error_message));
-            MessageBoxHelper::critical(nullptr, "Revert Failed",
-                result.error_message);
+    connect(historyWindow, &QObject::destroyed, this,
+            [self, windowKey]() {
+        if (self) {
+            self->untrack_window(windowKey);
         }
     });
 
-    watcher->setFuture(future);
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void TenantController::showDetailWindow(const iam::domain::tenant* tenant,
-                                         bool createMode, bool readOnly,
-                                         int versionNumber) {
+void TenantController::onOpenVersion(
+    const iam::domain::tenant& tenant, int versionNumber) {
+    BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
+                              << " for tenant: " << tenant.code;
 
-    const QString identifier = tenant ? QString::fromStdString(tenant->code) : "new";
-    QString windowKey = build_window_key("details", identifier);
+    const QString code = QString::fromStdString(tenant.code);
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(code).arg(versionNumber));
 
-    // For read-only versions, add version to key
-    if (readOnly && versionNumber > 0) {
-        windowKey = build_window_key("details",
-            QString("%1_v%2").arg(identifier).arg(versionNumber));
-    }
-
-    if (!createMode && !readOnly && try_reuse_window(windowKey)) {
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
         return;
     }
 
     auto* detailDialog = new TenantDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setTenant(tenant);
+    detailDialog->setReadOnly(true);
 
-    if (createMode) {
-        iam::domain::tenant emptyTenant;
-        detailDialog->setTenant(emptyTenant);
-    } else if (tenant) {
-        detailDialog->setTenant(*tenant);
-    }
-
-    if (readOnly) {
-        detailDialog->setReadOnly(true, versionNumber);
-    }
-
-    // Connect signals
     connect(detailDialog, &TenantDetailDialog::statusMessage,
-            this, &TenantController::statusMessage);
+            this, [self = QPointer<TenantController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
+    });
     connect(detailDialog, &TenantDetailDialog::errorMessage,
-            this, &TenantController::errorMessage);
-
-    connect(detailDialog, &TenantDetailDialog::tenantSaved,
-            this, [self = QPointer<TenantController>(this)](const QString& code) {
+            this, [self = QPointer<TenantController>(this)](const QString& message) {
         if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Tenant saved: " << code.toStdString();
-        self->handleEntitySaved();
+        emit self->errorMessage(message);
     });
-
-    connect(detailDialog, &TenantDetailDialog::tenantDeleted,
-            this, [self = QPointer<TenantController>(this), windowKey](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Tenant deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-        self->onTenantDeleted(code);
-    });
-
-    connect(detailDialog, &TenantDetailDialog::revertRequested,
-            this, &TenantController::onRevertTenant);
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-
-    QString title;
-    if (createMode) {
-        title = "New Tenant";
-    } else if (readOnly && versionNumber > 0) {
-        title = QString("Tenant: %1 (v%2)").arg(identifier).arg(versionNumber);
-    } else {
-        title = QString("Tenant: %1").arg(identifier);
-    }
-    detailWindow->setWindowTitle(title);
+    detailWindow->setWindowTitle(QString("Tenant: %1 (Version %2)")
+        .arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::History, IconUtils::DefaultIconColor));
+
+    track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
+
+    QPointer<TenantController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowKey]() {
+        if (self) {
+            self->untrack_window(windowKey);
+        }
+    });
+
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
+}
+
+void TenantController::onRevertVersion(
+    const iam::domain::tenant& tenant) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting tenant to version: "
+                              << tenant.version;
+
+    // Open detail dialog with the old version data for editing
+    auto* detailDialog = new TenantDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setTenant(tenant);
+    detailDialog->setCreateMode(false);
+
+    connect(detailDialog, &TenantDetailDialog::statusMessage,
+            this, &TenantController::statusMessage);
+    connect(detailDialog, &TenantDetailDialog::errorMessage,
+            this, &TenantController::errorMessage);
+    connect(detailDialog, &TenantDetailDialog::tenantSaved,
+            this, [self = QPointer<TenantController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Tenant reverted: " << code.toStdString();
+        emit self->statusMessage(QString("Tenant '%1' reverted successfully").arg(code));
+        self->handleEntitySaved();
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Revert Tenant: %1")
+        .arg(QString::fromStdString(tenant.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
-    connect(detailWindow, &QObject::destroyed, this,
-            [self = QPointer<TenantController>(this), windowKey]() {
-        if (!self) return;
-        self->managed_windows_.remove(windowKey);
-    });
-
-    managed_windows_[windowKey] = detailWindow;
-
     connect_dialog_close(detailDialog, detailWindow);
-
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+EntityListMdiWindow* TenantController::listWindow() const {
+    return listWindow_;
 }
 
 }

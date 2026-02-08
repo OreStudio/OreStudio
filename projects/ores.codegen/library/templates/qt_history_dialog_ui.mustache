@@ -149,101 +149,77 @@
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout">
-               <item row="0" column="0">
-                <widget class="QLabel" name="codeLabel">
+{{#domain_entity.qt.detail_fields}}
+               <item row="{{_row_index}}" column="0">
+                <widget class="QLabel" name="{{value_widget}}Label">
                  <property name="text">
-                  <string>Code:</string>
+                  <string>{{label}}:</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="QLabel" name="codeValue">
+               <item row="{{_row_index}}" column="1">
+                <widget class="QLabel" name="{{value_widget}}">
                  <property name="text">
                   <string/>
                  </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="nameLabel">
-                 <property name="text">
-                  <string>Name:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QLabel" name="nameValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="descriptionLabel">
-                 <property name="text">
-                  <string>Description:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLabel" name="descriptionValue">
-                 <property name="text">
-                  <string/>
-                 </property>
+{{#is_text_edit}}
                  <property name="wordWrap">
                   <bool>true</bool>
                  </property>
+{{/is_text_edit}}
                 </widget>
                </item>
-               <item row="3" column="0">
+{{/domain_entity.qt.detail_fields}}
+               <item row="{{domain_entity.qt.metadata_start_row}}" column="0">
                 <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
                   <string>Version:</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
+               <item row="{{domain_entity.qt.metadata_start_row}}" column="1">
                 <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="{{domain_entity.qt.metadata_start_row_plus_1}}" column="0">
                 <widget class="QLabel" name="recordedByLabel">
                  <property name="text">
                   <string>Recorded By:</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="{{domain_entity.qt.metadata_start_row_plus_1}}" column="1">
                 <widget class="QLabel" name="recordedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="{{domain_entity.qt.metadata_start_row_plus_2}}" column="0">
                 <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
                   <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="{{domain_entity.qt.metadata_start_row_plus_2}}" column="1">
                 <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="{{domain_entity.qt.metadata_start_row_plus_3}}" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="{{domain_entity.qt.metadata_start_row_plus_3}}" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

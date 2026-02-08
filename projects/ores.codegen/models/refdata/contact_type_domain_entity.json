@@ -70,6 +70,43 @@
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
       ]
+    },
+
+    "qt": {
+      "domain_include": "ores.refdata/domain/contact_type.hpp",
+      "domain_class": "refdata::domain::contact_type",
+      "protocol_include": "ores.refdata/messaging/contact_type_protocol.hpp",
+      "collection_name": "types",
+      "item_var": "type",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "refdata::messaging::get_contact_types_request",
+      "get_response_class": "refdata::messaging::get_contact_types_response",
+      "get_message_type": "get_contact_types_request",
+      "save_request_class": "refdata::messaging::save_contact_type_request",
+      "save_response_class": "refdata::messaging::save_contact_type_response",
+      "save_message_type": "save_contact_type_request",
+      "delete_request_class": "refdata::messaging::delete_contact_type_request",
+      "delete_response_class": "refdata::messaging::delete_contact_type_response",
+      "delete_message_type": "delete_contact_type_request",
+      "history_request_class": "refdata::messaging::get_contact_type_history_request",
+      "history_response_class": "refdata::messaging::get_contact_type_history_response",
+      "history_message_type": "get_contact_type_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 150},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "ContactTypeListWindow",
+      "window_title": "Contact Types",
+      "icon": "PersonAccounts"
     }
   }
 }

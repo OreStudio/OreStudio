@@ -94,6 +94,15 @@
       "history_response_class": "iam::messaging::get_tenant_status_history_response",
       "history_message_type": "get_tenant_status_history_request",
 
+      "detail_fields": [
+        {"field": "status", "label": "Status", "widget": "codeEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter status code"},
+        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit",
+         "is_required": true, "placeholder": "Enter display name"},
+        {"field": "description", "label": "Description", "widget": "descriptionEdit",
+         "type": "text_edit", "placeholder": "Enter a description"}
+      ],
+
       "columns": [
         {"enum_name": "Status", "field": "status", "header": "Status", "is_string": true, "width": 120},
         {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},

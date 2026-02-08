@@ -64,6 +64,12 @@
 #include "ores.qt/MethodologyController.hpp"
 #include "ores.qt/DatasetController.hpp"
 #include "ores.qt/DatasetBundleController.hpp"
+#include "ores.qt/PartyTypeController.hpp"
+#include "ores.qt/PartyStatusController.hpp"
+#include "ores.qt/PartyIdSchemeController.hpp"
+#include "ores.qt/ContactTypeController.hpp"
+#include "ores.qt/PartyController.hpp"
+#include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -144,6 +150,12 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
     ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
     ui_->ActionDatasetBundles->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    ui_->ActionPartyTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionPartyStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
+    ui_->ActionPartyIdSchemes->setIcon(IconUtils::createRecoloredIcon(Icon::Key, IconUtils::DefaultIconColor));
+    ui_->ActionContactTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
+    ui_->ActionParties->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));
+    ui_->ActionCounterparties->setIcon(IconUtils::createRecoloredIcon(Icon::Handshake, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -484,6 +496,42 @@ MainWindow::MainWindow(QWidget* parent) :
             datasetBundleController_->showListWindow();
     });
 
+    // Connect Party Types action to controller
+    connect(ui_->ActionPartyTypes, &QAction::triggered, this, [this]() {
+        if (partyTypeController_)
+            partyTypeController_->showListWindow();
+    });
+
+    // Connect Party Statuses action to controller
+    connect(ui_->ActionPartyStatuses, &QAction::triggered, this, [this]() {
+        if (partyStatusController_)
+            partyStatusController_->showListWindow();
+    });
+
+    // Connect Party ID Schemes action to controller
+    connect(ui_->ActionPartyIdSchemes, &QAction::triggered, this, [this]() {
+        if (partyIdSchemeController_)
+            partyIdSchemeController_->showListWindow();
+    });
+
+    // Connect Contact Types action to controller
+    connect(ui_->ActionContactTypes, &QAction::triggered, this, [this]() {
+        if (contactTypeController_)
+            contactTypeController_->showListWindow();
+    });
+
+    // Connect Parties action to controller
+    connect(ui_->ActionParties, &QAction::triggered, this, [this]() {
+        if (partyController_)
+            partyController_->showListWindow();
+    });
+
+    // Connect Counterparties action to controller
+    connect(ui_->ActionCounterparties, &QAction::triggered, this, [this]() {
+        if (counterpartyController_)
+            counterpartyController_->showListWindow();
+    });
+
     // Connect Data Librarian action
     connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
         if (dataLibrarianWindow_) {
@@ -789,6 +837,12 @@ void MainWindow::updateMenuState() {
     ui_->ActionMethodologies->setEnabled(isLoggedIn);
     ui_->ActionDataLibrarian->setEnabled(isLoggedIn);
     ui_->ActionDatasetBundles->setEnabled(isLoggedIn);
+    ui_->ActionPartyTypes->setEnabled(isLoggedIn);
+    ui_->ActionPartyStatuses->setEnabled(isLoggedIn);
+    ui_->ActionPartyIdSchemes->setEnabled(isLoggedIn);
+    ui_->ActionContactTypes->setEnabled(isLoggedIn);
+    ui_->ActionParties->setEnabled(isLoggedIn);
+    ui_->ActionCounterparties->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1164,6 +1218,108 @@ void MainWindow::createControllers() {
     connect(datasetBundleController_.get(), &DatasetBundleController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(datasetBundleController_.get(), &DatasetBundleController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create party type controller
+    partyTypeController_ = std::make_unique<PartyTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(partyTypeController_.get(), &PartyTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyTypeController_.get(), &PartyTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyTypeController_.get(), &PartyTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(partyTypeController_.get(), &PartyTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create party status controller
+    partyStatusController_ = std::make_unique<PartyStatusController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(partyStatusController_.get(), &PartyStatusController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyStatusController_.get(), &PartyStatusController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyStatusController_.get(), &PartyStatusController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(partyStatusController_.get(), &PartyStatusController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create party ID scheme controller
+    partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(partyIdSchemeController_.get(), &PartyIdSchemeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyIdSchemeController_.get(), &PartyIdSchemeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyIdSchemeController_.get(), &PartyIdSchemeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(partyIdSchemeController_.get(), &PartyIdSchemeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create contact type controller
+    contactTypeController_ = std::make_unique<ContactTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(contactTypeController_.get(), &ContactTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(contactTypeController_.get(), &ContactTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(contactTypeController_.get(), &ContactTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(contactTypeController_.get(), &ContactTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create party controller
+    partyController_ = std::make_unique<PartyController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(partyController_.get(), &PartyController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyController_.get(), &PartyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(partyController_.get(), &PartyController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(partyController_.get(), &PartyController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create counterparty controller
+    counterpartyController_ = std::make_unique<CounterpartyController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(counterpartyController_.get(), &CounterpartyController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(counterpartyController_.get(), &CounterpartyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(counterpartyController_.get(), &CounterpartyController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(counterpartyController_.get(), &CounterpartyController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";

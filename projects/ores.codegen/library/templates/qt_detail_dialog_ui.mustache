@@ -32,43 +32,24 @@
       <string>Basic Information</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelCode">
+{{#domain_entity.qt.detail_fields}}
+      <item row="{{_row_index}}" column="0">
+       <widget class="QLabel" name="label_{{widget}}">
         <property name="text">
-         <string>Code:</string>
+         <string>{{label}}:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="codeEdit">
+      <item row="{{_row_index}}" column="1">
+{{#is_line_edit}}
+       <widget class="QLineEdit" name="{{widget}}">
         <property name="placeholderText">
-         <string>Enter {{domain_entity.entity_singular_words}} code</string>
+         <string>{{placeholder}}</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelName">
-        <property name="text">
-         <string>Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="nameEdit">
-        <property name="placeholderText">
-         <string>Enter display name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelDescription">
-        <property name="text">
-         <string>Description:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QTextEdit" name="descriptionEdit">
+{{/is_line_edit}}
+{{#is_text_edit}}
+       <widget class="QTextEdit" name="{{widget}}">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -82,10 +63,12 @@
          </size>
         </property>
         <property name="placeholderText">
-         <string>Enter a description</string>
+         <string>{{placeholder}}</string>
         </property>
        </widget>
+{{/is_text_edit}}
       </item>
+{{/domain_entity.qt.detail_fields}}
      </layout>
     </widget>
    </item>

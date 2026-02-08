@@ -69,6 +69,12 @@ class CodingSchemeController;
 class MethodologyController;
 class DatasetController;
 class DatasetBundleController;
+class PartyTypeController;
+class PartyStatusController;
+class PartyIdSchemeController;
+class ContactTypeController;
+class PartyController;
+class CounterpartyController;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -525,6 +531,13 @@ private:
      * and history windows.
      */
     std::unique_ptr<DatasetBundleController> datasetBundleController_;
+
+    std::unique_ptr<PartyTypeController> partyTypeController_;
+    std::unique_ptr<PartyStatusController> partyStatusController_;
+    std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
+    std::unique_ptr<ContactTypeController> contactTypeController_;
+    std::unique_ptr<PartyController> partyController_;
+    std::unique_ptr<CounterpartyController> counterpartyController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

@@ -119,6 +119,19 @@
       "history_response_class": "iam::messaging::get_tenant_history_response",
       "history_message_type": "get_tenant_history_request",
 
+      "detail_fields": [
+        {"field": "code", "label": "Code", "widget": "codeEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter tenant code"},
+        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit",
+         "is_required": true, "placeholder": "Enter display name"},
+        {"field": "type", "label": "Type", "widget": "typeEdit", "type": "line_edit",
+         "placeholder": "Enter tenant type"},
+        {"field": "hostname", "label": "Hostname", "widget": "hostnameEdit", "type": "line_edit",
+         "placeholder": "Enter hostname"},
+        {"field": "status", "label": "Status", "widget": "statusEdit", "type": "line_edit",
+         "placeholder": "Enter status"}
+      ],
+
       "columns": [
         {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 120},
         {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},

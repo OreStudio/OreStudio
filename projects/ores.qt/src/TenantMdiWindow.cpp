@@ -19,160 +19,196 @@
  */
 #include "ores.qt/TenantMdiWindow.hpp"
 
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QMenu>
+#include <QSettings>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-TenantMdiWindow::TenantMdiWindow(ClientManager* clientManager,
-                                   const QString& username,
-                                   QWidget* parent)
+TenantMdiWindow::TenantMdiWindow(
+    ClientManager* clientManager,
+    const QString& username,
+    QWidget* parent)
     : EntityListMdiWindow(parent),
-      verticalLayout_(new QVBoxLayout(this)),
-      tenantTableView_(new QTableView(this)),
-      toolBar_(new QToolBar(this)),
-      reloadAction_(new QAction("Reload", this)),
-      addAction_(new QAction("Add", this)),
-      editAction_(new QAction("Edit", this)),
-      deleteAction_(new QAction("Delete", this)),
-      historyAction_(new QAction("History", this)),
-      tenantModel_(std::make_unique<ClientTenantModel>(clientManager)),
-      proxyModel_(new QSortFilterProxyModel(this)),
       clientManager_(clientManager),
-      username_(username) {
+      username_(username),
+      toolbar_(nullptr),
+      tableView_(nullptr),
+      model_(nullptr),
+      proxyModel_(nullptr),
+      reloadAction_(nullptr),
+      addAction_(nullptr),
+      editAction_(nullptr),
+      deleteAction_(nullptr),
+      historyAction_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating tenant MDI window";
+    setupUi();
+    setupConnections();
 
-    toolBar_->setMovable(false);
-    toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    // Initial load
+    reload();
+}
 
-    // Setup reload action with normal and stale icons
-    setupReloadAction();
-    toolBar_->addAction(reloadAction_);
+QSize TenantMdiWindow::sizeHint() const {
+    return {900, 400};
+}
 
-    toolBar_->addSeparator();
+void TenantMdiWindow::setupUi() {
+    auto* layout = new QVBoxLayout(this);
 
-    addAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor));
-    addAction_->setToolTip("Add new tenant");
-    connect(addAction_, &QAction::triggered, this, &TenantMdiWindow::addNew);
-    toolBar_->addAction(addAction_);
+    setupToolbar();
+    layout->addWidget(toolbar_);
 
-    editAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor));
-    editAction_->setToolTip("Edit selected tenant");
+    setupTable();
+    layout->addWidget(tableView_);
+}
+
+void TenantMdiWindow::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
+
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        tr("Reload"));
+    connect(reloadAction_, &QAction::triggered, this,
+            &TenantMdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    addAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Add, IconUtils::DefaultIconColor),
+        tr("Add"));
+    addAction_->setToolTip(tr("Add new tenant"));
+    connect(addAction_, &QAction::triggered, this,
+            &TenantMdiWindow::addNew);
+
+    editAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Edit, IconUtils::DefaultIconColor),
+        tr("Edit"));
+    editAction_->setToolTip(tr("Edit selected tenant"));
+    editAction_->setEnabled(false);
     connect(editAction_, &QAction::triggered, this,
-        &TenantMdiWindow::editSelected);
-    toolBar_->addAction(editAction_);
+            &TenantMdiWindow::editSelected);
 
-    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete selected tenant(s)");
+    deleteAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Delete, IconUtils::DefaultIconColor),
+        tr("Delete"));
+    deleteAction_->setToolTip(tr("Delete selected tenant"));
+    deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this,
-        &TenantMdiWindow::deleteSelected);
-    toolBar_->addAction(deleteAction_);
+            &TenantMdiWindow::deleteSelected);
 
-    toolBar_->addSeparator();
-
-    historyAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor));
-    historyAction_->setToolTip("View tenant history");
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    historyAction_->setToolTip(tr("View tenant history"));
+    historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
-        &TenantMdiWindow::viewHistorySelected);
-    toolBar_->addAction(historyAction_);
+            &TenantMdiWindow::viewHistorySelected);
+}
 
-    verticalLayout_->addWidget(toolBar_);
-    verticalLayout_->addWidget(tenantTableView_);
+void TenantMdiWindow::setupTable() {
+    model_ = new ClientTenantModel(clientManager_, this);
+    proxyModel_ = new QSortFilterProxyModel(this);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
-    tenantTableView_->setObjectName("tenantTableView");
-    tenantTableView_->setAlternatingRowColors(true);
-    tenantTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    tenantTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tenantTableView_->setWordWrap(false);
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->horizontalHeader()->setStretchLastSection(true);
+    tableView_->verticalHeader()->setVisible(false);
 
-    proxyModel_->setSourceModel(tenantModel_.get());
-    tenantTableView_->setModel(proxyModel_);
-    tenantTableView_->setSortingEnabled(true);
-    tenantTableView_->sortByColumn(0, Qt::AscendingOrder);
+    // Set column widths
+    tableView_->setColumnWidth(ClientTenantModel::Code, 120);
+    tableView_->setColumnWidth(ClientTenantModel::Name, 200);
+    tableView_->setColumnWidth(ClientTenantModel::Type, 100);
+    tableView_->setColumnWidth(ClientTenantModel::Hostname, 180);
+    tableView_->setColumnWidth(ClientTenantModel::Status, 100);
+    tableView_->setColumnWidth(ClientTenantModel::Version, 80);
+    tableView_->setColumnWidth(ClientTenantModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientTenantModel::RecordedAt, 150);
 
-    QHeaderView* horizontalHeader(tenantTableView_->horizontalHeader());
-    tenantTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    // Setup column visibility with context menu
+    setupColumnVisibility();
 
-    // Connect signals
-    connect(tenantModel_.get(), &ClientTenantModel::dataLoaded,
+    // Restore saved settings (column visibility, window size)
+    restoreSettings();
+}
+
+void TenantMdiWindow::setupConnections() {
+    connect(model_, &ClientTenantModel::dataLoaded,
             this, &TenantMdiWindow::onDataLoaded);
-    connect(tenantModel_.get(), &ClientTenantModel::loadError,
+    connect(model_, &ClientTenantModel::loadError,
             this, &TenantMdiWindow::onLoadError);
-    connect(tenantTableView_, &QTableView::doubleClicked,
-            this, &TenantMdiWindow::onRowDoubleClicked);
-    connect(tenantTableView_->selectionModel(),
-        &QItemSelectionModel::selectionChanged,
+
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &TenantMdiWindow::onSelectionChanged);
-
-    // Connect connection state signals
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::connected,
-                this, &TenantMdiWindow::onConnectionStateChanged);
-        connect(clientManager_, &ClientManager::disconnected,
-                this, &TenantMdiWindow::onConnectionStateChanged);
-    }
-
-    updateActionStates();
-
-    emit statusChanged("Loading tenants...");
-
-    // Initial load (only if logged in)
-    if (clientManager_->isLoggedIn()) {
-        tenantModel_->refresh();
-    } else {
-        emit statusChanged("Disconnected - Offline");
-        toolBar_->setEnabled(false);
-    }
-}
-
-TenantMdiWindow::~TenantMdiWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Destroying tenant MDI window";
-
-    const auto watchers = findChildren<QFutureWatcherBase*>();
-    for (auto* watcher : watchers) {
-        disconnect(watcher, nullptr, this, nullptr);
-        watcher->cancel();
-        watcher->waitForFinished();
-    }
-}
-
-void TenantMdiWindow::onConnectionStateChanged() {
-    const bool connected = clientManager_ && clientManager_->isConnected();
-    toolBar_->setEnabled(connected);
-
-    if (connected) {
-        emit statusChanged("Connected");
-    } else {
-        emit statusChanged("Disconnected - Offline");
-    }
+    connect(tableView_, &QTableView::doubleClicked,
+            this, &TenantMdiWindow::onDoubleClicked);
 }
 
 void TenantMdiWindow::reload() {
-    BOOST_LOG_SEV(lg(), debug) << "Reload requested";
-    if (!clientManager_->isConnected()) {
-        emit statusChanged("Cannot reload - Disconnected");
-        return;
-    }
-    emit statusChanged("Reloading tenants...");
+    BOOST_LOG_SEV(lg(), debug) << "Reloading tenants";
     clearStaleIndicator();
-    tenantModel_->refresh();
+    emit statusChanged(tr("Loading tenants..."));
+    model_->refresh();
+}
+
+void TenantMdiWindow::onDataLoaded() {
+    emit statusChanged(tr("Loaded %1 tenants").arg(model_->rowCount()));
+}
+
+void TenantMdiWindow::onLoadError(const QString& error_message,
+                                          const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void TenantMdiWindow::onSelectionChanged() {
+    updateActionStates();
+}
+
+void TenantMdiWindow::onDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid())
+        return;
+
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* tenant = model_->getTenant(sourceIndex.row())) {
+        emit showTenantDetails(*tenant);
+    }
+}
+
+void TenantMdiWindow::updateActionStates() {
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 void TenantMdiWindow::addNew() {
@@ -180,140 +216,140 @@ void TenantMdiWindow::addNew() {
     emit addNewRequested();
 }
 
-void TenantMdiWindow::onDataLoaded() {
-    const auto loaded = tenantModel_->rowCount();
-
-    const QString message = QString("Loaded %1 tenants").arg(loaded);
-    emit statusChanged(message);
-    BOOST_LOG_SEV(lg(), debug) << "Tenant data loaded successfully: "
-                               << loaded << " tenants";
-
-    if (tenantModel_->rowCount() > 0 &&
-        tenantTableView_->selectionModel()->selectedRows().isEmpty()) {
-        tenantTableView_->selectRow(0);
-        BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
-    }
-}
-
-void TenantMdiWindow::onLoadError(const QString& error_message,
-                                   const QString& details) {
-    emit errorOccurred(error_message);
-    BOOST_LOG_SEV(lg(), error) << "Error loading tenants: "
-                              << error_message.toStdString();
-
-    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
-}
-
-void TenantMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
-    if (!index.isValid()) {
-        return;
-    }
-
-    const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
-    const auto* tenant = tenantModel_->getTenant(sourceIndex.row());
-    if (!tenant) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get tenant for row: "
-                                 << sourceIndex.row();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showTenantDetails for tenant: "
-                               << tenant->code;
-    emit showTenantDetails(*tenant);
-}
-
-void TenantMdiWindow::onSelectionChanged() {
-    const int selection_count = tenantTableView_->selectionModel()->selectedRows().count();
-    updateActionStates();
-    emit selectionChanged(selection_count);
-}
-
 void TenantMdiWindow::editSelected() {
-    const auto selected = tenantTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
         return;
     }
 
-    onRowDoubleClicked(selected.first());
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* tenant = model_->getTenant(sourceIndex.row())) {
+        emit showTenantDetails(*tenant);
+    }
+}
+
+void TenantMdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* tenant = model_->getTenant(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showTenantHistory for code: "
+                                   << tenant->code;
+        emit showTenantHistory(*tenant);
+    }
 }
 
 void TenantMdiWindow::deleteSelected() {
-    const auto selected = tenantTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
         return;
     }
 
     if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected",
-             "Cannot delete tenant while disconnected.");
-         return;
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete tenant while disconnected.");
+        return;
     }
 
-    std::vector<boost::uuids::uuid> tenant_ids;
+    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> codes;  // For display purposes
     for (const auto& index : selected) {
-        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
-        const auto* tenant = tenantModel_->getTenant(sourceIndex.row());
-        if (tenant)
-            tenant_ids.push_back(tenant->id);
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* tenant = model_->getTenant(sourceIndex.row())) {
+            ids.push_back(tenant->id);
+            codes.push_back(tenant->code);
+        }
     }
 
-    if (tenant_ids.empty()) {
+    if (ids.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No valid tenants to delete";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << tenant_ids.size()
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
                                << " tenants";
 
     QString confirmMessage;
-    if (tenant_ids.size() == 1) {
-        const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
-        const auto* tenant = tenantModel_->getTenant(sourceIndex.row());
+    if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete tenant '%1'?")
-            .arg(QString::fromStdString(tenant->code));
+            .arg(QString::fromStdString(codes.front()));
     } else {
         confirmMessage = QString("Are you sure you want to delete %1 tenants?")
-            .arg(tenant_ids.size());
+            .arg(ids.size());
     }
 
     auto reply = MessageBoxHelper::question(this, "Delete Tenant",
         confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
-        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user.";
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
         return;
     }
 
     QPointer<TenantMdiWindow> self = this;
-    using DeleteResult = std::vector<iam::messaging::delete_tenant_result>;
+    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
-    auto task = [self, tenant_ids]() -> DeleteResult {
-        if (!self) {
-            return {};
+    auto task = [self, ids, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self) return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+                                   << ids.size() << " tenants";
+
+        iam::messaging::delete_tenant_request request;
+        request.ids = ids;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::delete_tenant_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            }
+            return results;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Deleting " << tenant_ids.size() << " tenants";
-
-        iam::messaging::delete_tenant_request request{tenant_ids};
-        auto response = self->clientManager_->
-            process_authenticated_request(std::move(request));
-
-        if (response) {
-            return std::move(response->results);
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to decompress server response"});
+            }
+            return results;
         }
 
-        // Handle error from process_authenticated_request
-        const auto error_string = comms::net::to_string(response.error());
-        BOOST_LOG_SEV(lg(), error) << "Failed to delete tenants: " << error_string;
+        auto response = iam::messaging::delete_tenant_response::
+            deserialize(*payload_result);
 
-        DeleteResult error_results;
-        const auto error_message = "Failed to delete tenants: " + error_string;
-        for (const auto& id : tenant_ids) {
-            error_results.push_back({id, false, error_message});
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Invalid server response"});
+            }
+            return results;
         }
-        return error_results;
+
+        // Match results with codes for display purposes
+        for (std::size_t i = 0; i < response->results.size(); ++i) {
+            const auto& result = response->results[i];
+            std::string code = (i < codes.size()) ? codes[i] : "";
+            results.push_back({result.id, code, result.success, result.message});
+        }
+
+        return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
@@ -326,28 +362,27 @@ void TenantMdiWindow::deleteSelected() {
         int failure_count = 0;
         QString first_error;
 
-        for (const auto& result : results) {
-            if (result.success) {
-                BOOST_LOG_SEV(lg(), debug) << "Tenant deleted successfully: "
-                                           << boost::uuids::to_string(result.id);
-                emit self->tenantDeleted(QString::fromStdString(
-                    boost::uuids::to_string(result.id)));
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "Tenant deleted: " << code;
                 success_count++;
+                emit self->tenantDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Tenant deletion failed: "
-                                           << result.message;
+                                           << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
-                    first_error = QString::fromStdString(result.message);
+                    first_error = QString::fromStdString(message);
                 }
             }
         }
 
-        self->tenantModel_->refresh();
+        self->model_->refresh();
+
         if (failure_count == 0) {
             QString msg = success_count == 1
-                ? "Deleted 1 tenant"
-                : QString("Deleted %1 tenants").arg(success_count);
+                ? "Successfully deleted 1 tenant"
+                : QString("Successfully deleted %1 tenants").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
@@ -357,11 +392,9 @@ void TenantMdiWindow::deleteSelected() {
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
+            QString msg = QString("Deleted %1, failed to delete %2")
                 .arg(success_count)
-                .arg(success_count == 1 ? "tenant" : "tenants")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "tenant" : "tenants");
+                .arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -371,46 +404,82 @@ void TenantMdiWindow::deleteSelected() {
     watcher->setFuture(future);
 }
 
-void TenantMdiWindow::viewHistorySelected() {
-    const auto selected = tenantTableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "History requested but no row selected";
-        return;
-    }
+void TenantMdiWindow::setupColumnVisibility() {
+    QHeaderView* header = tableView_->horizontalHeader();
 
-    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
-    const auto* tenant = tenantModel_->getTenant(sourceIndex.row());
-    if (!tenant) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get tenant for row: "
-                                 << sourceIndex.row();
-        return;
-    }
+    // Enable context menu on header for column visibility
+    header->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(header, &QHeaderView::customContextMenuRequested,
+            this, &TenantMdiWindow::showHeaderContextMenu);
 
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showTenantHistory for tenant: "
-                               << tenant->code;
-    emit showTenantHistory(QString::fromStdString(tenant->code));
+    // Save header state when sections are moved or resized
+    connect(header, &QHeaderView::sectionMoved, this,
+            &TenantMdiWindow::saveSettings);
+    connect(header, &QHeaderView::sectionResized, this,
+            &TenantMdiWindow::saveSettings);
 }
 
-void TenantMdiWindow::updateActionStates() {
-    const int selection_count = tenantTableView_
-        ->selectionModel()->selectedRows().count();
-    const bool hasSingleSelection = selection_count == 1;
-    const bool hasSelection = selection_count > 0;
+void TenantMdiWindow::showHeaderContextMenu(const QPoint& pos) {
+    QHeaderView* header = tableView_->horizontalHeader();
+    QMenu menu(this);
+    menu.setTitle(tr("Columns"));
 
-    // Edit and history only work on single selection
-    editAction_->setEnabled(hasSingleSelection);
-    historyAction_->setEnabled(hasSingleSelection);
+    // Add action for each column
+    for (int col = 0; col < model_->columnCount(); ++col) {
+        QString columnName = model_->headerData(col, Qt::Horizontal,
+            Qt::DisplayRole).toString();
 
-    // Delete supports multi-selection
-    deleteAction_->setEnabled(hasSelection);
+        QAction* action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(!header->isSectionHidden(col));
+
+        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
+            header->setSectionHidden(col, !visible);
+            saveSettings();
+            BOOST_LOG_SEV(lg(), debug) << "Column " << col
+                                       << " visibility changed to: " << visible;
+        });
+    }
+
+    menu.exec(header->mapToGlobal(pos));
 }
 
-void TenantMdiWindow::setupReloadAction() {
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &TenantMdiWindow::reload);
+void TenantMdiWindow::saveSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("TenantListWindow");
 
-    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
+    // Save header state (includes column visibility, order, and widths)
+    QHeaderView* header = tableView_->horizontalHeader();
+    settings.setValue("headerState", header->saveState());
+
+    // Save window size
+    settings.setValue("windowSize", size());
+
+    settings.endGroup();
+}
+
+void TenantMdiWindow::restoreSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("TenantListWindow");
+
+    QHeaderView* header = tableView_->horizontalHeader();
+
+    // Check if we have saved settings
+    if (settings.contains("headerState")) {
+        // Restore header state
+        header->restoreState(settings.value("headerState").toByteArray());
+        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+    } else {
+        // Apply default column visibility
+        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
+    }
+
+    // Restore window size if saved
+    if (settings.contains("windowSize")) {
+        resize(settings.value("windowSize").toSize());
+    }
+
+    settings.endGroup();
 }
 
 }

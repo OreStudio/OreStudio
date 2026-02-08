@@ -35,14 +35,14 @@ namespace ores::refdata::messaging {
  *
  * Processes messages in the refdata subsystem range (0x1000-0x1FFF).
  * Currently handles:
- * - get_currencies_request: Retrieves all currencies from the repository
- * - save_currency_request: Creates or updates a currency
- * - delete_currency_request: Deletes currencies
- * - get_currency_history_request: Retrieves currency version history
- * - get_countries_request: Retrieves all countries from the repository
- * - save_country_request: Creates or updates a country
- * - delete_country_request: Deletes countries
- * - get_country_history_request: Retrieves country version history
+ * - Currency CRUD + history
+ * - Country CRUD + history
+ * - Party type CRUD + history
+ * - Party status CRUD + history
+ * - Party ID scheme CRUD + history
+ * - Contact type CRUD + history
+ * - Party CRUD + history
+ * - Counterparty CRUD + history
  */
 class refdata_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
@@ -139,6 +139,90 @@ private:
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_country_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Party type handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_types_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_party_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_party_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_type_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Party status handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_statuses_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_party_status_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_party_status_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_status_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Party ID scheme handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_id_schemes_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_party_id_scheme_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_party_id_scheme_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_id_scheme_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Contact type handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_contact_types_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_contact_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_contact_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_contact_type_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Party handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_parties_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_party_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_party_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Counterparty handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_counterparties_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_counterparty_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_counterparty_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_counterparty_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     std::shared_ptr<variability::service::system_flags_service> system_flags_;

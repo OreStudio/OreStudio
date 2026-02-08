@@ -23,5 +23,11 @@
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
+#include "ores.refdata/messaging/party_type_protocol.hpp"
+#include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
+#include "ores.refdata/messaging/contact_type_protocol.hpp"
+#include "ores.refdata/messaging/party_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_protocol.hpp"
 
 #endif

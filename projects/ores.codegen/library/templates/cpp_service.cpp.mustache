@@ -64,6 +64,9 @@ std::vector<domain::{{entity_singular}}>
 #include "ores.{{component}}/service/{{name_singular}}_service.hpp"
 
 #include <stdexcept>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_left_or_right}}
 
 namespace ores::{{component}}::service {
 
@@ -78,16 +81,31 @@ std::vector<domain::{{name_singular}}> {{name_singular}}_service::list_{{name_sh
 }
 
 std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+{{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}}) {
+{{/left.is_uuid}}
+{{^left.is_uuid}}
 {{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}}) {
+{{/left.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Listing {{name_words}} for {{left.column_title_lower}}: " << {{left.column}};
     return repo_.read_latest_by_{{left.column_short}}({{left.column}});
 }
 
 void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}}) {
+{{#left.is_uuid}}
+    if ({{name_singular_short}}.{{left.column}}.is_nil()) {
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     if ({{name_singular_short}}.{{left.column}}.empty()) {
+{{/left.is_uuid}}
         throw std::invalid_argument("{{left.column_title}} cannot be empty.");
     }
+{{#right.is_uuid}}
+    if ({{name_singular_short}}.{{right.column}}.is_nil()) {
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     if ({{name_singular_short}}.{{right.column}}.empty()) {
+{{/right.is_uuid}}
         throw std::invalid_argument("{{right.column_title}} cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
@@ -97,8 +115,18 @@ void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{nam
                               << "/" << {{name_singular_short}}.{{right.column}};
 }
 
+{{#left.is_uuid}}
+void {{name_singular}}_service::remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
 void {{name_singular}}_service::remove_{{name_singular_short}}(const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    const boost::uuids::uuid& {{right.column}}) {
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     const std::string& {{right.column}}) {
+{{/right.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}}: " << {{left.column}}
                                << "/" << {{right.column}};
     repo_.remove({{left.column}}, {{right.column}});

@@ -32,15 +32,33 @@ void write_{{entity_singular}}(std::vector<std::byte>& buffer,
     writer::write_string(buffer, {{cpp.iterator_var}}.{{primary_key.column}});
 {{/primary_key.is_text}}
 {{#natural_keys}}
+{{#is_uuid}}
+    writer::write_uuid(buffer, {{iter_var}}.{{column}});
+{{/is_uuid}}
+{{^is_uuid}}
     writer::write_string(buffer, {{iter_var}}.{{column}});
+{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{#is_optional_uuid}}
+    writer::write_bool(buffer, {{iter_var}}.{{name}}.has_value());
+    if ({{iter_var}}.{{name}}.has_value()) {
+        writer::write_uuid(buffer, *{{iter_var}}.{{name}});
+    }
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    writer::write_uuid(buffer, {{iter_var}}.{{name}});
+{{/is_uuid}}
+{{^is_uuid}}
 {{#is_int}}
     writer::write_uint32(buffer, static_cast<std::uint32_t>({{iter_var}}.{{name}}));
 {{/is_int}}
 {{^is_int}}
     writer::write_string(buffer, {{iter_var}}.{{name}});
 {{/is_int}}
+{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/columns}}
     writer::write_string(buffer, {{cpp.iterator_var}}.recorded_by);
     writer::write_string(buffer, {{cpp.iterator_var}}.performed_by);
@@ -70,12 +88,38 @@ read_{{entity_singular}}(std::span<const std::byte>& data) {
 {{/primary_key.is_text}}
 
 {{#natural_keys}}
+{{#is_uuid}}
+    auto {{column}}_result = reader::read_uuid(data);
+    if (!{{column}}_result) return std::unexpected({{column}}_result.error());
+    {{iter_var}}.{{column}} = *{{column}}_result;
+
+{{/is_uuid}}
+{{^is_uuid}}
     auto {{column}}_result = reader::read_string(data);
     if (!{{column}}_result) return std::unexpected({{column}}_result.error());
     {{iter_var}}.{{column}} = *{{column}}_result;
 
+{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{#is_optional_uuid}}
+    auto {{name}}_present_result = reader::read_bool(data);
+    if (!{{name}}_present_result) return std::unexpected({{name}}_present_result.error());
+    if (*{{name}}_present_result) {
+        auto {{name}}_result = reader::read_uuid(data);
+        if (!{{name}}_result) return std::unexpected({{name}}_result.error());
+        {{iter_var}}.{{name}} = *{{name}}_result;
+    }
+
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    auto {{name}}_result = reader::read_uuid(data);
+    if (!{{name}}_result) return std::unexpected({{name}}_result.error());
+    {{iter_var}}.{{name}} = *{{name}}_result;
+
+{{/is_uuid}}
+{{^is_uuid}}
 {{#is_int}}
     auto {{name}}_result = reader::read_uint32(data);
     if (!{{name}}_result) return std::unexpected({{name}}_result.error());
@@ -88,6 +132,8 @@ read_{{entity_singular}}(std::span<const std::byte>& data) {
     {{iter_var}}.{{name}} = *{{name}}_result;
 
 {{/is_int}}
+{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/columns}}
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
@@ -425,8 +471,18 @@ namespace {
 void write_{{name_singular}}(std::vector<std::byte>& buffer,
     const domain::{{name_singular}}& {{cpp.iterator_var}}) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>({{cpp.iterator_var}}.version));
+{{#left.is_uuid}}
+    writer::write_uuid(buffer, {{cpp.iterator_var}}.{{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     writer::write_string(buffer, {{cpp.iterator_var}}.{{left.column}});
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    writer::write_uuid(buffer, {{cpp.iterator_var}}.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     writer::write_string(buffer, {{cpp.iterator_var}}.{{right.column}});
+{{/right.is_uuid}}
 {{#columns}}
 {{#is_int}}
     writer::write_uint32(buffer, static_cast<std::uint32_t>({{iter_var}}.{{name}}));
@@ -451,11 +507,21 @@ read_{{name_singular}}(std::span<const std::byte>& data) {
     if (!version_result) return std::unexpected(version_result.error());
     {{cpp.iterator_var}}.version = static_cast<int>(*version_result);
 
+{{#left.is_uuid}}
+    auto {{left.column}}_result = reader::read_uuid(data);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     auto {{left.column}}_result = reader::read_string(data);
+{{/left.is_uuid}}
     if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
     {{cpp.iterator_var}}.{{left.column}} = *{{left.column}}_result;
 
+{{#right.is_uuid}}
+    auto {{right.column}}_result = reader::read_uuid(data);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     auto {{right.column}}_result = reader::read_string(data);
+{{/right.is_uuid}}
     if (!{{right.column}}_result) return std::unexpected({{right.column}}_result.error());
     {{cpp.iterator_var}}.{{right.column}} = *{{right.column}}_result;
 
@@ -557,7 +623,12 @@ std::ostream& operator<<(std::ostream& s, const get_{{name}}_response& v) {
 
 std::vector<std::byte> get_{{name}}_by_{{left.column_short}}_request::serialize() const {
     std::vector<std::byte> buffer;
+{{#left.is_uuid}}
+    writer::write_uuid(buffer, {{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     writer::write_string(buffer, {{left.column}});
+{{/left.is_uuid}}
     return buffer;
 }
 
@@ -565,7 +636,12 @@ std::expected<get_{{name}}_by_{{left.column_short}}_request, error_code>
 get_{{name}}_by_{{left.column_short}}_request::deserialize(std::span<const std::byte> data) {
     get_{{name}}_by_{{left.column_short}}_request request;
 
+{{#left.is_uuid}}
+    auto {{left.column}}_result = reader::read_uuid(data);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     auto {{left.column}}_result = reader::read_string(data);
+{{/left.is_uuid}}
     if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
     request.{{left.column}} = *{{left.column}}_result;
 
@@ -672,8 +748,18 @@ std::vector<std::byte> delete_{{name_singular}}_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(keys.size()));
     for (const auto& k : keys) {
+{{#left.is_uuid}}
+        writer::write_uuid(buffer, k.{{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
         writer::write_string(buffer, k.{{left.column}});
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+        writer::write_uuid(buffer, k.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
         writer::write_string(buffer, k.{{right.column}});
+{{/right.is_uuid}}
     }
     return buffer;
 }
@@ -690,11 +776,21 @@ delete_{{name_singular}}_request::deserialize(std::span<const std::byte> data) {
     for (std::uint32_t i = 0; i < count; ++i) {
         {{name_singular}}_key k;
 
+{{#left.is_uuid}}
+        auto {{left.column}}_result = reader::read_uuid(data);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
         auto {{left.column}}_result = reader::read_string(data);
+{{/left.is_uuid}}
         if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
         k.{{left.column}} = *{{left.column}}_result;
 
+{{#right.is_uuid}}
+        auto {{right.column}}_result = reader::read_uuid(data);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
         auto {{right.column}}_result = reader::read_string(data);
+{{/right.is_uuid}}
         if (!{{right.column}}_result) return std::unexpected({{right.column}}_result.error());
         k.{{right.column}} = *{{right.column}}_result;
 
@@ -713,8 +809,18 @@ std::vector<std::byte> delete_{{name_singular}}_response::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
     for (const auto& r : results) {
+{{#left.is_uuid}}
+        writer::write_uuid(buffer, r.{{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
         writer::write_string(buffer, r.{{left.column}});
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+        writer::write_uuid(buffer, r.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
         writer::write_string(buffer, r.{{right.column}});
+{{/right.is_uuid}}
         writer::write_bool(buffer, r.success);
         writer::write_string(buffer, r.message);
     }
@@ -733,11 +839,21 @@ delete_{{name_singular}}_response::deserialize(std::span<const std::byte> data) 
     for (std::uint32_t i = 0; i < count; ++i) {
         delete_{{name_singular}}_result r;
 
+{{#left.is_uuid}}
+        auto {{left.column}}_result = reader::read_uuid(data);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
         auto {{left.column}}_result = reader::read_string(data);
+{{/left.is_uuid}}
         if (!{{left.column}}_result) return std::unexpected({{left.column}}_result.error());
         r.{{left.column}} = *{{left.column}}_result;
 
+{{#right.is_uuid}}
+        auto {{right.column}}_result = reader::read_uuid(data);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
         auto {{right.column}}_result = reader::read_string(data);
+{{/right.is_uuid}}
         if (!{{right.column}}_result) return std::unexpected({{right.column}}_result.error());
         r.{{right.column}} = *{{right.column}}_result;
 

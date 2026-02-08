@@ -193,6 +193,9 @@ struct message_traits<{{component}}::messaging::get_{{entity_singular}}_history_
 #include <iosfwd>
 #include <vector>
 #include <expected>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_left_or_right}}
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.{{component}}/domain/{{name_singular}}.hpp"
@@ -233,7 +236,12 @@ std::ostream& operator<<(std::ostream& s, const get_{{name}}_response& v);
  * @brief Request to retrieve {{name_words}} for a specific {{left.column_title_lower}}.
  */
 struct get_{{name}}_by_{{left.column_short}}_request final {
+{{#left.is_uuid}}
+    boost::uuids::uuid {{left.column}};
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     std::string {{left.column}};
+{{/left.is_uuid}}
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_{{name}}_by_{{left.column_short}}_request,
@@ -290,8 +298,18 @@ std::ostream& operator<<(std::ostream& s, const save_{{name_singular}}_response&
  * @brief Result for a single {{name_singular_words}} deletion.
  */
 struct delete_{{name_singular}}_result final {
+{{#left.is_uuid}}
+    boost::uuids::uuid {{left.column}};
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     std::string {{left.column}};
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    boost::uuids::uuid {{right.column}};
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     std::string {{right.column}};
+{{/right.is_uuid}}
     bool success;
     std::string message;
 };
@@ -302,8 +320,18 @@ std::ostream& operator<<(std::ostream& s, const delete_{{name_singular}}_result&
  * @brief Key identifying a {{name_singular_words}} for deletion.
  */
 struct {{name_singular}}_key final {
+{{#left.is_uuid}}
+    boost::uuids::uuid {{left.column}};
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     std::string {{left.column}};
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    boost::uuids::uuid {{right.column}};
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     std::string {{right.column}};
+{{/right.is_uuid}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}_key& v);

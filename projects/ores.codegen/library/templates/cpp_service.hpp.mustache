@@ -95,6 +95,9 @@ private:
 
 #include <string>
 #include <vector>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_left_or_right}}
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component}}/domain/{{name_singular}}.hpp"
@@ -140,7 +143,12 @@ public:
      * @param {{left.column}} The {{left.column_title_lower}} to filter by
      */
     std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+    list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}});
+{{/left.is_uuid}}
 
     /**
      * @brief Saves a {{name_singular_words}} (creates or updates).
@@ -155,8 +163,18 @@ public:
      * @param {{left.column}} The {{left.column_title_lower}}
      * @param {{right.column}} The {{right.column_title_lower}}
      */
+{{#left.is_uuid}}
+    void remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     void remove_{{name_singular_short}}(const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+        const boost::uuids::uuid& {{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
         const std::string& {{right.column}});
+{{/right.is_uuid}}
 
 private:
     repository::{{name_singular}}_repository repo_;

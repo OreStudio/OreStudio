@@ -42,6 +42,7 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/SystemProvisionerWizard.hpp"
+#include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
@@ -416,6 +417,11 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionTenants, &QAction::triggered, this, [this]() {
         if (tenantController_)
             tenantController_->showListWindow();
+    });
+
+    // Connect Onboard Tenant action
+    connect(ui_->ActionOnboardTenant, &QAction::triggered, this, [this]() {
+        showTenantOnboardingWizard();
     });
 
     // Connect Feature Flags action to controller (admin only)
@@ -825,6 +831,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionAccounts->setEnabled(isLoggedIn);
     ui_->ActionRoles->setEnabled(isLoggedIn);
     ui_->ActionTenants->setEnabled(isLoggedIn);
+    ui_->ActionOnboardTenant->setEnabled(isLoggedIn);
     ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
     ui_->ActionOriginDimensions->setEnabled(isLoggedIn);
     ui_->ActionNatureDimensions->setEnabled(isLoggedIn);
@@ -966,6 +973,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(tenantController_.get(), &TenantController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
+    connect(tenantController_.get(), &TenantController::onboardRequested,
+            this, &MainWindow::showTenantOnboardingWizard);
 
     // Create feature flag controller (admin only functionality)
     featureFlagController_ = std::make_unique<FeatureFlagController>(
@@ -2024,11 +2033,10 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
-void MainWindow::showSystemProvisionerWizard(
-    const std::vector<BootstrapBundleInfo>& bundles) {
+void MainWindow::showSystemProvisionerWizard() {
     BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
 
-    auto* wizard = new SystemProvisionerWizard(clientManager_, bundles, this);
+    auto* wizard = new SystemProvisionerWizard(clientManager_, this);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -2056,6 +2064,24 @@ void MainWindow::showSystemProvisionerWizard(
         if (clientManager_) {
             clientManager_->disconnect();
         }
+    });
+
+    wizard->show();
+}
+
+void MainWindow::showTenantOnboardingWizard() {
+    BOOST_LOG_SEV(lg(), info) << "Showing Tenant Onboarding Wizard";
+
+    auto* wizard = new TenantOnboardingWizard(clientManager_, this);
+    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(wizard, &TenantOnboardingWizard::onboardingCompleted,
+            this, [this](const QString& tenantName) {
+        BOOST_LOG_SEV(lg(), info) << "Tenant onboarding completed: "
+                                  << tenantName.toStdString();
+        ui_->statusbar->showMessage(
+            tr("Tenant '%1' onboarded successfully.").arg(tenantName));
     });
 
     wizard->show();
@@ -2120,7 +2146,7 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
 
     // Connect bootstrap mode signal
     connect(loginWidget, &LoginDialog::bootstrapModeDetected,
-            this, &MainWindow::showSystemProvisionerWizard);
+            this, [this]() { showSystemProvisionerWizard(); });
 
     // Connect sign up request if enabled
     if (options.showSignUpButton) {

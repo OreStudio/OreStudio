@@ -277,12 +277,17 @@ private:
     /**
      * @brief Shows the system provisioner wizard when in bootstrap mode.
      *
-     * Displays the SystemProvisionerWizard to create the initial admin account
-     * and provision the system with reference data.
-     *
-     * @param bundles Available dataset bundles for provisioning
+     * Displays the SystemProvisionerWizard to create the initial admin account.
      */
-    void showSystemProvisionerWizard(const std::vector<BootstrapBundleInfo>& bundles);
+    void showSystemProvisionerWizard();
+
+    /**
+     * @brief Shows the tenant onboarding wizard.
+     *
+     * Displays the TenantOnboardingWizard for creating and provisioning
+     * a new tenant, optionally seeded with GLEIF LEI data.
+     */
+    void showTenantOnboardingWizard();
 
     /**
      * @brief Options for configuring the login dialog.

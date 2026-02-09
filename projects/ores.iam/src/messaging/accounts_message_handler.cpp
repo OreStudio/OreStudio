@@ -188,6 +188,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_delete_tenant_request(payload, remote_address);
     case message_type::get_tenant_history_request:
         co_return co_await handle_get_tenant_history_request(payload, remote_address);
+    case message_type::provision_tenant_request:
+        co_return co_await handle_provision_tenant_request(payload, remote_address);
     case message_type::get_tenant_types_request:
         co_return co_await handle_get_tenant_types_request(payload, remote_address);
     case message_type::save_tenant_type_request:
@@ -2479,6 +2481,80 @@ handle_get_tenant_status_history_request(std::span<const std::byte> payload,
         .versions = {}
     };
     co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_provision_tenant_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing provision_tenant_request from "
+                               << remote_address;
+
+    auto request_result = provision_tenant_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize provision_tenant_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    // Requires authentication and iam::tenants:update permission
+    auto auth_result = check_authorization(remote_address, domain::permissions::tenants_update, "Provision tenant");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*auth_result);
+
+    // Escape single quotes by doubling them
+    auto escape = [](const std::string& s) {
+        std::string escaped;
+        for (char c : s) {
+            if (c == '\'') escaped += "''";
+            else escaped += c;
+        }
+        return escaped;
+    };
+
+    const auto sql = std::format(
+        "SELECT ores_iam_provision_tenant_fn('{}', '{}', '{}', '{}', '{}')",
+        escape(request.type), escape(request.code), escape(request.name),
+        escape(request.hostname), escape(request.description));
+
+    try {
+        auto rows = database::repository::execute_raw_multi_column_query(
+            ctx, sql, lg(), "Provisioning tenant");
+
+        if (rows.empty() || rows[0].empty() || !rows[0][0].has_value()) {
+            BOOST_LOG_SEV(lg(), error) << "Provision tenant function returned no result";
+            provision_tenant_response response{
+                .success = false,
+                .error_message = "Provision tenant function returned no result",
+                .tenant_id = ""
+            };
+            co_return response.serialize();
+        }
+
+        const auto& tenant_id = *rows[0][0];
+        BOOST_LOG_SEV(lg(), info) << "Provisioned tenant: " << request.name
+                                  << " (code: " << request.code
+                                  << ", id: " << tenant_id << ")";
+
+        provision_tenant_response response{
+            .success = true,
+            .error_message = "",
+            .tenant_id = tenant_id
+        };
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to provision tenant: " << e.what();
+        provision_tenant_response response{
+            .success = false,
+            .error_message = std::string("Failed to provision tenant: ") + e.what(),
+            .tenant_id = ""
+        };
+        co_return response.serialize();
+    }
 }
 
 }

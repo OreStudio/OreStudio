@@ -132,10 +132,8 @@ signals:
      *
      * This signal indicates that the system has no administrator account yet
      * and the SystemProvisionerWizard should be shown instead of the login form.
-     *
-     * @param bundles Available dataset bundles for provisioning
      */
-    void bootstrapModeDetected(const std::vector<BootstrapBundleInfo>& bundles);
+    void bootstrapModeDetected();
 
 private slots:
     void onLoginClicked();

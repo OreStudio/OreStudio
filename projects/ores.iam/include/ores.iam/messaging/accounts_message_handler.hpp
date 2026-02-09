@@ -527,6 +527,17 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle provision_tenant_request message.
+     *
+     * Creates a new tenant and provisions it with base IAM data by calling
+     * ores_iam_provision_tenant_fn. Requires authentication and tenants:write
+     * permission.
+     */
+    handler_result
+    handle_provision_tenant_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Handle get_tenant_types_request message.
      *
      * Requires authentication.

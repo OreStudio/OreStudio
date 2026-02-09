@@ -181,6 +181,48 @@ struct get_tenant_history_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_tenant_history_response& v);
 
+// ============================================================================
+// Tenant Provisioning Messages
+// ============================================================================
+
+/**
+ * @brief Request to create and fully provision a new tenant.
+ *
+ * Unlike save_tenant_request which only inserts a row, this calls
+ * ores_iam_provision_tenant_fn which also copies base IAM data
+ * (permissions, roles, role_permissions) into the new tenant.
+ */
+struct provision_tenant_request final {
+    std::string type;        ///< e.g. "organisation"
+    std::string code;        ///< unique tenant code
+    std::string name;        ///< display name
+    std::string hostname;    ///< unique hostname
+    std::string description; ///< optional
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<provision_tenant_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const provision_tenant_request& v);
+
+/**
+ * @brief Response from tenant provisioning.
+ */
+struct provision_tenant_response final {
+    bool success = false;
+    std::string error_message;
+    std::string tenant_id;   ///< UUID of created tenant (as string)
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<provision_tenant_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const provision_tenant_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -216,6 +258,14 @@ struct message_traits<iam::messaging::get_tenant_history_request> {
     using response_type = iam::messaging::get_tenant_history_response;
     static constexpr message_type request_message_type =
         message_type::get_tenant_history_request;
+};
+
+template<>
+struct message_traits<iam::messaging::provision_tenant_request> {
+    using request_type = iam::messaging::provision_tenant_request;
+    using response_type = iam::messaging::provision_tenant_response;
+    static constexpr message_type request_message_type =
+        message_type::provision_tenant_request;
 };
 
 }

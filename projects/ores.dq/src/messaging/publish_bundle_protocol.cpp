@@ -102,6 +102,7 @@ std::vector<std::byte> publish_bundle_request::serialize() const {
     writer::write_string(buffer, published_by);
     writer::write_bool(buffer, atomic);
     writer::write_string(buffer, params_json);
+    writer::write_string(buffer, target_tenant_id);
     return buffer;
 }
 
@@ -128,6 +129,13 @@ publish_bundle_request::deserialize(std::span<const std::byte> data) {
     auto params_json_result = reader::read_string(data);
     if (!params_json_result) return std::unexpected(params_json_result.error());
     request.params_json = *params_json_result;
+
+    // Handle backward compatibility: target_tenant_id was added later
+    if (!data.empty()) {
+        auto target_tenant_id_result = reader::read_string(data);
+        if (!target_tenant_id_result) return std::unexpected(target_tenant_id_result.error());
+        request.target_tenant_id = *target_tenant_id_result;
+    }
 
     return request;
 }

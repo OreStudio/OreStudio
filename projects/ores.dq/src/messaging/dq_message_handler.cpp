@@ -20,6 +20,7 @@
 #include "ores.dq/messaging/dq_message_handler.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.dq/messaging/dataset_dependency_protocol.hpp"
 #include "ores.dq/messaging/change_management_protocol.hpp"
@@ -2491,6 +2492,26 @@ handle_publish_bundle_request(std::span<const std::byte> payload,
                               << ", atomic: " << request.atomic;
 
     auto ctx = make_request_context(*auth_result);
+
+    // If a target tenant is specified, override the context to publish
+    // into that tenant instead of the session's current tenant.
+    if (!request.target_tenant_id.empty()) {
+        auto target_tid = ores::utility::uuid::tenant_id::from_string(
+            request.target_tenant_id);
+        if (!target_tid) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Invalid target_tenant_id: " << request.target_tenant_id;
+            publish_bundle_response err_response;
+            err_response.success = false;
+            err_response.error_message = "Invalid target_tenant_id: " +
+                request.target_tenant_id;
+            co_return err_response.serialize();
+        }
+        ctx = ctx.with_tenant(*target_tid);
+        BOOST_LOG_SEV(lg(), info) << "Publishing bundle to target tenant: "
+                                  << request.target_tenant_id;
+    }
+
     service::publication_service svc(ctx);
 
     publish_bundle_response response;

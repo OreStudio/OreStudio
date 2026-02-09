@@ -243,18 +243,6 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
                     connected_host_ = host;
                     connected_port_ = port;
 
-                    // Extract available bundles from bootstrap response
-                    std::vector<BootstrapBundleInfo> bundles;
-                    for (const auto& b : bootstrap_response->available_bundles) {
-                        bundles.push_back({
-                            .code = QString::fromStdString(b.code),
-                            .name = QString::fromStdString(b.name),
-                            .description = QString::fromStdString(b.description)
-                        });
-                    }
-                    BOOST_LOG_SEV(lg(), debug) << "Received " << bundles.size()
-                                               << " available bundles for bootstrap";
-
                     // Emit connected signal
                     QMetaObject::invokeMethod(this, "connected", Qt::QueuedConnection);
 
@@ -262,8 +250,7 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
                         .success = false,
                         .error_message = QString::fromStdString(bootstrap_response->message),
                         .password_reset_required = false,
-                        .bootstrap_mode = true,
-                        .available_bundles = std::move(bundles)
+                        .bootstrap_mode = true
                     };
                 }
             }

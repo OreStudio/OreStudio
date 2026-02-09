@@ -20,46 +20,28 @@
 #ifndef ORES_QT_SYSTEM_PROVISIONER_WIZARD_HPP
 #define ORES_QT_SYSTEM_PROVISIONER_WIZARD_HPP
 
-#include <vector>
 #include <QWizard>
 #include <QWizardPage>
 #include <QLineEdit>
 #include <QLabel>
-#include <QRadioButton>
-#include <QButtonGroup>
-#include <QProgressBar>
-#include <QTextEdit>
 #include <QCheckBox>
-#include <QComboBox>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
-class LeiEntityPicker;
-
-
 /**
- * @brief Result of a provisioning operation.
- */
-struct ProvisioningResult {
-    bool success = false;
-    QString error_message;
-    boost::uuids::uuid admin_account_id;
-    QStringList log_messages;
-};
-
-/**
- * @brief Wizard for initial system provisioning when in bootstrap mode.
+ * @brief Wizard for initial system bootstrap when no admin account exists.
  *
- * Multi-page wizard that guides users through:
- * 1. Creating the initial administrator account
- * 2. Selecting a dataset bundle to provision
- * 3. Applying the provisioning and showing progress
+ * Three-page wizard that guides users through:
+ * 1. Welcome - explains bootstrap mode
+ * 2. Create Administrator Account - sets up the first admin
+ * 3. Complete - confirms success and shows next steps
  *
  * This wizard should only be shown when the system is in bootstrap mode
- * (i.e., no administrator account exists yet).
+ * (i.e., no administrator account exists yet). Tenant onboarding is handled
+ * separately by TenantOnboardingWizard.
  */
 class SystemProvisionerWizard final : public QWizard {
     Q_OBJECT
@@ -92,53 +74,26 @@ signals:
     void provisioningFailed(const QString& errorMessage);
 
 public:
-    // Page IDs
     enum PageId {
         Page_Welcome,
         Page_AdminAccount,
-        Page_BundleSelection,
-        Page_TenantConfig,
-        Page_Apply
+        Page_Complete
     };
 
     explicit SystemProvisionerWizard(
         ClientManager* clientManager,
-        const std::vector<BootstrapBundleInfo>& bundles,
         QWidget* parent = nullptr);
 
     ~SystemProvisionerWizard() override = default;
 
-    // Accessors for wizard pages
     ClientManager* clientManager() const { return clientManager_; }
 
-    // Admin account data
     QString adminUsername() const { return adminUsername_; }
     QString adminEmail() const { return adminEmail_; }
     QString adminPassword() const { return adminPassword_; }
     void setAdminCredentials(const QString& username, const QString& email,
                              const QString& password);
 
-    // Bundle selection
-    const std::vector<BootstrapBundleInfo>& bundles() const { return bundles_; }
-    QString selectedBundleCode() const { return selectedBundleCode_; }
-    void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
-
-    // GLEIF tenant configuration
-    bool needsLeiPartyConfig() const { return needsLeiPartyConfig_; }
-    void setNeedsLeiPartyConfig(bool needs) { needsLeiPartyConfig_ = needs; }
-
-    QString rootLei() const { return rootLei_; }
-    void setRootLei(const QString& lei) { rootLei_ = lei; }
-
-    QString rootLeiName() const { return rootLeiName_; }
-    void setRootLeiName(const QString& name) { rootLeiName_ = name; }
-
-    QString leiDatasetSize() const { return leiDatasetSize_; }
-    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
-
-    QString paramsJson() const;
-
-    // Created admin account ID (set after successful creation)
     boost::uuids::uuid adminAccountId() const { return adminAccountId_; }
     void setAdminAccountId(const boost::uuids::uuid& id) { adminAccountId_ = id; }
 
@@ -146,24 +101,16 @@ private:
     void setupPages();
 
     ClientManager* clientManager_;
-    std::vector<BootstrapBundleInfo> bundles_;
     QString adminUsername_;
     QString adminEmail_;
     QString adminPassword_;
-    QString selectedBundleCode_;
     boost::uuids::uuid adminAccountId_;
-    bool needsLeiPartyConfig_ = false;
-    QString rootLei_;
-    QString rootLeiName_;
-    QString leiDatasetSize_ = QStringLiteral("large");
 };
 
 // Forward declarations of page classes
 class WelcomePage;
 class AdminAccountPage;
-class BundleSelectionPage;
-class TenantConfigPage;
-class ApplyProvisioningPage;
+class CompletePage;
 
 /**
  * @brief Welcome page explaining bootstrap mode and system initialization.
@@ -221,103 +168,20 @@ private:
 };
 
 /**
- * @brief Page for selecting a dataset bundle to provision.
+ * @brief Final page showing bootstrap completion summary.
  */
-class BundleSelectionPage final : public QWizardPage {
+class CompletePage final : public QWizardPage {
     Q_OBJECT
 
 public:
-    explicit BundleSelectionPage(SystemProvisionerWizard* wizard);
+    explicit CompletePage(SystemProvisionerWizard* wizard);
     void initializePage() override;
-    bool validatePage() override;
-
-private slots:
-    void onBundleChanged(int index);
 
 private:
     void setupUI();
-    void populateBundles();
 
     SystemProvisionerWizard* wizard_;
-    QComboBox* bundleCombo_;
-    QLabel* descriptionLabel_;
-};
-
-/**
- * @brief Page for configuring GLEIF-based tenant settings.
- *
- * Only relevant when the selected bundle contains lei_parties datasets.
- * Provides radio buttons for "Blank Tenant" vs "GLEIF-Based Tenant"
- * and embeds LeiEntityPicker for root LEI selection.
- */
-class TenantConfigPage final : public QWizardPage {
-    Q_OBJECT
-
-private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_config_page";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    explicit TenantConfigPage(SystemProvisionerWizard* wizard);
-    void initializePage() override;
-    bool validatePage() override;
-    int nextId() const override;
-
-private:
-    void setupUI();
-    void onModeChanged();
-
-    SystemProvisionerWizard* wizard_;
-    QRadioButton* blankRadio_;
-    QRadioButton* gleifRadio_;
-    QWidget* gleifConfigWidget_;
-    QComboBox* datasetSizeCombo_;
-    LeiEntityPicker* leiPicker_;
-    QLabel* selectedEntityLabel_;
-    bool leiLoaded_ = false;
-};
-
-/**
- * @brief Page for applying provisioning and showing progress.
- */
-class ApplyProvisioningPage final : public QWizardPage {
-    Q_OBJECT
-
-private:
-    inline static std::string_view logger_name = "ores.qt.apply_provisioning_page";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    explicit ApplyProvisioningPage(SystemProvisionerWizard* wizard);
-    void initializePage() override;
-    bool isComplete() const override;
-
-private slots:
-    void onProvisioningResult(const ProvisioningResult& result);
-
-private:
-    void startProvisioning();
-    ProvisioningResult performProvisioning();
-    void appendLog(const QString& message);
-    void setStatus(const QString& status);
-
-    SystemProvisionerWizard* wizard_;
-    QLabel* statusLabel_;
-    QProgressBar* progressBar_;
-    QTextEdit* logOutput_;
-    bool provisioningComplete_ = false;
-    bool provisioningSuccess_ = false;
+    QLabel* summaryLabel_;
 };
 
 }

@@ -67,6 +67,8 @@ void TenantController::showListWindow() {
             this, &TenantController::onShowDetails);
     connect(listWindow_, &TenantMdiWindow::addNewRequested,
             this, &TenantController::onAddNewRequested);
+    connect(listWindow_, &TenantMdiWindow::onboardRequested,
+            this, &TenantController::onboardRequested);
     connect(listWindow_, &TenantMdiWindow::showTenantHistory,
             this, &TenantController::onShowHistory);
 

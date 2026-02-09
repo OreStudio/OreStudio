@@ -154,9 +154,8 @@ and combines with configured database name."
 (prodigy-define-tag :name 'release)
 (prodigy-define-tag :name ores/checkout-tag)
 
-(prodigy-define-tag
-  :name 'comms-service
-  :env (ores/setup-environment "SERVICE"))
+(prodigy-define-tag :name 'comms-service)
+
 (defun ores/setup-http-server-environment ()
   "Set up environment variables for the HTTP server.
 Includes database credentials and JWT secret from auth-source."
@@ -166,12 +165,8 @@ Includes database credentials and JWT secret from auth-source."
     `(("ORES_HTTP_SERVER_JWT_SECRET" ,jwt-secret)
       ,@(ores/setup-environment "HTTP_SERVER"))))
 
-(prodigy-define-tag
-  :name 'http-server
-  :env (ores/setup-http-server-environment))
-(prodigy-define-tag
-  :name 'wt-server
-  :env (ores/setup-environment "WT"))
+(prodigy-define-tag :name 'http-server)
+(prodigy-define-tag :name 'wt-server)
 
 (defun ores/service-name (base config)
   "Generate unique service name from BASE, CONFIG (debug/release) and checkout."
@@ -257,6 +252,7 @@ Includes database credentials and JWT secret from auth-source."
           "--port" ,(number-to-string (ores/get-port 'binary 'debug)))
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.comms.service")
   :tags `(ores debug comms-service ,ores/checkout-tag)
+  :env (ores/setup-environment "SERVICE")
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
@@ -267,6 +263,7 @@ Includes database credentials and JWT secret from auth-source."
           "--port" ,(number-to-string (ores/get-port 'binary 'release)))
   :command (concat (ores/path-to-publish 'release) "/bin/ores.comms.service")
   :tags `(ores release comms-service ,ores/checkout-tag)
+  :env (ores/setup-environment "SERVICE")
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
@@ -277,6 +274,7 @@ Includes database credentials and JWT secret from auth-source."
           "--port" ,(number-to-string (ores/get-port 'http 'debug)))
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.http.server")
   :tags `(ores debug http-server ,ores/checkout-tag)
+  :env (ores/setup-http-server-environment)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
@@ -287,6 +285,7 @@ Includes database credentials and JWT secret from auth-source."
           "--port" ,(number-to-string (ores/get-port 'http 'release)))
   :command (concat (ores/path-to-publish 'release) "/bin/ores.http.server")
   :tags `(ores release http-server ,ores/checkout-tag)
+  :env (ores/setup-http-server-environment)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 

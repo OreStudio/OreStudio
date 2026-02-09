@@ -89,7 +89,7 @@ QVariant ClientPartyModel::data(
         case Status:
             return QString::fromStdString(party.status);
         case BusinessCenterCode:
-            return QString::fromStdString(party.business_center_code);
+            return QString::fromStdString(party.business_center_code.value_or(""));
         case Version:
             return party.version;
         case RecordedBy:

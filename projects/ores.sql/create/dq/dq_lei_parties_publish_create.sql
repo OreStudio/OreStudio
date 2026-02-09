@@ -127,20 +127,21 @@ begin
         raise exception 'Target tenant already has a root party. Cannot publish LEI parties.';
     end if;
 
-    -- Resolve subtree using recursive CTE
+    -- Resolve subtree using recursive CTE with depth tracking
     create temp table lei_party_subtree (
         lei text primary key,
         party_uuid uuid not null default gen_random_uuid(),
         parent_lei text null,
+        depth int not null default 0,
         entity_legal_name text not null,
         entity_legal_address_country text not null,
         entity_entity_status text not null
     ) on commit drop;
 
-    -- First, find all LEIs in the subtree (filtered to selected dataset)
+    -- Find all LEIs in the subtree with depth (filtered to selected dataset)
     with recursive subtree as (
-        -- Root node
-        select e.lei
+        -- Root node (depth 0)
+        select e.lei, 0 as depth
         from ores_dq_lei_entities_artefact_tbl e
         where e.lei = v_root_lei
           and e.dataset_id = v_entity_dataset_id
@@ -148,16 +149,17 @@ begin
         union
 
         -- Children: entities whose parent (end_node) is already in the subtree
-        select distinct r.relationship_start_node_node_id
+        select distinct r.relationship_start_node_node_id, s.depth + 1
         from ores_dq_lei_relationships_artefact_tbl r
         join subtree s on s.lei = r.relationship_end_node_node_id
         where r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
           and r.relationship_relationship_status = 'ACTIVE'
           and r.dataset_id = v_rel_dataset_id
     )
-    insert into lei_party_subtree (lei, entity_legal_name, entity_legal_address_country, entity_entity_status)
+    insert into lei_party_subtree (lei, depth, entity_legal_name, entity_legal_address_country, entity_entity_status)
     select distinct on (s.lei)
         s.lei,
+        s.depth,
         e.entity_legal_name,
         e.entity_legal_address_country,
         e.entity_entity_status
@@ -177,23 +179,58 @@ begin
       and r.dataset_id = v_rel_dataset_id
       and m.lei <> v_root_lei;  -- Root has no parent
 
-    -- Insert parties with parent-child hierarchy
-    insert into ores_refdata_parties_tbl (
-        tenant_id,
-        id, version, full_name, short_code, party_type,
-        parent_party_id, status,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        p_target_tenant_id,
-        m.party_uuid, 0, m.entity_legal_name, m.lei, 'Corporate',
-        parent_map.party_uuid, 'Active',
-        current_user, current_user, 'system.external_data_import',
-        'Imported from GLEIF LEI dataset: ' || v_dataset_name
-    from lei_party_subtree m
-    left join lei_party_subtree parent_map on parent_map.lei = m.parent_lei;
+    -- Insert parties level by level (root first, then children) so that
+    -- the insert trigger can validate parent_party_id references.
+    -- Names are normalised from ALL CAPS to Proper Case, with common
+    -- corporate suffixes restored to uppercase.
+    declare
+        v_current_depth int := 0;
+        v_max_depth int;
+        v_level_count bigint;
+    begin
+        select max(depth) into v_max_depth from lei_party_subtree;
 
-    get diagnostics v_inserted_parties = row_count;
+        for v_current_depth in 0..coalesce(v_max_depth, 0) loop
+            insert into ores_refdata_parties_tbl (
+                tenant_id,
+                id, version, full_name, short_code, party_type,
+                parent_party_id, business_center_code, status,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id,
+                m.party_uuid, 0,
+                m.entity_legal_name,
+                m.lei, 'Corporate',
+                parent_map.party_uuid,
+                -- Default business centre from country
+                bc_map.business_center_code,
+                'Active',
+                current_user, current_user, 'system.external_data_import',
+                'Imported from GLEIF LEI dataset: ' || v_dataset_name
+            from lei_party_subtree m
+            left join lei_party_subtree parent_map on parent_map.lei = m.parent_lei
+            left join (values
+                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBB'),
+                ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
+                ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
+                ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),
+                ('GB', 'GBLO'), ('GR', 'GRAT'), ('HK', 'HKHK'), ('HU', 'HUBU'),
+                ('ID', 'IDJA'), ('IE', 'IEDU'), ('IL', 'ILTA'), ('IN', 'INMU'),
+                ('IT', 'ITMI'), ('JP', 'JPTO'), ('KR', 'KRSE'), ('KY', 'KYGE'),
+                ('LU', 'LULU'), ('MX', 'MXMC'), ('MY', 'MYKL'), ('NL', 'NLAM'),
+                ('NO', 'NOOS'), ('NZ', 'NZAU'), ('PH', 'PHMA'), ('PL', 'PLWA'),
+                ('PT', 'PTLI'), ('RO', 'ROBU'), ('RU', 'RUMO'), ('SA', 'SARI'),
+                ('SE', 'SEST'), ('SG', 'SGSI'), ('TH', 'THBA'), ('TR', 'TRIS'),
+                ('TW', 'TWTA'), ('US', 'USNY'), ('ZA', 'ZAJO')
+            ) as bc_map(country_code, business_center_code)
+                on bc_map.country_code = m.entity_legal_address_country
+            where m.depth = v_current_depth;
+
+            get diagnostics v_level_count = row_count;
+            v_inserted_parties := v_inserted_parties + v_level_count;
+        end loop;
+    end;
 
     -- Insert party identifiers (LEI scheme)
     insert into ores_refdata_party_identifiers_tbl (

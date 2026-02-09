@@ -27,6 +27,7 @@
 #include <QComboBox>
 #include <QRadioButton>
 #include <QProgressBar>
+#include <QCheckBox>
 #include <QTextEdit>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -38,10 +39,13 @@ class LeiEntityPicker;
 /**
  * @brief Wizard for onboarding a new tenant.
  *
- * Three-page wizard that guides super admins through:
- * 1. TenantDetails - configure tenant code, name, type, hostname
- * 2. LeiPartyConfig - optionally select a GLEIF LEI entity (GLEIF mode only)
- * 3. Apply - provision the tenant and optionally publish LEI parties
+ * Four-page wizard that guides super admins through:
+ * 1. ModeAndLei - choose Blank or GLEIF mode; in GLEIF mode, select root LEI
+ *    entity whose name will seed the tenant details
+ * 2. TenantDetails - configure tenant code, name, type, hostname (pre-filled
+ *    from LEI entity in GLEIF mode)
+ * 3. AdminAccount - create the initial admin account for the new tenant
+ * 4. Apply - provision the tenant, populate parties, create admin account
  *
  * This wizard is accessible from System > Identity > Onboard Tenant and
  * from the TenantMdiWindow toolbar.
@@ -61,8 +65,9 @@ private:
 
 public:
     enum PageId {
+        Page_ModeAndLei,
         Page_TenantDetails,
-        Page_LeiPartyConfig,
+        Page_AdminAccount,
         Page_Apply
     };
 
@@ -101,12 +106,16 @@ public:
     QString leiDatasetSize() const { return leiDatasetSize_; }
     void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
 
+    QString adminUsername() const { return adminUsername_; }
+    void setAdminUsername(const QString& u) { adminUsername_ = u; }
+
+    QString adminPassword() const { return adminPassword_; }
+    void setAdminPassword(const QString& p) { adminPassword_ = p; }
+
+    QString adminEmail() const { return adminEmail_; }
+    void setAdminEmail(const QString& e) { adminEmail_ = e; }
+
 signals:
-    /**
-     * @brief Emitted when tenant onboarding completes successfully.
-     *
-     * @param tenantName The name of the onboarded tenant
-     */
     void onboardingCompleted(const QString& tenantName);
 
 private:
@@ -122,29 +131,64 @@ private:
     QString rootLei_;
     QString rootLeiName_;
     QString leiDatasetSize_ = QStringLiteral("large");
+    QString adminUsername_;
+    QString adminPassword_;
+    QString adminEmail_;
 };
 
 // Forward declarations of page classes
+class ModeAndLeiPage;
 class TenantDetailsPage;
-class OnboardingLeiPartyConfigPage;
+class OnboardingAdminAccountPage;
 class ApplyOnboardingPage;
 
 /**
- * @brief Page for configuring tenant details.
+ * @brief First page: choose Blank or GLEIF mode and select LEI entity.
  *
- * Allows choosing between Blank and GLEIF-based modes and entering
- * tenant code, name, type, hostname, and description.
+ * In GLEIF mode, embeds a LeiEntityPicker for selecting the root LEI
+ * entity whose legal name will pre-fill the tenant details on the next page.
+ */
+class ModeAndLeiPage final : public QWizardPage {
+    Q_OBJECT
+
+public:
+    explicit ModeAndLeiPage(TenantOnboardingWizard* wizard);
+    void initializePage() override;
+    bool validatePage() override;
+    int nextId() const override;
+
+private slots:
+    void onModeChanged();
+
+private:
+    void setupUI();
+
+    TenantOnboardingWizard* wizard_;
+    QRadioButton* blankRadio_;
+    QRadioButton* gleifRadio_;
+    QComboBox* datasetSizeCombo_;
+    QLabel* datasetSizeLabel_;
+    LeiEntityPicker* leiPicker_;
+    QLabel* selectedEntityLabel_;
+    bool leiLoaded_ = false;
+};
+
+/**
+ * @brief Second page: configure tenant details.
+ *
+ * In GLEIF mode, Code and Name are pre-filled from the selected LEI entity
+ * but remain editable. In Blank mode, all fields start empty.
  */
 class TenantDetailsPage final : public QWizardPage {
     Q_OBJECT
 
 public:
     explicit TenantDetailsPage(TenantOnboardingWizard* wizard);
+    void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
 
 private slots:
-    void onModeChanged();
     void onCodeChanged(const QString& text);
 
 private:
@@ -152,44 +196,44 @@ private:
     void updateHostname();
 
     TenantOnboardingWizard* wizard_;
-    QRadioButton* blankRadio_;
-    QRadioButton* gleifRadio_;
     QLineEdit* codeEdit_;
     QLineEdit* nameEdit_;
     QComboBox* typeCombo_;
     QLineEdit* hostnameEdit_;
     QLineEdit* descriptionEdit_;
-    QComboBox* datasetSizeCombo_;
     QLabel* validationLabel_;
     bool hostnameManuallyEdited_ = false;
 };
 
 /**
- * @brief Page for selecting a GLEIF LEI entity.
- *
- * Only shown in GLEIF mode. Embeds a LeiEntityPicker widget
- * for searching and selecting a root LEI entity.
+ * @brief Third page: create the initial admin account for the new tenant.
  */
-class OnboardingLeiPartyConfigPage final : public QWizardPage {
+class OnboardingAdminAccountPage final : public QWizardPage {
     Q_OBJECT
 
 public:
-    explicit OnboardingLeiPartyConfigPage(TenantOnboardingWizard* wizard);
+    explicit OnboardingAdminAccountPage(TenantOnboardingWizard* wizard);
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
+
+private slots:
+    void onShowPasswordToggled(bool checked);
 
 private:
     void setupUI();
 
     TenantOnboardingWizard* wizard_;
-    LeiEntityPicker* leiPicker_;
-    QLabel* selectedEntityLabel_;
-    bool leiLoaded_ = false;
+    QLineEdit* usernameEdit_;
+    QLineEdit* emailEdit_;
+    QLineEdit* passwordEdit_;
+    QLineEdit* confirmPasswordEdit_;
+    QCheckBox* showPasswordCheck_;
+    QLabel* validationLabel_;
 };
 
 /**
- * @brief Page that provisions the tenant and optionally publishes LEI data.
+ * @brief Fourth page: provisions the tenant, populates parties, creates admin.
  *
  * Runs the provisioning workflow asynchronously with progress output.
  */

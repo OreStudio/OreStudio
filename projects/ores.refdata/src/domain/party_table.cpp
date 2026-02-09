@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<party>& v) {
     table << fort::header << "Code" << "Name" << "Type" << "Status" << "Business Center" << "Recorded By" << "Version" << fort::endr;
 
     for (const auto& p : v) {
-        table << p.short_code << p.full_name << p.party_type << p.status << p.business_center_code << p.recorded_by << p.version << fort::endr;
+        table << p.short_code << p.full_name << p.party_type << p.status << p.business_center_code.value_or("") << p.recorded_by << p.version << fort::endr;
     }
     return table.to_string();
 }

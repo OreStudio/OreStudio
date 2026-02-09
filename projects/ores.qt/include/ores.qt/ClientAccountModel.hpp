@@ -209,6 +209,7 @@ private:
      */
     enum Column {
         Username,
+        AccountType,
         Email,
         Status,     // Login status: Never, LongAgo, Recent, Online
         Locked,

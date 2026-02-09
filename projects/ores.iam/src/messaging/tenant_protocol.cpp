@@ -385,6 +385,11 @@ std::vector<std::byte> provision_tenant_request::serialize() const {
     writer::write_string(buffer, name);
     writer::write_string(buffer, hostname);
     writer::write_string(buffer, description);
+    writer::write_string(buffer, root_lei);
+    writer::write_string(buffer, lei_dataset_size);
+    writer::write_string(buffer, admin_username);
+    writer::write_string(buffer, admin_password);
+    writer::write_string(buffer, admin_email);
     return buffer;
 }
 
@@ -412,6 +417,37 @@ provision_tenant_request::deserialize(std::span<const std::byte> data) {
     if (!description_result) return std::unexpected(description_result.error());
     request.description = *description_result;
 
+    // Backward-compatible: new fields may not be present
+    if (!data.empty()) {
+        auto root_lei_result = reader::read_string(data);
+        if (!root_lei_result) return std::unexpected(root_lei_result.error());
+        request.root_lei = *root_lei_result;
+    }
+
+    if (!data.empty()) {
+        auto lei_dataset_size_result = reader::read_string(data);
+        if (!lei_dataset_size_result) return std::unexpected(lei_dataset_size_result.error());
+        request.lei_dataset_size = *lei_dataset_size_result;
+    }
+
+    if (!data.empty()) {
+        auto admin_username_result = reader::read_string(data);
+        if (!admin_username_result) return std::unexpected(admin_username_result.error());
+        request.admin_username = *admin_username_result;
+    }
+
+    if (!data.empty()) {
+        auto admin_password_result = reader::read_string(data);
+        if (!admin_password_result) return std::unexpected(admin_password_result.error());
+        request.admin_password = *admin_password_result;
+    }
+
+    if (!data.empty()) {
+        auto admin_email_result = reader::read_string(data);
+        if (!admin_email_result) return std::unexpected(admin_email_result.error());
+        request.admin_email = *admin_email_result;
+    }
+
     return request;
 }
 
@@ -425,6 +461,7 @@ std::vector<std::byte> provision_tenant_response::serialize() const {
     writer::write_bool(buffer, success);
     writer::write_string(buffer, error_message);
     writer::write_string(buffer, tenant_id);
+    writer::write_uint32(buffer, parties_created);
     return buffer;
 }
 
@@ -443,6 +480,13 @@ provision_tenant_response::deserialize(std::span<const std::byte> data) {
     auto tenant_id_result = reader::read_string(data);
     if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
     response.tenant_id = *tenant_id_result;
+
+    // Backward-compatible: parties_created may not be present
+    if (!data.empty()) {
+        auto parties_result = reader::read_uint32(data);
+        if (!parties_result) return std::unexpected(parties_result.error());
+        response.parties_created = *parties_result;
+    }
 
     return response;
 }

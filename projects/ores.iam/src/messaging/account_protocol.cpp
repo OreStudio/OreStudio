@@ -196,6 +196,7 @@ std::vector<std::byte> get_accounts_response::serialize() const {
         writer::write_string(buffer, account.email);
         writer::write_string(buffer, account.change_reason_code);
         writer::write_string(buffer, account.change_commentary);
+        writer::write_string(buffer, account.account_type);
     }
 
     return buffer;
@@ -267,6 +268,10 @@ get_accounts_response::deserialize(std::span<const std::byte> data) {
         auto change_commentary_result = reader::read_string(data);
         if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
         account.change_commentary = *change_commentary_result;
+
+        auto account_type_result = reader::read_string(data);
+        if (!account_type_result) return std::unexpected(account_type_result.error());
+        account.account_type = *account_type_result;
 
         response.accounts.push_back(std::move(account));
     }

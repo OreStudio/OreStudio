@@ -427,6 +427,7 @@ Merged PRs:
 
 *** STARTED Add party related support to Qt                            :code:
     :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 13:00]--[2026-02-09 Mon 15:27] =>  2:27
     CLOCK: [2026-02-08 Sun 13:40]--[2026-02-08 Sun 16:00] =>  2:20
     CLOCK: [2026-02-08 Sun 12:14]--[2026-02-08 Sun 12:49] =>  0:35
     :END:
@@ -460,6 +461,7 @@ Highlights:
 
 *** STARTED Add GLEIF data to datasets                                 :code:
     :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 10:03]--[2026-02-09 Mon 11:40] =>  1:37
     CLOCK: [2026-02-09 Mon 09:42]--[2026-02-09 Mon 10:02] =>  0:20
     CLOCK: [2026-02-08 Sun 22:00]--[2026-02-09 Mon 02:10] =>  4:10
     CLOCK: [2026-02-08 Sun 19:30]--[2026-02-08 Sun 20:04] =>  0:34

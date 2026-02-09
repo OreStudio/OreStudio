@@ -101,6 +101,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
 
     switch (index.column()) {
     case Column::Username: return QString::fromStdString(account.username);
+    case Column::AccountType: return QString::fromStdString(account.account_type);
     case Column::Email: return QString::fromStdString(account.email);
     case Column::Status: {
         auto status = calculateLoginStatus(item.loginInfo);
@@ -131,6 +132,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation == Qt::Horizontal) {
         switch (section) {
         case Column::Username: return tr("Username");
+        case Column::AccountType: return tr("Type");
         case Column::Email: return tr("Email");
         case Column::Status: return tr("Status");
         case Column::Locked: return tr("Locked");

@@ -25,11 +25,11 @@
 #include <QGroupBox>
 #include <QButtonGroup>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
-#include "ores.dq/messaging/publish_bundle_protocol.hpp"
 
 namespace ores::qt {
 
@@ -46,8 +46,8 @@ TenantOnboardingWizard::TenantOnboardingWizard(
       clientManager_(clientManager) {
 
     setWindowTitle(tr("Onboard Tenant"));
-    setMinimumSize(700, 550);
-    resize(800, 600);
+    setMinimumSize(800, 650);
+    resize(900, 700);
 
     setWizardStyle(QWizard::ModernStyle);
     setOption(QWizard::NoBackButtonOnLastPage, true);
@@ -57,32 +57,36 @@ TenantOnboardingWizard::TenantOnboardingWizard(
 }
 
 void TenantOnboardingWizard::setupPages() {
+    setPage(Page_ModeAndLei, new ModeAndLeiPage(this));
     setPage(Page_TenantDetails, new TenantDetailsPage(this));
-    setPage(Page_LeiPartyConfig, new OnboardingLeiPartyConfigPage(this));
+    setPage(Page_AdminAccount, new OnboardingAdminAccountPage(this));
     setPage(Page_Apply, new ApplyOnboardingPage(this));
 
-    setStartId(Page_TenantDetails);
+    setStartId(Page_ModeAndLei);
 }
 
 // ============================================================================
-// TenantDetailsPage
+// ModeAndLeiPage
 // ============================================================================
 
-TenantDetailsPage::TenantDetailsPage(TenantOnboardingWizard* wizard)
+ModeAndLeiPage::ModeAndLeiPage(TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Tenant Details"));
-    setSubTitle(tr("Configure the new tenant. Choose whether to create a "
-                   "blank tenant or seed it with GLEIF LEI data."));
+    setTitle(tr("Onboarding Mode"));
+    setSubTitle(tr("Choose whether to create a blank tenant or seed it with "
+                   "GLEIF LEI data. In GLEIF mode, select the root legal "
+                   "entity whose subsidiaries will be imported as parties."));
     setupUI();
 }
 
-void TenantDetailsPage::setupUI() {
+void ModeAndLeiPage::setupUI() {
     auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(6);
 
     // Mode selection
     auto* modeGroup = new QGroupBox(tr("Tenant Mode"), this);
     auto* modeLayout = new QVBoxLayout(modeGroup);
+    modeLayout->setContentsMargins(8, 8, 8, 8);
 
     blankRadio_ = new QRadioButton(
         tr("Blank Tenant - Create an empty tenant"), this);
@@ -96,12 +100,109 @@ void TenantDetailsPage::setupUI() {
 
     modeLayout->addWidget(blankRadio_);
     modeLayout->addWidget(gleifRadio_);
-    layout->addWidget(modeGroup);
+    layout->addWidget(modeGroup, 0);
 
     connect(blankRadio_, &QRadioButton::toggled, this,
-            &TenantDetailsPage::onModeChanged);
+            &ModeAndLeiPage::onModeChanged);
 
-    // Tenant details form
+    // Dataset size (GLEIF only)
+    auto* sizeLayout = new QHBoxLayout();
+    datasetSizeLabel_ = new QLabel(tr("Dataset Size:"), this);
+    datasetSizeCombo_ = new QComboBox(this);
+    datasetSizeCombo_->addItem(tr("Large (full hierarchy)"), "large");
+    datasetSizeCombo_->addItem(tr("Small (direct children only)"), "small");
+    sizeLayout->addWidget(datasetSizeLabel_);
+    sizeLayout->addWidget(datasetSizeCombo_, 1);
+    layout->addLayout(sizeLayout, 0);
+
+    datasetSizeLabel_->setEnabled(false);
+    datasetSizeCombo_->setEnabled(false);
+
+    // LEI entity picker (disabled until GLEIF mode)
+    leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
+    leiPicker_->setEnabled(false);
+    layout->addWidget(leiPicker_, 1);
+
+    // Selected entity feedback
+    selectedEntityLabel_ = new QLabel(this);
+    selectedEntityLabel_->setWordWrap(true);
+    selectedEntityLabel_->setStyleSheet("font-weight: bold;");
+    layout->addWidget(selectedEntityLabel_, 0);
+
+    connect(leiPicker_, &LeiEntityPicker::entitySelected,
+            this, [this](const QString& lei, const QString& name) {
+        selectedEntityLabel_->setText(
+            tr("Selected: %1 (%2)").arg(name, lei));
+        emit completeChanged();
+    });
+
+    connect(leiPicker_, &LeiEntityPicker::selectionCleared,
+            this, [this]() {
+        selectedEntityLabel_->clear();
+        emit completeChanged();
+    });
+}
+
+void ModeAndLeiPage::onModeChanged() {
+    const bool gleif = gleifRadio_->isChecked();
+    datasetSizeLabel_->setEnabled(gleif);
+    datasetSizeCombo_->setEnabled(gleif);
+    leiPicker_->setEnabled(gleif);
+
+    if (gleif && !leiLoaded_) {
+        leiPicker_->load();
+        leiLoaded_ = true;
+    }
+}
+
+void ModeAndLeiPage::initializePage() {
+    // Load LEI data on first visit if already in GLEIF mode
+    if (gleifRadio_->isChecked() && !leiLoaded_) {
+        leiPicker_->load();
+        leiLoaded_ = true;
+    }
+}
+
+bool ModeAndLeiPage::validatePage() {
+    const bool gleif = gleifRadio_->isChecked();
+    wizard_->setGleifMode(gleif);
+
+    if (gleif) {
+        if (!leiPicker_->hasSelection()) {
+            QMessageBox::warning(this, tr("No Selection"),
+                tr("Please select an LEI entity to use as the root party."));
+            return false;
+        }
+
+        wizard_->setRootLei(leiPicker_->selectedLei());
+        wizard_->setRootLeiName(leiPicker_->selectedName());
+        wizard_->setLeiDatasetSize(
+            datasetSizeCombo_->currentData().toString());
+    }
+
+    return true;
+}
+
+int ModeAndLeiPage::nextId() const {
+    return TenantOnboardingWizard::Page_TenantDetails;
+}
+
+// ============================================================================
+// TenantDetailsPage
+// ============================================================================
+
+TenantDetailsPage::TenantDetailsPage(TenantOnboardingWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Tenant Details"));
+    setSubTitle(tr("Configure the tenant identity. In GLEIF mode, fields are "
+                   "pre-filled from the selected LEI entity but can be edited."));
+    setupUI();
+}
+
+void TenantDetailsPage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+
     auto* formLayout = new QFormLayout();
     formLayout->setSpacing(10);
 
@@ -123,7 +224,7 @@ void TenantDetailsPage::setupUI() {
 
     hostnameEdit_ = new QLineEdit(this);
     hostnameEdit_->setPlaceholderText(
-        tr("Unique hostname (e.g., acme.localhost)"));
+        tr("Unique hostname (e.g., acme)"));
     hostnameEdit_->setMaxLength(255);
     formLayout->addRow(tr("Hostname:"), hostnameEdit_);
 
@@ -131,13 +232,6 @@ void TenantDetailsPage::setupUI() {
     descriptionEdit_->setPlaceholderText(tr("Optional description"));
     descriptionEdit_->setMaxLength(500);
     formLayout->addRow(tr("Description:"), descriptionEdit_);
-
-    // Dataset size (only shown in GLEIF mode)
-    datasetSizeCombo_ = new QComboBox(this);
-    datasetSizeCombo_->addItem(tr("Large (full hierarchy)"), "large");
-    datasetSizeCombo_->addItem(tr("Small (direct children only)"), "small");
-    formLayout->addRow(tr("Dataset Size:"), datasetSizeCombo_);
-    datasetSizeCombo_->setVisible(false);
 
     layout->addLayout(formLayout);
 
@@ -163,16 +257,35 @@ void TenantDetailsPage::setupUI() {
     registerField("tenantName*", nameEdit_);
 }
 
-void TenantDetailsPage::onModeChanged() {
-    const bool gleif = gleifRadio_->isChecked();
-    datasetSizeCombo_->setVisible(gleif);
+void TenantDetailsPage::initializePage() {
+    // Reset manual hostname tracking when entering this page
+    hostnameManuallyEdited_ = false;
 
-    // Find the label for datasetSizeCombo_ and toggle it too
-    auto* formLayout = qobject_cast<QFormLayout*>(
-        datasetSizeCombo_->parentWidget()->layout());
-    if (formLayout) {
-        auto* label = formLayout->labelForField(datasetSizeCombo_);
-        if (label) label->setVisible(gleif);
+    if (wizard_->isGleifMode() && !wizard_->rootLeiName().isEmpty()) {
+        const QString entityName = wizard_->rootLeiName();
+
+        // Pre-fill name from LEI entity legal name
+        nameEdit_->setText(entityName);
+
+        // Generate a code from the entity name: lowercase, replace spaces
+        // with underscores, remove non-alphanumeric characters
+        QString code = entityName.toLower();
+        code.replace(QRegularExpression("[^a-z0-9]+"), "_");
+        code.replace(QRegularExpression("_+"), "_");
+        code.remove(QRegularExpression("^_|_$"));
+        if (code.length() > 50) {
+            code.truncate(50);
+            code.remove(QRegularExpression("_$"));
+        }
+        codeEdit_->setText(code);
+
+        // Hostname is auto-generated from code via onCodeChanged
+    } else {
+        // Blank mode: clear fields for fresh entry
+        codeEdit_->clear();
+        nameEdit_->clear();
+        hostnameEdit_->clear();
+        descriptionEdit_->clear();
     }
 }
 
@@ -187,7 +300,7 @@ void TenantDetailsPage::updateHostname() {
 
     const QString code = codeEdit_->text().trimmed().toLower();
     if (!code.isEmpty()) {
-        hostnameEdit_->setText(code + ".localhost");
+        hostnameEdit_->setText(code);
     } else {
         hostnameEdit_->clear();
     }
@@ -219,90 +332,141 @@ bool TenantDetailsPage::validatePage() {
     }
 
     // Store values in wizard
-    wizard_->setGleifMode(gleifRadio_->isChecked());
     wizard_->setTenantCode(code);
     wizard_->setTenantName(name);
     wizard_->setTenantType(
         typeCombo_->currentData().toString());
     wizard_->setTenantHostname(hostname);
     wizard_->setTenantDescription(descriptionEdit_->text().trimmed());
-    wizard_->setLeiDatasetSize(
-        datasetSizeCombo_->currentData().toString());
 
     return true;
 }
 
 int TenantDetailsPage::nextId() const {
-    // Skip LEI page if in blank mode
-    if (blankRadio_->isChecked()) {
-        return TenantOnboardingWizard::Page_Apply;
-    }
-    return TenantOnboardingWizard::Page_LeiPartyConfig;
+    return TenantOnboardingWizard::Page_AdminAccount;
 }
 
 // ============================================================================
-// OnboardingLeiPartyConfigPage
+// OnboardingAdminAccountPage
 // ============================================================================
 
-OnboardingLeiPartyConfigPage::OnboardingLeiPartyConfigPage(
-    TenantOnboardingWizard* wizard)
+OnboardingAdminAccountPage::OnboardingAdminAccountPage(TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Select LEI Entity"));
-    setSubTitle(tr("Choose the root GLEIF LEI entity whose subsidiaries will "
-                   "be imported as parties into the new tenant."));
+    setTitle(tr("Admin Account"));
+    setSubTitle(tr("Create the initial administrator account for the new "
+                   "tenant. This account will have the TenantAdmin role."));
     setupUI();
 }
 
-void OnboardingLeiPartyConfigPage::setupUI() {
+void OnboardingAdminAccountPage::setupUI() {
     auto* layout = new QVBoxLayout(this);
 
-    leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
-    layout->addWidget(leiPicker_);
+    auto* formLayout = new QFormLayout();
+    formLayout->setSpacing(10);
 
-    selectedEntityLabel_ = new QLabel(this);
-    selectedEntityLabel_->setWordWrap(true);
-    selectedEntityLabel_->setStyleSheet("font-weight: bold;");
-    layout->addWidget(selectedEntityLabel_);
+    usernameEdit_ = new QLineEdit(this);
+    usernameEdit_->setPlaceholderText(tr("admin"));
+    usernameEdit_->setMaxLength(100);
+    formLayout->addRow(tr("Username:"), usernameEdit_);
 
-    connect(leiPicker_, &LeiEntityPicker::entitySelected,
-            this, [this](const QString& lei, const QString& name) {
-        selectedEntityLabel_->setText(
-            tr("Selected: %1 (%2)").arg(name, lei));
-        emit completeChanged();
-    });
+    emailEdit_ = new QLineEdit(this);
+    emailEdit_->setPlaceholderText(tr("admin@example.com"));
+    emailEdit_->setMaxLength(255);
+    formLayout->addRow(tr("Email:"), emailEdit_);
 
-    connect(leiPicker_, &LeiEntityPicker::selectionCleared,
-            this, [this]() {
-        selectedEntityLabel_->clear();
-        emit completeChanged();
-    });
+    passwordEdit_ = new QLineEdit(this);
+    passwordEdit_->setEchoMode(QLineEdit::Password);
+    passwordEdit_->setPlaceholderText(tr("Minimum 8 characters"));
+    formLayout->addRow(tr("Password:"), passwordEdit_);
+
+    confirmPasswordEdit_ = new QLineEdit(this);
+    confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
+    confirmPasswordEdit_->setPlaceholderText(tr("Re-enter password"));
+    formLayout->addRow(tr("Confirm:"), confirmPasswordEdit_);
+
+    showPasswordCheck_ = new QCheckBox(tr("Show password"), this);
+    formLayout->addRow(QString(), showPasswordCheck_);
+
+    connect(showPasswordCheck_, &QCheckBox::toggled,
+            this, &OnboardingAdminAccountPage::onShowPasswordToggled);
+
+    layout->addLayout(formLayout);
+
+    // Validation label
+    validationLabel_ = new QLabel(this);
+    validationLabel_->setWordWrap(true);
+    validationLabel_->setStyleSheet("QLabel { color: #cc0000; }");
+    layout->addWidget(validationLabel_);
+
+    layout->addStretch();
+
+    // Register mandatory fields
+    registerField("adminUsername*", usernameEdit_);
+    registerField("adminEmail*", emailEdit_);
+    registerField("adminPassword*", passwordEdit_);
 }
 
-void OnboardingLeiPartyConfigPage::initializePage() {
-    if (!leiLoaded_) {
-        leiPicker_->load();
-        leiLoaded_ = true;
-    }
+void OnboardingAdminAccountPage::initializePage() {
+    usernameEdit_->setText(QStringLiteral("admin"));
+
+    const QString code = wizard_->tenantCode();
+    emailEdit_->setText(QStringLiteral("admin@") + code);
 }
 
-bool OnboardingLeiPartyConfigPage::validatePage() {
-    if (!leiPicker_->hasSelection()) {
-        QMessageBox::warning(this, tr("No Selection"),
-            tr("Please select an LEI entity."));
+void OnboardingAdminAccountPage::onShowPasswordToggled(bool checked) {
+    const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
+    passwordEdit_->setEchoMode(mode);
+    confirmPasswordEdit_->setEchoMode(mode);
+}
+
+bool OnboardingAdminAccountPage::validatePage() {
+    validationLabel_->clear();
+
+    const QString username = usernameEdit_->text().trimmed();
+    const QString email = emailEdit_->text().trimmed();
+    const QString password = passwordEdit_->text();
+    const QString confirm = confirmPasswordEdit_->text();
+
+    if (username.isEmpty()) {
+        validationLabel_->setText(tr("Username is required."));
+        usernameEdit_->setFocus();
         return false;
     }
 
-    wizard_->setRootLei(leiPicker_->selectedLei());
-    wizard_->setRootLeiName(leiPicker_->selectedName());
+    if (email.isEmpty()) {
+        validationLabel_->setText(tr("Email is required."));
+        emailEdit_->setFocus();
+        return false;
+    }
+
+    if (password.isEmpty()) {
+        validationLabel_->setText(tr("Password is required."));
+        passwordEdit_->setFocus();
+        return false;
+    }
+
+    if (password.length() < 8) {
+        validationLabel_->setText(tr("Password must be at least 8 characters."));
+        passwordEdit_->setFocus();
+        return false;
+    }
+
+    if (password != confirm) {
+        validationLabel_->setText(tr("Passwords do not match."));
+        confirmPasswordEdit_->setFocus();
+        return false;
+    }
+
+    // Store values in wizard
+    wizard_->setAdminUsername(username);
+    wizard_->setAdminPassword(password);
+    wizard_->setAdminEmail(email);
+
     return true;
 }
 
-int OnboardingLeiPartyConfigPage::nextId() const {
-    // Skip this page if in blank mode
-    if (!wizard_->isGleifMode()) {
-        return TenantOnboardingWizard::Page_Apply;
-    }
+int OnboardingAdminAccountPage::nextId() const {
     return TenantOnboardingWizard::Page_Apply;
 }
 
@@ -363,17 +527,16 @@ void ApplyOnboardingPage::startOnboarding() {
     const bool gleifMode = wizard_->isGleifMode();
     const std::string rootLei = wizard_->rootLei().toStdString();
     const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
+    const std::string adminUsername = wizard_->adminUsername().toStdString();
+    const std::string adminPassword = wizard_->adminPassword().toStdString();
+    const std::string adminEmail = wizard_->adminEmail().toStdString();
     ClientManager* clientManager = wizard_->clientManager();
 
     struct OnboardingResult {
-        bool provisionSuccess = false;
-        std::string provisionError;
+        bool success = false;
+        std::string error;
         std::string tenantId;
-
-        bool publishSuccess = false;
-        std::string publishError;
-        std::uint32_t datasetsProcessed = 0;
-        std::uint32_t datasetsSucceeded = 0;
+        std::uint32_t partiesCreated = 0;
     };
 
     auto* watcher = new QFutureWatcher<OnboardingResult>(this);
@@ -382,29 +545,25 @@ void ApplyOnboardingPage::startOnboarding() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!result.provisionSuccess) {
+        if (!result.success) {
             statusLabel_->setText(tr("Provisioning failed"));
             appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.provisionError)));
-            progressBar_->setRange(0, 1);
-            progressBar_->setValue(0);
-        } else if (wizard_->isGleifMode() && !result.publishSuccess) {
-            statusLabel_->setText(tr("Tenant created but data publication failed"));
-            appendLog(tr("Tenant created (ID: %1)").arg(
-                QString::fromStdString(result.tenantId)));
-            appendLog(tr("WARNING: LEI data publication failed: %1").arg(
-                QString::fromStdString(result.publishError)));
+                QString::fromStdString(result.error)));
             progressBar_->setRange(0, 1);
             progressBar_->setValue(1);
+            progressBar_->setStyleSheet(
+                "QProgressBar::chunk { background-color: #cc0000; }");
         } else {
             statusLabel_->setText(tr("Onboarding complete"));
-            appendLog(tr("Tenant '%1' onboarded successfully.").arg(
-                wizard_->tenantName()));
-            if (wizard_->isGleifMode()) {
-                appendLog(tr("Published %1 datasets (%2 succeeded).")
-                    .arg(result.datasetsProcessed)
-                    .arg(result.datasetsSucceeded));
+            appendLog(tr("Tenant '%1' onboarded successfully (ID: %2).")
+                .arg(wizard_->tenantName(),
+                     QString::fromStdString(result.tenantId)));
+            if (wizard_->isGleifMode() && result.partiesCreated > 0) {
+                appendLog(tr("Created %1 parties from LEI data.")
+                    .arg(result.partiesCreated));
             }
+            appendLog(tr("Admin account '%1' created with TenantAdmin role.")
+                .arg(wizard_->adminUsername()));
             progressBar_->setRange(0, 1);
             progressBar_->setValue(1);
             onboardingSuccess_ = true;
@@ -417,70 +576,43 @@ void ApplyOnboardingPage::startOnboarding() {
 
     QFuture<OnboardingResult> future = QtConcurrent::run(
         [clientManager, code, name, type, hostname, description,
-         gleifMode, rootLei, datasetSize]() -> OnboardingResult {
+         gleifMode, rootLei, datasetSize,
+         adminUsername, adminPassword, adminEmail]() -> OnboardingResult {
 
             OnboardingResult result;
 
-            // Step 1: Provision the tenant
-            iam::messaging::provision_tenant_request provRequest;
-            provRequest.type = type;
-            provRequest.code = code;
-            provRequest.name = name;
-            provRequest.hostname = hostname;
-            provRequest.description = description;
+            iam::messaging::provision_tenant_request request;
+            request.type = type;
+            request.code = code;
+            request.name = name;
+            request.hostname = hostname;
+            request.description = description;
+            request.admin_username = adminUsername;
+            request.admin_password = adminPassword;
+            request.admin_email = adminEmail;
 
-            auto provResult = clientManager->process_authenticated_request(
-                std::move(provRequest));
-
-            if (!provResult) {
-                result.provisionError = "Failed to communicate with server";
-                return result;
-            }
-
-            if (!provResult->success) {
-                result.provisionError = provResult->error_message;
-                return result;
-            }
-
-            result.provisionSuccess = true;
-            result.tenantId = provResult->tenant_id;
-
-            // Step 2: If GLEIF mode, publish lei_parties bundle to the new tenant
+            // Include LEI data if in GLEIF mode
             if (gleifMode && !rootLei.empty()) {
-                dq::messaging::publish_bundle_request pubRequest;
-                pubRequest.bundle_code = "lei_parties";
-                pubRequest.mode = dq::domain::publication_mode::upsert;
-                pubRequest.published_by = clientManager->currentUsername();
-                pubRequest.atomic = true;
-                pubRequest.target_tenant_id = result.tenantId;
-
-                // Build params_json with root LEI and dataset size
-                pubRequest.params_json =
-                    "{\"lei_parties\":{\"root_lei\":\"" + rootLei + "\"},"
-                    "\"lei_dataset_size\":\"" + datasetSize + "\"}";
-
-                auto pubResult = clientManager->process_authenticated_request(
-                    std::move(pubRequest));
-
-                if (!pubResult) {
-                    result.publishError =
-                        "Failed to communicate with server for data publication";
-                    return result;
-                }
-
-                if (!pubResult->success) {
-                    result.publishError = pubResult->error_message;
-                    return result;
-                }
-
-                result.publishSuccess = true;
-                result.datasetsProcessed = pubResult->datasets_processed;
-                result.datasetsSucceeded = pubResult->datasets_succeeded;
-            } else {
-                // Blank mode, no publication needed
-                result.publishSuccess = true;
+                request.root_lei = rootLei;
+                request.lei_dataset_size = datasetSize;
             }
 
+            auto response = clientManager->process_authenticated_request(
+                std::move(request));
+
+            if (!response) {
+                result.error = "Failed to communicate with server";
+                return result;
+            }
+
+            if (!response->success) {
+                result.error = response->error_message;
+                return result;
+            }
+
+            result.success = true;
+            result.tenantId = response->tenant_id;
+            result.partiesCreated = response->parties_created;
             return result;
         }
     );
@@ -491,9 +623,11 @@ void ApplyOnboardingPage::startOnboarding() {
         .arg(wizard_->tenantName(), wizard_->tenantCode(),
              wizard_->tenantHostname()));
     if (gleifMode) {
-        appendLog(tr("Will publish LEI parties data (root: %1, size: %2)")
+        appendLog(tr("Will populate parties from LEI data (root: %1, size: %2)")
             .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
     }
+    appendLog(tr("Will create admin account '%1'")
+        .arg(wizard_->adminUsername()));
 }
 
 }

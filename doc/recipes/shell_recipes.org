@@ -302,14 +302,10 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.11
+ORE Studio Shell REPL v0.0.12
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Connected to :51004
-
-⚠ WARNING: System is in BOOTSTRAP MODE
-  System in BOOTSTRAP MODE - awaiting initial admin account creation
-
 ores-shell> Bye!
 #+end_example
 

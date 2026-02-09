@@ -193,11 +193,16 @@ std::ostream& operator<<(std::ostream& s, const get_tenant_history_response& v);
  * (permissions, roles, role_permissions) into the new tenant.
  */
 struct provision_tenant_request final {
-    std::string type;        ///< e.g. "organisation"
-    std::string code;        ///< unique tenant code
-    std::string name;        ///< display name
-    std::string hostname;    ///< unique hostname
-    std::string description; ///< optional
+    std::string type;            ///< e.g. "organisation"
+    std::string code;            ///< unique tenant code
+    std::string name;            ///< display name
+    std::string hostname;        ///< unique hostname
+    std::string description;     ///< optional
+    std::string root_lei;        ///< optional: root LEI for party population
+    std::string lei_dataset_size; ///< "large" or "small" (default: "large")
+    std::string admin_username;  ///< optional: admin account username
+    std::string admin_password;  ///< optional: admin account password
+    std::string admin_email;     ///< optional: admin account email
 
     std::vector<std::byte> serialize() const;
     static std::expected<provision_tenant_request,
@@ -213,7 +218,8 @@ std::ostream& operator<<(std::ostream& s, const provision_tenant_request& v);
 struct provision_tenant_response final {
     bool success = false;
     std::string error_message;
-    std::string tenant_id;   ///< UUID of created tenant (as string)
+    std::string tenant_id;       ///< UUID of created tenant (as string)
+    std::uint32_t parties_created = 0; ///< number of parties inserted from LEI
 
     std::vector<std::byte> serialize() const;
     static std::expected<provision_tenant_response,

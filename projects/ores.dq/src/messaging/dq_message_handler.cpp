@@ -2540,31 +2540,66 @@ handle_get_lei_entities_summary_request(std::span<const std::byte> payload,
     get_lei_entities_summary_response response;
 
     try {
-        std::string sql =
-            "SELECT DISTINCT lei, entity_legal_name,"
-            " entity_legal_address_country, entity_entity_category"
-            " FROM ores_dq_lei_entities_artefact_tbl";
+        const auto& country_filter = request_result->country_filter;
+        const auto& search_filter = request_result->search_filter;
 
-        const auto& filter = request_result->search_filter;
-        if (!filter.empty()) {
-            sql += std::format(
-                " WHERE lei ILIKE '%{}%' OR entity_legal_name ILIKE '%{}%'",
-                filter, filter);
-        }
+        // Only show root entities (those with no parent relationship).
+        const std::string root_filter =
+            " AND NOT EXISTS ("
+            "SELECT 1 FROM ores_dq_lei_relationships_artefact_tbl r"
+            " WHERE r.relationship_start_node_node_id = e.lei"
+            " AND r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'"
+            " AND r.relationship_relationship_status = 'ACTIVE')";
 
-        sql += " ORDER BY entity_legal_name LIMIT 1000";
+        if (country_filter.empty()) {
+            // Country list mode: return distinct countries only.
+            const std::string sql =
+                "SELECT DISTINCT e.entity_legal_address_country"
+                " FROM ores_dq_lei_entities_artefact_tbl e"
+                " WHERE e.entity_legal_address_country IS NOT NULL"
+                + root_filter +
+                " ORDER BY 1";
 
-        auto rows = database::repository::execute_raw_multi_column_query(
-            ctx, sql, lg(), "Fetching LEI entity summaries");
+            auto rows = database::repository::execute_raw_multi_column_query(
+                ctx, sql, lg(), "Fetching LEI distinct countries");
 
-        for (const auto& row : rows) {
-            if (row.size() >= 4) {
-                lei_entity_summary entity;
-                entity.lei = row[0].value_or("");
-                entity.entity_legal_name = row[1].value_or("");
-                entity.country = row[2].value_or("");
-                entity.entity_category = row[3].value_or("");
-                response.entities.push_back(std::move(entity));
+            for (const auto& row : rows) {
+                if (!row.empty() && row[0].has_value()) {
+                    lei_entity_summary entity;
+                    entity.country = row[0].value();
+                    response.entities.push_back(std::move(entity));
+                }
+            }
+        } else {
+            // Entity list mode: all root entities for the selected country.
+            std::string sql =
+                "SELECT DISTINCT e.lei, e.entity_legal_name,"
+                " e.entity_legal_address_country, e.entity_entity_category"
+                " FROM ores_dq_lei_entities_artefact_tbl e"
+                " WHERE e.entity_legal_address_country = '" +
+                country_filter + "'" + root_filter;
+
+            if (!search_filter.empty()) {
+                sql += std::format(
+                    " AND (e.lei ILIKE '%{}%'"
+                    " OR e.entity_legal_name ILIKE '%{}%')",
+                    search_filter, search_filter);
+            }
+
+            sql += " ORDER BY e.entity_legal_name";
+
+            auto rows = database::repository::execute_raw_multi_column_query(
+                ctx, sql, lg(), "Fetching LEI entities for country");
+
+            for (const auto& row : rows) {
+                if (row.size() >= 4) {
+                    lei_entity_summary entity;
+                    entity.lei = row[0].value_or("");
+                    entity.entity_legal_name = row[1].value_or("");
+                    entity.country = row[2].value_or("");
+                    entity.entity_category = row[3].value_or("");
+                    response.entities.push_back(std::move(entity));
+                }
             }
         }
 

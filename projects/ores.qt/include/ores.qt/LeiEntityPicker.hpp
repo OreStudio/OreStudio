@@ -111,6 +111,7 @@ private slots:
 private:
     void setupUI();
     void applyFilters();
+    void loadEntitiesForCountry(const QString& country);
 
     ClientManager* clientManager_;
     QLineEdit* searchEdit_;
@@ -121,6 +122,7 @@ private:
     QLabel* statusLabel_;
     QString selectedLei_;
     QString selectedName_;
+    bool countriesLoaded_ = false;
 };
 
 }

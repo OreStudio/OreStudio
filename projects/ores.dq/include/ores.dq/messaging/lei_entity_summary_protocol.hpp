@@ -57,6 +57,12 @@ struct get_lei_entities_summary_request final {
      */
     std::string search_filter;
 
+    /**
+     * @brief Optional country filter. If non-empty, returns entities for that
+     * country. If empty, returns distinct country list only.
+     */
+    std::string country_filter;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_lei_entities_summary_request,
                          ores::utility::serialization::error_code>

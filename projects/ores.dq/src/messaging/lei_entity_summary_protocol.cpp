@@ -78,6 +78,7 @@ std::ostream& operator<<(std::ostream& s, const lei_entity_summary& v) {
 std::vector<std::byte> get_lei_entities_summary_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_string(buffer, search_filter);
+    writer::write_string(buffer, country_filter);
     return buffer;
 }
 
@@ -88,6 +89,10 @@ get_lei_entities_summary_request::deserialize(std::span<const std::byte> data) {
     auto filter_result = reader::read_string(data);
     if (!filter_result) return std::unexpected(filter_result.error());
     request.search_filter = *filter_result;
+
+    auto country_result = reader::read_string(data);
+    if (!country_result) return std::unexpected(country_result.error());
+    request.country_filter = *country_result;
 
     return request;
 }

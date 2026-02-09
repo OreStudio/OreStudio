@@ -16,7 +16,6 @@ Usage:
 
 import csv
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -98,7 +97,7 @@ def extract_uk_pra(filepath: str) -> list:
                 continue
 
             firm_name = row[0].strip()
-            lei = row[2].strip() if row[2] else ""
+            lei = row[2].strip().strip("'\"") if row[2] else ""
 
             if not firm_name or not lei:
                 continue

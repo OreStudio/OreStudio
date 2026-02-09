@@ -19,7 +19,7 @@
       "url": "https://www.fsb.org/2024/11/2024-list-of-global-systemically-important-banks-g-sibs/"
     }
   ],
-  "total_leis": 1081,
+  "total_leis": 1082,
   "leis": [
     {
       "lei": "529900UKZBMDBDZIXD62",
@@ -2400,6 +2400,12 @@
     {
       "lei": "2138009CAEGO41Q6HB61",
       "name": "Aldermore Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "95980020140005844330",
+      "name": "Allfunds Bank S.A.U",
       "source": "uk_pra",
       "country": "GB"
     },

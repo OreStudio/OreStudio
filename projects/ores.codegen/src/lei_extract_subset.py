@@ -642,8 +642,9 @@ def select_subset(
 
     # Force-include anchor LEIs (G-SIBs and major financial institutions)
     if anchor_leis:
-        anchor_found = anchor_leis & set(entities.keys())
-        anchor_missing = anchor_leis - set(entities.keys())
+        entity_leis = set(entities.keys())
+        anchor_found = anchor_leis & entity_leis
+        anchor_missing = anchor_leis - entity_leis
         selected_leis.update(anchor_found)
         print(f"\nAnchor entities: {len(anchor_found)} included, {len(anchor_missing)} not found in source data")
         if anchor_missing:

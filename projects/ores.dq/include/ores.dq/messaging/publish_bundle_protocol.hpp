@@ -89,6 +89,16 @@ struct publish_bundle_request final {
     bool atomic = true;
 
     /**
+     * @brief JSON parameters for per-dataset configuration.
+     *
+     * Keyed by artefact_type code. For example:
+     * {"lei_parties": {"root_lei": "5493001KJTIIGC8Y1R12"}}
+     *
+     * Empty string or "{}" means no parameters.
+     */
+    std::string params_json;
+
+    /**
      * @brief Serialize request to bytes.
      *
      * Format:
@@ -98,6 +108,8 @@ struct publish_bundle_request final {
      * - 2 bytes: published_by length
      * - N bytes: published_by (UTF-8)
      * - 1 byte: atomic
+     * - 2 bytes: params_json length
+     * - N bytes: params_json (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

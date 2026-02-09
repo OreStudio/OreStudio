@@ -37,6 +37,8 @@
 
 namespace ores::qt {
 
+class LeiEntityPicker;
+
 
 /**
  * @brief Result of a provisioning operation.
@@ -95,6 +97,7 @@ public:
         Page_Welcome,
         Page_AdminAccount,
         Page_BundleSelection,
+        Page_TenantConfig,
         Page_Apply
     };
 
@@ -120,6 +123,18 @@ public:
     QString selectedBundleCode() const { return selectedBundleCode_; }
     void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
 
+    // GLEIF tenant configuration
+    bool needsLeiPartyConfig() const { return needsLeiPartyConfig_; }
+    void setNeedsLeiPartyConfig(bool needs) { needsLeiPartyConfig_ = needs; }
+
+    QString rootLei() const { return rootLei_; }
+    void setRootLei(const QString& lei) { rootLei_ = lei; }
+
+    QString rootLeiName() const { return rootLeiName_; }
+    void setRootLeiName(const QString& name) { rootLeiName_ = name; }
+
+    QString paramsJson() const;
+
     // Created admin account ID (set after successful creation)
     boost::uuids::uuid adminAccountId() const { return adminAccountId_; }
     void setAdminAccountId(const boost::uuids::uuid& id) { adminAccountId_ = id; }
@@ -134,12 +149,16 @@ private:
     QString adminPassword_;
     QString selectedBundleCode_;
     boost::uuids::uuid adminAccountId_;
+    bool needsLeiPartyConfig_ = false;
+    QString rootLei_;
+    QString rootLeiName_;
 };
 
 // Forward declarations of page classes
 class WelcomePage;
 class AdminAccountPage;
 class BundleSelectionPage;
+class TenantConfigPage;
 class ApplyProvisioningPage;
 
 /**
@@ -163,8 +182,19 @@ private:
 class AdminAccountPage final : public QWizardPage {
     Q_OBJECT
 
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.admin_account_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     explicit AdminAccountPage(SystemProvisionerWizard* wizard);
+    void initializePage() override;
     bool validatePage() override;
 
 private slots:
@@ -183,6 +213,7 @@ private:
     QCheckBox* showPasswordCheckbox_;
     QLabel* passwordMatchLabel_;
     QLabel* validationLabel_;
+    bool accountCreated_ = false;
 };
 
 /**
@@ -206,6 +237,45 @@ private:
     SystemProvisionerWizard* wizard_;
     QComboBox* bundleCombo_;
     QLabel* descriptionLabel_;
+};
+
+/**
+ * @brief Page for configuring GLEIF-based tenant settings.
+ *
+ * Only relevant when the selected bundle contains lei_parties datasets.
+ * Provides radio buttons for "Blank Tenant" vs "GLEIF-Based Tenant"
+ * and embeds LeiEntityPicker for root LEI selection.
+ */
+class TenantConfigPage final : public QWizardPage {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.tenant_config_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit TenantConfigPage(SystemProvisionerWizard* wizard);
+    void initializePage() override;
+    bool validatePage() override;
+    int nextId() const override;
+
+private:
+    void setupUI();
+    void onModeChanged();
+
+    SystemProvisionerWizard* wizard_;
+    QRadioButton* blankRadio_;
+    QRadioButton* gleifRadio_;
+    QWidget* gleifConfigWidget_;
+    LeiEntityPicker* leiPicker_;
+    QLabel* selectedEntityLabel_;
+    bool leiLoaded_ = false;
 };
 
 /**

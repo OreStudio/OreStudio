@@ -423,6 +423,9 @@ enum class message_type : std::uint16_t {
     // DQ subsystem - Bundle publication
     publish_bundle_request = 0x60B8,
     publish_bundle_response = 0x60B9,
+    // DQ subsystem - LEI entity summary
+    get_lei_entities_summary_request = 0x60C0,
+    get_lei_entities_summary_response = 0x60C1,
     // Sentinel value
     last_value
 };
@@ -781,6 +784,8 @@ enum class message_type : std::uint16_t {
     case message_type::delete_dataset_bundle_member_response: return "delete_dataset_bundle_member_response";
     case message_type::publish_bundle_request: return "publish_bundle_request";
     case message_type::publish_bundle_response: return "publish_bundle_response";
+    case message_type::get_lei_entities_summary_request: return "get_lei_entities_summary_request";
+    case message_type::get_lei_entities_summary_response: return "get_lei_entities_summary_response";
     default: return {};
     }
 }

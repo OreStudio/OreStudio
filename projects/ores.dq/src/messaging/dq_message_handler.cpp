@@ -29,6 +29,8 @@
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq/service/change_management_service.hpp"
@@ -197,6 +199,10 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_resolve_dependencies_request(payload, remote_address);
     case message_type::publish_bundle_request:
         co_return co_await handle_publish_bundle_request(payload, remote_address);
+
+    // LEI entity summary messages
+    case message_type::get_lei_entities_summary_request:
+        co_return co_await handle_get_lei_entities_summary_request(payload, remote_address);
 
     // Dataset bundle messages
     case message_type::get_dataset_bundles_request:
@@ -2493,7 +2499,8 @@ handle_publish_bundle_request(std::span<const std::byte> payload,
             request.bundle_code,
             request.mode,
             request.published_by,
-            request.atomic);
+            request.atomic,
+            request.params_json);
 
         BOOST_LOG_SEV(lg(), info) << "Bundle publication complete: "
                                   << response.datasets_processed << " datasets, "
@@ -2501,6 +2508,70 @@ handle_publish_bundle_request(std::span<const std::byte> payload,
                                   << response.datasets_failed << " failed";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: " << e.what();
+        response.success = false;
+        response.error_message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// LEI Entity Summary Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_lei_entities_summary_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_lei_entities_summary_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "List LEI entities");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_lei_entities_summary_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_lei_entities_summary_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto ctx = make_request_context(*auth_result);
+    get_lei_entities_summary_response response;
+
+    try {
+        std::string sql =
+            "SELECT lei, entity_legal_name, entity_legal_address_country, entity_entity_status "
+            "FROM ores_dq_lei_entities_artefact_tbl";
+
+        const auto& filter = request_result->search_filter;
+        if (!filter.empty()) {
+            sql += std::format(
+                " WHERE lei ILIKE '%{}%' OR entity_legal_name ILIKE '%{}%'",
+                filter, filter);
+        }
+
+        sql += " ORDER BY entity_legal_name LIMIT 1000";
+
+        auto rows = database::repository::execute_raw_multi_column_query(
+            ctx, sql, lg(), "Fetching LEI entity summaries");
+
+        for (const auto& row : rows) {
+            if (row.size() >= 4) {
+                lei_entity_summary entity;
+                entity.lei = row[0].value_or("");
+                entity.entity_legal_name = row[1].value_or("");
+                entity.country = row[2].value_or("");
+                entity.entity_status = row[3].value_or("");
+                response.entities.push_back(std::move(entity));
+            }
+        }
+
+        response.success = true;
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.entities.size()
+                                  << " LEI entity summaries";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch LEI entities: " << e.what();
         response.success = false;
         response.error_message = e.what();
     }

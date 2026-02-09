@@ -87,7 +87,8 @@ $$ language plpgsql;
 create or replace function ores_dq_asset_classes_publish_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
-    p_mode text default 'upsert'
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
 )
 returns table (
     action text,

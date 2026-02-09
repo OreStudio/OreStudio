@@ -34,6 +34,8 @@
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
+#include "ores.qt/LeiEntityPicker.hpp"
+#include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
 namespace ores::qt {
 
@@ -67,6 +69,7 @@ void SystemProvisionerWizard::setupPages() {
     setPage(Page_Welcome, new WelcomePage(this));
     setPage(Page_AdminAccount, new AdminAccountPage(this));
     setPage(Page_BundleSelection, new BundleSelectionPage(this));
+    setPage(Page_TenantConfig, new TenantConfigPage(this));
     setPage(Page_Apply, new ApplyProvisioningPage(this));
 
     setStartId(Page_Welcome);
@@ -78,6 +81,13 @@ void SystemProvisionerWizard::setAdminCredentials(
     adminUsername_ = username;
     adminEmail_ = email;
     adminPassword_ = password;
+}
+
+QString SystemProvisionerWizard::paramsJson() const {
+    if (!needsLeiPartyConfig_ || rootLei_.isEmpty()) {
+        return QStringLiteral("{}");
+    }
+    return QStringLiteral("{\"lei_parties\":{\"root_lei\":\"%1\"}}").arg(rootLei_);
 }
 
 
@@ -133,6 +143,8 @@ void WelcomePage::setupUI() {
            "user who will have full access to manage the system.</li>"
            "<li><b>Select Data Bundle</b> - Choose a reference data bundle to "
            "populate the system with initial data.</li>"
+           "<li><b>Configure Tenant</b> - Optionally configure the initial "
+           "tenant with GLEIF-based party data.</li>"
            "<li><b>Apply Configuration</b> - The system will be provisioned "
            "with your chosen settings.</li>"
            "</ol>"));
@@ -254,7 +266,16 @@ void AdminAccountPage::setupUI() {
     registerField("adminPassword*", passwordEdit_);
 }
 
+void AdminAccountPage::initializePage() {
+    wizard()->setButtonText(QWizard::NextButton, tr("Create"));
+}
+
 bool AdminAccountPage::validatePage() {
+    // If already created, allow re-advancing without re-creating
+    if (accountCreated_) {
+        return true;
+    }
+
     validationLabel_->clear();
 
     const QString username = usernameEdit_->text().trimmed();
@@ -316,6 +337,51 @@ bool AdminAccountPage::validatePage() {
 
     // Store credentials in wizard
     wizard_->setAdminCredentials(username, email, password);
+
+    // Create the administrator account
+    BOOST_LOG_SEV(lg(), info) << "Creating administrator account: "
+                               << username.toStdString();
+
+    iam::messaging::create_initial_admin_request adminRequest;
+    adminRequest.principal = username.toStdString();
+    adminRequest.password = password.toStdString();
+    adminRequest.email = email.toStdString();
+
+    auto adminResult = wizard_->clientManager()->process_request(
+        std::move(adminRequest));
+
+    if (!adminResult) {
+        validationLabel_->setText(
+            tr("Failed to communicate with server. Please check your "
+               "connection and try again."));
+        return false;
+    }
+
+    if (!adminResult->success) {
+        validationLabel_->setText(
+            QString::fromStdString(adminResult->error_message));
+        return false;
+    }
+
+    wizard_->setAdminAccountId(adminResult->account_id);
+    BOOST_LOG_SEV(lg(), info) << "Administrator account created: "
+        << boost::uuids::to_string(adminResult->account_id);
+
+    // Login as the new administrator
+    BOOST_LOG_SEV(lg(), info) << "Logging in as administrator...";
+
+    auto loginResult = wizard_->clientManager()->login(
+        username.toStdString(), password.toStdString());
+
+    if (!loginResult.success) {
+        validationLabel_->setText(
+            tr("Account created but login failed: %1").arg(
+                loginResult.error_message));
+        return false;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Logged in as administrator successfully.";
+    accountCreated_ = true;
 
     return true;
 }
@@ -411,7 +477,7 @@ void BundleSelectionPage::populateBundles() {
 }
 
 void BundleSelectionPage::initializePage() {
-    wizard()->setButtonText(QWizard::NextButton, tr("Provision"));
+    wizard()->setButtonText(QWizard::NextButton, tr("Next >"));
     populateBundles();
 }
 
@@ -425,7 +491,146 @@ bool BundleSelectionPage::validatePage() {
     const QString bundleCode = bundleCombo_->currentData().toString();
     wizard_->setSelectedBundleCode(bundleCode);
 
+    // Check if the selected bundle contains lei_parties datasets
+    dq::messaging::get_dataset_bundle_members_by_bundle_request request;
+    request.bundle_code = bundleCode.toStdString();
+
+    auto result = wizard_->clientManager()->process_request(std::move(request));
+    if (result) {
+        bool hasLeiParties = false;
+        for (const auto& member : result->members) {
+            if (member.dataset_code.find("lei_parties") != std::string::npos) {
+                hasLeiParties = true;
+                break;
+            }
+        }
+        wizard_->setNeedsLeiPartyConfig(hasLeiParties);
+    }
+
     return true;
+}
+
+// ============================================================================
+// TenantConfigPage
+// ============================================================================
+
+TenantConfigPage::TenantConfigPage(SystemProvisionerWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Tenant Configuration"));
+    setSubTitle(tr("Configure how the initial tenant should be set up."));
+
+    setupUI();
+}
+
+void TenantConfigPage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+
+    // Mode selection
+    auto* modeBox = new QGroupBox(tr("Tenant Setup Mode"), this);
+    auto* modeLayout = new QVBoxLayout(modeBox);
+
+    blankRadio_ = new QRadioButton(
+        tr("Blank Tenant - Start with an empty tenant"), this);
+    gleifRadio_ = new QRadioButton(
+        tr("GLEIF-Based Tenant - Import parties from a GLEIF LEI entity tree"),
+        this);
+
+    blankRadio_->setChecked(true);
+    modeLayout->addWidget(blankRadio_);
+    modeLayout->addWidget(gleifRadio_);
+    layout->addWidget(modeBox);
+
+    layout->addSpacing(10);
+
+    // GLEIF configuration (initially hidden)
+    gleifConfigWidget_ = new QWidget(this);
+    auto* gleifLayout = new QVBoxLayout(gleifConfigWidget_);
+    gleifLayout->setContentsMargins(0, 0, 0, 0);
+
+    auto* instructionLabel = new QLabel(
+        tr("Select the root LEI entity. All direct and indirect subsidiaries "
+           "will be imported as parties in the tenant."),
+        this);
+    instructionLabel->setWordWrap(true);
+    gleifLayout->addWidget(instructionLabel);
+
+    gleifLayout->addSpacing(5);
+
+    // LEI entity picker
+    leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
+    gleifLayout->addWidget(leiPicker_, 1);
+
+    gleifLayout->addSpacing(5);
+
+    // Selected entity display
+    auto* selectionBox = new QGroupBox(tr("Selected Entity"), this);
+    auto* selectionLayout = new QVBoxLayout(selectionBox);
+    selectedEntityLabel_ = new QLabel(tr("No entity selected."), this);
+    selectedEntityLabel_->setWordWrap(true);
+    selectionLayout->addWidget(selectedEntityLabel_);
+    gleifLayout->addWidget(selectionBox);
+
+    layout->addWidget(gleifConfigWidget_);
+    gleifConfigWidget_->setVisible(false);
+
+    layout->addStretch();
+
+    // Connect signals
+    connect(blankRadio_, &QRadioButton::toggled,
+            this, [this](bool) { onModeChanged(); });
+    connect(gleifRadio_, &QRadioButton::toggled,
+            this, [this](bool) { onModeChanged(); });
+
+    connect(leiPicker_, &LeiEntityPicker::entitySelected,
+            this, [this](const QString& lei, const QString& name) {
+        wizard_->setRootLei(lei);
+        wizard_->setRootLeiName(name);
+        selectedEntityLabel_->setText(
+            tr("<b>%1</b> - %2").arg(lei, name));
+        emit completeChanged();
+    });
+}
+
+void TenantConfigPage::onModeChanged() {
+    const bool gleifMode = gleifRadio_->isChecked();
+    gleifConfigWidget_->setVisible(gleifMode);
+    wizard_->setNeedsLeiPartyConfig(gleifMode);
+
+    if (gleifMode) {
+        // Load LEI entities on first switch to GLEIF mode
+        if (!leiLoaded_) {
+            leiPicker_->load();
+            leiLoaded_ = true;
+        }
+    } else {
+        wizard_->setRootLei(QString());
+        wizard_->setRootLeiName(QString());
+        selectedEntityLabel_->setText(tr("No entity selected."));
+    }
+}
+
+void TenantConfigPage::initializePage() {
+    if (wizard_->rootLei().isEmpty()) {
+        selectedEntityLabel_->setText(tr("No entity selected."));
+    } else {
+        selectedEntityLabel_->setText(
+            tr("<b>%1</b> - %2").arg(
+                wizard_->rootLei(), wizard_->rootLeiName()));
+    }
+}
+
+bool TenantConfigPage::validatePage() {
+    if (gleifRadio_->isChecked() && wizard_->rootLei().isEmpty()) {
+        QMessageBox::warning(this, tr("Entity Required"),
+            tr("Please select a root LEI entity before continuing."));
+        return false;
+    }
+    return true;
+}
+
+int TenantConfigPage::nextId() const {
+    return SystemProvisionerWizard::Page_Apply;
 }
 
 // ============================================================================
@@ -510,19 +715,21 @@ void ApplyProvisioningPage::appendLog(const QString& message) {
 }
 
 void ApplyProvisioningPage::startProvisioning() {
-    BOOST_LOG_SEV(lg(), info) << "Starting system provisioning (async)";
+    BOOST_LOG_SEV(lg(), info) << "Starting data bundle publication (async)";
 
-    setStatus(tr("Provisioning system..."));
+    setStatus(tr("Publishing data bundle..."));
     appendLog(tr("Starting provisioning..."));
+    appendLog(tr("Administrator account already created and logged in."));
 
-    // Capture values needed for background thread (avoid accessing wizard_ from thread)
+    // Capture values needed for background thread
     const std::string username = wizard_->adminUsername().toStdString();
-    const std::string password = wizard_->adminPassword().toStdString();
-    const std::string email = wizard_->adminEmail().toStdString();
     const QString bundleCode = wizard_->selectedBundleCode();
+    const std::string paramsJson = wizard_->paramsJson().toStdString();
     ClientManager* clientManager = wizard_->clientManager();
 
-    // Perform provisioning asynchronously
+    appendLog(QString("[1/2] Applying data bundle: %1").arg(bundleCode));
+
+    // Perform bundle publication asynchronously
     auto* watcher = new QFutureWatcher<ProvisioningResult>(this);
     connect(watcher, &QFutureWatcher<ProvisioningResult>::finished,
             [this, watcher]() {
@@ -532,90 +739,53 @@ void ApplyProvisioningPage::startProvisioning() {
     });
 
     QFuture<ProvisioningResult> future = QtConcurrent::run(
-        [clientManager, username, password, email, bundleCode]() -> ProvisioningResult {
+        [clientManager, username, bundleCode, paramsJson]() -> ProvisioningResult {
             ProvisioningResult result;
-
-            // Step 1: Create administrator account
-            result.log_messages.append(
-                QString("[1/4] Creating administrator account: %1").arg(QString::fromStdString(username)));
-
-            // username acts as principal (can be "user" or "user@hostname")
-            iam::messaging::create_initial_admin_request adminRequest;
-            adminRequest.principal = username;
-            adminRequest.password = password;
-            adminRequest.email = email;
-
-            auto adminResult = clientManager->process_request(std::move(adminRequest));
-
-            if (!adminResult) {
-                result.success = false;
-                result.error_message = "Failed to communicate with server.";
-                result.log_messages.append("ERROR: Failed to communicate with server.");
-                return result;
-            }
-
-            if (!adminResult->success) {
-                result.success = false;
-                result.error_message = QString::fromStdString(adminResult->error_message);
-                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
-                return result;
-            }
-
-            result.admin_account_id = adminResult->account_id;
-            result.log_messages.append(QString("SUCCESS: Administrator account created (ID: %1)")
-                .arg(QString::fromStdString(boost::uuids::to_string(adminResult->account_id))));
-
-            // Step 2: Login as admin to establish session (using standard login flow)
-            result.log_messages.append(QString("[2/4] Logging in as administrator..."));
-
-            auto loginResult = clientManager->login(username, password);
-
-            if (!loginResult.success) {
-                result.success = false;
-                result.error_message = loginResult.error_message;
-                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
-                return result;
-            }
-
-            result.log_messages.append("SUCCESS: Logged in as administrator.");
-
-            // Step 3: Apply selected bundle (atomic by default for all-or-nothing semantics)
-            result.log_messages.append(QString("[3/4] Applying data bundle: %1").arg(bundleCode));
 
             dq::messaging::publish_bundle_request bundleRequest;
             bundleRequest.bundle_code = bundleCode.toStdString();
             bundleRequest.mode = dq::domain::publication_mode::upsert;
             bundleRequest.published_by = username;
+            bundleRequest.params_json = paramsJson;
 
-            auto bundleResult = clientManager->process_request(std::move(bundleRequest));
+            auto bundleResult = clientManager->process_request(
+                std::move(bundleRequest));
 
             if (!bundleResult) {
                 result.success = false;
-                result.error_message = "Failed to communicate with server for bundle publication.";
-                result.log_messages.append("ERROR: Failed to communicate with server.");
+                result.error_message =
+                    "Failed to communicate with server for bundle publication.";
+                result.log_messages.append(
+                    "ERROR: Failed to communicate with server.");
                 return result;
             }
 
             if (!bundleResult->success) {
                 result.success = false;
-                result.error_message = QString::fromStdString(bundleResult->error_message);
-                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
+                result.error_message =
+                    QString::fromStdString(bundleResult->error_message);
+                result.log_messages.append(
+                    QString("ERROR: %1").arg(result.error_message));
                 return result;
             }
 
-            result.log_messages.append(QString("SUCCESS: Published %1 datasets (%2 succeeded, %3 skipped)")
-                .arg(bundleResult->datasets_processed)
-                .arg(bundleResult->datasets_succeeded)
-                .arg(bundleResult->datasets_skipped));
-            result.log_messages.append(QString("  Records: %1 inserted, %2 updated")
-                .arg(bundleResult->total_records_inserted)
-                .arg(bundleResult->total_records_updated));
+            result.log_messages.append(
+                QString("SUCCESS: Published %1 datasets "
+                        "(%2 succeeded, %3 skipped)")
+                    .arg(bundleResult->datasets_processed)
+                    .arg(bundleResult->datasets_succeeded)
+                    .arg(bundleResult->datasets_skipped));
+            result.log_messages.append(
+                QString("  Records: %1 inserted, %2 updated")
+                    .arg(bundleResult->total_records_inserted)
+                    .arg(bundleResult->total_records_updated));
 
-            // Step 4: Finalize
-            result.log_messages.append("[4/4] Finalizing provisioning...");
-            result.log_messages.append("SUCCESS: System provisioning completed.");
+            result.log_messages.append("[2/2] Finalizing provisioning...");
+            result.log_messages.append(
+                "SUCCESS: System provisioning completed.");
             result.log_messages.append("");
-            result.log_messages.append("You are now logged in as administrator.");
+            result.log_messages.append(
+                "You are now logged in as administrator.");
 
             result.success = true;
             return result;
@@ -626,12 +796,12 @@ void ApplyProvisioningPage::startProvisioning() {
 }
 
 ProvisioningResult ApplyProvisioningPage::performProvisioning() {
-    // This method is now only used as a helper if needed
-    // The actual work is done in the lambda passed to QtConcurrent::run
     return {};
 }
 
-void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& result) {
+void ApplyProvisioningPage::onProvisioningResult(
+    const ProvisioningResult& result) {
+
     BOOST_LOG_SEV(lg(), debug) << "Provisioning result received";
 
     // Display all log messages
@@ -640,41 +810,41 @@ void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& resul
     }
 
     // Set progress bar to complete
-    progressBar_->setRange(0, 4);
-    progressBar_->setValue(4);
+    progressBar_->setRange(0, 2);
+    progressBar_->setValue(2);
 
     if (result.success) {
-        wizard_->setAdminAccountId(result.admin_account_id);
         setStatus(tr("Provisioning completed successfully!"));
         provisioningComplete_ = true;
         provisioningSuccess_ = true;
 
-        // Re-enable Finish button now that provisioning is complete
         wizard()->button(QWizard::FinishButton)->setEnabled(true);
         emit completeChanged();
 
-        // Show next steps message
         appendLog("");
         appendLog(tr("=== Setup Complete ==="));
-        appendLog(tr("You are logged in as: %1").arg(wizard_->adminUsername()));
+        appendLog(tr("You are logged in as: %1").arg(
+            wizard_->adminUsername()));
         appendLog("");
-        appendLog(tr("Click 'Finish' to close this wizard and start using the system."));
+        appendLog(tr("Click 'Finish' to close this wizard and start "
+                     "using the system."));
 
-        BOOST_LOG_SEV(lg(), info) << "System provisioning completed successfully";
+        BOOST_LOG_SEV(lg(), info)
+            << "System provisioning completed successfully";
         emit wizard_->provisioningCompleted(wizard_->adminUsername());
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Provisioning failed: " << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Provisioning failed: "
+            << result.error_message.toStdString();
         setStatus(tr("Provisioning failed!"));
 
-        // Make progress bar red to indicate failure
         progressBar_->setStyleSheet(
-            "QProgressBar { border: 1px solid #8B0000; border-radius: 3px; background: #2d2d2d; }"
+            "QProgressBar { border: 1px solid #8B0000; border-radius: 3px; "
+            "background: #2d2d2d; }"
             "QProgressBar::chunk { background-color: #CD5C5C; }");
 
         provisioningComplete_ = true;
         provisioningSuccess_ = false;
 
-        // Re-enable Finish button so user can close the wizard
         wizard()->button(QWizard::FinishButton)->setEnabled(true);
         emit completeChanged();
         emit wizard_->provisioningFailed(result.error_message);

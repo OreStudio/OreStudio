@@ -425,21 +425,24 @@ messaging::publish_bundle_response publication_service::publish_bundle(
     const std::string& bundle_code,
     domain::publication_mode mode,
     const std::string& published_by,
-    bool atomic) {
+    bool atomic,
+    const std::string& params_json) {
 
     BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << bundle_code
         << " with mode: " << mode
         << ", atomic: " << atomic
-        << ", published_by: " << published_by;
+        << ", published_by: " << published_by
+        << ", params_json: " << (params_json.empty() ? "(empty)" : params_json);
 
     messaging::publish_bundle_response response;
     const std::string mode_str = to_string(mode);
+    const std::string effective_params = params_json.empty() ? "{}" : params_json;
 
     // Call the SQL function
     const auto sql = std::format(
-        "SELECT * FROM ores_dq_bundles_publish_fn('{}', '{}'::uuid, '{}', '{}', {})",
+        "SELECT * FROM ores_dq_bundles_publish_fn('{}', '{}'::uuid, '{}', '{}', {}, '{}'::jsonb)",
         bundle_code, ctx_.tenant_id().to_string(), mode_str, published_by,
-        atomic ? "true" : "false");
+        atomic ? "true" : "false", effective_params);
 
     try {
         auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),

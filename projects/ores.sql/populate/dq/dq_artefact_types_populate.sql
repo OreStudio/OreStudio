@@ -103,6 +103,12 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_iam_system_tenant_id_fn(), 'lei_relationships', 0, 'LEI Relationships', 'GLEIF LEI corporate hierarchy relationships',
      'dq_lei_relationships_artefact_tbl', null, null, 26,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'lei_counterparties', 0, 'LEI Counterparties', 'GLEIF LEI entities published as counterparties',
+     'dq_lei_entities_artefact_tbl', 'refdata_counterparties_tbl', 'ores_dq_lei_counterparties_publish_fn', 27,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'lei_parties', 0, 'LEI Parties', 'GLEIF LEI entities published as parties (subtree)',
+     'dq_lei_entities_artefact_tbl', 'refdata_parties_tbl', 'ores_dq_lei_parties_publish_fn', 28,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

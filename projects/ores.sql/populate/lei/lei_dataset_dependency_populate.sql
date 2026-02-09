@@ -43,3 +43,29 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'entity_reference'
 );
 
+-- LEI Counterparties depend on entities and relationships
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_counterparties.small',
+    'gleif.lei_entities.small',
+    'entity_reference'
+);
+
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_counterparties.small',
+    'gleif.lei_relationships.small',
+    'entity_reference'
+);
+
+-- LEI Parties depend on entities and relationships
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_parties.small',
+    'gleif.lei_entities.small',
+    'entity_reference'
+);
+
+select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_parties.small',
+    'gleif.lei_relationships.small',
+    'entity_reference'
+);
+

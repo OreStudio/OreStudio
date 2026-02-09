@@ -105,13 +105,15 @@ public:
      * @param mode How to handle conflicts with existing data.
      * @param published_by Username of the person initiating publication.
      * @param atomic If true, first failure causes entire bundle to rollback.
+     * @param params_json JSON object with per-dataset parameters, keyed by artefact_type.
      * @return Publication result with per-dataset details.
      */
     messaging::publish_bundle_response publish_bundle(
         const std::string& bundle_code,
         domain::publication_mode mode,
         const std::string& published_by,
-        bool atomic = true);
+        bool atomic = true,
+        const std::string& params_json = "");
 
     /**
      * @brief Resolves the publication order for datasets.

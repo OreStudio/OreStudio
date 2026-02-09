@@ -101,6 +101,7 @@ std::vector<std::byte> publish_bundle_request::serialize() const {
     writer::write_uint8(buffer, static_cast<std::uint8_t>(mode));
     writer::write_string(buffer, published_by);
     writer::write_bool(buffer, atomic);
+    writer::write_string(buffer, params_json);
     return buffer;
 }
 
@@ -123,6 +124,10 @@ publish_bundle_request::deserialize(std::span<const std::byte> data) {
     auto atomic_result = reader::read_bool(data);
     if (!atomic_result) return std::unexpected(atomic_result.error());
     request.atomic = *atomic_result;
+
+    auto params_json_result = reader::read_string(data);
+    if (!params_json_result) return std::unexpected(params_json_result.error());
+    request.params_json = *params_json_result;
 
     return request;
 }

@@ -114,7 +114,7 @@ jobs:
         uses: lukka/get-cmake@v4.2.3
 
       - name: Cache vcpkg binary packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ github.workspace }}/vcpkg-cache
           key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-${{ hashFiles('vcpkg.json') }}

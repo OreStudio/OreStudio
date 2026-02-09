@@ -65,6 +65,9 @@ declare
     v_inserted_counterparties bigint := 0;
     v_inserted_identifiers bigint := 0;
     v_dataset_name text;
+    v_dataset_size text;
+    v_entity_dataset_id uuid;
+    v_rel_dataset_id uuid;
 begin
     -- Validate dataset exists
     select name into v_dataset_name
@@ -74,6 +77,23 @@ begin
 
     if v_dataset_name is null then
         raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    -- Determine which LEI dataset to use (default: large)
+    v_dataset_size := coalesce(p_params ->> 'lei_dataset_size', 'large');
+
+    select id into v_entity_dataset_id
+    from ores_dq_datasets_tbl
+    where code = 'gleif.lei_entities.' || v_dataset_size
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_rel_dataset_id
+    from ores_dq_datasets_tbl
+    where code = 'gleif.lei_relationships.' || v_dataset_size
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_entity_dataset_id is null or v_rel_dataset_id is null then
+        raise exception 'LEI dataset not found for size: %', v_dataset_size;
     end if;
 
     -- Check if target tenant already has LEI-sourced counterparties (idempotency)
@@ -100,14 +120,16 @@ begin
         entity_entity_status text not null
     ) on commit drop;
 
-    -- Populate all LEI entities into the map
+    -- Populate LEI entities from the selected dataset
     insert into lei_counterparty_uuid_map (lei, entity_legal_name, entity_legal_address_country, entity_entity_status)
-    select
+    select distinct on (e.lei)
         e.lei,
         e.entity_legal_name,
         e.entity_legal_address_country,
         e.entity_entity_status
-    from ores_dq_lei_entities_artefact_tbl e;
+    from ores_dq_lei_entities_artefact_tbl e
+    where e.dataset_id = v_entity_dataset_id
+    order by e.lei;
 
     -- Set parent LEI from active IS_DIRECTLY_CONSOLIDATED_BY relationships
     -- relationship_start_node_node_id = child, relationship_end_node_node_id = parent
@@ -116,7 +138,8 @@ begin
     from ores_dq_lei_relationships_artefact_tbl r
     where r.relationship_start_node_node_id = m.lei
       and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
-      and r.relationship_relationship_status = 'ACTIVE';
+      and r.relationship_relationship_status = 'ACTIVE'
+      and r.dataset_id = v_rel_dataset_id;
 
     -- Insert counterparties: parents first (parent_lei IS NULL), then children
     -- Using a single INSERT with the parent UUID resolved via self-join

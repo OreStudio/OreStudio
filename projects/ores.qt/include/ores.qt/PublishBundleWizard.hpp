@@ -93,6 +93,9 @@ public:
     QString rootLeiName() const { return rootLeiName_; }
     void setRootLeiName(const QString& name) { rootLeiName_ = name; }
 
+    QString leiDatasetSize() const { return leiDatasetSize_; }
+    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+
     /**
      * @brief Get the loaded bundle members.
      */
@@ -138,6 +141,7 @@ private:
     bool needsLeiPartyConfig_ = false;
     QString rootLei_;
     QString rootLeiName_;
+    QString leiDatasetSize_ = QStringLiteral("large");
     std::vector<dq::domain::dataset_bundle_member> members_;
     dq::domain::publication_mode selectedMode_ =
         dq::domain::publication_mode::upsert;
@@ -207,6 +211,7 @@ private:
     void setupUI();
 
     PublishBundleWizard* wizard_;
+    QComboBox* datasetSizeCombo_;
     LeiEntityPicker* leiPicker_;
     QLabel* instructionLabel_;
     QLabel* selectedEntityLabel_;

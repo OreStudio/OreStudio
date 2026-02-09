@@ -69,6 +69,9 @@ declare
     v_inserted_parties bigint := 0;
     v_inserted_identifiers bigint := 0;
     v_dataset_name text;
+    v_dataset_size text;
+    v_entity_dataset_id uuid;
+    v_rel_dataset_id uuid;
 begin
     -- Validate dataset exists
     select name into v_dataset_name
@@ -80,17 +83,35 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
+    -- Determine which LEI dataset to use (default: large)
+    v_dataset_size := coalesce(p_params ->> 'lei_dataset_size', 'large');
+
+    select id into v_entity_dataset_id
+    from ores_dq_datasets_tbl
+    where code = 'gleif.lei_entities.' || v_dataset_size
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_rel_dataset_id
+    from ores_dq_datasets_tbl
+    where code = 'gleif.lei_relationships.' || v_dataset_size
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_entity_dataset_id is null or v_rel_dataset_id is null then
+        raise exception 'LEI dataset not found for size: %', v_dataset_size;
+    end if;
+
     -- Extract root_lei from params
     v_root_lei := p_params ->> 'root_lei';
     if v_root_lei is null or v_root_lei = '' then
         raise exception 'root_lei parameter is required for LEI parties publication';
     end if;
 
-    -- Validate root LEI exists in staging data
+    -- Validate root LEI exists in the selected dataset
     if not exists (
         select 1
         from ores_dq_lei_entities_artefact_tbl
         where lei = v_root_lei
+          and dataset_id = v_entity_dataset_id
     ) then
         raise exception 'Root LEI not found in staging data: %', v_root_lei;
     end if;
@@ -116,30 +137,34 @@ begin
         entity_entity_status text not null
     ) on commit drop;
 
-    -- First, find all LEIs in the subtree
+    -- First, find all LEIs in the subtree (filtered to selected dataset)
     with recursive subtree as (
         -- Root node
         select e.lei
         from ores_dq_lei_entities_artefact_tbl e
         where e.lei = v_root_lei
+          and e.dataset_id = v_entity_dataset_id
 
-        union all
+        union
 
         -- Children: entities whose parent (end_node) is already in the subtree
-        select r.relationship_start_node_node_id
+        select distinct r.relationship_start_node_node_id
         from ores_dq_lei_relationships_artefact_tbl r
         join subtree s on s.lei = r.relationship_end_node_node_id
         where r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
           and r.relationship_relationship_status = 'ACTIVE'
+          and r.dataset_id = v_rel_dataset_id
     )
     insert into lei_party_subtree (lei, entity_legal_name, entity_legal_address_country, entity_entity_status)
-    select
+    select distinct on (s.lei)
         s.lei,
         e.entity_legal_name,
         e.entity_legal_address_country,
         e.entity_entity_status
     from subtree s
-    join ores_dq_lei_entities_artefact_tbl e on e.lei = s.lei;
+    join ores_dq_lei_entities_artefact_tbl e on e.lei = s.lei
+        and e.dataset_id = v_entity_dataset_id
+    order by s.lei;
 
     -- Set parent LEI from active IS_DIRECTLY_CONSOLIDATED_BY relationships
     -- Only for entities within the subtree
@@ -149,6 +174,7 @@ begin
     where r.relationship_start_node_node_id = m.lei
       and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
       and r.relationship_relationship_status = 'ACTIVE'
+      and r.dataset_id = v_rel_dataset_id
       and m.lei <> v_root_lei;  -- Root has no parent
 
     -- Insert parties with parent-child hierarchy

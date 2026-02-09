@@ -380,6 +380,12 @@ begin
             -- Extract per-dataset params keyed by artefact_type code
             v_dataset_params := coalesce(p_params -> v_dataset.artefact_type, '{}'::jsonb);
 
+            -- Propagate top-level lei_dataset_size into per-dataset params
+            if p_params ? 'lei_dataset_size' then
+                v_dataset_params := v_dataset_params ||
+                    jsonb_build_object('lei_dataset_size', p_params ->> 'lei_dataset_size');
+            end if;
+
             v_sql := format(
                 'SELECT * FROM %I(%L::uuid, %L::uuid, %L::text, %L::jsonb)',
                 v_artefact_type.populate_function,

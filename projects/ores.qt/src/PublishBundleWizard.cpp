@@ -232,6 +232,20 @@ void LeiPartyConfigPage::setupUI() {
 
     layout->addSpacing(10);
 
+    // Dataset size selection
+    auto* datasetLayout = new QHBoxLayout();
+    auto* datasetLabel = new QLabel(tr("LEI Dataset:"), this);
+    datasetSizeCombo_ = new QComboBox(this);
+    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), "large");
+    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"), "small");
+    datasetSizeCombo_->setCurrentIndex(0);
+    datasetLayout->addWidget(datasetLabel);
+    datasetLayout->addWidget(datasetSizeCombo_);
+    datasetLayout->addStretch();
+    layout->addLayout(datasetLayout);
+
+    layout->addSpacing(5);
+
     // LEI entity picker
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
     layout->addWidget(leiPicker_, 1);
@@ -280,6 +294,8 @@ bool LeiPartyConfigPage::validatePage() {
             tr("Please select a root LEI entity before continuing."));
         return false;
     }
+    wizard_->setLeiDatasetSize(
+        datasetSizeCombo_->currentData().toString());
     return true;
 }
 
@@ -459,9 +475,11 @@ void PublishProgressPage::startPublish() {
     const std::string publishedBy = clientManager->currentUsername();
 
     // Build params_json
+    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
     std::string paramsJson = "{}";
     if (needsLei && !rootLei.empty()) {
-        paramsJson = "{\"lei_parties\":{\"root_lei\":\"" + rootLei + "\"}}";
+        paramsJson = "{\"lei_parties\":{\"root_lei\":\"" + rootLei + "\"},"
+                     "\"lei_dataset_size\":\"" + datasetSize + "\"}";
     }
 
     using ResponseType = dq::messaging::publish_bundle_response;

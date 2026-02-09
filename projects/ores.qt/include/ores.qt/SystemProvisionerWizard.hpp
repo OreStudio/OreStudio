@@ -133,6 +133,9 @@ public:
     QString rootLeiName() const { return rootLeiName_; }
     void setRootLeiName(const QString& name) { rootLeiName_ = name; }
 
+    QString leiDatasetSize() const { return leiDatasetSize_; }
+    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+
     QString paramsJson() const;
 
     // Created admin account ID (set after successful creation)
@@ -152,6 +155,7 @@ private:
     bool needsLeiPartyConfig_ = false;
     QString rootLei_;
     QString rootLeiName_;
+    QString leiDatasetSize_ = QStringLiteral("large");
 };
 
 // Forward declarations of page classes
@@ -273,6 +277,7 @@ private:
     QRadioButton* blankRadio_;
     QRadioButton* gleifRadio_;
     QWidget* gleifConfigWidget_;
+    QComboBox* datasetSizeCombo_;
     LeiEntityPicker* leiPicker_;
     QLabel* selectedEntityLabel_;
     bool leiLoaded_ = false;

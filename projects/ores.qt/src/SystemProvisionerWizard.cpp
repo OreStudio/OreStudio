@@ -87,7 +87,10 @@ QString SystemProvisionerWizard::paramsJson() const {
     if (!needsLeiPartyConfig_ || rootLei_.isEmpty()) {
         return QStringLiteral("{}");
     }
-    return QStringLiteral("{\"lei_parties\":{\"root_lei\":\"%1\"}}").arg(rootLei_);
+    return QStringLiteral(
+        "{\"lei_parties\":{\"root_lei\":\"%1\"},"
+        "\"lei_dataset_size\":\"%2\"}")
+        .arg(rootLei_, leiDatasetSize_);
 }
 
 
@@ -555,6 +558,18 @@ void TenantConfigPage::setupUI() {
     instructionLabel->setWordWrap(true);
     gleifLayout->addWidget(instructionLabel);
 
+    // Dataset size selection
+    auto* datasetLayout = new QHBoxLayout();
+    auto* datasetLabel = new QLabel(tr("LEI Dataset:"), this);
+    datasetSizeCombo_ = new QComboBox(this);
+    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), "large");
+    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"), "small");
+    datasetSizeCombo_->setCurrentIndex(0);
+    datasetLayout->addWidget(datasetLabel);
+    datasetLayout->addWidget(datasetSizeCombo_);
+    datasetLayout->addStretch();
+    gleifLayout->addLayout(datasetLayout);
+
     gleifLayout->addSpacing(5);
 
     // LEI entity picker
@@ -621,10 +636,14 @@ void TenantConfigPage::initializePage() {
 }
 
 bool TenantConfigPage::validatePage() {
-    if (gleifRadio_->isChecked() && wizard_->rootLei().isEmpty()) {
-        QMessageBox::warning(this, tr("Entity Required"),
-            tr("Please select a root LEI entity before continuing."));
-        return false;
+    if (gleifRadio_->isChecked()) {
+        if (wizard_->rootLei().isEmpty()) {
+            QMessageBox::warning(this, tr("Entity Required"),
+                tr("Please select a root LEI entity before continuing."));
+            return false;
+        }
+        wizard_->setLeiDatasetSize(
+            datasetSizeCombo_->currentData().toString());
     }
     return true;
 }

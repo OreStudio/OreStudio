@@ -440,6 +440,19 @@ private:
         const std::string& remote_address);
 
     // =========================================================================
+    // LEI Entity Summary Handlers
+    // =========================================================================
+
+    /**
+     * @brief Handle get_lei_entities_summary_request message.
+     *
+     * Requires authentication. Returns LEI entity summaries from staging data.
+     */
+    handler_result
+    handle_get_lei_entities_summary_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
     // Dataset Bundle Handlers
     // =========================================================================
 

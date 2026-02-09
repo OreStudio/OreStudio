@@ -337,18 +337,97 @@ def download_gleif_data(
 
 # Sector detection keywords - used to classify entities by industry
 SECTOR_KEYWORDS = {
-    'BANK': ['BANK', 'BANKING', 'BANQUE', 'BANCA', 'BANCO', 'SPARKASSE', 'CREDIT UNION', 'SAVINGS BANK'],
-    'INSURANCE': ['INSURANCE', 'ASSURANCE', 'VERSICHERUNG', 'SEGUROS', 'ASSICURAZION', 'REINSURANCE', 'UNDERWRITER'],
+    # Financial sectors (priority)
+    'BANK': [
+        # "Bank" in ~50 languages (Latin script / transliterations)
+        'BANK',          # English, German, Dutch, Swedish, Norwegian, Danish,
+                         #   Polish, Hungarian, Indonesian, Malay, Afrikaans,
+                         #   Azerbaijani, Uzbek
+        'BANC',          # Welsh, Irish, Catalan, Romanian (archaic)
+        'BANCA',         # Italian, Romanian
+        'BANCO',         # Spanish, Portuguese, Galician
+        'BANQUE',        # French
+        'BANKA',         # Czech, Slovak, Croatian, Serbian, Slovenian,
+                         #   Bulgarian, Turkish, Albanian, Latvian, Macedonian
+        'BANKAS',        # Lithuanian
+        'BANKI',         # Icelandic, Georgian (transliterated), Swahili
+        'BANKASI',       # Turkish (as in Bankasi)
+        'BANGKO',        # Filipino / Tagalog
+        'BENKI',         # Swahili
+        'PANKKI',        # Finnish
+        'PANK',          # Estonian
+        'PANKI',         # Amharic (transliterated)
+        'TRAPEZA',       # Greek (transliterated)
+        'BANKA',         # (already above, covers Bosnian, Montenegrin)
+        'BANCORP',       # US holding company naming convention
+        'BANKU',         # Latvian (genitive form used in names)
+        'BANKUA',        # Basque
+        'BANKY',         # Malagasy
+        'BANKO',         # Esperanto, some Asian transliterations
+        'PANKU',         # Sinhala (transliterated)
+        'BANGKE',        # Khmer (transliterated)
+        'THANAKAN',      # Thai (transliterated)
+        'NGANHANG',      # Vietnamese (transliterated, no spaces)
+        'GINKO',         # Japanese (romanised)
+        'EUNHAENG',      # Korean (romanised)
+        'YINXING',       # Chinese (pinyin)
+        # Banking institution types
+        'BANKING', 'SPARKASSE', 'BAUSPARKASSE', 'CREDIT UNION',
+        'BUILDING SOCIETY', 'SAVINGS BANK', 'CAISSE', 'CAJA',
+        'RAIFFEISEN', 'VOLKSBANK', 'LANDESBANK',
+    ],
+    'INSURANCE': [
+        'INSURANCE', 'ASSURANCE', 'VERSICHERUNG', 'SEGUROS',
+        'ASSICURAZION', 'REINSURANCE', 'UNDERWRITER', 'INSURER',
+        'LLOYD', 'ACTUARIAL', 'LIFE ASSURANCE',
+    ],
     'INVESTMENT_FUND': ['MUTUAL FUND', 'UCITS', 'SICAV', 'FONDS COMMUN'],
     'ETF': ['ETF', 'EXCHANGE TRADED', 'EXCHANGE-TRADED'],
-    'HEDGE_FUND': ['HEDGE FUND', 'HEDGE-FUND', 'CAPITAL PARTNERS LP', 'CAPITAL OFFSHORE', 'OFFSHORE FUND'],
-    'PRIVATE_EQUITY': ['PRIVATE EQUITY', 'BUYOUT', 'VENTURE CAPITAL', 'PE FUND', 'GROWTH EQUITY'],
-    'PENSION': ['PENSION', 'RETIREMENT', 'SUPERANNUATION', '401K', 'PROVIDENT FUND'],
-    'ASSET_MANAGEMENT': ['ASSET MANAGEMENT', 'WEALTH MANAGEMENT', 'INVESTMENT MANAGEMENT', 'PORTFOLIO MANAGEMENT'],
-    'BROKER_DEALER': ['BROKER', 'DEALER', 'SECURITIES', 'BROKERAGE', 'TRADING CO'],
+    'HEDGE_FUND': [
+        'HEDGE FUND', 'HEDGE-FUND', 'CAPITAL PARTNERS LP',
+        'CAPITAL OFFSHORE', 'OFFSHORE FUND',
+    ],
+    'PRIVATE_EQUITY': [
+        'PRIVATE EQUITY', 'BUYOUT', 'VENTURE CAPITAL', 'PE FUND',
+        'GROWTH EQUITY',
+    ],
+    'PENSION': [
+        'PENSION', 'RETIREMENT', 'SUPERANNUATION', '401K',
+        'PROVIDENT FUND',
+    ],
+    'ASSET_MANAGEMENT': [
+        'ASSET MANAGEMENT', 'WEALTH MANAGEMENT',
+        'INVESTMENT MANAGEMENT', 'PORTFOLIO MANAGEMENT',
+        'FUND MANAGEMENT', 'FUND ADMIN',
+    ],
+    'BROKER_DEALER': [
+        'BROKER', 'DEALER', 'SECURITIES', 'BROKERAGE', 'TRADING CO',
+        'INTERDEALER', 'MARKET MAKER', 'STOCKBROKER',
+    ],
+    'CUSTODY_CLEARING': [
+        'CUSTODIAN', 'CUSTODY', 'CLEARING', 'CLEARINGHOUSE',
+        'DEPOSITORY', 'SETTLEMENT', 'DEPOSITARY',
+    ],
+    'PAYMENTS_FINTECH': [
+        'PAYMENT', 'FINTECH', 'MONEY TRANSFER', 'REMITTANCE',
+        'E-MONEY', 'DIGITAL PAYMENT',
+    ],
+    'MORTGAGE_LENDING': [
+        'MORTGAGE', 'LENDING', 'LOAN', 'CREDIT', 'FINANCE COMPANY',
+        'CONSUMER FINANCE', 'LEASING', 'FACTORING',
+    ],
+    'TRUST_FIDUCIARY': [
+        'TRUST COMPANY', 'TRUSTEE', 'FIDUCIARY', 'TRUST CO',
+        'TRUST CORP',
+    ],
+    'CAPITAL_MARKETS': [
+        'CAPITAL MARKET', 'EXCHANGE', 'STOCK EXCHANGE', 'COMMODIT',
+        'DERIVATIVE', 'FUTURES',
+    ],
+    # Non-financial sectors
     'REAL_ESTATE': ['REAL ESTATE', 'REIT', 'PROPERTY FUND', 'REALTY', 'IMMOBILIEN', 'IMMOBILIER'],
     'ENERGY': ['ENERGY', ' OIL ', 'PETROLEUM', 'NATURAL GAS', 'UTILITIES', 'ELECTRIC', 'POWER GENERATION'],
-    'TECHNOLOGY': ['TECHNOLOGY', 'SOFTWARE', 'DIGITAL', ' TECH ', 'COMPUTING', 'CYBER', 'FINTECH'],
+    'TECHNOLOGY': ['TECHNOLOGY', 'SOFTWARE', 'DIGITAL', ' TECH ', 'COMPUTING', 'CYBER'],
     'HEALTHCARE': ['HEALTHCARE', 'HEALTH CARE', 'MEDICAL', 'PHARMA', 'BIOTECH', 'HOSPITAL', 'THERAPEUTICS'],
     'MANUFACTURING': ['MANUFACTURING', 'INDUSTRIAL', 'FACTORY', 'PRODUCTION CO'],
     'RETAIL': ['RETAIL', 'STORES', 'SHOPPING', 'E-COMMERCE', 'CONSUMER GOODS'],
@@ -362,6 +441,15 @@ SECTOR_KEYWORDS = {
     'AGRICULTURE': ['AGRICULTURE', 'FARMING', 'AGRI', 'FOOD', 'BEVERAGE'],
     'MEDIA': ['MEDIA', 'ENTERTAINMENT', 'BROADCAST', 'PUBLISHING', 'FILM', 'MUSIC'],
 }
+
+# Financial sectors receive a higher sampling quota (multiplied by this factor).
+FINANCIAL_SECTORS = {
+    'BANK', 'INSURANCE', 'INVESTMENT_FUND', 'ETF', 'HEDGE_FUND',
+    'PRIVATE_EQUITY', 'PENSION', 'ASSET_MANAGEMENT', 'BROKER_DEALER',
+    'CUSTODY_CLEARING', 'PAYMENTS_FINTECH', 'MORTGAGE_LENDING',
+    'TRUST_FIDUCIARY', 'CAPITAL_MARKETS',
+}
+FINANCIAL_PRIORITY_MULTIPLIER = 3
 
 # Fund type keywords - for more detailed classification of FUND entities
 FUND_TYPE_KEYWORDS = {
@@ -681,13 +769,22 @@ def select_subset(
     print(f"  Fund types: {len(by_fund_type)}")
     print(f"  Legal forms: {len(by_legal_form)}")
 
-    def sample_from(source: Dict[str, List[str]], target: int, name: str) -> int:
-        """Sample from each bucket in source, avoiding already selected."""
+    def sample_from(source: Dict[str, List[str]], target: int, name: str,
+                    priority_keys: Set[str] = None,
+                    priority_multiplier: int = 1) -> int:
+        """Sample from each bucket in source, avoiding already selected.
+
+        If priority_keys is provided, those buckets receive
+        target * priority_multiplier instead of plain target.
+        """
         added = 0
         for key, candidates in sorted(source.items()):
             available = [lei for lei in candidates if lei not in selected_leis]
             if available:
-                sample_size = min(target, len(available))
+                effective_target = target
+                if priority_keys and key in priority_keys:
+                    effective_target = target * priority_multiplier
+                sample_size = min(effective_target, len(available))
                 selected = random.sample(available, sample_size)
                 selected_leis.update(selected)
                 added += len(selected)
@@ -698,8 +795,10 @@ def select_subset(
     print("\nSelecting by dimensions...")
     sample_from(by_depth, config.per_depth, "Relationship depth")
 
-    # 2. Sample by sector (important for industry diversity)
-    sample_from(by_sector, config.per_sector, "Sector")
+    # 2. Sample by sector (financial sectors get a higher quota)
+    sample_from(by_sector, config.per_sector, "Sector",
+                priority_keys=FINANCIAL_SECTORS,
+                priority_multiplier=FINANCIAL_PRIORITY_MULTIPLIER)
 
     # 3. Sample by fund type (for fund diversity)
     sample_from(by_fund_type, config.per_fund_type, "Fund type")

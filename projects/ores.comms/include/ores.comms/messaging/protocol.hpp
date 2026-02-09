@@ -231,8 +231,14 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 26.2 adds assign_role_by_name_request/response and
 // revoke_role_by_name_request/response for name-based role assignment.
 // Allows using principal (username@hostname) and role name instead of UUIDs.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 26;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+//
+// Version 27.0 makes business_center_code optional in party protocol.
+// Wire format changes from bare write_string to write_bool flag + conditional
+// write_string. Adds account_type field to get_accounts_response serialization.
+// Adds provision_tenant_request/response for tenant onboarding with LEI party
+// population and admin account creation.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 27;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

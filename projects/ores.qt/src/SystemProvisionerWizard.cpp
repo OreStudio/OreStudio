@@ -24,16 +24,12 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QMessageBox>
-#include <QTimer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
-#include "ores.dq/messaging/publish_bundle_protocol.hpp"
 
 namespace ores::qt {
 
@@ -45,13 +41,11 @@ using namespace ores::logging;
 
 SystemProvisionerWizard::SystemProvisionerWizard(
     ClientManager* clientManager,
-    const std::vector<BootstrapBundleInfo>& bundles,
     QWidget* parent)
     : QWizard(parent),
-      clientManager_(clientManager),
-      bundles_(bundles) {
+      clientManager_(clientManager) {
 
-    setWindowTitle(tr("System Provisioner"));
+    setWindowTitle(tr("System Bootstrap"));
     setMinimumSize(600, 500);
     resize(700, 550);
 
@@ -66,8 +60,7 @@ SystemProvisionerWizard::SystemProvisionerWizard(
 void SystemProvisionerWizard::setupPages() {
     setPage(Page_Welcome, new WelcomePage(this));
     setPage(Page_AdminAccount, new AdminAccountPage(this));
-    setPage(Page_BundleSelection, new BundleSelectionPage(this));
-    setPage(Page_Apply, new ApplyProvisioningPage(this));
+    setPage(Page_Complete, new CompletePage(this));
 
     setStartId(Page_Welcome);
 }
@@ -79,7 +72,6 @@ void SystemProvisionerWizard::setAdminCredentials(
     adminEmail_ = email;
     adminPassword_ = password;
 }
-
 
 // ============================================================================
 // WelcomePage
@@ -131,10 +123,8 @@ void WelcomePage::setupUI() {
         tr("<ol>"
            "<li><b>Create Administrator Account</b> - Set up the initial admin "
            "user who will have full access to manage the system.</li>"
-           "<li><b>Select Data Bundle</b> - Choose a reference data bundle to "
-           "populate the system with initial data.</li>"
-           "<li><b>Apply Configuration</b> - The system will be provisioned "
-           "with your chosen settings.</li>"
+           "<li><b>Auto-Login</b> - You will be automatically logged in as the "
+           "new administrator.</li>"
            "</ol>"));
     layout->addWidget(stepsLabel);
 
@@ -145,8 +135,8 @@ void WelcomePage::setupUI() {
     auto* infoLayout = new QVBoxLayout(infoBox);
     auto* infoLabel = new QLabel(
         tr("This wizard only appears during initial system setup. Once "
-           "provisioning is complete, you will be able to log in with the "
-           "administrator account you create."),
+           "complete, you can onboard tenants from "
+           "System > Identity > Onboard Tenant."),
         this);
     infoLabel->setWordWrap(true);
     infoLayout->addWidget(infoLabel);
@@ -254,7 +244,16 @@ void AdminAccountPage::setupUI() {
     registerField("adminPassword*", passwordEdit_);
 }
 
+void AdminAccountPage::initializePage() {
+    wizard()->setButtonText(QWizard::NextButton, tr("Create"));
+}
+
 bool AdminAccountPage::validatePage() {
+    // If already created, allow re-advancing without re-creating
+    if (accountCreated_) {
+        return true;
+    }
+
     validationLabel_->clear();
 
     const QString username = usernameEdit_->text().trimmed();
@@ -317,6 +316,51 @@ bool AdminAccountPage::validatePage() {
     // Store credentials in wizard
     wizard_->setAdminCredentials(username, email, password);
 
+    // Create the administrator account
+    BOOST_LOG_SEV(lg(), info) << "Creating administrator account: "
+                               << username.toStdString();
+
+    iam::messaging::create_initial_admin_request adminRequest;
+    adminRequest.principal = username.toStdString();
+    adminRequest.password = password.toStdString();
+    adminRequest.email = email.toStdString();
+
+    auto adminResult = wizard_->clientManager()->process_request(
+        std::move(adminRequest));
+
+    if (!adminResult) {
+        validationLabel_->setText(
+            tr("Failed to communicate with server. Please check your "
+               "connection and try again."));
+        return false;
+    }
+
+    if (!adminResult->success) {
+        validationLabel_->setText(
+            QString::fromStdString(adminResult->error_message));
+        return false;
+    }
+
+    wizard_->setAdminAccountId(adminResult->account_id);
+    BOOST_LOG_SEV(lg(), info) << "Administrator account created: "
+        << boost::uuids::to_string(adminResult->account_id);
+
+    // Login as the new administrator
+    BOOST_LOG_SEV(lg(), info) << "Logging in as administrator...";
+
+    auto loginResult = wizard_->clientManager()->login(
+        username.toStdString(), password.toStdString());
+
+    if (!loginResult.success) {
+        validationLabel_->setText(
+            tr("Account created but login failed: %1").arg(
+                loginResult.error_message));
+        return false;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Logged in as administrator successfully.";
+    accountCreated_ = true;
+
     return true;
 }
 
@@ -340,345 +384,75 @@ void AdminAccountPage::updatePasswordMatchIndicator() {
         passwordMatchLabel_->setStyleSheet("");
     } else if (password == confirm) {
         // Passwords match - green checkmark
-        passwordMatchLabel_->setText(QString::fromUtf8("\u2713")); // ✓
+        passwordMatchLabel_->setText(QString::fromUtf8("\u2713")); // checkmark
         passwordMatchLabel_->setStyleSheet("QLabel { color: #228B22; font-weight: bold; font-size: 14pt; }");
     } else {
         // Passwords don't match - red X
-        passwordMatchLabel_->setText(QString::fromUtf8("\u2717")); // ✗
+        passwordMatchLabel_->setText(QString::fromUtf8("\u2717")); // cross
         passwordMatchLabel_->setStyleSheet("QLabel { color: #cc0000; font-weight: bold; font-size: 14pt; }");
     }
 }
 
 // ============================================================================
-// BundleSelectionPage
+// CompletePage
 // ============================================================================
 
-BundleSelectionPage::BundleSelectionPage(SystemProvisionerWizard* wizard)
+CompletePage::CompletePage(SystemProvisionerWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Select Data Bundle"));
-    setSubTitle(tr("Choose a dataset bundle to provision the system with initial "
-                   "reference data. You can add more data later."));
+    setTitle(tr("Setup Complete"));
+    setFinalPage(true);
 
     setupUI();
 }
 
-void BundleSelectionPage::setupUI() {
+void CompletePage::setupUI() {
     auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(20);
 
-    auto* selectionLayout = new QFormLayout();
-    bundleCombo_ = new QComboBox(this);
-    selectionLayout->addRow(tr("Data Bundle:"), bundleCombo_);
-    layout->addLayout(selectionLayout);
-    layout->addSpacing(20);
+    // Success header
+    auto* headerLabel = new QLabel(
+        tr("System bootstrap complete"), this);
+    headerLabel->setStyleSheet("font-size: 16pt; font-weight: bold;");
+    headerLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(headerLabel);
 
-    auto* descBox = new QGroupBox(tr("Description"), this);
-    auto* descLayout = new QVBoxLayout(descBox);
-    descriptionLabel_ = new QLabel(this);
-    descriptionLabel_->setWordWrap(true);
-    descriptionLabel_->setMinimumHeight(100);
-    descLayout->addWidget(descriptionLabel_);
-    layout->addWidget(descBox);
+    layout->addSpacing(10);
+
+    // Summary label (populated in initializePage)
+    summaryLabel_ = new QLabel(this);
+    summaryLabel_->setWordWrap(true);
+    summaryLabel_->setTextFormat(Qt::RichText);
+    summaryLabel_->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    layout->addWidget(summaryLabel_);
 
     layout->addStretch();
 
-    connect(bundleCombo_, &QComboBox::currentIndexChanged,
-            this, &BundleSelectionPage::onBundleChanged);
+    // Next steps
+    auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
+    auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
+    auto* nextStepsLabel = new QLabel(
+        tr("You can now onboard tenants from "
+           "<b>System > Identity > Onboard Tenant</b>.\n\n"
+           "Use the <b>Data Librarian</b> to publish reference data bundles "
+           "to tenants."),
+        this);
+    nextStepsLabel->setWordWrap(true);
+    nextStepsLabel->setTextFormat(Qt::RichText);
+    nextStepsLayout->addWidget(nextStepsLabel);
+    layout->addWidget(nextStepsBox);
 }
 
-void BundleSelectionPage::onBundleChanged(int index) {
-    const auto& bundles = wizard_->bundles();
-    if (index >= 0 && index < static_cast<int>(bundles.size())) {
-        descriptionLabel_->setText(bundles[index].description);
-    }
-    emit completeChanged();
-}
+void CompletePage::initializePage() {
+    const QString username = wizard_->adminUsername();
 
-void BundleSelectionPage::populateBundles() {
-    bundleCombo_->clear();
+    summaryLabel_->setText(
+        tr("<p>The administrator account has been created and you are now "
+           "logged in.</p>"
+           "<p><b>Logged in as:</b> %1</p>")
+        .arg(username));
 
-    const auto& bundles = wizard_->bundles();
-    for (const auto& bundle : bundles) {
-        bundleCombo_->addItem(bundle.name, bundle.code);
-    }
-
-    if (bundleCombo_->count() > 0) {
-        bundleCombo_->setCurrentIndex(0);
-        onBundleChanged(0);
-    } else {
-        descriptionLabel_->setText(tr("No bundles available."));
-    }
-}
-
-void BundleSelectionPage::initializePage() {
-    wizard()->setButtonText(QWizard::NextButton, tr("Provision"));
-    populateBundles();
-}
-
-bool BundleSelectionPage::validatePage() {
-    if (bundleCombo_->currentIndex() < 0) {
-        QMessageBox::warning(this, tr("Selection Required"),
-                             tr("Please select a data bundle to continue."));
-        return false;
-    }
-
-    const QString bundleCode = bundleCombo_->currentData().toString();
-    wizard_->setSelectedBundleCode(bundleCode);
-
-    return true;
-}
-
-// ============================================================================
-// ApplyProvisioningPage
-// ============================================================================
-
-ApplyProvisioningPage::ApplyProvisioningPage(SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
-
-    setTitle(tr("Applying Provisioning"));
-    setSubTitle(tr("Please wait while the system is being provisioned."));
-    setFinalPage(true);
-
-    auto* layout = new QVBoxLayout(this);
-
-    // Status label
-    statusLabel_ = new QLabel(tr("Preparing to provision..."), this);
-    statusLabel_->setAlignment(Qt::AlignCenter);
-    statusLabel_->setStyleSheet("font-size: 14px; font-weight: bold;");
-    layout->addWidget(statusLabel_);
-
-    layout->addSpacing(20);
-
-    // Progress bar with visible animation style
-    progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0);  // Indeterminate initially
-    progressBar_->setMinimumWidth(400);
-    progressBar_->setTextVisible(false);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
-    layout->addWidget(progressBar_, 0, Qt::AlignCenter);
-
-    layout->addSpacing(20);
-
-    // Log output
-    logOutput_ = new QTextEdit(this);
-    logOutput_->setReadOnly(true);
-    logOutput_->setMinimumHeight(200);
-    logOutput_->setStyleSheet(
-        "QTextEdit { background-color: #1e1e1e; color: #d4d4d4; "
-        "font-family: monospace; font-size: 11px; }");
-    layout->addWidget(logOutput_, 1);
-
-    // Hide navigation buttons during provisioning
-    setCommitPage(true);
-
-    // Register ProvisioningResult for cross-thread signal/slot
-    qRegisterMetaType<ProvisioningResult>("ProvisioningResult");
-}
-
-void ApplyProvisioningPage::initializePage() {
-    provisioningComplete_ = false;
-    provisioningSuccess_ = false;
-    logOutput_->clear();
-    progressBar_->setRange(0, 0);  // Indeterminate
-
-    // Disable Finish button during provisioning
-    wizard()->button(QWizard::FinishButton)->setEnabled(false);
-
-    // Also hide the Back button during provisioning
-    wizard()->button(QWizard::BackButton)->setVisible(false);
-
-    // Start provisioning after a short delay
-    QTimer::singleShot(100, this, &ApplyProvisioningPage::startProvisioning);
-}
-
-bool ApplyProvisioningPage::isComplete() const {
-    return provisioningComplete_;
-}
-
-void ApplyProvisioningPage::setStatus(const QString& status) {
-    statusLabel_->setText(status);
-}
-
-void ApplyProvisioningPage::appendLog(const QString& message) {
-    logOutput_->append(message);
-    // Scroll to bottom
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
-}
-
-void ApplyProvisioningPage::startProvisioning() {
-    BOOST_LOG_SEV(lg(), info) << "Starting system provisioning (async)";
-
-    setStatus(tr("Provisioning system..."));
-    appendLog(tr("Starting provisioning..."));
-
-    // Capture values needed for background thread (avoid accessing wizard_ from thread)
-    const std::string username = wizard_->adminUsername().toStdString();
-    const std::string password = wizard_->adminPassword().toStdString();
-    const std::string email = wizard_->adminEmail().toStdString();
-    const QString bundleCode = wizard_->selectedBundleCode();
-    ClientManager* clientManager = wizard_->clientManager();
-
-    // Perform provisioning asynchronously
-    auto* watcher = new QFutureWatcher<ProvisioningResult>(this);
-    connect(watcher, &QFutureWatcher<ProvisioningResult>::finished,
-            [this, watcher]() {
-        const auto result = watcher->result();
-        watcher->deleteLater();
-        onProvisioningResult(result);
-    });
-
-    QFuture<ProvisioningResult> future = QtConcurrent::run(
-        [clientManager, username, password, email, bundleCode]() -> ProvisioningResult {
-            ProvisioningResult result;
-
-            // Step 1: Create administrator account
-            result.log_messages.append(
-                QString("[1/4] Creating administrator account: %1").arg(QString::fromStdString(username)));
-
-            // username acts as principal (can be "user" or "user@hostname")
-            iam::messaging::create_initial_admin_request adminRequest;
-            adminRequest.principal = username;
-            adminRequest.password = password;
-            adminRequest.email = email;
-
-            auto adminResult = clientManager->process_request(std::move(adminRequest));
-
-            if (!adminResult) {
-                result.success = false;
-                result.error_message = "Failed to communicate with server.";
-                result.log_messages.append("ERROR: Failed to communicate with server.");
-                return result;
-            }
-
-            if (!adminResult->success) {
-                result.success = false;
-                result.error_message = QString::fromStdString(adminResult->error_message);
-                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
-                return result;
-            }
-
-            result.admin_account_id = adminResult->account_id;
-            result.log_messages.append(QString("SUCCESS: Administrator account created (ID: %1)")
-                .arg(QString::fromStdString(boost::uuids::to_string(adminResult->account_id))));
-
-            // Step 2: Login as admin to establish session (using standard login flow)
-            result.log_messages.append(QString("[2/4] Logging in as administrator..."));
-
-            auto loginResult = clientManager->login(username, password);
-
-            if (!loginResult.success) {
-                result.success = false;
-                result.error_message = loginResult.error_message;
-                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
-                return result;
-            }
-
-            result.log_messages.append("SUCCESS: Logged in as administrator.");
-
-            // Step 3: Apply selected bundle (atomic by default for all-or-nothing semantics)
-            result.log_messages.append(QString("[3/4] Applying data bundle: %1").arg(bundleCode));
-
-            dq::messaging::publish_bundle_request bundleRequest;
-            bundleRequest.bundle_code = bundleCode.toStdString();
-            bundleRequest.mode = dq::domain::publication_mode::upsert;
-            bundleRequest.published_by = username;
-
-            auto bundleResult = clientManager->process_request(std::move(bundleRequest));
-
-            if (!bundleResult) {
-                result.success = false;
-                result.error_message = "Failed to communicate with server for bundle publication.";
-                result.log_messages.append("ERROR: Failed to communicate with server.");
-                return result;
-            }
-
-            if (!bundleResult->success) {
-                result.success = false;
-                result.error_message = QString::fromStdString(bundleResult->error_message);
-                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
-                return result;
-            }
-
-            result.log_messages.append(QString("SUCCESS: Published %1 datasets (%2 succeeded, %3 skipped)")
-                .arg(bundleResult->datasets_processed)
-                .arg(bundleResult->datasets_succeeded)
-                .arg(bundleResult->datasets_skipped));
-            result.log_messages.append(QString("  Records: %1 inserted, %2 updated")
-                .arg(bundleResult->total_records_inserted)
-                .arg(bundleResult->total_records_updated));
-
-            // Step 4: Finalize
-            result.log_messages.append("[4/4] Finalizing provisioning...");
-            result.log_messages.append("SUCCESS: System provisioning completed.");
-            result.log_messages.append("");
-            result.log_messages.append("You are now logged in as administrator.");
-
-            result.success = true;
-            return result;
-        }
-    );
-
-    watcher->setFuture(future);
-}
-
-ProvisioningResult ApplyProvisioningPage::performProvisioning() {
-    // This method is now only used as a helper if needed
-    // The actual work is done in the lambda passed to QtConcurrent::run
-    return {};
-}
-
-void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& result) {
-    BOOST_LOG_SEV(lg(), debug) << "Provisioning result received";
-
-    // Display all log messages
-    for (const QString& msg : result.log_messages) {
-        appendLog(msg);
-    }
-
-    // Set progress bar to complete
-    progressBar_->setRange(0, 4);
-    progressBar_->setValue(4);
-
-    if (result.success) {
-        wizard_->setAdminAccountId(result.admin_account_id);
-        setStatus(tr("Provisioning completed successfully!"));
-        provisioningComplete_ = true;
-        provisioningSuccess_ = true;
-
-        // Re-enable Finish button now that provisioning is complete
-        wizard()->button(QWizard::FinishButton)->setEnabled(true);
-        emit completeChanged();
-
-        // Show next steps message
-        appendLog("");
-        appendLog(tr("=== Setup Complete ==="));
-        appendLog(tr("You are logged in as: %1").arg(wizard_->adminUsername()));
-        appendLog("");
-        appendLog(tr("Click 'Finish' to close this wizard and start using the system."));
-
-        BOOST_LOG_SEV(lg(), info) << "System provisioning completed successfully";
-        emit wizard_->provisioningCompleted(wizard_->adminUsername());
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Provisioning failed: " << result.error_message.toStdString();
-        setStatus(tr("Provisioning failed!"));
-
-        // Make progress bar red to indicate failure
-        progressBar_->setStyleSheet(
-            "QProgressBar { border: 1px solid #8B0000; border-radius: 3px; background: #2d2d2d; }"
-            "QProgressBar::chunk { background-color: #CD5C5C; }");
-
-        provisioningComplete_ = true;
-        provisioningSuccess_ = false;
-
-        // Re-enable Finish button so user can close the wizard
-        wizard()->button(QWizard::FinishButton)->setEnabled(true);
-        emit completeChanged();
-        emit wizard_->provisioningFailed(result.error_message);
-    }
+    emit wizard_->provisioningCompleted(username);
 }
 
 }

@@ -210,13 +210,14 @@ $$ language plpgsql;
  * @param p_mode             Publication mode: 'upsert', 'insert_only', or 'replace_all'
  * @param p_published_by     User/system publishing the bundle
  * @param p_atomic           If true, any failure causes entire bundle to rollback
+ * @param p_params           JSON object with per-dataset parameters, keyed by artefact_type code
  *
  * @returns Summary of publication results per dataset
  *
  * Note: This function dynamically calls populate functions registered in
  * dq_artefact_types_tbl. All populate functions must conform to this signature:
  *
- *   function(dataset_id uuid, target_tenant_id uuid, mode text)
+ *   function(dataset_id uuid, target_tenant_id uuid, mode text, params jsonb)
  *   RETURNS TABLE (action text, record_count bigint)
  *
  * Where action is one of: 'inserted', 'updated', 'skipped', 'deleted'
@@ -227,7 +228,8 @@ create or replace function ores_dq_bundles_publish_fn(
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
     p_published_by text default current_user,
-    p_atomic boolean default true
+    p_atomic boolean default true,
+    p_params jsonb default '{}'::jsonb
 )
 returns table (
     dataset_code text,
@@ -260,6 +262,7 @@ declare
     v_row_skipped bigint;
     v_row_deleted bigint;
     v_error_msg text;
+    v_dataset_params jsonb;
 begin
     -- Validate mode
     if p_mode not in ('upsert', 'insert_only', 'replace_all') then
@@ -374,12 +377,22 @@ begin
 
         -- Call the populate function dynamically
         begin
+            -- Extract per-dataset params keyed by artefact_type code
+            v_dataset_params := coalesce(p_params -> v_dataset.artefact_type, '{}'::jsonb);
+
+            -- Propagate top-level lei_dataset_size into per-dataset params
+            if p_params ? 'lei_dataset_size' then
+                v_dataset_params := v_dataset_params ||
+                    jsonb_build_object('lei_dataset_size', p_params ->> 'lei_dataset_size');
+            end if;
+
             v_sql := format(
-                'SELECT * FROM %I(%L::uuid, %L::uuid, %L::text)',
+                'SELECT * FROM %I(%L::uuid, %L::uuid, %L::text, %L::jsonb)',
                 v_artefact_type.populate_function,
                 v_dataset.dataset_id,
                 p_target_tenant_id,
-                p_mode
+                p_mode,
+                v_dataset_params
             );
 
             raise notice 'Publishing dataset: % using %', v_dataset.dataset_code, v_artefact_type.populate_function;

@@ -120,4 +120,6 @@
 -- Publication
 \ir ./dq_publication_create.sql
 \ir ./dq_bundle_publication_create.sql
+\ir ./dq_lei_counterparties_publish_create.sql
+\ir ./dq_lei_parties_publish_create.sql
 

@@ -374,4 +374,126 @@ std::ostream& operator<<(std::ostream& s, const get_tenant_history_response& v) 
     return s;
 }
 
+// ============================================================================
+// Provision Tenant Messages Implementation
+// ============================================================================
+
+std::vector<std::byte> provision_tenant_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, type);
+    writer::write_string(buffer, code);
+    writer::write_string(buffer, name);
+    writer::write_string(buffer, hostname);
+    writer::write_string(buffer, description);
+    writer::write_string(buffer, root_lei);
+    writer::write_string(buffer, lei_dataset_size);
+    writer::write_string(buffer, admin_username);
+    writer::write_string(buffer, admin_password);
+    writer::write_string(buffer, admin_email);
+    return buffer;
+}
+
+std::expected<provision_tenant_request, error_code>
+provision_tenant_request::deserialize(std::span<const std::byte> data) {
+    provision_tenant_request request;
+
+    auto type_result = reader::read_string(data);
+    if (!type_result) return std::unexpected(type_result.error());
+    request.type = *type_result;
+
+    auto code_result = reader::read_string(data);
+    if (!code_result) return std::unexpected(code_result.error());
+    request.code = *code_result;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.name = *name_result;
+
+    auto hostname_result = reader::read_string(data);
+    if (!hostname_result) return std::unexpected(hostname_result.error());
+    request.hostname = *hostname_result;
+
+    auto description_result = reader::read_string(data);
+    if (!description_result) return std::unexpected(description_result.error());
+    request.description = *description_result;
+
+    // Backward-compatible: new fields may not be present
+    if (!data.empty()) {
+        auto root_lei_result = reader::read_string(data);
+        if (!root_lei_result) return std::unexpected(root_lei_result.error());
+        request.root_lei = *root_lei_result;
+    }
+
+    if (!data.empty()) {
+        auto lei_dataset_size_result = reader::read_string(data);
+        if (!lei_dataset_size_result) return std::unexpected(lei_dataset_size_result.error());
+        request.lei_dataset_size = *lei_dataset_size_result;
+    }
+
+    if (!data.empty()) {
+        auto admin_username_result = reader::read_string(data);
+        if (!admin_username_result) return std::unexpected(admin_username_result.error());
+        request.admin_username = *admin_username_result;
+    }
+
+    if (!data.empty()) {
+        auto admin_password_result = reader::read_string(data);
+        if (!admin_password_result) return std::unexpected(admin_password_result.error());
+        request.admin_password = *admin_password_result;
+    }
+
+    if (!data.empty()) {
+        auto admin_email_result = reader::read_string(data);
+        if (!admin_email_result) return std::unexpected(admin_email_result.error());
+        request.admin_email = *admin_email_result;
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const provision_tenant_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> provision_tenant_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
+    writer::write_string(buffer, tenant_id);
+    writer::write_uint32(buffer, parties_created);
+    return buffer;
+}
+
+std::expected<provision_tenant_response, error_code>
+provision_tenant_response::deserialize(std::span<const std::byte> data) {
+    provision_tenant_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = reader::read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    auto tenant_id_result = reader::read_string(data);
+    if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+    response.tenant_id = *tenant_id_result;
+
+    // Backward-compatible: parties_created may not be present
+    if (!data.empty()) {
+        auto parties_result = reader::read_uint32(data);
+        if (!parties_result) return std::unexpected(parties_result.error());
+        response.parties_created = *parties_result;
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const provision_tenant_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

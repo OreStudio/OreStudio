@@ -1,0 +1,318 @@
+:PROPERTIES:
+:ID: 5c83c9d5-f4ae-4707-ba7a-85d82fb2292b
+:END:
+#+title: GLEIF Dataset Librarian Integration Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Integrate the GLEIF LEI dataset into the librarian publication pipeline so that
+counterparties are fully populated from GLEIF data and parties are selectively
+imported based on a user-chosen root LEI entity and its descendants.
+
+** Problem Statement
+
+The existing publication pipeline assumes a one-to-one mapping between artefact
+tables and production tables: each artefact type has a staging table, a target
+table, and a SQL populate function that copies/transforms rows. The GLEIF dataset
+breaks this assumption in two ways:
+
+1. *Counterparties*: Straightforward -- the entire =lei_entities= artefact table
+   maps to =refdata_counterparties_tbl=. No user input needed.
+2. *Parties*: Selective -- only a single root LEI entity and its corporate
+   descendants (resolved via =lei_relationships=) should be imported into
+   =refdata_parties_tbl=. The user must choose which LEI entity serves as the
+   root. Additionally:
+   - LEI codes must be stored in the =refdata_party_identifiers_tbl= junction
+     table (not as a direct party field).
+   - Parent-child relationships use UUIDs in the party table but LEI codes in the
+     GLEIF tables, requiring a mapping step.
+
+** Success Criteria
+
+- Counterparties are published automatically without user input.
+- Parties are published from a user-selected root LEI, including all descendants.
+- Party identifiers (LEI codes) are stored in the junction table.
+- Parent-child hierarchy is correctly resolved via UUID mapping.
+- Provisioner can create a new tenant pre-populated from GLEIF data.
+- Librarian can publish GLEIF parties into an existing tenant.
+
+* Approach: Parameterised Publication
+
+Extend the existing publication pipeline with optional parameters. Populate
+functions gain a =p_params jsonb= argument that carries user-supplied
+configuration. Most datasets ignore this parameter (empty ='{}'::jsonb=); GLEIF
+party publication uses it to receive the root LEI code.
+
+** Data Model Changes
+
+*** artefact_types table
+
+Add a new nullable column to =ores_dq_artefact_types_tbl=:
+
+| Column                       | Type  | Purpose                                    |
+|------------------------------+-------+--------------------------------------------|
+| =publication_params_schema=  | jsonb | JSON Schema declaring required parameters  |
+
+For datasets requiring no parameters, this column is =NULL=. For =lei_parties=,
+it contains:
+
+#+begin_src json
+{
+  "type": "object",
+  "properties": {
+    "root_lei": {
+      "type": "string",
+      "description": "LEI code of the root entity to import",
+      "minLength": 20,
+      "maxLength": 20
+    }
+  },
+  "required": ["root_lei"]
+}
+#+end_src
+
+*** artefact_types population
+
+Add new artefact type rows for GLEIF publication:
+
+| Code                | Artefact Table               | Target Table                      | Populate Function                    | Params Schema |
+|---------------------+------------------------------+-----------------------------------+--------------------------------------+---------------|
+| =lei_counterparties= | =dq_lei_entities_artefact_tbl= | =refdata_counterparties_tbl=      | =ores_dq_lei_counterparties_publish_fn= | =NULL=        |
+| =lei_parties=        | =dq_lei_entities_artefact_tbl= | =refdata_parties_tbl=             | =ores_dq_lei_parties_publish_fn=        | =(schema)=    |
+
+The existing =lei_entities= and =lei_relationships= artefact types remain as
+staging-only (=NULL= target table and populate function).
+
+*** Populate function signatures
+
+All populate functions gain the =p_params= parameter:
+
+#+begin_src sql
+CREATE OR REPLACE FUNCTION ores_dq_countries_publish_fn(
+    p_tenant_id uuid,
+    p_dataset_bundle_id uuid,
+    p_params jsonb DEFAULT '{}'::jsonb
+) RETURNS void AS $$ ... $$ LANGUAGE plpgsql;
+#+end_src
+
+Existing functions ignore =p_params=. The GLEIF party function extracts
+=root_lei= from it.
+
+** Populate Functions
+
+*** lei_counterparties
+
+Straightforward bulk insert from =dq_lei_entities_artefact_tbl= to
+=refdata_counterparties_tbl=:
+
+#+begin_src
+FOR each lei_entity IN artefact table:
+    INSERT INTO refdata_counterparties_tbl (
+        id, tenant_id, short_code, full_name, status, ...
+    ) VALUES (
+        gen_random_uuid(), p_tenant_id,
+        lei_entity.lei,           -- short_code = LEI
+        lei_entity.entity_legal_name,
+        'active', ...
+    )
+#+end_src
+
+No parameters required. Counterparty identifiers (LEI codes) are inserted into
+=refdata_counterparty_identifiers_tbl= as a separate step within the same
+function.
+
+*** lei_parties
+
+Multi-step function using the =root_lei= parameter:
+
+#+begin_src
+STEP 1: Resolve subtree via recursive CTE on lei_relationships
+    WITH RECURSIVE subtree AS (
+        SELECT lei FROM dq_lei_entities_artefact_tbl WHERE lei = root_lei
+        UNION ALL
+        SELECT r.child_lei
+        FROM dq_lei_relationships_artefact_tbl r
+        JOIN subtree s ON s.lei = r.parent_lei
+    )
+
+STEP 2: Generate UUID map
+    CREATE TEMP TABLE lei_uuid_map (lei TEXT, party_uuid UUID)
+    INSERT INTO lei_uuid_map
+        SELECT lei, gen_random_uuid() FROM subtree
+
+STEP 3: Insert parties with parent resolution
+    FOR each entity in subtree:
+        parent_uuid = (SELECT party_uuid FROM lei_uuid_map
+                       WHERE lei = relationship.parent_lei)
+        INSERT INTO refdata_parties_tbl (
+            id, tenant_id, short_code, full_name,
+            parent_party_id, status, ...
+        ) VALUES (
+            lei_uuid_map[entity.lei], p_tenant_id,
+            entity.lei, entity.entity_legal_name,
+            parent_uuid,   -- NULL for root
+            'active', ...
+        )
+
+STEP 4: Insert party identifiers
+    FOR each entity in subtree:
+        INSERT INTO refdata_party_identifiers_tbl (
+            party_id, identifier_scheme, identifier_value, ...
+        ) VALUES (
+            lei_uuid_map[entity.lei], 'LEI', entity.lei, ...
+        )
+#+end_src
+
+The root entity has =parent_party_id = NULL=, making it the tenant's root party
+(enforced by the existing partial unique index).
+
+** Publication Pipeline Changes
+
+*** publication_service::publish_bundle()
+
+Modify the pipeline to pass parameters through to populate functions:
+
+1. After resolving the topological sort order, check each dataset's artefact type
+   for a non-NULL =publication_params_schema=.
+2. Look up user-supplied parameters from the publication request (keyed by
+   artefact type code).
+3. Pass parameters as the =p_params= argument to the SQL populate function call.
+
+The existing =publication_result= struct gains an optional =params= field per
+dataset. The SQL call changes from:
+
+#+begin_src sql
+SELECT ores_dq_<type>_publish_fn(p_tenant_id, p_bundle_id);
+#+end_src
+
+to:
+
+#+begin_src sql
+SELECT ores_dq_<type>_publish_fn(p_tenant_id, p_bundle_id, p_params);
+#+end_src
+
+*** Error handling
+
+- If =lei_parties= is invoked without =root_lei=, the function raises an
+  exception with a clear message.
+- If the root LEI does not exist in the artefact table, the function raises an
+  exception.
+- If the tenant already has a root party, the function raises an exception (the
+  existing partial unique index enforces this at the DB level).
+
+* Bundle Membership
+
+Add the GLEIF small dataset to the base system bundle. This means:
+
+- =lei_entities= (staging): already present
+- =lei_relationships= (staging): already present
+- =lei_counterparties= (new): auto-publishes, no params needed
+- =lei_parties= (new): requires =root_lei= parameter at publish time
+
+Since =lei_counterparties= has no =publication_params_schema=, it publishes
+automatically like any other dataset. Only =lei_parties= pauses for user input
+during the publish wizard.
+
+* UI Changes
+
+** Publish Dataset Wizard (Librarian)
+
+Transform the current publish dialog into a multi-step wizard:
+
+| Step | Content                                                    |
+|------+------------------------------------------------------------|
+| 1    | Bundle selection and confirmation (existing functionality)  |
+| 2+   | One step per parameterised dataset requiring user input     |
+| Final | Summary and publish button                                |
+
+For the GLEIF bundle, the wizard flow is:
+
+1. *Select bundle*: Choose "Base System" (or whichever bundle includes GLEIF).
+2. *Configure LEI Parties*: Search/browse the =lei_entities= artefact table and
+   select the root LEI entity. Display entity name and LEI code. Counterparties
+   do not appear as a step because they have no parameters.
+3. *Summary*: Show all datasets to be published, highlighting which have
+   parameters configured.
+4. *Publish*: Execute publication.
+
+*** LEI Entity Picker
+
+The "Configure LEI Parties" step needs a searchable list/table showing LEI
+entities from the artefact table. Key fields:
+
+- LEI code
+- Entity legal name
+- Jurisdiction
+- Entity status
+
+The user selects one entity as the root. A search box filters by name or LEI
+code.
+
+** System Provisioner Wizard
+
+Add a new "Create Tenant" page with two modes:
+
+| Mode              | Description                                                  |
+|-------------------+--------------------------------------------------------------|
+| Blank Tenant      | Creates an empty tenant with user-supplied name/description. |
+| GLEIF-Based Tenant | User selects a root LEI entity. Tenant name and description  |
+|                   | are pre-populated from the LEI entity's =entity_legal_name=. |
+
+*** GLEIF-Based Tenant Flow
+
+1. User selects "GLEIF-Based Tenant" option.
+2. LEI entity picker appears (same component as the publish wizard).
+3. User selects the root LEI entity.
+4. Tenant name field auto-fills with =entity_legal_name=.
+5. User can edit the name and description before confirming.
+6. Provisioner creates the tenant, then publishes the base system bundle with
+   =root_lei= set to the selected entity.
+
+*** Provisioner vs Librarian
+
+| Concern           | Provisioner                              | Librarian                          |
+|-------------------+------------------------------------------+------------------------------------|
+| Tenant creation   | Creates new tenant first                 | Uses existing tenant               |
+| Root party check  | Guaranteed no conflict (new tenant)      | Fails if root party already exists |
+| Tenant properties | Pre-populated from LEI entity            | N/A                                |
+| Bundle publish    | Automatic after tenant creation          | User-initiated via wizard          |
+
+* Implementation Phases
+
+** Phase 1: Database
+
+1. Add =publication_params_schema= column to =ores_dq_artefact_types_tbl=.
+2. Create =ores_dq_lei_counterparties_publish_fn= SQL function.
+3. Create =ores_dq_lei_parties_publish_fn= SQL function.
+4. Add =lei_counterparties= and =lei_parties= artefact type rows.
+5. Update existing populate function signatures to accept =p_params=.
+6. Add GLEIF datasets to base system bundle membership.
+
+** Phase 2: Service Layer
+
+1. Extend =publication_service::publish_bundle()= to pass parameters.
+2. Add =publication_params= to the publication request/response protocol.
+3. Wire parameter lookup into the SQL function call.
+
+** Phase 3: Qt UI
+
+1. Refactor publish dialog into multi-step wizard.
+2. Implement LEI entity picker widget.
+3. Add GLEIF-based tenant creation to provisioner wizard.
+4. Wire parameter collection into the publish request.
+
+* Open Questions
+
+- *Counterparty hierarchy*: Should the counterparty populate function also
+  resolve parent-child relationships from =lei_relationships=, or should
+  counterparties be flat initially?
+- *Incremental updates*: When GLEIF data is refreshed and the bundle is
+  re-published, should existing parties/counterparties be updated or is it a
+  clean replace? This affects the populate function's upsert vs truncate-insert
+  strategy.
+- *Multiple party imports*: Can a tenant publish LEI parties multiple times with
+  different roots (e.g., after an acquisition)? The root party uniqueness
+  constraint currently prevents this.

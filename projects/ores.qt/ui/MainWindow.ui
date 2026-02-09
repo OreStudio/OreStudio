@@ -120,6 +120,8 @@
      <addaction name="ActionAccounts"/>
      <addaction name="ActionRoles"/>
      <addaction name="ActionTenants"/>
+     <addaction name="separator"/>
+     <addaction name="ActionOnboardTenant"/>
     </widget>
     <widget class="QMenu" name="menuTelemetry">
      <property name="title">
@@ -501,6 +503,14 @@
    </property>
    <property name="toolTip">
     <string>Manage external counterparties</string>
+   </property>
+  </action>
+  <action name="ActionOnboardTenant">
+   <property name="text">
+    <string>&amp;Onboard Tenant...</string>
+   </property>
+   <property name="toolTip">
+    <string>Create and provision a new tenant</string>
    </property>
   </action>
  </widget>

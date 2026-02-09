@@ -50,6 +50,7 @@ TenantMdiWindow::TenantMdiWindow(
       proxyModel_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
+      onboardAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
       historyAction_(nullptr) {
@@ -99,6 +100,15 @@ void TenantMdiWindow::setupToolbar() {
     addAction_->setToolTip(tr("Add new tenant"));
     connect(addAction_, &QAction::triggered, this,
             &TenantMdiWindow::addNew);
+
+    onboardAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Building, IconUtils::DefaultIconColor),
+        tr("Onboard"));
+    onboardAction_->setToolTip(tr("Onboard a new tenant with wizard"));
+    connect(onboardAction_, &QAction::triggered, this, [this]() {
+        emit onboardRequested();
+    });
 
     editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(

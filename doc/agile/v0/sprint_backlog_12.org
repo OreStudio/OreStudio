@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ID: 1B387E8C-8EC1-4C2A-A321-1593C35A9A77
 :END:
-#+title: Sprint Backlog 12
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }
@@ -17,37 +16,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-07 Sat 18:32], for Saturday, February 07, 2026.
-|      | <75>                                               |        |      |      |       |
-| Tags | Headline                                           | Time   |      |      |     % |
-|------+----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                       | *5:48* |      |      | 100.0 |
-|------+----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                            | 5:48   |      |      | 100.0 |
-|      | Active                                             |        | 5:48 |      | 100.0 |
-| code | Add bound parameters to sqlgen                     |        |      | 0:51 |  14.7 |
-| code | Add roles to account via codes                     |        |      | 0:34 |   9.8 |
-| code | Implement party related entities at database level |        |      | 4:23 |  75.6 |
+#+CAPTION: Clock summary at [2026-02-09 Mon 10:02], for Monday, February 09, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *2:41* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 2:41   |      |      | 100.0 |
+|       | Active                                |        | 2:41 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:11 |   6.8 |
+| code  | Add GLEIF data to datasets            |        |      | 2:30 |  93.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-07 Sat 18:32]
-|       | <75>                                               |        |      |      |       |
-| Tags  | Headline                                           | Time   |      |      |     % |
-|-------+----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                       | *6:15* |      |      | 100.0 |
-|-------+----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                            | 6:15   |      |      | 100.0 |
-|       | Active                                             |        | 6:15 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |        |      | 0:27 |   7.2 |
-| code  | Add bound parameters to sqlgen                     |        |      | 0:51 |  13.6 |
-| code  | Add roles to account via codes                     |        |      | 0:34 |   9.1 |
-| code  | Implement party related entities at database level |        |      | 4:23 |  70.1 |
+#+CAPTION: Clock summary at [2026-02-09 Mon 10:02]
+|       | <75>                                               |         |       |      |       |
+| Tags  | Headline                                           | Time    |       |      |     % |
+|-------+----------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                       | *14:48* |       |      | 100.0 |
+|-------+----------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                            | 14:48   |       |      | 100.0 |
+|       | Active                                             |         | 14:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 0:38 |   4.3 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   5.7 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   3.8 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  29.6 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   2.6 |
+| code  | Add party related support to Qt                    |         |       | 2:55 |  19.7 |
+| code  | Add GLEIF data to datasets                         |         |       | 5:04 |  34.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 09:30]--[2026-02-09 Mon 09:41] =>  0:11
     CLOCK: [2026-02-06 Fri 23:00]--[2026-02-06 Fri 23:27] =>  0:27
     :END:
 
@@ -208,7 +210,7 @@ Links:
 
 - [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
 
-*** Add shell widget to ores.qt                                        :code:
+*** COMPLETED Add shell widget to ores.qt                              :code:
 
 It would be nice if we could login as super admin and add all the tenants,
 accounts etc in one go instead of having to go through different tools.
@@ -220,7 +222,7 @@ Merged stories:
 Users should be able to interact with the system directly via the REPL. Add a
 simple widget for this.
 
-*** STARTED Add roles to account via codes                             :code:
+*** COMPLETED Add roles to account via codes                           :code:
     :LOGBOOK:
     CLOCK: [2026-02-07 Sat 15:35]--[2026-02-07 Sat 16:09] =>  0:34
     :END:
@@ -258,7 +260,7 @@ Highlights:
   utility function to the account service for principal resolution.
 #+end_quote
 
-*** STARTED Implement party related entities at database level         :code:
+*** COMPLETED Implement party related entities at database level       :code:
     :LOGBOOK:
     CLOCK: [2026-02-07 Sat 17:01]--[2026-02-07 Sat 18:32] =>  1:31
     CLOCK: [2026-02-07 Sat 12:00]--[2026-02-07 Sat 14:52] =>  2:52
@@ -266,6 +268,33 @@ Highlights:
 
 The first step of this work is to get the entities to work at the database
 schema level.
+
+#+begin_quote
+This pull request lays the groundwork for robust party and counterparty
+management within the system. It introduces a comprehensive SQL schema to define
+internal legal entities and external trading partners, along with their
+associated identifiers and contact details. Key codegen templates have been
+enhanced to support advanced validation and indexing, streamlining future schema
+development. The changes also integrate new reference data with existing data
+quality frameworks and update the ER diagram for clarity.
+
+Highlights:
+
+- New SQL Schema for Parties and Counterparties: Introduced core tables,
+  identifiers, contact information, and account-party associations for internal
+  legal entities and external trading partners.
+- Reference Data Tables: Added four new lookup tables (party_types,
+  party_statuses, party_id_schemes, contact_types) with validation functions and
+  seed data.
+- Codegen Enhancements: Updated the domain entity template to support
+  validations[] and indexes[], and fixed the notify trigger template to use
+  product prefixes.
+- Data Governance Integration: Established a cross-reference between party ID
+  schemes and existing DQ coding schemes, ensuring strict FK validation through
+  correct population ordering.
+- ER Diagram Update: The Entity-Relationship diagram has been updated to reflect
+  the new entities and their relationships.
+#+end_quote
 
 **** Table Structure: party
 
@@ -282,6 +311,309 @@ schema level.
 | =business_center_id= | Integer     | FK (scheme)     | Links to an FpML Business Center (e.g., GBLO, USNY). Determines holiday calendars for settlement. |
 | =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
 | =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
+
+*** COMPLETED Add party entity                                         :code:
+
+Party analysis.
+
+| Field             | Type | Description                                | Foreign Key Reference      |
+|-------------------+------+--------------------------------------------+----------------------------|
+| party_id          | UUID | Primary key (globally unique identifier)   | —                          |
+| full_name         | TEXT | Legal or registered name                   | —                          |
+| short code        | TEXT | Short code for the party.                  |                            |
+| organization_type | INT  | Type of organization                       | → organization_type_scheme |
+| parent_party_id   | INT  | References parent party (self-referencing) | → party_id (nullable)      |
+
+*** COMPLETED Add party identifier entity                              :code:
+
+Allows a party to have multiple external identifiers (e.g., LEI, BIC).
+
+| Field       | Type | Description                               | Foreign Key Reference |
+|-------------+------+-------------------------------------------+-----------------------|
+| party_id    | UUID | References party.party_id                 | → party               |
+| id_value    | TEXT | Identifier value, e.g., "549300..."       | —                     |
+| id_scheme   | TEXT | Scheme defining identifier type, e.g. LEI | → party_id_scheme     |
+| Description | TEXT | Additional information about the party    |                       |
+
+Primary key: composite (party_id, id_scheme)
+
+*** COMPLETED Contact information entity                               :code:
+
+Contact Information is a container that groups various ways to reach an entity.
+
+Contact Information can be associated with either a Party (at the legal entity
+level) or a BusinessUnit (at the desk/operational level). To build a robust
+trading system, your database should support a polymorphic or flexible link to
+handle this.
+
+The Logic of the Link:
+
+- Link to Party: Used for Legal and Regulatory contact details. This is the
+  "Head Office" address, the legal service of process address, or the general
+  firm-wide contact for the LEI.
+- Link to Business Unit: Used for Execution and Operational contact details.
+  This is where your "Machine" or "Human" actually lives. It links the trader or
+  algo to a specific desk's phone number, email, and—most importantly—its
+  Business Center (Holiday Calendar).
+
+**** Type: Contact Information
+
+This is the main container for how to reach a party or person.
+
+- address (Complex): The physical location.
+- phone (String): Multiple entries allowed (Work, Mobile, Fax).
+- email (String): Electronic mail addresses.
+- webPage (String): The entity's URL.
+
+**** Type: Address
+
+The physical street address structure.
+
+- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
+- city (String): The city or municipality.
+- state (String): The state, province, or region.
+- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
+- postalCode (String): The ZIP or Postcode.
+
+*** COMPLETED Add party related support at the domain level            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-08 Sun 11:50]--[2026-02-08 Sun 12:13] =>  0:23
+    :END:
+
+#+begin_quote
+This pull request significantly expands the system's data model by introducing a
+robust set of domain entities and their associated infrastructure for managing
+party and counterparty information. The changes provide a foundational layer for
+classifying, identifying, and storing contact details for both internal and
+external entities, complete with mechanisms for data persistence, generation,
+and communication. This enhancement is crucial for building out comprehensive
+reference data and identity and access management capabilities.
+
+Highlights:
+
+- New Domain Entities: Introduced 11 new C++ domain types for party-related
+  entities, spanning both ores.refdata and ores.iam components. These include
+  core entities like party and counterparty, along with supporting lookup tables
+  (party_type, party_status, party_id_scheme, contact_type), identifiers
+  (party_identifier, counterparty_identifier), and contact information
+  (party_contact_information, counterparty_contact_information).
+- Junction Table for Account-Party Linking: Added an account_party junction
+  table in ores.iam to establish relationships between IAM accounts and refdata
+  parties, enabling granular control over user-party associations.
+- Comprehensive Infrastructure Generation: For each new entity, a full stack of
+  supporting code has been generated, including domain classes, JSON and table
+  I/O, data generators, repository components (entity, mapper, repository),
+  service layers, and binary messaging protocols.
+- Expanded Messaging Protocol: Incorporated 40 new message types into
+  message_type.hpp to support CRUD (Create, Read, Update, Delete) operations
+  across all the newly introduced party-related entities, facilitating
+  inter-service communication.
+#+end_quote
+
+*** BLOCKED Remove uses of raw libpq                                   :code:
+
+We have added support for the missing features in sqlgen so that we can replace
+uses of raw libpq. The PRs have been merged in main sqlgen, we just need a
+release. Do a search for all uses of raw libpq and replace it with appropriate
+sqlgen calls.
+
+We need to monitor sqlgen releases and then vcpkg updates.
+
+Merged PRs:
+
+- [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
+- [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
+- [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
+
+*** STARTED Add party related support to Qt                            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 13:00]--[2026-02-09 Mon 15:27] =>  2:27
+    CLOCK: [2026-02-08 Sun 13:40]--[2026-02-08 Sun 16:00] =>  2:20
+    CLOCK: [2026-02-08 Sun 12:14]--[2026-02-08 Sun 12:49] =>  0:35
+    :END:
+
+#+begin_quote
+This pull request significantly expands the Qt GUI capabilities by adding full
+support for the 'party' entity, encompassing list views, detailed editing, and
+historical tracking. A core improvement is the enhanced code generation
+framework, which now dynamically adapts to entity field configurations,
+streamlining UI development and maintenance. This update also ensures that
+existing entity screens benefit from these new, more robust templates.
+
+Highlights:
+
+- New Party Entity Qt Screens: Introduced comprehensive Qt screens for the
+  'party' entity, including detail dialogs, history dialogs, MDI windows,
+  controllers, and client models, accessible via a new 'Parties' submenu in the
+  main window.
+- Configurable Codegen for Detail Fields: Enhanced the Qt code generation
+  process by adding a configurable 'detail_fields' array. This allows templates
+  to generate correct fields for all entity types without requiring manual
+  post-codegen adjustments, improving flexibility and reducing boilerplate.
+- Improved Key Field Handling in Templates: Fixed Qt templates to correctly
+  handle non-standard key fields (e.g., 'short_code') in MdiWindow and
+  Controller templates, ensuring proper entity identification and operations.
+- Regeneration of Existing Entity Screens: Regenerated existing 'party',
+  'counterparty', and 'tenant' entity screens using the updated and more
+  flexible templates, ensuring consistency and leveraging the new codegen
+  capabilities.
+#+end_quote
+
+*** STARTED Add GLEIF data to datasets                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 10:03]--[2026-02-09 Mon 11:40] =>  1:37
+    CLOCK: [2026-02-09 Mon 09:42]--[2026-02-09 Mon 10:02] =>  0:20
+    CLOCK: [2026-02-08 Sun 22:00]--[2026-02-09 Mon 02:10] =>  4:10
+    CLOCK: [2026-02-08 Sun 19:30]--[2026-02-08 Sun 20:04] =>  0:34
+    :END:
+
+We exported the external data but did not create the datasets for it.
+
+#+begin_quote
+This pull request significantly enhances the system's data quality capabilities
+by integrating comprehensive GLEIF LEI reference data. It establishes a robust
+pipeline for ingesting legal entity and relationship information, from defining
+data models and automating SQL script generation to registering new datasets and
+their dependencies within the existing data quality framework. This foundational
+work enables the system to manage and utilize critical legal entity data, with
+future plans to provision this data to operational tables.
+
+Highlights:
+
+- GLEIF LEI Data Integration: Introduced comprehensive support for GLEIF Legal
+  Entity Identifier (LEI) data, encompassing both entity master data and
+  corporate hierarchy relationships, by adding new artefact tables via codegen.
+- Automated SQL Generation Pipeline: Developed a Python script
+  (lei_generate_metadata_sql.py) and a shell wrapper (generate_lei_metadata.sh)
+  to automate the creation of SQL populate scripts from GLEIF LEI CSV subsets,
+  ensuring idempotent bulk insertion using PL/pgSQL.
+- Metadata and Dataset Registration: Registered new artefact types
+  (lei_entities, lei_relationships), a dedicated GLEIF catalog, its associated
+  methodology, and four distinct datasets (small/large for
+  entities/relationships) along with their dependencies within the system.
+- Data Quality Framework Integration: Integrated the newly defined LEI artefact
+  tables and their population into the existing Data Quality (DQ) framework's
+  schema creation and catalogue population processes.
+- Documentation Update: Updated methodology.txt to clearly document the new SQL
+  generation pipeline for LEI data, providing detailed instructions and a list
+  of generated output files.
+#+end_quote
+
+*** Improve error message boxes                                        :code:
+
+Rename show details to just details. Icon should be red?
+
+*** Use exponential backoff for database problems                      :code:
+
+At present we have a constant retry:
+
+#+begin_quote
+2026-02-08 14:56:43.670204 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:56:48.685224 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:56:53.698886 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:56:58.712379 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:57:03.726010 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+#+end_quote
+
+Notes:
+
+- we should allow clients to connect and return an error stating DB is
+  unavailable.
+- stop service does not show any log lines about shutting down.
+
+*** Add composite primary keys                                         :code:
+
+We probably already have a story for this.
+
+#+begin_quote
+projects/ores.iam/include/ores.iam/repository/account_party_entity.hpp
+
+    sqlgen::PrimaryKey<std::string> account_id;
+    std::string tenant_id;
+    std::string party_id;
+Contributor
+@gemini-code-assist
+gemini-code-assist bot
+15 hours ago
+high
+
+The comment on line 32 indicates a composite primary key. For a junction table,
+both account_id and party_id should be part of the composite primary key.
+party_id should also be wrapped in sqlgen::PrimaryKey to correctly define the
+composite key.
+
+Suggested change
+    std::string party_id;
+    sqlgen::PrimaryKey<std::string> party_id;
+Member
+Author
+@mcraveiro
+mcraveiro
+5 hours ago
+
+Won't fix. This follows the established junction entity pattern in the codebase
+(see dataset_bundle_member_entity.hpp): the left column uses
+sqlgen::PrimaryKey<std::string> and the right column uses plain std::string. The
+sqlgen library handles composite keys this way — the actual SQL DDL defines both
+columns as the composite primary key via the migration script, not via the C++
+entity annotation.
+#+end_quote
+
+*** Improve generators with FK-aware test data                         :code:
+
+Generators for entities with foreign key UUID columns (e.g. =party_id=,
+=counterparty_id=, =account_id=) currently produce random UUIDs via
+=uuid_gen()=. This means generated test data contains dangling references that
+won't satisfy FK constraints in the database.
+
+Affected generators:
+
+- =party_identifier_generator=: =party_id= FK to =party=
+- =counterparty_identifier_generator=: =counterparty_id= FK to =counterparty=
+- =party_contact_information_generator=: =party_id= FK to =party=
+- =counterparty_contact_information_generator=: =counterparty_id= FK to =counterparty=
+- =account_party_generator=: =account_id= FK to =account=, =party_id= FK to =party=
+
+Proposed approach:
+
+- Generators should accept optional parent entity references or generate
+  parent entities first, then use their IDs.
+- Alternatively, generators could accept a list of valid FK values to sample
+  from.
+- Update codegen templates so =generator_expr= for FK columns can reference
+  other generators.
+
+Actually we should create a generation context with a KVP where generations can
+leave data for other generators to pick up from.
+
+Acceptance criteria:
+
+- Generated test data has valid FK references.
+- Existing generator API is preserved or extended in a backwards-compatible way.
+
+*** Fix "informations" plural naming in contact information entities    :code:
+
+The plural of "information" is "information" (uncountable noun). Several codegen
+models and generated files incorrectly use "informations":
+
+- =party_contact_information_domain_entity.json=: =entity_plural= is
+  =party_contact_informations= (should be =party_contact_information=).
+- =counterparty_contact_information_domain_entity.json=: same issue.
+- Repository section: =entity_plural_short= and =entity_plural_words= also
+  affected.
+
+This naming propagates to C++ class names, function names, SQL table references,
+and protocol message names. Fixing requires:
+
+1. Update the codegen JSON models.
+2. Regenerate affected C++ files.
+3. Update SQL table names and population scripts if they use the plural form.
+4. Verify no downstream references break.
+
+Acceptance criteria:
+
+- No "informations" appears in model files, generated code, or SQL scripts.
+- Build and tests pass after renaming.
 
 *** Fix security bug with shell                                        :code:
 
@@ -326,69 +658,6 @@ It should just be the database account.
 
 There are a lot of entries in the shell main menu, we need to group them. These
 could be based on the component.
-
-*** Add party entity                                                   :code:
-
-Party analysis.
-
-| Field             | Type | Description                                | Foreign Key Reference      |
-|-------------------+------+--------------------------------------------+----------------------------|
-| party_id          | UUID | Primary key (globally unique identifier)   | —                          |
-| full_name         | TEXT | Legal or registered name                   | —                          |
-| short code        | TEXT | Short code for the party.                  |                            |
-| organization_type | INT  | Type of organization                       | → organization_type_scheme |
-| parent_party_id   | INT  | References parent party (self-referencing) | → party_id (nullable)      |
-
-*** Add party identifier entity                                        :code:
-
-Allows a party to have multiple external identifiers (e.g., LEI, BIC).
-
-| Field       | Type | Description                               | Foreign Key Reference |
-|-------------+------+-------------------------------------------+-----------------------|
-| party_id    | UUID | References party.party_id                 | → party               |
-| id_value    | TEXT | Identifier value, e.g., "549300..."       | —                     |
-| id_scheme   | TEXT | Scheme defining identifier type, e.g. LEI | → party_id_scheme     |
-| Description | TEXT | Additional information about the party    |                       |
-
-Primary key: composite (party_id, id_scheme)
-
-*** Contact information entity                                         :code:
-
-Contact Information is a container that groups various ways to reach an entity.
-
-Contact Information can be associated with either a Party (at the legal entity
-level) or a BusinessUnit (at the desk/operational level). To build a robust
-trading system, your database should support a polymorphic or flexible link to
-handle this.
-
-The Logic of the Link:
-
-- Link to Party: Used for Legal and Regulatory contact details. This is the
-  "Head Office" address, the legal service of process address, or the general
-  firm-wide contact for the LEI.
-- Link to Business Unit: Used for Execution and Operational contact details.
-  This is where your "Machine" or "Human" actually lives. It links the trader or
-  algo to a specific desk's phone number, email, and—most importantly—its
-  Business Center (Holiday Calendar).
-
-**** Type: Contact Information
-
-This is the main container for how to reach a party or person.
-
-- address (Complex): The physical location.
-- phone (String): Multiple entries allowed (Work, Mobile, Fax).
-- email (String): Electronic mail addresses.
-- webPage (String): The entity's URL.
-
-**** Type: Address
-
-The physical street address structure.
-
-- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
-- city (String): The city or municipality.
-- state (String): The state, province, or region.
-- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
-- postalCode (String): The ZIP or Postcode.
 
 *** Redesign Qt ImageCache invalidation strategy                       :code:
 

@@ -246,3 +246,81 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Parties
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_parties_tbl enable row level security;
+
+create policy ores_refdata_parties_tenant_isolation_policy on ores_refdata_parties_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Party Identifiers
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_identifiers_tbl enable row level security;
+
+create policy ores_refdata_party_identifiers_tenant_isolation_policy on ores_refdata_party_identifiers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Party Contact Informations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_contact_informations_tbl enable row level security;
+
+create policy ores_refdata_party_contact_informations_tenant_isolation_policy on ores_refdata_party_contact_informations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Counterparties
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_counterparties_tbl enable row level security;
+
+create policy ores_refdata_counterparties_tenant_isolation_policy on ores_refdata_counterparties_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Counterparty Identifiers
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_counterparty_identifiers_tbl enable row level security;
+
+create policy ores_refdata_counterparty_identifiers_tenant_isolation_policy on ores_refdata_counterparty_identifiers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Counterparty Contact Informations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_counterparty_contact_informations_tbl enable row level security;
+
+create policy ores_refdata_counterparty_contact_informations_tenant_isolation_policy on ores_refdata_counterparty_contact_informations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

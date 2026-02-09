@@ -256,6 +256,9 @@ enum class message_type : std::uint16_t {
     save_account_party_response = 0x206D,
     delete_account_party_request = 0x206E,
     delete_account_party_response = 0x206F,
+    // IAM subsystem - Tenant provisioning
+    provision_tenant_request = 0x2070,
+    provision_tenant_response = 0x2071,
     // Variability subsystem
     get_feature_flags_request = 0x3000,
     get_feature_flags_response = 0x3001,
@@ -423,6 +426,9 @@ enum class message_type : std::uint16_t {
     // DQ subsystem - Bundle publication
     publish_bundle_request = 0x60B8,
     publish_bundle_response = 0x60B9,
+    // DQ subsystem - LEI entity summary
+    get_lei_entities_summary_request = 0x60C0,
+    get_lei_entities_summary_response = 0x60C1,
     // Sentinel value
     last_value
 };
@@ -633,6 +639,8 @@ enum class message_type : std::uint16_t {
     case message_type::save_account_party_response: return "save_account_party_response";
     case message_type::delete_account_party_request: return "delete_account_party_request";
     case message_type::delete_account_party_response: return "delete_account_party_response";
+    case message_type::provision_tenant_request: return "provision_tenant_request";
+    case message_type::provision_tenant_response: return "provision_tenant_response";
     case message_type::get_feature_flags_request: return "get_feature_flags_request";
     case message_type::get_feature_flags_response: return "get_feature_flags_response";
     case message_type::save_feature_flag_request: return "save_feature_flag_request";
@@ -781,6 +789,8 @@ enum class message_type : std::uint16_t {
     case message_type::delete_dataset_bundle_member_response: return "delete_dataset_bundle_member_response";
     case message_type::publish_bundle_request: return "publish_bundle_request";
     case message_type::publish_bundle_response: return "publish_bundle_response";
+    case message_type::get_lei_entities_summary_request: return "get_lei_entities_summary_request";
+    case message_type::get_lei_entities_summary_response: return "get_lei_entities_summary_response";
     default: return {};
     }
 }

@@ -216,7 +216,8 @@ $$ language plpgsql;
 create or replace function ores_dq_images_publish_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
-    p_mode text default 'upsert'
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
 )
 returns table (
     action text,
@@ -378,7 +379,8 @@ $$ language plpgsql;
 create or replace function ores_dq_countries_publish_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
-    p_mode text default 'upsert'
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
 )
 returns table (
     action text,
@@ -572,6 +574,7 @@ create or replace function ores_dq_currencies_publish_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb,
     p_currency_type_filter text default null
 )
 returns table (
@@ -760,7 +763,8 @@ $$ language plpgsql;
 create or replace function ores_dq_ip2country_publish_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
-    p_mode text default 'replace_all'
+    p_mode text default 'replace_all',
+    p_params jsonb default '{}'::jsonb
 )
 returns table (
     action text,

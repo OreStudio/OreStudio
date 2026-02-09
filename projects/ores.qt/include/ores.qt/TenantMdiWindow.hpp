@@ -67,6 +67,7 @@ signals:
     void errorOccurred(const QString& error_message);
     void showTenantDetails(const iam::domain::tenant& tenant);
     void addNewRequested();
+    void onboardRequested();
     void tenantDeleted(const QString& code);
     void showTenantHistory(const iam::domain::tenant& tenant);
 
@@ -111,6 +112,7 @@ private:
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
+    QAction* onboardAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;

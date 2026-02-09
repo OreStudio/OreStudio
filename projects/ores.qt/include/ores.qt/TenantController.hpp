@@ -67,6 +67,7 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+    void onboardRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;

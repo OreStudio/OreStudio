@@ -27,10 +27,17 @@
 #include "ores.qt/TenantDetailDialog.hpp"
 #include "ores.qt/TenantHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.iam/eventing/tenant_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view tenant_event_name =
+        eventing::domain::event_traits<iam::eventing::tenant_changed_event>::name;
+}
 
 TenantController::TenantController(
     QMainWindow* mainWindow,
@@ -39,7 +46,7 @@ TenantController::TenantController(
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
+          tenant_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -67,6 +74,8 @@ void TenantController::showListWindow() {
             this, &TenantController::onShowDetails);
     connect(listWindow_, &TenantMdiWindow::addNewRequested,
             this, &TenantController::onAddNewRequested);
+    connect(listWindow_, &TenantMdiWindow::onboardRequested,
+            this, &TenantController::onboardRequested);
     connect(listWindow_, &TenantMdiWindow::showTenantHistory,
             this, &TenantController::onShowHistory);
 

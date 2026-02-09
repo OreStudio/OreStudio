@@ -34,6 +34,7 @@
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/PublishDatasetsDialog.hpp"
+#include "ores.qt/PublishBundleWizard.hpp"
 #include "ores.qt/PublicationHistoryDialog.hpp"
 #include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
@@ -1389,38 +1390,64 @@ void DataLibrarianWindow::showNavigationContextMenu(const QPoint& pos) {
         return;
     }
 
-    // Get datasets under this node
-    auto datasets = getDatasetsUnderNode(index);
-    if (datasets.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No datasets under selected navigation node";
-        return;
-    }
-
     const auto itemText = index.data(Qt::DisplayRole).toString();
+    const auto itemType = static_cast<NavigationItemType>(
+        index.data(ItemTypeRole).toInt());
 
     QMenu menu(this);
+    QAction* publishBundleAction = nullptr;
+    QAction* publishAction = nullptr;
 
-    // Publish action with dataset count
-    QAction* publishAction = menu.addAction(
-        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
-        tr("Publish %1 Datasets from \"%2\"")
-            .arg(datasets.size())
-            .arg(itemText));
+    // Add "Publish Bundle" action for bundle nodes
+    if (itemType == NavigationItemType::Bundle) {
+        publishBundleAction = menu.addAction(
+            IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
+            tr("Publish Bundle \"%1\"").arg(itemText));
+    }
+
+    // Get datasets under this node for the dataset publish option
+    auto datasets = getDatasetsUnderNode(index);
+    if (!datasets.empty()) {
+        publishAction = menu.addAction(
+            IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
+            tr("Publish %1 Datasets from \"%2\"")
+                .arg(datasets.size())
+                .arg(itemText));
+    }
+
+    if (!publishBundleAction && !publishAction) {
+        BOOST_LOG_SEV(lg(), debug) << "No actions available for navigation node";
+        return;
+    }
 
     // Execute menu
     QAction* selectedAction = menu.exec(navigationTree_->viewport()->mapToGlobal(pos));
 
-    if (selectedAction == publishAction) {
+    if (selectedAction && selectedAction == publishBundleAction) {
+        const auto bundleCode = index.data(ItemIdRole).toString();
+        BOOST_LOG_SEV(lg(), info) << "Publishing bundle: "
+                                   << bundleCode.toStdString();
+
+        auto* wizard = new PublishBundleWizard(
+            clientManager_, bundleCode, itemText, this);
+        wizard->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Forward published signal (for cache refresh)
+        connect(wizard, &PublishBundleWizard::bundlePublished,
+                this, [this](const QString& bundleCode) {
+            emit datasetsPublished(QStringList{bundleCode});
+        });
+
+        wizard->exec();
+    } else if (selectedAction && selectedAction == publishAction) {
         BOOST_LOG_SEV(lg(), info) << "Publishing " << datasets.size()
                                    << " datasets from navigation node: "
                                    << itemText.toStdString();
 
-        // Open publish dialog with collected datasets
         auto* dialog = new PublishDatasetsDialog(clientManager_, username_, this);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setDatasets(datasets);
 
-        // Forward published signal (for cache refresh)
         connect(dialog, &PublishDatasetsDialog::datasetsPublished,
                 this, &DataLibrarianWindow::datasetsPublished);
 

@@ -21,6 +21,7 @@
 #define ORES_REFDATA_REPOSITORY_PARTY_ENTITY_HPP
 
 #include <string>
+#include <optional>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
@@ -39,8 +40,8 @@ struct party_entity {
     std::string full_name;
     std::string short_code;
     std::string party_type;
-    std::string parent_party_id;
-    std::string business_center_code;
+    std::optional<std::string> parent_party_id;
+    std::optional<std::string> business_center_code;
     std::string status;
     std::string modified_by;
     std::string performed_by;

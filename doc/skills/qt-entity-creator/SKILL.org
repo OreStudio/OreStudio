@@ -230,35 +230,48 @@ The implementation should:
 
 **** Async fetch pattern with exception handling
 
+Use =process_authenticated_request= for typed request/response handling. The
+protocol request must include =offset= and =limit= fields, and the response must
+include =total_available_count=.
+
 #+begin_src cpp
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.comms/net/client_session.hpp"
 
-void Client<Entity>Model::fetch_data() {
+void Client<Entity>Model::fetch_data(std::uint32_t offset, std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<Client<Entity>Model> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .entries = {}, .total_count = 0,
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+    QFuture<FetchResult> future =
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .entries = {}, .total_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            // Build and send request...
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-            if (!response_result) {
-                return {.success = false, .entries = {}, .total_count = 0,
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                // Build typed request with pagination params
+                <component>::messaging::get_<entity>s_request request;
+                request.offset = offset;
+                request.limit = limit;
 
-            // Deserialize response...
-            return {.success = true,
-                    .entries = std::move(response->entries),
-                    .total_count = response->total_count,
-                    .error_message = {}, .error_details = {}};
-        }, "<entity>s");  // Entity name for error messages
-    });
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
+
+                if (!result) {
+                    return {.success = false, .entries = {}, .total_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
+
+                return {.success = true,
+                        .entries = std::move(result-><entity>s),
+                        .total_count = result->total_available_count,
+                        .error_message = {}, .error_details = {}};
+            }, "<entity>s");  // Entity name for error messages
+        });
 
     watcher_->setFuture(future);
 }
@@ -575,6 +588,47 @@ The base class provides:
 - =markAsStale()= - Starts pulse animation and shows stale tooltip
 - =clearStaleIndicator()= - Stops animation and restores normal state
 - =normalRefreshTooltip()= / =staleRefreshTooltip()= - Override for custom tooltips
+
+**** Pagination widget pattern
+
+For entities with large datasets, add a =PaginationWidget= below the table view
+and connect its signals to the model:
+
+#+begin_src cpp
+// In setupUi():
+pagination_widget_ = new PaginationWidget(this);
+layout->addWidget(pagination_widget_);
+
+// In setupConnections():
+connect(pagination_widget_, &PaginationWidget::page_size_changed,
+        this, [this](std::uint32_t size) {
+    model_->set_page_size(size);
+    model_->refresh(true);
+});
+
+connect(pagination_widget_, &PaginationWidget::load_all_requested,
+        this, [this]() {
+    const auto total = model_->total_available_count();
+    if (total > 0 && total <= 1000) {
+        model_->set_page_size(total);
+        model_->refresh(true);
+    }
+});
+
+connect(pagination_widget_, &PaginationWidget::page_requested,
+        this, [this](std::uint32_t offset, std::uint32_t limit) {
+    model_->load_page(offset, limit);
+});
+
+// In onDataLoaded():
+const auto loaded = model_->rowCount();
+const auto total = model_->total_available_count();
+pagination_widget_->update_state(loaded, total);
+pagination_widget_->set_load_all_enabled(
+    loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+#+end_src
+
+Reference: =CurrencyMdiWindow= and =PartyMdiWindow= both implement this pattern.
 
 **** Deletion pattern
 

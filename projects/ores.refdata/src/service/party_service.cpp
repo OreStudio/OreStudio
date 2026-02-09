@@ -34,6 +34,18 @@ std::vector<domain::party> party_service::list_parties() {
     return repo_.read_latest();
 }
 
+std::vector<domain::party> party_service::list_parties(
+    std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing parties with offset=" << offset
+                               << " limit=" << limit;
+    return repo_.read_latest(offset, limit);
+}
+
+std::uint32_t party_service::count_parties() {
+    BOOST_LOG_SEV(lg(), debug) << "Counting parties";
+    return repo_.get_total_party_count();
+}
+
 std::optional<domain::party>
 party_service::find_party(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party: " << id;

@@ -79,8 +79,28 @@ public:
 
     /**
      * @brief Refresh party data from server asynchronously.
+     *
+     * @param replace If true, replace existing data; if false, append.
      */
-    void refresh();
+    void refresh(bool replace = true);
+
+    /**
+     * @brief Load a specific page of party data.
+     *
+     * @param offset Number of records to skip
+     * @param limit Number of records to fetch
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Check if more data can be fetched from the server.
+     */
+    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
+
+    /**
+     * @brief Fetch the next page of data from the server.
+     */
+    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
 
     /**
      * @brief Get party at the specified row.
@@ -89,6 +109,23 @@ public:
      * @return The party, or nullptr if row is invalid.
      */
     const refdata::domain::party* getParty(int row) const;
+
+    /**
+     * @brief Get the page size used for pagination.
+     */
+    std::uint32_t page_size() const { return page_size_; }
+
+    /**
+     * @brief Set the page size for pagination.
+     *
+     * @param size The number of records to fetch per page (1-1000).
+     */
+    void set_page_size(std::uint32_t size);
+
+    /**
+     * @brief Get the total number of records available on the server.
+     */
+    std::uint32_t total_available_count() const { return total_available_count_; }
 
 signals:
     /**
@@ -112,13 +149,18 @@ private:
     struct FetchResult {
         bool success;
         std::vector<refdata::domain::party> parties;
+        std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
+    void fetch_parties(std::uint32_t offset, std::uint32_t limit);
+
     ClientManager* clientManager_;
     std::vector<refdata::domain::party> parties_;
     QFutureWatcher<FetchResult>* watcher_;
+    std::uint32_t page_size_{100};
+    std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using PartyKeyExtractor = std::string(*)(const refdata::domain::party&);

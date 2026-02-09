@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -62,6 +63,23 @@ public:
      * @brief Lists all parties.
      */
     std::vector<domain::party> list_parties();
+
+    /**
+     * @brief Lists parties with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of parties for the requested page.
+     */
+    std::vector<domain::party> list_parties(std::uint32_t offset,
+                                             std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active parties.
+     *
+     * @return Total number of parties.
+     */
+    std::uint32_t count_parties();
 
     /**
      * @brief Finds a party by its ID.

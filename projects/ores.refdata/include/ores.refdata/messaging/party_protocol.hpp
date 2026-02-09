@@ -23,6 +23,7 @@
 #include <span>
 #include <iosfwd>
 #include <vector>
+#include <cstdint>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
@@ -37,9 +38,14 @@ namespace ores::refdata::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all parties.
+ * @brief Request to retrieve parties with pagination support.
  */
 struct get_parties_request final {
+    /// Number of records to skip (0-based)
+    std::uint32_t offset = 0;
+    /// Maximum number of records to return
+    std::uint32_t limit = 100;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_parties_request,
                          ores::utility::serialization::error_code>
@@ -49,10 +55,12 @@ struct get_parties_request final {
 std::ostream& operator<<(std::ostream& s, const get_parties_request& v);
 
 /**
- * @brief Response containing all parties.
+ * @brief Response containing parties with pagination metadata.
  */
 struct get_parties_response final {
     std::vector<domain::party> parties;
+    /// Total number of parties available (not just in this page)
+    std::uint32_t total_available_count = 0;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_parties_response,

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/LeiEntityPicker.hpp"
 
+#include <set>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -32,11 +33,31 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+/**
+ * @brief Custom role for storing the LEI code on model items.
+ */
+constexpr int LeiRole = Qt::UserRole + 1;
+
+/**
+ * @brief Column indices for the visible table.
+ */
+enum Column {
+    Country = 0,
+    Category = 1,
+    EntityLegalName = 2,
+    ColumnCount = 3
+};
+
+}
+
 LeiEntityPicker::LeiEntityPicker(ClientManager* clientManager,
     QWidget* parent)
     : QWidget(parent),
       clientManager_(clientManager),
       searchEdit_(nullptr),
+      countryFilter_(nullptr),
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
@@ -48,25 +69,34 @@ void LeiEntityPicker::setupUI() {
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // Search box
-    auto* searchLayout = new QHBoxLayout();
+    // Filter row: country combo + search box
+    auto* filterLayout = new QHBoxLayout();
+
+    auto* countryLabel = new QLabel("Country:", this);
+    countryFilter_ = new QComboBox(this);
+    countryFilter_->addItem("All Countries");
+    countryFilter_->setMaxVisibleItems(10);
+    countryFilter_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    filterLayout->addWidget(countryLabel);
+    filterLayout->addWidget(countryFilter_);
+
     auto* searchLabel = new QLabel("Search:", this);
     searchEdit_ = new QLineEdit(this);
-    searchEdit_->setPlaceholderText("Filter by entity legal name...");
+    searchEdit_->setPlaceholderText("Filter by entity name...");
     searchEdit_->setClearButtonEnabled(true);
-    searchLayout->addWidget(searchLabel);
-    searchLayout->addWidget(searchEdit_);
-    mainLayout->addLayout(searchLayout);
+    filterLayout->addWidget(searchLabel);
+    filterLayout->addWidget(searchEdit_, 1);
+    mainLayout->addLayout(filterLayout);
 
-    // Table view
-    model_ = new QStandardItemModel(0, 4, this);
-    model_->setHorizontalHeaderLabels({"LEI", "Entity Legal Name",
-        "Country", "Status"});
+    // Table view: Country, Category, Entity Legal Name
+    model_ = new QStandardItemModel(0, Column::ColumnCount, this);
+    model_->setHorizontalHeaderLabels({"Country", "Category",
+        "Entity Legal Name"});
 
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    proxyModel_->setFilterKeyColumn(1);
+    proxyModel_->setFilterKeyColumn(Column::EntityLegalName);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     tableView_ = new QTableView(this);
@@ -87,6 +117,8 @@ void LeiEntityPicker::setupUI() {
     // Connections
     connect(searchEdit_, &QLineEdit::textChanged,
         this, &LeiEntityPicker::onSearchTextChanged);
+    connect(countryFilter_, &QComboBox::currentIndexChanged,
+        this, &LeiEntityPicker::onCountryFilterChanged);
     connect(tableView_->selectionModel(),
         &QItemSelectionModel::selectionChanged,
         this, &LeiEntityPicker::onSelectionChanged);
@@ -141,20 +173,39 @@ void LeiEntityPicker::load() {
                 return;
             }
 
+            // Collect distinct countries for the filter combo.
+            std::set<QString> countries;
+
             // Populate model
             self->model_->removeRows(0, self->model_->rowCount());
             for (const auto& entity : result.entities) {
-                QList<QStandardItem*> row;
-                row.append(new QStandardItem(
-                    QString::fromStdString(entity.lei)));
-                row.append(new QStandardItem(
-                    QString::fromStdString(entity.entity_legal_name)));
-                row.append(new QStandardItem(
-                    QString::fromStdString(entity.country)));
-                row.append(new QStandardItem(
-                    QString::fromStdString(entity.entity_status)));
-                self->model_->appendRow(row);
+                const auto country =
+                    QString::fromStdString(entity.country);
+                countries.insert(country);
+
+                auto* countryItem = new QStandardItem(country);
+                countryItem->setData(
+                    QString::fromStdString(entity.lei), LeiRole);
+                auto* categoryItem = new QStandardItem(
+                    QString::fromStdString(entity.entity_category));
+                auto* nameItem = new QStandardItem(
+                    QString::fromStdString(entity.entity_legal_name));
+
+                self->model_->appendRow(
+                    {countryItem, categoryItem, nameItem});
             }
+
+            // Populate country filter combo (preserve current selection).
+            const auto current = self->countryFilter_->currentText();
+            self->countryFilter_->blockSignals(true);
+            self->countryFilter_->clear();
+            self->countryFilter_->addItem("All Countries");
+            for (const auto& c : countries)
+                self->countryFilter_->addItem(c);
+
+            const int idx = self->countryFilter_->findText(current);
+            self->countryFilter_->setCurrentIndex(idx > 0 ? idx : 0);
+            self->countryFilter_->blockSignals(false);
 
             const int count = static_cast<int>(result.entities.size());
             self->statusLabel_->setText(
@@ -187,10 +238,42 @@ void LeiEntityPicker::load() {
     watcher->setFuture(future);
 }
 
-void LeiEntityPicker::onSearchTextChanged(const QString& text) {
+void LeiEntityPicker::onSearchTextChanged(const QString& /*text*/) {
+    applyFilters();
+}
+
+void LeiEntityPicker::onCountryFilterChanged(int /*index*/) {
+    applyFilters();
+}
+
+void LeiEntityPicker::applyFilters() {
+    const auto searchText = searchEdit_->text();
+    const auto country = countryFilter_->currentText();
+    const bool filterByCountry =
+        (countryFilter_->currentIndex() > 0);
+
+    // Build a regex that matches the search text on the name column.
+    proxyModel_->setFilterKeyColumn(Column::EntityLegalName);
     proxyModel_->setFilterRegularExpression(
-        QRegularExpression(QRegularExpression::escape(text),
+        QRegularExpression(QRegularExpression::escape(searchText),
             QRegularExpression::CaseInsensitiveOption));
+
+    // For country filtering, iterate source rows and hide/show.
+    // QSortFilterProxyModel only supports one filter column natively,
+    // so we set row visibility via a custom filter approach:
+    // Override isn't possible after construction, so we manually hide
+    // rows that don't match the country filter.
+    if (filterByCountry) {
+        for (int row = 0; row < proxyModel_->rowCount(); ++row) {
+            const auto proxyIndex = proxyModel_->index(row, Column::Country);
+            const auto rowCountry = proxyModel_->data(proxyIndex).toString();
+            tableView_->setRowHidden(row, rowCountry != country);
+        }
+    } else {
+        for (int row = 0; row < proxyModel_->rowCount(); ++row) {
+            tableView_->setRowHidden(row, false);
+        }
+    }
 }
 
 void LeiEntityPicker::onSelectionChanged() {
@@ -203,10 +286,11 @@ void LeiEntityPicker::onSelectionChanged() {
     }
 
     const auto& index = indexes.first();
+    // LEI is stored as UserRole data on the Country column item.
     selectedLei_ = proxyModel_->data(
-        proxyModel_->index(index.row(), 0)).toString();
+        proxyModel_->index(index.row(), Column::Country), LeiRole).toString();
     selectedName_ = proxyModel_->data(
-        proxyModel_->index(index.row(), 1)).toString();
+        proxyModel_->index(index.row(), Column::EntityLegalName)).toString();
 
     BOOST_LOG_SEV(lg(), debug) << "Entity selected: "
                                << selectedLei_.toStdString()

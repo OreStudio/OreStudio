@@ -39,7 +39,7 @@ std::vector<std::byte> lei_entity_summary::serialize() const {
     writer::write_string(buffer, lei);
     writer::write_string(buffer, entity_legal_name);
     writer::write_string(buffer, country);
-    writer::write_string(buffer, entity_status);
+    writer::write_string(buffer, entity_category);
     return buffer;
 }
 
@@ -59,9 +59,9 @@ lei_entity_summary::deserialize(std::span<const std::byte>& data) {
     if (!country_result) return std::unexpected(country_result.error());
     result.country = *country_result;
 
-    auto status_result = reader::read_string(data);
-    if (!status_result) return std::unexpected(status_result.error());
-    result.entity_status = *status_result;
+    auto category_result = reader::read_string(data);
+    if (!category_result) return std::unexpected(category_result.error());
+    result.entity_category = *category_result;
 
     return result;
 }

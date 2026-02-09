@@ -37,7 +37,7 @@ struct lei_entity_summary final {
     std::string lei;
     std::string entity_legal_name;
     std::string country;
-    std::string entity_status;
+    std::string entity_category;
 
     std::vector<std::byte> serialize() const;
     static std::expected<lei_entity_summary, ores::utility::serialization::error_code>

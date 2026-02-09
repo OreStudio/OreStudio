@@ -22,6 +22,8 @@
 \ir ./dq_functions_drop.sql
 
 -- Publications (bundle before individual)
+\ir ./dq_lei_parties_publish_drop.sql
+\ir ./dq_lei_counterparties_publish_drop.sql
 \ir ./dq_bundle_publication_drop.sql
 \ir ./dq_publication_drop.sql
 

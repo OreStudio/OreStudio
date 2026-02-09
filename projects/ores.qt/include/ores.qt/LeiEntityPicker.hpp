@@ -22,6 +22,7 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QTableView>
 #include <QLabel>
 #include <QStandardItemModel>
@@ -104,13 +105,16 @@ signals:
 
 private slots:
     void onSearchTextChanged(const QString& text);
+    void onCountryFilterChanged(int index);
     void onSelectionChanged();
 
 private:
     void setupUI();
+    void applyFilters();
 
     ClientManager* clientManager_;
     QLineEdit* searchEdit_;
+    QComboBox* countryFilter_;
     QTableView* tableView_;
     QStandardItemModel* model_;
     QSortFilterProxyModel* proxyModel_;

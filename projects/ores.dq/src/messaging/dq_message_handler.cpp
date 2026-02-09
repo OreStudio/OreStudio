@@ -2541,8 +2541,9 @@ handle_get_lei_entities_summary_request(std::span<const std::byte> payload,
 
     try {
         std::string sql =
-            "SELECT lei, entity_legal_name, entity_legal_address_country, entity_entity_status "
-            "FROM ores_dq_lei_entities_artefact_tbl";
+            "SELECT DISTINCT lei, entity_legal_name,"
+            " entity_legal_address_country, entity_entity_category"
+            " FROM ores_dq_lei_entities_artefact_tbl";
 
         const auto& filter = request_result->search_filter;
         if (!filter.empty()) {
@@ -2562,7 +2563,7 @@ handle_get_lei_entities_summary_request(std::span<const std::byte> payload,
                 entity.lei = row[0].value_or("");
                 entity.entity_legal_name = row[1].value_or("");
                 entity.country = row[2].value_or("");
-                entity.entity_status = row[3].value_or("");
+                entity.entity_category = row[3].value_or("");
                 response.entities.push_back(std::move(entity));
             }
         }

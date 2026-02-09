@@ -1,0 +1,6511 @@
+{
+  "description": "Anchor LEIs from regulatory lists for GLEIF subset extraction",
+  "sources": [
+    {
+      "id": "ecb_ssm",
+      "name": "ECB SSM Significant Institutions",
+      "file": "ssm.listofsupervisedentities202512.en.xlsx",
+      "url": "https://www.bankingsupervision.europa.eu/framework/supervised-banks/html/index.en.html"
+    },
+    {
+      "id": "uk_pra",
+      "name": "Bank of England PRA Regulated Banks",
+      "file": "Banks List 2602.csv",
+      "url": "https://www.bankofengland.co.uk/prudential-regulation/authorisations/which-firms-does-the-pra-regulate"
+    },
+    {
+      "id": "manual",
+      "name": "Hand-curated G-SIB and major institution LEIs",
+      "url": "https://www.fsb.org/2024/11/2024-list-of-global-systemically-important-banks-g-sibs/"
+    }
+  ],
+  "total_leis": 1081,
+  "leis": [
+    {
+      "lei": "529900UKZBMDBDZIXD62",
+      "name": "Addiko Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900S9YO2JHTIIDG38",
+      "name": "BAWAG Group AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900ICA8XQYGIKR372",
+      "name": "BAWAG P.S.K. Bank für Arbeit und Wirtschaft und Österreichische Postsparkasse Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900GZ42KYYPY7HZ06",
+      "name": "Bausparkasse der österreichischen Sparkassen Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900ICKT0K5E1BTY38",
+      "name": "CA Auto Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900Z9G1PRYZSX4O63",
+      "name": "Die Zweite Wiener Vereins-Sparcasse",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900HC8KY7N0HNY191",
+      "name": "Dornbirner Sparkasse Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "549300HUKIA1IZQHFZ83",
+      "name": "Erste Bank der oesterreichischen Sparkassen AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "PQOH26KWDF7CG10L6792",
+      "name": "Erste Group Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "52990080J4AQ0O07WO29",
+      "name": "KREMSER BANK UND SPARKASSEN AKTIENGESELLSCHAFT",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900TXPMGGJR19EY42",
+      "name": "Kathrein Privatbank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900TKQRJNCFUQI507",
+      "name": "Kärntner Sparkasse Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900L8FZJJC3JGYK56",
+      "name": "Lienzer Sparkasse AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900SXEWPJ1MRRX537",
+      "name": "RAIFFEISEN-HOLDING NIEDERÖSTERREICH-WIEN registrierte Genossenschaft mit beschränkter Haftung",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900GPOO9ISPD1EE83",
+      "name": "RAIFFEISENLANDESBANK NIEDERÖSTERREICH-WIEN AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "9ZHRYM6F437SQJ6OUG95",
+      "name": "Raiffeisen Bank International AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900WEWTWSNCK1VE42",
+      "name": "Raiffeisen Bausparkasse Gesellschaft m.b.H.",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900M2F7D5795H1A49",
+      "name": "Raiffeisen Digital Bank AG (RDB)",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900XSTAE561178282",
+      "name": "Raiffeisenbankengruppe OÖ Verbund eGen",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "I6SS27Q1Q3385V753S50",
+      "name": "Raiffeisenlandesbank Oberösterreich Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900408LYNP1ETAV33",
+      "name": "SPARKASSE FRANKENMARKT AKTIENGESELLSCHAFT",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "549300FVPWXG57TWN385",
+      "name": "SPARKASSE NIEDERÖSTERREICH MITTE WEST AKTIENGESELLSCHAFT",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299000I7Y60A8273788",
+      "name": "Santander Consumer Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900WIJT833AWXWQ36",
+      "name": "Santander Consumer Holding Austria GmbH",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900ESWL1AEC189F69",
+      "name": "Schoellerbank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900AZFXT8865M6B67",
+      "name": "Spar-Finanz Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "549300X1FFW399TI1820",
+      "name": "Sparkasse Baden",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299006FZT79EKTMK255",
+      "name": "Sparkasse Bludenz Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900IZ69LR7SRU9V71",
+      "name": "Sparkasse Bregenz Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900XDISRMBH5UBL39",
+      "name": "Sparkasse Eferding-Peuerbach-Waizenkirchen",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299004LQR2P5LDTH233",
+      "name": "Sparkasse Feldkirchen/Kärnten",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900HFS7EV7VIALL43",
+      "name": "Sparkasse Hainburg-Bruck-Neusiedl Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900F5XFD7D1PQS086",
+      "name": "Sparkasse Haugsdorf",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900LC50TXB405RY86",
+      "name": "Sparkasse Herzogenburg-Neulengbach Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900YFDTTO5R71VW86",
+      "name": "Sparkasse Horn-Ravelsbach-Kirchberg Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900WSPO88HBNY6S36",
+      "name": "Sparkasse Imst AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900L5GWPLRF3T6825",
+      "name": "Sparkasse Korneuburg AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900PMGP6HWEDQW939",
+      "name": "Sparkasse Kufstein Tiroler Sparkasse von 1877",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299009MP8BA1UW56F78",
+      "name": "Sparkasse Lambach Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900Z4R67VBTGVH491",
+      "name": "Sparkasse Langenlois",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "52990073IQ71941QXH68",
+      "name": "Sparkasse Mittersill Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900JJ5V5FF6B1BP91",
+      "name": "Sparkasse Mühlviertel-West Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900T3GEQTBTM4VF20",
+      "name": "Sparkasse Mürzzuschlag Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900QU5N4XMZ1M8Y58",
+      "name": "Sparkasse Neuhofen Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900JSHYRHGDZL1753",
+      "name": "Sparkasse Neunkirchen",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "V0VY22PV9D0HFTF8EI62",
+      "name": "Sparkasse Oberösterreich Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299004T81B4514RAQ13",
+      "name": "Sparkasse Pottenstein N.Ö.",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900ZKIMUP9PHZIY83",
+      "name": "Sparkasse Poysdorf AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900A3V7234Q3DNK66",
+      "name": "Sparkasse Pregarten - Unterweißenbach AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900XW4Z6DFWK42X08",
+      "name": "Sparkasse Pöllau AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299001G7RXMGFNQBO33",
+      "name": "Sparkasse Rattenberg Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299002Q3XW9T7PSYJ07",
+      "name": "Sparkasse Reutte AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900JQ18IUYNKUIP97",
+      "name": "Sparkasse Ried im Innkreis-Haag am Hausruck",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299006ORDZE7VB1WT33",
+      "name": "Sparkasse Salzkammergut AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900VABV69Q757MP34",
+      "name": "Sparkasse Scheibbs AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900P4VO14SV3AUU56",
+      "name": "Sparkasse Schwaz AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900ZOABQITI07W206",
+      "name": "Sparkasse Voitsberg-Köflach Bankaktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299007CQAM6HN45CF82",
+      "name": "Sparkasse der Gemeinde Egg",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900XA7RHLU8ECBK28",
+      "name": "Sparkasse der Stadt Amstetten AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299007FR13EUF82L493",
+      "name": "Sparkasse der Stadt Feldkirch",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299005F2A4SAXE4PE25",
+      "name": "Sparkasse der Stadt Kitzbühel",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "549300DVPJYGNF2P7B03",
+      "name": "Steiermärkische Bank und Sparkassen Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900HGWNOHNJP3D185",
+      "name": "Tiroler Sparkasse Bankaktiengesellschaft Innsbruck",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "D1HEB8VEU6D9M8ZUXG17",
+      "name": "UniCredit Bank Austria AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900Z809LC9QNOR649",
+      "name": "VOLKSBANK VORARLBERG e.Gen.",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900GXZM8IKP4S7O11",
+      "name": "Volksbank Kärnten eG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900TJVZO6PPBYKU80",
+      "name": "Volksbank Niederösterreich AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5299002O43DCLC2NJV75",
+      "name": "Volksbank Oberösterreich AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900P1U3D3OR1TG879",
+      "name": "Volksbank Salzburg eG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900AB1TM69EG83E75",
+      "name": "Volksbank Steiermark AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900CYHTDIZTXAFW51",
+      "name": "Volksbank Tirol AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900D4CD6DIB3CI904",
+      "name": "Volksbank Wien AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900K5H0F7K9SBO784",
+      "name": "Waldviertler Sparkasse Bank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900TZVDFQV1D69R57",
+      "name": "Wiener Neustädter Sparkasse",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900TPGMMB7GRJQB55",
+      "name": "start:bausparkasse AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "529900X1F1MUXHHDIV43",
+      "name": "Österreichische Ärzte- und Apothekerbank AG",
+      "source": "ecb_ssm",
+      "country": "Austria"
+    },
+    {
+      "lei": "5493009ML6YX83YHC820",
+      "name": "Argenta Bank- en Verzekeringsgroep nv",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "A6NZLYKYN1UV7VVGFX65",
+      "name": "Argenta Spaarbank NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "549300F0CVELHBU9A156",
+      "name": "BANQUE NAGELMACKERS S.A.",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "KGCEPHLVVKVRZYO1T647",
+      "name": "BNP Paribas Fortis SA ; BNP Paribas Fortis NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "549300NBLHT5Z7ZV1241",
+      "name": "Banque Degroof Petercam SA ; Bank Degroof Petercam NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "549300OHZQPOY65BN167",
+      "name": "Banque Transatlantique Belgium SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "A5GWLFH3KM7YV2SFQL84",
+      "name": "Belfius Banque SA ; Belfius Bank NV ; Belfius Bank SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "529900GQWNQZIWLG8D46",
+      "name": "Beobank NV ; Beobank SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "DVCTKZJG5QM5XGM4TR05",
+      "name": "CBC Banque SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "549300DYPOFMXOR7XM56",
+      "name": "Crelan SA ; Crelan NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "699400S1FXIPB5VFO165",
+      "name": "CrelanCo SC ; CrelanCo CV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "5493007JPYB9SW6CSB23",
+      "name": "Europabank SA ; Europabank NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "JLS56RAMYQZECFUF2G44",
+      "name": "ING Belgium SA ; ING België NV ; ING Belgique SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "5493008QOCP58OLEN998",
+      "name": "Investeringsmaatschappij Argenta NV ; Société d'investissements Argenta SA ; Investierungsgesellschaft Argenta AG",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "6B2PBRV1FCJDMR45RZ53",
+      "name": "KBC Bank NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "213800X3Q9LSAKRUWY91",
+      "name": "KBC Group NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "2138005SP78ELT822P61",
+      "name": "KBC Securities NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "529900MATKY89NT0U738",
+      "name": "MeDirect Bank SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "MMYX0N4ZEZ13Z4XCG897",
+      "name": "The Bank of New York Mellon SA/NV",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "549300U1YXDFKMDU7D20",
+      "name": "UniCredit NV/SA",
+      "source": "ecb_ssm",
+      "country": "Belgium"
+    },
+    {
+      "lei": "529900GEH0DAUTAXUA94",
+      "name": "DSK Bank AD",
+      "source": "ecb_ssm",
+      "country": "Bulgaria"
+    },
+    {
+      "lei": "549300IRGNL8Q3O8Y413",
+      "name": "Eurobank Bulgaria AD",
+      "source": "ecb_ssm",
+      "country": "Bulgaria"
+    },
+    {
+      "lei": "549300Z7V2WOFIMUEK50",
+      "name": "UniCredit Bulbank AD",
+      "source": "ecb_ssm",
+      "country": "Bulgaria"
+    },
+    {
+      "lei": "5299000PCY1EP8QJFV48",
+      "name": "United Bulgarian Bank AD",
+      "source": "ecb_ssm",
+      "country": "Bulgaria"
+    },
+    {
+      "lei": "RG3IZJKPYQ4H6IQPIC08",
+      "name": "Addiko Bank d.d.",
+      "source": "ecb_ssm",
+      "country": "Croatia"
+    },
+    {
+      "lei": "549300A2F46GR0UOM390",
+      "name": "Erste&Steiermärkische Bank d.d.",
+      "source": "ecb_ssm",
+      "country": "Croatia"
+    },
+    {
+      "lei": "549300ZHFZ4CSK7VS460",
+      "name": "Privredna banka Zagreb d.d.",
+      "source": "ecb_ssm",
+      "country": "Croatia"
+    },
+    {
+      "lei": "529900I1UZV70CZRAU55",
+      "name": "Raiffeisenbank Austria d.d.",
+      "source": "ecb_ssm",
+      "country": "Croatia"
+    },
+    {
+      "lei": "PRNXTNXHBI0TSY1V8P17",
+      "name": "Zagrebačka banka d.d.",
+      "source": "ecb_ssm",
+      "country": "Croatia"
+    },
+    {
+      "lei": "213800HDJ876ACJXXD05",
+      "name": "AikGroup (CY) Limited",
+      "source": "ecb_ssm",
+      "country": "Cyprus"
+    },
+    {
+      "lei": "529900VS0F7BA91P4I60",
+      "name": "Alpha Bank Cyprus Ltd",
+      "source": "ecb_ssm",
+      "country": "Cyprus"
+    },
+    {
+      "lei": "PQ0RAP85KK9Z75ONZW93",
+      "name": "Bank of Cyprus Public Company Ltd",
+      "source": "ecb_ssm",
+      "country": "Cyprus"
+    },
+    {
+      "lei": "CXUHEGU3MADZ2CEV7C11",
+      "name": "Eurobank Limited",
+      "source": "ecb_ssm",
+      "country": "Cyprus"
+    },
+    {
+      "lei": "5493008QZPPHVJ8Q4F45",
+      "name": "National Bank of Greece (Cyprus) Ltd",
+      "source": "ecb_ssm",
+      "country": "Cyprus"
+    },
+    {
+      "lei": "529900JG015JC10LED24",
+      "name": "AS LHV Group",
+      "source": "ecb_ssm",
+      "country": "Estonia"
+    },
+    {
+      "lei": "529900GJOSVHI055QR67",
+      "name": "AS LHV Pank",
+      "source": "ecb_ssm",
+      "country": "Estonia"
+    },
+    {
+      "lei": "549300ND1MQ8SNNYMJ22",
+      "name": "AS SEB Pank",
+      "source": "ecb_ssm",
+      "country": "Estonia"
+    },
+    {
+      "lei": "213800JD2L89GGG7LF07",
+      "name": "Luminor Bank AS",
+      "source": "ecb_ssm",
+      "country": "Estonia"
+    },
+    {
+      "lei": "213800RZWHE5EUX9R444",
+      "name": "Luminor Holding AS",
+      "source": "ecb_ssm",
+      "country": "Estonia"
+    },
+    {
+      "lei": "549300PHQZ4HL15HH975",
+      "name": "Swedbank AS",
+      "source": "ecb_ssm",
+      "country": "Estonia"
+    },
+    {
+      "lei": "74370073K87ST7Z3KJ70",
+      "name": "Alavieskan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700I7CL9CIMW1BB86",
+      "name": "Andelsbanken Raseborg",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "74370027F0X7YDR8AQ33",
+      "name": "Andelsbanken för Åland",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700QCC7N8MCA6GD92",
+      "name": "Botnia Andelsbank",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700UZ1VOLOGO1OJ70",
+      "name": "Etelä-Pirkanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700B7Q12N6S7N7X40",
+      "name": "Etelä-Pohjanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437005JG3Z3WOS6XW29",
+      "name": "Haapamäen Seudun Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700KC1KWMCS2BWH13",
+      "name": "Hämeen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "74370055K4A4WHBSWC21",
+      "name": "Janakkalan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700IX3V0DULG0E310",
+      "name": "Joki-Pohjanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700V2NMNCS085TJ90",
+      "name": "Jokilaaksojen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700YIQDI229VCF807",
+      "name": "Jokiläänin Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700I70YHRWX6KNW39",
+      "name": "Jokirannikon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437007VWK7OVH2L9M20",
+      "name": "Järvi-Hämeen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700CYLA0M84DD0R95",
+      "name": "Järvi-Pohjanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700MHNVY2ZL88EM50",
+      "name": "Kaakkois-Suomen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700HPFK5TOZEID048",
+      "name": "Kainuun Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700JLRONKNUWLYD47",
+      "name": "Kangasniemen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "74370015ZE09JO490U23",
+      "name": "Kemin Seudun Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700KP81EUI8819583",
+      "name": "Kerimäen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437005U02E0MJI4BB87",
+      "name": "Keski-Pohjanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "74370097ZDC1B7CS5F05",
+      "name": "Keski-Suomen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700ZU856U8XLQZK68",
+      "name": "Koillismaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700QZB28DPS5GCD07",
+      "name": "Korpilahden Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700DQL4AMH4DDIP61",
+      "name": "Kuhmon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "529900HEKOENJHPNN480",
+      "name": "Kuntarahoitus Oyj",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700Q1Z9Z9OYVQA133",
+      "name": "Lounais-Suomen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700Q1LWZ4Y0EKR428",
+      "name": "Lounaismaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700KKSGN4OMWDGL22",
+      "name": "Lounaisrannikon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437009KVZK8X0D99654",
+      "name": "Länsi-Suomen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700M8IDLE7OUJGL97",
+      "name": "Mouhijärven Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700KOC7ONKBMR4525",
+      "name": "Multian Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700XF2UPB5Y351629",
+      "name": "Nagu Andelsbank",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437008TJBCASFTJJY74",
+      "name": "Niinijokivarren Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "529900ODI3047E2LIV03",
+      "name": "Nordea Bank Abp",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437001LESKGLAEOEU84",
+      "name": "Nordea Kiinnitysluottopankki Oyj",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "529900Z872020RO6J884",
+      "name": "Nordea Rahoitus Suomi Oy",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437003B5WFBOIEFY714",
+      "name": "OP Osuuskunta",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700ABSYTMKL8IF439",
+      "name": "OP Vähittäisasiakkaat Oyj",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "549300NQ588N7RWKBP98",
+      "name": "OP Yrityspankki Oyj",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700IJXAGL8TGFRC33",
+      "name": "OP-Asuntoluottopankki Oyj",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700RBFI9Y3A2EG815",
+      "name": "Osuuspankki Salpa",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700VY2W3QJGFLPT18",
+      "name": "Osuuspankki Vakka-Auranmaa",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437008NJB465JRJ8U12",
+      "name": "Petäjäveden Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700TIOTHSZS7MTG50",
+      "name": "Pirkanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437000YE37J35JJA860",
+      "name": "Pohjois-Karjalan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700GFD1LTRFQ5F539",
+      "name": "Pohjois-Savon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700VPGD5G0QF6TR40",
+      "name": "Pohjolan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437007LJK24K8KRH254",
+      "name": "Polvijärven Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700IQJN2H8TL25G52",
+      "name": "Punkalaitumen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437004C3FH18M3RRP74",
+      "name": "Rantasalmen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437006A4VPAI9NZ1745",
+      "name": "Rymättylän Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700APEEB4897EDQ84",
+      "name": "Sataharjun Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700HC5C388KB3MP75",
+      "name": "Satapirkan OP",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "74370014NEIOLLVU6U43",
+      "name": "Savonmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700GYCIRJVFJ14E25",
+      "name": "Siikajoen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700GB87YRXFF28K90",
+      "name": "Suomenselän Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700XQEP1UEYJUNS65",
+      "name": "Suur-Savon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700KZG4DRVNYYRP06",
+      "name": "Sydän-Savon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700UXY2MX54OLKB86",
+      "name": "Tervolan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700IV1RKODV0CZL73",
+      "name": "Turun Seudun Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700M7JFX3LTJH7K88",
+      "name": "Uudenmaan OP",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700K3BR9RSDT06G37",
+      "name": "Vasa Andelsbank",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700OD43J9JBTF4114",
+      "name": "Vehmersalmen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700GJ4UN7ZRKOHU29",
+      "name": "Ylä-Hämeen Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437008T38NCFUZK1W68",
+      "name": "Ylä-Pirkanmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "7437006SV8L2TOJ65K82",
+      "name": "Ylä-Savon Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "743700JBSBLALUKAVO03",
+      "name": "Ylä-Uudenmaan Osuuspankki",
+      "source": "ecb_ssm",
+      "country": "Finland"
+    },
+    {
+      "lei": "96950010FL2T1TJKR531",
+      "name": "Amundi",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695004W30Q4EEGQ1Y09",
+      "name": "Amundi finance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500EYUH381IUM2589",
+      "name": "Arkéa Direct Bank",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003L69OAFQ15LD18",
+      "name": "Arkéa Home Loans SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500ZQ9ZCXKXACF956",
+      "name": "Arkéa banking services",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500LZ8VV8HS83UI11",
+      "name": "Arkéa banque entreprises et institutionnels",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695002BGH4R9KJFC936",
+      "name": "Arkéa public sector SCF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500LC14MGH2LT8K81",
+      "name": "Auxifip",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500E7V019H9NP7427",
+      "name": "Ayvens",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500PEV9ULDOND9384",
+      "name": "BNP Paribas Antilles Guyane",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "6EWKU0FGVX5QQJHFGT48",
+      "name": "BNP Paribas Financial Markets",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500O7DJZNM0F0Z036",
+      "name": "BNP Paribas Home Loan SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695008XBRCWFEZ8B440",
+      "name": "BNP Paribas Lease Group",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VHT1ZNPVWOYF63",
+      "name": "BNP Paribas Personal Finance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695005XT323C6A7GN39",
+      "name": "BNP Paribas Réunion",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "R0MUWSFPU8MPRO8K5P83",
+      "name": "BNP Paribas S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695007YFLSFQ43HNC76",
+      "name": "BPCE Bail",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500XQTL79VHO3DZ93",
+      "name": "BPCE Factor",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500T4TDGHRQWB7P58",
+      "name": "BPCE International et Outre-Mer S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003SC48YQ0POQD44",
+      "name": "BPCE Lease",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500X4B1N5NA7VL398",
+      "name": "BPCE Lease Immo",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FPMX32U8Y45C30",
+      "name": "BPCE Payment Services",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695005MSX1OYEMGDF46",
+      "name": "BPCE S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500T1UBNNTYVWOS04",
+      "name": "BPCE SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "NICH5Q04ADUV9SN3Q390",
+      "name": "BRED - Banque Populaire",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GRYRLGR28CAX66",
+      "name": "Banque BCP",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500QH3DQ56ELDMG12",
+      "name": "Banque CIC Est",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500PLBHFXRDQ2T644",
+      "name": "Banque CIC Nord-Ouest",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500Q39EWQJXXGQB80",
+      "name": "Banque CIC Ouest",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500W27MXOYZQRB449",
+      "name": "Banque CIC Sud-Ouest",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500X6PPLAEU0GBV79",
+      "name": "Banque Chalus",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950070V8OK5HMTM949",
+      "name": "Banque Edel S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695006OH2J2YVVCPY96",
+      "name": "Banque Européenne du Crédit Mutuel",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "VBHFXSYT7OG62HNT8T76",
+      "name": "Banque Fédérative du Crédit Mutuel",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500Q0AKBOIX5OK547",
+      "name": "Banque Internationale De Commerce - BIC BRED",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "EJ3P8B7HPQFKAH6YME79",
+      "name": "Banque Palatine",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500EVOBAGHKZEXA33",
+      "name": "Banque Populaire Alsace Lorraine Champagne",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FVXC72N72X9J71",
+      "name": "Banque Populaire Aquitaine Centre Atlantique",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500JM7VIGQIPZOL49",
+      "name": "Banque Populaire Auvergne Rhône-Alpes",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500QFU43JUMEBY949",
+      "name": "Banque Populaire Bourgogne Franche-Comté",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500WFZ7C2IBN9TB80",
+      "name": "Banque Populaire Grand Ouest",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500NJ02LC5HAFDY89",
+      "name": "Banque Populaire Méditerranée",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500W2MGVVW9OKB478",
+      "name": "Banque Populaire Occitane",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500W8SBCXNX1DG443",
+      "name": "Banque Populaire Rives de Paris",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500W7Y2VW04VB8943",
+      "name": "Banque Populaire Val de France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500RVNUVNP6SCY284",
+      "name": "Banque Populaire du Nord",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VRA7FNH5YBQJ98",
+      "name": "Banque Populaire du Sud",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500JK1O192KI3E882",
+      "name": "Banque Stellantis France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500U61BV3EB4B7I48",
+      "name": "Banque de Savoie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500RJUSFHLNM8LI47",
+      "name": "Banque du Bâtiment et des Travaux Publics - BTP Banque",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500K8IQ975QPQKN89",
+      "name": "Banque française commerciale Océan Indien",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FZ69MUJG4X7Z43",
+      "name": "Banque transatlantique S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695005HLMTFJJDOB797",
+      "name": "Bforbank",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "549300FH0WJAPEHTIQ77",
+      "name": "BofA Securities Europe SA",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003SJ7Z9C9HIGV14",
+      "name": "Boursorama",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500STN7T9MRUMJ267",
+      "name": "Bpifrance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500SGZEL04ORYBK95",
+      "name": "Bred Cofilease",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500OCJGH64CBUIY13",
+      "name": "Bred Gestion",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GDYGB7Y20PP765",
+      "name": "CA Consumer Finance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500IHDSNRRY5LDB67",
+      "name": "CA Indosuez",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950023SCR9X9F3L662",
+      "name": "CACEIS Bank",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500OLD4M3NDWVC189",
+      "name": "CACEIS S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500W8LGZQUL2KL242",
+      "name": "CASDEN Banque Populaire",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VFRBX1W3Y3XS80",
+      "name": "CCF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500ULNMJWJWCKM704",
+      "name": "CCF Holding",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500HCJLWDO4YCYT40",
+      "name": "CCF SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950015J69CVHEL3Z57",
+      "name": "CNH Industrial Capital Europe",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500CXBDY2KMHP0J53",
+      "name": "Caisse Centrale du Crédit Mutuel",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "549300E6W08778I4OW85",
+      "name": "Caisse Française de Financement Local",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500A2J49LYGX9NS83",
+      "name": "Caisse Fédérale du Crédit Mutuel Océan",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "23B6332KMR0JIZLJG565",
+      "name": "Caisse Fédérale du Crédit Mutuel de Maine-Anjou et Basse-Normandie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500YOM7PBQMJLNE66",
+      "name": "Caisse de Bretagne de Crédit Mutuel Agricole",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500A9SZ8YP1810S21",
+      "name": "Caisse d’Épargne et de Prévoyance Aquitaine Poitou- Charentes",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500SJXM8MW32ZVG75",
+      "name": "Caisse d’Épargne et de Prévoyance Bretagne-Pays de Loire",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695005B0IXNAZ11QL51",
+      "name": "Caisse d’Épargne et de Prévoyance Côte d’Azur",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500JJWO4PQG0R1C58",
+      "name": "Caisse d’Épargne et de Prévoyance Grand Est Europe",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GIUTUIEDJHFL17",
+      "name": "Caisse d’Épargne et de Prévoyance Hauts de France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500W34S6NCZWYBV47",
+      "name": "Caisse d’Épargne et de Prévoyance Ile-de-France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500XVHN9Z1Z1Y1358",
+      "name": "Caisse d’Épargne et de Prévoyance Loire-Centre",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695006UH4BR9VH36947",
+      "name": "Caisse d’Épargne et de Prévoyance Loire-Drôme- Ardèche",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695007N7RATI6VK7E92",
+      "name": "Caisse d’Épargne et de Prévoyance Normandie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500TU5ZMYBIWP0R51",
+      "name": "Caisse d’Épargne et de Prévoyance Provence-Alpes- Corse",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695009GVHASHCJ1D122",
+      "name": "Caisse d’Épargne et de Prévoyance de Bourgogne Franche-Comté",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500L38QMPKJ554U34",
+      "name": "Caisse d’Épargne et de Prévoyance de Midi-Pyrénées",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VR2NA6ANMTXH21",
+      "name": "Caisse d’Épargne et de Prévoyance de Rhône-Alpes",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695001BN7B574TIZH43",
+      "name": "Caisse d’Épargne et de Prévoyance du Languedoc Roussillon",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695001WIZU5SWHBP423",
+      "name": "Caisse d’Épargne et de Prévoyance d’Auvergne et du Limousin",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500LFTDNMONT2EP08",
+      "name": "Caisse fédérale de Crédit Mutuel",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VCC5OCQHSHU906",
+      "name": "Caisse régionale de crédit agricole mutuel Alsace Vosges",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500B5DNR7Q1ACGD23",
+      "name": "Caisse régionale de crédit agricole mutuel Atlantique Vendée",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FYEXW795NPJO79",
+      "name": "Caisse régionale de crédit agricole mutuel Brie Picardie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950001JKROZEF62G96",
+      "name": "Caisse régionale de crédit agricole mutuel Centre Loire",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500WJ4V0WNG8Q5L42",
+      "name": "Caisse régionale de crédit agricole mutuel Centre-Est",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500WME8Y1C3PFJO94",
+      "name": "Caisse régionale de crédit agricole mutuel Charente-Maritime Deux-Sèvres",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695006R5WWBX118FA17",
+      "name": "Caisse régionale de crédit agricole mutuel Charente-Périgord (Crédit agricole Charente-Périgord)",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500KBBNBZ7MIZAX74",
+      "name": "Caisse régionale de crédit agricole mutuel Loire - Haute-Loire",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500KWT26BST7DUO80",
+      "name": "Caisse régionale de crédit agricole mutuel Nord Midi-Pyrénées",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FF9M4SBM5VHR15",
+      "name": "Caisse régionale de crédit agricole mutuel Nord de France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003BBN1S4HV82514",
+      "name": "Caisse régionale de crédit agricole mutuel Normandie-Seine",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500CP6UARAMYIGY51",
+      "name": "Caisse régionale de crédit agricole mutuel Provence-Côte d’Azur (Alpes de Haute-Provence-Alpes-maritimes-Var)",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500M0I766TJINXO92",
+      "name": "Caisse régionale de crédit agricole mutuel Pyrénées-Gascogne",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500DRY71IGWG0L656",
+      "name": "Caisse régionale de crédit agricole mutuel Sud Rhône-Alpes",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GCBQ50LL4N4X78",
+      "name": "Caisse régionale de crédit agricole mutuel Sud- Méditerranée (Ariège et Pyrénées-Orientales)",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VME9AAR39CTQ60",
+      "name": "Caisse régionale de crédit agricole mutuel Toulouse 31",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695000P6V7QBJL4NW96",
+      "name": "Caisse régionale de crédit agricole mutuel Val de France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500AGACQ54Q3UF243",
+      "name": "Caisse régionale de crédit agricole mutuel de Centre France - Crédit agricole Centre France (3ème du nom)",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695005FT3RGI6WWJ534",
+      "name": "Caisse régionale de crédit agricole mutuel de Champagne-Bourgogne",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500E6PTIKAVW46P28",
+      "name": "Caisse régionale de crédit agricole mutuel de Franche-Comté",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500XM9XYLLPWS3X80",
+      "name": "Caisse régionale de crédit agricole mutuel de Lorraine",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "SQEISV1ELQFV4EDRBN58",
+      "name": "Caisse régionale de crédit agricole mutuel de Normandie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500PI25OKPKTD9364",
+      "name": "Caisse régionale de crédit agricole mutuel de Paris et d’Ile-de-France",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695004NR7T2BKZFQL03",
+      "name": "Caisse régionale de crédit agricole mutuel de la Corse",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500NUI273XLGK9751",
+      "name": "Caisse régionale de crédit agricole mutuel de la Guadeloupe",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500SAHI7IJX8TRZ82",
+      "name": "Caisse régionale de crédit agricole mutuel de la Martinique et de la Guyane",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500SRQKP7167VWF70",
+      "name": "Caisse régionale de crédit agricole mutuel de la Réunion et de Mayotte",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500BQ4JYX8980ZJ22",
+      "name": "Caisse régionale de crédit agricole mutuel de la Touraine et du Poitou",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003KLVYC6WLE4F19",
+      "name": "Caisse régionale de crédit agricole mutuel de l’Anjou et du Maine",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695005GXM695D8LUY58",
+      "name": "Caisse régionale de crédit agricole mutuel des Côtes-D’Armor",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500ORP9FTJYI28L37",
+      "name": "Caisse régionale de crédit agricole mutuel des Savoie - Crédit agricole des Savoie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500URVFX2P87A8306",
+      "name": "Caisse régionale de crédit agricole mutuel du Centre Ouest",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950008DNO3H80I0682",
+      "name": "Caisse régionale de crédit agricole mutuel du Finistère",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500A3Y5KTGJEMDZ32",
+      "name": "Caisse régionale de crédit agricole mutuel du Languedoc",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695008F57RGP8WJVD09",
+      "name": "Caisse régionale de crédit agricole mutuel du Morbihan",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500LLFVCIVUFVMK94",
+      "name": "Caisse régionale de crédit agricole mutuel du Nord Est",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500VSI0Q11PB93327",
+      "name": "Caisse régionale de crédit agricole mutuel d’Alpes-Provence",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500X8MO6M37C47827",
+      "name": "Caisse régionale de crédit agricole mutuel d’Aquitaine",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500I60Z80FT66CR93",
+      "name": "Caisse régionale de crédit agricole mutuel d’Ille-et-Vilaine",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500H8VFKY74LBMD78",
+      "name": "Capitole Finance - Tofinso",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GMOFJPLBESK810",
+      "name": "Cicobail",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FFSA9DO4WKVZ66",
+      "name": "Claas Financial Services",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500EJMFFRSWFDJG41",
+      "name": "Cofidis",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500WG4PW2O28P5546",
+      "name": "Cofidis Group",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500C6V7XE6KJJW795",
+      "name": "Compagnie Générale De Crédit Aux Particuliers - Credipar",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "DKGVVH5FKILG8R13CO13",
+      "name": "Compagnie de Financement Foncier",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500U7ESUWL7OBF125",
+      "name": "Compagnie générale de location d’équipements ‘C.G.L.’",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500Y5YGKGKT3Q1627",
+      "name": "Compagnie pour la Location de Véhicules (CLV)",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695000CG7B84NLR5984",
+      "name": "Confédération Nationale du Crédit Mutuel",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "CVRWQDHDBEPUUVU2FD09",
+      "name": "Crelan Home Loan SCF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695000UYHNOFKRJWZ52",
+      "name": "Créatis",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "1VUV7VQFKUOQSJ21A208",
+      "name": "Crédit Agricole Corporate and Investment Bank",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500DDQOQPU5PDGB36",
+      "name": "Crédit Agricole Financement de l’Habitat SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500CN2FOU71HFHW51",
+      "name": "Crédit Agricole Public Sector SCF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500TJ5KRTCJQWXH05",
+      "name": "Crédit Agricole S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500C9913Z7PKUGB44",
+      "name": "Crédit Agricole home loan SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "W2RVX391BFSQJQAGEM62",
+      "name": "Crédit Coopératif",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500EYG6U339D3TI84",
+      "name": "Crédit Foncier de France S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "N4JDFKKH2FTD8RKFXO39",
+      "name": "Crédit Industriel et Commercial - Cic",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950041VJ1QP0B69503",
+      "name": "Crédit Mutuel Arkéa",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500HRT9HZF47M6584",
+      "name": "Crédit Mutuel Factoring",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695009KQA7MMTQL8E07",
+      "name": "Crédit Mutuel Home Loan SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500LTWFP98DC8XE44",
+      "name": "Crédit Mutuel Leasing",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FE2U56EIAS1D04",
+      "name": "Crédit Mutuel Real Estate Lease",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500HQXNML1DTRBT51",
+      "name": "Crédit agricole leasing & factoring",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500YEPXWE78XJIB31",
+      "name": "Crédit foncier et communal d’Alsace et de Lorraine-banque",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695009F5UPB9IITI298",
+      "name": "Crédit lyonnais",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695002ASDT3XIMLZY47",
+      "name": "Diac",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500OMKS4AIGVOBR28",
+      "name": "Ester finance technologies",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500EIKV8PFM8OAP16",
+      "name": "FLOA",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500B8TW4VUQ7WKT96",
+      "name": "Factofrance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500QL4O0R6UCP9V20",
+      "name": "Finamur",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500ZO0UK0ACQQHO98",
+      "name": "Fédéral finance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GB44A4V4W4SF44",
+      "name": "GENEFINANCE",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695007Q5MTZ4Q454M45",
+      "name": "Génébanque",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500QUPGUHSZ2FTU81",
+      "name": "Généfim",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "F0HUI1NY1AZMJMD8LP67",
+      "name": "HSBC Continental Europe",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950046C6898GAG8P66",
+      "name": "JCB Finance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950066U5XAAIRCPA78",
+      "name": "La Banque Postale",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500D5PFMTWUYSUF61",
+      "name": "La Banque Postale Home Loan SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950036L1P0BIL35D42",
+      "name": "LixxBail",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950085DHGG9K8CYV50",
+      "name": "Louvre Banque Privée",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500GIRR9L94LVRP32",
+      "name": "Lyonnaise de banque “L.B.”",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500M22JF85TPA6F83",
+      "name": "MGF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500901GY8ZCBR6Y85",
+      "name": "MMB SCF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500CHDIA34DPV9611",
+      "name": "Monabanq.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500R3EA0ADWQ2II38",
+      "name": "Monte Paschi Banque S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "549300XYJSIN9JGKDH03",
+      "name": "My Money Bank",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500X5SDIOTP2B2892",
+      "name": "Natiocredimurs, Société en Nom Collectif",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500G0F6571RKIRJ92",
+      "name": "Natiocrédibail",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500Y5C0C13HQSAB09",
+      "name": "Natixis Coficiné",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "KX1WK48MPD4Y2NCUIZ63",
+      "name": "Natixis S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500OCY8KZTP2CB380",
+      "name": "Natixis TradEx Solutions",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500892AQHFDSWRF71",
+      "name": "Natixis Wealth Management",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500E07BR6468F5910",
+      "name": "Oney Bank S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500DEM67LRGQOTV19",
+      "name": "Portzamparc",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695002ZQFZGWDVXU826",
+      "name": "ProCapital",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950001WI712W7PQG45",
+      "name": "RCI Banque SA",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "549300HFEHJOXGE4ZE63",
+      "name": "SFIL S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500FDN8G43HMHZM83",
+      "name": "SG OPTION EUROPE",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500ITSEQFH24SE562",
+      "name": "SGB Finance",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500O6YKL9S5XGAP98",
+      "name": "SOCIETE GENERALE Factoring SA",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500U1YMTCDXPHSS10",
+      "name": "SOFIDER",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500OQSJX6T47PZQ59",
+      "name": "Société Centrale pour le Financement de l’Immobilier - SOCFIM",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "O2RNE8IBXP4R0TD8PU41",
+      "name": "Société Générale S.A.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "96950000VTPII1X03R06",
+      "name": "Société anonyme de crédit à l’industrie française (C.A.L.I.F.)",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003ZGAIUXLI2B651",
+      "name": "Société de Banque et d’Expansion - S.B.E.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500UEQ3U3P21QNJ13",
+      "name": "Société de Bourse Gilbert DUPONT",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500F9HMMIJD7DJC28",
+      "name": "Société générale SCF",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500KN90DZLHUN3566",
+      "name": "Société générale SFH",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003KW541RB4PSS16",
+      "name": "Société générale pour le développement des opérations de crédit-bail immobilier - Sogebail",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500SX48YEYEHYII63",
+      "name": "Sogefimur",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "549300CU9LDRDVQE5539",
+      "name": "Stellantis Bank SA",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500BJUHMDM3UVRK06",
+      "name": "Taitbout Participation 3 SNC",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "969500QQVZTWFHPN2O17",
+      "name": "Unifergie - Union pour le financement des économies d’énergie",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "9695003L8X241KRTAG54",
+      "name": "Union de Banques Arabes et Françaises - U.B.A.F.",
+      "source": "ecb_ssm",
+      "country": "France"
+    },
+    {
+      "lei": "PQEBSF10YW5QXWIKTJ21",
+      "name": "ABC International Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "54930061N57ORAEPGX16",
+      "name": "AIB Group (UK) Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "8945008WK6DNAUZQ7L32",
+      "name": "ALLICA BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380038NTY1PVJ3IY34",
+      "name": "ARBUTHNOT LATHAM & CO., LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "724500973ODKK3IFQ447",
+      "name": "Adyen N.V.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800NRZ2K3AGEXHT08",
+      "name": "Afin Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300E7TSGLCOVSY746",
+      "name": "Agricultural Bank of China Limited London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800AINT5U4D66UA65",
+      "name": "Al Rayan Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138009CAEGO41Q6HB61",
+      "name": "Aldermore Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800S8K5XZJ2K6OB13",
+      "name": "Alpha Bank London Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800NCSKH968YFDB88",
+      "name": "Arab Banking Corporation (B.S.C)",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800CYWGYQVT1ZBQ57",
+      "name": "Arab National Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800YWQOYL4VQODV50",
+      "name": "Atom Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "JHE42UYNWWTJB8YTTU19",
+      "name": "Australia and New Zealand Banking Group Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800DG2M8QX22U6P30",
+      "name": "BANK OF CEYLON (UK) LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800SVCJUHY6VX7884",
+      "name": "BANK OF CHINA (UK) LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380055DUNS6NF26T32",
+      "name": "BIRMINGHAM BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300TEJKOLFN65KR76",
+      "name": "BNF Bank plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "QE0Q0253K88YAGNPE356",
+      "name": "Banco do Brasil SA",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300CCL2BKJGMYXV60",
+      "name": "Bangkok Bank Public Company Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300HI3GYE86825R87",
+      "name": "Bank J. Safra Sarasin (Gibraltar) Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138001M5OB5OE11NS50",
+      "name": "Bank Mandiri (Europe) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2549006RZET62B51UR82",
+      "name": "Bank Of Baroda (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300GSSPQ1QSKI1376",
+      "name": "Bank Pictet & Cie (Europe) AG",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138008KTNTDICZU8L25",
+      "name": "Bank Saderat Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800NCOJLY8JW3YI89",
+      "name": "Bank Sepah International Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493000N7DDJ93G26E43",
+      "name": "Bank of Africa United Kingdom Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "B4TYDEB6GKMZO031MB27",
+      "name": "Bank of America, N.A.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300CQ6M9Q0TJEZR23",
+      "name": "Bank of Baroda",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800AQHMYPEH8NNA33",
+      "name": "Bank of Beirut (UK) Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "54930053HGCFWVHYZX42",
+      "name": "Bank of China Limited London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300AX1UM10U30HK09",
+      "name": "Bank of Communications Co Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380058KMSRJIL8C294",
+      "name": "Bank of India",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800OOT97XZGKQPY40",
+      "name": "Bank of Ireland (UK) Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800NRFLLAE9AF6P35",
+      "name": "Bank of London and The Middle East plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "NQQ6HPCNCCU6TUTQYE16",
+      "name": "Bank of Montreal",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "OQ3T05P7YR8P5YJEVI93",
+      "name": "Bank of Scotland plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300QBHSCPTZ7YV010",
+      "name": "Bank of Taiwan",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493007JJOEN82MFUM53",
+      "name": "Bank of the Philippine Islands (Europe) PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800W1NGBLERUS6M39",
+      "name": "Banking Circle S.A.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "9695007EQZDL89LUW373",
+      "name": "Banque Banorient France",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "G5GSEF7VJP5I7OUK5573",
+      "name": "Barclays Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800UUGANOMFJ9X769",
+      "name": "Barclays Bank UK PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800EF3SHQLBJPGB20",
+      "name": "British Arab Commercial Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493003MITCIX89B0R76",
+      "name": "Brown Shipley & Co Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "7245002ZUXNOEJ0QPZ44",
+      "name": "Bunq B.V.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493008BATDQM2LE5Z97",
+      "name": "Byblos Bank Europe SA",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300DPP8ACTS8VM749",
+      "name": "C. HOARE & CO.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800EUD395AUZB1G21",
+      "name": "CAF BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "SR3J0ZUTXT7OTFT2VU03",
+      "name": "CIMB Bank Berhad",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800HZTUSEIN3M1Z46",
+      "name": "Cambridge & Counties Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2IGI19DL77OX0HC3ZE78",
+      "name": "Canadian Imperial Bank of Commerce",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "335800E4RH82Z8XC3C30",
+      "name": "Canara Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800RA4QIHSIMFZL73",
+      "name": "Castle Trust Capital PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "NJ2Z3LWOIYWE0BE0UJ21",
+      "name": "Cater Allen Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300FHFNGCSKDTHT42",
+      "name": "Chang Hwa Commercial Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800ZCPY5ZNSY5I637",
+      "name": "Charter Court Financial Services Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "254900DIJWMU1HVLWA90",
+      "name": "Chetwood Financial Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "FGJPAKKCTZVSKZXNBS63",
+      "name": "Chiba Bank Ltd, The",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "300300C1030211000384",
+      "name": "China Citic Bank Corporation Limited London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493001KQW6DM7KEDR62",
+      "name": "China Construction Bank Corporation London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300MKO5B60FFIHF58",
+      "name": "China Merchants Bank Co., Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300HBUGSQD1VCXG94",
+      "name": "China Minsheng Banking Corporation Limited London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300U8H3KN0K301B23",
+      "name": "Citibank UK Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "E57ODZWZ7FF32TWEFA76",
+      "name": "Citibank, N.A.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800PERENGATFCHD95",
+      "name": "ClearBank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "LC2LS8O497851NSB4L61",
+      "name": "Close Brothers Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "NHXOBHMY8K53VRC7MZ54",
+      "name": "Clydesdale Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "MSFSBD3QN1GSN7Q6C537",
+      "name": "Commonwealth Bank of Australia",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138005L2R4KXAYKGO32",
+      "name": "Conister Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300OLXJ4Y010LOT34",
+      "name": "Coutts & Company",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300GUAMON5OX2OO54",
+      "name": "Credit Suisse (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "E58DKGMJYYYJLN8C3868",
+      "name": "Credit Suisse International",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380011ZYMBN21SZ194",
+      "name": "Crown Agents Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138008LEZ3ZLF8HJ541",
+      "name": "Cynergy Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "529900HNH6UOOF40A490",
+      "name": "DB UK Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "ATUEL7OJR5057F2PV266",
+      "name": "DBS Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800UHF7TEFY61T896",
+      "name": "DF Capital Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300GKFG0RYRRQ1414",
+      "name": "DNB Bank ASA",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "MAES062Z21O4RZ2U7M96",
+      "name": "Danske Bank A/S",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800ZAC8VAGV4L2K61",
+      "name": "EFG Private Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "54930029BCN8HF3B1286",
+      "name": "Emirates NBD Bank (P.J.S.C)",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800RRX1TYUVV2R518",
+      "name": "Europe Arab Bank plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "TU5V87TL5Q0UV1EW4H93",
+      "name": "FCE Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800NLJCYY4AZZLS92",
+      "name": "FCMB Bank (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300URGO4D3SHWLM15",
+      "name": "FidBank UK Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138002Y3WMK6RZS8H90",
+      "name": "First Abu Dhabi Bank P.J.S.C.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493003NOCSC6LUWUF03",
+      "name": "First Commercial Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800DD8GVBIP1HM239",
+      "name": "FirstBank UK Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "ZAYQDKTCATIXF9OQY690",
+      "name": "FirstRand Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138002JLTR8GY8TKN40",
+      "name": "GB Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800UIMM88P3K5ZV42",
+      "name": "Gatehouse Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800MSK6IY7NX8XM32",
+      "name": "Ghana International Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300CEWWYG2REGSU04",
+      "name": "Gibraltar International Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "KD3XUN7C6T14HNAYLU02",
+      "name": "Goldman Sachs Bank USA",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "N9FYJ29MC81JI74MJE92",
+      "name": "Goldman Sachs International Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800PNWYME8874XZ32",
+      "name": "Griffin Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800FD3LOR6LPZPH83",
+      "name": "Guaranty Trust Bank (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "7N7YKE66OZ27KON72O26",
+      "name": "Gulf International Bank (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "558600JW2XPMLG97TV14",
+      "name": "Gulf International Bank Bsc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800KJGAYVISGD2863",
+      "name": "HAMPDEN & CO PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300K7NH3086Y0SV98",
+      "name": "HBL BANK UK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "MP6I5ZYZBEU3UXPYFY54",
+      "name": "HSBC Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800LH7QCHIR3JI632",
+      "name": "HSBC INNOVATION BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300G717XMVN87UL79",
+      "name": "HSBC Private Bank (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380081EP12LC86CB82",
+      "name": "HSBC UK Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138004YBSJVUUIRA750",
+      "name": "Habib Bank AG Zurich",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800DVCFBA2TVL1T25",
+      "name": "Habib Bank Zurich Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380013V6JI2T3MOG16",
+      "name": "Hampshire Trust Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "254900HILJ9CO56XA292",
+      "name": "Handelsbanken plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800YMG7E1F48JC136",
+      "name": "Havin Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493000IRH8ZF2IJYY72",
+      "name": "Hua Nan Commercial Bank, Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138003HW6485HGVSH88",
+      "name": "ICBC (London) plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "F01VVKN4DRF2NWKGQ283",
+      "name": "ICBC Standard Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138002XB6T14IGKGU43",
+      "name": "ICICI Bank UK Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138003488D1LGCBRV23",
+      "name": "IFAST GLOBAL BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493004D82XDFVPWQJ91",
+      "name": "Ikano Bank AB (publ)",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "988400RBIWE3YA18PK12",
+      "name": "Industrial Bank of Korea",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493002ERZU2K9PZDL40",
+      "name": "Industrial and Commercial Bank of China Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "84S0VF8TSMH0T6D4K848",
+      "name": "Investec Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493009ADHYKU8V9P697",
+      "name": "Itau BBA International PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300EJYMJS22ND8Y17",
+      "name": "J.P. Morgan Europe Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "K6Q0W1PS1L1O4IQL9C32",
+      "name": "J.P. Morgan Securities plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "7H6GLXDRUGQFU57RNE97",
+      "name": "JPMorgan Chase Bank, National Association",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800WMLZ87OAYT3X87",
+      "name": "Jordan International Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800GEIK9AZNTJVZ29",
+      "name": "Julian Hodge Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "6RPK2YDJN6L35AS0M510",
+      "name": "KEB Hana Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800246DSYDX1BMF80",
+      "name": "KEXIM BANK (UK) LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138004N9K31CATCK953",
+      "name": "KINGDOM BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800F3IFWY8CWYWO07",
+      "name": "KUWAIT FINANCE HOUSE PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300XXMOJSIW8P4769",
+      "name": "Kookmin Bank Co Ltd London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800D41PZHBTEHQN06",
+      "name": "Kroo Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "9845001RFA8CMB01A341",
+      "name": "LHV BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800BJFRCI88UOLL93",
+      "name": "Lidion Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800MBWEIJDM5CU638",
+      "name": "Lloyds Bank Corporate Markets Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "H7FNTJ4851HG0EXQ1Z70",
+      "name": "Lloyds Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300E2FDLN8Y0QI242",
+      "name": "Lombard Odier & Cie (Gibraltar) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300ZOE0EU2VKF6M35",
+      "name": "Lombard Odier (Europe) S.A.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138009M124EE2Q9ZK29",
+      "name": "MARKS AND SPENCER FINANCIAL SERVICES PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138008864ADTHGQP554",
+      "name": "MILLEIS BANQUE",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "C3GTMMZIHMY46P4OIX74",
+      "name": "MUFG BANK, LTD",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "4ZHCHI4KYZG2WVRT8631",
+      "name": "Macquarie Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493004OT3TOY404V310",
+      "name": "Malayan Banking Berhad",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493000SA3K24EQKA103",
+      "name": "Mashreqbank psc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300GCRU5QIM9WHM73",
+      "name": "Mega International Commercial Bank Co. Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800BC4TEGCCQH9V07",
+      "name": "Melli Bank plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800GD7EDYBP4LH202",
+      "name": "Methodist Chapel Aid Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800X5WU57YL9GPK89",
+      "name": "Metro Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "JBONEPAGQXF4QP29B387",
+      "name": "Mitsubishi UFJ Trust and Banking Corporation",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "YZO9YEGEO4VYDZMDWF93",
+      "name": "Mizrahi Tefahot Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "RB0PEZSDGCO3JS6CEU02",
+      "name": "Mizuho Bank, Ltd.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800HZ54TG54H2KV03",
+      "name": "Mizuho International plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800XLZGL9MX1X2Y70",
+      "name": "Moneycorp Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800OLF8OE1I3HVY91",
+      "name": "Monument Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800PLUYXGZ8LU7T61",
+      "name": "Monzo Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "Z06S12H6N9QRJ8HHN626",
+      "name": "Morgan Stanley Bank International Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800IBT39XQ9C4CP71",
+      "name": "NATIONAL WESTMINSTER BANK PUBLIC LIMITED COMPANY",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "RR3QWICWWIPCS8A4S074",
+      "name": "NatWest Markets Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "F8SB4JFBSYQFRQEH3Z21",
+      "name": "National Australia Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "BSGEFEIOM18Y80CKCV46",
+      "name": "National Bank of Canada",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2TV5CTDU7ZDMT8HL5F58",
+      "name": "National Bank of Egypt (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800OTQ2BHFRVL6A46",
+      "name": "National Bank of Kuwait (International) Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800ZBWY3BU3UUMA42",
+      "name": "Nedbank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800YEKLOP9E1LRX08",
+      "name": "Nedbank Private Wealth Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "WGII3666BEDR02O24131",
+      "name": "Nomura Bank International Plc.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "988400GSDJCW3LKJBD20",
+      "name": "NongHyup Bank London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300KUB2XKWLPMXV81",
+      "name": "Northern Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "HWIPDOTRM1EKRPKYKH81",
+      "name": "Northern Trust Global Services SE",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800A7BOPQRC475O81",
+      "name": "OakNorth Bank plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800WTQKOQI8ELD692",
+      "name": "OneSavings Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493007O3QFXCPOGWK22",
+      "name": "Oversea-Chinese Banking Corporation Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380065OVUSBK99TQ03",
+      "name": "Oxbury Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300HZ8J3MLVXQ8F85",
+      "name": "PT Bank Negara Indonesia (Persero) Tbk",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800ZD686TR7FEP983",
+      "name": "Paragon Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138005PR3L49ZS15G64",
+      "name": "Perenna Bank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800HTIY6D1KMBG757",
+      "name": "Persia International Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "8945002FWV05NGBXJJ26",
+      "name": "Philippine National Bank (Europe) Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138006AACENARGZJ838",
+      "name": "Punjab National Bank (International) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800S4QPWSX1GXY767",
+      "name": "QIB (UK) Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300FFSRVBS0SQXY75",
+      "name": "Qatar National Bank (Q.P.S.C.)",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "TXDSU46SXBWIGJ8G8E98",
+      "name": "RBC Europe Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493002MUOV04NSPT571",
+      "name": "RBC Investor Services Trust",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800XJY1CUVMC29H81",
+      "name": "RCI Bank UK Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800ZFTXJC7RV9UQ92",
+      "name": "RECOGNISE BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800MZ8SY49DGWN237",
+      "name": "REDWOOD BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800EO3S4IKXAPB795",
+      "name": "RELIANCE BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138008ANZZHTOFO9Y42",
+      "name": "Rathbones Investment Management Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138003LXONKR247S255",
+      "name": "Revolut NewCo UK Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "54930037RJ782ISGGM71",
+      "name": "Riyad Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "ES7IP3U3RHIGC71XBU11",
+      "name": "Royal Bank of Canada",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800CXIBLC2TMIGI76",
+      "name": "SECURE TRUST BANK PUBLIC LIMITED COMPANY",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "NT7C58H5HPZYKZDPOO64",
+      "name": "SMBC Bank International plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800VDIFGJM2DF1R46",
+      "name": "Sainsbury's Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "R83QYRLEMH4ZSHI0L097",
+      "name": "Santander Financial Services plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "PTCQB104N23FMNK2RZ28",
+      "name": "Santander UK Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "XZYM01I1402576QWNU05",
+      "name": "Schroder & Co Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300DLWZLXC60CXS69",
+      "name": "Shanghai Commercial Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "300300C1031031001330",
+      "name": "Shanghai Pudong Development Bank Co., Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800XSHRKUIZK86B68",
+      "name": "Shawbrook Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493003P813VL21KG928",
+      "name": "Shinhan Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "F3JS33DEI6XQ4ZBPTN86",
+      "name": "Skandinaviska Enskilda Banken AB (Publ)",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "RILFO74KP1CM8P6PCT96",
+      "name": "Standard Chartered Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800AE5VSF3V1PAV23",
+      "name": "Starling Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800LOV39TJH6YQY23",
+      "name": "State Bank Of India (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493001JZ37UBBZF6L49",
+      "name": "State Bank of India",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "571474TGEMMWANRLN572",
+      "name": "State Street Bank and Trust Company",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800KDQFY4NBXFKP66",
+      "name": "StreamBank PLC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5U0XI89JRFVHWIBS4F54",
+      "name": "Sumitomo Mitsui Banking Corporation, London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493006GGLR4BTEL8O61",
+      "name": "Sumitomo Mitsui Trust Bank, Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800K5KTZFSUS8MR51",
+      "name": "T C Ziraat Bankasi AS",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800TSUEO1BP2F4Z08",
+      "name": "TD Bank Europe Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800TLZ6PCLYPSR448",
+      "name": "THE CO-OPERATIVE BANK P.L.C.",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138008GGHD1Q6OZZ280",
+      "name": "THIS BANK LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300XP222MV7P3CC54",
+      "name": "TSB Bank plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800UHJUCFNA7KY464",
+      "name": "TURKISH BANK (UK) LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138006XK2FFFY53L343",
+      "name": "Tandem Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493002IGEWNBCWX0S85",
+      "name": "The Access Bank UK Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "CO6GC26LCGGRTUESIP55",
+      "name": "The Bank of East Asia, Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "984500564M886CFD4643",
+      "name": "The Bank of London Group Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "HPFHU0OQ28E4N0NFVK49",
+      "name": "The Bank of New York Mellon",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300KP56LL8NKKFL47",
+      "name": "The Bank of New York Mellon (International) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "L3I9ZG2KFGXZ61BMYR72",
+      "name": "The Bank of Nova Scotia",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800RNCUQ66C57MV78",
+      "name": "The Charity Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300ML2LNRZUCS7149",
+      "name": "The Korea Development Bank - London Branch",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493007VSMFZCPV1NB83",
+      "name": "The Norinchukin Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "6PTKHDJ8HDUF78PFWH30",
+      "name": "The Northern Trust Company",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138004K85AQBWML6K65",
+      "name": "The Royal Bank of Scotland (Gibraltar) Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380078CCZSEEIIKA41",
+      "name": "The Royal Bank of Scotland International Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300WHU4EIHRP28H10",
+      "name": "The Royal Bank of Scotland Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "PT3QB789TSUIDF371261",
+      "name": "The Toronto-Dominion Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800CT9EVOBAGLKM04",
+      "name": "Triodos Bank UK Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800WRWWDT3HW3HE26",
+      "name": "Trusted Novus Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "789000FIRX9MDN0KTM91",
+      "name": "Turkiye Is Bankasi As",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "5493008GNQHVI377MY19",
+      "name": "U.S. Bank Europe DAC",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "BFM8T61CT2L1QCEMIK50",
+      "name": "UBS AG",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800AYQA28LZ7J6M48",
+      "name": "UNION BANK OF INDIA (UK) LIMITED",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "IPLPO8C7P68Q5FFRI280",
+      "name": "Union Bancaire Privee, UBP SA",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300KR3CB1AXT4LT74",
+      "name": "Union Bancaire Privée (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800Y39WDKGBTX4B95",
+      "name": "United Bank for Africa (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800W6KCECL8MCGZ36",
+      "name": "United National Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "IO66REGK3RCBAMA8HR66",
+      "name": "United Overseas Bank Ltd",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800LZU65P34WD8A92",
+      "name": "United Trust Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800PX57VULWV8AK43",
+      "name": "Unity Trust Bank Plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "74OG4PIVJ3TT4O5NSN12",
+      "name": "VTB Capital plc",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "2138005IBE41C824QF22",
+      "name": "Vanquis Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "635400LSFAEFKDSBOC05",
+      "name": "Vida Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300OF84KDPIFN4M17",
+      "name": "Weatherbys Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "KB1H1DSPRFMYMCUFXT09",
+      "name": "Wells Fargo Bank, National Association",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "EN5TNI6CI43VEPAMHL14",
+      "name": "Westpac Banking Corporation",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "549300VUVMRL6RE7R376",
+      "name": "Woori Bank",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "98450015CDQ51B6B5A07",
+      "name": "Xapo Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "21380039DXZZIN38WR68",
+      "name": "Zempler Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800HXR6XZKC2G7U74",
+      "name": "Zenith Bank (UK) Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "213800QW7QJVVCL9RZ56",
+      "name": "Zopa Bank Limited",
+      "source": "uk_pra",
+      "country": "GB"
+    },
+    {
+      "lei": "EZKODONU5TYHW4PP1R34",
+      "name": "Aareal Bank AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900RXTG7SEZWVGV30",
+      "name": "Atlantic BidCo GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "7D9EHZL14BBPJWTN6S08",
+      "name": "BHW Bausparkasse AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "391200XC6WLFU5H11N05",
+      "name": "BPCE Germany Holding GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "GTQYZJON3I7SXRNJTT73",
+      "name": "BSK 1818 AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900RI32IU7J7VF635",
+      "name": "BSK 1818 Holding AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900JZXXU699FCKK89",
+      "name": "Bausparkasse Schwäbisch Hall Aktiengesellschaft, Bausparkasse der Volksbanken und Raiffeisenbanken",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "VDYMYTQGZZ6DU0912C88",
+      "name": "Bayerische Landesbank",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "851WYGNLUQLFZBSYGB56",
+      "name": "COMMERZBANK Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "6TJCK1B7E7UTXP528Y04",
+      "name": "Citigroup Global Markets Europe AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "52990056C1E0V96O5B50",
+      "name": "CreditPlus Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900HNOAA1KXQJUQ27",
+      "name": "DZ BANK AG Deutsche Zentral-Genossenschaftsbank",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299004TE2DYMKEAM814",
+      "name": "DZ HYP AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "0W2PZJM8XOY22M4GG883",
+      "name": "DekaBank Deutsche Girozentrale",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299007S3UH5RKUYDA52",
+      "name": "Deutsche Apotheker- und Ärztebank eG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "7LTWFZYICNSX8D621K86",
+      "name": "Deutsche Bank AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "213800QILIUD4ROSUO03",
+      "name": "Deutsche Bank Europe GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900K16YGKC8BES892",
+      "name": "Deutsche Kreditbank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "DZZ47B9A52ZJ6LT6VV95",
+      "name": "Deutsche Pfandbriefbank AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "391200EEGLNXBBCVKC73",
+      "name": "Erwerbsgesellschaft der S-Finanzgruppe mbH & Co. KG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299008RRLLP8RA53L11",
+      "name": "Frankfurter Bankgesellschaft (Deutschland) AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "391200EAYM5TKNGYS461",
+      "name": "Frankfurter Bankgesellschaft Holding AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900VA5CNBWXAONR25",
+      "name": "Frankfurter Sparkasse AdöR",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900O36LIHML9KNF05",
+      "name": "GEFA BANK GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "3912001VYZ4FACUQ1K19",
+      "name": "GENO Broker GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "8IBZUGJ7JPLH368JE346",
+      "name": "Goldman Sachs Bank Europe SE",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900JZTYE3W7WQH904",
+      "name": "HASPA Finanzholding",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "TUKDD90GPC79G1KOE162",
+      "name": "Hamburg Commercial Bank AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900F5KTT6ZUPA8N40",
+      "name": "Hamburger Sparkasse AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900U1VF734FP08987",
+      "name": "Hanseatic Bank GmbH & Co KG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900OOZP78CYPYF471",
+      "name": "Hauck Aufhäuser Lampe Privatbank AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "391200UZL84G59FD0D11",
+      "name": "Hyundai Capital Bank Europe GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5493007S4JE930SIUE86",
+      "name": "ING Holding Deutschland GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "3KXUNHVVQFIJN6RHLO76",
+      "name": "ING-DiBa AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "549300ZK53CNGEEI6A29",
+      "name": "J.P. Morgan SE",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299002GPCR602QYJC04",
+      "name": "KfW Beteiligungsholding GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900Q1M1F4M8KMTM64",
+      "name": "KfW IPEX-Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900FU4WJ2XT7BVE31",
+      "name": "LBS Landesbausparkasse Süd",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "B81CK4ESI35472RHJ606",
+      "name": "Landesbank Baden-Württemberg",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "DIZES5CFO5K3I5R58746",
+      "name": "Landesbank Hessen-Thüringen Girozentrale",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "391200JSBVM7SPMPFX14",
+      "name": "MCE Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900OQ9BR23GQ6MD82",
+      "name": "MMV Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "7CPI4ZQUQVBDH8SA1F44",
+      "name": "Morgan Stanley Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "54930056FHWP7GIWYY08",
+      "name": "Morgan Stanley Europe SE",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900GM944JT8YIRL63",
+      "name": "Münchener Hypothekenbank eG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "894500M8C9DWGV7L2Q81",
+      "name": "NatWest Bank Europe GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900J6VNDBVTKV7I86",
+      "name": "Natixis Pfandbriefbank AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "DSNHHQ2B9X5N6OUJ1236",
+      "name": "Norddeutsche Landesbank -Girozentrale-",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299008I0TO44SUINZ71",
+      "name": "Oldenburgische Landesbank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900GXEWI4BLMXTJ81",
+      "name": "S Broker AG & Co. KG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299002CRNX7K6KOL397",
+      "name": "Santander Consumer Bank Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900KRVTRP5RWP9K95",
+      "name": "Santander Consumer Holding GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "ZMHGNT7ZPKZ3UFZ8EO46",
+      "name": "State Street Bank International GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900V3O1M5IHMOSF46",
+      "name": "State Street Europe Holdings Germany S.à.r.l. & Co. KG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900EVCB17C6S4D127",
+      "name": "State Street Holdings Germany GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900DSJ4S9VXG0FS94",
+      "name": "TARGOBANK AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900A3P80B8TXJHR15",
+      "name": "Targo Deutschland GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900XIPMQFJ8PTB895",
+      "name": "TeamBank AG Nürnberg",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "5299007QVIQ7IO64NX37",
+      "name": "UBS Europe SE",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "2ZCNRR8UK83OBTEK2170",
+      "name": "UniCredit Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "391200IBCEYMREHKPO13",
+      "name": "VR Smart Finanz Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900GJD3OQLRZCKW37",
+      "name": "Volkswagen Bank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900SSGT49ZZSWYE62",
+      "name": "Volkswagen Financial Services AG",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900S1KHKOEQL5CK20",
+      "name": "Wüstenrot Bausparkasse Aktiengesellschaft",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "529900WMBOJTFWCJ6Z71",
+      "name": "norisbank GmbH",
+      "source": "ecb_ssm",
+      "country": "Germany"
+    },
+    {
+      "lei": "213800DBQIB6VBNU5C64",
+      "name": "ALPHA BANK S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "JEUVK5RWVJEN8W0C9M24",
+      "name": "Eurobank Ergasias Services and Holdings S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "213800KGF4EFNUQKAT69",
+      "name": "Eurobank S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "5UMCZOEYKCVFAW8ZLO05",
+      "name": "National Bank of Greece S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "213800OYHR1MPQ5VJL60",
+      "name": "Piraeus Bank S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "M6AD1Y1KW32H8THQ6F76",
+      "name": "Piraeus Financial Holdings S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "213800FLZB75NI6NRO92",
+      "name": "Snappi S.A.",
+      "source": "ecb_ssm",
+      "country": "Greece"
+    },
+    {
+      "lei": "635400AKJBGNS5WNQL34",
+      "name": "AIB Group plc",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "549300CGO72ED3XVUZ04",
+      "name": "AIB MORTGAGE BANK UNLIMITED COMPANY",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "3U8WV1YX2VMUHH7Z1Q21",
+      "name": "Allied Irish Banks, plc",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "EQYXK86SF381Q21S3020",
+      "name": "Bank of America Europe Designated Activity Company",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "635400L14KNHZXPUZM19",
+      "name": "Bank of Cyprus Holdings Public Limited Company",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "635400C8EK6DRI12LJ39",
+      "name": "Bank of Ireland Group plc",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "635400LWGWFFKITHYD44",
+      "name": "Bank of Ireland Mortgage Bank",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "2G5BKIC2CB69PRJH1W31",
+      "name": "Barclays Bank Ireland plc",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "N1FBEDJ5J41VKZLO2475",
+      "name": "Citibank Europe plc",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "549300QS0R6M20VUB380",
+      "name": "EBS Designated Activity Company",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "635400PSMCTBZD9XNS47",
+      "name": "Intesa Sanpaolo Bank Ireland Plc",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "Q2GQA2KF6XJ24W42G291",
+      "name": "The Governor and Company of the Bank of Ireland",
+      "source": "ecb_ssm",
+      "country": "Ireland"
+    },
+    {
+      "lei": "81560076F9CF35569687",
+      "name": "B.C.C. del Garda - Banca di Credito Cooperativo Colli Morenici del Garda - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E124FA09C12E37",
+      "name": "BANCA CENTRO CALABRIA – Credito cooperativo – Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300R7VK7PAHEHQ320",
+      "name": "BANCA CREMASCA E MANTOVANA- Credito Cooperativo- Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156008AB768C360F861",
+      "name": "BANCA DEL TERRITORIO LOMBARDO CREDITO COOPERATIVO - Società cooperative, or, in short form, “BTL”",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600359CB8809F3B57",
+      "name": "BANCA DI CREDITO COOPERATIVO CAMPANIA CENTRO - CASSA RURALE ED ARTIGIANA - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560065B99BF3EEED47",
+      "name": "BANCA DI CREDITO COOPERATIVO Terra di Lavoro \"S. Vincenzo de' Paoli\" Società Cooperativa per Azioni",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156002B686285A23661",
+      "name": "BANCA DI CREDITO COOPERATIVO VALLE DEL TORTO - SOCIETA' COOPERATIVA",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800XNM6R7H7YDYM15",
+      "name": "BANCA DI FILOTTRANO - CREDITO COOPERATIVO DI FILOTTRANO E DI CAMERANO-SOCIETA' COOPERATIVA",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E6A5F948BED362",
+      "name": "BANCA MALATESTIANA - Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "J4CP7MHCXR8DAQMKIL78",
+      "name": "BANCA MONTE DEI PASCHI DI SIENA S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600AD2A7F68612621",
+      "name": "BCC Basilicata - Credito Cooperativo di Laurenzana e Comuni Lucani - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560021E7800490A761",
+      "name": "BCC Calabria Nord – Credito Cooperativo",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156000D231E006B3783",
+      "name": "BCC Felsinea - Banca di Credito Cooperativo dal 1902 - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300HQF0CKXWS4CJ46",
+      "name": "BCC Financing S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493004CEH2M42CLH992",
+      "name": "BCC Leasing S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600D2A535AB310937",
+      "name": "BCC Veneta – Credito Cooperativo – Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "54930082Z2DPUUSYXO04",
+      "name": "BENE BANCA CREDITO COOPERATIVO DI BENE VAGIENNA (CUNEO) - SOCIETA’ COOPERATIVA",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "N747OI7JINV7RUUH6190",
+      "name": "BPER Banca S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300R3JXX43J09PA39",
+      "name": "BVR Banca Veneto Centrale Credito Cooperativo Italiano – Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300207BR8W5FCX367",
+      "name": "Banca 360 Credito Cooperativo FVG - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300WHH7HQS04GS740",
+      "name": "Banca Adria Colli Euganei - Credito Cooperativo Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300GRXFI7D6PNEA68",
+      "name": "Banca Akros S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300NQ32SRT0NWPB72",
+      "name": "Banca Aletti S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900DYXMRV3VD4O825",
+      "name": "Banca Alpi Marittime Credito Cooperativo Carrù Società cooperativa per azioni",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300IGVRJKAFTG2F34",
+      "name": "Banca Alta Toscana Credito Cooperativo - società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156001FAA78B9C94B89",
+      "name": "Banca Centro - Credito Cooperativo Toscana - Umbria - società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600508DD477037C23",
+      "name": "Banca Centro Emilia - Credito Cooperativo Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600592C43D4AB9174",
+      "name": "Banca Centro Lazio Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E0D5CF102FCB85",
+      "name": "Banca Centropadana Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300DY78U4CMKNHE48",
+      "name": "Banca Cesare Ponti S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156006B5372B27D1F97",
+      "name": "Banca Don Rizzo Credito Cooperativo della Sicilia occidentale - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600B12A035CEEFD62",
+      "name": "Banca Lazio Nord Credito Cooperativo - Società Cooperativa per azioni",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "7LVZJ6XRIE7VNZ4UBX81",
+      "name": "Banca Mediolanum S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600BEB84262193263",
+      "name": "Banca Monte Pruno - Credito Cooperativo di Fisciano, Roscigno e Laurino - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E3A78973E36F85",
+      "name": "Banca Montepaone - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "UI802FYJ52XDB7N4KN18",
+      "name": "Banca Nazionale del Lavoro S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "J48C8PCSJVUBR8KCW529",
+      "name": "Banca Popolare di Sondrio, Società per Azioni (S.p.A.)",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300W9LMF70M5SBS25",
+      "name": "Banca Prealpi SanBiagio Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600C24240F5072990",
+      "name": "Banca San Francesco Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300S7C1GB2JYIKK33",
+      "name": "Banca Territori del Monviso - Credito Cooperativo di Casalgrasso e Sant'Albano Stura Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900SCODDYH4YVYA60",
+      "name": "Banca Veronese Credito Cooperativo di Concamarise - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560036A9D8DF50A702",
+      "name": "Banca Versilia Lunigiana e Garfagnana - Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800HX3NN1E7FQEQ06",
+      "name": "Banca dei Sibillini-Credito Cooperativo di Casavecchia -Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800HEAE6H2M1Q3S97",
+      "name": "Banca del Piceno Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560030E9DBD0D5E541",
+      "name": "Banca del Valdarno - Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600507FA0758E6840",
+      "name": "Banca dell'Alta Murgia Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156003073EAF2280026",
+      "name": "Banca dell'Elba Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300I8FH314U10ZK71",
+      "name": "Banca della Marca Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560095BC9C22595B60",
+      "name": "Banca della Nuova Terra S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600A08DEE8E5FEF34",
+      "name": "Banca della Valsassina Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560058B09E00E6B614",
+      "name": "Banca delle Terre Venete Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800OJ4LG8R54XIX88",
+      "name": "Banca di Ancona e Falconara Marittima Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156000E223BCDD9B355",
+      "name": "Banca di Andria di Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300QGFHQRB8SVPI60",
+      "name": "Banca di Anghiari e Stia - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600A41BAE508B4978",
+      "name": "Banca di Bari e Taranto - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F58EC991557450",
+      "name": "Banca di Bologna Credito Cooperativo società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300TCEYVHTMWRRX34",
+      "name": "Banca di Caraglio del Cuneese e della Riviera dei Fiori - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156000591F6D1881913",
+      "name": "Banca di Credito Cooperativo Abruzzese - Cappelle sul Tavo società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600EA7F74AD0BFC07",
+      "name": "Banca di Credito Cooperativo Agrigentino - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300TIUY0WVROSRF36",
+      "name": "Banca di Credito Cooperativo Agrobresciano - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560027F4E51C4FBF71",
+      "name": "Banca di Credito Cooperativo Appulo Lucana - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156009539C883586092",
+      "name": "Banca di Credito Cooperativo Bergamasca e Orobica - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300NPPVK0H2XGQ639",
+      "name": "Banca di Credito Cooperativo Brianza e Laghi - società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300627QRYTW1KIZ12",
+      "name": "Banca di Credito Cooperativo Carate Brianza e Treviglio - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560080DE68CD0F6B78",
+      "name": "Banca di Credito Cooperativo La Riscossa di Regalbuto - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493002GUK42AICGG334",
+      "name": "Banca di Credito Cooperativo Lodi - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600C101E215303625",
+      "name": "Banca di Credito Cooperativo Magna Grecia - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493005B0M5DJBZW1L20",
+      "name": "Banca di Credito Cooperativo Pordenonese e Monsile - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900ZYI15J69I7KK95",
+      "name": "Banca di Credito Cooperativo Valdostana - Coopérative de Crédit Valdôtaine - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493002ZF0U0GKWZR064",
+      "name": "Banca di Credito Cooperativo Venezia Giulia – Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300JK0JZQU6CW3084",
+      "name": "Banca di Credito Cooperativo Vicentino - Pojana Maggiore (Vicenza) - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156005AF5CB138D5E62",
+      "name": "Banca di Credito Cooperativo degli Ulivi - Terra di Bari - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007B431FA10DC467",
+      "name": "Banca di Credito Cooperativo dei Castelli Romani e del Tuscolo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156004429DC523F7747",
+      "name": "Banca di Credito Cooperativo dei Castelli e degli Iblei - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156003E7C83E0E5A794",
+      "name": "Banca di Credito Cooperativo dei Colli Albani - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600A339665E59B196",
+      "name": "Banca di Credito Cooperativo del Basso Sebino - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600D2B97740C5D011",
+      "name": "Banca di Credito Cooperativo del Circeo e Privernate - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "2138002ZW2HMFTRYF147",
+      "name": "Banca di Credito Cooperativo del Metauro - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600ADE74B26BBC232",
+      "name": "Banca di Credito Cooperativo dell'Adriatico Teramano - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156009580A5A11D7809",
+      "name": "Banca di Credito Cooperativo della Calabria Ulteriore - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560024665B1D101E77",
+      "name": "Banca di Credito Cooperativo della Provincia Romana - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493006DF3CJAPW64Z40",
+      "name": "Banca di Credito Cooperativo della Romagna Occidentale - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600319098FE3E4C13",
+      "name": "Banca di Credito Cooperativo della Valle del Fitalia - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156006BE70771197135",
+      "name": "Banca di Credito Cooperativo della Valle del Trigno - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560033FF167D891734",
+      "name": "Banca di Credito Cooperativo delle Madonie - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600609F6B88892B88",
+      "name": "Banca di Credito Cooperativo dell’Oglio e del Serio, Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E3ADB5FFB01F79",
+      "name": "Banca di Credito Cooperativo di Abruzzi e Molise – Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300CUJUUF2CK3QK26",
+      "name": "Banca di Credito Cooperativo di Alba, Langhe, Roero e del Canavese Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600CE8997AB730738",
+      "name": "Banca di Credito Cooperativo di Alberobello, Sammichele e Monopoli - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F426FC5A48F641",
+      "name": "Banca di Credito Cooperativo di Altofonte e Caccamo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156009A05D870E43030",
+      "name": "Banca di Credito Cooperativo di Anagni - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600B13AD31D39D678",
+      "name": "Banca di Credito Cooperativo di Aquara - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600394B60C2D3BE77",
+      "name": "Banca di Credito Cooperativo di Arborea - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300MB8JNPSH0NIZ61",
+      "name": "Banca di Credito Cooperativo di Avetrana - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156009499D0A080FA62",
+      "name": "Banca di Credito Cooperativo di Barlassina - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560059500B178C0F86",
+      "name": "Banca di Credito Cooperativo di Basciano Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560086FC6C00CB8127",
+      "name": "Banca di Credito Cooperativo di Bellegra - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560091574B0CCEFB73",
+      "name": "Banca di Credito Cooperativo di Brescia - Società cooperative, or, in short form, “BCC Brescia - Società cooperativa”",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F340760D34C636",
+      "name": "Banca di Credito Cooperativo di Busto Garolfo e Buguggiate - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560085614CE4044842",
+      "name": "Banca di Credito Cooperativo di Cagliari - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156005D33AEADD74A22",
+      "name": "Banca di Credito Cooperativo di Canosa - Loconia Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560085243C7A22D013",
+      "name": "Banca di Credito Cooperativo di Capaccio Paestum e Serino - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156005F89D8A2777026",
+      "name": "Banca di Credito Cooperativo di Cassano delle Murge e Tolve - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600060B0559175453",
+      "name": "Banca di Credito Cooperativo di Castiglione Messer Raimondo e Pianella - Società cooperativa per azioni a responsabilità limitata",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493002HFC6D3TA7KQ61",
+      "name": "Banca di Credito Cooperativo di Cherasco - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F4DEAB2DB98487",
+      "name": "Banca di Credito Cooperativo di Conversano - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "2138006RZQ2Q5WP2V343",
+      "name": "Banca di Credito Cooperativo di Fano - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560027A3FCB64DB096",
+      "name": "Banca di Credito Cooperativo di Flumeri - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F7E20E33D4B595",
+      "name": "Banca di Credito Cooperativo di Gambatesa - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156004771C4C28EB022",
+      "name": "Banca di Credito Cooperativo di Gaudiano di Lavello - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E9E5FC140FBE91",
+      "name": "Banca di Credito Cooperativo di Leverano Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F588D900701610",
+      "name": "Banca di Credito Cooperativo di Lezzeno (Como)- Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E5D92770C58275",
+      "name": "Banca di Credito Cooperativo di Locorotondo - Cassa Rurale ed Artigiana - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007B86A3EABEF937",
+      "name": "Banca di Credito Cooperativo di Marina di Ginosa (TA) - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300C6L67POGOTK470",
+      "name": "Banca di Credito Cooperativo di Milano - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300Y3SYD3R07LYS08",
+      "name": "Banca di Credito Cooperativo di Mozzanica - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600ED93CC24800564",
+      "name": "Banca di Credito Cooperativo di Napoli - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E5ACBF344A5C50",
+      "name": "Banca di Credito Cooperativo di Nettuno - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800WWEG2ERRNV4T32",
+      "name": "Banca di Credito Cooperativo di Ostra Vetere - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800J7R5S5HB56BJ48",
+      "name": "Banca di Credito Cooperativo di Ostra e Morro d'Alba - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156004DCB878A344F61",
+      "name": "Banca di Credito Cooperativo di Ostuni - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156003612CB0B67E831",
+      "name": "Banca di Credito Cooperativo di Pachino - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "2138003K4HA4JNKW7342",
+      "name": "Banca di Credito Cooperativo di Pergola e Corinaldo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156005FED254FE6D424",
+      "name": "Banca di Credito Cooperativo di Pianfei e Rocca de’ Baldi - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300TUB5TU8NU5CC18",
+      "name": "Banca di Credito Cooperativo di Pontassieve - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007CDD4F40965278",
+      "name": "Banca di Credito Cooperativo di Pratola Peligna - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600BDB91CFF904A37",
+      "name": "Banca di Credito Cooperativo di Putignano - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "2138005YNZGB4JGPNL33",
+      "name": "Banca di Credito Cooperativo di Recanati e Colmurano - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300EJVW55HJ98V521",
+      "name": "Banca di Credito Cooperativo di Roma - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600CEC2F5CA193226",
+      "name": "Banca di Credito Cooperativo di San Giovanni Rotondo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "54930090SMZ6BUH5QZ02",
+      "name": "Banca di Credito Cooperativo di San Marco dei Cavoti e del Sannio - Calvi - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156009C252A56CA6782",
+      "name": "Banca di Credito Cooperativo di San Marzano di San Giuseppe - Taranto - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300NZSH0TUJK0MP50",
+      "name": "Banca di Credito Cooperativo di Santeramo in Colle (Bari) - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560000348B3B64B603",
+      "name": "Banca di Credito Cooperativo di Sarsina - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560072DB4C69D19464",
+      "name": "Banca di Credito Cooperativo di Scafati e Cetara - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493001IDJJSIDOP8024",
+      "name": "Banca di Credito Cooperativo di Spello e del Velino – Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F9BAA8F7A6E161",
+      "name": "Banca di Credito Cooperativo di Terra d'Otranto - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300Z8WO0USJ2GJL93",
+      "name": "Banca di Credito Cooperativo di Triuggio e della Valle del Lambro - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007B79F45EC4F227",
+      "name": "Banca di Credito Cooperativo di Venezia, Padova e Rovigo - Banca Annia Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560021A777399C8A98",
+      "name": "Banca di Credito Cooperativo “G. Toniolo” e San Michele di San Cataldo (Caltanissetta) Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "2138005G7OZ24BLZMP56",
+      "name": "Banca di Pesaro Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800E4QT6C67P9QR72",
+      "name": "Banca di Pescia e Cascina Credito Cooperativo - Società Cooperativa S.C.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800BABSIOVJ9U9136",
+      "name": "Banca di Ripatransone e del Fermano Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300M8XQL2SIHLTO81",
+      "name": "Banca di Udine Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "54930034BCN4UKQP6G13",
+      "name": "Banca per il Trentino Alto Adige – Bank für Trentino-Südtirol – Credito Cooperativo Italiano Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600781499E4A92317",
+      "name": "Banca per lo Sviluppo della Cooperazione di Credito S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E4E6DCD2D25E30",
+      "name": "Banco BPM S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600F20AB1ACA60919",
+      "name": "Banco Fiorentino - Mugello Impruneta Signa - Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800AGKVL18YKQSV51",
+      "name": "Banco Marchigiano Credito Cooperativo",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300VD62S16PRFF473",
+      "name": "Banco di Sardegna S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300PHVEBLXGO8CN25",
+      "name": "Bibanca S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300V1VN70Q7PQ7234",
+      "name": "CA Auto Bank S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300P123CGXBLT3M90",
+      "name": "CASSA RURALE ED ARTIGIANA DI BINASCO - CREDITO COOPERATIVO Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800Y98OCZVJIM5C04",
+      "name": "CASSA RURALE ED ARTIGIANA DI CANTÙ BANCA DI CREDITO COOPERATIVO - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600949D9905878C77",
+      "name": "CASSA RURALE ED ARTIGIANA DI RIVAROLO MANTOVANO (MANTOVA) CREDITO COOPERATIVO - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300JXVNVNY1YSBO15",
+      "name": "CASSA RURALE VAL DI SOLE - Banca di Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493001TFWOL7W94IZ53",
+      "name": "CHIANTIBANCA - CREDITO COOPERATIVO - S.C.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300R3XR02910GZ080",
+      "name": "CORTINABANCA - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600516E0DFDFB1A29",
+      "name": "CREDITO COOPERATIVO DI CARAVAGGIO ADDA E CREMASCO - CASSA RURALE - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "LOO0AWXR8GF142JCO404",
+      "name": "Cassa Centrale Banca - Credito Cooperativo Italiano S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300YHNUGLS407SF83",
+      "name": "Cassa Padana Banca di Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300L4VGUHIHBN5T53",
+      "name": "Cassa Rurale Alta Valsugana Banca di Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493006IXEI238WEWX48",
+      "name": "Cassa Rurale AltoGarda - Rovereto - Banca di Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300PKIBU2YUNTH225",
+      "name": "Cassa Rurale Val di Fiemme Banca di Credito Cooperativo Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300FZTQNO0EOY4Y45",
+      "name": "Cassa Rurale Val di Non - Rotaliana e Giovo - Banca di Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300LFHTJF2OGIXL33",
+      "name": "Cassa Rurale Vallagarina - Banca di Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300HM84IFXD1X6652",
+      "name": "Cassa Rurale Valsugana e Tesino - Banca di Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "54930051952BDB4UR393",
+      "name": "Cassa Rurale di Ledro - Banca di Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300MZA4CBXT81MS60",
+      "name": "Cassa Rurale ed Artigiana di Borgo San Giacomo (Brescia) - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900A89KU7DB0XKP06",
+      "name": "Cassa Rurale ed Artigiana di Boves - Banca di Credito Cooperativo (Boves - Cuneo) - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156009F4602B5E67F66",
+      "name": "Cassa Rurale ed Artigiana di Castellana Grotte - Credito Cooperativo - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600185B3DB18DA514",
+      "name": "Castagneto Banca 1910 – Credito Cooperativo – S.C.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900NQZHRIVDUZTC59",
+      "name": "CentroMarca Banca - Credito Cooperativo di Treviso e Venezia, Società Cooperativa per azioni",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300BDK2FS7ZK39197",
+      "name": "Compass Banca S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600A15AB095A07855",
+      "name": "Credem - Euromobiliare Private Banking S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156006E5A083C759043",
+      "name": "Credito Cooperativo - Cassa Rurale ed Artigiana del Friuli-Venezia Giulia (abbreviato Cassa Rurale FVG) - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600C58CB170C66887",
+      "name": "Credito Cooperativo - Cassa Rurale ed Artigiana di Paliano - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560046D2F4157A3552",
+      "name": "Credito Cooperativo Cassa Rurale ed Artigiana di Erchie - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300FO5ANZMIVPNN87",
+      "name": "Credito Cooperativo Friuli - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600BCA706E397CE36",
+      "name": "Credito Cooperativo Mediocrati - Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300IMLK876H8BDA38",
+      "name": "Credito Cooperativo Ravennate, Forlivese e Imolese Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600810761E5145524",
+      "name": "Credito Cooperativo Romagnolo - BCC di Cesena e Gatteo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156005B55CF2C496C85",
+      "name": "Credito Cooperativo Valdarno Fiorentino Banca di Cascia - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600AD83B2B6317788",
+      "name": "Credito Emiliano Holding S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156004B244AA70DE787",
+      "name": "Credito Emiliano S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007809B0C5D5EC30",
+      "name": "Credito Padano Banca di Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007D348794DB1690",
+      "name": "Crédit Agricole Italia S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156006ACD5E92B0C985",
+      "name": "Deutsche Bank Mutui S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900SS7ZWCX82U3W60",
+      "name": "Deutsche Bank S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "213800YGLP66PQFJDE14",
+      "name": "Emil Banca - Credito Cooperativo - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300NCMRN7QO6TPB94",
+      "name": "FPB Cassa di Fassa Primiero Belluno – Banca di Credito Cooperativo – Società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300XGJX6FOWLOI640",
+      "name": "Fideuram - Intesa Sanpaolo Private Banking S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156001CB574B6939179",
+      "name": "Findomestic Banca S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300L7YCATGO57ZE10",
+      "name": "FinecoBank S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "NNVPP80YIZGEY2314M97",
+      "name": "ICCREA Banca S.p.A. - Istituto Centrale del Credito Cooperativo",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156004F298245FBB836",
+      "name": "Intesa Sanpaolo Private Banking S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "2W8N8UU78PMDQKZENC08",
+      "name": "Intesa Sanpaolo S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560095E5C286EA9562",
+      "name": "Isybank S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5493000IPQ5EZ5Y4WC35",
+      "name": "La Cassa Rurale – Credito Cooperativo Adamello Giudicarie Valsabbia Paganella - Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "PSNL19R2RXX5U3QWHI44",
+      "name": "Mediobanca - Banca di Credito Finanziario S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600DDCE9083CAC598",
+      "name": "Mediobanca Premier S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "81560016432945B31773",
+      "name": "PrimaCassa - Credito Cooperativo FVG - società cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "529900ARX9C44EDFQG43",
+      "name": "Raiffeisenkasse Ritten Genossenschaft - Cassa Rurale Renon Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600A9CA782010F012",
+      "name": "Raiffeisenkasse St. Martin in Passeier Genossenschaft - Cassa Raiffeisen di San Martino in Passiria Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E568401B26FB47",
+      "name": "RivieraBanca Credito Cooperativo di Rimini e Gradara s.c.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600BDBBCC1431D872",
+      "name": "RomagnaBanca Credito Cooperativo Romagna Est e Sala di Cesenatico s.c., or, in short form, \"RomagnaBanca Credito Cooperativo s.c.\"",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300O0YQXDOJB36Y73",
+      "name": "Santander Consumer Bank S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600E96158FB8FF364",
+      "name": "Sicilbanca Credito Cooperativo Italiano - Societá Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300SAMQW7TYZ1TR74",
+      "name": "Société Générale Securities Services S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300MJE0EYLRQ0SS55",
+      "name": "Stellantis Financial Services Italia S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600DAF12F47DD1E35",
+      "name": "Terre Etrusche di Valdichiana e di Maremma - Credito Cooperativo – S.C.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "549300TRUWO2CD2G5692",
+      "name": "UniCredit S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "5299009VRTVEID33F522",
+      "name": "VALPOLICELLA BENACO BANCA CREDITO COOPERATIVO (VERONA) - SOCIETA' COOPERATIVA",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "8156007AE27B7429B185",
+      "name": "Wise Dialog Bank S.p.A.",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "815600810B937CD30406",
+      "name": "ZKB ZADRUŽNA KRAŠKA BANKA TRST GORICA Zadruga - ZKB CREDITO COOPERATIVO DI TRIESTE E GORIZIA Società Cooperativa",
+      "source": "ecb_ssm",
+      "country": "Italy"
+    },
+    {
+      "lei": "353800V2V8PUY9TK3E06",
+      "name": "Mitsubishi UFJ Financial Group (MUFG)",
+      "source": "manual",
+      "country": "JP"
+    },
+    {
+      "lei": "549300HS3WTRS6D88H32",
+      "name": "Mizuho Financial Group",
+      "source": "manual",
+      "country": "JP"
+    },
+    {
+      "lei": "35380028MYWPB6AUO129",
+      "name": "Sumitomo Mitsui Financial Group (SMFG)",
+      "source": "manual",
+      "country": "JP"
+    },
+    {
+      "lei": "549300FXBIWWGK7T0Y98",
+      "name": "\"Swedbank\" AS",
+      "source": "ecb_ssm",
+      "country": "Latvia"
+    },
+    {
+      "lei": "549300YW95G1VBBGGV07",
+      "name": "AS \"SEB banka\"",
+      "source": "ecb_ssm",
+      "country": "Latvia"
+    },
+    {
+      "lei": "2138009Y59EAR7H1UO97",
+      "name": "AS “Citadele banka”",
+      "source": "ecb_ssm",
+      "country": "Latvia"
+    },
+    {
+      "lei": "9845006C7B5CC707X660",
+      "name": "Swedbank Baltics AS",
+      "source": "ecb_ssm",
+      "country": "Latvia"
+    },
+    {
+      "lei": "549300TK038P6EV4YU51",
+      "name": "AB Artea bankas",
+      "source": "ecb_ssm",
+      "country": "Lithuania"
+    },
+    {
+      "lei": "549300SBPFE9JX7N8J82",
+      "name": "AB SEB bankas",
+      "source": "ecb_ssm",
+      "country": "Lithuania"
+    },
+    {
+      "lei": "485100NUOK3CEDCUTW40",
+      "name": "Revolut Bank UAB",
+      "source": "ecb_ssm",
+      "country": "Lithuania"
+    },
+    {
+      "lei": "485100FX5Y9YLAQLNP12",
+      "name": "Revolut Holdings Europe UAB",
+      "source": "ecb_ssm",
+      "country": "Lithuania"
+    },
+    {
+      "lei": "549300GH3DFCXVNBHE59",
+      "name": "„Swedbank”, AB",
+      "source": "ecb_ssm",
+      "country": "Lithuania"
+    },
+    {
+      "lei": "254900RNFMDM0P11YR84",
+      "name": "Atlantic Lux HoldCo S.à r.l.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "UAIAINAJ28P30E5GWE37",
+      "name": "BGL BNP Paribas",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300FOF121DSRG5867",
+      "name": "BPER Bank Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300FCO24OZMMRHE09",
+      "name": "Bankinter Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "9CZ7TVMR36CYD5TZBS50",
+      "name": "Banque Internationale à Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300N5WDXOIOYBFN31",
+      "name": "Banque Transatlantique Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "PSZXLEV07O5MHRRFCW56",
+      "name": "Banque de Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "R7CQUF1DQM73HUTV1078",
+      "name": "Banque et Caisse d’Epargne de l’Etat, Luxembourg",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300UA2M7UCJX8SE64",
+      "name": "CA Indosuez Wealth (Europe)",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "2221007YM6XY7PI28I04",
+      "name": "CaixaBank Wealth Management Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "9KBIXMK6BHK6T4OV3F48",
+      "name": "Commerzbank Finance & Covered Bond S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "SVY0KHTJZBP60K295346",
+      "name": "DZ PRIVATBANK S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "529900FIAMEJDQ8C9097",
+      "name": "Deutsche Bank Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "529900HB1NOUF0UAGK18",
+      "name": "Eurobank Private Bank Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "213800CD235ST4TMNL94",
+      "name": "HSBC Private Bank (Luxembourg) S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300BT51N3KAXDPP56",
+      "name": "ING Luxembourg",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300H62SNDRT0PS319",
+      "name": "Intesa Sanpaolo Bank Luxembourg S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300AQRUHYWYR0T637",
+      "name": "Intesa Sanpaolo Holding International S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300OZSHE4H5BFQA66",
+      "name": "Intesa Sanpaolo Wealth Management S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "222100K6QL2V4MLHWQ08",
+      "name": "LSF Nani Investments S.à.r.l.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300DV870NBWY5W279",
+      "name": "Mediobanca International (Luxembourg) S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "529900PYIF3AF0FSQG43",
+      "name": "Mizuho Trust & Banking (Luxembourg) SA",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "CAF7KSNT1N0CTA93RI98",
+      "name": "NORD/LB Luxembourg S.A. Covered Bond Bank",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "222100G2HV6K1ZW7DW18",
+      "name": "Nani Holdings S.à.r.l.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "AELIZRVUG3YVEFFUVL97",
+      "name": "Natixis Corporate and Investment Banking Luxembourg",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "22210058UCKT3BJTCN24",
+      "name": "OTP Luxembourg S.à.r.l.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "2138006FNR865VUT1Q20",
+      "name": "RBS International Depositary Services S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "549300BI9FMGBXN2I036",
+      "name": "Société Générale Capital Market Finance S.A.",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "5493007Q432SOF1RTC02",
+      "name": "Société Générale Financing and Distribution",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "TPS0Q8GFSZF45ZZFL873",
+      "name": "Société Générale Luxembourg",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "529900I5EWMMMCSTS175",
+      "name": "UniCredit International Bank (Luxembourg) SA",
+      "source": "ecb_ssm",
+      "country": "Luxembourg"
+    },
+    {
+      "lei": "529900RWC8ZYB066JF16",
+      "name": "Bank of Valletta plc",
+      "source": "ecb_ssm",
+      "country": "Malta"
+    },
+    {
+      "lei": "549300X34UUBDEUL1Z91",
+      "name": "HSBC Bank Malta p.l.c.",
+      "source": "ecb_ssm",
+      "country": "Malta"
+    },
+    {
+      "lei": "213800TC9PZRBHMJW403",
+      "name": "MDB Group Limited",
+      "source": "ecb_ssm",
+      "country": "Malta"
+    },
+    {
+      "lei": "529900SYUCFQHI3JZQ05",
+      "name": "MeDirect Bank (Malta) plc",
+      "source": "ecb_ssm",
+      "country": "Malta"
+    },
+    {
+      "lei": "BFXS5XCH7N0Y05NIXW11",
+      "name": "ABN AMRO Bank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "G8ZTNESVNKW4NN761W05",
+      "name": "ABN AMRO Clearing Bank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "724500CH8CC5T0YOLT90",
+      "name": "ABN AMRO Hypotheken Groep B.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "724500A1FNICHSDF2I11",
+      "name": "ASN Bank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "724500C60L930FVHS484",
+      "name": "Ayvens Bank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "529900GGYMNGRQTDOO93",
+      "name": "BNG Bank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "DG3RU1DBUFHT4ZF9WN62",
+      "name": "Coöperatieve Rabobank U.A.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "635400JLGKETPVVGPW53",
+      "name": "De Lage Landen International B.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "L35YSDFOIH056VDJ2557",
+      "name": "GarantiBank International N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "3TK20IVIUJ8J3ZU0QE75",
+      "name": "ING Bank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "549300NYKK9MWM7GGW15",
+      "name": "ING Groep N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "724500GY4BYLAXLTAN38",
+      "name": "International Card Services B.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "549300772D1G8JPIUR96",
+      "name": "Knab N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "72450088V7QLGDPY6W41",
+      "name": "LP Group B.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "X3CZP3CK64YBHON1LE12",
+      "name": "NatWest Markets N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "JLP5FSPH9WPSHY3NIM24",
+      "name": "Nederlandse Waterschapsbank N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "549300UARE5MHTBUPJ19",
+      "name": "Promontoria 19 Coöperatie U.A.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "5493002PZJP4MPAK2748",
+      "name": "Promontoria Holding 101 B.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "724500JIWG886A9RRT57",
+      "name": "RBS Holdings N.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "724500XGC9SSQ81M6I94",
+      "name": "Rabo Groen Bank B.V.",
+      "source": "ecb_ssm",
+      "country": "Netherlands"
+    },
+    {
+      "lei": "95980020140005997493",
+      "name": "BBVA Instituição Financeira de Crédito, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300TW29K5QURDVU59",
+      "name": "BEST - Banco Electrónico de Serviço Total, SA",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "529900GYIFZ0EH50GF42",
+      "name": "Banco ActivoBank, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300QQJ6BNALGU6806",
+      "name": "Banco BIC Português, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "3DM5DPGI3W6OU6GJ4N92",
+      "name": "Banco BPI, SA",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "JU1U6S0DG9YLT7N8ZV32",
+      "name": "Banco Comercial Português, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "213800JCFD358CCSSK44",
+      "name": "Banco Credibom, SA",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "635400VIYABUSTRYT791",
+      "name": "Banco Primus, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300URJH9VSI58CS32",
+      "name": "Banco Santander Totta S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300KAXHDD341NRL28",
+      "name": "Caixa - Banco de Investimento, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "TO822O0VT80V06K0FH57",
+      "name": "Caixa Geral de Depósitos, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300WW40X9COOEW455",
+      "name": "Caixa-Participações, SGPS, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300EP6JOM2CY64233",
+      "name": "NOVO BANCO DOS AÇORES, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "5493009W2E2YDCXY6S81",
+      "name": "NOVO BANCO, S.A.",
+      "source": "ecb_ssm",
+      "country": "Portugal"
+    },
+    {
+      "lei": "549300S2T3FWVVXWJI89",
+      "name": "Slovenská sporiteľňa, a.s.",
+      "source": "ecb_ssm",
+      "country": "Slovakia"
+    },
+    {
+      "lei": "3157002JBFAI478MD587",
+      "name": "Tatra banka, a.s.",
+      "source": "ecb_ssm",
+      "country": "Slovakia"
+    },
+    {
+      "lei": "549300JB1P61FUTPEZ75",
+      "name": "Všeobecná úverová banka, a.s.",
+      "source": "ecb_ssm",
+      "country": "Slovakia"
+    },
+    {
+      "lei": "52990096Q5LMCH1WU462",
+      "name": "Československá obchodná banka, a.s.",
+      "source": "ecb_ssm",
+      "country": "Slovakia"
+    },
+    {
+      "lei": "529900VC4WC3QO8WTL13",
+      "name": "Addiko Bank d.d.",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "549300ECJDDLOVWWL932",
+      "name": "Banka Intesa Sanpaolo d.d.",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "315700RO18UEKF9GP419",
+      "name": "Banka Sparkasse d.d.",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "5493000UPYR7EEHN2R94",
+      "name": "Gorenjska Banka d.d., Kranj",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "5493001BABFV7P27OW30",
+      "name": "Nova Ljubljanska banka d.d., Ljubljana",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "549300J0GSZ83GTKBZ89",
+      "name": "OTP banka d.d.",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "549300O2UN9JLME31F08",
+      "name": "UniCredit Banka Slovenija d.d.",
+      "source": "ecb_ssm",
+      "country": "Slovenia"
+    },
+    {
+      "lei": "54930056IRBXK0Q1FP96",
+      "name": "ABANCA Corporación Bancaria, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "K8MS7FD7N5Z2WQ51AZ71",
+      "name": "Banco Bilbao Vizcaya Argentaria, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "95980020140005879929",
+      "name": "Banco Cetelem S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "2138001YBO7CJNQOEE37",
+      "name": "Banco Mediolanum, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "95980020140005816006",
+      "name": "Banco Occidental, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "5493006QMFDDMYWIAM13",
+      "name": "Banco Santander, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "959800MZYB6CKWA9K382",
+      "name": "Banco de Albacete, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "95980020140005881190",
+      "name": "Banco de Crédito Social Cooperativo, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "SI5RG2M0WQQLZCXKRM20",
+      "name": "Banco de Sabadell, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "VWMYAEQSTOPNV0SUGU82",
+      "name": "Bankinter, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "95980020140005970915",
+      "name": "CACEIS Bank Spain, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400AAPLXTJGKCMB39",
+      "name": "Caixa R. Altea, C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400NY7IQMBTTK4D30",
+      "name": "Caixa R. S. Vicent Ferrer de la Vall D’Uixó, C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "6354007ZW5CLO6YHGK36",
+      "name": "Caixa R. de Turís, C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400J15IRJJXMI6M28",
+      "name": "Caixa R.S. Josep de Vilavella, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400Q3SPCPIHXXGR35",
+      "name": "Caixa Rural De Callosa D'en Sarria Cooperativa De Credito Valenciana",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400FTUWGNM6CHRI73",
+      "name": "Caixa Rural Torrent, C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "7CUNS533WID6K7DGFI87",
+      "name": "CaixaBank, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400T8P82JKHPUBD58",
+      "name": "Caja R. Católico Agraria, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400JGUDBXA9SJAT89",
+      "name": "Caja R. La Junquera de Chilches, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400GCLK5ZHSHH5B80",
+      "name": "Caja R. S. Isidro de Vilafames, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400PG53OKXYYLRB68",
+      "name": "Caja R. S. Jaime Alquerías Niño Perdido S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400QRDROC5REDLP11",
+      "name": "Caja R. S. José de Burriana, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400T6AXCIH7EOTO46",
+      "name": "Caja R. S. José de Nules, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400LATQHBDJVK2O07",
+      "name": "Caja R. S. Roque de Almenara S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400AQCMGMEAGQB886",
+      "name": "Caja R. de Alginet, S.C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400OVO6HWLUD2YY08",
+      "name": "Caja R. de Cheste, S.C.C.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400TVFCZ8KWG6YZ06",
+      "name": "Caja R. de Villar, C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400AOYRRGOJUGAX32",
+      "name": "Caja de Crédito de Petrel, Caja Rural, C.C.V.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "635400CE9HHFB55PEY43",
+      "name": "Cajamar Caja Rural Sociedad Cooperativa de Crédito",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "529900SICIK5OVMVY186",
+      "name": "Deutsche Bank, S.A.E.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "549300OLBL49CW8CT155",
+      "name": "Ibercaja Banco, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "549300U4LIZV0REEQQ46",
+      "name": "Kutxabank, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "95980020140005635198",
+      "name": "Nuevo Micro Bank, S.A.U.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "95980020140006024944",
+      "name": "Open Bank, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "959800EPV2YFDAY45075",
+      "name": "Sabadell Consumer Finance S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "9598006VA7CEUXXG2H60",
+      "name": "Santander CACEIS Latam Holding 1, S.L.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "5493000LM0MZ4JPMGM90",
+      "name": "Santander Consumer Finance, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "959800PF0SJV8TSAB140",
+      "name": "Santander Investment, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "5493007SJLLCTM6J6M37",
+      "name": "Unicaja Banco, S.A.",
+      "source": "ecb_ssm",
+      "country": "Spain"
+    },
+    {
+      "lei": "9DJT3UXIJIZJI4WXO774",
+      "name": "Bank of America Corporation",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "6SHGI4ZSSLCXXQSBB395",
+      "name": "Citigroup Inc.",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "8I5DZWZKVSZI1NUHU748",
+      "name": "JPMorgan Chase & Co.",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "IGJSJL3JD5P30I6NJZ34",
+      "name": "Morgan Stanley",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "549300ZFEEJ2IP5VME73",
+      "name": "State Street Corporation",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "WFLLPEPC7FZXENRZV188",
+      "name": "The Bank of New York Mellon Corporation",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "784F5XWPLTWKTBV3E584",
+      "name": "The Goldman Sachs Group, Inc.",
+      "source": "manual",
+      "country": "US"
+    },
+    {
+      "lei": "PBLD0EJDB5FWOLXP3B76",
+      "name": "Wells Fargo & Company",
+      "source": "manual",
+      "country": "US"
+    }
+  ]
+}

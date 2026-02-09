@@ -11,7 +11,39 @@ Data Sourcing and Generation Steps:
      Download: LEI-CDF v3.1 (Concatenated File) and RR-CDF v2.1
      Extract: Unzip into external/lei/
 
-2. GENERATE SUBSET FILES
+2. GENERATE ANCHOR LEI LIST
+   Script: projects/ores.codegen/src/lei_extract_anchor_leis.py
+   Command: python3 lei_extract_anchor_leis.py
+   Output: external/lei/anchor_leis.json
+
+   Extracts LEIs from regulatory supervised entity lists to ensure major
+   financial institutions are always included in subsets. Sources:
+
+   a) ECB SSM Significant Institutions
+      File: ssm.listofsupervisedentities202512.en.xlsx
+      URL: https://www.bankingsupervision.europa.eu/framework/supervised-banks/html/index.en.html
+      Coverage: 112 significant banking groups in the Eurozone plus their
+      subsidiaries (~800 entities total).
+
+   b) Bank of England PRA Regulated Banks
+      File: Banks List 2602.csv
+      URL: https://www.bankofengland.co.uk/prudential-regulation/authorisations/which-firms-does-the-pra-regulate
+      Coverage: ~284 PRA-regulated banks (UK-incorporated, overseas branches
+      in UK, Gibraltar, EEA in supervised run-off).
+
+   c) Hand-curated G-SIB LEIs (US, Asia-Pacific, Canada)
+      URL: https://www.fsb.org/2024/11/2024-list-of-global-systemically-important-banks-g-sibs/
+      Coverage: Major US holding companies (JPMorgan Chase, Citigroup,
+      Goldman Sachs, etc.), Japanese mega-banks (MUFG, Mizuho, SMFG),
+      Chinese big-four banks (ICBC, BoC, CCB, ABC), and Canadian banks
+      (RBC, TD).
+
+   Note: The US OCC national banks list (national-by-name.xlsx, from
+   https://www.occ.treas.gov/topics/charters-and-licensing/financial-institution-lists/index-financial-institution-lists.html)
+   was evaluated but does not contain LEI codes, so US coverage relies on
+   hand-curated G-SIB LEIs instead.
+
+3. GENERATE SUBSET FILES
    Script: projects/ores.codegen/scripts/generate_lei_subsets.sh
    Command: ./generate_lei_subsets.sh
    Output: Both small and large subsets in external/lei/
@@ -20,7 +52,7 @@ Data Sourcing and Generation Steps:
      ./generate_lei_subsets.sh --small    # Small subset only
      ./generate_lei_subsets.sh --large    # Large subset only
 
-3. COMMIT TO REPOSITORY
+4. COMMIT TO REPOSITORY
    Note: Full LEI files are too large to commit (~4.3 GB).
    Only subset files should be committed.
 
@@ -77,7 +109,7 @@ Large (~50K entities):
   per_country=60, per_depth=30, per_sector=40
   per_category=60, per_fund_type=30, per_legal_form=10
 
-4. GENERATE SQL POPULATE FILES
+5. GENERATE SQL POPULATE FILES
    Script: projects/ores.codegen/scripts/generate_lei_metadata.sh
    Command: ./generate_lei_metadata.sh
    Or directly: python3 projects/ores.codegen/src/lei_generate_metadata_sql.py
@@ -107,6 +139,6 @@ Large (~50K entities):
    Each artefact populate file uses PL/pgSQL with VALUES clauses for idempotent
    bulk insertion: lookup dataset_id, DELETE existing, INSERT from VALUES.
 
-5. COMMIT GENERATED SQL
+6. COMMIT GENERATED SQL
    git add projects/ores.sql/populate/lei/
    git commit -m "[sql] Generate LEI populate files"

@@ -236,8 +236,7 @@ bool ClientPartyModel::canFetchMore(const QModelIndex& parent) const {
     if (parent.isValid())
         return false;
 
-    const bool has_more = parties_.size() < page_size_ &&
-                          parties_.size() < total_available_count_;
+    const bool has_more = parties_.size() < total_available_count_;
     return has_more && !is_fetching_;
 }
 

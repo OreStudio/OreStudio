@@ -349,10 +349,7 @@ bool ClientCurrencyModel::canFetchMore(const QModelIndex& parent) const {
     if (parent.isValid())
         return false;
 
-    // For Qt's automatic fetch-more, we only allow it for appending data
-    // (e.g., infinite scroll). Page-based navigation uses load_page() instead.
-    const bool has_more = currencies_.size() < page_size_ &&
-                          currencies_.size() < total_available_count_;
+    const bool has_more = currencies_.size() < total_available_count_;
 
     BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
                                << " (loaded: " << currencies_.size()

@@ -591,6 +591,36 @@ Acceptance criteria:
 - Generated test data has valid FK references.
 - Existing generator API is preserved or extended in a backwards-compatible way.
 
+*** Add RLS-aware tenant provisioning for tests                        :code:
+
+Repository tests for the =tenant= entity cannot use the standard
+=database_helper= because the database has Row-Level Security (RLS) policies on
+the =tenant= table. The test session runs under an existing test tenant context,
+and RLS prevents that session from inserting new tenants via the normal
+repository path.
+
+This is a separate problem from FK-aware generators (which solve dangling
+foreign key references). The tenant issue is that the security policy itself
+blocks the operation entirely.
+
+Possible approaches:
+
+- A privileged =tenant_provisioning_helper= that uses direct SQL with
+  =SET LOCAL role = 'admin'= or similar role escalation.
+- A superuser/admin database context that bypasses RLS for tenant provisioning.
+- Pre-seeding test tenants outside the RLS-scoped transaction.
+
+Affected tests:
+
+- =repository_tenant_repository_tests.cpp=: all 6 TEST_CASEs are currently
+  SKIP'd with "Requires RLS-aware tenant provisioning".
+
+Acceptance criteria:
+
+- Tenant repository tests can create, read, and query tenants in a test context.
+- The solution does not weaken RLS policies in production.
+- All 6 SKIP'd tenant tests are re-enabled and passing.
+
 *** Fix "informations" plural naming in contact information entities    :code:
 
 The plural of "information" is "information" (uncountable noun). Several codegen

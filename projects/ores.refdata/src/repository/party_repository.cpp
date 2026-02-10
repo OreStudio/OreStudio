@@ -99,6 +99,46 @@ party_repository::read_latest_by_code(const std::string& code) {
 }
 
 std::vector<domain::party>
+party_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest parties with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("full_name"_c) |
+        sqlgen::offset(offset) |
+        sqlgen::limit(limit);
+
+    return execute_read_query<party_entity, domain::party>(
+        ctx_, query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(), "Reading latest parties with pagination.");
+}
+
+std::uint32_t party_repository::get_total_party_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party count";
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<party_entity>(
+        sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party count: " << count;
+    return count;
+}
+
+std::vector<domain::party>
 party_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. Id: " << id;
 

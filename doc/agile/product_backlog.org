@@ -67,6 +67,36 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Create a AAD build of ORE                                          :code:
+
+Requires further investigation.
+
+Links:
+
+- [[https://github.com/auto-differentiation/QuantLibAAD][GH: QuantLibAAD]]: "As a demonstrator of integration of the XAD automatic
+  differentiation tool with real-world code, the latest release of QuantLib can
+  calculate risks (sensitivities) with the help of XAD. The performance achieved
+  on sample applications is many-fold superior to what has been reported
+  previously with other tools. This demonstrates production quality use of the
+  XAD library in a code-base of several hundred thousand lines."
+- [[https://github.com/auto-differentiation/xad][GH: xad]]: "XAD is a high-performance C++ automatic differentiation library
+  designed for large-scale, performance-critical systems. It provides forward
+  and adjoint (reverse) mode automatic differentiation via operator overloading,
+  with a strong focus on: Low runtime overhead; Minimal memory footprint;
+  Straightforward integration into existing C++ codebases. For Monte Carlo and
+  other repetitive workloads, XAD also offers optional JIT backend support,
+  enabling record-once / replay-many execution for additional performance boost."
+- [[https://github.com/da-roth/forge][GH: forge]]: "Forge compiles mathematical expressions to optimized x86-64
+  machine code with automatic gradient computation. It follows a record-once,
+  compile-once, evaluate-many paradigm designed for workloads where the same
+  computation is repeated with varying inputs."
+- [[https://github.com/da-roth/xad-forge][GH: xad-forge]]: "Forge JIT backends for XAD automatic differentiation. This
+  library implements JIT backends for XAD using the Forge C API as the code
+  generation engine. When XAD records a computation graph, xad-forge compiles it
+  to native x86-64 machine code for fast re-evaluation."
+- [[https://sourceforge.net/p/quantlib/mailman/message/59293906/][[Quantlib-users] QuantLibAAD: AAD with JIT Replay (Record-Once / Replay-Many)]]:
+  email discussing XAD and montecarlo.
+
 *** Add ores.compute or ores.grid                                      :code:
 
 Analysis with Gemini:
@@ -995,6 +1025,153 @@ Description
 - Description: Partner An entity with which this party trades from time to time,
   ie. with which it acts as a counterparty on some transactions. This role is
   used for static reference data, not individual transactions.
+
+*** Implement party-level RLS isolation                                :code:
+
+Add a second layer of Row-Level Security that isolates party-scoped data
+(counterparties, books, portfolios, trades) within a tenant. At login, compute
+the user's visible party set via a recursive CTE on the party hierarchy and
+store it as a PostgreSQL session variable (=app.visible_party_ids=). RLS
+policies on party-scoped tables filter using =party_id = ANY(...)=.
+
+See =projects/ores.refdata/modeling/multi_party.org= and
+=doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= for the full
+architecture.
+
+**** Acceptance Criteria
+
+- =app.visible_party_ids= session variable set at login.
+- Party-scoped tables have RLS policies filtering by visible party set.
+- System party users see all parties in the tenant.
+- Leaf party users see only their own data.
+- Mid-level party users see their subtree.
+
+*** Extend login flow with party selection                             :code:
+
+After authentication, look up the user's associated parties from
+=account_parties=. If one party, auto-select. If multiple, return the party list
+to the client for selection. The client displays a party picker widget. After
+selection, compute the visible party set and bind to the session.
+
+**** Acceptance Criteria
+
+- Login response includes available parties.
+- Party picker displayed when user has multiple parties.
+- Selected party stored in session and displayed in application window.
+- Party context immutable for session lifetime.
+
+*** Rename tenant types                                                :code:
+
+Rename existing tenant types: =platform= to =system=, =organisation= to
+=production=, =test= to =automation=. Add new =evaluation= type. Update
+population scripts, validation functions, and any code referencing old type
+names.
+
+See =doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= for the
+rationale and full type descriptions.
+
+**** Acceptance Criteria
+
+- =ores_iam_tenant_types_tbl= contains: system, production, evaluation,
+  automation.
+- All existing references to old type names updated.
+- Tenant provisioner uses new type names.
+
+*** Add party types lookup table                                       :code:
+
+Create =ores_refdata_party_types_tbl= (or similar) with two types: =system= and
+=operational=. The system party is auto-created during tenant provisioning. The
+operational type is for business entities created by users.
+
+**** Acceptance Criteria
+
+- Party types table created with system and operational types.
+- Tenant provisioning auto-creates system party for new tenants.
+- Party creation validates type against lookup table.
+
+*** Implement four-eyes authorisation framework                        :code:
+
+Add a generic authorisation queue that supports four-eyes (maker-checker)
+workflows. Sensitive operations in production tenants (counterparty onboarding,
+party modifications) require a second authoriser to approve. The framework should
+be entity-agnostic: any operation that produces a pending change can be routed
+through the queue.
+
+**** Acceptance Criteria
+
+- Pending changes stored with maker identity and timestamp.
+- Checker can approve or reject pending changes.
+- Approved changes applied atomically.
+- Rejected changes logged with reason.
+- Framework is reusable across entity types.
+
+*** Add KYC workflow for counterparty onboarding                       :code:
+
+In production tenants, counterparty creation requires a KYC (Know Your Customer)
+process with supporting documentation. Each operational party manages their own
+counterparties independently. The workflow should integrate with the four-eyes
+authorisation framework.
+
+**** Acceptance Criteria
+
+- Counterparty creation in production tenants goes through KYC workflow.
+- Supporting documentation can be attached.
+- Four-eyes approval required before counterparty is active.
+- Each party's counterparties are isolated from other parties.
+
+*** Lock down data librarian for production tenants                    :code:
+
+The data librarian currently allows unrestricted dataset publication. In
+production tenants, restrict operations to safe, auditable actions. Bulk imports,
+GLEIF-based party creation, and other evaluation-only features should be gated by
+the tenant type.
+
+**** Acceptance Criteria
+
+- Librarian checks tenant type before allowing operations.
+- Bulk counterparty import disabled in production tenants.
+- GLEIF-based party creation disabled in production tenants.
+- Audit trail for all librarian operations.
+
+*** Add GLEIF-based evaluation tenant onboarding wizard                :code:
+
+For evaluation tenants, provide a wizard that creates operational parties from
+GLEIF/LEI data. The wizard is a separate action (not part of tenant
+provisioning) gated by the =evaluation= tenant type. It imports a root LEI
+entity and its corporate descendants as operational parties.
+
+**** Acceptance Criteria
+
+- Wizard available only for evaluation tenants.
+- User selects root LEI entity from a searchable picker.
+- Root party and descendants imported with proper hierarchy.
+- Party identifiers (LEI codes) stored in junction table.
+
+*** Add currency and country party-visibility junctions                :code:
+
+Add junction tables (=party_currencies=, =party_countries=) that control which
+currencies and countries a given party can see and use. The underlying reference
+data definitions remain shared at the tenant level; only visibility is
+per-party.
+
+**** Acceptance Criteria
+
+- Junction tables created with proper constraints.
+- Party-scoped queries for currencies and countries filter through junctions.
+- Default: all currencies/countries visible to all parties (opt-in restriction).
+
+*** Add self-registration and approval for production tenants          :code:
+
+Allow tenant administrators to self-register. A super admin reviews and approves
+the registration via the authorisation queue framework. On approval, the tenant
+is created with a system party and the registrant becomes the tenant admin.
+
+**** Acceptance Criteria
+
+- Self-registration form captures tenant details.
+- Registration enters authorisation queue for super admin approval.
+- Approved registration creates tenant, system party, and admin account.
+- Rejected registration logged with reason.
 
 *** Modes of operation                                                 :code:
 

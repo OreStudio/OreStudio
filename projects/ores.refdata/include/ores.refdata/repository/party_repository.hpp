@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -57,6 +58,21 @@ public:
     std::vector<domain::party> read_latest();
     std::vector<domain::party> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::party> read_latest_by_code(const std::string& code);
+
+    /**
+     * @brief Reads latest parties with pagination support.
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of parties within the specified range
+     */
+    std::vector<domain::party> read_latest(std::uint32_t offset,
+                                            std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active parties.
+     * @return Total number of parties with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_party_count();
 
     std::vector<domain::party> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

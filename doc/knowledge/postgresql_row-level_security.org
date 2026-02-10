@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: B28747DF-A735-1C84-4E43-11ADFA8B05E3
+:ROAM_ALIASES: RLS
+:END:
+#+title: PostgreSQL Row-Level Security
+#+author: Marco Craveiro
+#+startup: inlineimages
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+This document describes RLS in general, not the specifics of how we use it.
+
+*PostgreSQL Row-Level Security (RLS)* is a built-in database feature that
+provides fine-grained access control by restricting which rows of a table a user
+can see or modify, based on defined security policies.
+
+It acts as an additional layer on top of standard SQL privileges (GRANT/REVOKE).
+While table-level permissions control whether a user can access a table at all,
+RLS filters individual rows dynamically during SELECT, INSERT, UPDATE, and
+DELETE operations.
+
+* Key Characteristics
+
+RLS is enabled per table using:
+
+#+begin_src sql
+alter table table_name enable row level security;
+#+end_src
+
+Once enabled, access to rows requires at least one matching *policy* (otherwise
+a default-deny behavior applies — no rows are visible/modifiable). Policies are
+created with =CREATE POLICY= and use a Boolean expression to determine which
+rows are accessible, /e.g./:
+
+- =current_user = owner= or
+- =tenant_id = current_setting('app.current_tenant')=
+
+Policies can apply to specific commands (=SELECT=, =INSERT=, =UPDATE=, =DELETE=,
+or =ALL=), specific roles, or be permissive/restrictive. Table owners and
+superusers typically bypass RLS (unless explicitly configured otherwise).
+
+Whole-table operations like =TRUNCATE= or adding foreign keys are not affected
+by RLS.
+
+* Common Use Cases
+
+- Multi-tenant applications (each tenant only sees their own data)
+- User-specific data isolation (e.g., employees see only their department's
+  records)
+- Implementing authorization logic directly in the database for consistency and
+  defense-in-depth
+
+RLS helps enforce data privacy and security at the database level, reducing the
+risk of accidental or malicious over-exposure of data through application bugs
+or direct database access.

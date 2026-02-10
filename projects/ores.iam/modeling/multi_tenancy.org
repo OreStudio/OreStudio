@@ -11,7 +11,8 @@
 ORE Studio implements a multi-tenant architecture where each tenant's data is
 isolated at the database level using PostgreSQL Row-Level Security (RLS). This
 document describes how tenant context flows through the system from user
-authentication to database queries.
+authentication to database queries. For multi-party support see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party
+Architecture]].
 
 * Core Concepts
 
@@ -107,6 +108,77 @@ The max UUID was chosen because:
 - It is a valid UUID that will not conflict with randomly generated UUIDs
 - It is easily recognizable in logs and debugging
 - It avoids issues with nil UUID (all zeros) which some databases treat as NULL
+
+** Tenant Types
+
+Each tenant has a type that determines its operational characteristics, available
+features, and the level of controls enforced. Tenant types are stored in the
+=ores_iam_tenant_types_tbl= lookup table and validated on tenant creation.
+
+| Type           | Purpose                                          | Controls              |
+|----------------+--------------------------------------------------+-----------------------|
+| =system=       | Platform administration and shared governance    | Platform-managed      |
+| =production=   | Real customer organisations                      | Strict                |
+| =evaluation=   | Realistic environments for demos and testing     | Relaxed               |
+| =automation=   | Automated test infrastructure                    | None (programmatic)   |
+
+*** =system=
+
+The system tenant (tenant 0, max UUID) is the platform-level tenant that owns
+shared governance data such as the tenant registry, system-wide permissions, and
+reference datasets in the data librarian. There is exactly one system tenant per
+deployment. Users logged into the system tenant are super administrators with
+cross-tenant visibility.
+
+*** =production=
+
+Production tenants represent real customer organisations with isolated business
+operations. These tenants enforce strict operational controls:
+
+- Four-eyes authorisation for sensitive operations (e.g., counterparty
+  onboarding, party modifications).
+- KYC-gated counterparty creation with supporting documentation.
+- Data librarian operations restricted to safe, auditable actions.
+- No bulk import of parties or counterparties from external datasets.
+
+*** =evaluation=
+
+Evaluation tenants provide realistic, production-like environments for
+demonstrations, user acceptance testing, QA, and system evaluation. Controls are
+relaxed to allow rapid environment setup:
+
+- GLEIF-based tenant onboarding available (importing root party and child
+  parties from LEI data).
+- Bulk counterparty import from LEI datasets via the data librarian.
+- No four-eyes requirement for sensitive operations.
+- Clearly labelled in the UI to prevent confusion with production tenants.
+
+Evaluation tenants are suitable for pre-production testing, sales demos, training
+environments, and exploratory testing by QA teams.
+
+*** =automation=
+
+Automation tenants are created and destroyed programmatically by test harnesses
+for unit, integration, and load testing. They are not intended for human
+interaction:
+
+- Created with random UUIDs for isolation between test runs.
+- No UI-driven workflows; all operations performed via test fixtures.
+- Parallel test execution without interference.
+- Ephemeral; typically torn down after test completion.
+
+** Party Types and Multi-Party Architecture
+
+Each tenant contains parties that represent business units. Parties have their
+own type taxonomy and RLS-based data isolation. See the companion document
+=projects/ores.refdata/modeling/multi_party.org= for the full multi-party
+architecture, including party-level RLS, visible party sets, and the login flow
+extension.
+
+| Party Type      | Purpose                                    | Auto-created |
+|-----------------+--------------------------------------------+--------------|
+| =system=        | Administrative party (party 0)             | Yes          |
+| =operational=   | Business entity (trades, books, KYC)       | No           |
 
 ** Row-Level Security
 

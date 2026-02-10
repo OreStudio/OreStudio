@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
-Contains all of the Claude Code skills used with ORE Studio. They are generated
+Contains all of the [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Claude Code Skills]] used with ORE Studio. They are generated
 using the org-mode publishing system. To deploy skills see [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]].
 
 * Skill Catalogue

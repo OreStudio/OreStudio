@@ -23,14 +23,12 @@
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string party_key_extractor(const refdata::domain::party& e) {
@@ -135,84 +133,134 @@ QVariant ClientPartyModel::headerData(
     }
 }
 
-void ClientPartyModel::refresh() {
+void ClientPartyModel::refresh(bool replace) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+
     if (is_fetching_) {
-        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh party model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting party fetch";
-    is_fetching_ = true;
+    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(parties_.size());
 
+    if (replace) {
+        if (!parties_.empty()) {
+            beginResetModel();
+            parties_.clear();
+            recencyTracker_.clear();
+            pulseManager_->stop_pulsing();
+            total_available_count_ = 0;
+            endResetModel();
+        }
+    }
+
+    fetch_parties(offset, page_size_);
+}
+
+void ClientPartyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    if (!parties_.empty()) {
+        beginResetModel();
+        parties_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
+    }
+
+    fetch_parties(offset, limit);
+}
+
+void ClientPartyModel::fetch_parties(std::uint32_t offset,
+                                      std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<ClientPartyModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .parties = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+    QFuture<FetchResult> future =
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making a parties request with offset="
+                                           << offset << ", limit=" << limit;
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .parties = {}, .total_available_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            refdata::messaging::get_parties_request request;
-            auto payload = request.serialize();
+                refdata::messaging::get_parties_request request;
+                request.offset = offset;
+                request.limit = limit;
 
-            frame request_frame(
-                message_type::get_parties_request,
-                0, std::move(payload)
-            );
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .parties = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch parties: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .parties = {}, .total_available_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch parties: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .parties = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
+                BOOST_LOG_SEV(lg(), debug) << "Received " << result->parties.size()
+                                           << " parties, total available: "
+                                           << result->total_available_count;
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .parties = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response = refdata::messaging::get_parties_response::
-                deserialize(*payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .parties = {},
-                        .error_message = "Failed to deserialize response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->parties.size()
-                                       << " parties";
-            return {.success = true, .parties = std::move(response->parties),
-                    .error_message = {}, .error_details = {}};
-        }, "parties");
-    });
+                return {.success = true, .parties = std::move(result->parties),
+                        .total_available_count = result->total_available_count,
+                        .error_message = {}, .error_details = {}};
+            }, "parties");
+        });
 
     watcher_->setFuture(future);
 }
 
+bool ClientPartyModel::canFetchMore(const QModelIndex& parent) const {
+    if (parent.isValid())
+        return false;
+
+    const bool has_more = parties_.size() < total_available_count_;
+    return has_more && !is_fetching_;
+}
+
+void ClientPartyModel::fetchMore(const QModelIndex& parent) {
+    if (parent.isValid() || is_fetching_)
+        return;
+
+    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
+    refresh(false);
+}
+
+void ClientPartyModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
+}
+
 void ClientPartyModel::onPartysLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "On parties loaded event.";
     is_fetching_ = false;
 
     const auto result = watcher_->result();
@@ -224,18 +272,29 @@ void ClientPartyModel::onPartysLoaded() {
         return;
     }
 
-    beginResetModel();
-    parties_ = std::move(result.parties);
-    endResetModel();
+    total_available_count_ = result.total_available_count;
 
-    const bool has_recent = recencyTracker_.update(parties_);
-    if (has_recent && !pulseManager_->is_pulsing()) {
-        pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " parties newer than last reload";
+    const int old_size = static_cast<int>(parties_.size());
+    const int new_count = static_cast<int>(result.parties.size());
+
+    if (new_count > 0) {
+        beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
+        parties_.insert(parties_.end(),
+            std::make_move_iterator(result.parties.begin()),
+            std::make_move_iterator(result.parties.end()));
+        endInsertRows();
+
+        const bool has_recent = recencyTracker_.update(parties_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " parties newer than last reload";
+        }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << parties_.size() << " parties";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new parties. "
+                              << "Total in model: " << parties_.size()
+                              << ", Total available: " << total_available_count_;
     emit dataLoaded();
 }
 

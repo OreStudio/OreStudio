@@ -237,8 +237,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // write_string. Adds account_type field to get_accounts_response serialization.
 // Adds provision_tenant_request/response for tenant onboarding with LEI party
 // population and admin account creation.
+//
+// Version 27.1 adds pagination support to get_parties_request (offset, limit)
+// and get_parties_response (total_available_count). Backward compatible: empty
+// payload from old clients returns defaults (offset=0, limit=100).
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 27;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

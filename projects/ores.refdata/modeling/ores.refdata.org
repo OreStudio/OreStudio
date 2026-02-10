@@ -32,4 +32,6 @@ The module is organized into namespaces: domain (core entities), repository (ORM
 and persistence), csv (CSV export), service (business logic), messaging (API
 handlers), and generators (test data).
 
+For multi-party support see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]].
+
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

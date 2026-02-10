@@ -1295,11 +1295,28 @@ handle_get_parties_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    auto parties = svc.list_parties();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << parties.size() << " parties";
+    const auto& request = *request_result;
+
+    // Validate pagination parameters
+    constexpr std::uint32_t max_limit = 1000;
+    if (request.limit == 0 || request.limit > max_limit) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
+                                  << ". Must be between 1 and " << max_limit;
+        co_return std::unexpected(ores::utility::serialization::error_code::limit_exceeded);
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Fetching parties with offset: "
+                               << request.offset << ", limit: " << request.limit;
+
+    auto parties = svc.list_parties(request.offset, request.limit);
+    auto total_count = svc.count_parties();
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << parties.size()
+                              << " parties (total available: " << total_count << ")";
 
     get_parties_response response{
-        .parties = std::move(parties)
+        .parties = std::move(parties),
+        .total_available_count = total_count
     };
     co_return response.serialize();
 }

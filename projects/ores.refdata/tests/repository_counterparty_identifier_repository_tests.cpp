@@ -28,6 +28,8 @@
 #include "ores.refdata/domain/counterparty_identifier.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/generators/counterparty_identifier_generator.hpp"
+#include "ores.refdata/generators/counterparty_generator.hpp"
+#include "ores.refdata/repository/counterparty_repository.hpp"
 
 namespace {
 
@@ -39,6 +41,7 @@ const std::string tags("[repository]");
 using namespace ores::refdata::generators;
 using ores::refdata::domain::counterparty_identifier;
 using ores::refdata::repository::counterparty_identifier_repository;
+using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -46,8 +49,16 @@ TEST_CASE("write_single_counterparty_identifier", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto ci = generate_synthetic_counterparty_identifier();
     ci.tenant_id = h.tenant_id().to_string();
+    ci.change_reason_code = "system.test";
+    ci.counterparty_id = cp.id;
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 
     counterparty_identifier_repository repo(h.context());
@@ -58,10 +69,19 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto counterparty_identifiers =
         generate_synthetic_counterparty_identifiers(3);
-    for (auto& ci : counterparty_identifiers)
+    for (auto& ci : counterparty_identifiers) {
         ci.tenant_id = h.tenant_id().to_string();
+        ci.change_reason_code = "system.test";
+        ci.counterparty_id = cp.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifiers: "
                              << counterparty_identifiers;
 
@@ -73,10 +93,19 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto written_counterparty_identifiers =
         generate_synthetic_counterparty_identifiers(3);
-    for (auto& ci : written_counterparty_identifiers)
+    for (auto& ci : written_counterparty_identifiers) {
         ci.tenant_id = h.tenant_id().to_string();
+        ci.change_reason_code = "system.test";
+        ci.counterparty_id = cp.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Written counterparty identifiers: "
                              << written_counterparty_identifiers;
 
@@ -95,8 +124,16 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto ci = generate_synthetic_counterparty_identifier();
     ci.tenant_id = h.tenant_id().to_string();
+    ci.change_reason_code = "system.test";
+    ci.counterparty_id = cp.id;
     const auto original_id_value = ci.id_value;
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 

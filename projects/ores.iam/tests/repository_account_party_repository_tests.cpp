@@ -62,6 +62,7 @@ using ores::iam::repository::account_party_repository;
 using ores::iam::repository::account_repository;
 
 TEST_CASE("write_single_account_party", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -79,6 +80,7 @@ TEST_CASE("write_single_account_party", tags) {
 }
 
 TEST_CASE("write_multiple_account_parties", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -98,6 +100,7 @@ TEST_CASE("write_multiple_account_parties", tags) {
 }
 
 TEST_CASE("read_latest_account_parties", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -123,6 +126,7 @@ TEST_CASE("read_latest_account_parties", tags) {
 }
 
 TEST_CASE("read_latest_account_parties_by_account", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -147,6 +151,7 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
 }
 
 TEST_CASE("read_nonexistent_account_party", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;

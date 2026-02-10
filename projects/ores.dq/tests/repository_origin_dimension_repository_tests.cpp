@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -50,6 +51,7 @@ TEST_CASE("write_single_origin_dimension", tags) {
     origin_dimension_repository repo(h.context());
     auto origin_dimension = generate_synthetic_origin_dimension();
     origin_dimension.tenant_id = h.tenant_id().to_string();
+    origin_dimension.code = origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
     CHECK_NOTHROW(repo.write(origin_dimension));
@@ -62,8 +64,10 @@ TEST_CASE("write_multiple_origin_dimensions", tags) {
 
     origin_dimension_repository repo(h.context());
     auto origin_dimensions = generate_synthetic_origin_dimensions(3);
-    for (auto& o : origin_dimensions)
+    for (auto& o : origin_dimensions) {
         o.tenant_id = h.tenant_id().to_string();
+        o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Origin dimensions: " << origin_dimensions;
 
     CHECK_NOTHROW(repo.write(origin_dimensions));
@@ -76,8 +80,10 @@ TEST_CASE("read_latest_origin_dimensions", tags) {
 
     origin_dimension_repository repo(h.context());
     auto written_origin_dimensions = generate_synthetic_origin_dimensions(3);
-    for (auto& o : written_origin_dimensions)
+    for (auto& o : written_origin_dimensions) {
         o.tenant_id = h.tenant_id().to_string();
+        o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Written origin dimensions: " << written_origin_dimensions;
 
     repo.write(written_origin_dimensions);
@@ -96,8 +102,10 @@ TEST_CASE("read_latest_origin_dimension_by_code", tags) {
 
     origin_dimension_repository repo(h.context());
     auto origin_dimensions = generate_synthetic_origin_dimensions(3);
-    for (auto& o : origin_dimensions)
+    for (auto& o : origin_dimensions) {
         o.tenant_id = h.tenant_id().to_string();
+        o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
+    }
 
     const auto target = origin_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write origin dimensions: " << origin_dimensions;

@@ -28,6 +28,8 @@
 #include "ores.refdata/domain/party_identifier.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/generators/party_identifier_generator.hpp"
+#include "ores.refdata/generators/party_generator.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
 
 namespace {
 
@@ -39,6 +41,7 @@ const std::string tags("[repository]");
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party_identifier;
 using ores::refdata::repository::party_identifier_repository;
+using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -46,8 +49,16 @@ TEST_CASE("write_single_party_identifier", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto pi = generate_synthetic_party_identifier();
     pi.tenant_id = h.tenant_id().to_string();
+    pi.change_reason_code = "system.test";
+    pi.party_id = party.id;
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 
     party_identifier_repository repo(h.context());
@@ -58,9 +69,18 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto party_identifiers = generate_synthetic_party_identifiers(3);
-    for (auto& pi : party_identifiers)
+    for (auto& pi : party_identifiers) {
         pi.tenant_id = h.tenant_id().to_string();
+        pi.change_reason_code = "system.test";
+        pi.party_id = party.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Party identifiers: " << party_identifiers;
 
     party_identifier_repository repo(h.context());
@@ -71,9 +91,18 @@ TEST_CASE("read_latest_party_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto written_party_identifiers = generate_synthetic_party_identifiers(3);
-    for (auto& pi : written_party_identifiers)
+    for (auto& pi : written_party_identifiers) {
         pi.tenant_id = h.tenant_id().to_string();
+        pi.change_reason_code = "system.test";
+        pi.party_id = party.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Written party identifiers: "
                              << written_party_identifiers;
 
@@ -91,8 +120,16 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto pi = generate_synthetic_party_identifier();
     pi.tenant_id = h.tenant_id().to_string();
+    pi.change_reason_code = "system.test";
+    pi.party_id = party.id;
     const auto original_id_value = pi.id_value;
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 

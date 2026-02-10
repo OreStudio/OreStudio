@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -50,6 +51,7 @@ TEST_CASE("write_single_methodology", tags) {
     methodology_repository repo(h.context());
     auto methodology = generate_synthetic_methodology();
     methodology.tenant_id = h.tenant_id().to_string();
+    methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
     CHECK_NOTHROW(repo.write(methodology));
@@ -62,8 +64,10 @@ TEST_CASE("write_multiple_methodologies", tags) {
 
     methodology_repository repo(h.context());
     auto methodologies = generate_synthetic_methodologies(3);
-    for (auto& m : methodologies)
+    for (auto& m : methodologies) {
         m.tenant_id = h.tenant_id().to_string();
+        m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
 
     CHECK_NOTHROW(repo.write(methodologies));
@@ -76,8 +80,10 @@ TEST_CASE("read_latest_methodologies", tags) {
 
     methodology_repository repo(h.context());
     auto written_methodologies = generate_synthetic_methodologies(3);
-    for (auto& m : written_methodologies)
+    for (auto& m : written_methodologies) {
         m.tenant_id = h.tenant_id().to_string();
+        m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Written methodologies: " << written_methodologies;
 
     repo.write(written_methodologies);
@@ -96,8 +102,10 @@ TEST_CASE("read_latest_methodology_by_id", tags) {
 
     methodology_repository repo(h.context());
     auto methodologies = generate_synthetic_methodologies(3);
-    for (auto& m : methodologies)
+    for (auto& m : methodologies) {
         m.tenant_id = h.tenant_id().to_string();
+        m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
 
     const auto target = methodologies.front();
     BOOST_LOG_SEV(lg, debug) << "Write methodologies: " << methodologies;

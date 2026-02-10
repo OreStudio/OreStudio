@@ -28,6 +28,8 @@
 #include "ores.refdata/domain/counterparty_contact_information.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/generators/counterparty_contact_information_generator.hpp"
+#include "ores.refdata/generators/counterparty_generator.hpp"
+#include "ores.refdata/repository/counterparty_repository.hpp"
 
 namespace {
 
@@ -39,6 +41,7 @@ const std::string tags("[repository]");
 using namespace ores::refdata::generators;
 using ores::refdata::domain::counterparty_contact_information;
 using ores::refdata::repository::counterparty_contact_information_repository;
+using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -46,8 +49,16 @@ TEST_CASE("write_single_counterparty_contact_information", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto cci = generate_synthetic_counterparty_contact_information();
     cci.tenant_id = h.tenant_id().to_string();
+    cci.change_reason_code = "system.test";
+    cci.counterparty_id = cp.id;
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact information: " << cci;
 
     counterparty_contact_information_repository repo(h.context());
@@ -58,10 +69,19 @@ TEST_CASE("write_multiple_counterparty_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto counterparty_contact_informations =
         generate_synthetic_counterparty_contact_informations(3);
-    for (auto& cci : counterparty_contact_informations)
+    for (auto& cci : counterparty_contact_informations) {
         cci.tenant_id = h.tenant_id().to_string();
+        cci.change_reason_code = "system.test";
+        cci.counterparty_id = cp.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact informations: "
                              << counterparty_contact_informations;
 
@@ -73,10 +93,19 @@ TEST_CASE("read_latest_counterparty_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto written_counterparty_contact_informations =
         generate_synthetic_counterparty_contact_informations(3);
-    for (auto& cci : written_counterparty_contact_informations)
+    for (auto& cci : written_counterparty_contact_informations) {
         cci.tenant_id = h.tenant_id().to_string();
+        cci.change_reason_code = "system.test";
+        cci.counterparty_id = cp.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Written counterparty contact informations: "
                              << written_counterparty_contact_informations;
 
@@ -95,8 +124,16 @@ TEST_CASE("read_latest_counterparty_contact_information_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto cp = generate_synthetic_counterparty();
+    cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
+    counterparty_repository cp_repo(h.context());
+    cp_repo.write(cp);
+
     auto cci = generate_synthetic_counterparty_contact_information();
     cci.tenant_id = h.tenant_id().to_string();
+    cci.change_reason_code = "system.test";
+    cci.counterparty_id = cp.id;
     const auto original_city = cci.city;
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact information: " << cci;
 

@@ -22,11 +22,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq/domain/change_reason_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/change_reason_generator.hpp"
+#include "ores.dq/generators/change_reason_category_generator.hpp"
+#include "ores.dq/repository/change_reason_category_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 
 namespace {
@@ -47,9 +50,17 @@ TEST_CASE("write_single_change_reason", tags) {
 
     database_helper h;
 
+    auto cat = generate_synthetic_change_reason_category();
+    cat.tenant_id = h.tenant_id().to_string();
+    cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
+    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
+    cat_repo.write(cat);
+
     change_reason_repository repo(h.context());
     auto change_reason = generate_synthetic_change_reason();
     change_reason.tenant_id = h.tenant_id().to_string();
+    change_reason.code = change_reason.code + "_" + std::string(faker::string::alphanumeric(8));
+    change_reason.category_code = cat.code;
 
     BOOST_LOG_SEV(lg, debug) << "Change reason: " << change_reason;
     CHECK_NOTHROW(repo.write(change_reason));
@@ -60,10 +71,19 @@ TEST_CASE("write_multiple_change_reasons", tags) {
 
     database_helper h;
 
+    auto cat = generate_synthetic_change_reason_category();
+    cat.tenant_id = h.tenant_id().to_string();
+    cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
+    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
+    cat_repo.write(cat);
+
     change_reason_repository repo(h.context());
     auto change_reasons = generate_synthetic_change_reasons(3);
-    for (auto& c : change_reasons)
+    for (auto& c : change_reasons) {
         c.tenant_id = h.tenant_id().to_string();
+        c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
+        c.category_code = cat.code;
+    }
     BOOST_LOG_SEV(lg, debug) << "Change reasons: " << change_reasons;
 
     CHECK_NOTHROW(repo.write(change_reasons));
@@ -74,10 +94,19 @@ TEST_CASE("read_latest_change_reasons", tags) {
 
     database_helper h;
 
+    auto cat = generate_synthetic_change_reason_category();
+    cat.tenant_id = h.tenant_id().to_string();
+    cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
+    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
+    cat_repo.write(cat);
+
     change_reason_repository repo(h.context());
     auto written_change_reasons = generate_synthetic_change_reasons(3);
-    for (auto& c : written_change_reasons)
+    for (auto& c : written_change_reasons) {
         c.tenant_id = h.tenant_id().to_string();
+        c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
+        c.category_code = cat.code;
+    }
     BOOST_LOG_SEV(lg, debug) << "Written change reasons: " << written_change_reasons;
 
     repo.write(written_change_reasons);
@@ -94,10 +123,19 @@ TEST_CASE("read_latest_change_reason_by_code", tags) {
 
     database_helper h;
 
+    auto cat = generate_synthetic_change_reason_category();
+    cat.tenant_id = h.tenant_id().to_string();
+    cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
+    ores::dq::repository::change_reason_category_repository cat_repo(h.context());
+    cat_repo.write(cat);
+
     change_reason_repository repo(h.context());
     auto change_reasons = generate_synthetic_change_reasons(3);
-    for (auto& c : change_reasons)
+    for (auto& c : change_reasons) {
         c.tenant_id = h.tenant_id().to_string();
+        c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
+        c.category_code = cat.code;
+    }
 
     const auto target = change_reasons.front();
     BOOST_LOG_SEV(lg, debug) << "Write change reasons: " << change_reasons;

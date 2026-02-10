@@ -48,6 +48,7 @@ TEST_CASE("write_single_counterparty", tags) {
     scoped_database_helper h;
     auto cp = generate_synthetic_counterparty();
     cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
     counterparty_repository repo(h.context());
@@ -59,8 +60,10 @@ TEST_CASE("write_multiple_counterparties", tags) {
 
     scoped_database_helper h;
     auto counterparties = generate_synthetic_counterparties(3);
-    for (auto& cp : counterparties)
+    for (auto& cp : counterparties) {
         cp.tenant_id = h.tenant_id().to_string();
+        cp.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Counterparties: " << counterparties;
 
     counterparty_repository repo(h.context());
@@ -72,8 +75,10 @@ TEST_CASE("read_latest_counterparties", tags) {
 
     scoped_database_helper h;
     auto written_counterparties = generate_synthetic_counterparties(3);
-    for (auto& cp : written_counterparties)
+    for (auto& cp : written_counterparties) {
         cp.tenant_id = h.tenant_id().to_string();
+        cp.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Written counterparties: "
                              << written_counterparties;
 
@@ -93,6 +98,7 @@ TEST_CASE("read_latest_counterparty_by_id", tags) {
     scoped_database_helper h;
     auto cp = generate_synthetic_counterparty();
     cp.tenant_id = h.tenant_id().to_string();
+    cp.change_reason_code = "system.test";
     const auto original_full_name = cp.full_name;
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 

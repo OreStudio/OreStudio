@@ -47,6 +47,7 @@ TEST_CASE("write_single_party_status", tags) {
     scoped_database_helper h;
     auto ps = generate_synthetic_party_status();
     ps.tenant_id = h.tenant_id();
+    ps.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;
 
     party_status_repository repo;
@@ -58,8 +59,10 @@ TEST_CASE("write_multiple_party_statuses", tags) {
 
     scoped_database_helper h;
     auto party_statuses = generate_synthetic_party_statuses(3);
-    for (auto& ps : party_statuses)
+    for (auto& ps : party_statuses) {
         ps.tenant_id = h.tenant_id();
+        ps.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Party statuses: " << party_statuses;
 
     party_status_repository repo;
@@ -71,8 +74,10 @@ TEST_CASE("read_latest_party_statuses", tags) {
 
     scoped_database_helper h;
     auto written_party_statuses = generate_synthetic_party_statuses(3);
-    for (auto& ps : written_party_statuses)
+    for (auto& ps : written_party_statuses) {
         ps.tenant_id = h.tenant_id();
+        ps.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Written party statuses: "
                              << written_party_statuses;
 
@@ -92,6 +97,7 @@ TEST_CASE("read_latest_party_status_by_code", tags) {
     scoped_database_helper h;
     auto ps = generate_synthetic_party_status();
     ps.tenant_id = h.tenant_id();
+    ps.change_reason_code = "system.test";
     const auto original_name = ps.name;
     BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;
 

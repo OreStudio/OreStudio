@@ -47,6 +47,7 @@ TEST_CASE("write_single_party_type", tags) {
     scoped_database_helper h;
     auto pt = generate_synthetic_party_type();
     pt.tenant_id = h.tenant_id();
+    pt.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Party type: " << pt;
 
     party_type_repository repo;
@@ -58,8 +59,10 @@ TEST_CASE("write_multiple_party_types", tags) {
 
     scoped_database_helper h;
     auto party_types = generate_synthetic_party_types(3);
-    for (auto& pt : party_types)
+    for (auto& pt : party_types) {
         pt.tenant_id = h.tenant_id();
+        pt.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Party types: " << party_types;
 
     party_type_repository repo;
@@ -71,8 +74,10 @@ TEST_CASE("read_latest_party_types", tags) {
 
     scoped_database_helper h;
     auto written_party_types = generate_synthetic_party_types(3);
-    for (auto& pt : written_party_types)
+    for (auto& pt : written_party_types) {
         pt.tenant_id = h.tenant_id();
+        pt.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Written party types: " << written_party_types;
 
     party_type_repository repo;
@@ -90,6 +95,7 @@ TEST_CASE("read_latest_party_type_by_code", tags) {
     scoped_database_helper h;
     auto pt = generate_synthetic_party_type();
     pt.tenant_id = h.tenant_id();
+    pt.change_reason_code = "system.test";
     const auto original_name = pt.name;
     BOOST_LOG_SEV(lg, debug) << "Party type: " << pt;
 

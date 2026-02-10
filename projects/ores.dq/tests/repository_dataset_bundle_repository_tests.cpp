@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -51,6 +52,7 @@ TEST_CASE("write_single_dataset_bundle", tags) {
     auto bundle = generate_synthetic_dataset_bundle();
     bundle.tenant_id = h.tenant_id().to_string();
     bundle.change_reason_code = "system.test";
+    bundle.code = bundle.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle: " << bundle;
     CHECK_NOTHROW(repo.write(bundle));
@@ -66,6 +68,7 @@ TEST_CASE("write_multiple_dataset_bundles", tags) {
     for (auto& b : bundles) {
         b.tenant_id = h.tenant_id().to_string();
         b.change_reason_code = "system.test";
+        b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Dataset bundles: " << bundles;
 
@@ -82,6 +85,7 @@ TEST_CASE("read_latest_dataset_bundles", tags) {
     for (auto& b : written_bundles) {
         b.tenant_id = h.tenant_id().to_string();
         b.change_reason_code = "system.test";
+        b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written bundles: " << written_bundles;
 
@@ -104,6 +108,7 @@ TEST_CASE("read_latest_dataset_bundle_by_id", tags) {
     for (auto& b : bundles) {
         b.tenant_id = h.tenant_id().to_string();
         b.change_reason_code = "system.test";
+        b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = bundles.front();

@@ -28,6 +28,8 @@
 #include "ores.refdata/domain/party_contact_information.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/generators/party_contact_information_generator.hpp"
+#include "ores.refdata/generators/party_generator.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
 
 namespace {
 
@@ -39,6 +41,7 @@ const std::string tags("[repository]");
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party_contact_information;
 using ores::refdata::repository::party_contact_information_repository;
+using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -46,8 +49,16 @@ TEST_CASE("write_single_party_contact_information", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto pci = generate_synthetic_party_contact_information();
     pci.tenant_id = h.tenant_id().to_string();
+    pci.change_reason_code = "system.test";
+    pci.party_id = party.id;
     BOOST_LOG_SEV(lg, debug) << "Party contact information: " << pci;
 
     party_contact_information_repository repo(h.context());
@@ -58,10 +69,19 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto party_contact_informations =
         generate_synthetic_party_contact_informations(3);
-    for (auto& pci : party_contact_informations)
+    for (auto& pci : party_contact_informations) {
         pci.tenant_id = h.tenant_id().to_string();
+        pci.change_reason_code = "system.test";
+        pci.party_id = party.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Party contact informations: "
                              << party_contact_informations;
 
@@ -73,10 +93,19 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto written_party_contact_informations =
         generate_synthetic_party_contact_informations(3);
-    for (auto& pci : written_party_contact_informations)
+    for (auto& pci : written_party_contact_informations) {
         pci.tenant_id = h.tenant_id().to_string();
+        pci.change_reason_code = "system.test";
+        pci.party_id = party.id;
+    }
     BOOST_LOG_SEV(lg, debug) << "Written party contact informations: "
                              << written_party_contact_informations;
 
@@ -95,8 +124,16 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto party = generate_synthetic_party();
+    party.tenant_id = h.tenant_id().to_string();
+    party.change_reason_code = "system.test";
+    party_repository party_repo(h.context());
+    party_repo.write(party);
+
     auto pci = generate_synthetic_party_contact_information();
     pci.tenant_id = h.tenant_id().to_string();
+    pci.change_reason_code = "system.test";
+    pci.party_id = party.id;
     const auto original_city = pci.city;
     BOOST_LOG_SEV(lg, debug) << "Party contact information: " << pci;
 

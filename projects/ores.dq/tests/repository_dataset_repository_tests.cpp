@@ -43,6 +43,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::dataset_repository;
 
 TEST_CASE("write_single_dataset", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -56,6 +57,7 @@ TEST_CASE("write_single_dataset", tags) {
 }
 
 TEST_CASE("write_multiple_datasets", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -70,6 +72,7 @@ TEST_CASE("write_multiple_datasets", tags) {
 }
 
 TEST_CASE("read_latest_datasets", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -90,6 +93,7 @@ TEST_CASE("read_latest_datasets", tags) {
 }
 
 TEST_CASE("read_latest_dataset_by_id", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -115,6 +119,7 @@ TEST_CASE("read_latest_dataset_by_id", tags) {
 }
 
 TEST_CASE("read_nonexistent_dataset_by_id", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;

@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -50,6 +51,7 @@ TEST_CASE("write_single_change_reason_category", tags) {
     change_reason_category_repository repo(h.context());
     auto category = generate_synthetic_change_reason_category();
     category.tenant_id = h.tenant_id().to_string();
+    category.code = category.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Change reason category: " << category;
     CHECK_NOTHROW(repo.write(category));
@@ -62,8 +64,10 @@ TEST_CASE("write_multiple_change_reason_categories", tags) {
 
     change_reason_category_repository repo(h.context());
     auto categories = generate_synthetic_change_reason_categories(3);
-    for (auto& c : categories)
+    for (auto& c : categories) {
         c.tenant_id = h.tenant_id().to_string();
+        c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Change reason categories: " << categories;
 
     CHECK_NOTHROW(repo.write(categories));
@@ -76,8 +80,10 @@ TEST_CASE("read_latest_change_reason_categories", tags) {
 
     change_reason_category_repository repo(h.context());
     auto written_categories = generate_synthetic_change_reason_categories(3);
-    for (auto& c : written_categories)
+    for (auto& c : written_categories) {
         c.tenant_id = h.tenant_id().to_string();
+        c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Written categories: " << written_categories;
 
     repo.write(written_categories);
@@ -96,8 +102,10 @@ TEST_CASE("read_latest_change_reason_category_by_code", tags) {
 
     change_reason_category_repository repo(h.context());
     auto categories = generate_synthetic_change_reason_categories(3);
-    for (auto& c : categories)
+    for (auto& c : categories) {
         c.tenant_id = h.tenant_id().to_string();
+        c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
+    }
 
     const auto target = categories.front();
     BOOST_LOG_SEV(lg, debug) << "Write categories: " << categories;

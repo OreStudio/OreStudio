@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -50,6 +51,7 @@ TEST_CASE("write_single_data_domain", tags) {
     data_domain_repository repo(h.context());
     auto data_domain = generate_synthetic_data_domain();
     data_domain.tenant_id = h.tenant_id().to_string();
+    data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
     CHECK_NOTHROW(repo.write(data_domain));
@@ -62,8 +64,10 @@ TEST_CASE("write_multiple_data_domains", tags) {
 
     data_domain_repository repo(h.context());
     auto data_domains = generate_synthetic_data_domains(3);
-    for (auto& d : data_domains)
+    for (auto& d : data_domains) {
         d.tenant_id = h.tenant_id().to_string();
+        d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Data domains: " << data_domains;
 
     CHECK_NOTHROW(repo.write(data_domains));
@@ -76,8 +80,10 @@ TEST_CASE("read_latest_data_domains", tags) {
 
     data_domain_repository repo(h.context());
     auto written_data_domains = generate_synthetic_data_domains(3);
-    for (auto& d : written_data_domains)
+    for (auto& d : written_data_domains) {
         d.tenant_id = h.tenant_id().to_string();
+        d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
     BOOST_LOG_SEV(lg, debug) << "Written data domains: " << written_data_domains;
 
     repo.write(written_data_domains);
@@ -96,8 +102,10 @@ TEST_CASE("read_latest_data_domain_by_name", tags) {
 
     data_domain_repository repo(h.context());
     auto data_domains = generate_synthetic_data_domains(3);
-    for (auto& d : data_domains)
+    for (auto& d : data_domains) {
         d.tenant_id = h.tenant_id().to_string();
+        d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
 
     const auto target = data_domains.front();
     BOOST_LOG_SEV(lg, debug) << "Write data domains: " << data_domains;

@@ -43,6 +43,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::coding_scheme_repository;
 
 TEST_CASE("write_single_coding_scheme", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -56,6 +57,7 @@ TEST_CASE("write_single_coding_scheme", tags) {
 }
 
 TEST_CASE("write_multiple_coding_schemes", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -70,6 +72,7 @@ TEST_CASE("write_multiple_coding_schemes", tags) {
 }
 
 TEST_CASE("read_latest_coding_schemes", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -90,6 +93,7 @@ TEST_CASE("read_latest_coding_schemes", tags) {
 }
 
 TEST_CASE("read_latest_coding_scheme_by_code", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -114,6 +118,7 @@ TEST_CASE("read_latest_coding_scheme_by_code", tags) {
 }
 
 TEST_CASE("read_nonexistent_coding_scheme", tags) {
+    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;

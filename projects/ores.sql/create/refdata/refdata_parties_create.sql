@@ -79,10 +79,12 @@ create index if not exists ores_refdata_parties_tenant_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Root party uniqueness: exactly one party per tenant with no parent
+-- Root party uniqueness: exactly one operational root party per tenant.
+-- The system party (party_category='system') is excluded — it has its
+-- own uniqueness constraint below.
 create unique index if not exists ores_refdata_parties_root_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
-where parent_party_id is null and valid_to = ores_utility_infinity_timestamp_fn();
+where parent_party_id is null and party_category <> 'system' and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- System party uniqueness: exactly one system party per tenant
 create unique index if not exists ores_refdata_parties_system_party_uniq_idx

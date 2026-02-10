@@ -78,20 +78,20 @@ std::string database_name_service::execute_scalar_string_query(
 
 std::string database_name_service::generate_whimsical_name() {
     return execute_scalar_string_query(
-        "SELECT admin_generate_whimsical_name_fn()");
+        "SELECT ores_utility_generate_whimsical_name_fn()");
 }
 
 std::string database_name_service::generate_whimsical_name(bool with_suffix) {
     const std::string sql = with_suffix
-        ? "SELECT admin_generate_whimsical_name_fn(true)"
-        : "SELECT admin_generate_whimsical_name_fn(false)";
+        ? "SELECT ores_utility_generate_whimsical_name_fn(true)"
+        : "SELECT ores_utility_generate_whimsical_name_fn(false)";
     return execute_scalar_string_query(sql);
 }
 
 std::string database_name_service::generate_database_name(bool with_suffix) {
     const std::string sql = with_suffix
-        ? "SELECT admin_generate_database_name_fn(true)"
-        : "SELECT admin_generate_database_name_fn(false)";
+        ? "SELECT ores_utility_generate_database_name_fn(true)"
+        : "SELECT ores_utility_generate_database_name_fn(false)";
     return execute_scalar_string_query(sql);
 }
 
@@ -100,14 +100,14 @@ std::string database_name_service::generate_unique_database_name(
 
     const std::string array_literal = build_array_literal(existing_names);
     const std::string sql =
-        "SELECT admin_generate_unique_database_name_fn(" +
+        "SELECT ores_utility_generate_unique_database_name_fn(" +
         array_literal + ", " + std::to_string(max_attempts) + ")";
     return execute_scalar_string_query(sql);
 }
 
 std::string database_name_service::generate_unique_database_name_from_server() {
     return execute_scalar_string_query(
-        "SELECT admin_generate_unique_database_name_from_server_fn()");
+        "SELECT ores_utility_generate_unique_database_name_from_server_fn()");
 }
 
 }

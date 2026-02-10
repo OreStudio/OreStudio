@@ -44,14 +44,14 @@ begin
     ) then
         insert into ores_refdata_parties_tbl (
             id, tenant_id, full_name, short_code, party_category,
-            party_type, parent_party_id, status,
+            party_type, business_center_code, parent_party_id, status,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), ores_iam_system_tenant_id_fn(),
-            'System', 'system', 'system',
-            'Corporate', null, 'Active',
+            'System Party', 'system', 'system',
+            'Internal', 'WRLD', null, 'Active',
             current_user, current_user, 'system.initial_load',
-            'System party for the system tenant'
+            'Root system party for the platform tenant'
         );
         raise notice 'Created system party for system tenant';
     else

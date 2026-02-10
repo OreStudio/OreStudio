@@ -153,10 +153,11 @@ Order    Script                                   What it seeds
 
 9        refdata/refdata_rounding_types_...         Rounding type lookup
 10       refdata/refdata_party_categories_...       system, operational
-11       refdata/refdata_party_types_populate.sql   Bank, Corporate, HedgeFund, ...
+11       refdata/refdata_party_types_populate.sql   Internal, Bank, Corporate, HedgeFund, ...
 12       refdata/refdata_party_statuses_...         Active, Inactive, Suspended
 13       refdata/refdata_party_id_schemes_...       LEI, BIC, etc.
 14       refdata/refdata_contact_types_...          Email, Phone, etc.
+14.5     refdata/refdata_system_business_...       WRLD business centre for system tenant
 15       refdata/refdata_system_party_populate.sql  System party for system tenant
 
 16       iam/iam_populate.sql                       Permissions and roles
@@ -541,8 +542,9 @@ When a new tenant is onboarded (via the SystemProvisionerWizard or the
 
 1. Tenant record created in =ores_iam_tenants_tbl=
 2. IAM data copied from system tenant: permissions, roles, role_permissions
-3. System party created in =ores_refdata_parties_tbl= (party_category='system',
-   party_type='Corporate', root of party hierarchy)
+3. WRLD business centre seeded in =ores_refdata_business_centres_tbl=
+4. System party created in =ores_refdata_parties_tbl= (party_category='system',
+   party_type='Internal', business_center_code='WRLD', root of party hierarchy)
 
 Reference data (currencies, countries, etc.) is NOT copied during provisioning.
 Tenants populate refdata via the Data Librarian's "Publish Datasets" feature.

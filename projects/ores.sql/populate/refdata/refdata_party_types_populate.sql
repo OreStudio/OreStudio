@@ -34,27 +34,30 @@ insert into ores_refdata_party_types_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
+    (ores_iam_system_tenant_id_fn(), 'Internal', 0, 'Internal',
+     'Internal entity for platform administration and organisational purposes. Auto-created system parties use this type; also available for user-created internal entities.',
+     0, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'Bank', 0, 'Bank',
      'A licensed financial institution that accepts deposits, makes loans, and provides other financial services.',
-     1, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
+     2, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'CorporateGroup', 0, 'Corporate Group',
      'A parent entity comprising multiple subsidiaries or divisions operating as a single economic unit.',
-     2, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
+     3, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'HedgeFund', 0, 'Hedge Fund',
      'An alternative investment vehicle using pooled funds and various strategies to earn returns for investors.',
-     3, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
+     4, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'Corporate', 0, 'Corporate',
      'A non-financial corporation that may engage in hedging or treasury operations.',
-     4, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
+     5, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'CentralBank', 0, 'Central Bank',
      'A national monetary authority responsible for monetary policy, currency issuance, and financial system stability.',
-     5, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
+     6, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'Exchange', 0, 'Exchange',
      'A regulated marketplace for trading securities, derivatives, or other financial instruments.',
-     6, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
+     7, current_user, current_user, 'system.initial_load', 'Initial population of party types'),
     (ores_iam_system_tenant_id_fn(), 'Individual', 0, 'Individual',
      'A natural person acting as a counterparty in financial transactions.',
-     7, current_user, current_user, 'system.initial_load', 'Initial population of party types')
+     8, current_user, current_user, 'system.initial_load', 'Initial population of party types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

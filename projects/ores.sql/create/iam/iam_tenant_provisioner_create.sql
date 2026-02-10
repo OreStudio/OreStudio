@@ -165,13 +165,28 @@ begin
     -- No context switch needed: this function is security definer (bypasses
     -- RLS), and lookup validation checks system tenant data directly.
 
+    -- Seed the WRLD business centre for the new tenant so that the system
+    -- party's business_center_code passes validation if later edited via UI.
+    insert into ores_refdata_business_centres_tbl (
+        code, tenant_id, version, coding_scheme_code,
+        description, modified_by, performed_by,
+        change_reason_code, change_commentary
+    ) values (
+        'WRLD', v_new_tenant_id, 0, 'NONE',
+        'World. Global business centre for entities not tied to a specific geographic location.',
+        current_user, current_user,
+        'system.new_record', 'System business centre for tenant'
+    );
+
+    raise notice 'Created WRLD business centre for tenant: %', p_code;
+
     insert into ores_refdata_parties_tbl (
         id, tenant_id, full_name, short_code, party_category,
-        party_type, parent_party_id, status,
+        party_type, business_center_code, parent_party_id, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         gen_random_uuid(), v_new_tenant_id, p_name, p_code, 'system',
-        'Corporate', null, 'Active',
+        'Internal', 'WRLD', null, 'Active',
         current_user, current_user, 'system.new_record',
         'System party created during tenant provisioning'
     );

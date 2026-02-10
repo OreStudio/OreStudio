@@ -74,6 +74,7 @@ private slots:
 private:
     void setupUi();
     void setupConnections();
+    void populateLookups();
     void updateUiFromCounterparty();
     void updateCounterpartyFromUi();
     void updateSaveButtonState();

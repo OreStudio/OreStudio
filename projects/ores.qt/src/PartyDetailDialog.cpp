@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PartyDetailDialog.hpp"
 
+#include <QComboBox>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -27,6 +28,8 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
+#include "ores.refdata/messaging/party_type_protocol.hpp"
+#include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -54,6 +57,9 @@ void PartyDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->partyCategoryCombo->addItem("operational");
+    ui_->partyCategoryCombo->addItem("system");
 }
 
 void PartyDetailDialog::setupConnections() {
@@ -66,11 +72,11 @@ void PartyDetailDialog::setupConnections() {
             &PartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PartyDetailDialog::onFieldChanged);
-    connect(ui_->partyCategoryEdit, &QLineEdit::textChanged, this,
+    connect(ui_->partyCategoryCombo, &QComboBox::currentTextChanged, this,
             &PartyDetailDialog::onFieldChanged);
-    connect(ui_->partyTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->partyTypeCombo, &QComboBox::currentTextChanged, this,
             &PartyDetailDialog::onFieldChanged);
-    connect(ui_->statusEdit, &QLineEdit::textChanged, this,
+    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &PartyDetailDialog::onFieldChanged);
     connect(ui_->businessCenterEdit, &QLineEdit::textChanged, this,
             &PartyDetailDialog::onFieldChanged);
@@ -78,10 +84,103 @@ void PartyDetailDialog::setupConnections() {
 
 void PartyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateLookups();
 }
 
 void PartyDetailDialog::setUsername(const std::string& username) {
     username_ = username;
+}
+
+void PartyDetailDialog::populateLookups() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        return;
+    }
+
+    QPointer<PartyDetailDialog> self = this;
+
+    struct LookupResult {
+        std::vector<std::string> type_codes;
+        std::vector<std::string> status_codes;
+    };
+
+    auto task = [self]() -> LookupResult {
+        LookupResult result;
+        if (!self || !self->clientManager_) {
+            return result;
+        }
+
+        using namespace comms::messaging;
+
+        {
+            refdata::messaging::get_party_types_request request;
+            auto payload = request.serialize();
+            frame request_frame(message_type::get_party_types_request,
+                0, std::move(payload));
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (response_result) {
+                auto payload_result = response_result->decompressed_payload();
+                if (payload_result) {
+                    auto response = refdata::messaging::
+                        get_party_types_response::deserialize(*payload_result);
+                    if (response) {
+                        for (const auto& t : response->types) {
+                            result.type_codes.push_back(t.code);
+                        }
+                    }
+                }
+            }
+        }
+
+        {
+            refdata::messaging::get_party_statuses_request request;
+            auto payload = request.serialize();
+            frame request_frame(message_type::get_party_statuses_request,
+                0, std::move(payload));
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (response_result) {
+                auto payload_result = response_result->decompressed_payload();
+                if (payload_result) {
+                    auto response = refdata::messaging::
+                        get_party_statuses_response::deserialize(*payload_result);
+                    if (response) {
+                        for (const auto& s : response->statuses) {
+                            result.status_codes.push_back(s.code);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    };
+
+    auto* watcher = new QFutureWatcher<LookupResult>(self);
+    connect(watcher, &QFutureWatcher<LookupResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        self->ui_->partyTypeCombo->clear();
+        for (const auto& code : result.type_codes) {
+            self->ui_->partyTypeCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        self->ui_->statusCombo->clear();
+        for (const auto& code : result.status_codes) {
+            self->ui_->statusCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        self->updateUiFromParty();
+    });
+
+    QFuture<LookupResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void PartyDetailDialog::setParty(
@@ -107,9 +206,9 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->partyCategoryEdit->setReadOnly(readOnly);
-    ui_->partyTypeEdit->setReadOnly(readOnly);
-    ui_->statusEdit->setReadOnly(readOnly);
+    ui_->partyCategoryCombo->setEnabled(!readOnly);
+    ui_->partyTypeCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->businessCenterEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -118,9 +217,9 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(party_.full_name));
-    ui_->partyCategoryEdit->setText(QString::fromStdString(party_.party_category));
-    ui_->partyTypeEdit->setText(QString::fromStdString(party_.party_type));
-    ui_->statusEdit->setText(QString::fromStdString(party_.status));
+    ui_->partyCategoryCombo->setCurrentText(QString::fromStdString(party_.party_category));
+    ui_->partyTypeCombo->setCurrentText(QString::fromStdString(party_.party_type));
+    ui_->statusCombo->setCurrentText(QString::fromStdString(party_.status));
     ui_->businessCenterEdit->setText(QString::fromStdString(party_.business_center_code.value_or("")));
 
     ui_->versionEdit->setText(QString::number(party_.version));
@@ -134,9 +233,9 @@ void PartyDetailDialog::updatePartyFromUi() {
         party_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     party_.full_name = ui_->nameEdit->text().trimmed().toStdString();
-    party_.party_category = ui_->partyCategoryEdit->text().trimmed().toStdString();
-    party_.party_type = ui_->partyTypeEdit->text().trimmed().toStdString();
-    party_.status = ui_->statusEdit->text().trimmed().toStdString();
+    party_.party_category = ui_->partyCategoryCombo->currentText().trimmed().toStdString();
+    party_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
+    party_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     const auto bcc = ui_->businessCenterEdit->text().trimmed().toStdString();
     party_.business_center_code = bcc.empty() ? std::nullopt : std::optional(bcc);
     party_.recorded_by = username_;

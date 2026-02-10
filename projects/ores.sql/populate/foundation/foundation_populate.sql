@@ -92,6 +92,7 @@
 \ir ../refdata/refdata_party_statuses_populate.sql
 \ir ../refdata/refdata_party_id_schemes_populate.sql
 \ir ../refdata/refdata_contact_types_populate.sql
+\ir ../refdata/refdata_system_business_centre_populate.sql
 \ir ../refdata/refdata_system_party_populate.sql
 
 -- =============================================================================
@@ -151,6 +152,9 @@ from ores_refdata_party_id_schemes_tbl
 union all
 select 'Contact Types', count(*)
 from ores_refdata_contact_types_tbl
+union all
+select 'Business Centres (system)', count(*)
+from ores_refdata_business_centres_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Parties (system)', count(*)
 from ores_refdata_parties_tbl where valid_to = ores_utility_infinity_timestamp_fn()

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CounterpartyDetailDialog.hpp"
 
+#include <QComboBox>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -27,6 +28,8 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata/messaging/party_type_protocol.hpp"
+#include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -66,9 +69,9 @@ void CounterpartyDetailDialog::setupConnections() {
             &CounterpartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
-    connect(ui_->partyTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->partyTypeCombo, &QComboBox::currentTextChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
-    connect(ui_->statusEdit, &QLineEdit::textChanged, this,
+    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
     connect(ui_->businessCenterEdit, &QLineEdit::textChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
@@ -76,10 +79,103 @@ void CounterpartyDetailDialog::setupConnections() {
 
 void CounterpartyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateLookups();
 }
 
 void CounterpartyDetailDialog::setUsername(const std::string& username) {
     username_ = username;
+}
+
+void CounterpartyDetailDialog::populateLookups() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        return;
+    }
+
+    QPointer<CounterpartyDetailDialog> self = this;
+
+    struct LookupResult {
+        std::vector<std::string> type_codes;
+        std::vector<std::string> status_codes;
+    };
+
+    auto task = [self]() -> LookupResult {
+        LookupResult result;
+        if (!self || !self->clientManager_) {
+            return result;
+        }
+
+        using namespace comms::messaging;
+
+        {
+            refdata::messaging::get_party_types_request request;
+            auto payload = request.serialize();
+            frame request_frame(message_type::get_party_types_request,
+                0, std::move(payload));
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (response_result) {
+                auto payload_result = response_result->decompressed_payload();
+                if (payload_result) {
+                    auto response = refdata::messaging::
+                        get_party_types_response::deserialize(*payload_result);
+                    if (response) {
+                        for (const auto& t : response->types) {
+                            result.type_codes.push_back(t.code);
+                        }
+                    }
+                }
+            }
+        }
+
+        {
+            refdata::messaging::get_party_statuses_request request;
+            auto payload = request.serialize();
+            frame request_frame(message_type::get_party_statuses_request,
+                0, std::move(payload));
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (response_result) {
+                auto payload_result = response_result->decompressed_payload();
+                if (payload_result) {
+                    auto response = refdata::messaging::
+                        get_party_statuses_response::deserialize(*payload_result);
+                    if (response) {
+                        for (const auto& s : response->statuses) {
+                            result.status_codes.push_back(s.code);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    };
+
+    auto* watcher = new QFutureWatcher<LookupResult>(self);
+    connect(watcher, &QFutureWatcher<LookupResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        self->ui_->partyTypeCombo->clear();
+        for (const auto& code : result.type_codes) {
+            self->ui_->partyTypeCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        self->ui_->statusCombo->clear();
+        for (const auto& code : result.status_codes) {
+            self->ui_->statusCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        self->updateUiFromCounterparty();
+    });
+
+    QFuture<LookupResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void CounterpartyDetailDialog::setCounterparty(
@@ -105,8 +201,8 @@ void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->partyTypeEdit->setReadOnly(readOnly);
-    ui_->statusEdit->setReadOnly(readOnly);
+    ui_->partyTypeCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->businessCenterEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -115,8 +211,8 @@ void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
 void CounterpartyDetailDialog::updateUiFromCounterparty() {
     ui_->codeEdit->setText(QString::fromStdString(counterparty_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(counterparty_.full_name));
-    ui_->partyTypeEdit->setText(QString::fromStdString(counterparty_.party_type));
-    ui_->statusEdit->setText(QString::fromStdString(counterparty_.status));
+    ui_->partyTypeCombo->setCurrentText(QString::fromStdString(counterparty_.party_type));
+    ui_->statusCombo->setCurrentText(QString::fromStdString(counterparty_.status));
     ui_->businessCenterEdit->setText(QString::fromStdString(counterparty_.business_center_code));
 
     ui_->versionEdit->setText(QString::number(counterparty_.version));
@@ -130,8 +226,8 @@ void CounterpartyDetailDialog::updateCounterpartyFromUi() {
         counterparty_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     counterparty_.full_name = ui_->nameEdit->text().trimmed().toStdString();
-    counterparty_.party_type = ui_->partyTypeEdit->text().trimmed().toStdString();
-    counterparty_.status = ui_->statusEdit->text().trimmed().toStdString();
+    counterparty_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
+    counterparty_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     counterparty_.business_center_code = ui_->businessCenterEdit->text().trimmed().toStdString();
     counterparty_.recorded_by = username_;
     counterparty_.performed_by = username_;

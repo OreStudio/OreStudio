@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TenantDetailDialog.hpp"
 
+#include <QComboBox>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -27,6 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -66,20 +68,60 @@ void TenantDetailDialog::setupConnections() {
             &TenantDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &TenantDetailDialog::onFieldChanged);
-    connect(ui_->typeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->typeCombo, &QComboBox::currentTextChanged, this,
             &TenantDetailDialog::onFieldChanged);
     connect(ui_->hostnameEdit, &QLineEdit::textChanged, this,
             &TenantDetailDialog::onFieldChanged);
-    connect(ui_->statusEdit, &QLineEdit::textChanged, this,
+    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &TenantDetailDialog::onFieldChanged);
 }
 
 void TenantDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateLookups();
 }
 
 void TenantDetailDialog::setUsername(const std::string& username) {
     username_ = username;
+}
+
+void TenantDetailDialog::populateLookups() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        return;
+    }
+
+    QPointer<TenantDetailDialog> self = this;
+
+    auto task = [self]() -> lookup_result {
+        if (!self || !self->clientManager_) return {};
+        return fetch_tenant_lookups(self->clientManager_);
+    };
+
+    auto* watcher = new QFutureWatcher<lookup_result>(self);
+    connect(watcher, &QFutureWatcher<lookup_result>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        self->ui_->typeCombo->clear();
+        for (const auto& code : result.type_codes) {
+            self->ui_->typeCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        self->ui_->statusCombo->clear();
+        for (const auto& code : result.status_codes) {
+            self->ui_->statusCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        self->updateUiFromTenant();
+    });
+
+    QFuture<lookup_result> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void TenantDetailDialog::setTenant(
@@ -105,9 +147,9 @@ void TenantDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->typeEdit->setReadOnly(readOnly);
+    ui_->typeCombo->setEnabled(!readOnly);
     ui_->hostnameEdit->setReadOnly(readOnly);
-    ui_->statusEdit->setReadOnly(readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -115,9 +157,9 @@ void TenantDetailDialog::setReadOnly(bool readOnly) {
 void TenantDetailDialog::updateUiFromTenant() {
     ui_->codeEdit->setText(QString::fromStdString(tenant_.code));
     ui_->nameEdit->setText(QString::fromStdString(tenant_.name));
-    ui_->typeEdit->setText(QString::fromStdString(tenant_.type));
+    ui_->typeCombo->setCurrentText(QString::fromStdString(tenant_.type));
     ui_->hostnameEdit->setText(QString::fromStdString(tenant_.hostname));
-    ui_->statusEdit->setText(QString::fromStdString(tenant_.status));
+    ui_->statusCombo->setCurrentText(QString::fromStdString(tenant_.status));
 
     ui_->versionEdit->setText(QString::number(tenant_.version));
     ui_->recordedByEdit->setText(QString::fromStdString(tenant_.recorded_by));
@@ -130,9 +172,9 @@ void TenantDetailDialog::updateTenantFromUi() {
         tenant_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     tenant_.name = ui_->nameEdit->text().trimmed().toStdString();
-    tenant_.type = ui_->typeEdit->text().trimmed().toStdString();
+    tenant_.type = ui_->typeCombo->currentText().trimmed().toStdString();
     tenant_.hostname = ui_->hostnameEdit->text().trimmed().toStdString();
-    tenant_.status = ui_->statusEdit->text().trimmed().toStdString();
+    tenant_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     tenant_.recorded_by = username_;
     tenant_.performed_by = username_;
 }

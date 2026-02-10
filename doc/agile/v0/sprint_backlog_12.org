@@ -16,36 +16,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-10 Tue 13:13], for Tuesday, February 10, 2026.
+#+CAPTION: Clock summary at [2026-02-10 Tue 23:50], for Tuesday, February 10, 2026.
 |      | <75>                              |        |      |      |       |
 | Tags | Headline                          | Time   |      |      |     % |
 |------+-----------------------------------+--------+------+------+-------|
-|      | *Total time*                      | *3:41* |      |      | 100.0 |
+|      | *Total time*                      | *7:28* |      |      | 100.0 |
 |------+-----------------------------------+--------+------+------+-------|
-|      | Stories                           | 3:41   |      |      | 100.0 |
-|      | Active                            |        | 3:41 |      | 100.0 |
-| code | Brainstorm on multi-party support |        |      | 3:41 | 100.0 |
+|      | Stories                           | 7:28   |      |      | 100.0 |
+|      | Active                            |        | 7:28 |      | 100.0 |
+| code | Brainstorm on multi-party support |        |      | 4:00 |  53.6 |
+| code | Add party 0 support               |        |      | 3:14 |  43.3 |
+| code | Improve code coverage             |        |      | 0:14 |   3.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-10 Tue 13:13]
+#+CAPTION: Clock summary at [2026-02-10 Tue 23:51]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *25:04* |       |      | 100.0 |
+|       | *Total time*                                       | *28:51* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 25:04   |       |      | 100.0 |
-|       | Active                                             |         | 25:04 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 0:38 |   2.5 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   3.4 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   2.3 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  17.5 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   1.5 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  26.7 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  26.7 |
-| code  | Brainstorm on multi-party support                  |         |       | 3:41 |  14.7 |
-| code  | Add counterparty wizard                            |         |       | 1:12 |   4.8 |
+|       | Stories                                            | 28:51   |       |      | 100.0 |
+|       | Active                                             |         | 28:51 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 0:38 |   2.2 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.9 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   2.0 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  15.2 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   1.3 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  23.2 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  23.2 |
+| code  | Brainstorm on multi-party support                  |         |       | 4:00 |  13.9 |
+| code  | Add party 0 support                                |         |       | 3:14 |  11.2 |
+| code  | Improve code coverage                              |         |       | 0:14 |   0.8 |
+| code  | Add counterparty wizard                            |         |       | 1:12 |   4.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -536,10 +540,80 @@ Highlights:
 
 *** STARTED Add party 0 support                                        :code:
     :LOGBOOK:
-    CLOCK: [2026-02-10 Tue 15:38]
+    CLOCK: [2026-02-10 Tue 23:19]--[2026-02-10 Tue 23:50] =>  0:31
+    CLOCK: [2026-02-10 Tue 22:14]--[2026-02-10 Tue 23:18] =>  1:04
+    CLOCK: [2026-02-10 Tue 17:32]--[2026-02-10 Tue 17:52] =>  0:20
+    CLOCK: [2026-02-10 Tue 17:05]--[2026-02-10 Tue 17:31] =>  0:26
+    CLOCK: [2026-02-10 Tue 15:38]--[2026-02-10 Tue 16:31] =>  0:53
     :END:
 
 As per design document.
+
+**** Improvements to tenant and party dialog
+
+#+begin_quote
+This pull request significantly improves the user experience for managing core
+entities like parties and tenants by upgrading input fields to dynamic combo
+boxes that fetch valid options from the server. It also refines the underlying
+system architecture by centralizing data lookup mechanisms and clarifying the
+distinction and handling of system-level parties versus operational parties,
+ensuring better data integrity and system behavior.
+
+Highlights:
+
+- Enhanced UI for Detail Dialogs: Replaced QLineEdit with QComboBox for 'Type'
+  and 'Status' fields in Party, Counterparty, and Tenant detail dialogs,
+  enabling asynchronous server-fetched lookup values for improved data entry and
+  consistency.
+- Centralized Lookup Fetching Logic: Extracted common server-side lookup
+  fetching logic into a new LookupFetcher utility class, reducing code
+  duplication across various detail dialogs.
+- Refined System Party Management: Introduced an 'Internal' party type and
+  'WRLD' (World) business center for system/platform entities, renamed the
+  system tenant to 'Root Tenant' and system party to 'System Party', and updated
+  the tenant provisioner accordingly. System parties are now explicitly excluded
+  from operational root party uniqueness checks.
+#+end_quote
+
+**** Improvements to bootstrapping
+
+#+begin_quote
+This pull request significantly enhances the user experience for managing
+parties and counterparties by introducing dynamic dropdowns for key attributes,
+replacing manual text entry with controlled selections. It also streamlines the
+system's initial setup by enabling pre-population of admin credentials during
+provisioning. Furthermore, the database's foundational data seeding for system
+entities has been refined, and extensive documentation on the database lifecycle
+has been added to improve developer understanding and maintainability.
+
+Highlights:
+
+- UI Enhancements for Party and Counterparty Details: Replaced free-text input
+  fields (QLineEdit) with dynamically populated dropdowns (QComboBox) for
+  'partyType', 'status', and 'partyCategory' in the CounterpartyDetailDialog and
+  PartyDetailDialog. These comboboxes fetch their options from backend lookup
+  services, ensuring data consistency and improving user experience.
+- Dynamic Lookup Population: Introduced populateLookups() methods in both
+  CounterpartyDetailDialog and PartyDetailDialog. These methods asynchronously
+  fetch available party types and statuses from the backend using ClientManager
+  and QtConcurrent::run, populating the new comboboxes upon dialog
+  initialization.
+- System Provisioning Pre-fill Capability: Modified the
+  showSystemProvisionerWizard function in MainWindow to accept optional username
+  and password parameters. This allows the System Provisioner Wizard to pre-fill
+  the admin account creation form with credentials provided during the login
+  process, streamlining the bootstrap setup.
+- Refined Database Seeding for System Party: Updated the tenant provisioning SQL
+  script (iam_tenant_provisioner_create.sql) to automatically seed a 'WRLD'
+  (World) business center and assign it to the system party. The system party's
+  type is now explicitly set to 'Internal', ensuring proper categorization and
+  validation from the outset.
+- Comprehensive Database Lifecycle Documentation: Added a new, detailed
+  documentation file (database_lifecycle.org) that outlines the database
+  creation, population, and teardown processes. It covers multi-environment
+  architecture, database roles, user management, and testing infrastructure,
+  providing a central reference for developers.
+#+end_quote
 
 *** STARTED Improve code coverage                                      :code:
     :LOGBOOK:
@@ -810,6 +884,12 @@ It should just be the database account.
 There are a lot of entries in the shell main menu, we need to group them. These
 could be based on the component.
 
+Notes:
+
+- shell has no parties or counterparties commands.
+- It should be possible to set the "output type" or format in the shell, from
+  json to table. Find the correct terminology for this.
+
 *** Redesign Qt ImageCache invalidation strategy                       :code:
 
 The current ImageCache invalidation approach is brittle and error-prone. When
@@ -836,13 +916,6 @@ Acceptance criteria:
 - Cache invalidation is based on structured metadata, not string patterns
 - Adding new image-related datasets doesn't require code changes
 - Cache invalidation logic is documented and maintainable
-
-*** Add output option to repl                                          :code:
-
-It should be possible to set the "output type" or format in the shell, from json
-to table. Find the correct terminology for this.
-
-
 
 *** Support tenant specification in shell account commands             :code:
 

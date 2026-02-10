@@ -135,7 +135,7 @@ std::string test_database_manager::provision_test_tenant(
     // Call the provisioner function - it returns the new tenant's UUID
     const auto results = execute_parameterized_string_query(ctx,
         "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)::text",
-        {"test", tenant_code, tenant_code,
+        {"automation", tenant_code, tenant_code,
          tenant_code + ".localhost", description},
         lg(), "Provisioning test tenant");
 

@@ -28,8 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
-#include "ores.refdata/messaging/party_type_protocol.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -58,8 +57,10 @@ void PartyDetailDialog::setupUi() {
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
 
-    ui_->partyCategoryCombo->addItem("operational");
-    ui_->partyCategoryCombo->addItem("system");
+    ui_->partyCategoryCombo->addItem(
+        QString::fromUtf8(party_categories::operational));
+    ui_->partyCategoryCombo->addItem(
+        QString::fromUtf8(party_categories::system));
 }
 
 void PartyDetailDialog::setupConnections() {
@@ -98,66 +99,13 @@ void PartyDetailDialog::populateLookups() {
 
     QPointer<PartyDetailDialog> self = this;
 
-    struct LookupResult {
-        std::vector<std::string> type_codes;
-        std::vector<std::string> status_codes;
+    auto task = [self]() -> lookup_result {
+        if (!self || !self->clientManager_) return {};
+        return fetch_party_lookups(self->clientManager_);
     };
 
-    auto task = [self]() -> LookupResult {
-        LookupResult result;
-        if (!self || !self->clientManager_) {
-            return result;
-        }
-
-        using namespace comms::messaging;
-
-        {
-            refdata::messaging::get_party_types_request request;
-            auto payload = request.serialize();
-            frame request_frame(message_type::get_party_types_request,
-                0, std::move(payload));
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
-            if (response_result) {
-                auto payload_result = response_result->decompressed_payload();
-                if (payload_result) {
-                    auto response = refdata::messaging::
-                        get_party_types_response::deserialize(*payload_result);
-                    if (response) {
-                        for (const auto& t : response->types) {
-                            result.type_codes.push_back(t.code);
-                        }
-                    }
-                }
-            }
-        }
-
-        {
-            refdata::messaging::get_party_statuses_request request;
-            auto payload = request.serialize();
-            frame request_frame(message_type::get_party_statuses_request,
-                0, std::move(payload));
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
-            if (response_result) {
-                auto payload_result = response_result->decompressed_payload();
-                if (payload_result) {
-                    auto response = refdata::messaging::
-                        get_party_statuses_response::deserialize(*payload_result);
-                    if (response) {
-                        for (const auto& s : response->statuses) {
-                            result.status_codes.push_back(s.code);
-                        }
-                    }
-                }
-            }
-        }
-
-        return result;
-    };
-
-    auto* watcher = new QFutureWatcher<LookupResult>(self);
-    connect(watcher, &QFutureWatcher<LookupResult>::finished,
+    auto* watcher = new QFutureWatcher<lookup_result>(self);
+    connect(watcher, &QFutureWatcher<lookup_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -179,7 +127,7 @@ void PartyDetailDialog::populateLookups() {
         self->updateUiFromParty();
     });
 
-    QFuture<LookupResult> future = QtConcurrent::run(task);
+    QFuture<lookup_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

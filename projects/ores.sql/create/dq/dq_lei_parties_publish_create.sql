@@ -116,12 +116,15 @@ begin
         raise exception 'Root LEI not found in staging data: %', v_root_lei;
     end if;
 
-    -- Validate target tenant has no existing root party
+    -- Validate target tenant has no existing operational root party.
+    -- The system party (party_category='system') is excluded — it is
+    -- a platform-level entity, not the operational party hierarchy root.
     if exists (
         select 1
         from ores_refdata_parties_tbl p
         where p.tenant_id = p_target_tenant_id
           and p.parent_party_id is null
+          and p.party_category <> 'system'
           and p.valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Target tenant already has a root party. Cannot publish LEI parties.';

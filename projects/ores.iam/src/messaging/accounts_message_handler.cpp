@@ -37,6 +37,8 @@
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
+#include "ores.iam/service/tenant_type_service.hpp"
+#include "ores.iam/service/tenant_status_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -2287,10 +2289,14 @@ handle_get_tenant_types_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant type repository is available
-    BOOST_LOG_SEV(lg(), warn) << "get_tenant_types_request not yet implemented";
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_type_service svc(ctx);
+
+    auto types = svc.list_types();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << types.size() << " tenant types";
+
     get_tenant_types_response response{
-        .types = {}
+        .types = std::move(types)
     };
     co_return response.serialize();
 }
@@ -2313,12 +2319,28 @@ handle_save_tenant_type_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant type repository is available
-    BOOST_LOG_SEV(lg(), warn) << "save_tenant_type_request not yet implemented";
-    save_tenant_type_response response{
-        .success = false,
-        .message = "Tenant type management not yet implemented"
-    };
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_type_service svc(ctx);
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving tenant type: " << request.type.type;
+
+    request.type.recorded_by = auth_result->username;
+
+    save_tenant_type_response response;
+    try {
+        svc.save_type(request.type);
+        response.success = true;
+        response.message = "Tenant type saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved tenant type: "
+                                  << request.type.type << " by " << auth_result->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save tenant type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving tenant type "
+                                   << request.type.type << ": " << e.what();
+    }
+
     co_return response.serialize();
 }
 
@@ -2340,11 +2362,34 @@ handle_delete_tenant_type_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant type repository is available
-    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_type_request not yet implemented";
-    delete_tenant_type_response response{
-        .results = {}
-    };
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_type_service svc(ctx);
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.types.size()
+                              << " tenant type(s)";
+
+    delete_tenant_type_response response;
+    for (const auto& type : request.types) {
+        delete_tenant_type_result result;
+        result.type = type;
+
+        try {
+            svc.remove_type(type);
+            result.success = true;
+            result.message = "Tenant type deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant type: "
+                                      << type;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete tenant type: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting tenant type "
+                                       << type << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
     co_return response.serialize();
 }
 
@@ -2366,13 +2411,40 @@ handle_get_tenant_type_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant type repository is available
-    BOOST_LOG_SEV(lg(), warn) << "get_tenant_type_history_request not yet implemented";
-    get_tenant_type_history_response response{
-        .success = false,
-        .message = "Tenant type management not yet implemented",
-        .versions = {}
-    };
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_type_service svc(ctx);
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for tenant type: "
+                              << request.type;
+
+    get_tenant_type_history_response response;
+    try {
+        auto history = svc.get_type_history(request.type);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Tenant type not found: " + request.type;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for tenant type: "
+                                      << request.type;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                                  << response.versions.size()
+                                  << " versions for tenant type: "
+                                  << request.type;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for tenant type "
+                                   << request.type << ": " << e.what();
+    }
+
     co_return response.serialize();
 }
 
@@ -2394,10 +2466,15 @@ handle_get_tenant_statuses_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant status repository is available
-    BOOST_LOG_SEV(lg(), warn) << "get_tenant_statuses_request not yet implemented";
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_status_service svc(ctx);
+
+    auto statuses = svc.list_statuses();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << statuses.size()
+                              << " tenant statuses";
+
     get_tenant_statuses_response response{
-        .statuses = {}
+        .statuses = std::move(statuses)
     };
     co_return response.serialize();
 }
@@ -2420,12 +2497,30 @@ handle_save_tenant_status_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant status repository is available
-    BOOST_LOG_SEV(lg(), warn) << "save_tenant_status_request not yet implemented";
-    save_tenant_status_response response{
-        .success = false,
-        .message = "Tenant status management not yet implemented"
-    };
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_status_service svc(ctx);
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving tenant status: "
+                              << request.status.status;
+
+    request.status.recorded_by = auth_result->username;
+
+    save_tenant_status_response response;
+    try {
+        svc.save_status(request.status);
+        response.success = true;
+        response.message = "Tenant status saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved tenant status: "
+                                  << request.status.status << " by "
+                                  << auth_result->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save tenant status: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving tenant status "
+                                   << request.status.status << ": " << e.what();
+    }
+
     co_return response.serialize();
 }
 
@@ -2447,11 +2542,34 @@ handle_delete_tenant_status_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant status repository is available
-    BOOST_LOG_SEV(lg(), warn) << "delete_tenant_status_request not yet implemented";
-    delete_tenant_status_response response{
-        .results = {}
-    };
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_status_service svc(ctx);
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.statuses.size()
+                              << " tenant status(es)";
+
+    delete_tenant_status_response response;
+    for (const auto& status : request.statuses) {
+        delete_tenant_status_result result;
+        result.status = status;
+
+        try {
+            svc.remove_status(status);
+            result.success = true;
+            result.message = "Tenant status deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant status: "
+                                      << status;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete tenant status: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting tenant status "
+                                       << status << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
     co_return response.serialize();
 }
 
@@ -2473,13 +2591,40 @@ handle_get_tenant_status_history_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    // TODO: Implement when tenant status repository is available
-    BOOST_LOG_SEV(lg(), warn) << "get_tenant_status_history_request not yet implemented";
-    get_tenant_status_history_response response{
-        .success = false,
-        .message = "Tenant status management not yet implemented",
-        .versions = {}
-    };
+    auto ctx = make_request_context(*auth_result);
+    service::tenant_status_service svc(ctx);
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for tenant status: "
+                              << request.status;
+
+    get_tenant_status_history_response response;
+    try {
+        auto history = svc.get_status_history(request.status);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Tenant status not found: " + request.status;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for tenant status: "
+                                      << request.status;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                                  << response.versions.size()
+                                  << " versions for tenant status: "
+                                  << request.status;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for tenant status "
+                                   << request.status << ": " << e.what();
+    }
+
     co_return response.serialize();
 }
 

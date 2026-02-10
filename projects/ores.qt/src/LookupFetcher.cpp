@@ -1,0 +1,126 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.refdata/messaging/party_type_protocol.hpp"
+#include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.iam/messaging/tenant_type_protocol.hpp"
+#include "ores.iam/messaging/tenant_status_protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
+
+namespace ores::qt {
+
+using namespace comms::messaging;
+
+lookup_result fetch_party_lookups(ClientManager* cm) {
+    lookup_result result;
+    if (!cm) return result;
+
+    {
+        refdata::messaging::get_party_types_request request;
+        auto payload = request.serialize();
+        frame request_frame(message_type::get_party_types_request,
+            0, std::move(payload));
+        auto response_result = cm->sendRequest(std::move(request_frame));
+        if (response_result) {
+            auto payload_result = response_result->decompressed_payload();
+            if (payload_result) {
+                auto response = refdata::messaging::
+                    get_party_types_response::deserialize(*payload_result);
+                if (response) {
+                    for (const auto& t : response->types) {
+                        result.type_codes.push_back(t.code);
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        refdata::messaging::get_party_statuses_request request;
+        auto payload = request.serialize();
+        frame request_frame(message_type::get_party_statuses_request,
+            0, std::move(payload));
+        auto response_result = cm->sendRequest(std::move(request_frame));
+        if (response_result) {
+            auto payload_result = response_result->decompressed_payload();
+            if (payload_result) {
+                auto response = refdata::messaging::
+                    get_party_statuses_response::deserialize(*payload_result);
+                if (response) {
+                    for (const auto& s : response->statuses) {
+                        result.status_codes.push_back(s.code);
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+lookup_result fetch_tenant_lookups(ClientManager* cm) {
+    lookup_result result;
+    if (!cm) return result;
+
+    {
+        iam::messaging::get_tenant_types_request request;
+        auto payload = request.serialize();
+        frame request_frame(message_type::get_tenant_types_request,
+            0, std::move(payload));
+        auto response_result = cm->sendRequest(std::move(request_frame));
+        if (response_result) {
+            auto payload_result = response_result->decompressed_payload();
+            if (payload_result) {
+                auto response = iam::messaging::
+                    get_tenant_types_response::deserialize(*payload_result);
+                if (response) {
+                    for (const auto& t : response->types) {
+                        result.type_codes.push_back(t.type);
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        iam::messaging::get_tenant_statuses_request request;
+        auto payload = request.serialize();
+        frame request_frame(message_type::get_tenant_statuses_request,
+            0, std::move(payload));
+        auto response_result = cm->sendRequest(std::move(request_frame));
+        if (response_result) {
+            auto payload_result = response_result->decompressed_payload();
+            if (payload_result) {
+                auto response = iam::messaging::
+                    get_tenant_statuses_response::deserialize(*payload_result);
+                if (response) {
+                    for (const auto& s : response->statuses) {
+                        result.status_codes.push_back(s.status);
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+}

@@ -48,7 +48,7 @@ Environment Variables:
     PGPASSWORD                  Password for the postgres superuser (required)
 
 Protected Databases (cannot be dropped):
-    ores_admin, ores_template, postgres, template0, template1
+    postgres, template0, template1
 
 Example:
     export PGPASSWORD=myPostgresPass

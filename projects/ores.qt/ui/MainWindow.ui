@@ -193,6 +193,8 @@
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
    <addaction name="CountriesAction"/>
+   <addaction name="ActionParties"/>
+   <addaction name="ActionCounterparties"/>
    <addaction name="ActionAccounts"/>
    <addaction name="ActionTenants"/>
    <addaction name="ActionFeatureFlags"/>

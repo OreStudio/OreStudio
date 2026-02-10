@@ -207,9 +207,148 @@ IP2Country      IP geolocation ranges               ores_dq_ip2country_artefact_
 Artefact data is NOT live reference data. It must be *published* to production
 tables via the Data Librarian's "Publish Datasets" feature.
 
+* Multi-Environment Architecture
+
+ORE Studio supports multiple isolated development environments, allowing
+concurrent work across different checkouts without database conflicts.
+
+** Database Layout
+
+#+begin_example
+ores_admin          # Admin utilities (shared across environments)
+ores_template       # Template for test databases (shared)
+ores_dev_local1     # Environment-specific database
+ores_dev_local2     # Environment-specific database
+ores_dev_local3     # etc.
+ores_test_*         # Temporary test databases (created/dropped by tests)
+#+end_example
+
+** Naming Conventions
+
+| Database Type       | Pattern              | Example            |
+|---------------------+----------------------+--------------------|
+| Environment         | =ores_dev_<env>=     | =ores_dev_local2=  |
+| Template            | =ores_template=      | (used by tests)    |
+| Admin               | =ores_admin=         | (cluster utilities)|
+| Test (temporary)    | =ores_test_<pid>_*=  | =ores_test_1234_5678= |
+| Whimsical instances | =ores_<adjective>_<noun>= | =ores_frosty_leaf= |
+
+** Environment Isolation
+
+- Environment databases are created from scratch (not from template)
+- Recreating one environment does NOT affect others
+- Tests create temporary databases from =ores_template=
+- Each checkout (local1, local2, etc.) auto-detects its database name
+
+* Database Roles and Users
+
+ORE Studio uses a role-based access control system for database connections.
+This is separate from the application-level RBAC stored in the =ores_iam_*=
+tables.
+
+** Role Hierarchy
+
+Group roles (no login) act as permission templates:
+
+| Role         | Purpose                              |
+|--------------+--------------------------------------|
+| =ores_owner= | DDL operations (schema changes)      |
+| =ores_rw=    | Read-write operations (application)  |
+| =ores_ro=    | Read-only operations (analytics/BI)  |
+
+** Service Users
+
+Login users inherit from appropriate group roles:
+
+| User               | Inherits From  | Purpose                        |
+|--------------------+----------------+--------------------------------|
+| =ores_ddl_user=    | =ores_owner=   | Migrations, schema changes     |
+| =ores_cli_user=    | =ores_rw=      | Command-line interface         |
+| =ores_wt_user=     | =ores_rw=      | Web toolkit service            |
+| =ores_comms_user=  | =ores_rw=      | Communications service         |
+| =ores_http_user=   | =ores_rw=      | HTTP REST service              |
+| =ores_readonly_user= | =ores_ro=    | Analytics, BI tools            |
+
+** Test Users
+
+| User                | Inherits From  | Purpose                        |
+|---------------------+----------------+--------------------------------|
+| =ores_test_ddl_user= | =ores_owner=  | Create/drop test databases     |
+| =ores_test_dml_user= | =ores_rw=     | Run tests                      |
+
+** Credential Management
+
+*** pg_service.conf (Recommended)
+
+Create =~/.pg_service.conf= for convenient access:
+
+#+begin_src conf
+[ores_cli]
+host=localhost
+port=5432
+dbname=ores_dev_local2
+user=ores_cli_user
+password=your_password
+
+[ores_ddl]
+host=localhost
+port=5432
+dbname=ores_dev_local2
+user=ores_ddl_user
+password=your_password
+#+end_src
+
+Set permissions and use:
+
+#+begin_src sh
+chmod 600 ~/.pg_service.conf
+psql service=ores_cli
+#+end_src
+
+*** Environment Variables
+
+For development and CI/CD:
+
+#+begin_src sh
+# Application-specific password variables
+export ORES_DB_CLI_PASSWORD=your_password
+export ORES_DB_DDL_PASSWORD=your_password
+export ORES_DB_WT_PASSWORD=your_password
+export ORES_DB_HTTP_PASSWORD=your_password
+export ORES_DB_COMMS_PASSWORD=your_password
+
+# Test infrastructure
+export ORES_TEST_DB_DDL_PASSWORD=your_password
+export ORES_TEST_DB_PASSWORD=your_password
+#+end_src
+
 * Database Types and Creation Paths
 
-Three types of databases, two creation paths:
+Three types of databases, two creation paths.
+
+** Prerequisites
+
+Run initial setup scripts as postgres superuser in order:
+
+#+begin_src sh
+# 1. Install extensions (btree_gist required, timescaledb optional)
+psql -U postgres -f setup_extensions.sql
+
+# 2. Create roles and users (provide passwords for all users)
+psql -U postgres \
+  -v ddl_password='DDL_PASS' \
+  -v cli_password='CLI_PASS' \
+  -v wt_password='WT_PASS' \
+  -v comms_password='COMMS_PASS' \
+  -v http_password='HTTP_PASS' \
+  -v test_ddl_password='TEST_DDL_PASS' \
+  -v test_dml_password='TEST_DML_PASS' \
+  -v ro_password='RO_PASS' \
+  -f setup_user.sql
+
+# 3. Create admin database (whimsical name generation)
+psql -U postgres -f admin/setup_admin.sql
+#+end_src
 
 ** Template Path (Fast)
 
@@ -236,6 +375,38 @@ recreate_env.sh / create_database_direct.sql
     run populate/populate.sql      (governance + catalogues)
     run instance/init_instance.sql
 #+end_example
+
+** Creating Instances
+
+*** Template Database (One-Time)
+
+Create =ores_template= containing the schema and foundation layer:
+
+#+begin_src sh
+psql -U postgres -f setup_template.sql
+#+end_src
+
+*** Instance with Whimsical Name
+
+Fast creation using PostgreSQL filesystem copy:
+
+#+begin_src sh
+psql -U postgres -f create_instance.sql
+#+end_src
+
+*** Instance with Specific Name
+
+#+begin_src sh
+psql -U postgres -v db_name='my_database' -f create_instance.sql
+#+end_src
+
+*** Direct Creation (Without Template)
+
+For environments without template support:
+
+#+begin_src sh
+psql -U postgres -v db_name='my_database' -f create_database_direct.sql
+#+end_src
 
 ** When to Use Which
 

@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: B28747DF-A735-1C84-4E43-11ADFA8B05E3
+:END:
+#+title: Knowledge
+#+author: Marco Craveiro
+#+startup: inlineimages
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+This folder contains assorted knowledge we picked up as part of implementing
+this project. It is mainly made up of short definitions created by LLMs (Gemini,
+Grok, etc) and is there to help us when we are looking at certain aspects of the
+code; we can then rely on org-roam to get the required context for some
+technical terms. This page serves as a "general index" of the knowledge.
+
+* Security
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]]

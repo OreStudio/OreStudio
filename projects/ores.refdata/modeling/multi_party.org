@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 268AED29-2107-48C3-AF55-335CD5477C84
+:ID: BAE3AA18-6027-10A4-965B-2C174C237195
 :END:
 #+title: Multi-Party Architecture
 #+author: Marco Craveiro
@@ -9,9 +9,10 @@
 * Overview
 
 ORE Studio implements party-level data isolation within tenants. While tenant
-isolation separates organisations from each other, party isolation separates
-business units within an organisation. This document describes how party context
-flows through the system from user authentication to database queries.
+isolation separates organisations from each other (see [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy
+Architecture]]), party isolation separates business units within an organisation.
+This document describes how party context flows through the system from user
+authentication to database queries.
 
 This is a companion document to =projects/ores.iam/modeling/multi_tenancy.org=.
 The multi-tenancy architecture provides the foundation; multi-party adds a second

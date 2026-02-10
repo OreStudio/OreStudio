@@ -27,6 +27,8 @@
 
 namespace ores::qt {
 
+using Column = ConnectionTreeModel::Column;
+
 namespace {
 
 constexpr int badge_spacing = 4;
@@ -47,8 +49,8 @@ void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    // Only custom render the Name column (column 0) for environments
-    if (index.column() != 0) {
+    // Only custom render the Name column for environments
+    if (index.column() != Column::Name) {
         QStyledItemDelegate::paint(painter, option, index);
         return;
     }
@@ -128,7 +130,7 @@ QSize ConnectionItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     // Ensure minimum height for rows with tags
-    if (index.column() == 0) {
+    if (index.column() == Column::Name) {
         QVariant tagsData = index.data(ConnectionTreeModel::TagsRole);
         if (tagsData.isValid() && !tagsData.toStringList().isEmpty()) {
             size.setHeight(qMax(size.height(), 26));

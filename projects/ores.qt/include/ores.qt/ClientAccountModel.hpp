@@ -79,6 +79,27 @@ private:
     }
 
 public:
+    /**
+     * @brief Enumeration of table columns for type-safe column access.
+     *
+     * Using an enum instead of magic numbers makes the code self-documenting
+     * and easier to refactor when columns are added, removed, or reordered.
+     * This enum is public so that delegates and other consumers can reference
+     * columns without hardcoding indices.
+     * Note: IsAdmin removed - admin privileges are now managed via RBAC.
+     */
+    enum Column {
+        Username,
+        AccountType,
+        Email,
+        Status,     // Login status: Never, LongAgo, Recent, Online
+        Locked,
+        Version,
+        RecordedBy,
+        RecordedAt,
+        ColumnCount  // Must be last - represents total number of columns
+    };
+
     explicit ClientAccountModel(ClientManager* clientManager,
                                 QObject* parent = nullptr);
     ~ClientAccountModel() override = default;
@@ -199,25 +220,6 @@ private:
      * @return QVariant containing QColor for foreground, or invalid QVariant if no color.
      */
     QVariant recency_foreground_color(const std::string& username) const;
-
-    /**
-     * @brief Enumeration of table columns for type-safe column access.
-     *
-     * Using an enum instead of magic numbers makes the code self-documenting
-     * and easier to refactor when columns are added, removed, or reordered.
-     * Note: IsAdmin removed - admin privileges are now managed via RBAC.
-     */
-    enum Column {
-        Username,
-        AccountType,
-        Email,
-        Status,     // Login status: Never, LongAgo, Recent, Online
-        Locked,
-        Version,
-        RecordedBy,
-        RecordedAt,
-        ColumnCount  // Must be last - represents total number of columns
-    };
 
     /**
      * @brief Calculate login status from login_info.

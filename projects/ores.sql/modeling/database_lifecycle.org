@@ -1,0 +1,379 @@
+:PROPERTIES:
+:ID: 7A3D8E2F-B1C4-4F9A-8D5E-6C2A1B9F0E3D
+:END:
+#+title: Database Lifecycle and Script Reference
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Operational reference for database creation, population, and teardown in
+[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. For schema design patterns and table conventions, see
+[[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]]. For step-by-step table creation instructions, see
+the [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]] skill.
+
+* Quick Reference
+
+The most common development operations:
+
+| Task                         | Command                              |
+|------------------------------+--------------------------------------|
+| Recreate everything          | =./recreate_database.sh= (with args)|
+| Recreate one environment     | =./recreate_env.sh -e local1=        |
+| Validate schema consistency  | =./utility/validate_schemas.sh=      |
+| Recreate a single entity     | =./utility/recreate_entity.sh NAME=  |
+| Run tests                    | =./test/run_tests.sh=                |
+
+All scripts are in =projects/ores.sql/=.
+
+* Directory Layout
+
+#+begin_example
+projects/ores.sql/
+  create/                   Schema creation (tables, triggers, functions)
+    create.sql                Master orchestrator
+    utility/                  Shared utility functions
+    dq/                       Data governance tables
+    refdata/                  Reference data tables (currencies, parties, ...)
+    iam/                      Identity and access management
+    variability/              Feature flags
+    telemetry/                Monitoring and logging
+    assets/                   Image and tag storage
+    geo/                      IP geolocation
+    rls/                      Row-level security policies
+    seed/                     Seed/population functions
+
+  drop/                     Schema teardown (mirrors create/ in reverse)
+    drop.sql                  Master orchestrator
+
+  populate/                 Data population scripts
+    populate.sql              Master orchestrator (governance + catalogues)
+    foundation/               Foundation layer (in template, run first)
+    governance/               Governance layer (dimensions, methodologies)
+    catalogues/               Catalogue layer (orchestrates all data sources)
+    dq/                       DQ metadata population
+    refdata/                  Refdata lookup population
+    iam/                      IAM initial data
+    variability/              Feature flag defaults
+    iso/                      ISO 3166/4217 data
+    flags/                    Country flag icons
+    solvaris/                 Extended currency metadata
+    fpml/                     Financial products reference data
+    crypto/                   Cryptocurrency data
+    lei/                      GLEIF LEI legal entities
+    ip2country/               IP geolocation mappings
+
+  test/                     pgTAP tests
+  utility/                  Helper scripts (validation, entity recreation)
+  admin/                    Cluster-level admin utilities
+  instance/                 Instance-specific initialisation
+  modeling/                 Documentation and diagrams (you are here)
+#+end_example
+
+* Schema Creation Order
+
+=create/create.sql= orchestrates schema creation with strict dependency ordering:
+
+#+begin_example
+1. Utility Functions            create/utility/utility_create.sql
+   (infinity timestamp, system tenant ID, validation helpers)
+
+2. Data Governance Tables       create/dq/dq_create.sql
+   (change reasons, coding schemes, dimensions, artefact tables)
+
+3. Operational Tables           create/refdata/refdata_create.sql
+   (in parallel)                create/iam/iam_create.sql
+                                create/variability/variability_create.sql
+                                create/telemetry/telemetry_create.sql
+                                create/assets/assets_create.sql
+                                create/geo/geo_create.sql
+
+4. Row-Level Security           create/rls/rls_create.sql
+   (depends on all tables + IAM functions)
+
+5. Seed Functions               create/seed/seed_create.sql
+   (data publication functions)
+
+6. Summary Functions            create/utility/utility_summary_functions_create.sql
+#+end_example
+
+** Refdata Creation Order
+
+=create/refdata/refdata_create.sql= creates tables in dependency order:
+
+#+begin_example
+1. Lookup tables (static)       rounding_types
+2. Core tables                  currencies, countries
+3. FPML tables                  account_types, asset_classes, benchmark_rates, ...
+4. Party lookup tables          party_categories, party_types, party_statuses,
+                                party_id_schemes, contact_types
+5. Party/counterparty entities  parties, counterparties
+6. Child entities               party_identifiers, counterparty_identifiers,
+                                party_contact_informations,
+                                counterparty_contact_informations
+#+end_example
+
+Each table has a matching =*_notify_trigger_create.sql= for change notifications.
+
+** Drop Order
+
+=drop/drop.sql= reverses the creation order:
+
+#+begin_example
+1. Operational tables (refdata, iam, variability, telemetry, assets, geo)
+2. Data governance tables (dq)
+3. Seed functions, utility functions
+#+end_example
+
+Within each component, child tables are dropped before parents.
+
+* Population Layers
+
+Data is populated in layers, each building on the previous. The foundation layer
+is baked into the template database; everything else runs per-instance.
+
+** Foundation Layer
+
+Script: =populate/foundation/foundation_populate.sql=
+
+Populated during template creation. Must be present before any application data.
+
+#+begin_example
+Order    Script                                   What it seeds
+-----    ------                                   -------------
+1        iam/iam_tenant_types_populate.sql         system, production, evaluation, automation
+2        iam/iam_tenant_statuses_populate.sql       active, suspended, deactivated
+3        iam/iam_system_tenant_populate.sql         The system tenant (UUID max sentinel)
+
+4        dq/dq_change_reasons_populate.sql          Audit trail change reasons + categories
+
+5        dq/dq_data_domain_populate.sql             Data domain classification
+6        dq/dq_subject_area_populate.sql            Subject area classification
+7        dq/dq_coding_scheme_authority_type_...     Coding scheme authority types
+8        dq/dq_coding_scheme_populate.sql           Coding schemes
+
+9        refdata/refdata_rounding_types_...         Rounding type lookup
+10       refdata/refdata_party_categories_...       system, operational
+11       refdata/refdata_party_types_populate.sql   Bank, Corporate, HedgeFund, ...
+12       refdata/refdata_party_statuses_...         Active, Inactive, Suspended
+13       refdata/refdata_party_id_schemes_...       LEI, BIC, etc.
+14       refdata/refdata_contact_types_...          Email, Phone, etc.
+15       refdata/refdata_system_party_populate.sql  System party for system tenant
+
+16       iam/iam_populate.sql                       Permissions and roles
+17       variability/variability_populate.sql       Feature flags (bootstrap mode, etc.)
+#+end_example
+
+*** Ordering Constraints
+
+The most important ordering constraint: the *system tenant* (step 3) must exist
+before any data that has =tenant_id= columns, because insert triggers call
+=ores_iam_validate_tenant_fn()= which checks the tenant exists.
+
+The *system party* (step 15) must come after party lookup tables (steps 10-14)
+and change reasons (step 4), because the parties insert trigger validates
+=party_category=, =party_type=, =status=, and =change_reason_code= against
+those lookup tables.
+
+** Governance Layer
+
+Script: =populate/governance/governance_populate.sql=
+
+#+begin_example
+- Origin, nature, treatment dimensions
+- Methodologies
+- Artefact types
+- Dataset bundles
+#+end_example
+
+** Catalogues Layer
+
+Script: =populate/catalogues/catalogues_populate.sql=
+
+Populates artefact staging tables from various data sources:
+
+#+begin_example
+Source          What                                Artefact Table
+------          ----                                --------------
+Flag Icons      Country flag SVGs                   ores_dq_images_artefact_tbl
+ISO 3166        Countries                           ores_dq_countries_artefact_tbl
+ISO 4217        Currencies                          ores_dq_currencies_artefact_tbl
+Solvaris        Extended currency metadata           (merged into currencies artefact)
+FPML            Financial products reference data   ores_dq_*_artefact_tbl (many)
+Crypto          Cryptocurrency data                 (merged into currencies artefact)
+GLEIF LEI       Legal Entity Identifiers            ores_dq_lei_*_artefact_tbl
+IP2Country      IP geolocation ranges               ores_dq_ip2country_artefact_tbl
+#+end_example
+
+Artefact data is NOT live reference data. It must be *published* to production
+tables via the Data Librarian's "Publish Datasets" feature.
+
+* Database Types and Creation Paths
+
+Three types of databases, two creation paths:
+
+** Template Path (Fast)
+
+#+begin_example
+setup_template.sql
+    create database ores_template from template0
+    run create/create.sql          (schema)
+    run foundation_populate.sql    (foundation data)
+    mark as template
+
+create_instance.sql
+    create database <name> from ores_template   (filesystem copy - fast)
+    run instance/init_instance.sql
+    run populate/populate.sql      (governance + catalogues)
+#+end_example
+
+** Direct Path (Isolated)
+
+#+begin_example
+recreate_env.sh / create_database_direct.sql
+    create database ores_dev_<env> from template0
+    run create/create.sql          (schema)
+    run foundation_populate.sql    (foundation data)
+    run populate/populate.sql      (governance + catalogues)
+    run instance/init_instance.sql
+#+end_example
+
+** When to Use Which
+
+| Scenario                       | Script                  | Path     |
+|--------------------------------+-------------------------+----------|
+| Full cluster recreation        | =recreate_database.sh=  | Template |
+| Recreate one dev environment   | =recreate_env.sh=       | Direct   |
+| Rebuild test infrastructure    | =recreate_template.sh=  | Template |
+| Quick instance for experiments | =create_instance.sql=   | Template |
+
+* Bash Wrapper Scripts
+
+** recreate_database.sh
+
+Full teardown and recreation of the entire cluster. Requires passwords for all
+database users. Executes:
+
+1. =teardown_all.sql= - drops all instances, template, admin, users
+2. =setup_user.sql= - creates roles and users
+3. =admin/setup_admin.sql= - creates =ores_admin= database
+4. =setup_template.sql= - creates =ores_template= with schema + foundation
+5. =create_instance.sql= - creates instance from template
+6. =populate/populate.sql= - populates governance + catalogues
+
+** recreate_env.sh
+
+Recreates a single environment database (=ores_dev_local1=, etc.) without
+affecting other environments or the template. Creates from scratch, not from
+template.
+
+** recreate_template.sh
+
+Recreates just =ores_template=. Existing instances are not affected until they
+are themselves recreated.
+
+** recreate_admin.sh
+
+Recreates just =ores_admin= (cluster utility functions like whimsical name
+generation).
+
+** drop_database.sh
+
+Safely drops a single database. Checks for active connections and refuses to
+drop protected databases.
+
+* Utility Scripts
+
+Located in =utility/=:
+
+| Script                    | Purpose                                          |
+|---------------------------+--------------------------------------------------|
+| =validate_schemas.sh=    | Parses create/drop scripts for consistency        |
+| =recreate_entity.sh=     | Drop + recreate a single table (fast iteration)  |
+| =check_db_connections.sh= | Shows active connections to a database            |
+| =kill_db_connections.sh=  | Terminates all connections to a database           |
+| =list_databases.sh=       | Lists all ORES databases in the cluster           |
+
+** validate_schemas.sh
+
+Run this after any schema change. Checks that every create script has a matching
+drop script and vice versa. Reports warnings for mismatches.
+
+** recreate_entity.sh
+
+For fast iteration when modifying a single table:
+
+#+begin_src sh
+./utility/recreate_entity.sh refdata_parties
+#+end_src
+
+This drops and recreates just that entity's table, triggers, and functions
+without touching anything else. Useful during development but does not
+repopulate data.
+
+* Test Infrastructure
+
+Tests use pgTAP (PostgreSQL unit testing framework).
+
+| File                            | What it tests                          |
+|---------------------------------+----------------------------------------|
+| =iam_tenant_type_test.sql=      | Tenant type validation function        |
+| =iam_tenant_status_test.sql=    | Tenant status validation function      |
+| =refdata_party_test.sql=        | Party insert trigger (category, type, status, uniqueness) |
+| =refdata_counterparty_test.sql= | Counterparty insert trigger            |
+| =refdata_currencies_test.sql=   | Currency validation                    |
+| =refdata_validation_test.sql=   | General refdata validation functions   |
+| =refdata_party_reference_data_test.sql= | Party reference data lookups   |
+| =dq_artefact_type_test.sql=     | Artefact type validation               |
+
+Run all tests:
+
+#+begin_src sh
+./test/run_tests.sh
+#+end_src
+
+* Adding a New Entity: Checklist
+
+When adding a new table or lookup to the schema:
+
+1. *Create scripts*: Add =create/COMPONENT/ENTITY_create.sql= and optionally
+   =ENTITY_notify_trigger_create.sql=. Wire into the component's master create
+   script (e.g., =create/refdata/refdata_create.sql=).
+
+2. *Drop scripts*: Add matching drop scripts. Wire into the component's master
+   drop script in reverse order.
+
+3. *Populate scripts* (if seeded): Add =populate/COMPONENT/ENTITY_populate.sql=.
+   Wire into the appropriate layer:
+   - Foundation data (lookup tables, system config) goes in =foundation_populate.sql=
+   - Governance metadata goes in =governance_populate.sql=
+   - Catalogue/artefact data goes in =catalogues_populate.sql=
+
+4. *Validate*: Run =./utility/validate_schemas.sh= to check create/drop
+   consistency.
+
+5. *Test* (optional): Add a pgTAP test in =test/= for validation functions.
+
+*** Ordering Pitfalls
+
+- A table's insert trigger may validate foreign keys against *system tenant
+  data* in lookup tables. Ensure the lookup table is populated *before* any
+  INSERT into the dependent table.
+- The system tenant must exist before any table with a =tenant_id= column can
+  be populated.
+- RLS policies depend on IAM functions; the =rls/= scripts must run after
+  =iam/=.
+
+* Tenant Provisioning
+
+When a new tenant is onboarded (via the SystemProvisionerWizard or the
+=ores_iam_provision_tenant_fn= SQL function), the following happens:
+
+1. Tenant record created in =ores_iam_tenants_tbl=
+2. IAM data copied from system tenant: permissions, roles, role_permissions
+3. System party created in =ores_refdata_parties_tbl= (party_category='system',
+   party_type='Corporate', root of party hierarchy)
+
+Reference data (currencies, countries, etc.) is NOT copied during provisioning.
+Tenants populate refdata via the Data Librarian's "Publish Datasets" feature.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Schema: [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] | Skills: [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]] |

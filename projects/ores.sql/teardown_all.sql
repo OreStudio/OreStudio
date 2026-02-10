@@ -32,28 +32,8 @@
  *
  * WHAT IT DROPS (in order):
  *   1. Test databases (pattern-based - acceptable for ephemeral DBs)
- *   2. Instance databases (from teardown_instances.sql - explicit, reviewable)
- *   3. ores_template (explicit)
- *   4. ores_admin (explicit)
- *   5. ores users and roles (explicit)
- *
- * INSTANCE DATABASE WORKFLOW:
- *   For production environments, instance drops must be explicit and reviewable:
- *
- *   1. Generate the teardown script:
- *      psql -U postgres -f admin/admin_teardown_instances_generate.sql
- *
- *   2. Review the generated file:
- *      cat teardown_instances.sql
- *
- *   3. Commit to git for audit trail:
- *      git add teardown_instances.sql && git commit -m "Teardown: list DBs to drop"
- *
- *   4. Run this script:
- *      psql -U postgres -f teardown_all.sql
- *
- * If teardown_instances.sql is empty or contains only comments, no instance
- * databases will be dropped (useful for dev environments with no instances).
+ *   2. Instance and dev databases (pattern-based discovery)
+ *   3. ores users and roles (explicit)
  */
 
 \set ON_ERROR_STOP on
@@ -72,9 +52,7 @@
     \echo ''
 \else
     \echo 'Before proceeding, ensure you have:'
-    \echo '  - Generated teardown_instances.sql (if dropping instances)'
     \echo '  - Reviewed all databases that will be dropped'
-    \echo '  - Committed the teardown script for audit trail (production)'
     \echo ''
 
     -- Confirmation prompt
@@ -125,58 +103,40 @@ where datname like 'ores_test_%'
 \endif
 
 --------------------------------------------------------------------------------
--- Step 2: Drop instance databases (from teardown_instances.sql)
+-- Step 2: Drop instance and dev databases (pattern-based discovery)
 --------------------------------------------------------------------------------
 \echo ''
-\echo '--- Step 2: Dropping instance databases ---'
-\echo ''
-\echo 'Running teardown_instances.sql...'
+\echo '--- Step 2: Dropping ORES databases ---'
 \echo ''
 
--- Include the generated instance teardown script
--- This file should contain explicit DROP DATABASE statements
--- If empty or not generated, no instances will be dropped
-\ir teardown_instances.sql
+select count(*) as ores_db_count
+from pg_database
+where (datname like 'ores_%' or datname like 'oresdb_%')
+  and datname not like 'ores_test_%'
+  and datname not like 'oresdb_test_%'
+\gset
 
-\echo ''
-\echo 'Instance database teardown complete.'
+\if :ores_db_count
+    \echo 'Found' :ores_db_count 'ORES database(s) to drop.'
 
---------------------------------------------------------------------------------
--- Step 3: Drop template
---------------------------------------------------------------------------------
-\echo ''
-\echo '--- Step 3: Dropping ores_template ---'
+    select format('drop database if exists %I;', datname)
+    from pg_database
+    where (datname like 'ores_%' or datname like 'oresdb_%')
+      and datname not like 'ores_test_%'
+      and datname not like 'oresdb_test_%'
+    order by datname
+    \gexec
 
--- Unmark as template so it can be dropped
-update pg_database set datistemplate = false where datname = 'ores_template';
-
--- Terminate connections
-select pg_terminate_backend(pid)
-from pg_stat_activity
-where datname = 'ores_template' and pid <> pg_backend_pid();
-
-drop database if exists ores_template;
-\echo 'ores_template dropped.'
+    \echo 'ORES databases dropped.'
+\else
+    \echo 'No ORES databases found.'
+\endif
 
 --------------------------------------------------------------------------------
--- Step 4: Drop admin
+-- Step 3: Drop users and roles
 --------------------------------------------------------------------------------
 \echo ''
-\echo '--- Step 4: Dropping ores_admin ---'
-
--- Terminate connections
-select pg_terminate_backend(pid)
-from pg_stat_activity
-where datname = 'ores_admin' and pid <> pg_backend_pid();
-
-drop database if exists ores_admin;
-\echo 'ores_admin dropped.'
-
---------------------------------------------------------------------------------
--- Step 5: Drop users and roles
---------------------------------------------------------------------------------
-\echo ''
-\echo '--- Step 5: Dropping ores users and roles ---'
+\echo '--- Step 3: Dropping ores users and roles ---'
 
 -- Drop service users first (they depend on roles)
 drop role if exists ores_ddl_user;

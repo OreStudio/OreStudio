@@ -47,6 +47,7 @@ TEST_CASE("write_single_party_contact_information", tags) {
 
     scoped_database_helper h;
     auto pci = generate_synthetic_party_contact_information();
+    pci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Party contact information: " << pci;
 
     party_contact_information_repository repo(h.context());
@@ -59,6 +60,8 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     scoped_database_helper h;
     auto party_contact_informations =
         generate_synthetic_party_contact_informations(3);
+    for (auto& pci : party_contact_informations)
+        pci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Party contact informations: "
                              << party_contact_informations;
 
@@ -72,6 +75,8 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     scoped_database_helper h;
     auto written_party_contact_informations =
         generate_synthetic_party_contact_informations(3);
+    for (auto& pci : written_party_contact_informations)
+        pci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written party contact informations: "
                              << written_party_contact_informations;
 
@@ -91,6 +96,7 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
 
     scoped_database_helper h;
     auto pci = generate_synthetic_party_contact_information();
+    pci.tenant_id = h.tenant_id().to_string();
     const auto original_city = pci.city;
     BOOST_LOG_SEV(lg, debug) << "Party contact information: " << pci;
 

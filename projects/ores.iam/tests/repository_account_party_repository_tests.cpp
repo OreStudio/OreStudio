@@ -20,6 +20,7 @@
 #include "ores.iam/repository/account_party_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -27,7 +28,8 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_party.hpp"
 #include "ores.iam/domain/account_party_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam/generators/account_party_generator.hpp"
+#include "ores.iam/repository/account_repository.hpp"
+#include "ores.iam/generators/account_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 
 namespace {
@@ -35,23 +37,42 @@ namespace {
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
+using ores::iam::domain::account_party;
+
+account_party make_account_party(ores::testing::database_helper& h,
+    const boost::uuids::uuid& account_id) {
+    account_party ap;
+    ap.tenant_id = h.tenant_id().to_string();
+    ap.account_id = account_id;
+    ap.party_id = boost::uuids::random_generator()();
+    ap.recorded_by = std::string(faker::internet::username());
+    ap.change_reason_code = "system.test";
+    ap.change_commentary = "Synthetic test data";
+    ap.performed_by = std::string(faker::internet::username());
+    return ap;
+}
+
 }
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
-using ores::iam::domain::account_party;
 using ores::iam::repository::account_party_repository;
+using ores::iam::repository::account_repository;
 
 TEST_CASE("write_single_account_party", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
-    auto ap = generate_synthetic_account_party();
-    ap.tenant_id = h.tenant_id().to_string();
+
+    auto acc = generate_synthetic_account(h.tenant_id());
+    acc_repo.write(acc);
+
+    auto ap = make_account_party(h, acc.id);
 
     BOOST_LOG_SEV(lg, debug) << "Account party: " << ap;
     CHECK_NOTHROW(repo.write(ap));
@@ -62,10 +83,15 @@ TEST_CASE("write_multiple_account_parties", tags) {
 
     database_helper h;
 
+    account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
-    auto aps = generate_synthetic_account_parties(5);
-    for (auto& ap : aps)
-        ap.tenant_id = h.tenant_id().to_string();
+
+    std::vector<account_party> aps;
+    for (int i = 0; i < 3; ++i) {
+        auto acc = generate_synthetic_account(h.tenant_id());
+        acc_repo.write(acc);
+        aps.push_back(make_account_party(h, acc.id));
+    }
 
     BOOST_LOG_SEV(lg, debug) << "Account parties: " << aps;
     CHECK_NOTHROW(repo.write(aps));
@@ -76,10 +102,15 @@ TEST_CASE("read_latest_account_parties", tags) {
 
     database_helper h;
 
+    account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
-    auto written = generate_synthetic_account_parties(3);
-    for (auto& ap : written)
-        ap.tenant_id = h.tenant_id().to_string();
+
+    std::vector<account_party> written;
+    for (int i = 0; i < 3; ++i) {
+        auto acc = generate_synthetic_account(h.tenant_id());
+        acc_repo.write(acc);
+        written.push_back(make_account_party(h, acc.id));
+    }
 
     BOOST_LOG_SEV(lg, debug) << "Written account parties: " << written;
     repo.write(written);
@@ -96,22 +127,23 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
 
     database_helper h;
 
+    account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
-    auto aps = generate_synthetic_account_parties(3);
-    for (auto& ap : aps)
-        ap.tenant_id = h.tenant_id().to_string();
 
-    const auto target_account_id = aps.front().account_id;
-    BOOST_LOG_SEV(lg, debug) << "Written account parties: " << aps;
-    repo.write(aps);
+    auto acc = generate_synthetic_account(h.tenant_id());
+    acc_repo.write(acc);
 
-    BOOST_LOG_SEV(lg, debug) << "Target account ID: " << target_account_id;
+    auto ap = make_account_party(h, acc.id);
+    BOOST_LOG_SEV(lg, debug) << "Written account party: " << ap;
+    repo.write(ap);
 
-    auto read_aps = repo.read_latest_by_account(target_account_id);
+    BOOST_LOG_SEV(lg, debug) << "Target account ID: " << acc.id;
+
+    auto read_aps = repo.read_latest_by_account(acc.id);
     BOOST_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
 
     REQUIRE(read_aps.size() >= 1);
-    CHECK(read_aps[0].account_id == target_account_id);
+    CHECK(read_aps[0].account_id == acc.id);
 }
 
 TEST_CASE("read_nonexistent_account_party", tags) {

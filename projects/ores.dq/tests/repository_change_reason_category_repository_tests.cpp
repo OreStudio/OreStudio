@@ -49,6 +49,7 @@ TEST_CASE("write_single_change_reason_category", tags) {
 
     change_reason_category_repository repo(h.context());
     auto category = generate_synthetic_change_reason_category();
+    category.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Change reason category: " << category;
     CHECK_NOTHROW(repo.write(category));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_change_reason_categories", tags) {
 
     change_reason_category_repository repo(h.context());
     auto categories = generate_synthetic_change_reason_categories(3);
+    for (auto& c : categories)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Change reason categories: " << categories;
 
     CHECK_NOTHROW(repo.write(categories));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_change_reason_categories", tags) {
 
     change_reason_category_repository repo(h.context());
     auto written_categories = generate_synthetic_change_reason_categories(3);
+    for (auto& c : written_categories)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written categories: " << written_categories;
 
     repo.write(written_categories);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_change_reason_category_by_code", tags) {
 
     change_reason_category_repository repo(h.context());
     auto categories = generate_synthetic_change_reason_categories(3);
+    for (auto& c : categories)
+        c.tenant_id = h.tenant_id().to_string();
 
     const auto target = categories.front();
     BOOST_LOG_SEV(lg, debug) << "Write categories: " << categories;

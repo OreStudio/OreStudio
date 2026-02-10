@@ -46,6 +46,7 @@ TEST_CASE("write_single_party_id_scheme", tags) {
 
     scoped_database_helper h;
     auto pis = generate_synthetic_party_id_scheme();
+    pis.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
 
     party_id_scheme_repository repo;
@@ -57,6 +58,8 @@ TEST_CASE("write_multiple_party_id_schemes", tags) {
 
     scoped_database_helper h;
     auto party_id_schemes = generate_synthetic_party_id_schemes(3);
+    for (auto& pis : party_id_schemes)
+        pis.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Party ID schemes: " << party_id_schemes;
 
     party_id_scheme_repository repo;
@@ -68,6 +71,8 @@ TEST_CASE("read_latest_party_id_schemes", tags) {
 
     scoped_database_helper h;
     auto written_party_id_schemes = generate_synthetic_party_id_schemes(3);
+    for (auto& pis : written_party_id_schemes)
+        pis.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Written party ID schemes: "
                              << written_party_id_schemes;
 
@@ -86,6 +91,7 @@ TEST_CASE("read_latest_party_id_scheme_by_code", tags) {
 
     scoped_database_helper h;
     auto pis = generate_synthetic_party_id_scheme();
+    pis.tenant_id = h.tenant_id();
     const auto original_name = pis.name;
     BOOST_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
 

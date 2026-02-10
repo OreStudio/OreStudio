@@ -47,6 +47,7 @@ TEST_CASE("write_single_counterparty_identifier", tags) {
 
     scoped_database_helper h;
     auto ci = generate_synthetic_counterparty_identifier();
+    ci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 
     counterparty_identifier_repository repo(h.context());
@@ -59,6 +60,8 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     scoped_database_helper h;
     auto counterparty_identifiers =
         generate_synthetic_counterparty_identifiers(3);
+    for (auto& ci : counterparty_identifiers)
+        ci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifiers: "
                              << counterparty_identifiers;
 
@@ -72,6 +75,8 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     scoped_database_helper h;
     auto written_counterparty_identifiers =
         generate_synthetic_counterparty_identifiers(3);
+    for (auto& ci : written_counterparty_identifiers)
+        ci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written counterparty identifiers: "
                              << written_counterparty_identifiers;
 
@@ -91,6 +96,7 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
 
     scoped_database_helper h;
     auto ci = generate_synthetic_counterparty_identifier();
+    ci.tenant_id = h.tenant_id().to_string();
     const auto original_id_value = ci.id_value;
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 

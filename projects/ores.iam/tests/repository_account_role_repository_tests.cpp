@@ -51,7 +51,7 @@ role make_role(ores::testing::database_helper& h) {
         + std::string(faker::string::alphanumeric(6));
     r.description = std::string(faker::lorem::sentence());
     r.recorded_by = std::string(faker::internet::username());
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.performed_by = std::string(faker::internet::username());
     return r;
@@ -86,7 +86,7 @@ TEST_CASE("write_single_account_role", tags) {
     ar.account_id = acc.id;
     ar.role_id = r.id;
     ar.assigned_by = std::string(faker::internet::username());
-    ar.change_reason_code = "system.new";
+    ar.change_reason_code = "system.test";
     ar.change_commentary = "Synthetic test data";
 
     BOOST_LOG_SEV(lg, debug) << "Account role - account_id: " << ar.account_id
@@ -113,7 +113,7 @@ TEST_CASE("read_latest_account_roles", tags) {
     ar.account_id = acc.id;
     ar.role_id = r.id;
     ar.assigned_by = std::string(faker::internet::username());
-    ar.change_reason_code = "system.new";
+    ar.change_reason_code = "system.test";
     ar.change_commentary = "Synthetic test data";
     repo.write(ar);
 
@@ -145,7 +145,7 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     ar1.account_id = acc.id;
     ar1.role_id = r1.id;
     ar1.assigned_by = std::string(faker::internet::username());
-    ar1.change_reason_code = "system.new";
+    ar1.change_reason_code = "system.test";
     ar1.change_commentary = "Synthetic test data";
 
     account_role ar2;
@@ -153,7 +153,7 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     ar2.account_id = acc.id;
     ar2.role_id = r2.id;
     ar2.assigned_by = std::string(faker::internet::username());
-    ar2.change_reason_code = "system.new";
+    ar2.change_reason_code = "system.test";
     ar2.change_commentary = "Synthetic test data";
 
     repo.write(ar1);

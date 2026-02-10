@@ -49,6 +49,7 @@ TEST_CASE("write_single_coding_scheme_authority_type", tags) {
 
     coding_scheme_authority_type_repository repo(h.context());
     auto authority_type = generate_synthetic_coding_scheme_authority_type();
+    authority_type.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme authority type: " << authority_type;
     CHECK_NOTHROW(repo.write(authority_type));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
 
     coding_scheme_authority_type_repository repo(h.context());
     auto authority_types = generate_synthetic_coding_scheme_authority_types(3);
+    for (auto& a : authority_types)
+        a.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Coding scheme authority types: " << authority_types;
 
     CHECK_NOTHROW(repo.write(authority_types));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
 
     coding_scheme_authority_type_repository repo(h.context());
     auto written_authority_types = generate_synthetic_coding_scheme_authority_types(3);
+    for (auto& a : written_authority_types)
+        a.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written authority types: " << written_authority_types;
 
     repo.write(written_authority_types);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_coding_scheme_authority_type_by_code", tags) {
 
     coding_scheme_authority_type_repository repo(h.context());
     auto authority_types = generate_synthetic_coding_scheme_authority_types(3);
+    for (auto& a : authority_types)
+        a.tenant_id = h.tenant_id().to_string();
 
     const auto target = authority_types.front();
     BOOST_LOG_SEV(lg, debug) << "Write authority types: " << authority_types;

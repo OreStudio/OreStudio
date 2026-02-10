@@ -49,6 +49,7 @@ TEST_CASE("write_single_coding_scheme", tags) {
 
     coding_scheme_repository repo(h.context());
     auto coding_scheme = generate_synthetic_coding_scheme();
+    coding_scheme.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme: " << coding_scheme;
     CHECK_NOTHROW(repo.write(coding_scheme));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_coding_schemes", tags) {
 
     coding_scheme_repository repo(h.context());
     auto coding_schemes = generate_synthetic_coding_schemes(3);
+    for (auto& c : coding_schemes)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Coding schemes: " << coding_schemes;
 
     CHECK_NOTHROW(repo.write(coding_schemes));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_coding_schemes", tags) {
 
     coding_scheme_repository repo(h.context());
     auto written_coding_schemes = generate_synthetic_coding_schemes(3);
+    for (auto& c : written_coding_schemes)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written coding schemes: " << written_coding_schemes;
 
     repo.write(written_coding_schemes);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_coding_scheme_by_code", tags) {
 
     coding_scheme_repository repo(h.context());
     auto coding_schemes = generate_synthetic_coding_schemes(3);
+    for (auto& c : coding_schemes)
+        c.tenant_id = h.tenant_id().to_string();
 
     const auto target = coding_schemes.front();
     BOOST_LOG_SEV(lg, debug) << "Write coding schemes: " << coding_schemes;

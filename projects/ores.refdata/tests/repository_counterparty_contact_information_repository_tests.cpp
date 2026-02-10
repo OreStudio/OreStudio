@@ -47,6 +47,7 @@ TEST_CASE("write_single_counterparty_contact_information", tags) {
 
     scoped_database_helper h;
     auto cci = generate_synthetic_counterparty_contact_information();
+    cci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact information: " << cci;
 
     counterparty_contact_information_repository repo(h.context());
@@ -59,6 +60,8 @@ TEST_CASE("write_multiple_counterparty_contact_informations", tags) {
     scoped_database_helper h;
     auto counterparty_contact_informations =
         generate_synthetic_counterparty_contact_informations(3);
+    for (auto& cci : counterparty_contact_informations)
+        cci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact informations: "
                              << counterparty_contact_informations;
 
@@ -72,6 +75,8 @@ TEST_CASE("read_latest_counterparty_contact_informations", tags) {
     scoped_database_helper h;
     auto written_counterparty_contact_informations =
         generate_synthetic_counterparty_contact_informations(3);
+    for (auto& cci : written_counterparty_contact_informations)
+        cci.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written counterparty contact informations: "
                              << written_counterparty_contact_informations;
 
@@ -91,6 +96,7 @@ TEST_CASE("read_latest_counterparty_contact_information_by_id", tags) {
 
     scoped_database_helper h;
     auto cci = generate_synthetic_counterparty_contact_information();
+    cci.tenant_id = h.tenant_id().to_string();
     const auto original_city = cci.city;
     BOOST_LOG_SEV(lg, debug) << "Counterparty contact information: " << cci;
 

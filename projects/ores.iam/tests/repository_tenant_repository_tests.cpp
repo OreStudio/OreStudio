@@ -48,7 +48,7 @@ tenant make_tenant(ores::testing::database_helper& /*h*/) {
     t.hostname = std::string(faker::string::alphanumeric(8)) + ".example.com";
     t.status = "active";
     t.recorded_by = std::string(faker::internet::username());
-    t.change_reason_code = "system.new";
+    t.change_reason_code = "system.test";
     t.change_commentary = "Synthetic test data";
     t.performed_by = std::string(faker::internet::username());
     return t;

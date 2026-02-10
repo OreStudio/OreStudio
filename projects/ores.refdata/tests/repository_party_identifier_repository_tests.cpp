@@ -47,6 +47,7 @@ TEST_CASE("write_single_party_identifier", tags) {
 
     scoped_database_helper h;
     auto pi = generate_synthetic_party_identifier();
+    pi.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 
     party_identifier_repository repo(h.context());
@@ -58,6 +59,8 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
 
     scoped_database_helper h;
     auto party_identifiers = generate_synthetic_party_identifiers(3);
+    for (auto& pi : party_identifiers)
+        pi.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Party identifiers: " << party_identifiers;
 
     party_identifier_repository repo(h.context());
@@ -69,6 +72,8 @@ TEST_CASE("read_latest_party_identifiers", tags) {
 
     scoped_database_helper h;
     auto written_party_identifiers = generate_synthetic_party_identifiers(3);
+    for (auto& pi : written_party_identifiers)
+        pi.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written party identifiers: "
                              << written_party_identifiers;
 
@@ -87,6 +92,7 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
 
     scoped_database_helper h;
     auto pi = generate_synthetic_party_identifier();
+    pi.tenant_id = h.tenant_id().to_string();
     const auto original_id_value = pi.id_value;
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 

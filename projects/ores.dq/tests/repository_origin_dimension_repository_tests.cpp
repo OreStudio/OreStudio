@@ -49,6 +49,7 @@ TEST_CASE("write_single_origin_dimension", tags) {
 
     origin_dimension_repository repo(h.context());
     auto origin_dimension = generate_synthetic_origin_dimension();
+    origin_dimension.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
     CHECK_NOTHROW(repo.write(origin_dimension));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_origin_dimensions", tags) {
 
     origin_dimension_repository repo(h.context());
     auto origin_dimensions = generate_synthetic_origin_dimensions(3);
+    for (auto& o : origin_dimensions)
+        o.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Origin dimensions: " << origin_dimensions;
 
     CHECK_NOTHROW(repo.write(origin_dimensions));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_origin_dimensions", tags) {
 
     origin_dimension_repository repo(h.context());
     auto written_origin_dimensions = generate_synthetic_origin_dimensions(3);
+    for (auto& o : written_origin_dimensions)
+        o.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written origin dimensions: " << written_origin_dimensions;
 
     repo.write(written_origin_dimensions);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_origin_dimension_by_code", tags) {
 
     origin_dimension_repository repo(h.context());
     auto origin_dimensions = generate_synthetic_origin_dimensions(3);
+    for (auto& o : origin_dimensions)
+        o.tenant_id = h.tenant_id().to_string();
 
     const auto target = origin_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write origin dimensions: " << origin_dimensions;

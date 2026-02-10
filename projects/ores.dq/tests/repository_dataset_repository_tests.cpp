@@ -49,6 +49,7 @@ TEST_CASE("write_single_dataset", tags) {
 
     dataset_repository repo(h.context());
     auto dataset = generate_synthetic_dataset();
+    dataset.tenant_id = h.tenant_id();
 
     BOOST_LOG_SEV(lg, debug) << "Dataset: " << dataset;
     CHECK_NOTHROW(repo.write(dataset));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_datasets", tags) {
 
     dataset_repository repo(h.context());
     auto datasets = generate_synthetic_datasets(3);
+    for (auto& d : datasets)
+        d.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Datasets: " << datasets;
 
     CHECK_NOTHROW(repo.write(datasets));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_datasets", tags) {
 
     dataset_repository repo(h.context());
     auto written_datasets = generate_synthetic_datasets(3);
+    for (auto& d : written_datasets)
+        d.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Written datasets: " << written_datasets;
 
     repo.write(written_datasets);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_dataset_by_id", tags) {
 
     dataset_repository repo(h.context());
     auto datasets = generate_synthetic_datasets(3);
+    for (auto& d : datasets)
+        d.tenant_id = h.tenant_id();
 
     const auto target = datasets.front();
     BOOST_LOG_SEV(lg, debug) << "Write datasets: " << datasets;

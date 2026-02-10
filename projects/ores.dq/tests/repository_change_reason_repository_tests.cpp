@@ -49,6 +49,7 @@ TEST_CASE("write_single_change_reason", tags) {
 
     change_reason_repository repo(h.context());
     auto change_reason = generate_synthetic_change_reason();
+    change_reason.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Change reason: " << change_reason;
     CHECK_NOTHROW(repo.write(change_reason));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_change_reasons", tags) {
 
     change_reason_repository repo(h.context());
     auto change_reasons = generate_synthetic_change_reasons(3);
+    for (auto& c : change_reasons)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Change reasons: " << change_reasons;
 
     CHECK_NOTHROW(repo.write(change_reasons));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_change_reasons", tags) {
 
     change_reason_repository repo(h.context());
     auto written_change_reasons = generate_synthetic_change_reasons(3);
+    for (auto& c : written_change_reasons)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written change reasons: " << written_change_reasons;
 
     repo.write(written_change_reasons);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_change_reason_by_code", tags) {
 
     change_reason_repository repo(h.context());
     auto change_reasons = generate_synthetic_change_reasons(3);
+    for (auto& c : change_reasons)
+        c.tenant_id = h.tenant_id().to_string();
 
     const auto target = change_reasons.front();
     BOOST_LOG_SEV(lg, debug) << "Write change reasons: " << change_reasons;

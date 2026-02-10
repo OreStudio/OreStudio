@@ -49,6 +49,7 @@ TEST_CASE("write_single_subject_area", tags) {
 
     subject_area_repository repo(h.context());
     auto subject_area = generate_synthetic_subject_area();
+    subject_area.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Subject area: " << subject_area;
     CHECK_NOTHROW(repo.write(subject_area));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_subject_areas", tags) {
 
     subject_area_repository repo(h.context());
     auto subject_areas = generate_synthetic_subject_areas(3);
+    for (auto& s : subject_areas)
+        s.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Subject areas: " << subject_areas;
 
     CHECK_NOTHROW(repo.write(subject_areas));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_subject_areas", tags) {
 
     subject_area_repository repo(h.context());
     auto written_subject_areas = generate_synthetic_subject_areas(3);
+    for (auto& s : written_subject_areas)
+        s.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written subject areas: " << written_subject_areas;
 
     repo.write(written_subject_areas);
@@ -92,6 +97,7 @@ TEST_CASE("read_latest_subject_areas_by_domain", tags) {
     subject_area_repository repo(h.context());
     const std::string domain_name = "test_domain_for_subject_area_12345";
     auto subject_area = generate_synthetic_subject_area(domain_name);
+    subject_area.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Write subject area: " << subject_area;
     repo.write(subject_area);
 

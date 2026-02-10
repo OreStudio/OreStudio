@@ -47,6 +47,7 @@ TEST_CASE("write_single_party", tags) {
 
     scoped_database_helper h;
     auto p = generate_synthetic_party();
+    p.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 
     party_repository repo(h.context());
@@ -58,6 +59,8 @@ TEST_CASE("write_multiple_parties", tags) {
 
     scoped_database_helper h;
     auto parties = generate_synthetic_parties(3);
+    for (auto& p : parties)
+        p.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Parties: " << parties;
 
     party_repository repo(h.context());
@@ -69,6 +72,8 @@ TEST_CASE("read_latest_parties", tags) {
 
     scoped_database_helper h;
     auto written_parties = generate_synthetic_parties(3);
+    for (auto& p : written_parties)
+        p.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written parties: " << written_parties;
 
     party_repository repo(h.context());
@@ -85,6 +90,7 @@ TEST_CASE("read_latest_party_by_id", tags) {
 
     scoped_database_helper h;
     auto p = generate_synthetic_party();
+    p.tenant_id = h.tenant_id().to_string();
     const auto original_full_name = p.full_name;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 

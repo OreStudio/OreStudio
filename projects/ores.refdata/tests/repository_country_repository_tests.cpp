@@ -46,6 +46,8 @@ TEST_CASE("write_single_country", tags) {
 
     scoped_database_helper h;
     auto countries = generate_fictional_countries(1);
+    for (auto& c : countries)
+        c.tenant_id = h.tenant_id();
     REQUIRE(!countries.empty());
     auto cntry = countries[0];
     BOOST_LOG_SEV(lg, debug) << "Country: " << cntry;
@@ -59,6 +61,8 @@ TEST_CASE("write_multiple_countries", tags) {
 
     scoped_database_helper h;
     auto countries = generate_fictional_countries(3);
+    for (auto& c : countries)
+        c.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Countries: " << countries;
 
     country_repository repo;
@@ -70,6 +74,8 @@ TEST_CASE("read_latest_countries", tags) {
 
     scoped_database_helper h;
     auto written_countries = generate_fictional_countries(3);
+    for (auto& c : written_countries)
+        c.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Written countries: " << written_countries;
 
     country_repository repo;
@@ -86,6 +92,8 @@ TEST_CASE("read_latest_country_by_alpha2_code", tags) {
 
     scoped_database_helper h;
     auto countries = generate_fictional_countries(1);
+    for (auto& c : countries)
+        c.tenant_id = h.tenant_id();
     REQUIRE(!countries.empty());
     auto cntry = countries[0];
     const auto original_name = cntry.name;

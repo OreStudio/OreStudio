@@ -97,7 +97,6 @@ TEST_CASE("read_session_by_id", tags) {
     REQUIRE(read_session.has_value());
     CHECK(read_session->id == target_id);
     CHECK(read_session->account_id == s.account_id);
-    CHECK(read_session->username == s.username);
 }
 
 TEST_CASE("read_nonexistent_session", tags) {

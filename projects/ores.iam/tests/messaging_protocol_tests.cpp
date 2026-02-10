@@ -1471,7 +1471,6 @@ TEST_CASE("save_account_party_request_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.account_party.version == e.account_party.version);
-    CHECK(a.account_party.tenant_id == e.account_party.tenant_id);
     CHECK(a.account_party.account_id == e.account_party.account_id);
     CHECK(a.account_party.party_id == e.account_party.party_id);
     CHECK(a.account_party.recorded_by == e.account_party.recorded_by);

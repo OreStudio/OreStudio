@@ -49,6 +49,7 @@ TEST_CASE("write_single_treatment_dimension", tags) {
 
     treatment_dimension_repository repo(h.context());
     auto treatment_dimension = generate_synthetic_treatment_dimension();
+    treatment_dimension.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Treatment dimension: " << treatment_dimension;
     CHECK_NOTHROW(repo.write(treatment_dimension));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_treatment_dimensions", tags) {
 
     treatment_dimension_repository repo(h.context());
     auto treatment_dimensions = generate_synthetic_treatment_dimensions(3);
+    for (auto& t : treatment_dimensions)
+        t.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Treatment dimensions: " << treatment_dimensions;
 
     CHECK_NOTHROW(repo.write(treatment_dimensions));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_treatment_dimensions", tags) {
 
     treatment_dimension_repository repo(h.context());
     auto written_treatment_dimensions = generate_synthetic_treatment_dimensions(3);
+    for (auto& t : written_treatment_dimensions)
+        t.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written treatment dimensions: " << written_treatment_dimensions;
 
     repo.write(written_treatment_dimensions);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_treatment_dimension_by_code", tags) {
 
     treatment_dimension_repository repo(h.context());
     auto treatment_dimensions = generate_synthetic_treatment_dimensions(3);
+    for (auto& t : treatment_dimensions)
+        t.tenant_id = h.tenant_id().to_string();
 
     const auto target = treatment_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write treatment dimensions: " << treatment_dimensions;

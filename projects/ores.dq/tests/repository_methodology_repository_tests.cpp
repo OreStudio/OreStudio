@@ -49,6 +49,7 @@ TEST_CASE("write_single_methodology", tags) {
 
     methodology_repository repo(h.context());
     auto methodology = generate_synthetic_methodology();
+    methodology.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
     CHECK_NOTHROW(repo.write(methodology));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_methodologies", tags) {
 
     methodology_repository repo(h.context());
     auto methodologies = generate_synthetic_methodologies(3);
+    for (auto& m : methodologies)
+        m.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
 
     CHECK_NOTHROW(repo.write(methodologies));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_methodologies", tags) {
 
     methodology_repository repo(h.context());
     auto written_methodologies = generate_synthetic_methodologies(3);
+    for (auto& m : written_methodologies)
+        m.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written methodologies: " << written_methodologies;
 
     repo.write(written_methodologies);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_methodology_by_id", tags) {
 
     methodology_repository repo(h.context());
     auto methodologies = generate_synthetic_methodologies(3);
+    for (auto& m : methodologies)
+        m.tenant_id = h.tenant_id().to_string();
 
     const auto target = methodologies.front();
     BOOST_LOG_SEV(lg, debug) << "Write methodologies: " << methodologies;

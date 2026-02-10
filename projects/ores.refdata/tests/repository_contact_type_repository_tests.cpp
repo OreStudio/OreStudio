@@ -46,6 +46,7 @@ TEST_CASE("write_single_contact_type", tags) {
 
     scoped_database_helper h;
     auto ct = generate_synthetic_contact_type();
+    ct.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Contact type: " << ct;
 
     contact_type_repository repo;
@@ -57,6 +58,8 @@ TEST_CASE("write_multiple_contact_types", tags) {
 
     scoped_database_helper h;
     auto contact_types = generate_synthetic_contact_types(3);
+    for (auto& ct : contact_types)
+        ct.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Contact types: " << contact_types;
 
     contact_type_repository repo;
@@ -68,6 +71,8 @@ TEST_CASE("read_latest_contact_types", tags) {
 
     scoped_database_helper h;
     auto written_contact_types = generate_synthetic_contact_types(3);
+    for (auto& ct : written_contact_types)
+        ct.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Written contact types: "
                              << written_contact_types;
 
@@ -85,6 +90,7 @@ TEST_CASE("read_latest_contact_type_by_code", tags) {
 
     scoped_database_helper h;
     auto ct = generate_synthetic_contact_type();
+    ct.tenant_id = h.tenant_id();
     const auto original_name = ct.name;
     BOOST_LOG_SEV(lg, debug) << "Contact type: " << ct;
 

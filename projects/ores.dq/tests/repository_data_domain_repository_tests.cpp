@@ -49,6 +49,7 @@ TEST_CASE("write_single_data_domain", tags) {
 
     data_domain_repository repo(h.context());
     auto data_domain = generate_synthetic_data_domain();
+    data_domain.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Data domain: " << data_domain;
     CHECK_NOTHROW(repo.write(data_domain));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_data_domains", tags) {
 
     data_domain_repository repo(h.context());
     auto data_domains = generate_synthetic_data_domains(3);
+    for (auto& d : data_domains)
+        d.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Data domains: " << data_domains;
 
     CHECK_NOTHROW(repo.write(data_domains));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_data_domains", tags) {
 
     data_domain_repository repo(h.context());
     auto written_data_domains = generate_synthetic_data_domains(3);
+    for (auto& d : written_data_domains)
+        d.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written data domains: " << written_data_domains;
 
     repo.write(written_data_domains);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_data_domain_by_name", tags) {
 
     data_domain_repository repo(h.context());
     auto data_domains = generate_synthetic_data_domains(3);
+    for (auto& d : data_domains)
+        d.tenant_id = h.tenant_id().to_string();
 
     const auto target = data_domains.front();
     BOOST_LOG_SEV(lg, debug) << "Write data domains: " << data_domains;

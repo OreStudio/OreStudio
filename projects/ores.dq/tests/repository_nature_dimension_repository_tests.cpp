@@ -49,6 +49,7 @@ TEST_CASE("write_single_nature_dimension", tags) {
 
     nature_dimension_repository repo(h.context());
     auto nature_dimension = generate_synthetic_nature_dimension();
+    nature_dimension.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Nature dimension: " << nature_dimension;
     CHECK_NOTHROW(repo.write(nature_dimension));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_nature_dimensions", tags) {
 
     nature_dimension_repository repo(h.context());
     auto nature_dimensions = generate_synthetic_nature_dimensions(3);
+    for (auto& n : nature_dimensions)
+        n.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Nature dimensions: " << nature_dimensions;
 
     CHECK_NOTHROW(repo.write(nature_dimensions));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_nature_dimensions", tags) {
 
     nature_dimension_repository repo(h.context());
     auto written_nature_dimensions = generate_synthetic_nature_dimensions(3);
+    for (auto& n : written_nature_dimensions)
+        n.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written nature dimensions: " << written_nature_dimensions;
 
     repo.write(written_nature_dimensions);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_nature_dimension_by_code", tags) {
 
     nature_dimension_repository repo(h.context());
     auto nature_dimensions = generate_synthetic_nature_dimensions(3);
+    for (auto& n : nature_dimensions)
+        n.tenant_id = h.tenant_id().to_string();
 
     const auto target = nature_dimensions.front();
     BOOST_LOG_SEV(lg, debug) << "Write nature dimensions: " << nature_dimensions;

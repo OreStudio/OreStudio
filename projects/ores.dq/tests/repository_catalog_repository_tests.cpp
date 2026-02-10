@@ -49,6 +49,7 @@ TEST_CASE("write_single_catalog", tags) {
 
     catalog_repository repo(h.context());
     auto catalog = generate_synthetic_catalog();
+    catalog.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
     CHECK_NOTHROW(repo.write(catalog));
@@ -61,6 +62,8 @@ TEST_CASE("write_multiple_catalogs", tags) {
 
     catalog_repository repo(h.context());
     auto catalogs = generate_synthetic_catalogs(3);
+    for (auto& c : catalogs)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Catalogs: " << catalogs;
 
     CHECK_NOTHROW(repo.write(catalogs));
@@ -73,6 +76,8 @@ TEST_CASE("read_latest_catalogs", tags) {
 
     catalog_repository repo(h.context());
     auto written_catalogs = generate_synthetic_catalogs(3);
+    for (auto& c : written_catalogs)
+        c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written catalogs: " << written_catalogs;
 
     repo.write(written_catalogs);
@@ -91,6 +96,8 @@ TEST_CASE("read_latest_catalog_by_name", tags) {
 
     catalog_repository repo(h.context());
     auto catalogs = generate_synthetic_catalogs(3);
+    for (auto& c : catalogs)
+        c.tenant_id = h.tenant_id().to_string();
 
     const auto target = catalogs.front();
     BOOST_LOG_SEV(lg, debug) << "Write catalogs: " << catalogs;
@@ -114,6 +121,7 @@ TEST_CASE("read_all_catalog_versions", tags) {
     catalog_repository repo(h.context());
 
     auto cat1 = generate_synthetic_catalog();
+    cat1.tenant_id = h.tenant_id().to_string();
     const auto test_name = cat1.name;
     BOOST_LOG_SEV(lg, debug) << "Catalog v1: " << cat1;
 
@@ -155,6 +163,7 @@ TEST_CASE("write_and_read_catalog_roundtrip", tags) {
     catalog_repository repo(h.context());
 
     auto catalog = generate_synthetic_catalog();
+    catalog.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;
 
     const auto catalog_name = catalog.name;

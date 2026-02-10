@@ -49,6 +49,8 @@ TEST_CASE("write_single_dataset_bundle_member", tags) {
 
     dataset_bundle_member_repository repo(h.context());
     auto member = generate_synthetic_dataset_bundle_member();
+    member.tenant_id = h.tenant_id().to_string();
+    member.change_reason_code = "system.test";
 
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle member: " << member;
     CHECK_NOTHROW(repo.write(member));
@@ -61,6 +63,10 @@ TEST_CASE("write_multiple_dataset_bundle_members", tags) {
 
     dataset_bundle_member_repository repo(h.context());
     auto members = generate_synthetic_dataset_bundle_members(3);
+    for (auto& m : members) {
+        m.tenant_id = h.tenant_id().to_string();
+        m.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle members: " << members;
 
     CHECK_NOTHROW(repo.write(members));
@@ -73,6 +79,10 @@ TEST_CASE("read_latest_dataset_bundle_members", tags) {
 
     dataset_bundle_member_repository repo(h.context());
     auto written_members = generate_synthetic_dataset_bundle_members(3);
+    for (auto& m : written_members) {
+        m.tenant_id = h.tenant_id().to_string();
+        m.change_reason_code = "system.test";
+    }
     BOOST_LOG_SEV(lg, debug) << "Written members: " << written_members;
 
     repo.write(written_members);
@@ -91,6 +101,8 @@ TEST_CASE("read_latest_dataset_bundle_members_by_bundle", tags) {
 
     dataset_bundle_member_repository repo(h.context());
     auto member = generate_synthetic_dataset_bundle_member();
+    member.tenant_id = h.tenant_id().to_string();
+    member.change_reason_code = "system.test";
 
     const auto target_bundle_code = member.bundle_code;
     BOOST_LOG_SEV(lg, debug) << "Write member: " << member;

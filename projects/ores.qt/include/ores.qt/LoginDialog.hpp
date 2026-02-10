@@ -96,6 +96,11 @@ public:
     QString getUsername() const;
 
     /**
+     * @brief Get the password that was entered for login.
+     */
+    QString getPassword() const;
+
+    /**
      * @brief Get the current server/host field value.
      */
     QString getServer() const;

@@ -278,8 +278,11 @@ private:
      * @brief Shows the system provisioner wizard when in bootstrap mode.
      *
      * Displays the SystemProvisionerWizard to create the initial admin account.
+     * If username and password are provided, they are used to pre-fill the
+     * admin account form fields.
      */
-    void showSystemProvisionerWizard();
+    void showSystemProvisionerWizard(
+        const QString& username = {}, const QString& password = {});
 
     /**
      * @brief Shows the tenant onboarding wizard.

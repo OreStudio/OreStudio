@@ -2033,10 +2033,16 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
-void MainWindow::showSystemProvisionerWizard() {
+void MainWindow::showSystemProvisionerWizard(
+    const QString& username, const QString& password) {
     BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
 
     auto* wizard = new SystemProvisionerWizard(clientManager_, this);
+
+    // Pre-fill admin form with login credentials if available
+    if (!username.isEmpty() || !password.isEmpty()) {
+        wizard->setAdminCredentials(username, {}, password);
+    }
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -2144,9 +2150,12 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
         }
     });
 
-    // Connect bootstrap mode signal
+    // Connect bootstrap mode signal - pass login credentials to pre-fill wizard
     connect(loginWidget, &LoginDialog::bootstrapModeDetected,
-            this, [this]() { showSystemProvisionerWizard(); });
+            this, [this, loginWidget]() {
+        showSystemProvisionerWizard(
+            loginWidget->getUsername(), loginWidget->getPassword());
+    });
 
     // Connect sign up request if enabled
     if (options.showSignUpButton) {

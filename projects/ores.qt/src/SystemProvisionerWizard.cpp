@@ -246,6 +246,22 @@ void AdminAccountPage::setupUI() {
 
 void AdminAccountPage::initializePage() {
     wizard()->setButtonText(QWizard::NextButton, tr("Create"));
+
+    // Pre-fill from login credentials if available (bootstrap convenience)
+    const auto username = wizard_->adminUsername();
+    const auto password = wizard_->adminPassword();
+
+    if (!username.isEmpty() && usernameEdit_->text().isEmpty()) {
+        usernameEdit_->setText(username);
+        if (emailEdit_->text().isEmpty()) {
+            emailEdit_->setText(username + "@localhost.com");
+        }
+    }
+    if (!password.isEmpty() && passwordEdit_->text().isEmpty()) {
+        passwordEdit_->setText(password);
+        confirmPasswordEdit_->setText(password);
+        updatePasswordMatchIndicator();
+    }
 }
 
 bool AdminAccountPage::validatePage() {

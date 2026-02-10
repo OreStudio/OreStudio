@@ -115,6 +115,10 @@ QString LoginDialog::getUsername() const {
     return usernameEdit_->text().trimmed();
 }
 
+QString LoginDialog::getPassword() const {
+    return passwordEdit_->text();
+}
+
 QString LoginDialog::getServer() const {
     return hostEdit_->text().trimmed();
 }

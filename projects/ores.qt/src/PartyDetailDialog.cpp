@@ -57,8 +57,10 @@ void PartyDetailDialog::setupUi() {
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
 
-    ui_->partyCategoryCombo->addItem("operational");
-    ui_->partyCategoryCombo->addItem("system");
+    ui_->partyCategoryCombo->addItem(
+        QString::fromUtf8(party_categories::operational));
+    ui_->partyCategoryCombo->addItem(
+        QString::fromUtf8(party_categories::system));
 }
 
 void PartyDetailDialog::setupConnections() {

@@ -21,11 +21,20 @@
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::qt {
 
 class ClientManager;
+
+/**
+ * @brief Fixed party category values (foundation data, not server-fetched).
+ */
+namespace party_categories {
+inline constexpr std::string_view operational = "operational";
+inline constexpr std::string_view system = "system";
+}
 
 /**
  * @brief Result of fetching type and status lookup codes from the server.

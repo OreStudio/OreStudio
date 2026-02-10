@@ -38,9 +38,8 @@
  *     -f setup_user.sql
  *
  * NEXT STEPS:
- *   1. admin/setup_admin.sql - Create admin database
- *   2. setup_template.sql    - Create template database
- *   3. create_instance.sql   - Create database instance
+ *   1. create_database.sql   - Create database (postgres)
+ *   2. setup_schema.sql      - Setup schema (ores_ddl_user)
  *
  * NOTE: Generate secure passwords with:
  *   pwgen -c 25 1
@@ -117,11 +116,27 @@ create user ores_test_dml_user with password :'test_dml_password' in role ores_r
 -- optional: read-only user for devs/bi
 create user ores_readonly_user with password :'ro_password' in role ores_ro;
 
+-- Set default search_path for all ores users
+-- Note: search_path must be set on users, not group roles (it doesn't inherit)
+alter role ores_ddl_user set search_path to public;
+alter role ores_cli_user set search_path to public;
+alter role ores_wt_user set search_path to public;
+alter role ores_comms_user set search_path to public;
+alter role ores_http_user set search_path to public;
+alter role ores_test_ddl_user set search_path to public;
+alter role ores_test_dml_user set search_path to public;
+alter role ores_readonly_user set search_path to public;
+
+-- Set default tenant context to system tenant for test users.
+-- This is essential for test operations that don't explicitly set tenant context.
+alter role ores_test_ddl_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+alter role ores_test_dml_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+
 \echo ''
 \echo '=========================================='
 \echo 'ORES role-based users created successfully!'
 \echo '=========================================='
 \echo ''
-\echo 'Next step: Create admin database'
-\echo '  psql -U postgres -f admin/setup_admin.sql'
+\echo 'Next step: Create database'
+\echo '  psql -U postgres -v db_name=''my_database'' -f create_database.sql'
 \echo ''

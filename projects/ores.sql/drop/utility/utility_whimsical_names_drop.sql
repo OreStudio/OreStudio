@@ -18,10 +18,10 @@
  *
  */
 
-drop function if exists admin_generate_unique_database_name_from_server_fn();
-drop function if exists admin_generate_unique_database_name_fn(text[], int);
-drop function if exists admin_generate_database_name_fn(boolean);
-drop function if exists admin_generate_whimsical_name_fn(boolean);
-drop function if exists admin_generate_whimsical_name_fn();
-drop function if exists admin_whimsical_nouns_fn();
-drop function if exists admin_whimsical_adjectives_fn();
+drop function if exists ores_utility_generate_unique_database_name_from_server_fn();
+drop function if exists ores_utility_generate_unique_database_name_fn(text[], int);
+drop function if exists ores_utility_generate_database_name_fn(boolean);
+drop function if exists ores_utility_generate_whimsical_name_fn(boolean);
+drop function if exists ores_utility_generate_whimsical_name_fn();
+drop function if exists ores_utility_whimsical_nouns_fn();
+drop function if exists ores_utility_whimsical_adjectives_fn();

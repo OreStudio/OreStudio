@@ -24,7 +24,7 @@
  * Installs required PostgreSQL extensions for ORES. This script is used in
  * two contexts:
  *   1. Run manually against postgres database to verify extensions are available
- *   2. Included by setup_template.sql to install extensions in ores_template
+ *   2. Included by create_database.sql to install extensions in new databases
  *
  * Extensions are per-database in PostgreSQL, so they must be installed in
  * each database that needs them.
@@ -55,10 +55,9 @@
  *   psql -U postgres -f setup_extensions.sql
  *
  * NEXT STEPS:
- *   1. setup_user.sql       - Create application user
- *   2. admin/setup_admin.sql - Create admin database
- *   3. setup_template.sql    - Create template database
- *   4. create_instance.sql   - Create database instance
+ *   1. setup_user.sql       - Create roles and users
+ *   2. create_database.sql   - Create database (postgres)
+ *   3. setup_schema.sql      - Setup schema (ores_ddl_user)
  */
 
 \set ON_ERROR_STOP on

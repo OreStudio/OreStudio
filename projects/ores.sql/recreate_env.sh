@@ -30,7 +30,7 @@ usage() {
 Usage: $(basename "$0") -e ENVIRONMENT [OPTIONS]
 
 Recreates an environment-specific database (ores_dev_<environment>).
-The database is created from scratch (NOT from template) for isolation.
+Uses two-phase creation: postgres creates the database, ores_ddl_user sets up schema.
 
 Required arguments:
     -e, --env ENVIRONMENT               Environment name (e.g., local1, local2, remote)
@@ -42,6 +42,7 @@ Optional arguments:
 
 Environment Variables:
     PGPASSWORD                          Password for the postgres superuser
+    ORES_DB_DDL_PASSWORD                Password for the DDL database user
 
 Example:
     $(basename "$0") -e local2
@@ -61,6 +62,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 POSTGRES_PASSWORD="${PGPASSWORD:-}"
+DDL_PASSWORD="${ORES_DB_DDL_PASSWORD:-}"
 ENVIRONMENT=""
 ASSUME_YES=""
 SKIP_VALIDATION="off"
@@ -106,6 +108,11 @@ if [[ -z "${POSTGRES_PASSWORD}" ]]; then
     exit 1
 fi
 
+if [[ -z "${DDL_PASSWORD}" ]]; then
+    echo "Error: ORES_DB_DDL_PASSWORD environment variable is required" >&2
+    exit 1
+fi
+
 DB_NAME="ores_dev_${ENVIRONMENT}"
 
 echo "=== ORE Studio Environment Database Recreation ==="
@@ -141,14 +148,22 @@ echo "--- Dropping ${DB_NAME} (if exists) ---"
 PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"
 PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"
 
-# Create database from scratch (NOT from template)
-echo "--- Creating ${DB_NAME} ---"
+# Phase 1: Create database as postgres (infrastructure)
+echo "--- Creating ${DB_NAME} (postgres phase) ---"
 PGPASSWORD="${POSTGRES_PASSWORD}" psql \
     -h localhost \
     -U postgres \
     -v db_name="${DB_NAME}" \
+    -f ./create_database.sql
+
+# Phase 2: Setup schema as ores_ddl_user
+echo "--- Setting up schema (ores_ddl_user phase) ---"
+PGPASSWORD="${DDL_PASSWORD}" psql \
+    -h localhost \
+    -U ores_ddl_user \
+    -d "${DB_NAME}" \
     -v skip_validation="${SKIP_VALIDATION}" \
-    -f ./create_database_direct.sql
+    -f ./setup_schema.sql
 
 echo ""
 echo "=== Environment database recreation complete ==="

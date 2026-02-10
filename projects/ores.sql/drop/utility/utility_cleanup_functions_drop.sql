@@ -18,5 +18,12 @@
  *
  */
 
-drop function if exists admin_create_database_command_fn(text);
-drop function if exists admin_generate_create_database_sql_fn(text);
+drop function if exists ores_utility_generate_cleanup_ores_instance_databases_sql_fn();
+drop function if exists ores_utility_generate_cleanup_ores_databases_sql_fn();
+drop function if exists ores_utility_generate_cleanup_test_databases_sql_fn();
+drop function if exists ores_utility_list_ores_instance_databases_fn();
+drop function if exists ores_utility_list_ores_databases_fn();
+drop function if exists ores_utility_list_test_databases_fn();
+drop view if exists ores_utility_ores_instance_databases_view;
+drop view if exists ores_utility_ores_databases_view;
+drop view if exists ores_utility_test_databases_view;

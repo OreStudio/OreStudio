@@ -58,24 +58,6 @@ select exists(select 1 from pg_database where datname = :'db_name') as db_exists
     \quit
 \endif
 
--- Refuse to drop infrastructure databases (use dedicated teardown scripts)
-select case
-    when :'db_name' in ('ores_admin', 'ores_template')
-    then true
-    else false
-end as is_infrastructure \gset
-
-\if :is_infrastructure
-    \echo ''
-    \echo 'ERROR: Cannot drop infrastructure database:' :db_name
-    \echo ''
-    \echo 'Use the dedicated teardown scripts instead:'
-    \echo '  - admin/teardown_admin.sql for ores_admin'
-    \echo '  - teardown_template.sql for ores_template'
-    \echo ''
-    \quit
-\endif
-
 -- Refuse to drop system databases
 select case
     when :'db_name' in ('postgres', 'template0', 'template1')

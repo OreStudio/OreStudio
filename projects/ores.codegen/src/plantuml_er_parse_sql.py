@@ -46,7 +46,6 @@ COMPONENT_PREFIXES = {
     'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
     'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 8},
     'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
-    'ores_admin_': {'name': 'admin', 'description': 'Administration', 'schema': 'ores_admin', 'color': '#E0E0E0', 'order': 10},
 }
 
 # Valid schema names for pattern matching
@@ -817,7 +816,7 @@ class SQLParser:
         Valid actions: insert, notify, upsert, assign, validate, lookup, populate
         """
         # Functions that don't need to follow component prefix pattern
-        exempt_prefixes = ['ores_utility_', 'ores_seed_', 'ores_admin_', 'ores_refdata_validate_']
+        exempt_prefixes = ['ores_utility_', 'ores_seed_', 'ores_refdata_validate_']
 
         # Known valid function name patterns (regex)
         valid_action_suffixes = [

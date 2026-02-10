@@ -30,7 +30,7 @@
  * - Catch2 listeners: Automatic logging and database lifecycle management
  * - Logging integration: Boost.Log configured per-test-case with suite-based organization
  * - Database helpers: Table truncation and context management for tests
- * - Template databases: Tests clone from ores_template with full schema
+ * - Tenant isolation: Tests use row-level security within a shared database
  * - Environment-driven: Database configuration from TEST_ORES_DB_* environment variables
  *
  * Usage: Register the listeners in each test's main.cpp:

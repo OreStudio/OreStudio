@@ -90,8 +90,6 @@ falls back to the current project."
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
     (define-key map (kbd "r")   #'ores-db/recreate-at-point)
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
-    (define-key map (kbd "a")   #'ores-db/recreate-admin)
-    (define-key map (kbd "T")   #'ores-db/recreate-template)
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "v")   #'ores-db/set-env-vars)
@@ -329,7 +327,7 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
   (let ((count 0)
         (env (ores-db/current-environment)))
     ;; Set test database connection info (use current environment's database)
-    (setenv "ORES_TEST_DB_DATABASE" (if env (concat "ores_dev_" env) "ores_template"))
+    (setenv "ORES_TEST_DB_DATABASE" (if env (concat "ores_dev_" env) "ores"))
     (setenv "ORES_TEST_DB_HOST" host)
     (setq count (+ count 2))
 
@@ -489,28 +487,6 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
                         (format "*ores-db-recreate-%s*" environment)
                         args)))
 
-(defun ores-db/recreate-template (&optional skip-validation)
-  "Recreate the ores_template database.
-If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
-  (interactive "P")
-  (unless (yes-or-no-p "Recreate ores_template? This affects ALL instance databases! ")
-    (user-error "Aborted"))
-  (let ((args '("-y")))
-    (when skip-validation
-      (setq args (append args '("--no-sql-validation"))))
-    (ores-db/run-script "recreate_template.sh" "*ores-db-recreate-template*" args)))
-
-(defun ores-db/recreate-admin (&optional skip-validation)
-  "Recreate the ores_admin database.
-If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
-  (interactive "P")
-  (unless (yes-or-no-p "Recreate ores_admin? ")
-    (user-error "Aborted"))
-  (let ((args '("-y")))
-    (when skip-validation
-      (setq args (append args '("--no-sql-validation"))))
-    (ores-db/run-script "recreate_admin.sh" "*ores-db-recreate-admin*" args)))
-
 (defun ores-db/recreate-current-env (&optional skip-validation)
   "Recreate the database for the current environment.
 If SKIP-VALIDATION is non-nil (prefix arg), skip SQL input validation."
@@ -530,10 +506,6 @@ If SKIP-VALIDATION is non-nil (prefix arg), skip SQL input validation."
     (unless (yes-or-no-p (format "This will DROP and recreate %s. Are you sure? " db-name))
       (user-error "Aborted"))
     (cond
-     ((string= db-name "ores_template")
-      (ores-db/recreate-template skip-validation))
-     ((string= db-name "ores_admin")
-      (ores-db/recreate-admin skip-validation))
      ((string-prefix-p "ores_dev_" db-name)
       (let ((env (substring db-name (length "ores_dev_"))))
         (ores-db/recreate-env-database env skip-validation)))
@@ -550,9 +522,28 @@ This runs recreate_database.sh which drops everything and recreates from scratch
 
 (defun ores-db/create-whimsical ()
   "Create a new database instance with a whimsical name.
-Uses create_instance.sql to create from ores_template."
+Uses two-phase creation: postgres creates the database, ores_ddl_user sets up schema."
   (interactive)
-  (ores-db/run-sql "create_instance.sql" "*ores-db-create-whimsical*"))
+  (let* ((sql-dir (ores-db/sql-scripts-directory))
+         (host "localhost")
+         (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+         (ddl-pw (ores-db/database--get-credential "ores_ddl_user" host :secret))
+         (default-directory sql-dir)
+         (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
+                                    process-environment))
+         ;; Generate a whimsical name by querying any existing ORES database
+         ;; or use a default pattern
+         (db-name (string-trim
+                   (shell-command-to-string
+                    (format "psql -h %s -U postgres -At -c \"SELECT 'ores_' || substr(md5(random()::text), 1, 12);\"" host)))))
+    (compilation-start
+     (format "PGPASSWORD=%s psql -h %s -U postgres -v db_name=%s -f %s && PGPASSWORD=%s psql -h %s -U ores_ddl_user -d %s -f %s"
+             postgres-pw host db-name
+             (expand-file-name "create_database.sql" sql-dir)
+             ddl-pw host db-name
+             (expand-file-name "setup_schema.sql" sql-dir))
+     nil
+     (lambda (_) "*ores-db-create-whimsical*"))))
 
 ;;; ==========================================================================
 ;;; Transient Menu
@@ -582,8 +573,6 @@ Uses create_instance.sql to create from ores_template."
     ("d" "Recreate current env" ores-db/recreate-current-env)
     ("r" "Recreate at point" ores-db/recreate-at-point)
     ("e" "Recreate environment..." ores-db/recreate-env-database)
-    ("a" "Recreate admin" ores-db/recreate-admin)
-    ("T" "Recreate template" ores-db/recreate-template)
     ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
    ["Utilities"
     ("v" "Export env vars" ores-db/set-env-vars)

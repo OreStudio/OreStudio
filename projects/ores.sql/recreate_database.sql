@@ -19,20 +19,20 @@
  */
 
 /**
- * Recreate Database from Scratch
+ * Recreate Database from Scratch (Postgres Superuser Phase)
  *
  * Full wipe and rebuild for development environments. Tears down all ORES
- * components and recreates them from scratch.
+ * components and recreates users and an empty database. The schema setup
+ * phase runs separately as ores_ddl_user (see recreate_database.sh).
  *
  * USAGE:
- *   Typically called via recreate_database.sh (handles confirmation prompt):
+ *   Typically called via recreate_database.sh (handles confirmation and DDL phase):
  *     ./recreate_database.sh -p postgres_pass -d ddl_pass -c cli_pass -w wt_pass -m comms_pass -h http_pass -t test_ddl_pass -T test_dml_pass -r ro_pass [-y] [--no-sql-validation]
  *
  *   Direct psql usage (no confirmation prompt):
- *     psql -U postgres -v skip_validation='off' -v ddl_password='...' -v cli_password='...' -v wt_password='...' -v comms_password='...' -v http_password='...' -v test_ddl_password='...' -v test_dml_password='...' -v ro_password='...' -f recreate_database.sql
+ *     psql -U postgres -v ddl_password='...' -v cli_password='...' -v wt_password='...' -v comms_password='...' -v http_password='...' -v test_ddl_password='...' -v test_dml_password='...' -v ro_password='...' -v db_name='...' -f recreate_database.sql
  *
  * Variables:
- *   :skip_validation - 'on' to skip input validation in seed functions (faster)
  *   :ddl_password - password for DDL operations
  *   :cli_password - password for CLI service
  *   :wt_password - password for Web Toolkit service
@@ -41,24 +41,15 @@
  *   :test_ddl_password - password for test DDL operations
  *   :test_dml_password - password for test DML operations
  *   :ro_password - password for read-only access
- *
- * NOTE: To drop instance databases, first run:
- *   psql -U postgres -f admin/admin_teardown_instances_generate.sql
+ *   :db_name - database name to create
  */
 \pset pager off
 \pset tuples_only on
 \timing off
-
--- Set session variable for seed function validation control
--- This can be checked via current_setting('ores.skip_validation', true)
-select set_config('ores.skip_validation', :'skip_validation', false);
 
 -- Skip confirmation in teardown_all.sql - shell script handles this
 \set skip_confirm 1
 
 \ir teardown_all.sql
 \ir setup_user.sql
-\ir admin/setup_admin.sql
-\ir setup_template.sql
-\ir create_instance.sql
-\ir populate/populate.sql
+\ir create_database.sql

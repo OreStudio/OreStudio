@@ -227,28 +227,9 @@ fi
 echo "No active connections found."
 echo ""
 
-# Generate teardown_instances.sql with current instance databases
-# This must happen BEFORE confirmation so user can review what will be dropped
-echo "--- Generating teardown_instances.sql ---"
-if PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -lqt | grep -qw ores_admin; then
-    PGPASSWORD="${POSTGRES_PASSWORD}" psql \
-        -h localhost \
-        -f ./admin/admin_teardown_instances_generate.sql \
-        -U postgres \
-        -q
-    echo ""
-    echo "Instance databases to be dropped:"
-    grep -E "^-- Instance:" ./teardown_instances.sql 2>/dev/null || echo "  (none)"
-    echo ""
-else
-    echo "ores_admin does not exist - no instance databases to drop."
-    echo ""
-fi
-
 # Confirmation prompt (unless -y flag is set)
 if [[ -z "${ASSUME_YES}" ]]; then
     echo "WARNING: This will DROP all ORES databases and recreate from scratch!"
-    echo "Review teardown_instances.sql before proceeding."
     echo ""
     read -p "Type 'yes' to proceed: " confirm
     if [[ "${confirm}" != "yes" ]]; then
@@ -258,7 +239,7 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
-# Run the recreate_database.sql script
+# Phase 1: Run recreate_database.sql as postgres (teardown + users + create database)
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
@@ -274,8 +255,17 @@ PGPASSWORD="${POSTGRES_PASSWORD}" psql \
     -v test_ddl_password="${TEST_DDL_PASSWORD}" \
     -v test_dml_password="${TEST_DML_PASSWORD}" \
     -v ro_password="${RO_PASSWORD}" \
-    -v db_name="${DB_NAME}" \
-    -v skip_validation="${SKIP_VALIDATION}"
+    -v db_name="${DB_NAME}"
+
+# Phase 2: Run setup_schema.sql as ores_ddl_user (schema + data + grants)
+echo ""
+echo "--- Setting up schema as ores_ddl_user ---"
+PGPASSWORD="${DDL_PASSWORD}" psql \
+    -h localhost \
+    -U ores_ddl_user \
+    -d "${DB_NAME}" \
+    -v skip_validation="${SKIP_VALIDATION}" \
+    -f ./setup_schema.sql
 
 echo ""
 echo "=== Database recreation complete ==="

@@ -64,7 +64,6 @@ projects/ores.sql/
 
   test/                     pgTAP tests
   utility/                  Helper scripts (validation, entity recreation)
-  admin/                    Cluster-level admin utilities
   instance/                 Instance-specific initialisation
   modeling/                 Documentation and diagrams (you are here)
 #+end_example
@@ -129,13 +128,13 @@ Within each component, child tables are dropped before parents.
 * Population Layers
 
 Data is populated in layers, each building on the previous. The foundation layer
-is baked into the template database; everything else runs per-instance.
+runs first during =setup_schema.sql=, followed by governance and catalogues.
 
 ** Foundation Layer
 
 Script: =populate/foundation/foundation_populate.sql=
 
-Populated during template creation. Must be present before any application data.
+Populated during =setup_schema.sql=. Must be present before any application data.
 
 #+begin_example
 Order    Script                                   What it seeds
@@ -216,12 +215,11 @@ concurrent work across different checkouts without database conflicts.
 ** Database Layout
 
 #+begin_example
-ores_admin          # Admin utilities (shared across environments)
-ores_template       # Template for test databases (shared)
 ores_dev_local1     # Environment-specific database
 ores_dev_local2     # Environment-specific database
 ores_dev_local3     # etc.
 ores_test_*         # Temporary test databases (created/dropped by tests)
+ores_frosty_leaf    # Whimsical-named instances
 #+end_example
 
 ** Naming Conventions
@@ -229,16 +227,14 @@ ores_test_*         # Temporary test databases (created/dropped by tests)
 | Database Type       | Pattern              | Example            |
 |---------------------+----------------------+--------------------|
 | Environment         | =ores_dev_<env>=     | =ores_dev_local2=  |
-| Template            | =ores_template=      | (used by tests)    |
-| Admin               | =ores_admin=         | (cluster utilities)|
 | Test (temporary)    | =ores_test_<pid>_*=  | =ores_test_1234_5678= |
 | Whimsical instances | =ores_<adjective>_<noun>= | =ores_frosty_leaf= |
 
 ** Environment Isolation
 
-- Environment databases are created from scratch (not from template)
+- Environment databases are created from scratch using two-phase creation
 - Recreating one environment does NOT affect others
-- Tests create temporary databases from =ores_template=
+- Tests create temporary databases with full schema via =setup_schema.sql=
 - Each checkout (local1, local2, etc.) auto-detects its database name
 
 * Database Roles and Users
@@ -346,77 +342,55 @@ psql -U postgres \
   -v test_dml_password='TEST_DML_PASS' \
   -v ro_password='RO_PASS' \
   -f setup_user.sql
-
-# 3. Create admin database (whimsical name generation)
-psql -U postgres -f admin/setup_admin.sql
 #+end_src
 
-** Template Path (Fast)
+** Two-Phase Database Creation
+
+All databases are created via a two-phase process:
 
 #+begin_example
-setup_template.sql
-    create database ores_template from template0
-    run create/create.sql          (schema)
-    run foundation_populate.sql    (foundation data)
-    mark as template
+Phase 1: create_database.sql (postgres superuser)
+    create database <name> from template0
+    grant connect, create on database
+    install extensions (btree_gist)
+    grant usage on schema public
 
-create_instance.sql
-    create database <name> from ores_template   (filesystem copy - fast)
-    run instance/init_instance.sql
-    run populate/populate.sql      (governance + catalogues)
-#+end_example
-
-** Direct Path (Isolated)
-
-#+begin_example
-recreate_env.sh / create_database_direct.sql
-    create database ores_dev_<env> from template0
+Phase 2: setup_schema.sql (ores_ddl_user)
     run create/create.sql          (schema)
     run foundation_populate.sql    (foundation data)
     run populate/populate.sql      (governance + catalogues)
+    grant on tables and sequences
     run instance/init_instance.sql
 #+end_example
 
-** Creating Instances
+** Creating Databases
 
-*** Template Database (One-Time)
-
-Create =ores_template= containing the schema and foundation layer:
+*** Database with Default Name
 
 #+begin_src sh
-psql -U postgres -f setup_template.sql
+# Phase 1: Create empty database (postgres)
+psql -U postgres -f create_database.sql
+
+# Phase 2: Setup schema and populate (ores_ddl_user)
+PGPASSWORD='DDL_PASS' psql -U ores_ddl_user -d ores -f setup_schema.sql
 #+end_src
 
-*** Instance with Whimsical Name
-
-Fast creation using PostgreSQL filesystem copy:
+*** Database with Specific Name
 
 #+begin_src sh
-psql -U postgres -f create_instance.sql
-#+end_src
+# Phase 1: Create empty database (postgres)
+psql -U postgres -v db_name='my_database' -f create_database.sql
 
-*** Instance with Specific Name
-
-#+begin_src sh
-psql -U postgres -v db_name='my_database' -f create_instance.sql
-#+end_src
-
-*** Direct Creation (Without Template)
-
-For environments without template support:
-
-#+begin_src sh
-psql -U postgres -v db_name='my_database' -f create_database_direct.sql
+# Phase 2: Setup schema and populate (ores_ddl_user)
+PGPASSWORD='DDL_PASS' psql -U ores_ddl_user -d my_database -f setup_schema.sql
 #+end_src
 
 ** When to Use Which
 
-| Scenario                       | Script                  | Path     |
-|--------------------------------+-------------------------+----------|
-| Full cluster recreation        | =recreate_database.sh=  | Template |
-| Recreate one dev environment   | =recreate_env.sh=       | Direct   |
-| Rebuild test infrastructure    | =recreate_template.sh=  | Template |
-| Quick instance for experiments | =create_instance.sql=   | Template |
+| Scenario                       | Script                  |
+|--------------------------------+-------------------------|
+| Full cluster recreation        | =recreate_database.sh=  |
+| Recreate one dev environment   | =recreate_env.sh=       |
 
 * Bash Wrapper Scripts
 
@@ -425,28 +399,16 @@ psql -U postgres -v db_name='my_database' -f create_database_direct.sql
 Full teardown and recreation of the entire cluster. Requires passwords for all
 database users. Executes:
 
-1. =teardown_all.sql= - drops all instances, template, admin, users
+1. =teardown_all.sql= - drops all ORES databases and users
 2. =setup_user.sql= - creates roles and users
-3. =admin/setup_admin.sql= - creates =ores_admin= database
-4. =setup_template.sql= - creates =ores_template= with schema + foundation
-5. =create_instance.sql= - creates instance from template
-6. =populate/populate.sql= - populates governance + catalogues
+3. =create_database.sql= - creates empty database (postgres)
+4. =setup_schema.sql= - creates schema and populates data (ores_ddl_user)
 
 ** recreate_env.sh
 
 Recreates a single environment database (=ores_dev_local1=, etc.) without
-affecting other environments or the template. Creates from scratch, not from
-template.
-
-** recreate_template.sh
-
-Recreates just =ores_template=. Existing instances are not affected until they
-are themselves recreated.
-
-** recreate_admin.sh
-
-Recreates just =ores_admin= (cluster utility functions like whimsical name
-generation).
+affecting other environments. Uses two-phase creation: =create_database.sql=
+(postgres) then =setup_schema.sql= (ores_ddl_user).
 
 ** drop_database.sh
 

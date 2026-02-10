@@ -48,7 +48,7 @@ begin
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), ores_iam_system_tenant_id_fn(),
-            'System Party', 'system', 'system',
+            'System Party', 'system_party', 'system',
             'Internal', 'WRLD', null, 'Active',
             current_user, current_user, 'system.initial_load',
             'Root system party for the platform tenant'

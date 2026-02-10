@@ -1,0 +1,138 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.dq/repository/methodology_repository.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.dq/domain/methodology_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq/generators/methodology_generator.hpp"
+#include "ores.testing/database_helper.hpp"
+
+namespace {
+
+const std::string_view test_suite("ores.dq.tests");
+const std::string tags("[repository]");
+
+}
+
+using namespace ores::logging;
+using namespace ores::dq::generators;
+
+using ores::testing::database_helper;
+using ores::dq::repository::methodology_repository;
+
+TEST_CASE("write_single_methodology", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+
+    methodology_repository repo(h.context());
+    auto methodology = generate_synthetic_methodology();
+    methodology.tenant_id = h.tenant_id().to_string();
+    methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
+
+    BOOST_LOG_SEV(lg, debug) << "Methodology: " << methodology;
+    CHECK_NOTHROW(repo.write(methodology));
+}
+
+TEST_CASE("write_multiple_methodologies", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+
+    methodology_repository repo(h.context());
+    auto methodologies = generate_synthetic_methodologies(3);
+    for (auto& m : methodologies) {
+        m.tenant_id = h.tenant_id().to_string();
+        m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
+    BOOST_LOG_SEV(lg, debug) << "Methodologies: " << methodologies;
+
+    CHECK_NOTHROW(repo.write(methodologies));
+}
+
+TEST_CASE("read_latest_methodologies", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+
+    methodology_repository repo(h.context());
+    auto written_methodologies = generate_synthetic_methodologies(3);
+    for (auto& m : written_methodologies) {
+        m.tenant_id = h.tenant_id().to_string();
+        m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
+    BOOST_LOG_SEV(lg, debug) << "Written methodologies: " << written_methodologies;
+
+    repo.write(written_methodologies);
+
+    auto read_methodologies = repo.read_latest();
+    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+
+    CHECK(!read_methodologies.empty());
+    CHECK(read_methodologies.size() >= written_methodologies.size());
+}
+
+TEST_CASE("read_latest_methodology_by_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+
+    methodology_repository repo(h.context());
+    auto methodologies = generate_synthetic_methodologies(3);
+    for (auto& m : methodologies) {
+        m.tenant_id = h.tenant_id().to_string();
+        m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
+    }
+
+    const auto target = methodologies.front();
+    BOOST_LOG_SEV(lg, debug) << "Write methodologies: " << methodologies;
+    repo.write(methodologies);
+
+    BOOST_LOG_SEV(lg, debug) << "Target methodology: " << target;
+
+    auto read_methodologies = repo.read_latest(target.id);
+    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+
+    REQUIRE(read_methodologies.size() == 1);
+    CHECK(read_methodologies[0].id == target.id);
+    CHECK(read_methodologies[0].name == target.name);
+}
+
+TEST_CASE("read_nonexistent_methodology_by_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+
+    methodology_repository repo(h.context());
+
+    const auto nonexistent_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+
+    auto read_methodologies = repo.read_latest(nonexistent_id);
+    BOOST_LOG_SEV(lg, debug) << "Read methodologies: " << read_methodologies;
+
+    CHECK(read_methodologies.size() == 0);
+}

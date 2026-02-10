@@ -22,7 +22,6 @@
 
 #include <QStyledItemDelegate>
 #include <QFont>
-#include <vector>
 
 namespace ores::qt {
 
@@ -46,9 +45,8 @@ public:
 
 private:
     void drawTagBadge(QPainter* painter, const QRect& rect,
-                      const QString& text, const QColor& backgroundColor) const;
-
-    QFont badgeFont_;
+                      const QString& text, const QColor& backgroundColor,
+                      const QFont& badgeFont) const;
 };
 
 }

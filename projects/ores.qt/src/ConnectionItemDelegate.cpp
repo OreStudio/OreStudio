@@ -27,6 +27,8 @@
 
 namespace ores::qt {
 
+using Column = ConnectionTreeModel::Column;
+
 namespace {
 
 constexpr int badge_spacing = 4;
@@ -37,9 +39,6 @@ constexpr int text_badge_gap = 8;
 
 ConnectionItemDelegate::ConnectionItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
-    badgeFont_ = QFont();
-    badgeFont_.setPointSize(7);
-    badgeFont_.setBold(true);
 }
 
 void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -47,8 +46,8 @@ void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    // Only custom render the Name column (column 0) for environments
-    if (index.column() != 0) {
+    // Only custom render the Name column for environments
+    if (index.column() != Column::Name) {
         QStyledItemDelegate::paint(painter, option, index);
         return;
     }
@@ -98,11 +97,16 @@ void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     actualTextRect.setWidth(textWidth);
     painter->drawText(actualTextRect, Qt::AlignLeft | Qt::AlignVCenter, text);
 
+    // Derive badge font from view font for proper high-DPI scaling
+    QFont badgeFont = opt.font;
+    badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+    badgeFont.setBold(true);
+
     // Draw tag badges after the text
     int badgeX = textRect.left() + textWidth + text_badge_gap;
     int badgeY = textRect.center().y();
 
-    QFontMetrics badgeFm(badgeFont_);
+    QFontMetrics badgeFm(badgeFont);
     int badgeHeight = badgeFm.height() + 2;
 
     for (const QString& tag : tags) {
@@ -116,7 +120,7 @@ void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
             break;
         }
 
-        drawTagBadge(painter, badgeRect, tag, colorForTag(tag));
+        drawTagBadge(painter, badgeRect, tag, colorForTag(tag), badgeFont);
         badgeX += badgeWidth + badge_spacing;
     }
 
@@ -128,7 +132,7 @@ QSize ConnectionItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     // Ensure minimum height for rows with tags
-    if (index.column() == 0) {
+    if (index.column() == Column::Name) {
         QVariant tagsData = index.data(ConnectionTreeModel::TagsRole);
         if (tagsData.isValid() && !tagsData.toStringList().isEmpty()) {
             size.setHeight(qMax(size.height(), 26));
@@ -139,7 +143,8 @@ QSize ConnectionItemDelegate::sizeHint(const QStyleOptionViewItem& option,
 }
 
 void ConnectionItemDelegate::drawTagBadge(QPainter* painter, const QRect& rect,
-                                           const QString& text, const QColor& backgroundColor) const {
+                                           const QString& text, const QColor& backgroundColor,
+                                           const QFont& badgeFont) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
@@ -150,7 +155,7 @@ void ConnectionItemDelegate::drawTagBadge(QPainter* painter, const QRect& rect,
     painter->drawRoundedRect(rect, radius, radius);
 
     // Draw text
-    painter->setFont(badgeFont_);
+    painter->setFont(badgeFont);
     painter->setPen(Qt::white);
     painter->drawText(rect, Qt::AlignCenter, text);
 

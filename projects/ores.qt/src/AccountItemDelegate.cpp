@@ -26,14 +26,9 @@
 
 namespace ores::qt {
 
-namespace {
+using Column = ClientAccountModel::Column;
 
-// Column indices (matches ClientAccountModel::Column enum)
-constexpr int status_column_index = 2;
-constexpr int locked_column_index = 3;
-constexpr int version_column_index = 4;
-constexpr int recorded_by_column_index = 5;
-constexpr int recorded_at_column_index = 6;
+namespace {
 
 // Login status badge colors
 const QColor status_never_bg(107, 114, 128);    // Gray for never logged in
@@ -57,10 +52,6 @@ AccountItemDelegate::AccountItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
     monospaceFont_ = QFont("Fira Code");
     monospaceFont_.setPointSize(10);
-
-    badgeFont_ = QFont();
-    badgeFont_.setPointSize(7);
-    badgeFont_.setBold(true);
 }
 
 void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -69,8 +60,8 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     initStyleOption(&opt, index);
 
     // Handle badge columns
-    if (index.column() == status_column_index ||
-        index.column() == locked_column_index) {
+    if (index.column() == Column::Status ||
+        index.column() == Column::Locked) {
 
         // Draw the background (for selection highlighting)
         QStyle* style = QApplication::style();
@@ -81,7 +72,7 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QColor bgColor, textColor;
         QString badgeText;
 
-        if (index.column() == status_column_index) {
+        if (index.column() == Column::Status) {
             // Login status column - different color for each status
             if (text == "Online") {
                 bgColor = status_online_bg;
@@ -101,7 +92,7 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
                 textColor = status_never_text;
                 badgeText = tr("Never");
             }
-        } else if (index.column() == locked_column_index) {
+        } else if (index.column() == Column::Locked) {
             // Locked column
             if (text == "Locked") {
                 bgColor = locked_badge_bg;
@@ -114,8 +105,13 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
             }
         }
 
+        // Derive badge font from view font for proper high-DPI scaling
+        QFont badgeFont = opt.font;
+        badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+        badgeFont.setBold(true);
+
         // Draw the badge
-        drawBadge(painter, opt.rect, badgeText, bgColor, textColor);
+        drawBadge(painter, opt.rect, badgeText, bgColor, textColor, badgeFont);
         return;
     }
 
@@ -128,20 +124,20 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     // Apply formatting based on column
     switch (index.column()) {
-        case 0: // Username
+        case Column::Username:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 1: // Email
+        case Column::Email:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case version_column_index: // Version
+        case Column::Version:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case recorded_by_column_index: // RecordedBy
+        case Column::RecordedBy:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case recorded_at_column_index: // RecordedAt
+        case Column::RecordedAt:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
@@ -158,11 +154,11 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     // Ensure minimum height for badge columns
-    if (index.column() == status_column_index ||
-        index.column() == locked_column_index) {
+    if (index.column() == Column::Status ||
+        index.column() == Column::Locked) {
         size.setHeight(qMax(size.height(), 24));
         // Status column needs more width for "Recent" and "Online" text
-        if (index.column() == status_column_index) {
+        if (index.column() == Column::Status) {
             size.setWidth(qMax(size.width(), 70));
         } else {
             size.setWidth(qMax(size.width(), 50));
@@ -174,12 +170,12 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
 
 void AccountItemDelegate::drawBadge(QPainter* painter, const QRect& rect,
                                     const QString& text, const QColor& backgroundColor,
-                                    const QColor& textColor) const {
+                                    const QColor& textColor, const QFont& badgeFont) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
     // Calculate badge dimensions (compact size)
-    QFontMetrics fm(badgeFont_);
+    QFontMetrics fm(badgeFont);
     int textWidth = fm.horizontalAdvance(text);
     int padding = 5;
     int badgeWidth = textWidth + padding * 2;
@@ -197,7 +193,7 @@ void AccountItemDelegate::drawBadge(QPainter* painter, const QRect& rect,
     painter->drawRoundedRect(badgeRect, radius, radius);
 
     // Draw text
-    painter->setFont(badgeFont_);
+    painter->setFont(badgeFont);
     painter->setPen(textColor);
     painter->drawText(badgeRect, Qt::AlignCenter, text);
 

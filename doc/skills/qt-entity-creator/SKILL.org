@@ -1784,6 +1784,54 @@ Use =color_constants= from =ColorConstants.hpp=:
 - =icon_color= - Light gray (220, 220, 220) for toolbar icons
 - =stale_indicator= - Orange (255, 165, 0) for stale data indicator
 
+*** Item delegates must reference the model's Column enum
+
+When creating a custom =ItemDelegate=, *never hardcode column indices*. Always
+reference the model's public =Column= enum. This ensures that adding, removing,
+or reordering columns in the model is automatically reflected in the delegate at
+compile time.
+
+#+BEGIN_SRC cpp
+#include "ores.qt/Client<Entity>Model.hpp"
+
+namespace ores::qt {
+
+using Column = Client<Entity>Model::Column;
+
+void <Entity>ItemDelegate::paint(QPainter* painter,
+    const QStyleOptionViewItem& option,
+    const QModelIndex& index) const {
+
+    QStyleOptionViewItem opt = option;
+    initStyleOption(&opt, index);
+
+    // CORRECT: Use enum values for column checks
+    if (index.column() == Column::Status) {
+        drawBadge(painter, opt.rect, /* ... */);
+        return;
+    }
+
+    switch (index.column()) {
+        case Column::Name:
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case Column::Version:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
+        // ...
+    }
+}
+#+END_SRC
+
+*Anti-pattern* - do not duplicate column indices as local constants:
+
+#+BEGIN_SRC cpp
+// WRONG: These go stale when the model's Column enum changes.
+constexpr int status_column_index = 2;
+constexpr int locked_column_index = 3;
+#+END_SRC
+
 *** Badge colors for item delegates
 
 When creating custom item delegates with badges, use =badge_colors= from

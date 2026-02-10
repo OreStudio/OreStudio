@@ -6,7 +6,8 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
-Database schema and management for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+Database schema and management for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. To understand the database
+lifecycle see [[id:7A3D8E2F-B1C4-4F9A-8D5E-6C2A1B9F0E3D][Database Lifecycle]]. For recipes related to SQL see [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]].
 
 * Schema Mental Model
 
@@ -422,4 +423,4 @@ ready-to-run queries for:
 - Session and login tracking
 - Administrative queries (database size, table sizes)
 
-| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] | Lifecycle: [[id:7A3D8E2F-B1C4-4F9A-8D5E-6C2A1B9F0E3D][Database Lifecycle]] | Recipes: [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]] |
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

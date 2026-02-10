@@ -103,13 +103,16 @@ jobs:
             -v ro_password='${{ steps.db_passwords.outputs.ro_password }}' \
             -f ./projects/ores.sql/setup_user.sql
 
-      - name: Setup Template Database
+      - name: Create Database
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/ores.sql/setup_template.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} \
+            -v db_name=ores_ci -f ./projects/ores.sql/create_database.sql
 
-      - name: Setup Main Database
+      - name: Setup Schema
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -v db_name=ores_ci -f ./projects/ores.sql/create_instance.sql
+          PGPASSWORD=${{ steps.db_passwords.outputs.ddl_password }} \
+          psql -h localhost -p 5432 -U ores_ddl_user -d ores_ci \
+            -f ./projects/ores.sql/setup_schema.sql
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.2.3

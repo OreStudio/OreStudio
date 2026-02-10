@@ -16,36 +16,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-10 Tue 12:36], for Tuesday, February 10, 2026.
+#+CAPTION: Clock summary at [2026-02-10 Tue 13:13], for Tuesday, February 10, 2026.
 |      | <75>                              |        |      |      |       |
 | Tags | Headline                          | Time   |      |      |     % |
 |------+-----------------------------------+--------+------+------+-------|
-|      | *Total time*                      | *3:04* |      |      | 100.0 |
+|      | *Total time*                      | *3:41* |      |      | 100.0 |
 |------+-----------------------------------+--------+------+------+-------|
-|      | Stories                           | 3:04   |      |      | 100.0 |
-|      | Active                            |        | 3:04 |      | 100.0 |
-| code | Brainstorm on multi-party support |        |      | 3:04 | 100.0 |
+|      | Stories                           | 3:41   |      |      | 100.0 |
+|      | Active                            |        | 3:41 |      | 100.0 |
+| code | Brainstorm on multi-party support |        |      | 3:41 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-10 Tue 12:36]
+#+CAPTION: Clock summary at [2026-02-10 Tue 13:13]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *24:27* |       |      | 100.0 |
+|       | *Total time*                                       | *25:04* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 24:27   |       |      | 100.0 |
-|       | Active                                             |         | 24:27 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 0:38 |   2.6 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   3.5 |
+|       | Stories                                            | 25:04   |       |      | 100.0 |
+|       | Active                                             |         | 25:04 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 0:38 |   2.5 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   3.4 |
 | code  | Add roles to account via codes                     |         |       | 0:34 |   2.3 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  17.9 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   1.6 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  27.3 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  27.3 |
-| code  | Brainstorm on multi-party support                  |         |       | 3:04 |  12.5 |
-| code  | Add counterparty wizard                            |         |       | 1:12 |   4.9 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  17.5 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   1.5 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  26.7 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  26.7 |
+| code  | Brainstorm on multi-party support                  |         |       | 3:41 |  14.7 |
+| code  | Add counterparty wizard                            |         |       | 1:12 |   4.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -501,14 +501,37 @@ Highlights:
   of generated output files.
 #+end_quote
 
-*** STARTED Brainstorm on multi-party support                          :code:
+*** COMPLETED Brainstorm on multi-party support                        :code:
     :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 12:36]--[2026-02-10 Tue 13:13] =>  0:37
     CLOCK: [2026-02-10 Tue 12:11]--[2026-02-10 Tue 12:35] =>  0:24
     CLOCK: [2026-02-10 Tue 09:30]--[2026-02-10 Tue 12:10] =>  2:40
     :END:
 
 We added parties but there are many open questions on the design. Use the
 brainstorm skill to come up with a design that solves most common use cases.
+
+#+begin_quote
+This pull request introduces party pagination, a design for party-level RLS
+isolation within tenants, and updates the product backlog with related features.
+The changes enhance data isolation and access control, providing a more granular
+security model for the application.
+
+Highlights:
+
+- Party Pagination: Implemented full-stack pagination for the party entity,
+  including protocol, repository, service, handler validation, Qt client model,
+  and MdiWindow integration.
+- Party-Level RLS Isolation Design: Introduced a design document for party-level
+  Row-Level Security (RLS) isolation within tenants, covering tenant and party
+  types, visible party set computation, and login flow extension with party
+  selection.
+- Multi-Party Architecture Modeling: Created a multi-party architecture modeling
+  document as a companion to the multi_tenancy.org document.
+- Product Backlog Updates: Updated the product backlog with deferred stories for
+  features like four-eyes authorisation, KYC workflow, librarian lockdown, and
+  GLEIF evaluation wizard.
+#+end_quote
 
 *** STARTED Add counterparty wizard                                    :code:
     :LOGBOOK:

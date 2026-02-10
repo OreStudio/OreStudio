@@ -203,19 +203,119 @@ Domain tests typically include:
    #+end_src
 
 
-** Step 7: Repository Test Patterns
+** Step 7: Messaging Protocol Test Patterns
 
-Repository tests require database setup:
+Protocol tests verify binary serialize/deserialize roundtrips. They require no
+infrastructure and are fast to run.
 
-1. **Write Operations**
+1. **Standard Includes**
+
+   #+begin_src cpp
+   #include <catch2/catch_test_macros.hpp>
+   #include "ores.logging/make_logger.hpp"
+   #include "COMPONENT/messaging/PROTOCOL_protocol.hpp"
+   // Include generators if populating domain types:
+   #include "COMPONENT/generators/TYPE_generator.hpp"
+   // Include streaming for container types:
+   #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+   #+end_src
+
+2. **Test Naming**: Use =TYPE_serialize_deserialize= pattern
+
+3. **Roundtrip Pattern** (empty/marker messages)
+
+   #+begin_src cpp
+   TEST_CASE("get_TYPES_request_serialize_deserialize", tags) {
+       auto lg(make_logger(test_suite));
+
+       get_TYPES_request e;
+       BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+       const auto serialized = e.serialize();
+       const auto r = get_TYPES_request::deserialize(serialized);
+
+       REQUIRE(r.has_value());
+       BOOST_LOG_SEV(lg, info) << "Actual: " << r.value();
+   }
+   #+end_src
+
+4. **Roundtrip Pattern** (messages with fields)
+
+   #+begin_src cpp
+   TEST_CASE("save_TYPE_request_serialize_deserialize", tags) {
+       auto lg(make_logger(test_suite));
+
+       save_TYPE_request e;
+       e.entity = generate_synthetic_TYPE();
+       BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+       const auto serialized = e.serialize();
+       const auto r = save_TYPE_request::deserialize(serialized);
+
+       REQUIRE(r.has_value());
+       const auto& a = r.value();
+       BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+       CHECK(a.entity.name == e.entity.name);
+       CHECK(a.entity.version == e.entity.version);
+   }
+   #+end_src
+
+5. **Tag**: =[messaging]=
+
+** Step 8: Generator Test Patterns
+
+Generator tests verify that synthetic data generators produce valid, populated
+entities.
+
+1. **Single Entity Generator**
+
+   #+begin_src cpp
+   TEST_CASE("generate_synthetic_TYPE_produces_valid_entity", tags) {
+       auto lg(make_logger(test_suite));
+
+       const auto sut = generate_synthetic_TYPE();
+       BOOST_LOG_SEV(lg, info) << "Generated: " << sut;
+
+       CHECK(!sut.name.empty());
+       CHECK(sut.id != boost::uuids::nil_generator()());
+   }
+   #+end_src
+
+2. **Batch Generator**
+
+   #+begin_src cpp
+   TEST_CASE("generate_synthetic_TYPES_produces_multiple", tags) {
+       auto lg(make_logger(test_suite));
+
+       const auto sut = generate_synthetic_TYPES(3);
+       BOOST_LOG_SEV(lg, info) << "Generated: " << sut;
+
+       REQUIRE(sut.size() == 3);
+       for (const auto& e : sut) {
+           CHECK(!e.name.empty());
+       }
+   }
+   #+end_src
+
+3. **Tag**: =[generators]=
+
+** Step 9: Repository Test Patterns
+
+Repository tests require database setup. Two helpers are available:
+
+- =database_helper= - Original pattern. Some components (DQ, IAM) pass context
+  to the repository constructor.
+- =scoped_database_helper= - Newer pattern with per-test tenant isolation. No
+  table truncation needed. Used by Refdata.
+
+1. **Write Operations** (=database_helper= style)
 
    #+begin_src cpp
    TEST_CASE("write_single_TYPE", tags) {
        auto lg(make_logger(test_suite));
 
        database_helper h;
-       h.truncate_table("oresdb.table_name");
-
        TYPE_repository repo(h.context());
        auto entity = generate_synthetic_TYPE();
 
@@ -224,15 +324,28 @@ Repository tests require database setup:
    }
    #+end_src
 
-2. **Read Operations**
+2. **Write Operations** (=scoped_database_helper= style)
+
+   #+begin_src cpp
+   TEST_CASE("write_single_TYPE", tags) {
+       auto lg(make_logger(test_suite));
+
+       scoped_database_helper h;
+       TYPE_repository repo;
+       auto entity = generate_synthetic_TYPE();
+
+       BOOST_LOG_SEV(lg, debug) << "TYPE: " << entity;
+       CHECK_NOTHROW(repo.write(h.context(), entity));
+   }
+   #+end_src
+
+3. **Read Operations**
 
    #+begin_src cpp
    TEST_CASE("read_latest_TYPES", tags) {
        auto lg(make_logger(test_suite));
 
        database_helper h;
-       h.truncate_table("oresdb.table_name");
-
        TYPE_repository repo(h.context());
        auto written = generate_synthetic_TYPES(3);
        repo.write(written);
@@ -245,7 +358,7 @@ Repository tests require database setup:
    }
    #+end_src
 
-** Step 8: Using Generators
+** Step 10: Using Generators
 
 When generators exist for a type, use them instead of manual construction:
 
@@ -267,7 +380,7 @@ TEST_CASE("test_with_generator", tags) {
 }
 #+end_src
 
-** Step 9: Common Tags
+** Step 11: Common Tags
 
 Use appropriate tags for test categorization:
 
@@ -277,10 +390,12 @@ Use appropriate tags for test categorization:
 - =[security]= - Security-related tests
 - =[messaging]= - Message handling tests
 
-** Step 10: Best Practices
+** Step 12: Best Practices
 
 1. **Logging**: Always log test data with =BOOST_LOG_SEV= for debugging
-2. **Database Cleanup**: Use =database_helper::truncate_table()= before repository tests
+2. **Tenant Isolation**: Use =scoped_database_helper= for tenant-isolated tests
+   (no table truncation needed). Use =database_helper= for components that pass
+   context to the repository constructor.
 3. **Descriptive Names**: Test names should clearly describe what is being tested
 4. **Assertions**: Use =CHECK= for non-fatal assertions, =REQUIRE= for fatal ones
 5. **Setup/Teardown**: Use database_helper which handles setup/teardown automatically

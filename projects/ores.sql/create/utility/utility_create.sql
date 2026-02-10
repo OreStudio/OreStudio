@@ -19,3 +19,5 @@
  */
 
 \ir ./utility_functions_create.sql
+\ir ./utility_whimsical_names_create.sql
+\ir ./utility_cleanup_functions_create.sql

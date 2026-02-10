@@ -18,4 +18,6 @@
  *
  */
 
+\ir ./utility_cleanup_functions_drop.sql
+\ir ./utility_whimsical_names_drop.sql
 \ir ./utility_functions_drop.sql

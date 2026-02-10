@@ -98,9 +98,8 @@ Scripts that don't create schema objects but provide utility functions or genera
 
 | Script Type       | Pattern                              | Example                                 |
 |----------------- |------------------------------------ |--------------------------------------- |
-| Generation script | `{component}_{feature}_generate.sql` | `admin_teardown_instances_generate.sql` |
-| Teardown script   | `{component}_{feature}_teardown.sql` | `admin_teardown.sql`                    |
-| Setup script      | `setup_{feature}.sql`                | `setup_template.sql`, `setup_user.sql`  |
+| Teardown script   | `{component}_{feature}_teardown.sql` | `teardown_all.sql`                      |
+| Setup script      | `setup_{feature}.sql`                | `setup_schema.sql`, `setup_user.sql`    |
 
 Generation scripts produce other SQL files (e.g., for review before execution). They should:
 
@@ -250,17 +249,11 @@ projects/ores.sql/
 │   │   └── {component}_{entity}_populate.sql
 │   ├── data/                        # Static data files (SVG flags, etc.)
 │   └── populate.sql                 # Master-of-masters
-├── admin/                           # Cluster-level admin utilities
-│   ├── setup_admin.sql              # Creates ores_admin database
-│   ├── teardown_admin.sql           # Drops ores_admin database
-│   ├── admin_{feature}_create.sql   # Admin function creation
-│   └── admin_{feature}_generate.sql # Generation scripts
 ├── instance/                        # Instance-specific initialization
 │   └── init_instance.sql
-├── setup_template.sql               # Creates template database
-├── teardown_template.sql            # Drops template database
+├── create_database.sql              # Creates database (postgres superuser)
+├── setup_schema.sql                 # Sets up schema (ores_ddl_user)
 ├── teardown_all.sql                 # Complete cluster teardown
-├── create_instance.sql              # Creates new database instance
 └── recreate_database.sql            # Full wipe and rebuild (dev)
 ```
 
@@ -615,23 +608,17 @@ The file is organized in sections:
 
 ## Step 7: Test the schema
 
-1.  Drop and recreate the template database:
+1.  Create a test database:
 
 ```sh
-psql -U postgres -c "DROP DATABASE IF EXISTS ores_template"
-psql -U postgres -f projects/ores.sql/setup_template.sql
-```
-
-1.  Create a test instance:
-
-```sh
-psql -U postgres -f projects/ores.sql/create_instance.sql
+psql -U postgres -v db_name='ores_test_schema' -f projects/ores.sql/create_database.sql
+PGPASSWORD='DDL_PASS' psql -U ores_ddl_user -d ores_test_schema -f projects/ores.sql/setup_schema.sql
 ```
 
 1.  Verify the table exists:
 
 ```sh
-psql -U ores -d <database_name> -c "\d ores.{component}_{entity}_tbl"
+psql -U ores_cli_user -d ores_test_schema -c "\d ores_{component}_{entity}_tbl"
 ```
 
 1.  Test the notification trigger:

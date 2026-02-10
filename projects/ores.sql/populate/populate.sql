@@ -22,8 +22,8 @@
  * System Population Script
  *
  * Seeds the database with governance and catalogue data. Foundation layer
- * data (change reasons, IAM, coding schemes, etc.) is already included in
- * the database template via setup_template.sql.
+ * data (change reasons, IAM, coding schemes, etc.) is already populated
+ * by setup_schema.sql before this script runs.
  *
  * Population Layers:
  *

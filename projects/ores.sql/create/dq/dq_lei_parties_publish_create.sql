@@ -193,7 +193,8 @@ begin
         for v_current_depth in 0..coalesce(v_max_depth, 0) loop
             insert into ores_refdata_parties_tbl (
                 tenant_id,
-                id, version, full_name, short_code, party_type,
+                id, version, full_name, short_code,
+                party_category, party_type,
                 parent_party_id, business_center_code, status,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
@@ -201,7 +202,7 @@ begin
                 p_target_tenant_id,
                 m.party_uuid, 0,
                 m.entity_legal_name,
-                m.lei, 'Corporate',
+                m.lei, 'operational', 'Corporate',
                 parent_map.party_uuid,
                 -- Default business centre from country
                 bc_map.business_center_code,

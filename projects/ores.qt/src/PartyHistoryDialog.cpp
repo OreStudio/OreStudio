@@ -276,6 +276,12 @@ void PartyHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.full_name));
     }
 
+    if (current.party_category != previous.party_category) {
+        addChange("Category",
+                  QString::fromStdString(previous.party_category),
+                  QString::fromStdString(current.party_category));
+    }
+
     if (current.party_type != previous.party_type) {
         addChange("Party Type",
                   QString::fromStdString(previous.party_type),
@@ -314,6 +320,7 @@ void PartyHistoryDialog::updateFullDetails(int versionIndex) {
 
     ui_->codeValue->setText(QString::fromStdString(version.short_code));
     ui_->nameValue->setText(QString::fromStdString(version.full_name));
+    ui_->partyCategoryValue->setText(QString::fromStdString(version.party_category));
     ui_->partyTypeValue->setText(QString::fromStdString(version.party_type));
     ui_->statusValue->setText(QString::fromStdString(version.status));
     ui_->businessCenterValue->setText(QString::fromStdString(version.business_center_code.value_or("")));

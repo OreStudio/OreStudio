@@ -125,7 +125,7 @@ private:
     bool gleifMode_ = false;
     QString tenantCode_;
     QString tenantName_;
-    QString tenantType_ = QStringLiteral("organisation");
+    QString tenantType_ = QStringLiteral("evaluation");
     QString tenantHostname_;
     QString tenantDescription_;
     QString rootLei_;

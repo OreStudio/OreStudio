@@ -30,8 +30,8 @@ namespace ores::iam::domain {
  * @brief Classification of tenant types.
  *
  * Reference data table defining valid tenant type classifications.
- * Examples: 'organisation', 'platform', 'sandbox'.
- * 
+ * Examples: 'system', 'production', 'evaluation', 'automation'.
+ *
  * Tenant types are managed by the system tenant and are used to
  * categorise tenants for different purposes.
  */
@@ -44,7 +44,7 @@ struct tenant_type final {
     /**
      * @brief Unique type code.
      *
-     * Examples: 'organisation', 'platform'.
+     * Examples: 'system', 'production', 'evaluation'.
      */
     std::string type;
 

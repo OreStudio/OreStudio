@@ -32,7 +32,7 @@
 
 begin;
 
-select plan(5);
+select plan(6);
 
 -- =============================================================================
 -- Test: NULL and empty values raise exceptions (no default)
@@ -58,25 +58,32 @@ select throws_ok(
 -- Test: Valid values pass through
 -- =============================================================================
 
--- Test 3: Valid value 'platform' returns itself
+-- Test 3: Valid value 'system' returns itself
 select is(
-    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'platform'),
-    'platform',
-    'tenant_type: valid value platform returns itself'
+    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'system'),
+    'system',
+    'tenant_type: valid value system returns itself'
 );
 
--- Test 4: Valid value 'organisation' returns itself
+-- Test 4: Valid value 'production' returns itself
 select is(
-    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'organisation'),
-    'organisation',
-    'tenant_type: valid value organisation returns itself'
+    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'production'),
+    'production',
+    'tenant_type: valid value production returns itself'
+);
+
+-- Test 5: Valid value 'evaluation' returns itself
+select is(
+    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'evaluation'),
+    'evaluation',
+    'tenant_type: valid value evaluation returns itself'
 );
 
 -- =============================================================================
 -- Test: Invalid values raise exception
 -- =============================================================================
 
--- Test 5: Invalid value raises 23503 exception
+-- Test 6: Invalid value raises 23503 exception
 select throws_ok(
     $$select ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'INVALID_TYPE')$$,
     '23503',

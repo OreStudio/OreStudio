@@ -87,6 +87,7 @@
 \echo ''
 \echo '--- Reference Data Lookup Tables ---'
 \ir ../refdata/refdata_rounding_types_populate.sql
+\ir ../refdata/refdata_party_categories_populate.sql
 \ir ../refdata/refdata_party_types_populate.sql
 \ir ../refdata/refdata_party_statuses_populate.sql
 \ir ../refdata/refdata_party_id_schemes_populate.sql
@@ -134,6 +135,9 @@ from ores_dq_change_reasons_tbl where valid_to = ores_utility_infinity_timestamp
 union all
 select 'Rounding Types', count(*)
 from ores_refdata_rounding_types_tbl
+union all
+select 'Party Categories', count(*)
+from ores_refdata_party_categories_tbl
 union all
 select 'Party Types', count(*)
 from ores_refdata_party_types_tbl

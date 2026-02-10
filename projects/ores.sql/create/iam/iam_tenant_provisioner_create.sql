@@ -40,7 +40,7 @@
 -- Caller must have system tenant context set.
 --
 -- Parameters:
---   p_type: Tenant type ('organisation', 'platform', or 'test')
+--   p_type: Tenant type ('production', 'evaluation', or 'automation')
 --   p_code: Unique tenant code (e.g., 'acme', 'test_20260201_143052_abc')
 --   p_name: Display name for the tenant
 --   p_hostname: Unique hostname (e.g., 'acme.example.com', 'test_123.localhost')
@@ -153,6 +153,30 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % role-permission assignments', v_copied_count;
+
+    -- =========================================================================
+    -- Create the system party for the new tenant
+    -- =========================================================================
+    -- Every tenant gets exactly one system party (party_category='system')
+    -- which serves as the root of the party hierarchy. The system party
+    -- represents the tenant organisation itself. It is the only party with
+    -- parent_party_id = NULL, enforced by a partial unique index.
+    --
+    -- No context switch needed: this function is security definer (bypasses
+    -- RLS), and lookup validation checks system tenant data directly.
+
+    insert into ores_refdata_parties_tbl (
+        id, tenant_id, full_name, short_code, party_category,
+        party_type, parent_party_id, status,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        gen_random_uuid(), v_new_tenant_id, p_name, p_code, 'system',
+        'Corporate', null, 'Active',
+        current_user, current_user, 'system.new_record',
+        'System party created during tenant provisioning'
+    );
+
+    raise notice 'Created system party for tenant: %', p_code;
 
     -- =========================================================================
     -- Provisioning complete

@@ -503,6 +503,7 @@ Highlights:
 
 *** COMPLETED Brainstorm on multi-party support                        :code:
     :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 13:14]--[2026-02-10 Tue 13:33] =>  0:19
     CLOCK: [2026-02-10 Tue 12:36]--[2026-02-10 Tue 13:13] =>  0:37
     CLOCK: [2026-02-10 Tue 12:11]--[2026-02-10 Tue 12:35] =>  0:24
     CLOCK: [2026-02-10 Tue 09:30]--[2026-02-10 Tue 12:10] =>  2:40
@@ -531,6 +532,54 @@ Highlights:
 - Product Backlog Updates: Updated the product backlog with deferred stories for
   features like four-eyes authorisation, KYC workflow, librarian lockdown, and
   GLEIF evaluation wizard.
+#+end_quote
+
+*** STARTED Add party 0 support                                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 15:38]
+    :END:
+
+As per design document.
+
+*** STARTED Improve code coverage                                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 13:34]--[2026-02-10 Tue 13:48] =>  0:14
+    :END:
+
+It has dipped below 50% again.
+
+#+begin_quote
+This pull request significantly enhances the robustness and reliability of the
+ORE Studio codebase by introducing a substantial suite of new unit tests. The
+added tests target modules with previously lower coverage, ensuring that
+critical functionalities such as CLI parsing, data quality entity generation,
+identity and access management authorization, reference data generation,
+synthetic data creation, and logging configurations behave as expected. This
+effort aims to catch potential regressions early and provide a more stable
+development environment.
+
+Highlights:
+
+- Expanded Unit Test Coverage: Added 12 new unit test files, introducing
+  approximately 110 new test cases and 1900 lines of test code across 7 core
+  modules to significantly improve test coverage.
+- CLI Parser Helpers Tested: Implemented comprehensive tests for ores.cli's
+  parser helpers, covering operation validation, format reading, and help output
+  generation.
+- Data Quality (DQ) Generators and Enums Validated: Introduced extensive tests
+  for 12 different entity generators within ores.dq and validated the
+  publication_mode enum's string conversions and round-trip functionality.
+- Reference Data (RefData) Generators Covered: Provided new tests for 10 entity generators in ores.refdata, ensuring the correct generation of parties, counterparties, contacts, and identifiers.
+- IAM Authorization and Session Conversion Tested: Added tests for ores.iam's
+  authorization logic, including wildcard permissions, and verified the
+  session_converter's data mapping and updates.
+- Synthetic Data Generation Logic Verified: Enhanced test coverage for
+  ores.synthetic, focusing on the generation_context's random distributions,
+  UUID generation, and the catalog_generator_service's orchestration and
+  reproducibility.
+- Logging Utilities Tested: Added tests for ores.logging's boost_severity
+  conversions, logging_options JSON streaming, and the
+  logging_options_validator's configuration checks.
 #+end_quote
 
 *** STARTED Add counterparty wizard                                    :code:

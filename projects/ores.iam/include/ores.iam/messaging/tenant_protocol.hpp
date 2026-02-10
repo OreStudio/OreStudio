@@ -193,7 +193,7 @@ std::ostream& operator<<(std::ostream& s, const get_tenant_history_response& v);
  * (permissions, roles, role_permissions) into the new tenant.
  */
 struct provision_tenant_request final {
-    std::string type;            ///< e.g. "organisation"
+    std::string type;            ///< e.g. "production"
     std::string code;            ///< unique tenant code
     std::string name;            ///< display name
     std::string hostname;        ///< unique hostname

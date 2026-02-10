@@ -280,7 +280,7 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
  * @example
  * execute_parameterized_command(ctx_,
  *     "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)",
- *     {"organisation", "tenant_code", "tenant_name", "domain", "description"},
+ *     {"production", "tenant_code", "tenant_name", "domain", "description"},
  *     lg(), "Provisioning tenant");
  */
 void execute_parameterized_command(context ctx, const std::string& sql,

@@ -60,6 +60,8 @@
 \ir ./refdata_supervisory_bodies_notify_trigger_create.sql
 
 -- Party reference data tables
+\ir ./refdata_party_categories_create.sql
+\ir ./refdata_party_categories_notify_trigger_create.sql
 \ir ./refdata_party_types_create.sql
 \ir ./refdata_party_types_notify_trigger_create.sql
 \ir ./refdata_party_statuses_create.sql

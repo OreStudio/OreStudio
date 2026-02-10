@@ -31,14 +31,17 @@ insert into ores_iam_tenant_types_tbl (
     tenant_id, type, version, name, description, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
-    (ores_iam_system_tenant_id_fn(), 'platform', 0, 'Platform',
-     'System-level tenant for platform administration and shared governance data', 0,
+    (ores_iam_system_tenant_id_fn(), 'system', 0, 'System',
+     'Platform administration and shared governance data. One per deployment.', 0,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
-    (ores_iam_system_tenant_id_fn(), 'organisation', 0, 'Organisation',
-     'Customer organisation tenant for isolated business operations', 10,
+    (ores_iam_system_tenant_id_fn(), 'production', 0, 'Production',
+     'Real customer organisation with strict operational controls (four-eyes, KYC).', 10,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
-    (ores_iam_system_tenant_id_fn(), 'test', 0, 'Test',
-     'Tenant for automated testing scenarios including unit, integration, and load tests', 20,
+    (ores_iam_system_tenant_id_fn(), 'evaluation', 0, 'Evaluation',
+     'Realistic environment for demos, QA, and evaluation. Relaxed controls.', 20,
+     current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
+    (ores_iam_system_tenant_id_fn(), 'automation', 0, 'Automation',
+     'Automated test infrastructure for unit, integration, and load testing.', 30,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types')
 on conflict (tenant_id, type)
 where valid_to = ores_utility_infinity_timestamp_fn()

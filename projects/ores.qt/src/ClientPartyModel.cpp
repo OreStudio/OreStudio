@@ -82,6 +82,8 @@ QVariant ClientPartyModel::data(
             return QString::fromStdString(party.short_code);
         case FullName:
             return QString::fromStdString(party.full_name);
+        case PartyCategory:
+            return QString::fromStdString(party.party_category);
         case PartyType:
             return QString::fromStdString(party.party_type);
         case Status:
@@ -116,6 +118,8 @@ QVariant ClientPartyModel::headerData(
         return tr("Code");
     case FullName:
         return tr("Name");
+    case PartyCategory:
+        return tr("Category");
     case PartyType:
         return tr("Type");
     case Status:

@@ -217,9 +217,8 @@ void TenantDetailsPage::setupUI() {
     formLayout->addRow(tr("Name:"), nameEdit_);
 
     typeCombo_ = new QComboBox(this);
-    typeCombo_->addItem(tr("Organisation"), "organisation");
-    typeCombo_->addItem(tr("Individual"), "individual");
-    typeCombo_->addItem(tr("Test"), "test");
+    typeCombo_->addItem(tr("Production"), "production");
+    typeCombo_->addItem(tr("Evaluation"), "evaluation");
     formLayout->addRow(tr("Type:"), typeCombo_);
 
     hostnameEdit_ = new QLineEdit(this);

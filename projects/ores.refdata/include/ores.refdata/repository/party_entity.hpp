@@ -39,6 +39,7 @@ struct party_entity {
     int version = 0;
     std::string full_name;
     std::string short_code;
+    std::string party_category;
     std::string party_type;
     std::optional<std::string> parent_party_id;
     std::optional<std::string> business_center_code;

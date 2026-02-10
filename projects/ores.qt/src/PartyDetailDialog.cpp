@@ -66,6 +66,8 @@ void PartyDetailDialog::setupConnections() {
             &PartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PartyDetailDialog::onFieldChanged);
+    connect(ui_->partyCategoryEdit, &QLineEdit::textChanged, this,
+            &PartyDetailDialog::onFieldChanged);
     connect(ui_->partyTypeEdit, &QLineEdit::textChanged, this,
             &PartyDetailDialog::onFieldChanged);
     connect(ui_->statusEdit, &QLineEdit::textChanged, this,
@@ -105,6 +107,7 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
+    ui_->partyCategoryEdit->setReadOnly(readOnly);
     ui_->partyTypeEdit->setReadOnly(readOnly);
     ui_->statusEdit->setReadOnly(readOnly);
     ui_->businessCenterEdit->setReadOnly(readOnly);
@@ -115,6 +118,7 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(party_.full_name));
+    ui_->partyCategoryEdit->setText(QString::fromStdString(party_.party_category));
     ui_->partyTypeEdit->setText(QString::fromStdString(party_.party_type));
     ui_->statusEdit->setText(QString::fromStdString(party_.status));
     ui_->businessCenterEdit->setText(QString::fromStdString(party_.business_center_code.value_or("")));
@@ -130,6 +134,7 @@ void PartyDetailDialog::updatePartyFromUi() {
         party_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     party_.full_name = ui_->nameEdit->text().trimmed().toStdString();
+    party_.party_category = ui_->partyCategoryEdit->text().trimmed().toStdString();
     party_.party_type = ui_->partyTypeEdit->text().trimmed().toStdString();
     party_.status = ui_->statusEdit->text().trimmed().toStdString();
     const auto bcc = ui_->businessCenterEdit->text().trimmed().toStdString();

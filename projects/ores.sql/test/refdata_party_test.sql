@@ -36,7 +36,7 @@
 
 begin;
 
-select plan(10);
+select plan(12);
 
 -- =============================================================================
 -- Test: Valid insert
@@ -72,10 +72,38 @@ select is(
 );
 
 -- =============================================================================
+-- Test: Validation - party_category
+-- =============================================================================
+
+-- Test 3: party_category defaults to 'operational'
+select is(
+    (select party_category from ores_refdata_parties_tbl
+     where id = 'a0000000-0000-0000-0000-000000000001'::uuid
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    'operational',
+    'party insert: party_category defaults to operational'
+);
+
+-- Test 4: Invalid party_category is rejected
+select throws_ok(
+    $$insert into ores_refdata_parties_tbl (
+        id, tenant_id, version, full_name, short_code, party_category, party_type,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'a0000000-0000-0000-0000-000000000090'::uuid,
+        ores_iam_system_tenant_id_fn(), 0, 'Bad Category Corp', 'BCC', 'INVALID_CATEGORY', 'Bank',
+        current_user, current_user, 'system.test', 'Test'
+    )$$,
+    '23503',
+    NULL,
+    'party insert: invalid party_category raises 23503'
+);
+
+-- =============================================================================
 -- Test: Validation - party_type
 -- =============================================================================
 
--- Test 3: Invalid party_type is rejected
+-- Test 5: Invalid party_type is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
         id, tenant_id, version, full_name, short_code, party_type,
@@ -94,7 +122,7 @@ select throws_ok(
 -- Test: Validation - status
 -- =============================================================================
 
--- Test 4: Invalid status is rejected
+-- Test 6: Invalid status is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
         id, tenant_id, version, full_name, short_code, party_type, status,
@@ -113,7 +141,7 @@ select throws_ok(
 -- Test: Parent party validation
 -- =============================================================================
 
--- Test 5: Insert child party with valid parent succeeds
+-- Test 7: Insert child party with valid parent succeeds
 insert into ores_refdata_parties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
     parent_party_id,
@@ -133,7 +161,7 @@ select is(
     'party insert: child party has correct parent_party_id'
 );
 
--- Test 6: Invalid parent_party_id is rejected
+-- Test 8: Invalid parent_party_id is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
         id, tenant_id, version, full_name, short_code, party_type,
@@ -154,7 +182,7 @@ select throws_ok(
 -- Test: Root party uniqueness
 -- =============================================================================
 
--- Test 7: Second root party (no parent) for same tenant is rejected
+-- Test 9: Second root party (no parent) for same tenant is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
         id, tenant_id, version, full_name, short_code, party_type,
@@ -175,7 +203,7 @@ select throws_ok(
 -- Test: Natural key uniqueness
 -- =============================================================================
 
--- Test 8: Duplicate full_name is rejected
+-- Test 10: Duplicate full_name is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
         id, tenant_id, version, full_name, short_code, party_type,
@@ -196,7 +224,7 @@ select throws_ok(
 -- Test: Soft delete
 -- =============================================================================
 
--- Test 9: DELETE sets valid_to instead of removing
+-- Test 11: DELETE sets valid_to instead of removing
 delete from ores_refdata_parties_tbl
 where id = 'a0000000-0000-0000-0000-000000000002'::uuid;
 
@@ -208,7 +236,7 @@ select is(
     'party delete: record no longer current after soft delete'
 );
 
--- Test 10: Soft-deleted record still exists in history
+-- Test 12: Soft-deleted record still exists in history
 select ok(
     (select count(*) > 0 from ores_refdata_parties_tbl
      where id = 'a0000000-0000-0000-0000-000000000002'::uuid

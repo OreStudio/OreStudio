@@ -21,7 +21,7 @@
 -- =============================================================================
 -- Tenants Table
 -- Core table for multi-tenancy support. Each tenant represents an isolated
--- organisation or the system platform tenant.
+-- organisation or the system tenant.
 --
 -- Note: All tenant records belong to the system tenant (tenant_id = system_tenant_id).
 -- This allows the system tenant to manage all tenants. Regular tenants can still

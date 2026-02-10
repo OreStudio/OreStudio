@@ -58,7 +58,7 @@ begin
         ) values (
             'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid,
             0,
-            'platform',
+            'system',
             'system',
             'System',
             'Platform-level system tenant for shared governance data and administration',

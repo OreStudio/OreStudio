@@ -67,7 +67,16 @@ struct party final {
     std::string short_code;
 
     /**
-     * @brief Classification of this party.
+     * @brief Structural classification of this party.
+     *
+     * References the party_category lookup table. Values: 'system' (one per
+     * tenant, auto-created during provisioning) or 'operational' (business
+     * entities created during normal system operation).
+     */
+    std::string party_category;
+
+    /**
+     * @brief Business classification of this party.
      *
      * References the party_type lookup table.
      */

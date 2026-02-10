@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_parties_tbl" (
     "version" integer not null,
     "full_name" text not null,
     "short_code" text not null,
+    "party_category" text not null default 'operational',
     "party_type" text not null,
     "parent_party_id" uuid null,
     "business_center_code" text null,
@@ -83,6 +84,11 @@ create unique index if not exists ores_refdata_parties_root_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where parent_party_id is null and valid_to = ores_utility_infinity_timestamp_fn();
 
+-- System party uniqueness: exactly one system party per tenant
+create unique index if not exists ores_refdata_parties_system_party_uniq_idx
+on "ores_refdata_parties_tbl" (tenant_id)
+where party_category = 'system' and valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_refdata_parties_insert_fn()
 returns trigger as $$
 declare
@@ -90,6 +96,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate party_category
+    NEW.party_category := ores_refdata_validate_party_category_fn(NEW.tenant_id, NEW.party_category);
 
     -- Validate party_type
     NEW.party_type := ores_refdata_validate_party_type_fn(NEW.tenant_id, NEW.party_type);

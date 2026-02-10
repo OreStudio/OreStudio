@@ -1,0 +1,332 @@
+:PROPERTIES:
+:ID: 046217E8-7259-492B-A713-A4043C867FE5
+:END:
+#+title: Party-Level Isolation and Tenant Types Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+This document defines the architecture for party-level data isolation within
+tenants and the revised tenant type taxonomy. Together these provide fine-grained
+access control: tenants isolate organisations from each other, and parties
+isolate business units within an organisation.
+
+** Goals
+
+- Enforce party-level data isolation at the database level using PostgreSQL RLS.
+- Define tenant types that gate available features and operational controls.
+- Define party types that distinguish administrative from business entities.
+- Support arbitrarily nested party hierarchies with subtree-scoped visibility.
+- Decouple tenant provisioning (system operation) from party setup (business
+  operation).
+
+** Success Criteria
+
+- A user logged in at a leaf party cannot see data belonging to sibling or
+  ancestor parties.
+- A user logged in at an intermediate party sees their own data plus all
+  descendant party data.
+- The system party within each tenant has full visibility over all parties.
+- Evaluation tenants allow relaxed operations (GLEIF onboarding, bulk import);
+  production tenants enforce strict controls.
+
+* Tenant Types
+
+Each tenant has a type that determines its operational characteristics, available
+features, and the level of controls enforced. The type is stored in
+=ores_iam_tenant_types_tbl= and validated on tenant creation.
+
+| Type           | Purpose                                          | Controls            |
+|----------------+--------------------------------------------------+---------------------|
+| =system=       | Platform administration and shared governance    | Platform-managed    |
+| =production=   | Real customer organisations                      | Strict              |
+| =evaluation=   | Realistic environments for demos and testing     | Relaxed             |
+| =automation=   | Automated test infrastructure                    | None (programmatic) |
+
+** =system=
+
+The system tenant (tenant 0, max UUID) is the platform-level tenant that owns
+shared governance data: the tenant registry, system-wide permissions, and
+reference datasets in the data librarian. There is exactly one system tenant per
+deployment. Users logged into the system tenant are super administrators with
+cross-tenant visibility.
+
+** =production=
+
+Production tenants represent real customer organisations with isolated business
+operations. These tenants enforce strict operational controls:
+
+- Four-eyes authorisation for sensitive operations (counterparty onboarding,
+  party modifications).
+- KYC-gated counterparty creation with supporting documentation.
+- Data librarian operations restricted to safe, auditable actions.
+- No bulk import of parties or counterparties from external datasets.
+
+** =evaluation=
+
+Evaluation tenants provide realistic, production-like environments for
+demonstrations, user acceptance testing, QA, and system evaluation. Controls are
+relaxed to allow rapid environment setup:
+
+- GLEIF-based party creation available (importing root party and child parties
+  from LEI data).
+- Bulk counterparty import from LEI datasets via the data librarian.
+- No four-eyes requirement for sensitive operations.
+- Clearly labelled in the UI to prevent confusion with production tenants.
+
+Evaluation tenants are suitable for pre-production testing, sales demos, training
+environments, and exploratory testing by QA teams.
+
+** =automation=
+
+Automation tenants are created and destroyed programmatically by test harnesses
+for unit, integration, and load testing. They are not intended for human
+interaction:
+
+- Created with random UUIDs for isolation between test runs.
+- No UI-driven workflows; all operations performed via test fixtures.
+- Parallel test execution without interference.
+- Ephemeral; typically torn down after test completion.
+
+** Rename from Current Types
+
+| Current     | New            | Notes                                    |
+|-------------+----------------+------------------------------------------|
+| =platform=  | =system=       | Clearer intent                           |
+| =organisation= | =production= | Reflects operational mode, not structure |
+| =test=      | =automation=   | Distinguishes from human QA testing      |
+| (new)       | =evaluation=   | Fills gap for demo/evaluation use        |
+
+* Party Types
+
+Each party has a type that determines its role within the tenant.
+
+| Type            | Purpose                                    | Auto-created |
+|-----------------+--------------------------------------------+--------------|
+| =system=        | Administrative party (party 0)             | Yes          |
+| =operational=   | Business entity (trades, books, KYC)       | No           |
+
+** =system= Party
+
+Every tenant has exactly one system party, created automatically during tenant
+provisioning. The system party:
+
+- Is the administrative home for tenant admin accounts.
+- Has full visibility over all parties in the tenant (equivalent to root in the
+  hierarchy model).
+- Owns any party-scoped data that is administrative rather than business in
+  nature.
+- In tenant 0, it is the only party and serves as the platform admin party.
+
+The system party is analogous to the system tenant: it is an infrastructure
+construct, not a business entity.
+
+** =operational= Party
+
+Operational parties represent real business entities: legal entities, branches,
+desks, subsidiaries. They:
+
+- Are created by users during normal business operations.
+- Form an arbitrarily nested hierarchy via =parent_party_id=.
+- Have tree-scoped visibility: a party can see its own data and all descendant
+  party data.
+- Own business data: counterparties, books, portfolios, trades.
+
+The root operational party (=parent_party_id = NULL= among operational parties,
+or =parent_party_id= pointing to the system party) represents the top of the
+business hierarchy, typically the holding company or group entity.
+
+* Data Ownership Patterns
+
+Data within a tenant falls into two categories based on ownership scope.
+
+** Tenant-Scoped Data (Shared Reference Data)
+
+Reference data defined once at the tenant level, sourced from standards bodies
+(ISO, FpML). All parties within the tenant share a common definition.
+
+| Entity           | Source     | Party Relationship              |
+|------------------+------------+---------------------------------|
+| Currencies       | ISO 4217   | Visibility scoped via junction  |
+| Countries        | ISO 3166-1 | Visibility scoped via junction  |
+| Business centres | ORE        | Visibility scoped via junction  |
+
+Party-level visibility is controlled through junction tables (e.g.
+=party_currencies=) that define which currencies a given party can see and use.
+The underlying currency definitions remain shared. This is a future enhancement.
+
+** Party-Scoped Data (Isolated Operational Data)
+
+Operational data owned by a specific party. Each party maintains its own records
+independently. Even when two parties deal with the same external legal entity,
+they each have separate records (different KYC status, credit limits,
+documentation).
+
+| Entity           | Isolation Mechanism        | Notes                      |
+|------------------+----------------------------+----------------------------|
+| Counterparties   | =party_id= column + RLS    | Own KYC, own records       |
+| Books            | =party_id= column + RLS    | Trading books              |
+| Portfolios       | =party_id= column + RLS    | Position aggregations      |
+| Trades           | =party_id= column + RLS    | Individual transactions    |
+
+Party-scoped tables have a =party_id= column and RLS policies that filter based
+on the session's visible party set.
+
+* Party-Level RLS Architecture
+
+Party isolation follows the same pattern as tenant isolation but adds a second
+layer of RLS filtering.
+
+** Session Variables
+
+At login, three values are set on the database session:
+
+#+begin_example
+app.current_tenant_id   = '<tenant-uuid>'       -- existing
+app.current_party_id    = '<party-uuid>'         -- new
+app.visible_party_ids   = '{uuid1,uuid2,...}'    -- new
+#+end_example
+
+** Visible Party Set Computation
+
+At login, after the user selects their party, the server computes the full set of
+visible party IDs using a recursive CTE:
+
+#+begin_src sql
+WITH RECURSIVE party_tree AS (
+    -- Start with the user's party
+    SELECT id FROM ores_refdata_parties_tbl
+    WHERE id = $user_party_id
+      AND tenant_id = $tenant_id
+      AND valid_to = ores_utility_infinity_timestamp_fn()
+
+    UNION ALL
+
+    -- Add all descendants
+    SELECT p.id FROM ores_refdata_parties_tbl p
+    JOIN party_tree pt ON p.parent_party_id = pt.id
+    WHERE p.tenant_id = $tenant_id
+      AND p.valid_to = ores_utility_infinity_timestamp_fn()
+)
+SELECT array_agg(id) FROM party_tree;
+#+end_src
+
+For the system party, the CTE returns all parties in the tenant, giving full
+visibility.
+
+The visible set is computed once at login and is immutable for the session
+lifetime. If the party tree changes mid-session, the user must re-login to
+pick up new visibility.
+
+** RLS Policy
+
+Party-scoped tables use a single, simple RLS policy:
+
+#+begin_src sql
+CREATE POLICY party_isolation ON ores_refdata_counterparties_tbl
+  USING (
+    party_id = ANY(current_setting('app.visible_party_ids')::uuid[])
+  );
+#+end_src
+
+This covers all cases:
+- System party user: visible set = all parties. Sees everything.
+- Root operational party user: visible set = root + all descendants.
+- Mid-level party user: visible set = their party + their subtree.
+- Leaf party user: visible set = just their party.
+
+** Performance
+
+| Operation                          | Cost                              |
+|------------------------------------+-----------------------------------|
+| Recursive CTE at login             | Once per login (~1ms typical)     |
+| =current_setting()= in RLS policy | Constant per query plan           |
+| =ANY(uuid[])= membership check    | O(n) where n = visible party count |
+
+For realistic hierarchies (up to a few hundred parties per tenant), the UUID
+array stays well within PostgreSQL session variable limits and the membership
+check is fast.
+
+* Login Flow Changes
+
+** Current Flow
+
+1. Client sends =login_request= with =username@hostname=.
+2. Server resolves tenant from hostname.
+3. Server authenticates user, creates session bound to tenant.
+4. Client proceeds.
+
+** Proposed Flow
+
+1. Client sends =login_request= with =username@hostname=.
+2. Server resolves tenant from hostname.
+3. Server authenticates user.
+4. Server looks up user's parties from =account_parties=.
+5. If one party: auto-select. If multiple: return party list to client.
+6. Client displays party picker (if needed) and sends party selection.
+7. Server computes =visible_party_ids= via recursive CTE.
+8. Session is created with tenant ID + party ID + visible party set.
+9. Client proceeds. Current party is displayed in the application window.
+
+** UI Considerations for Multi-Party Users
+
+When a user's visible set spans multiple parties:
+
+- Party-scoped table views gain a "Party" column showing the owning party.
+- A party filter dropdown allows scoping the view to a specific subtree.
+- Single-party users see the party column hidden (always the same value).
+
+* Tenant Provisioning
+
+Tenant creation is a system-level operation. It creates the minimal
+infrastructure for a tenant to operate.
+
+** Provisioning Creates
+
+1. Tenant record in =ores_iam_tenants_tbl=.
+2. System party (party 0) for the new tenant.
+3. Copies of system-level permissions and roles from the system tenant.
+4. One or more admin accounts (associated with the system party).
+
+** Provisioning Does NOT Create
+
+- Business parties (the "house"). This is a separate business operation.
+- Reference data (currencies, countries). Published via the data librarian.
+- Counterparties. Created per-party through appropriate workflows.
+
+This separation ensures that tenant creation is a clean, predictable system
+operation, and business setup is done by the people who understand the business.
+
+** Evaluation Tenant Variant
+
+For evaluation tenants, an additional step is available after provisioning:
+importing operating parties from GLEIF/LEI data. This is a separate action,
+not part of provisioning itself, and is gated by the =evaluation= tenant type.
+
+* Single-Tenant Mode (Future)
+
+The design must not preclude a deployment where tenant 0 (the system tenant) is
+the only tenant. In this mode:
+
+- The system party of tenant 0 serves as the administrative party.
+- Users create operational parties directly within tenant 0.
+- All data lives in a single tenant.
+
+This is useful for small deployments or single-organisation setups. It does not
+require special implementation now; it simply means we must avoid assumptions
+that tenant 0 cannot have operational parties.
+
+* Open Questions
+
+None at this time. The following items are deferred to separate stories:
+
+- Four-eyes authorisation framework.
+- KYC workflow for counterparty onboarding in production tenants.
+- Data librarian lockdown for production tenants.
+- GLEIF-based evaluation onboarding wizard.
+- Currency/country party-visibility junction tables.
+- Self-registration and approval workflow for production tenants.
+- Single-tenant mode implementation.
+- Party selection protocol changes (login flow extension).

@@ -16,35 +16,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-09 Mon 10:02], for Monday, February 09, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *2:41* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 2:41   |      |      | 100.0 |
-|       | Active                                |        | 2:41 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:11 |   6.8 |
-| code  | Add GLEIF data to datasets            |        |      | 2:30 |  93.2 |
+#+CAPTION: Clock summary at [2026-02-10 Tue 12:36], for Tuesday, February 10, 2026.
+|      | <75>                              |        |      |      |       |
+| Tags | Headline                          | Time   |      |      |     % |
+|------+-----------------------------------+--------+------+------+-------|
+|      | *Total time*                      | *3:04* |      |      | 100.0 |
+|------+-----------------------------------+--------+------+------+-------|
+|      | Stories                           | 3:04   |      |      | 100.0 |
+|      | Active                            |        | 3:04 |      | 100.0 |
+| code | Brainstorm on multi-party support |        |      | 3:04 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-09 Mon 10:02]
+#+CAPTION: Clock summary at [2026-02-10 Tue 12:36]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *14:48* |       |      | 100.0 |
+|       | *Total time*                                       | *24:27* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 14:48   |       |      | 100.0 |
-|       | Active                                             |         | 14:48 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 0:38 |   4.3 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   5.7 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   3.8 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  29.6 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   2.6 |
-| code  | Add party related support to Qt                    |         |       | 2:55 |  19.7 |
-| code  | Add GLEIF data to datasets                         |         |       | 5:04 |  34.2 |
+|       | Stories                                            | 24:27   |       |      | 100.0 |
+|       | Active                                             |         | 24:27 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 0:38 |   2.6 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   3.5 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   2.3 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  17.9 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   1.6 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  27.3 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  27.3 |
+| code  | Brainstorm on multi-party support                  |         |       | 3:04 |  12.5 |
+| code  | Add counterparty wizard                            |         |       | 1:12 |   4.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -425,8 +426,9 @@ Merged PRs:
 - [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
 - [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
 
-*** STARTED Add party related support to Qt                            :code:
+*** COMPLETED Add party related support to Qt                          :code:
     :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 15:28]--[2026-02-09 Mon 16:47] =>  1:19
     CLOCK: [2026-02-09 Mon 13:00]--[2026-02-09 Mon 15:27] =>  2:27
     CLOCK: [2026-02-08 Sun 13:40]--[2026-02-08 Sun 16:00] =>  2:20
     CLOCK: [2026-02-08 Sun 12:14]--[2026-02-08 Sun 12:49] =>  0:35
@@ -459,7 +461,7 @@ Highlights:
   capabilities.
 #+end_quote
 
-*** STARTED Add GLEIF data to datasets                                 :code:
+*** COMPLETED Add GLEIF data to datasets                               :code:
     :LOGBOOK:
     CLOCK: [2026-02-09 Mon 10:03]--[2026-02-09 Mon 11:40] =>  1:37
     CLOCK: [2026-02-09 Mon 09:42]--[2026-02-09 Mon 10:02] =>  0:20
@@ -497,6 +499,53 @@ Highlights:
 - Documentation Update: Updated methodology.txt to clearly document the new SQL
   generation pipeline for LEI data, providing detailed instructions and a list
   of generated output files.
+#+end_quote
+
+*** STARTED Brainstorm on multi-party support                          :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 12:11]--[2026-02-10 Tue 12:35] =>  0:24
+    CLOCK: [2026-02-10 Tue 09:30]--[2026-02-10 Tue 12:10] =>  2:40
+    :END:
+
+We added parties but there are many open questions on the design. Use the
+brainstorm skill to come up with a design that solves most common use cases.
+
+*** STARTED Add counterparty wizard                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
+    :END:
+
+We need a GLEIF based counterparty wizard.
+
+*** Fix issues with accounts dialog                                    :code:
+
+#+begin_quote
+This pull request addresses a specific display issue in the accounts list view
+and significantly enhances the robustness and maintainability of Qt delegates.
+It rectifies an off-by-one error that emerged after a new column was added to
+the account model. More broadly, it refactors delegates to use type-safe Column
+enums from their respective models instead of hardcoded integer indices,
+preventing future display bugs and simplifying column reordering or additions.
+The change also includes updated documentation to guide developers on this
+improved pattern.
+
+Highlights:
+
+- Accounts List View Fix: Fixed an off-by-one display error in the accounts list
+  view that occurred after the AccountType column was introduced, ensuring
+  correct field alignment.
+- Public Column Enum for ClientAccountModel: Made the ClientAccountModel::Column
+  enum public, allowing delegates and other consumers to reference column
+  indices directly and safely, improving type safety and refactorability.
+- Delegate Refactoring - AccountItemDelegate: Updated AccountItemDelegate to
+  utilize the ClientAccountModel::Column enum, replacing previously hardcoded
+  integer indices for column checks and formatting.
+- Delegate Refactoring - ConnectionItemDelegate: Updated ConnectionItemDelegate
+  to utilize the ConnectionTreeModel::Column enum, replacing hardcoded integer
+  indices for column checks.
+- Documentation Update: Added new documentation to the qt-entity-creator skill
+  guide, detailing the best practice for delegates to reference their model's
+  public Column enums instead of hardcoding indices.
 #+end_quote
 
 *** Improve error message boxes                                        :code:

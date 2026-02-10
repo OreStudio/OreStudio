@@ -1,0 +1,521 @@
+:PROPERTIES:
+:ID: 268AED29-2107-48C3-AF55-335CD5477C84
+:END:
+#+title: Multi-Party Architecture
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+ORE Studio implements party-level data isolation within tenants. While tenant
+isolation separates organisations from each other, party isolation separates
+business units within an organisation. This document describes how party context
+flows through the system from user authentication to database queries.
+
+This is a companion document to =projects/ores.iam/modeling/multi_tenancy.org=.
+The multi-tenancy architecture provides the foundation; multi-party adds a second
+layer of isolation within each tenant.
+
+* Core Concepts
+
+** Party Hierarchy
+
+Parties within a tenant form an arbitrarily nested tree. The tree structure
+represents a corporate group's organisational hierarchy:
+
+#+begin_example
+                        ┌────────────────────┐
+                        │   System Party     │  (party 0, auto-created)
+                        │   type: system     │
+                        └────────┬───────────┘
+                                 │
+                        ┌────────┴───────────┐
+                        │   ACME Group       │  (root operational party)
+                        │   type: operational│
+                        └────────┬───────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+     ┌────────┴─────────┐  ┌────┴───────────┐  ┌───┴────────────┐
+     │ ACME Europe      │  │ ACME Americas  │  │ ACME Asia-Pac  │
+     │ type: operational│  │ type: operational│  │ type: operational│
+     └────────┬─────────┘  └────────────────┘  └────────────────┘
+              │
+     ┌────────┴─────────┐
+     │ ACME London      │
+     │ type: operational│
+     └──────────────────┘
+#+end_example
+
+** Party Types
+
+Each party has a type that determines its role within the tenant.
+
+| Type            | Purpose                                    | Auto-created |
+|-----------------+--------------------------------------------+--------------|
+| =system=        | Administrative party (party 0)             | Yes          |
+| =operational=   | Business entity (trades, books, KYC)       | No           |
+
+** System Party
+
+Every tenant has exactly one system party, created automatically during tenant
+provisioning. The system party:
+
+- Is the administrative home for tenant admin accounts.
+- Has full visibility over all parties in the tenant.
+- Owns party-scoped data that is administrative rather than business in nature.
+- In tenant 0 (system tenant), it is the only party.
+
+The system party is analogous to the system tenant: it is an infrastructure
+construct, not a business entity. It serves a similar role to the max UUID system
+tenant but at the party level.
+
+** Operational Parties
+
+Operational parties represent real business entities: legal entities, branches,
+desks, subsidiaries. They:
+
+- Are created by users during normal business operations.
+- Form an arbitrarily nested hierarchy via =parent_party_id=.
+- Have tree-scoped visibility: a party can see its own data and all descendant
+  party data.
+- Own business data: counterparties, books, portfolios, trades.
+
+* Data Ownership Patterns
+
+Data within a tenant falls into two categories based on ownership scope.
+
+** Tenant-Scoped Data (Shared Reference Data)
+
+Reference data defined once at the tenant level, sourced from standards bodies
+(ISO, FpML). All parties within the tenant share a common definition.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────┐
+│                     Tenant: ACME Corp                        │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │          Shared Reference Data (tenant-scoped)         │  │
+│  │   Currencies: USD, EUR, GBP, JPY                       │  │
+│  │   Countries: US, GB, DE, JP, FR                        │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│  Party A can use: USD, EUR, GBP   (via junction table)       │
+│  Party B can use: USD, JPY        (via junction table)       │
+│  Party C can use: EUR, GBP        (via junction table)       │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+#+end_example
+
+Entities in this category:
+
+| Entity           | Source     | Party Relationship              |
+|------------------+------------+---------------------------------|
+| Currencies       | ISO 4217   | Visibility scoped via junction  |
+| Countries        | ISO 3166-1 | Visibility scoped via junction  |
+| Business centres | ORE        | Visibility scoped via junction  |
+
+Party-level visibility is controlled through junction tables (e.g.
+=party_currencies=) that define which currencies a given party can see and use.
+The underlying currency definitions remain shared.
+
+** Party-Scoped Data (Isolated Operational Data)
+
+Operational data owned by a specific party. Each party maintains its own records
+independently. Even when two parties deal with the same external legal entity,
+they each have separate records with different KYC status, credit limits, and
+documentation.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────┐
+│                     Tenant: ACME Corp                        │
+│                                                              │
+│  ┌────────────────────┐    ┌────────────────────┐            │
+│  │    ACME London     │    │   ACME New York    │            │
+│  │    (party A)       │    │   (party B)        │            │
+│  ├────────────────────┤    ├────────────────────┤            │
+│  │ Counterparties:    │    │ Counterparties:    │            │
+│  │  - Deutsche Bank   │    │  - Deutsche Bank   │  ← separate│
+│  │    KYC: Approved   │    │    KYC: Pending    │    records │
+│  │  - BNP Paribas     │    │  - Goldman Sachs   │            │
+│  ├────────────────────┤    ├────────────────────┤            │
+│  │ Books:             │    │ Books:             │            │
+│  │  - Main Trading    │    │  - Main Trading    │  ← separate│
+│  │  - Hedge Book      │    │  - Prop Book       │    records │
+│  └────────────────────┘    └────────────────────┘            │
+│                                                              │
+│  Party A CANNOT see Party B's data. Party B CANNOT see       │
+│  Party A's data. Both are invisible to each other.           │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+#+end_example
+
+Entities in this category:
+
+| Entity           | Isolation Mechanism        | Notes                      |
+|------------------+----------------------------+----------------------------|
+| Counterparties   | =party_id= column + RLS    | Own KYC, own records       |
+| Books            | =party_id= column + RLS    | Trading books              |
+| Portfolios       | =party_id= column + RLS    | Position aggregations      |
+| Trades           | =party_id= column + RLS    | Individual transactions    |
+
+* Party-Level Row-Level Security
+
+Party isolation mirrors the tenant RLS pattern but adds a second layer of
+filtering. Both layers are enforced simultaneously.
+
+** Session Variables
+
+At login, three values are set on the database session:
+
+#+begin_src sql
+SET app.current_tenant_id = 'tenant-uuid';          -- existing (tenant RLS)
+SET app.current_party_id  = 'party-uuid';           -- new (user's party)
+SET app.visible_party_ids = '{uuid1,uuid2,...}';     -- new (subtree set)
+#+end_src
+
+The =visible_party_ids= array contains the user's party plus all its
+descendants, computed at login via a recursive CTE.
+
+** Visible Party Set Computation
+
+At login, after the user selects their party, the server computes the full set of
+visible party IDs:
+
+#+begin_src sql
+WITH RECURSIVE party_tree AS (
+    -- Start with the user's party
+    SELECT id FROM ores_refdata_parties_tbl
+    WHERE id = $user_party_id
+      AND tenant_id = $tenant_id
+      AND valid_to = ores_utility_infinity_timestamp_fn()
+
+    UNION ALL
+
+    -- Add all descendants
+    SELECT p.id FROM ores_refdata_parties_tbl p
+    JOIN party_tree pt ON p.parent_party_id = pt.id
+    WHERE p.tenant_id = $tenant_id
+      AND p.valid_to = ores_utility_infinity_timestamp_fn()
+)
+SELECT array_agg(id) FROM party_tree;
+#+end_src
+
+The result is stored as the =app.visible_party_ids= session variable. For the
+system party, this query returns all parties in the tenant.
+
+** RLS Policy Pattern
+
+Party-scoped tables use a single RLS policy:
+
+#+begin_src sql
+CREATE POLICY party_isolation ON ores_refdata_counterparties_tbl
+  USING (
+    party_id = ANY(current_setting('app.visible_party_ids')::uuid[])
+  );
+#+end_src
+
+This covers all visibility scenarios:
+
+#+begin_example
+┌──────────────────────────────┬──────────────────────────────────────┐
+│ User's Party                 │ Visible Data                         │
+├──────────────────────────────┼──────────────────────────────────────┤
+│ System party                 │ All parties in tenant                │
+│ ACME Group (root operational)│ All operational parties              │
+│ ACME Europe (mid-level)      │ ACME Europe + ACME London            │
+│ ACME London (leaf)           │ ACME London only                     │
+└──────────────────────────────┴──────────────────────────────────────┘
+#+end_example
+
+** Dual RLS Enforcement
+
+Tenant and party RLS are enforced simultaneously. A query on a party-scoped
+table is filtered by both:
+
+#+begin_src sql
+-- Effective filter on any party-scoped table:
+WHERE tenant_id = current_setting('app.current_tenant_id')::uuid     -- tenant RLS
+  AND party_id = ANY(current_setting('app.visible_party_ids')::uuid[])  -- party RLS
+#+end_src
+
+This provides defence in depth: even if party RLS were misconfigured, tenant RLS
+prevents cross-tenant data access.
+
+* Database Context
+
+** Extended =context= Class
+
+The database context gains party awareness alongside tenant awareness:
+
+#+begin_src cpp
+class context {
+public:
+    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
+                     sqlgen::postgres::Credentials credentials,
+                     utility::uuid::tenant_id tenant_id);
+
+    const utility::uuid::tenant_id& tenant_id() const;
+
+    // Create a new context with a different tenant (shares connection pool)
+    context with_tenant(utility::uuid::tenant_id tenant_id) const;
+
+    // Create a new context with tenant + party (shares connection pool)
+    context with_party(utility::uuid::tenant_id tenant_id,
+                       boost::uuids::uuid party_id,
+                       std::vector<boost::uuids::uuid> visible_party_ids) const;
+
+private:
+    tenant_aware_pool<connection_type> connection_pool_;   // existing
+    sqlgen::postgres::Credentials credentials_;
+};
+#+end_src
+
+** Extended =tenant_aware_pool=
+
+The pool wrapper sets all session variables on connection acquisition:
+
+#+begin_src cpp
+template <class Connection>
+class tenant_aware_pool {
+public:
+    expected<AcquiredConnection, sqlgen::Error> acquire() {
+        auto conn = pool_.acquire();
+        if (!conn) {
+            return sqlgen::error(conn.error());
+        }
+
+        // Set tenant context (existing)
+        (*conn)->exec(fmt::format(
+            "SET app.current_tenant_id = '{}'",
+            tenant_id_.to_string()));
+
+        // Set party context (new)
+        if (party_id_) {
+            (*conn)->exec(fmt::format(
+                "SET app.current_party_id = '{}'",
+                boost::uuids::to_string(*party_id_)));
+
+            (*conn)->exec(fmt::format(
+                "SET app.visible_party_ids = '{{{}}}'",
+                format_uuid_array(visible_party_ids_)));
+        }
+
+        return conn;
+    }
+
+private:
+    sqlgen::ConnectionPool<Connection> pool_;
+    utility::uuid::tenant_id tenant_id_;
+    std::optional<boost::uuids::uuid> party_id_;           // new
+    std::vector<boost::uuids::uuid> visible_party_ids_;     // new
+};
+#+end_src
+
+Key properties:
+
+- Party context is optional (not all operations require party scope).
+- When set, both tenant and party session variables are configured.
+- The =visible_party_ids= array is formatted as a PostgreSQL array literal.
+
+* Session Management
+
+** Extended Session Data
+
+Each authenticated session stores party context alongside tenant context:
+
+#+begin_src cpp
+struct session_data {
+    boost::uuids::uuid id;
+    boost::uuids::uuid account_id;
+    utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid party_id;                            // new
+    std::vector<boost::uuids::uuid> visible_party_ids;      // new
+    std::string username;
+    std::chrono::system_clock::time_point created_at;
+    std::chrono::system_clock::time_point last_activity;
+};
+#+end_src
+
+** Session-Party Binding
+
+Party binding follows the same principles as tenant binding:
+
+- Resolved at login time (after party selection).
+- Immutable for the session lifetime.
+- Used for all subsequent requests in that session.
+
+* Login Flow
+
+** Authentication and Party Selection
+
+#+begin_example
+┌──────────────────────┐
+│  Login Request       │
+│  user@hostname       │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Resolve tenant       │   (existing)
+│ from hostname        │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Authenticate user    │   (existing)
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Lookup parties from  │   (new)
+│ account_parties      │
+└──────────┬───────────┘
+           │
+    ┌──────┴──────┐
+    │ 1 party     │ N parties
+    ▼             ▼
+┌─────────┐  ┌───────────────┐
+│ Auto-   │  │ Return party  │
+│ select  │  │ list to client│
+└────┬────┘  └───────┬───────┘
+     │               │
+     │          ┌────┴────────┐
+     │          │ Client shows│
+     │          │ party picker│
+     │          └────┬────────┘
+     │               │
+     └───────┬───────┘
+             │
+             ▼
+┌──────────────────────┐
+│ Compute visible      │   (new)
+│ party set via        │
+│ recursive CTE        │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Create session with  │
+│ tenant + party +     │
+│ visible set          │
+└──────────────────────┘
+#+end_example
+
+** Per-Request Context Creation
+
+The =make_request_context()= method gains party awareness:
+
+#+begin_src cpp
+database::context make_request_context(
+    const comms::service::session_data& session) {
+    return ctx_.with_party(
+        session.tenant_id,
+        session.party_id,
+        session.visible_party_ids);
+}
+#+end_src
+
+* UI Considerations
+
+** Party Context Display
+
+The current party is displayed in the application window (e.g. status bar or
+window title) so the user always knows their active party context.
+
+** Multi-Party Table Views
+
+When a user's visible set spans multiple parties, table views adapt:
+
+| User Context          | Party Column | Party Filter |
+|-----------------------+--------------+--------------|
+| Single party          | Hidden       | Not shown    |
+| Multiple parties      | Visible      | Available    |
+
+The party column shows the owning party for each record. A filter dropdown
+allows scoping the view to a specific party or subtree.
+
+** Intercompany Considerations
+
+When viewing data across multiple parties, some records may appear to be
+duplicates (e.g. both Party A and Party B have a counterparty "Deutsche Bank").
+These are distinct records with independent lifecycles. The party column
+disambiguates them.
+
+For aggregated views (group-level risk, consolidated P&L), intercompany
+positions between parties in the same group require special handling
+(elimination) which is a reporting concern, not a data isolation concern.
+
+* Performance Characteristics
+
+** Per-Login Overhead
+
+| Operation                            | Cost                            |
+|--------------------------------------+---------------------------------|
+| Recursive CTE for visible party set  | ~1ms for typical hierarchies    |
+| Array formatting for session variable | Negligible                      |
+
+** Per-Request Overhead
+
+| Operation                                | Cost              |
+|------------------------------------------+-------------------|
+| SET app.current_party_id                 | Part of query     |
+| SET app.visible_party_ids                | Part of query     |
+| =ANY(uuid[])= check in RLS policy       | O(n), n = parties |
+
+For realistic hierarchies (up to a few hundred parties per tenant), the
+performance impact is negligible.
+
+** Memory Per Session
+
+| Component                  | Size                           |
+|----------------------------+--------------------------------|
+| party_id (UUID)            | 16 bytes                       |
+| visible_party_ids (vector) | 16 bytes * party count         |
+
+For a tenant with 100 parties, visible_party_ids adds ~1.6 KB per session.
+
+* Relationship to Tenant Isolation
+
+Party isolation is a strict refinement of tenant isolation:
+
+#+begin_example
+┌─────────────────────────────────────────────────────────────┐
+│                    PostgreSQL Database                       │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │ Tenant RLS Layer (app.current_tenant_id)              │  │
+│  │   Isolates tenants from each other                    │  │
+│  │                                                       │  │
+│  │  ┌─────────────────────────────────────────────────┐  │  │
+│  │  │ Party RLS Layer (app.visible_party_ids)         │  │  │
+│  │  │   Isolates parties within a tenant              │  │  │
+│  │  │                                                 │  │  │
+│  │  │   Only applies to party-scoped tables           │  │  │
+│  │  │   (counterparties, books, trades, etc.)         │  │  │
+│  │  │                                                 │  │  │
+│  │  │   Tenant-scoped tables (currencies, countries)  │  │  │
+│  │  │   are filtered by tenant RLS only               │  │  │
+│  │  └─────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+#+end_example
+
+- Tenant RLS applies to *all* tenant-scoped tables.
+- Party RLS applies only to *party-scoped* tables (those with a =party_id=
+  column).
+- Both layers are enforced simultaneously on party-scoped tables.
+
+* Related Components
+
+| Component | File                                                     | Purpose                              |
+|-----------+----------------------------------------------------------+--------------------------------------|
+| design    | doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org | Design rationale and decisions |
+| tenancy   | projects/ores.iam/modeling/multi_tenancy.org             | Companion tenant isolation document  |
+| utility   | include/ores.utility/uuid/tenant_id.hpp                  | Tenant ID wrapper type               |
+| database  | include/ores.database/domain/tenant_aware_pool.hpp       | Connection pool with tenant context  |
+| database  | include/ores.database/domain/context.hpp                 | Database context with tenant         |
+| refdata   | include/ores.refdata/domain/party.hpp                    | Party domain type                    |
+| iam       | ores_iam_account_parties_tbl                             | Account-party junction table         |

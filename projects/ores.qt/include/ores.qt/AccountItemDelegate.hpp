@@ -55,10 +55,9 @@ private:
      */
     void drawBadge(QPainter* painter, const QRect& rect,
                    const QString& text, const QColor& backgroundColor,
-                   const QColor& textColor) const;
+                   const QColor& textColor, const QFont& badgeFont) const;
 
     QFont monospaceFont_;
-    QFont badgeFont_;
 };
 
 }

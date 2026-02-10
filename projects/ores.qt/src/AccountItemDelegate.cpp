@@ -52,10 +52,6 @@ AccountItemDelegate::AccountItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
     monospaceFont_ = QFont("Fira Code");
     monospaceFont_.setPointSize(10);
-
-    badgeFont_ = QFont();
-    badgeFont_.setPointSize(7);
-    badgeFont_.setBold(true);
 }
 
 void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -109,8 +105,13 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
             }
         }
 
+        // Derive badge font from view font for proper high-DPI scaling
+        QFont badgeFont = opt.font;
+        badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+        badgeFont.setBold(true);
+
         // Draw the badge
-        drawBadge(painter, opt.rect, badgeText, bgColor, textColor);
+        drawBadge(painter, opt.rect, badgeText, bgColor, textColor, badgeFont);
         return;
     }
 
@@ -169,12 +170,12 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
 
 void AccountItemDelegate::drawBadge(QPainter* painter, const QRect& rect,
                                     const QString& text, const QColor& backgroundColor,
-                                    const QColor& textColor) const {
+                                    const QColor& textColor, const QFont& badgeFont) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
     // Calculate badge dimensions (compact size)
-    QFontMetrics fm(badgeFont_);
+    QFontMetrics fm(badgeFont);
     int textWidth = fm.horizontalAdvance(text);
     int padding = 5;
     int badgeWidth = textWidth + padding * 2;
@@ -192,7 +193,7 @@ void AccountItemDelegate::drawBadge(QPainter* painter, const QRect& rect,
     painter->drawRoundedRect(badgeRect, radius, radius);
 
     // Draw text
-    painter->setFont(badgeFont_);
+    painter->setFont(badgeFont);
     painter->setPen(textColor);
     painter->drawText(badgeRect, Qt::AlignCenter, text);
 

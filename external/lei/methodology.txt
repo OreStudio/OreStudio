@@ -38,6 +38,27 @@ Data Sourcing and Generation Steps:
       Chinese big-four banks (ICBC, BoC, CCB, ABC), and Canadian banks
       (RBC, TD).
 
+   d) Sovereign bond issuers (~33 entries)
+      LEIs verified against: https://api.gleif.org/api/v1/lei-records
+      Coverage: Government treasuries, ministries of finance, and sovereign
+      republics/kingdoms that issue government bonds. Includes US Treasury,
+      HM Treasury (UK), Bundesrepublik Deutschland, Repubblica Italiana,
+      Republique Francaise, Ministry of Finance Japan/PRC, and ~25 others
+      across Americas, Europe, Asia-Pacific, Middle East and Africa.
+
+   e) Central banks and monetary authorities (~51 entries)
+      LEIs verified against: https://api.gleif.org/api/v1/lei-records
+      Coverage: Central banks from ~45 countries including all 19 Eurozone
+      national central banks plus ECB, Federal Reserve Bank of New York,
+      Bank of England, Bank of Japan, People's Bank of China, Reserve Bank
+      of India, Reserve Bank of Australia, Swiss National Bank, and others.
+
+   f) Supranational financial institutions (~9 entries)
+      LEIs verified against: https://api.gleif.org/api/v1/lei-records
+      Coverage: European Investment Bank, European Stability Mechanism,
+      World Bank (IBRD), Asian Development Bank, Inter-American Development
+      Bank, African Development Bank, and others.
+
    Note: The US OCC national banks list (national-by-name.xlsx, from
    https://www.occ.treas.gov/topics/charters-and-licensing/financial-institution-lists/index-financial-institution-lists.html)
    was evaluated but does not contain LEI codes, so US coverage relies on
@@ -78,11 +99,17 @@ sampling across multiple dimensions:
    - INTERNATIONAL_ORGANIZATION
 
 3. Sector Diversity (detected from entity names via keywords)
+   - Sovereign: CENTRAL_BANK (multilingual: Central Bank, Reserve Bank,
+     Banque Centrale, Banco Central, Riksbank, Bundesbank, etc.)
    - Financial: BANK, INSURANCE, BROKER_DEALER, ASSET_MANAGEMENT
    - Funds: INVESTMENT_FUND, ETF, HEDGE_FUND, PRIVATE_EQUITY, PENSION
    - Industrial: ENERGY, MANUFACTURING, MINING, CONSTRUCTION
    - Services: TECHNOLOGY, HEALTHCARE, RETAIL, TELECOM
    - Other: REAL_ESTATE, AEROSPACE, SHIPPING, AGRICULTURE, MEDIA
+
+   CENTRAL_BANK is classified ahead of BANK to ensure central banks are
+   not misclassified as generic banks. All financial sectors (including
+   CENTRAL_BANK) receive 3x priority sampling.
 
 4. Fund Type Diversity (for FUND entities)
    - ETF, BOND, EQUITY, INDEX, MONEY_MARKET

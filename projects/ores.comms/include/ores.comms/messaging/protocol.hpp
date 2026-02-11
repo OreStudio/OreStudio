@@ -241,8 +241,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 27.1 adds pagination support to get_parties_request (offset, limit)
 // and get_parties_response (total_available_count). Backward compatible: empty
 // payload from old clients returns defaults (offset=0, limit=100).
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 27;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+//
+// Version 28.0 removes root_lei/lei_dataset_size from
+// provision_tenant_request and parties_created from provision_tenant_response.
+// Tenant provisioning now creates evaluation-only tenants (tenant record,
+// system party, admin account). LEI party import deferred to Phase 2.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 28;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

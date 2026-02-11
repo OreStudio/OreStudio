@@ -1016,8 +1016,6 @@ TEST_CASE("provision_tenant_request_serialize_deserialize", tags) {
     e.name = "Acme Corp";
     e.hostname = "acme.example.com";
     e.description = "Acme Corporation tenant";
-    e.root_lei = "529900T8BM49AURSDO55";
-    e.lei_dataset_size = "large";
     e.admin_username = "admin";
     e.admin_password = "secret123";
     e.admin_email = "admin@acme.com";
@@ -1035,8 +1033,6 @@ TEST_CASE("provision_tenant_request_serialize_deserialize", tags) {
     CHECK(a.name == e.name);
     CHECK(a.hostname == e.hostname);
     CHECK(a.description == e.description);
-    CHECK(a.root_lei == e.root_lei);
-    CHECK(a.lei_dataset_size == e.lei_dataset_size);
     CHECK(a.admin_username == e.admin_username);
     CHECK(a.admin_password == e.admin_password);
     CHECK(a.admin_email == e.admin_email);
@@ -1049,7 +1045,6 @@ TEST_CASE("provision_tenant_response_serialize_deserialize", tags) {
     e.success = true;
     e.error_message = "";
     e.tenant_id = "some-tenant-uuid";
-    e.parties_created = 42;
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1062,7 +1057,6 @@ TEST_CASE("provision_tenant_response_serialize_deserialize", tags) {
     CHECK(a.success == e.success);
     CHECK(a.error_message == e.error_message);
     CHECK(a.tenant_id == e.tenant_id);
-    CHECK(a.parties_created == e.parties_created);
 }
 
 // ============================================================================

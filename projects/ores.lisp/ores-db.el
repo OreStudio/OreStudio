@@ -480,7 +480,7 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
      (list env current-prefix-arg)))
   (unless (yes-or-no-p (format "This will DROP and recreate ores_dev_%s. Are you sure? " environment))
     (user-error "Aborted"))
-  (let ((args (list "-e" environment "-y")))
+  (let ((args (list "-e" environment "-y" "-k")))
     (when skip-validation
       (setq args (append args '("--no-sql-validation"))))
     (ores-db/run-script "recreate_env.sh"

@@ -38,7 +38,28 @@ using namespace ores::logging;
 
 void require_calendaradjustment_equal(const calendaradjustment& original,
                                        const calendaradjustment& roundtripped) {
-    CHECK(roundtripped.Calendar.size() == original.Calendar.size());
+    REQUIRE(roundtripped.Calendar.size() == original.Calendar.size());
+    for (size_t i = 0; i < original.Calendar.size(); ++i) {
+        const auto& orig = original.Calendar.at(i);
+        const auto& rt = roundtripped.Calendar.at(i);
+        CHECK(rt.name == orig.name);
+
+        REQUIRE(static_cast<bool>(rt.BaseCalendar) ==
+                static_cast<bool>(orig.BaseCalendar));
+        if (orig.BaseCalendar)
+            CHECK(*rt.BaseCalendar == *orig.BaseCalendar);
+
+        REQUIRE(static_cast<bool>(rt.AdditionalHolidays) ==
+                static_cast<bool>(orig.AdditionalHolidays));
+        if (orig.AdditionalHolidays)
+            CHECK(rt.AdditionalHolidays->Date == orig.AdditionalHolidays->Date);
+
+        REQUIRE(static_cast<bool>(rt.AdditionalBusinessDays) ==
+                static_cast<bool>(orig.AdditionalBusinessDays));
+        if (orig.AdditionalBusinessDays)
+            CHECK(rt.AdditionalBusinessDays->Date ==
+                  orig.AdditionalBusinessDays->Date);
+    }
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

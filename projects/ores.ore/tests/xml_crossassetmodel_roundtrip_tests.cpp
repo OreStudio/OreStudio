@@ -39,8 +39,23 @@ using namespace ores::logging;
 void require_crossassetmodel_equal(const crossAssetModel& original,
                                     const crossAssetModel& roundtripped) {
     CHECK(roundtripped.DomesticCcy == original.DomesticCcy);
+    CHECK(roundtripped.Currencies.Currency.size() ==
+          original.Currencies.Currency.size());
+    CHECK(roundtripped.BootstrapTolerance == original.BootstrapTolerance);
     CHECK(roundtripped.InterestRateModels.LGM.size() ==
           original.InterestRateModels.LGM.size());
+    CHECK(roundtripped.InterestRateModels.HWModel.size() ==
+          original.InterestRateModels.HWModel.size());
+    CHECK(static_cast<bool>(roundtripped.ForeignExchangeModels) ==
+          static_cast<bool>(original.ForeignExchangeModels));
+    if (original.ForeignExchangeModels)
+        CHECK(roundtripped.ForeignExchangeModels->CrossCcyLGM.size() ==
+              original.ForeignExchangeModels->CrossCcyLGM.size());
+    CHECK(static_cast<bool>(roundtripped.InstantaneousCorrelations) ==
+          static_cast<bool>(original.InstantaneousCorrelations));
+    if (original.InstantaneousCorrelations)
+        CHECK(roundtripped.InstantaneousCorrelations->Correlation.size() ==
+              original.InstantaneousCorrelations->Correlation.size());
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

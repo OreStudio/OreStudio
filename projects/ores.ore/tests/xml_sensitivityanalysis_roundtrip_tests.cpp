@@ -42,6 +42,22 @@ void require_sensitivityanalysis_equal(const sensitivityanalysis& original,
           original.DiscountCurves.DiscountCurve.size());
     CHECK(static_cast<bool>(roundtripped.IndexCurves) ==
           static_cast<bool>(original.IndexCurves));
+    if (original.IndexCurves)
+        CHECK(roundtripped.IndexCurves->IndexCurve.size() ==
+              original.IndexCurves->IndexCurve.size());
+    CHECK(static_cast<bool>(roundtripped.FxSpots) ==
+          static_cast<bool>(original.FxSpots));
+    CHECK(static_cast<bool>(roundtripped.SwaptionVolatilities) ==
+          static_cast<bool>(original.SwaptionVolatilities));
+    CHECK(static_cast<bool>(roundtripped.CapFloorVolatilities) ==
+          static_cast<bool>(original.CapFloorVolatilities));
+    CHECK(static_cast<bool>(roundtripped.CreditCurves) ==
+          static_cast<bool>(original.CreditCurves));
+    CHECK(roundtripped.ParConversion == original.ParConversion);
+    CHECK(static_cast<bool>(roundtripped.ComputeGamma) ==
+          static_cast<bool>(original.ComputeGamma));
+    CHECK(static_cast<bool>(roundtripped.CrossGammaFilter) ==
+          static_cast<bool>(original.CrossGammaFilter));
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

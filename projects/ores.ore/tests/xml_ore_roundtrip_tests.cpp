@@ -37,10 +37,24 @@ using ores::ore::domain::ore;
 using namespace ores::logging;
 
 void require_ore_equal(const ore& original, const ore& roundtripped) {
-    CHECK(roundtripped.Setup.Parameter.size() ==
-          original.Setup.Parameter.size());
-    CHECK(roundtripped.Analytics.Analytic.size() ==
-          original.Analytics.Analytic.size());
+    REQUIRE(roundtripped.Setup.Parameter.size() ==
+            original.Setup.Parameter.size());
+    for (size_t i = 0; i < original.Setup.Parameter.size(); ++i) {
+        CHECK(roundtripped.Setup.Parameter.at(i).name ==
+              original.Setup.Parameter.at(i).name);
+    }
+    CHECK(static_cast<bool>(roundtripped.Logging) ==
+          static_cast<bool>(original.Logging));
+    CHECK(static_cast<bool>(roundtripped.Markets) ==
+          static_cast<bool>(original.Markets));
+    REQUIRE(roundtripped.Analytics.Analytic.size() ==
+            original.Analytics.Analytic.size());
+    for (size_t i = 0; i < original.Analytics.Analytic.size(); ++i) {
+        CHECK(roundtripped.Analytics.Analytic.at(i).type ==
+              original.Analytics.Analytic.at(i).type);
+        CHECK(roundtripped.Analytics.Analytic.at(i).Parameter.size() ==
+              original.Analytics.Analytic.at(i).Parameter.size());
+    }
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

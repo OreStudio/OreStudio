@@ -38,12 +38,25 @@ using namespace ores::logging;
 
 void require_counterpartyinfo_equal(const counterpartyInformation& original,
                                      const counterpartyInformation& roundtripped) {
-    CHECK(static_cast<bool>(roundtripped.Counterparties) ==
-          static_cast<bool>(original.Counterparties));
+    REQUIRE(static_cast<bool>(roundtripped.Counterparties) ==
+            static_cast<bool>(original.Counterparties));
     if (original.Counterparties && roundtripped.Counterparties) {
-        CHECK(roundtripped.Counterparties->Counterparty.size() ==
-              original.Counterparties->Counterparty.size());
+        REQUIRE(roundtripped.Counterparties->Counterparty.size() ==
+                original.Counterparties->Counterparty.size());
+        for (size_t i = 0; i < original.Counterparties->Counterparty.size(); ++i) {
+            const auto& orig = original.Counterparties->Counterparty.at(i);
+            const auto& rt = roundtripped.Counterparties->Counterparty.at(i);
+            CHECK(rt.CounterpartyId == orig.CounterpartyId);
+            CHECK(rt.ClearingCounterparty == orig.ClearingCounterparty);
+            CHECK(static_cast<bool>(rt.CreditQuality) ==
+                  static_cast<bool>(orig.CreditQuality));
+            CHECK(rt.BaCvaRiskWeight == orig.BaCvaRiskWeight);
+            CHECK(rt.SaCcrRiskWeight == orig.SaCcrRiskWeight);
+            CHECK(rt.SaCvaRiskBucket == orig.SaCvaRiskBucket);
+        }
     }
+    CHECK(static_cast<bool>(roundtripped.Correlations) ==
+          static_cast<bool>(original.Correlations));
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

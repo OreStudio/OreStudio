@@ -38,7 +38,24 @@ using namespace ores::logging;
 
 void require_stresstesting_equal(const stresstesting& original,
                                   const stresstesting& roundtripped) {
-    CHECK(roundtripped.StressTest.size() == original.StressTest.size());
+    CHECK(static_cast<bool>(roundtripped.UseSpreadedTermStructures) ==
+          static_cast<bool>(original.UseSpreadedTermStructures));
+    REQUIRE(roundtripped.StressTest.size() == original.StressTest.size());
+    for (size_t i = 0; i < original.StressTest.size(); ++i) {
+        const auto& orig = original.StressTest.at(i);
+        const auto& rt = roundtripped.StressTest.at(i);
+        CHECK(rt.id == orig.id);
+        CHECK(static_cast<bool>(rt.ParShifts) ==
+              static_cast<bool>(orig.ParShifts));
+        CHECK(static_cast<bool>(rt.DiscountCurves) ==
+              static_cast<bool>(orig.DiscountCurves));
+        CHECK(static_cast<bool>(rt.FxSpots) ==
+              static_cast<bool>(orig.FxSpots));
+        CHECK(static_cast<bool>(rt.EquitySpots) ==
+              static_cast<bool>(orig.EquitySpots));
+        CHECK(static_cast<bool>(rt.SurvivalProbabilities) ==
+              static_cast<bool>(orig.SurvivalProbabilities));
+    }
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

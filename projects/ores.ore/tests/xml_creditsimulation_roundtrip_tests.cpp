@@ -38,8 +38,27 @@ using namespace ores::logging;
 
 void require_creditsimulation_equal(const creditsimulation& original,
                                      const creditsimulation& roundtripped) {
-    CHECK(roundtripped.Entities.Entity.size() ==
-          original.Entities.Entity.size());
+    REQUIRE(roundtripped.TransitionMatrices.TransitionMatrix.size() ==
+            original.TransitionMatrices.TransitionMatrix.size());
+    for (size_t i = 0; i < original.TransitionMatrices.TransitionMatrix.size(); ++i) {
+        CHECK(roundtripped.TransitionMatrices.TransitionMatrix.at(i).Name ==
+              original.TransitionMatrices.TransitionMatrix.at(i).Name);
+    }
+
+    REQUIRE(roundtripped.Entities.Entity.size() ==
+            original.Entities.Entity.size());
+    for (size_t i = 0; i < original.Entities.Entity.size(); ++i) {
+        const auto& orig = original.Entities.Entity.at(i);
+        const auto& rt = roundtripped.Entities.Entity.at(i);
+        CHECK(rt.Name == orig.Name);
+        CHECK(rt.TransitionMatrix == orig.TransitionMatrix);
+        CHECK(rt.InitialState == orig.InitialState);
+    }
+
+    CHECK(roundtripped.Risk.Market == original.Risk.Market);
+    CHECK(roundtripped.Risk.Credit == original.Risk.Credit);
+    CHECK(roundtripped.Risk.Seed == original.Risk.Seed);
+    CHECK(roundtripped.Risk.Paths == original.Risk.Paths);
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

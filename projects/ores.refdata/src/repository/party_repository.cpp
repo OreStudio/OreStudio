@@ -19,6 +19,8 @@
  */
 #include "ores.refdata/repository/party_repository.hpp"
 
+#include <array>
+#include <algorithm>
 #include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
@@ -115,10 +117,13 @@ party_repository::read_system_party(const std::string& tenant_id) {
     std::vector<domain::party> result;
     result.reserve(rows.size());
 
+    static constexpr std::array required_columns =
+        {0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14};
+
     for (const auto& row : rows) {
-        if (row.size() >= 16 && row[0] && row[1] && row[2] && row[3] &&
-            row[4] && row[5] && row[6] && row[9] && row[10] && row[11] &&
-            row[12] && row[13] && row[14]) {
+        if (row.size() >= 16 &&
+            std::ranges::all_of(required_columns,
+                [&row](int i) { return static_cast<bool>(row[i]); })) {
             domain::party p;
             p.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
             p.tenant_id = *row[1];

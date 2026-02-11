@@ -39,7 +39,28 @@ using namespace ores::logging;
 
 void require_nettingsetdefs_equal(const nettingsetdefinitions& original,
                                    const nettingsetdefinitions& roundtripped) {
-    CHECK(roundtripped.NettingSet.size() == original.NettingSet.size());
+    REQUIRE(roundtripped.NettingSet.size() == original.NettingSet.size());
+    for (size_t i = 0; i < original.NettingSet.size(); ++i) {
+        const auto& orig = original.NettingSet.at(i);
+        const auto& rt = roundtripped.NettingSet.at(i);
+        CHECK(static_cast<bool>(rt.nettingSetGroup.NettingSetId) ==
+              static_cast<bool>(orig.nettingSetGroup.NettingSetId));
+        if (orig.nettingSetGroup.NettingSetId)
+            CHECK(*rt.nettingSetGroup.NettingSetId ==
+                  *orig.nettingSetGroup.NettingSetId);
+        CHECK(rt.ActiveCSAFlag == orig.ActiveCSAFlag);
+        REQUIRE(static_cast<bool>(rt.CSADetails) ==
+                static_cast<bool>(orig.CSADetails));
+        if (orig.CSADetails) {
+            CHECK(rt.CSADetails->Bilateral == orig.CSADetails->Bilateral);
+            CHECK(static_cast<bool>(rt.CSADetails->CSACurrency) ==
+                  static_cast<bool>(orig.CSADetails->CSACurrency));
+            CHECK(rt.CSADetails->ThresholdPay == orig.CSADetails->ThresholdPay);
+            CHECK(rt.CSADetails->ThresholdReceive ==
+                  orig.CSADetails->ThresholdReceive);
+        }
+        CHECK(rt.RiskWeight == orig.RiskWeight);
+    }
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

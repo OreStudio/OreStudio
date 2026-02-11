@@ -39,8 +39,23 @@ using namespace ores::logging;
 
 void require_collateralbalances_equal(const collateralBalances& original,
                                        const collateralBalances& roundtripped) {
-    CHECK(roundtripped.CollateralBalance.size() ==
-          original.CollateralBalance.size());
+    REQUIRE(roundtripped.CollateralBalance.size() ==
+            original.CollateralBalance.size());
+    for (size_t i = 0; i < original.CollateralBalance.size(); ++i) {
+        const auto& orig = original.CollateralBalance.at(i);
+        const auto& rt = roundtripped.CollateralBalance.at(i);
+        CHECK(static_cast<bool>(rt.nettingSetGroup.NettingSetId) ==
+              static_cast<bool>(orig.nettingSetGroup.NettingSetId));
+        if (orig.nettingSetGroup.NettingSetId)
+            CHECK(*rt.nettingSetGroup.NettingSetId ==
+                  *orig.nettingSetGroup.NettingSetId);
+        CHECK(static_cast<bool>(rt.Currency) ==
+              static_cast<bool>(orig.Currency));
+        if (orig.Currency)
+            CHECK(*rt.Currency == *orig.Currency);
+        CHECK(rt.InitialMargin == orig.InitialMargin);
+        CHECK(rt.VariationMargin == orig.VariationMargin);
+    }
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {

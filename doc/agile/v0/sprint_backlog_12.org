@@ -16,44 +16,52 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-10 Tue 23:50], for Tuesday, February 10, 2026.
-|      | <75>                              |        |      |      |       |
-| Tags | Headline                          | Time   |      |      |     % |
-|------+-----------------------------------+--------+------+------+-------|
-|      | *Total time*                      | *7:28* |      |      | 100.0 |
-|------+-----------------------------------+--------+------+------+-------|
-|      | Stories                           | 7:28   |      |      | 100.0 |
-|      | Active                            |        | 7:28 |      | 100.0 |
-| code | Brainstorm on multi-party support |        |      | 4:00 |  53.6 |
-| code | Add party 0 support               |        |      | 3:14 |  43.3 |
-| code | Improve code coverage             |        |      | 0:14 |   3.1 |
+#+CAPTION: Clock summary at [2026-02-11 Wed 12:14], for Wednesday, February 11, 2026.
+|       | <75>                                              |        |      |      |       |
+| Tags  | Headline                                          | Time   |      |      |     % |
+|-------+---------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                      | *4:06* |      |      | 100.0 |
+|-------+---------------------------------------------------+--------+------+------+-------|
+|       | Stories                                           | 4:06   |      |      | 100.0 |
+|       | Active                                            |        | 4:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |        |      | 0:14 |   5.7 |
+| code  | Improve generators with FK-aware test data        |        |      | 1:35 |  38.6 |
+| code  | Enable all skipped tests                          |        |      | 0:29 |  11.8 |
+| code  | Add central bank related LEIs                     |        |      | 0:35 |  14.2 |
+| code  | Expand unit test coverage for ORE codegened types |        |      | 0:49 |  19.9 |
+| code  | Add party 0 support                               |        |      | 0:24 |   9.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-10 Tue 23:51]
+#+CAPTION: Clock summary at [2026-02-11 Wed 12:14]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *28:51* |       |      | 100.0 |
+|       | *Total time*                                       | *33:06* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 28:51   |       |      | 100.0 |
-|       | Active                                             |         | 28:51 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 0:38 |   2.2 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.9 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   2.0 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  15.2 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   1.3 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  23.2 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  23.2 |
-| code  | Brainstorm on multi-party support                  |         |       | 4:00 |  13.9 |
-| code  | Add party 0 support                                |         |       | 3:14 |  11.2 |
-| code  | Improve code coverage                              |         |       | 0:14 |   0.8 |
-| code  | Add counterparty wizard                            |         |       | 1:12 |   4.2 |
+|       | Stories                                            | 33:06   |       |      | 100.0 |
+|       | Active                                             |         | 33:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 0:52 |   2.6 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.6 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   1.7 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  13.2 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   1.2 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  20.2 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  20.2 |
+| code  | Brainstorm on multi-party support                  |         |       | 4:00 |  12.1 |
+| code  | Improve code coverage                              |         |       | 0:14 |   0.7 |
+| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   5.2 |
+| code  | Enable all skipped tests                           |         |       | 0:29 |   1.5 |
+| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.8 |
+| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   2.5 |
+| code  | Add party 0 support                                |         |       | 3:38 |  11.0 |
+| code  | Add counterparty wizard                            |         |       | 1:12 |   3.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 09:30]--[2026-02-11 Wed 09:44] =>  0:14
     CLOCK: [2026-02-09 Mon 09:30]--[2026-02-09 Mon 09:41] =>  0:11
     CLOCK: [2026-02-06 Fri 23:00]--[2026-02-06 Fri 23:27] =>  0:27
     :END:
@@ -214,6 +222,21 @@ injection. We should extend sqlgen to support this.
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/119][#119: Support for bound parameters]]
+
+*** BLOCKED Remove uses of raw libpq                                   :code:
+
+We have added support for the missing features in sqlgen so that we can replace
+uses of raw libpq. The PRs have been merged in main sqlgen, we just need a
+release. Do a search for all uses of raw libpq and replace it with appropriate
+sqlgen calls.
+
+We need to monitor sqlgen releases and then vcpkg updates.
+
+Merged PRs:
+
+- [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
+- [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
+- [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
 
 *** COMPLETED Add shell widget to ores.qt                              :code:
 
@@ -415,21 +438,6 @@ Highlights:
   inter-service communication.
 #+end_quote
 
-*** BLOCKED Remove uses of raw libpq                                   :code:
-
-We have added support for the missing features in sqlgen so that we can replace
-uses of raw libpq. The PRs have been merged in main sqlgen, we just need a
-release. Do a search for all uses of raw libpq and replace it with appropriate
-sqlgen calls.
-
-We need to monitor sqlgen releases and then vcpkg updates.
-
-Merged PRs:
-
-- [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
-- [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
-- [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
-
 *** COMPLETED Add party related support to Qt                          :code:
     :LOGBOOK:
     CLOCK: [2026-02-09 Mon 15:28]--[2026-02-09 Mon 16:47] =>  1:19
@@ -538,8 +546,249 @@ Highlights:
   GLEIF evaluation wizard.
 #+end_quote
 
+*** COMPLETED Improve code coverage                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 13:34]--[2026-02-10 Tue 13:48] =>  0:14
+    :END:
+
+It has dipped below 50% again.
+
+#+begin_quote
+This pull request significantly enhances the robustness and reliability of the
+ORE Studio codebase by introducing a substantial suite of new unit tests. The
+added tests target modules with previously lower coverage, ensuring that
+critical functionalities such as CLI parsing, data quality entity generation,
+identity and access management authorization, reference data generation,
+synthetic data creation, and logging configurations behave as expected. This
+effort aims to catch potential regressions early and provide a more stable
+development environment.
+
+Highlights:
+
+- Expanded Unit Test Coverage: Added 12 new unit test files, introducing
+  approximately 110 new test cases and 1900 lines of test code across 7 core
+  modules to significantly improve test coverage.
+- CLI Parser Helpers Tested: Implemented comprehensive tests for ores.cli's
+  parser helpers, covering operation validation, format reading, and help output
+  generation.
+- Data Quality (DQ) Generators and Enums Validated: Introduced extensive tests
+  for 12 different entity generators within ores.dq and validated the
+  publication_mode enum's string conversions and round-trip functionality.
+- Reference Data (RefData) Generators Covered: Provided new tests for 10 entity generators in ores.refdata, ensuring the correct generation of parties, counterparties, contacts, and identifiers.
+- IAM Authorization and Session Conversion Tested: Added tests for ores.iam's
+  authorization logic, including wildcard permissions, and verified the
+  session_converter's data mapping and updates.
+- Synthetic Data Generation Logic Verified: Enhanced test coverage for
+  ores.synthetic, focusing on the generation_context's random distributions,
+  UUID generation, and the catalog_generator_service's orchestration and
+  reproducibility.
+- Logging Utilities Tested: Added tests for ores.logging's boost_severity
+  conversions, logging_options JSON streaming, and the
+  logging_options_validator's configuration checks.
+#+end_quote
+
+*** COMPLETED Improve generators with FK-aware test data               :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-10 Tue 23:51]--[2026-02-11 Wed 01:35] =>  1:44
+    :END:
+
+Generators for entities with foreign key UUID columns (e.g. =party_id=,
+=counterparty_id=, =account_id=) currently produce random UUIDs via
+=uuid_gen()=. This means generated test data contains dangling references that
+won't satisfy FK constraints in the database.
+
+Affected generators:
+
+- =party_identifier_generator=: =party_id= FK to =party=
+- =counterparty_identifier_generator=: =counterparty_id= FK to =counterparty=
+- =party_contact_information_generator=: =party_id= FK to =party=
+- =counterparty_contact_information_generator=: =counterparty_id= FK to =counterparty=
+- =account_party_generator=: =account_id= FK to =account=, =party_id= FK to =party=
+
+Proposed approach:
+
+- Generators should accept optional parent entity references or generate
+  parent entities first, then use their IDs.
+- Alternatively, generators could accept a list of valid FK values to sample
+  from.
+- Update codegen templates so =generator_expr= for FK columns can reference
+  other generators.
+
+Actually we should create a generation context with a KVP where generations can
+leave data for other generators to pick up from.
+
+Acceptance criteria:
+
+- Generated test data has valid FK references.
+- Existing generator API is preserved or extended in a backwards-compatible way.
+
+*** COMPLETED Fix issues with accounts dialog                          :code:
+
+#+begin_quote
+This pull request addresses a specific display issue in the accounts list view
+and significantly enhances the robustness and maintainability of Qt delegates.
+It rectifies an off-by-one error that emerged after a new column was added to
+the account model. More broadly, it refactors delegates to use type-safe Column
+enums from their respective models instead of hardcoded integer indices,
+preventing future display bugs and simplifying column reordering or additions.
+The change also includes updated documentation to guide developers on this
+improved pattern.
+
+Highlights:
+
+- Accounts List View Fix: Fixed an off-by-one display error in the accounts list
+  view that occurred after the AccountType column was introduced, ensuring
+  correct field alignment.
+- Public Column Enum for ClientAccountModel: Made the ClientAccountModel::Column
+  enum public, allowing delegates and other consumers to reference column
+  indices directly and safely, improving type safety and refactorability.
+- Delegate Refactoring - AccountItemDelegate: Updated AccountItemDelegate to
+  utilize the ClientAccountModel::Column enum, replacing previously hardcoded
+  integer indices for column checks and formatting.
+- Delegate Refactoring - ConnectionItemDelegate: Updated ConnectionItemDelegate
+  to utilize the ConnectionTreeModel::Column enum, replacing hardcoded integer
+  indices for column checks.
+- Documentation Update: Added new documentation to the qt-entity-creator skill
+  guide, detailing the best practice for delegates to reference their model's
+  public Column enums instead of hardcoding indices.
+#+end_quote
+
+*** COMPLETED Merge all databases into one                             :code:
+
+#+begin_quote
+This pull request significantly refactors the database lifecycle management by
+eliminating redundant infrastructure databases and introducing a more secure,
+two-phase creation process. The changes aim to simplify deployment, enhance
+security through least-privilege access for schema operations, and improve
+testing efficiency by moving away from template cloning to RLS-based tenant
+isolation. Utility functions are now universally accessible, reducing complexity
+and improving maintainability across different database instances.
+
+Highlights:
+
+- Database Simplification: Removed the dedicated ores_admin and ores_template
+  databases, streamlining the database infrastructure. Environment databases now
+  use direct creation, and testing leverages Row-Level Security (RLS) instead of
+  template cloning for tenant isolation.
+- Least-Privilege Database Creation: Implemented a two-phase database creation
+  process. The create_database.sql script, run by a PostgreSQL superuser,
+  handles infrastructure setup, while setup_schema.sql, executed by the
+  ores_ddl_user, manages schema and data population, enforcing the principle of
+  least privilege.
+- Centralized Utility Functions: Relocated administrative utility functions
+  (e.g., whimsical name generation, cleanup views) from the removed ores_admin
+  database into a new create/utility/ directory. These functions are now
+  prefixed with ores_utility_ and are available in every ORES database.
+#+end_quote
+
+*** COMPLETED Enable all skipped tests                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 11:11]--[2026-02-11 Wed 11:40] =>  0:29
+    :END:
+
+Gemini's comment does not reflect the entire PR, all previously skipped tests
+are now running.
+
+#+begin_quote
+This pull request significantly enhances the robustness of our testing
+infrastructure by rectifying issues with synthetic data generation. By ensuring
+that generated test data adheres to foreign key constraints and uses valid
+reference values, a substantial number of previously skipped tests are now
+active. This change improves the reliability of our test suite and provides more
+comprehensive coverage for critical data integrity aspects.
+
+Highlights:
+
+- DQ Generator Fixes: Fixed DQ generators (coding_scheme, dataset,
+  dataset_bundle_member) to produce valid pre-populated reference data instead
+  of random faker words that previously caused database validation failures.
+- IAM Test Updates: Updated account_party tests to utilize real party_ids
+  obtained from tenant provisioning, resolving issues with soft foreign key
+  validation that arose from using random UUIDs.
+- Test Unskipping: Enabled 19 previously skipped tests across the DQ (14 tests)
+  and IAM (5 tests) modules by addressing the underlying foreign key-aware
+  generator requirements.
+- Skip Count: Reduced the total test skip count from 25 to 6, with only
+  tenant RLS tests remaining skipped.
+#+end_quote
+
+*** COMPLETED Add central bank related LEIs                            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 09:45]--[2026-02-11 Wed 10:20] =>  0:35
+    :END:
+
+#+begin_quote
+This pull request significantly expands the coverage of Legal Entity Identifier
+(LEI) anchors by integrating key sovereign, central bank, and supranational
+entities. The update also refines the sector classification mechanism to more
+accurately identify central banks, preventing misclassification and ensuring
+appropriate data sampling. These changes enhance the robustness and accuracy of
+the LEI data processing and documentation.
+
+Highlights:
+
+- New LEI Anchors Added: Incorporated approximately 93 new GLEIF-verified LEIs
+  covering sovereign bond issuers (33), central banks (51), and supranational
+  financial institutions (9) into the anchor extraction pipeline.
+- Enhanced Sector Classification: Introduced a new CENTRAL_BANK sector keyword
+  detection with multilingual support (20 keywords) to accurately classify
+  central banks, prioritizing it over the generic BANK classification and
+  applying a 3x financial priority sampling.
+- Data Refresh and Cleanup: Regenerated all subset files and SQL populate
+  scripts using the January 23rd golden copy, and removed stale February 8th
+  subset files to ensure data currency.
+- Methodology Documentation Updated: Updated the methodology.txt file to reflect
+  the newly added anchor sources and the refined sector classification logic.
+#+end_quote
+
+*** COMPLETED Expand unit test coverage for ORE codegened types        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 10:21]--[2026-02-11 Wed 11:10] =>  0:49
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the robustness and reliability of the
+ORE system by introducing a comprehensive suite of unit and XML roundtrip tests
+across various domain components. It ensures that critical data structures can
+be correctly serialized to and deserialized from XML, maintaining data integrity
+throughout the process. Additionally, the PR updates the underlying domain type
+generation for better XML schema compatibility and provides a new, dedicated
+mechanism for retrieving system party information from the reference data
+repository.
+
+Highlights:
+
+- Comprehensive Testing for ORE Components: Added extensive unit tests for the
+  ores.ore currency mapper, ensuring correct bidirectional mapping between
+  domain objects and XML definitions. This includes tests for various field
+  combinations and rounding types.
+- XML Roundtrip Tests for Domain Types: Introduced XML serialization and
+  deserialization roundtrip tests for 9 previously untested ORE domain types:
+  simulation, crossAssetModel, creditsimulation, sensitivityanalysis,
+  stresstesting, ore, calendaradjustment, counterpartyInformation,
+  nettingsetdefinitions, and collateralBalances. This verifies data integrity
+  through XML I/O.
+- File I/O Roundtrip Tests: Implemented load_file and save_file roundtrip tests
+  for key ORE domain types like currencyConfig, simulation, and todaysmarket,
+  confirming reliable file-based persistence.
+- Domain Type Regeneration and Enhancements: Regenerated ORE domain types using
+  an updated xsdcpp tool, which now includes substitution group support. This
+  resulted in the addition of numerous new structs and group types
+  (nettingSetGroup_group_t, DerivedScheduleGroup_group_t, legDataType_group_t,
+  underlyingTypes_group_t, exerciseDatesGroup_group_t, strikeGroup_group_t,
+  creditCurveIdType_group_t) to domain.hpp for improved XML schema
+  representation.
+- Refdata Party Repository Update: Added a new read_system_party method to the
+  party_repository in ores.refdata, allowing for direct retrieval of the system
+  party for a given tenant. This is backed by a new PostgreSQL function
+  ores_refdata_read_system_party_fn.
+- Removal of Unused Code: Removed the parsing_error class, which was identified
+  as unused, streamlining the codebase.
+#+end_quote
+
 *** STARTED Add party 0 support                                        :code:
     :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 11:50]--[2026-02-11 Wed 12:14] =>  0:24
     CLOCK: [2026-02-10 Tue 23:19]--[2026-02-10 Tue 23:50] =>  0:31
     CLOCK: [2026-02-10 Tue 22:14]--[2026-02-10 Tue 23:18] =>  1:04
     CLOCK: [2026-02-10 Tue 17:32]--[2026-02-10 Tue 17:52] =>  0:20
@@ -615,84 +864,12 @@ Highlights:
   providing a central reference for developers.
 #+end_quote
 
-*** STARTED Improve code coverage                                      :code:
-    :LOGBOOK:
-    CLOCK: [2026-02-10 Tue 13:34]--[2026-02-10 Tue 13:48] =>  0:14
-    :END:
-
-It has dipped below 50% again.
-
-#+begin_quote
-This pull request significantly enhances the robustness and reliability of the
-ORE Studio codebase by introducing a substantial suite of new unit tests. The
-added tests target modules with previously lower coverage, ensuring that
-critical functionalities such as CLI parsing, data quality entity generation,
-identity and access management authorization, reference data generation,
-synthetic data creation, and logging configurations behave as expected. This
-effort aims to catch potential regressions early and provide a more stable
-development environment.
-
-Highlights:
-
-- Expanded Unit Test Coverage: Added 12 new unit test files, introducing
-  approximately 110 new test cases and 1900 lines of test code across 7 core
-  modules to significantly improve test coverage.
-- CLI Parser Helpers Tested: Implemented comprehensive tests for ores.cli's
-  parser helpers, covering operation validation, format reading, and help output
-  generation.
-- Data Quality (DQ) Generators and Enums Validated: Introduced extensive tests
-  for 12 different entity generators within ores.dq and validated the
-  publication_mode enum's string conversions and round-trip functionality.
-- Reference Data (RefData) Generators Covered: Provided new tests for 10 entity generators in ores.refdata, ensuring the correct generation of parties, counterparties, contacts, and identifiers.
-- IAM Authorization and Session Conversion Tested: Added tests for ores.iam's
-  authorization logic, including wildcard permissions, and verified the
-  session_converter's data mapping and updates.
-- Synthetic Data Generation Logic Verified: Enhanced test coverage for
-  ores.synthetic, focusing on the generation_context's random distributions,
-  UUID generation, and the catalog_generator_service's orchestration and
-  reproducibility.
-- Logging Utilities Tested: Added tests for ores.logging's boost_severity
-  conversions, logging_options JSON streaming, and the
-  logging_options_validator's configuration checks.
-#+end_quote
-
 *** STARTED Add counterparty wizard                                    :code:
     :LOGBOOK:
     CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
     :END:
 
 We need a GLEIF based counterparty wizard.
-
-*** Fix issues with accounts dialog                                    :code:
-
-#+begin_quote
-This pull request addresses a specific display issue in the accounts list view
-and significantly enhances the robustness and maintainability of Qt delegates.
-It rectifies an off-by-one error that emerged after a new column was added to
-the account model. More broadly, it refactors delegates to use type-safe Column
-enums from their respective models instead of hardcoded integer indices,
-preventing future display bugs and simplifying column reordering or additions.
-The change also includes updated documentation to guide developers on this
-improved pattern.
-
-Highlights:
-
-- Accounts List View Fix: Fixed an off-by-one display error in the accounts list
-  view that occurred after the AccountType column was introduced, ensuring
-  correct field alignment.
-- Public Column Enum for ClientAccountModel: Made the ClientAccountModel::Column
-  enum public, allowing delegates and other consumers to reference column
-  indices directly and safely, improving type safety and refactorability.
-- Delegate Refactoring - AccountItemDelegate: Updated AccountItemDelegate to
-  utilize the ClientAccountModel::Column enum, replacing previously hardcoded
-  integer indices for column checks and formatting.
-- Delegate Refactoring - ConnectionItemDelegate: Updated ConnectionItemDelegate
-  to utilize the ConnectionTreeModel::Column enum, replacing hardcoded integer
-  indices for column checks.
-- Documentation Update: Added new documentation to the qt-entity-creator skill
-  guide, detailing the best practice for delegates to reference their model's
-  public Column enums instead of hardcoding indices.
-#+end_quote
 
 *** Improve error message boxes                                        :code:
 
@@ -753,38 +930,6 @@ sqlgen library handles composite keys this way — the actual SQL DDL defines bo
 columns as the composite primary key via the migration script, not via the C++
 entity annotation.
 #+end_quote
-
-*** Improve generators with FK-aware test data                         :code:
-
-Generators for entities with foreign key UUID columns (e.g. =party_id=,
-=counterparty_id=, =account_id=) currently produce random UUIDs via
-=uuid_gen()=. This means generated test data contains dangling references that
-won't satisfy FK constraints in the database.
-
-Affected generators:
-
-- =party_identifier_generator=: =party_id= FK to =party=
-- =counterparty_identifier_generator=: =counterparty_id= FK to =counterparty=
-- =party_contact_information_generator=: =party_id= FK to =party=
-- =counterparty_contact_information_generator=: =counterparty_id= FK to =counterparty=
-- =account_party_generator=: =account_id= FK to =account=, =party_id= FK to =party=
-
-Proposed approach:
-
-- Generators should accept optional parent entity references or generate
-  parent entities first, then use their IDs.
-- Alternatively, generators could accept a list of valid FK values to sample
-  from.
-- Update codegen templates so =generator_expr= for FK columns can reference
-  other generators.
-
-Actually we should create a generation context with a KVP where generations can
-leave data for other generators to pick up from.
-
-Acceptance criteria:
-
-- Generated test data has valid FK references.
-- Existing generator API is preserved or extended in a backwards-compatible way.
 
 *** Add RLS-aware tenant provisioning for tests                        :code:
 

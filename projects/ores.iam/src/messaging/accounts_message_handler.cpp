@@ -2685,73 +2685,6 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
                                   << " (code: " << request.code
                                   << ", id: " << tenant_id << ")";
 
-        // If a root LEI is provided, populate parties from LEI data
-        std::uint32_t parties_created = 0;
-        if (!request.root_lei.empty()) {
-            BOOST_LOG_SEV(lg(), info)
-                << "Populating parties from LEI data (root: "
-                << request.root_lei << ", size: "
-                << request.lei_dataset_size << ")";
-
-            const auto dataset_size = request.lei_dataset_size.empty()
-                ? "large" : request.lei_dataset_size;
-            const auto params_json = std::format(
-                "{{\"root_lei\":\"{}\",\"lei_dataset_size\":\"{}\"}}",
-                escape(request.root_lei), escape(dataset_size));
-
-            // Find the LEI entities dataset ID for the appropriate size
-            const auto dataset_code = std::format(
-                "gleif.lei_entities.{}", dataset_size);
-            const auto dataset_sql = std::format(
-                "SELECT id FROM ores_dq_datasets_tbl "
-                "WHERE code = '{}' "
-                "AND valid_to = ores_utility_infinity_timestamp_fn()",
-                escape(dataset_code));
-
-            auto dataset_rows =
-                database::repository::execute_raw_multi_column_query(
-                    ctx, dataset_sql, lg(), "Looking up LEI parties dataset");
-
-            if (!dataset_rows.empty() && !dataset_rows[0].empty()
-                && dataset_rows[0][0].has_value()) {
-                const auto& dataset_id = *dataset_rows[0][0];
-
-                const auto lei_sql = std::format(
-                    "SELECT action, record_count FROM "
-                    "ores_dq_lei_parties_publish_fn("
-                    "'{}'::uuid, '{}'::uuid, 'upsert', '{}'::jsonb)",
-                    escape(dataset_id), escape(tenant_id),
-                    escape(params_json));
-
-                auto lei_rows =
-                    database::repository::execute_raw_multi_column_query(
-                        ctx, lei_sql, lg(),
-                        "Publishing LEI parties to new tenant");
-
-                for (const auto& row : lei_rows) {
-                    if (row.size() >= 2 && row[0].has_value()
-                        && row[1].has_value()) {
-                        const auto& action = *row[0];
-                        const auto count = std::stoul(*row[1]);
-                        BOOST_LOG_SEV(lg(), info) << "LEI parties: "
-                            << action << " = " << count;
-                        if (action == "inserted") {
-                            parties_created =
-                                static_cast<std::uint32_t>(count);
-                        }
-                    }
-                }
-
-                BOOST_LOG_SEV(lg(), info)
-                    << "LEI party population complete: "
-                    << parties_created << " parties created";
-            } else {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Dataset '" << dataset_code << "' not found, "
-                    << "skipping LEI party population";
-            }
-        }
-
         // If admin credentials are provided, create a TenantAdmin account
         if (!request.admin_username.empty()
             && !request.admin_password.empty()) {
@@ -2782,8 +2715,7 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
         provision_tenant_response response{
             .success = true,
             .error_message = "",
-            .tenant_id = tenant_id,
-            .parties_created = parties_created
+            .tenant_id = tenant_id
         };
         co_return response.serialize();
     } catch (const std::exception& e) {

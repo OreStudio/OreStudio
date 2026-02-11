@@ -73,9 +73,9 @@ ModeAndLeiPage::ModeAndLeiPage(TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Onboarding Mode"));
-    setSubTitle(tr("Choose whether to create a blank tenant or seed it with "
-                   "GLEIF LEI data. In GLEIF mode, select the root legal "
-                   "entity whose subsidiaries will be imported as parties."));
+    setSubTitle(tr("Choose whether to create a blank tenant or pre-fill "
+                   "details from a GLEIF LEI entity. In GLEIF mode, select "
+                   "the entity to use for the tenant name and code."));
     setupUI();
 }
 
@@ -91,7 +91,7 @@ void ModeAndLeiPage::setupUI() {
     blankRadio_ = new QRadioButton(
         tr("Blank Tenant - Create an empty tenant"), this);
     gleifRadio_ = new QRadioButton(
-        tr("GLEIF-Based Tenant - Seed with LEI party data"), this);
+        tr("GLEIF-Based Tenant - Pre-fill details from LEI entity"), this);
     blankRadio_->setChecked(true);
 
     auto* buttonGroup = new QButtonGroup(this);
@@ -104,19 +104,6 @@ void ModeAndLeiPage::setupUI() {
 
     connect(blankRadio_, &QRadioButton::toggled, this,
             &ModeAndLeiPage::onModeChanged);
-
-    // Dataset size (GLEIF only)
-    auto* sizeLayout = new QHBoxLayout();
-    datasetSizeLabel_ = new QLabel(tr("Dataset Size:"), this);
-    datasetSizeCombo_ = new QComboBox(this);
-    datasetSizeCombo_->addItem(tr("Large (full hierarchy)"), "large");
-    datasetSizeCombo_->addItem(tr("Small (direct children only)"), "small");
-    sizeLayout->addWidget(datasetSizeLabel_);
-    sizeLayout->addWidget(datasetSizeCombo_, 1);
-    layout->addLayout(sizeLayout, 0);
-
-    datasetSizeLabel_->setEnabled(false);
-    datasetSizeCombo_->setEnabled(false);
 
     // LEI entity picker (disabled until GLEIF mode)
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
@@ -145,8 +132,6 @@ void ModeAndLeiPage::setupUI() {
 
 void ModeAndLeiPage::onModeChanged() {
     const bool gleif = gleifRadio_->isChecked();
-    datasetSizeLabel_->setEnabled(gleif);
-    datasetSizeCombo_->setEnabled(gleif);
     leiPicker_->setEnabled(gleif);
 
     if (gleif && !leiLoaded_) {
@@ -176,8 +161,6 @@ bool ModeAndLeiPage::validatePage() {
 
         wizard_->setRootLei(leiPicker_->selectedLei());
         wizard_->setRootLeiName(leiPicker_->selectedName());
-        wizard_->setLeiDatasetSize(
-            datasetSizeCombo_->currentData().toString());
     }
 
     return true;
@@ -523,9 +506,6 @@ void ApplyOnboardingPage::startOnboarding() {
     const std::string type = wizard_->tenantType().toStdString();
     const std::string hostname = wizard_->tenantHostname().toStdString();
     const std::string description = wizard_->tenantDescription().toStdString();
-    const bool gleifMode = wizard_->isGleifMode();
-    const std::string rootLei = wizard_->rootLei().toStdString();
-    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
     const std::string adminUsername = wizard_->adminUsername().toStdString();
     const std::string adminPassword = wizard_->adminPassword().toStdString();
     const std::string adminEmail = wizard_->adminEmail().toStdString();
@@ -535,7 +515,6 @@ void ApplyOnboardingPage::startOnboarding() {
         bool success = false;
         std::string error;
         std::string tenantId;
-        std::uint32_t partiesCreated = 0;
     };
 
     auto* watcher = new QFutureWatcher<OnboardingResult>(this);
@@ -557,10 +536,6 @@ void ApplyOnboardingPage::startOnboarding() {
             appendLog(tr("Tenant '%1' onboarded successfully (ID: %2).")
                 .arg(wizard_->tenantName(),
                      QString::fromStdString(result.tenantId)));
-            if (wizard_->isGleifMode() && result.partiesCreated > 0) {
-                appendLog(tr("Created %1 parties from LEI data.")
-                    .arg(result.partiesCreated));
-            }
             appendLog(tr("Admin account '%1' created with TenantAdmin role.")
                 .arg(wizard_->adminUsername()));
             progressBar_->setRange(0, 1);
@@ -575,7 +550,6 @@ void ApplyOnboardingPage::startOnboarding() {
 
     QFuture<OnboardingResult> future = QtConcurrent::run(
         [clientManager, code, name, type, hostname, description,
-         gleifMode, rootLei, datasetSize,
          adminUsername, adminPassword, adminEmail]() -> OnboardingResult {
 
             OnboardingResult result;
@@ -589,12 +563,6 @@ void ApplyOnboardingPage::startOnboarding() {
             request.admin_username = adminUsername;
             request.admin_password = adminPassword;
             request.admin_email = adminEmail;
-
-            // Include LEI data if in GLEIF mode
-            if (gleifMode && !rootLei.empty()) {
-                request.root_lei = rootLei;
-                request.lei_dataset_size = datasetSize;
-            }
 
             auto response = clientManager->process_authenticated_request(
                 std::move(request));
@@ -611,7 +579,6 @@ void ApplyOnboardingPage::startOnboarding() {
 
             result.success = true;
             result.tenantId = response->tenant_id;
-            result.partiesCreated = response->parties_created;
             return result;
         }
     );
@@ -621,9 +588,9 @@ void ApplyOnboardingPage::startOnboarding() {
     appendLog(tr("Provisioning tenant '%1' (code: %2, hostname: %3)...")
         .arg(wizard_->tenantName(), wizard_->tenantCode(),
              wizard_->tenantHostname()));
-    if (gleifMode) {
-        appendLog(tr("Will populate parties from LEI data (root: %1, size: %2)")
-            .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
+    if (wizard_->isGleifMode()) {
+        appendLog(tr("Tenant details pre-filled from LEI entity: %1")
+            .arg(wizard_->rootLeiName()));
     }
     appendLog(tr("Will create admin account '%1'")
         .arg(wizard_->adminUsername()));

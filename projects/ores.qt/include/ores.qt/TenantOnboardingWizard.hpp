@@ -45,7 +45,7 @@ class LeiEntityPicker;
  * 2. TenantDetails - configure tenant code, name, type, hostname (pre-filled
  *    from LEI entity in GLEIF mode)
  * 3. AdminAccount - create the initial admin account for the new tenant
- * 4. Apply - provision the tenant, populate parties, create admin account
+ * 4. Apply - provision the tenant and create admin account
  *
  * This wizard is accessible from System > Identity > Onboard Tenant and
  * from the TenantMdiWindow toolbar.
@@ -103,9 +103,6 @@ public:
     QString rootLeiName() const { return rootLeiName_; }
     void setRootLeiName(const QString& name) { rootLeiName_ = name; }
 
-    QString leiDatasetSize() const { return leiDatasetSize_; }
-    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
-
     QString adminUsername() const { return adminUsername_; }
     void setAdminUsername(const QString& u) { adminUsername_ = u; }
 
@@ -130,7 +127,6 @@ private:
     QString tenantDescription_;
     QString rootLei_;
     QString rootLeiName_;
-    QString leiDatasetSize_ = QStringLiteral("large");
     QString adminUsername_;
     QString adminPassword_;
     QString adminEmail_;
@@ -166,8 +162,6 @@ private:
     TenantOnboardingWizard* wizard_;
     QRadioButton* blankRadio_;
     QRadioButton* gleifRadio_;
-    QComboBox* datasetSizeCombo_;
-    QLabel* datasetSizeLabel_;
     LeiEntityPicker* leiPicker_;
     QLabel* selectedEntityLabel_;
     bool leiLoaded_ = false;
@@ -233,7 +227,7 @@ private:
 };
 
 /**
- * @brief Fourth page: provisions the tenant, populates parties, creates admin.
+ * @brief Fourth page: provisions the tenant and creates admin account.
  *
  * Runs the provisioning workflow asynchronously with progress output.
  */

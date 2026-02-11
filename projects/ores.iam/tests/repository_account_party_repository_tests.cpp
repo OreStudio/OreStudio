@@ -30,21 +30,40 @@
 #include "ores.iam/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/generators/account_generator.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.refdata/generators/party_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+
+using namespace ores::logging;
+using namespace ores::iam::generators;
+
+using ores::iam::domain::account_party;
+using ores::testing::database_helper;
+using ores::iam::repository::account_party_repository;
+using ores::iam::repository::account_repository;
+using ores::refdata::repository::party_repository;
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-using ores::iam::domain::account_party;
+boost::uuids::uuid find_system_party_id(
+    party_repository& repo, const std::string& tid) {
+    auto parties = repo.read_latest();
+    for (const auto& p : parties)
+        if (p.tenant_id == tid)
+            return p.id;
+    throw std::runtime_error("No system party for tenant: " + tid);
+}
 
-account_party make_account_party(ores::testing::database_helper& h,
-    const boost::uuids::uuid& account_id) {
+account_party make_account_party(database_helper& h,
+    const boost::uuids::uuid& account_id,
+    const boost::uuids::uuid& party_id) {
     account_party ap;
     ap.tenant_id = h.tenant_id().to_string();
     ap.account_id = account_id;
-    ap.party_id = boost::uuids::random_generator()();
+    ap.party_id = party_id;
     ap.recorded_by = std::string(faker::internet::username());
     ap.change_reason_code = "system.test";
     ap.change_commentary = "Synthetic test data";
@@ -54,45 +73,49 @@ account_party make_account_party(ores::testing::database_helper& h,
 
 }
 
-using namespace ores::logging;
-using namespace ores::iam::generators;
-
-using ores::testing::database_helper;
-using ores::iam::repository::account_party_repository;
-using ores::iam::repository::account_repository;
-
 TEST_CASE("write_single_account_party", tags) {
-    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
+    party_repository party_repo(h.context());
+    const auto party_id = find_system_party_id(
+        party_repo, h.tenant_id().to_string());
 
     auto acc = generate_synthetic_account(h.tenant_id());
     acc_repo.write(acc);
 
-    auto ap = make_account_party(h, acc.id);
+    auto ap = make_account_party(h, acc.id, party_id);
 
     BOOST_LOG_SEV(lg, debug) << "Account party: " << ap;
     CHECK_NOTHROW(repo.write(ap));
 }
 
 TEST_CASE("write_multiple_account_parties", tags) {
-    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
+    party_repository party_repo(h.context());
+    const auto system_party_id = find_system_party_id(
+        party_repo, h.tenant_id().to_string());
 
     std::vector<account_party> aps;
     for (int i = 0; i < 3; ++i) {
         auto acc = generate_synthetic_account(h.tenant_id());
         acc_repo.write(acc);
-        aps.push_back(make_account_party(h, acc.id));
+
+        auto party = ores::refdata::generators::generate_synthetic_party();
+        party.tenant_id = h.tenant_id().to_string();
+        party.change_reason_code = "system.test";
+        party.parent_party_id = system_party_id;
+        party_repo.write(party);
+
+        aps.push_back(make_account_party(h, acc.id, party.id));
     }
 
     BOOST_LOG_SEV(lg, debug) << "Account parties: " << aps;
@@ -100,19 +123,28 @@ TEST_CASE("write_multiple_account_parties", tags) {
 }
 
 TEST_CASE("read_latest_account_parties", tags) {
-    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
+    party_repository party_repo(h.context());
+    const auto system_party_id = find_system_party_id(
+        party_repo, h.tenant_id().to_string());
 
     std::vector<account_party> written;
     for (int i = 0; i < 3; ++i) {
         auto acc = generate_synthetic_account(h.tenant_id());
         acc_repo.write(acc);
-        written.push_back(make_account_party(h, acc.id));
+
+        auto party = ores::refdata::generators::generate_synthetic_party();
+        party.tenant_id = h.tenant_id().to_string();
+        party.change_reason_code = "system.test";
+        party.parent_party_id = system_party_id;
+        party_repo.write(party);
+
+        written.push_back(make_account_party(h, acc.id, party.id));
     }
 
     BOOST_LOG_SEV(lg, debug) << "Written account parties: " << written;
@@ -126,18 +158,20 @@ TEST_CASE("read_latest_account_parties", tags) {
 }
 
 TEST_CASE("read_latest_account_parties_by_account", tags) {
-    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
+    party_repository party_repo(h.context());
+    const auto party_id = find_system_party_id(
+        party_repo, h.tenant_id().to_string());
 
     auto acc = generate_synthetic_account(h.tenant_id());
     acc_repo.write(acc);
 
-    auto ap = make_account_party(h, acc.id);
+    auto ap = make_account_party(h, acc.id, party_id);
     BOOST_LOG_SEV(lg, debug) << "Written account party: " << ap;
     repo.write(ap);
 
@@ -151,7 +185,6 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
 }
 
 TEST_CASE("read_nonexistent_account_party", tags) {
-    SKIP("Requires FK-aware generators");
     auto lg(make_logger(test_suite));
 
     database_helper h;

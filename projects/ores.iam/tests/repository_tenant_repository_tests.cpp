@@ -19,11 +19,13 @@
  */
 #include "ores.iam/repository/tenant_repository.hpp"
 
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/tenant.hpp"
@@ -37,15 +39,19 @@ const std::string tags("[repository]");
 
 using ores::iam::domain::tenant;
 
-tenant make_tenant(ores::testing::database_helper& /*h*/) {
+tenant make_tenant() {
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
+
     tenant t;
     t.version = 1;
     t.id = boost::uuids::random_generator()();
-    t.code = std::string(faker::string::alphanumeric(10));
-    t.name = std::string(faker::word::noun());
-    t.type = "organisation";
+    t.code = std::string(faker::string::alphanumeric(10)) + "_" + std::to_string(idx);
+    t.name = std::string(faker::word::noun()) + " " + std::to_string(idx);
+    t.type = "automation";
     t.description = std::string(faker::lorem::sentence());
-    t.hostname = std::string(faker::string::alphanumeric(8)) + ".example.com";
+    t.hostname = std::string(faker::string::alphanumeric(8))
+        + "_" + std::to_string(idx) + ".example.com";
     t.status = "active";
     t.recorded_by = std::string(faker::internet::username());
     t.change_reason_code = "system.test";
@@ -62,43 +68,46 @@ using ores::testing::database_helper;
 using ores::iam::repository::tenant_repository;
 
 TEST_CASE("write_single_tenant", tags) {
-    SKIP("Requires RLS-aware tenant provisioning");
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto sys_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system());
 
-    tenant_repository repo(h.context());
-    auto t = make_tenant(h);
+    tenant_repository repo(sys_ctx);
+    auto t = make_tenant();
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
     CHECK_NOTHROW(repo.write(t));
 }
 
 TEST_CASE("write_multiple_tenants", tags) {
-    SKIP("Requires RLS-aware tenant provisioning");
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto sys_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system());
 
-    tenant_repository repo(h.context());
+    tenant_repository repo(sys_ctx);
     std::vector<tenant> tenants;
     for (int i = 0; i < 3; ++i)
-        tenants.push_back(make_tenant(h));
+        tenants.push_back(make_tenant());
 
     BOOST_LOG_SEV(lg, debug) << "Tenants: " << tenants;
     CHECK_NOTHROW(repo.write(tenants));
 }
 
 TEST_CASE("read_latest_tenants", tags) {
-    SKIP("Requires RLS-aware tenant provisioning");
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto sys_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system());
 
-    tenant_repository repo(h.context());
+    tenant_repository repo(sys_ctx);
     std::vector<tenant> written;
     for (int i = 0; i < 3; ++i)
-        written.push_back(make_tenant(h));
+        written.push_back(make_tenant());
 
     BOOST_LOG_SEV(lg, debug) << "Written tenants: " << written;
     repo.write(written);
@@ -111,13 +120,14 @@ TEST_CASE("read_latest_tenants", tags) {
 }
 
 TEST_CASE("read_latest_tenant_by_id", tags) {
-    SKIP("Requires RLS-aware tenant provisioning");
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto sys_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system());
 
-    tenant_repository repo(h.context());
-    auto t = make_tenant(h);
+    tenant_repository repo(sys_ctx);
+    auto t = make_tenant();
     const auto target_id = t.id;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
@@ -135,13 +145,14 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
 }
 
 TEST_CASE("read_latest_tenant_by_code", tags) {
-    SKIP("Requires RLS-aware tenant provisioning");
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto sys_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system());
 
-    tenant_repository repo(h.context());
-    auto t = make_tenant(h);
+    tenant_repository repo(sys_ctx);
+    auto t = make_tenant();
     const auto target_code = t.code;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
@@ -158,12 +169,13 @@ TEST_CASE("read_latest_tenant_by_code", tags) {
 }
 
 TEST_CASE("read_nonexistent_tenant", tags) {
-    SKIP("Requires RLS-aware tenant provisioning");
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto sys_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system());
 
-    tenant_repository repo(h.context());
+    tenant_repository repo(sys_ctx);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;

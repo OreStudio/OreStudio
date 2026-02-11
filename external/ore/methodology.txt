@@ -8,6 +8,15 @@ Data Sourcing and Generation Steps:
        - Content of Examples directory into external/ore/examples
        - xsd directory into external/ore/xsd.
 
+2. CODE GENERATION
+   Regenerate C++ domain types from the XSD schemas using xsdcpp:
+     ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
+   Requires xsdcpp on PATH. If built locally, prepend to PATH:
+     PATH="/path/to/xsdcpp/build/src:$PATH" ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
+   This regenerates:
+     - projects/ores.ore/include/ores.ore/domain/domain.hpp
+     - projects/ores.ore/src/domain/domain.cpp
+
 3. COMMIT TO REPOSITORY
-   git add external/ore/*
+   git add external/ore/* projects/ores.ore/include/ores.ore/domain/domain.hpp projects/ores.ore/src/domain/domain.cpp
    git commit -m "[data] Update ORE Sample Data"

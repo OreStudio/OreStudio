@@ -143,8 +143,9 @@ TEST_CASE("validate_currency_with_negative_rounding_precision", tags) {
 TEST_CASE("validate_currency_with_multiple_errors", tags) {
     auto lg(make_logger(test_suite));
 
-    currency c;
-    // All required fields left empty/default
+    currency c{};
+    c.fractions_per_unit = 0;
+    c.rounding_precision = -1;
 
     const auto errors = importer::validate_currency(c);
     BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
@@ -154,6 +155,7 @@ TEST_CASE("validate_currency_with_multiple_errors", tags) {
     CHECK(errors.contains("ISO code is required"));
     CHECK(errors.contains("Fractions per unit must be positive"));
     CHECK(errors.contains("Rounding type is required"));
+    CHECK(errors.contains("Rounding precision must be non-negative"));
 }
 
 // =============================================================================

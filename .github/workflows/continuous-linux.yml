@@ -81,7 +81,7 @@ jobs:
 
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2
-        if: ${{matrix.compiler}} == clang
+        if: ${{ matrix.compiler == 'clang' }}
         with:
           version: "19"
           arch: x64

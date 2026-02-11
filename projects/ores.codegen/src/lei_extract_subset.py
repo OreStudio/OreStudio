@@ -337,6 +337,15 @@ def download_gleif_data(
 
 # Sector detection keywords - used to classify entities by industry
 SECTOR_KEYWORDS = {
+    # Central banks and monetary authorities
+    'CENTRAL_BANK': [
+        'CENTRAL BANK', 'RESERVE BANK', 'BANQUE CENTRALE', 'BANCO CENTRAL',
+        'BANCA CENTRALE', 'ZENTRALBANK', 'RIKSBANK', 'BUNDESBANK',
+        'NARODOWY BANK', 'NARODNI BANKA', 'NATIONALBANK', 'NEMZETI BANK',
+        'MONETARY AUTHORITY', 'FEDERAL RESERVE',
+        'BANQUE DE FRANCE', "BANCA D'ITALIA", 'BANCO DE ESPANA',
+        'NORGES BANK', 'BANK NEGARA', 'BANGKO SENTRAL',
+    ],
     # Financial sectors (priority)
     'BANK': [
         # "Bank" in ~50 languages (Latin script / transliterations)
@@ -444,10 +453,10 @@ SECTOR_KEYWORDS = {
 
 # Financial sectors receive a higher sampling quota (multiplied by this factor).
 FINANCIAL_SECTORS = {
-    'BANK', 'INSURANCE', 'INVESTMENT_FUND', 'ETF', 'HEDGE_FUND',
-    'PRIVATE_EQUITY', 'PENSION', 'ASSET_MANAGEMENT', 'BROKER_DEALER',
-    'CUSTODY_CLEARING', 'PAYMENTS_FINTECH', 'MORTGAGE_LENDING',
-    'TRUST_FIDUCIARY', 'CAPITAL_MARKETS',
+    'CENTRAL_BANK', 'BANK', 'INSURANCE', 'INVESTMENT_FUND', 'ETF',
+    'HEDGE_FUND', 'PRIVATE_EQUITY', 'PENSION', 'ASSET_MANAGEMENT',
+    'BROKER_DEALER', 'CUSTODY_CLEARING', 'PAYMENTS_FINTECH',
+    'MORTGAGE_LENDING', 'TRUST_FIDUCIARY', 'CAPITAL_MARKETS',
 }
 FINANCIAL_PRIORITY_MULTIPLIER = 3
 

@@ -46,7 +46,7 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '',
     'GLEIF',
     'GLEIF golden copy data',
-    '2026-02-08'::date,
+    '2026-01-23'::date,
     'Open Data',
     'lei_entities'
 );
@@ -66,7 +66,7 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '',
     'GLEIF',
     'GLEIF golden copy data',
-    '2026-02-08'::date,
+    '2026-01-23'::date,
     'Open Data',
     'lei_entities'
 );
@@ -86,7 +86,7 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '',
     'GLEIF',
     'GLEIF golden copy data',
-    '2026-02-08'::date,
+    '2026-01-23'::date,
     'Open Data',
     'lei_relationships'
 );
@@ -106,7 +106,7 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '',
     'GLEIF',
     'GLEIF golden copy data',
-    '2026-02-08'::date,
+    '2026-01-23'::date,
     'Open Data',
     'lei_relationships'
 );

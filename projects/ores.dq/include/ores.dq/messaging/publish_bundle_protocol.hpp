@@ -22,6 +22,8 @@
 
 #include <span>
 #include <iosfwd>
+#include <optional>
+#include <string>
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
@@ -30,6 +32,32 @@
 #include "ores.dq/domain/publication_mode.hpp"
 
 namespace ores::dq::messaging {
+
+/**
+ * @brief Per-dataset configuration for LEI party publication.
+ */
+struct lei_parties_params final {
+    std::string root_lei;
+};
+
+/**
+ * @brief Typed representation of the params_json field in publish_bundle_request.
+ *
+ * Used by all frontends (Qt, shell, HTTP, Wt) to build the JSON parameter
+ * string in a type-safe way via build_params_json().
+ */
+struct publish_bundle_params final {
+    std::vector<std::string> opted_in_datasets;
+    std::optional<lei_parties_params> lei_parties;
+};
+
+/**
+ * @brief Build the params_json string from typed parameters.
+ *
+ * Serializes the parameters to a compact JSON string suitable for
+ * publish_bundle_request::params_json.
+ */
+std::string build_params_json(const publish_bundle_params& params);
 
 /**
  * @brief Result for a single dataset within a bundle publication.

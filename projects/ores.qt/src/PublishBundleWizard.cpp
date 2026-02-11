@@ -26,9 +26,6 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
@@ -570,22 +567,15 @@ void PublishProgressPage::startPublish() {
     // Get published_by from current session
     const std::string publishedBy = clientManager->currentUsername();
 
-    // Build params_json using Qt JSON classes
-    QJsonObject paramsObject;
-
-    QJsonArray optedInArray;
+    // Build params_json using shared builder
+    dq::messaging::publish_bundle_params params;
     for (const auto& ds : wizard_->optedInDatasets()) {
-        optedInArray.append(ds);
+        params.opted_in_datasets.push_back(ds.toStdString());
     }
-    paramsObject.insert("opted_in_datasets", optedInArray);
-
     if (needsLei && !rootLei.empty()) {
-        paramsObject.insert("lei_parties",
-            QJsonObject{{"root_lei", QString::fromStdString(rootLei)}});
+        params.lei_parties = dq::messaging::lei_parties_params{rootLei};
     }
-
-    const std::string paramsJson =
-        QJsonDocument(paramsObject).toJson(QJsonDocument::Compact).toStdString();
+    const std::string paramsJson = dq::messaging::build_params_json(params);
 
     using ResponseType = dq::messaging::publish_bundle_response;
 

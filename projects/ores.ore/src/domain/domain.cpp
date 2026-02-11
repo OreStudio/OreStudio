@@ -933,6 +933,13 @@ extern const xsdcpp::ElementInfo _portfolio_Info;
 extern const xsdcpp::ElementInfo _trade_Info;
 extern const xsdcpp::ElementInfo _envelope_Info;
 extern const xsdcpp::ElementInfo _envelope_CounterParty_t_Info;
+extern const xsdcpp::ElementInfo __NettingSetId_t_Info;
+extern const xsdcpp::ElementInfo _nettingSetDetails_Info;
+extern const xsdcpp::ElementInfo _nettingSetDetails_NettingSetId_t_Info;
+extern const xsdcpp::ElementInfo _nettingSetDetails_AgreementType_t_Info;
+extern const xsdcpp::ElementInfo _nettingSetDetails_CallType_t_Info;
+extern const xsdcpp::ElementInfo _nettingSetDetails_InitialMarginType_t_Info;
+extern const xsdcpp::ElementInfo _nettingSetDetails_LegalEntityId_t_Info;
 extern const xsdcpp::ElementInfo _envelope_PortfolioIds_t_Info;
 extern const xsdcpp::ElementInfo _envelope_PortfolioIds_t_PortfolioId_t_Info;
 extern const xsdcpp::ElementInfo _envelope_AdditionalFields_t_Info;
@@ -944,6 +951,9 @@ extern const xsdcpp::ElementInfo _scheduleData_Rules_t_Tenor_t_Info;
 extern const xsdcpp::ElementInfo _scheduleData_Dates_t_Info;
 extern const xsdcpp::ElementInfo _scheduleData_Dates_t_Tenor_t_Info;
 extern const xsdcpp::ElementInfo _scheduleData_Dates_t_Dates_t_Info;
+extern const xsdcpp::ElementInfo _DerivedScheduleType_Info;
+extern const xsdcpp::ElementInfo _DerivedScheduleType_BaseSchedule_t_Info;
+extern const xsdcpp::ElementInfo _DerivedScheduleType_Shift_t_Info;
 extern const xsdcpp::ElementInfo _swapData_Info;
 extern const xsdcpp::ElementInfo _legData_Info;
 extern const xsdcpp::ElementInfo _legData_PaymentCalendar_t_Info;
@@ -965,6 +975,96 @@ extern const xsdcpp::ElementInfo _indexingData_Info;
 extern const xsdcpp::ElementInfo _indexingData_Index_t_Info;
 extern const xsdcpp::ElementInfo _indexingData_IndexFixingCalendar_t_Info;
 extern const xsdcpp::ElementInfo _indexingData_FixingCalendar_t_Info;
+extern const xsdcpp::ElementInfo __CashflowData_t_Info;
+extern const xsdcpp::ElementInfo __CashflowData_t_Cashflow_t_Info;
+extern const xsdcpp::ElementInfo __CashflowData_t_Cashflow_t_Amount_t_Info;
+extern const xsdcpp::ElementInfo __FixedLegData_t_Info;
+extern const xsdcpp::ElementInfo __FixedLegData_t_Rates_t_Info;
+extern const xsdcpp::ElementInfo __FixedLegData_t_Rates_t_Rate_t_Info;
+extern const xsdcpp::ElementInfo __FloatingLegData_t_Info;
+extern const xsdcpp::ElementInfo __FloatingLegData_t_LastRecentPeriod_t_Info;
+extern const xsdcpp::ElementInfo __FloatingLegData_t_Lookback_t_Info;
+extern const xsdcpp::ElementInfo _spreads_Info;
+extern const xsdcpp::ElementInfo _floatWithAttribute_Info;
+extern const xsdcpp::ElementInfo _caps_Info;
+extern const xsdcpp::ElementInfo _floors_Info;
+extern const xsdcpp::ElementInfo _gearings_Info;
+extern const xsdcpp::ElementInfo _tradeLevelFixings_Info;
+extern const xsdcpp::ElementInfo _tradeLevelFixings_Fixing_t_Info;
+extern const xsdcpp::ElementInfo _stubInterpolation_Info;
+extern const xsdcpp::ElementInfo __CPILegData_t_Info;
+extern const xsdcpp::ElementInfo __CPILegData_t_Index_t_Info;
+extern const xsdcpp::ElementInfo __CPILegData_t_Rates_t_Info;
+extern const xsdcpp::ElementInfo __CPILegData_t_Rates_t_Rate_t_Info;
+extern const xsdcpp::ElementInfo __CPILegData_t_ObservationLag_t_Info;
+extern const xsdcpp::ElementInfo __CPILegData_t_Interpolation_t_Info;
+extern const xsdcpp::ElementInfo __YYLegData_t_Info;
+extern const xsdcpp::ElementInfo __YYLegData_t_Index_t_Info;
+extern const xsdcpp::ElementInfo __YYLegData_t_ObservationLag_t_Info;
+extern const xsdcpp::ElementInfo __CMSLegData_t_Info;
+extern const xsdcpp::ElementInfo __CMBLegData_t_Info;
+extern const xsdcpp::ElementInfo __CMBLegData_t_Index_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_CMSLegData_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_CallPosition_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_CallStrikes_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_CallPayoffs_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_PutPosition_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_PutStrikes_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSLegData_t_PutPayoffs_t_Info;
+extern const xsdcpp::ElementInfo __DurationAdjustedCMSLegData_t_Info;
+extern const xsdcpp::ElementInfo __CMSSpreadLegData_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CallPosition_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CallStrikes_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CallPayoffs_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_PutPosition_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_PutStrikes_t_Info;
+extern const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_PutPayoffs_t_Info;
+extern const xsdcpp::ElementInfo __EquityLegData_t_Info;
+extern const xsdcpp::ElementInfo __EquityLegData_t_ReturnType_t_Info;
+extern const xsdcpp::ElementInfo __Name_t_Info;
+extern const xsdcpp::ElementInfo _underlying_Info;
+extern const xsdcpp::ElementInfo _underlying_Type_t_Info;
+extern const xsdcpp::ElementInfo _underlying_Name_t_Info;
+extern const xsdcpp::ElementInfo _underlying_IdentifierType_t_Info;
+extern const xsdcpp::ElementInfo _underlying_Exchange_t_Info;
+extern const xsdcpp::ElementInfo _underlying_PriceType_t_Info;
+extern const xsdcpp::ElementInfo _underlying_DeliveryRollCalendar_t_Info;
+extern const xsdcpp::ElementInfo _underlying_FutureExpiryDate_t_Info;
+extern const xsdcpp::ElementInfo _underlying_FutureContractMonth_t_Info;
+extern const xsdcpp::ElementInfo _underlying_Interpolation_t_Info;
+extern const xsdcpp::ElementInfo _underlyings_Info;
+extern const xsdcpp::ElementInfo __EquityLegData_t_FXTerms_t_Info;
+extern const xsdcpp::ElementInfo __EquityLegData_t_FXTerms_t_FXIndex_t_Info;
+extern const xsdcpp::ElementInfo __EquityLegData_t_FXTerms_t_FXIndexCalendar_t_Info;
+extern const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Info;
+extern const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Rates_t_Info;
+extern const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Rates_t_Rate_t_Info;
+extern const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Compounding_t_Info;
+extern const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_SubtractNotional_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_Rates_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_Rates_t_Rate_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_ReturnType_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t_Info;
+extern const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFixedLegData_t_Info;
+extern const xsdcpp::ElementInfo _quantitiesType_Info;
+extern const xsdcpp::ElementInfo _quantitiesType_Quantity_t_Info;
+extern const xsdcpp::ElementInfo _pricesType_Info;
+extern const xsdcpp::ElementInfo _pricesType_Price_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFixedLegData_t_Tag_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Name_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_PricingDates_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Tag_t_Info;
+extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_FXIndex_t_Info;
+extern const xsdcpp::ElementInfo __FormulaBasedLegData_t_Info;
+extern const xsdcpp::ElementInfo __FormulaBasedLegData_t_Index_t_Info;
 extern const xsdcpp::ElementInfo _legData_SettlementData_t_Info;
 extern const xsdcpp::ElementInfo _legData_SettlementData_t_FXIndex_t_Info;
 extern const xsdcpp::ElementInfo _legData_SettlementData_t_FixingDate_t_Info;
@@ -993,6 +1093,7 @@ extern const xsdcpp::ElementInfo _optionData_ExerciseFees_t_ExerciseFee_t_Info;
 extern const xsdcpp::ElementInfo _optionData_ExerciseFeeSettlementPeriod_t_Info;
 extern const xsdcpp::ElementInfo _optionData_ExerciseFeeSettlementCalendar_t_Info;
 extern const xsdcpp::ElementInfo _optionData_ExerciseFeeSettlementConvention_t_Info;
+extern const xsdcpp::ElementInfo __ExerciseDates_t_Info;
 extern const xsdcpp::ElementInfo _optionExerciseData_Info;
 extern const xsdcpp::ElementInfo _optionPaymentData_Info;
 extern const xsdcpp::ElementInfo _optionPaymentData_Dates_t_Info;
@@ -1060,6 +1161,10 @@ extern const xsdcpp::ElementInfo _capFloorData_PremiumAmount_t_Info;
 extern const xsdcpp::ElementInfo _capFloorData_PremiumPayDate_t_Info;
 extern const xsdcpp::ElementInfo _equityFutureOptionData_Info;
 extern const xsdcpp::ElementInfo _equityOptionData_Info;
+extern const xsdcpp::ElementInfo __Strike_t_Info;
+extern const xsdcpp::ElementInfo __StrikeData_t_Info;
+extern const xsdcpp::ElementInfo _strikePriceData_Info;
+extern const xsdcpp::ElementInfo _strikeYieldData_Info;
 extern const xsdcpp::ElementInfo _eqBarrierOptionData_Info;
 extern const xsdcpp::ElementInfo _eqBarrierOptionData_EQIndex_t_Info;
 extern const xsdcpp::ElementInfo _equityForwardData_Info;
@@ -1117,6 +1222,9 @@ extern const xsdcpp::ElementInfo _deliveryBasket_Info;
 extern const xsdcpp::ElementInfo _deliveryBasket_Id_t_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapData_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapData_IssuerId_t_Info;
+extern const xsdcpp::ElementInfo __CreditCurveId_t_Info;
+extern const xsdcpp::ElementInfo __ReferenceInformation_t_Info;
+extern const xsdcpp::ElementInfo __ReferenceInformation_t_ReferenceEntityId_t_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapData_ReferenceObligation_t_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapData_ProtectionPaymentTime_t_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapOptionData_Info;
@@ -1150,16 +1258,6 @@ extern const xsdcpp::ElementInfo _commodityOptionStripData_PremiumAmount_t_Info;
 extern const xsdcpp::ElementInfo _commodityOptionStripData_PremiumPayDate_t_Info;
 extern const xsdcpp::ElementInfo _commodityOptionStripData_Style_t_Info;
 extern const xsdcpp::ElementInfo _commodityPositionData_Info;
-extern const xsdcpp::ElementInfo _underlying_Info;
-extern const xsdcpp::ElementInfo _underlying_Type_t_Info;
-extern const xsdcpp::ElementInfo _underlying_Name_t_Info;
-extern const xsdcpp::ElementInfo _underlying_IdentifierType_t_Info;
-extern const xsdcpp::ElementInfo _underlying_Exchange_t_Info;
-extern const xsdcpp::ElementInfo _underlying_PriceType_t_Info;
-extern const xsdcpp::ElementInfo _underlying_DeliveryRollCalendar_t_Info;
-extern const xsdcpp::ElementInfo _underlying_FutureExpiryDate_t_Info;
-extern const xsdcpp::ElementInfo _underlying_FutureContractMonth_t_Info;
-extern const xsdcpp::ElementInfo _underlying_Interpolation_t_Info;
 extern const xsdcpp::ElementInfo _singleUnderlyingAsianOptionData_Info;
 extern const xsdcpp::ElementInfo _singleUnderlyingAsianOptionData_Settlement_t_Info;
 extern const xsdcpp::ElementInfo _bondOptionData_Info;
@@ -1333,7 +1431,6 @@ extern const xsdcpp::ElementInfo _stFreeStyleOptionType_Info;
 extern const xsdcpp::ElementInfo _basketVarianceSwapData_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleBool_Info;
 extern const xsdcpp::ElementInfo _basketVarianceSwapData2_Info;
-extern const xsdcpp::ElementInfo _underlyings_Info;
 extern const xsdcpp::ElementInfo _extendedAccumulatorData_Info;
 extern const xsdcpp::ElementInfo _varianceOptionData_Info;
 extern const xsdcpp::ElementInfo _varianceDispersionSwapData_Info;
@@ -3400,6 +3497,31 @@ const char* _tradeActionOwner_Values[] = {
     "Bought",
     nullptr};
 
+const char* _pricingDateRuleType_Values[] = {
+    "FutureExpiryDate",
+    "None",
+    nullptr};
+
+const char* _cdsTierType_Values[] = {
+    "SNRFOR",
+    "SUBLT2",
+    "SNRLAC",
+    "SECDOM",
+    "JRSUBUT2",
+    "PREFT1",
+    nullptr};
+
+const char* _cdsDocClauseType_Values[] = {
+    "CR",
+    "MM",
+    "MR",
+    "XR",
+    "CR14",
+    "MM14",
+    "MR14",
+    "XR14",
+    nullptr};
+
 const char* _trsNotionalType_Values[] = {
     "PeriodReset",
     "DailyReset",
@@ -4016,6 +4138,9 @@ void _set_parameterListType_Parameter_t(domain::parameterListType_Parameter_t* o
 void _set_currencyDefinition_MinorUnitCodes_t(domain::currencyDefinition_MinorUnitCodes_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_currencyDefinition_CurrencyType_t(domain::currencyDefinition_CurrencyType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_envelope_CounterParty_t(domain::envelope_CounterParty_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+const xsdcpp::ElementInfo _nettingSetGroup_group_t_Info = { 0, nullptr };
+void _set__NettingSetId_t(domain::_NettingSetId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_nettingSetDetails_NettingSetId_t(domain::nettingSetDetails_NettingSetId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 std::string to_string(tradeActionType val) { return xsdcpp::to_string((size_t)val, 3, _tradeActionType_Values, "tradeActionType"); }
 std::string to_string(tradeActionOwner val) { return xsdcpp::to_string((size_t)val, 3, _tradeActionOwner_Values, "tradeActionOwner"); }
 void _set_tradeActionType(domain::tradeActionType* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::tradeActionType)xsdcpp::toNumeric(pos, _tradeActionType_Values, val); }
@@ -4026,7 +4151,10 @@ void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t(domain::
 void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t(domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t(domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t(domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__Name_t(domain::_Name_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_scheduleData_Rules_t_Tenor_t(domain::scheduleData_Rules_t_Tenor_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+const xsdcpp::ElementInfo _DerivedScheduleGroup_group_t_Info = { 0, nullptr };
+void _set_DerivedScheduleType_BaseSchedule_t(domain::DerivedScheduleType_BaseSchedule_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_optionData_OptionType_t(domain::optionData_OptionType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_optionData_PayoffType_t(domain::optionData_PayoffType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_optionData_PayoffType2_t(domain::optionData_PayoffType2_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -4042,6 +4170,7 @@ void _set_optionData_ExercisePrices_t(domain::optionData_ExercisePrices_t* obj, 
 void _set_optionData_ExerciseFeeSettlementPeriod_t(domain::optionData_ExerciseFeeSettlementPeriod_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_optionData_ExerciseFeeSettlementCalendar_t(domain::optionData_ExerciseFeeSettlementCalendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_optionData_ExerciseFeeSettlementConvention_t(domain::optionData_ExerciseFeeSettlementConvention_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+const xsdcpp::ElementInfo _exerciseDatesGroup_group_t_Info = { 0, nullptr };
 void _set_optionData_SettlementData_t_FXIndex_t(domain::optionData_SettlementData_t_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_fxOptionData_FXIndex_t(domain::fxOptionData_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_fxBarrierOptionData_FXIndex_t(domain::fxBarrierOptionData_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -4058,8 +4187,21 @@ void _set_fxTouchOptionData_Calendar_t(domain::fxTouchOptionData_Calendar_t* obj
 void _set_legData_capfloor_PaymentCalendar_t(domain::legData_capfloor_PaymentCalendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_legData_capfloor_Notionals_t_Notional_t(domain::legData_capfloor_Notionals_t_Notional_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
 void _set_fxreset_FXIndex_t(domain::fxreset_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_indexNameType(domain::indexNameType* obj, const xsdcpp::Position& pos, std::string&& val) { xsdcpp::set_string(obj, pos, std::move(val)); }
+const xsdcpp::ElementInfo _indexNameType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_indexNameType };
+void _set__YYLegData_t_Index_t(domain::_YYLegData_t_Index_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__YYLegData_t_ObservationLag_t(domain::_YYLegData_t_ObservationLag_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CMBLegData_t_Index_t(domain::_CMBLegData_t_Index_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__EquityLegData_t_ReturnType_t(domain::_EquityLegData_t_ReturnType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__EquityMarginLegData_t_EquityLegData_t_ReturnType_t(domain::_EquityMarginLegData_t_EquityLegData_t_ReturnType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CommodityFloatingLegData_t_Name_t(domain::_CommodityFloatingLegData_t_Name_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+std::string to_string(pricingDateRuleType val) { return xsdcpp::to_string((size_t)val, 2, _pricingDateRuleType_Values, "pricingDateRuleType"); }
+void _set_pricingDateRuleType(domain::pricingDateRuleType* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::pricingDateRuleType)xsdcpp::toNumeric(pos, _pricingDateRuleType_Values, val); }
+const xsdcpp::ElementInfo _pricingDateRuleType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_pricingDateRuleType };
+void _set__FormulaBasedLegData_t_Index_t(domain::_FormulaBasedLegData_t_Index_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_capFloorData_PremiumAmount_t(domain::capFloorData_PremiumAmount_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_capFloorData_PremiumPayDate_t(domain::capFloorData_PremiumPayDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__Strike_t(domain::_Strike_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_eqBarrierOptionData_EQIndex_t(domain::eqBarrierOptionData_EQIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_eqTouchOptionData_EQIndex_t(domain::eqTouchOptionData_EQIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_bondData_IssuerId_t(domain::bondData_IssuerId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -4095,6 +4237,14 @@ void _set_bondFutureData_SettlementLag_t(domain::bondFutureData_SettlementLag_t*
 void _set_bondFutureData_LastTradingDate_t(domain::bondFutureData_LastTradingDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_bondFutureData_LastDeliveryDate_t(domain::bondFutureData_LastDeliveryDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_creditDefaultSwapData_IssuerId_t(domain::creditDefaultSwapData_IssuerId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CreditCurveId_t(domain::_CreditCurveId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__ReferenceInformation_t_ReferenceEntityId_t(domain::_ReferenceInformation_t_ReferenceEntityId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+std::string to_string(cdsTierType val) { return xsdcpp::to_string((size_t)val, 6, _cdsTierType_Values, "cdsTierType"); }
+std::string to_string(cdsDocClauseType val) { return xsdcpp::to_string((size_t)val, 8, _cdsDocClauseType_Values, "cdsDocClauseType"); }
+void _set_cdsTierType(domain::cdsTierType* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::cdsTierType)xsdcpp::toNumeric(pos, _cdsTierType_Values, val); }
+const xsdcpp::ElementInfo _cdsTierType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cdsTierType };
+void _set_cdsDocClauseType(domain::cdsDocClauseType* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::cdsDocClauseType)xsdcpp::toNumeric(pos, _cdsDocClauseType_Values, val); }
+const xsdcpp::ElementInfo _cdsDocClauseType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cdsDocClauseType };
 void _set_creditDefaultSwapData_ReferenceObligation_t(domain::creditDefaultSwapData_ReferenceObligation_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_creditDefaultSwapData_ProtectionPaymentTime_t(domain::creditDefaultSwapData_ProtectionPaymentTime_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_legData_PaymentCalendar_t(domain::legData_PaymentCalendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -4166,8 +4316,6 @@ void _set_ycInterpolation(domain::ycInterpolation* obj, const xsdcpp::Position& 
 const xsdcpp::ElementInfo _ycInterpolation_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_ycInterpolation };
 void _set_ycExtrapolation(domain::ycExtrapolation* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::ycExtrapolation)xsdcpp::toNumeric(pos, _ycExtrapolation_Values, val); }
 const xsdcpp::ElementInfo _ycExtrapolation_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_ycExtrapolation };
-void _set_indexNameType(domain::indexNameType* obj, const xsdcpp::Position& pos, std::string&& val) { xsdcpp::set_string(obj, pos, std::move(val)); }
-const xsdcpp::ElementInfo _indexNameType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_indexNameType };
 void _set_market_DefaultCurves_t_Tenors_t(domain::market_DefaultCurves_t_Tenors_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 std::string to_string(defaultCurveExtrapolation val) { return xsdcpp::to_string((size_t)val, 2, _defaultCurveExtrapolation_Values, "defaultCurveExtrapolation"); }
 void _set_defaultCurveExtrapolation(domain::defaultCurveExtrapolation* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::defaultCurveExtrapolation)xsdcpp::toNumeric(pos, _defaultCurveExtrapolation_Values, val); }
@@ -4480,8 +4628,13 @@ void _set_creditQualityType(domain::creditQualityType* obj, const xsdcpp::Positi
 const xsdcpp::ElementInfo _creditQualityType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_creditQualityType };
 void _set_counterPartyCorrelations_Correlation_t(domain::counterPartyCorrelations_Correlation_t* obj, const xsdcpp::Position& pos, std::string&& val) { domain::correlationValue& base = *obj; domain::_set_correlationValue(&base, pos, std::move(val)); }
 void _set_envelope_PortfolioIds_t_PortfolioId_t(domain::envelope_PortfolioIds_t_PortfolioId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_nettingSetDetails_AgreementType_t(domain::nettingSetDetails_AgreementType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_nettingSetDetails_CallType_t(domain::nettingSetDetails_CallType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_nettingSetDetails_InitialMarginType_t(domain::nettingSetDetails_InitialMarginType_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_nettingSetDetails_LegalEntityId_t(domain::nettingSetDetails_LegalEntityId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_fxForwardSettlementData_FXIndex_t(domain::fxForwardSettlementData_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_scheduleData_Dates_t_Tenor_t(domain::scheduleData_Dates_t_Tenor_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_DerivedScheduleType_Shift_t(domain::DerivedScheduleType_Shift_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_optionData_ExerciseFees_t_ExerciseFee_t(domain::optionData_ExerciseFees_t_ExerciseFee_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
 std::string to_string(optionPayRelativeTo val) { return xsdcpp::to_string((size_t)val, 2, _optionPayRelativeTo_Values, "optionPayRelativeTo"); }
 void _set_optionPayRelativeTo(domain::optionPayRelativeTo* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::optionPayRelativeTo)xsdcpp::toNumeric(pos, _optionPayRelativeTo_Values, val); }
@@ -4489,6 +4642,25 @@ const xsdcpp::ElementInfo _optionPayRelativeTo_Info = { xsdcpp::ElementInfo::Rea
 void _set_optionData_SettlementData_t_FixingDate_t(domain::optionData_SettlementData_t_FixingDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_fxreset_StartDate_t(domain::fxreset_StartDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_fxreset_FixingCalendar_t(domain::fxreset_FixingCalendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CashflowData_t_Cashflow_t_Amount_t(domain::_CashflowData_t_Cashflow_t_Amount_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__FixedLegData_t_Rates_t_Rate_t(domain::_FixedLegData_t_Rates_t_Rate_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__FloatingLegData_t_LastRecentPeriod_t(domain::_FloatingLegData_t_LastRecentPeriod_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__FloatingLegData_t_Lookback_t(domain::_FloatingLegData_t_Lookback_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CPILegData_t_Index_t(domain::_CPILegData_t_Index_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CPILegData_t_ObservationLag_t(domain::_CPILegData_t_ObservationLag_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CPILegData_t_Interpolation_t(domain::_CPILegData_t_Interpolation_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__DigitalCMSLegData_t_CallPosition_t(domain::_DigitalCMSLegData_t_CallPosition_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__DigitalCMSLegData_t_PutPosition_t(domain::_DigitalCMSLegData_t_PutPosition_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__DigitalCMSSpreadLegData_t_CallPosition_t(domain::_DigitalCMSSpreadLegData_t_CallPosition_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__DigitalCMSSpreadLegData_t_PutPosition_t(domain::_DigitalCMSSpreadLegData_t_PutPosition_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__ZeroCouponFixedLegData_t_Compounding_t(domain::_ZeroCouponFixedLegData_t_Compounding_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__ZeroCouponFixedLegData_t_SubtractNotional_t(domain::_ZeroCouponFixedLegData_t_SubtractNotional_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__EquityMarginLegData_t_Rates_t_Rate_t(domain::_EquityMarginLegData_t_Rates_t_Rate_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set_pricesType_Price_t(domain::pricesType_Price_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__CommodityFixedLegData_t_Tag_t(domain::_CommodityFixedLegData_t_Tag_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_quantitiesType_Quantity_t(domain::quantitiesType_Quantity_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__CommodityFloatingLegData_t_Tag_t(domain::_CommodityFloatingLegData_t_Tag_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__CommodityFloatingLegData_t_FXIndex_t(domain::_CommodityFloatingLegData_t_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_capFloorData_Caps_t_Cap_t(domain::capFloorData_Caps_t_Cap_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
 void _set_capFloorData_Floors_t_Floor_t(domain::capFloorData_Floors_t_Floor_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
 void _set_eqForwardSettlementData_FXIndex_t(domain::eqForwardSettlementData_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -4785,6 +4957,14 @@ void _set_stresscommodityvolatility_ShiftExpiries_t(domain::stresscommodityvolat
 void _set_stresscommodityvolatility_ShiftMoneyness_t(domain::stresscommodityvolatility_ShiftMoneyness_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_survivalprobability_ShiftTenors_t(domain::survivalprobability_ShiftTenors_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_premiumData_Premium_t_SettlementData_t_FXIndex_t(domain::premiumData_Premium_t_SettlementData_t_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set_floatWithAttribute(domain::floatWithAttribute* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set_tradeLevelFixings_Fixing_t(domain::tradeLevelFixings_Fixing_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__CPILegData_t_Rates_t_Rate_t(domain::_CPILegData_t_Rates_t_Rate_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__EquityLegData_t_FXTerms_t_FXIndex_t(domain::_EquityLegData_t_FXTerms_t_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__EquityLegData_t_FXTerms_t_FXIndexCalendar_t(domain::_EquityLegData_t_FXTerms_t_FXIndexCalendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__ZeroCouponFixedLegData_t_Rates_t_Rate_t(domain::_ZeroCouponFixedLegData_t_Rates_t_Rate_t* obj, const xsdcpp::Position& pos, std::string&& val) { float& base = *obj; xsdcpp::set_float(&base, pos, std::move(val)); }
+void _set__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t(domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
+void _set__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t(domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_amortizationData_StartDate_t(domain::amortizationData_StartDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_amortizationData_EndDate_t(domain::amortizationData_EndDate_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_amortizationData_Frequency_t(domain::amortizationData_Frequency_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -5807,12 +5987,16 @@ xsdcpp::ChildElementInfo __root_t_Children[] = {
     {nullptr}
 };
 void* _get_envelope_CounterParty(domain::envelope* parent) {return &*(parent->CounterParty = domain::envelope_CounterParty_t());}
+void* _get_envelope_nettingSetGroup_NettingSetId(domain::envelope* parent) {return &*((parent->nettingSetGroup = domain::nettingSetGroup_group_t())->NettingSetId = domain::_NettingSetId_t());}
+void* _get_envelope_nettingSetGroup_NettingSetDetails(domain::envelope* parent) {return &*((parent->nettingSetGroup = domain::nettingSetGroup_group_t())->NettingSetDetails = domain::nettingSetDetails());}
 void* _get_envelope_PortfolioIds(domain::envelope* parent) {return &*(parent->PortfolioIds = domain::envelope_PortfolioIds_t());}
 void* _get_envelope_AdditionalFields(domain::envelope* parent) {return &*(parent->AdditionalFields = domain::envelope_AdditionalFields_t());}
 xsdcpp::ChildElementInfo _envelope_Children[] = {
     {"CounterParty", 0, (xsdcpp::get_field_t)&_get_envelope_CounterParty, &domain::_envelope_CounterParty_t_Info, 0, 1},
-    {"PortfolioIds", 1, (xsdcpp::get_field_t)&_get_envelope_PortfolioIds, &domain::_envelope_PortfolioIds_t_Info, 0, 1},
-    {"AdditionalFields", 2, (xsdcpp::get_field_t)&_get_envelope_AdditionalFields, &domain::_envelope_AdditionalFields_t_Info, 0, 1},
+    {"NettingSetId", 1, (xsdcpp::get_field_t)&_get_envelope_nettingSetGroup_NettingSetId, &domain::__NettingSetId_t_Info, 0, 1},
+    {"NettingSetDetails", 1, (xsdcpp::get_field_t)&_get_envelope_nettingSetGroup_NettingSetDetails, &domain::_nettingSetDetails_Info, 0, 1},
+    {"PortfolioIds", 2, (xsdcpp::get_field_t)&_get_envelope_PortfolioIds, &domain::_envelope_PortfolioIds_t_Info, 0, 1},
+    {"AdditionalFields", 3, (xsdcpp::get_field_t)&_get_envelope_AdditionalFields, &domain::_envelope_AdditionalFields_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_tradeActions_TradeAction(domain::tradeActions* parent) {return (parent->TradeAction.emplace_back(), &parent->TradeAction.back());}
@@ -5910,6 +6094,9 @@ xsdcpp::ChildElementInfo _swaptionData_Children[] = {
 void* _get_varianceSwapData_StartDate(domain::varianceSwapData* parent) {return &parent->StartDate;}
 void* _get_varianceSwapData_EndDate(domain::varianceSwapData* parent) {return &parent->EndDate;}
 void* _get_varianceSwapData_Currency(domain::varianceSwapData* parent) {return &parent->Currency;}
+void* _get_varianceSwapData_underlyingTypes_Name(domain::varianceSwapData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_varianceSwapData_underlyingTypes_Underlying(domain::varianceSwapData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_varianceSwapData_underlyingTypes_Underlyings(domain::varianceSwapData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_varianceSwapData_LongShort(domain::varianceSwapData* parent) {return &parent->LongShort;}
 void* _get_varianceSwapData_Strike(domain::varianceSwapData* parent) {return &parent->Strike;}
 void* _get_varianceSwapData_Notional(domain::varianceSwapData* parent) {return &parent->Notional;}
@@ -5920,12 +6107,15 @@ xsdcpp::ChildElementInfo _varianceSwapData_Children[] = {
     {"StartDate", 0, (xsdcpp::get_field_t)&_get_varianceSwapData_StartDate, &domain::_date_Info, 1, 1},
     {"EndDate", 1, (xsdcpp::get_field_t)&_get_varianceSwapData_EndDate, &domain::_date_Info, 1, 1},
     {"Currency", 2, (xsdcpp::get_field_t)&_get_varianceSwapData_Currency, &domain::_currencyCode_Info, 1, 1},
-    {"LongShort", 3, (xsdcpp::get_field_t)&_get_varianceSwapData_LongShort, &domain::_varianceSwapData_LongShort_t_Info, 1, 1},
-    {"Strike", 4, (xsdcpp::get_field_t)&_get_varianceSwapData_Strike, &domain::_float_Info, 1, 1},
-    {"Notional", 5, (xsdcpp::get_field_t)&_get_varianceSwapData_Notional, &domain::_float_Info, 1, 1},
-    {"Calendar", 6, (xsdcpp::get_field_t)&_get_varianceSwapData_Calendar, &domain::_calendar_Info, 1, 1},
-    {"MomentType", 7, (xsdcpp::get_field_t)&_get_varianceSwapData_MomentType, &domain::_momentType_Info, 0, 1},
-    {"AddPastDividends", 8, (xsdcpp::get_field_t)&_get_varianceSwapData_AddPastDividends, &domain::_bool_Info, 0, 1},
+    {"Name", 3, (xsdcpp::get_field_t)&_get_varianceSwapData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 3, (xsdcpp::get_field_t)&_get_varianceSwapData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 3, (xsdcpp::get_field_t)&_get_varianceSwapData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"LongShort", 4, (xsdcpp::get_field_t)&_get_varianceSwapData_LongShort, &domain::_varianceSwapData_LongShort_t_Info, 1, 1},
+    {"Strike", 5, (xsdcpp::get_field_t)&_get_varianceSwapData_Strike, &domain::_float_Info, 1, 1},
+    {"Notional", 6, (xsdcpp::get_field_t)&_get_varianceSwapData_Notional, &domain::_float_Info, 1, 1},
+    {"Calendar", 7, (xsdcpp::get_field_t)&_get_varianceSwapData_Calendar, &domain::_calendar_Info, 1, 1},
+    {"MomentType", 8, (xsdcpp::get_field_t)&_get_varianceSwapData_MomentType, &domain::_momentType_Info, 0, 1},
+    {"AddPastDividends", 9, (xsdcpp::get_field_t)&_get_varianceSwapData_AddPastDividends, &domain::_bool_Info, 0, 1},
     {nullptr}
 };
 void* _get_forwardRateAgreementData_StartDate(domain::forwardRateAgreementData* parent) {return &parent->StartDate;}
@@ -5964,9 +6154,13 @@ xsdcpp::ChildElementInfo _fxForwardData_Children[] = {
 };
 void* _get_scheduleData_Rules(domain::scheduleData* parent) {return (parent->Rules.emplace_back(), &parent->Rules.back());}
 void* _get_scheduleData_Dates(domain::scheduleData* parent) {return (parent->Dates.emplace_back(), &parent->Dates.back());}
+void* _get_scheduleData_DerivedScheduleGroup_DerivedSchedule(domain::scheduleData* parent) {return (parent->DerivedScheduleGroup.emplace_back(), &*(parent->DerivedScheduleGroup.back().DerivedSchedule = domain::DerivedScheduleType()));}
+void* _get_scheduleData_DerivedScheduleGroup_Derived(domain::scheduleData* parent) {return (parent->DerivedScheduleGroup.emplace_back(), &*(parent->DerivedScheduleGroup.back().Derived = domain::DerivedScheduleType()));}
 xsdcpp::ChildElementInfo _scheduleData_Children[] = {
     {"Rules", 0, (xsdcpp::get_field_t)&_get_scheduleData_Rules, &domain::_scheduleData_Rules_t_Info, 0, 4294967295},
     {"Dates", 1, (xsdcpp::get_field_t)&_get_scheduleData_Dates, &domain::_scheduleData_Dates_t_Info, 0, 4294967295},
+    {"DerivedSchedule", 2, (xsdcpp::get_field_t)&_get_scheduleData_DerivedScheduleGroup_DerivedSchedule, &domain::_DerivedScheduleType_Info, 0, 4294967295},
+    {"Derived", 2, (xsdcpp::get_field_t)&_get_scheduleData_DerivedScheduleGroup_Derived, &domain::_DerivedScheduleType_Info, 0, 4294967295},
     {nullptr}
 };
 void* _get_fxAverageForwardData_PaymentDate(domain::fxAverageForwardData* parent) {return &parent->PaymentDate;}
@@ -6011,6 +6205,8 @@ void* _get_optionData_ExerciseFees(domain::optionData* parent) {return &*(parent
 void* _get_optionData_ExerciseFeeSettlementPeriod(domain::optionData* parent) {return &*(parent->ExerciseFeeSettlementPeriod = domain::optionData_ExerciseFeeSettlementPeriod_t());}
 void* _get_optionData_ExerciseFeeSettlementCalendar(domain::optionData* parent) {return &*(parent->ExerciseFeeSettlementCalendar = domain::optionData_ExerciseFeeSettlementCalendar_t());}
 void* _get_optionData_ExerciseFeeSettlementConvention(domain::optionData* parent) {return &*(parent->ExerciseFeeSettlementConvention = domain::optionData_ExerciseFeeSettlementConvention_t());}
+void* _get_optionData_exerciseDatesGroup_ExerciseDates(domain::optionData* parent) {return &*((parent->exerciseDatesGroup = domain::exerciseDatesGroup_group_t())->ExerciseDates = domain::_ExerciseDates_t());}
+void* _get_optionData_exerciseDatesGroup_ExerciseSchedule(domain::optionData* parent) {return &*((parent->exerciseDatesGroup = domain::exerciseDatesGroup_group_t())->ExerciseSchedule = domain::scheduleData());}
 void* _get_optionData_AutomaticExercise(domain::optionData* parent) {return &*(parent->AutomaticExercise = domain::bool_());}
 void* _get_optionData_ExerciseData(domain::optionData* parent) {return &*(parent->ExerciseData = domain::optionExerciseData());}
 void* _get_optionData_PaymentData(domain::optionData* parent) {return &*(parent->PaymentData = domain::optionPaymentData());}
@@ -6037,10 +6233,12 @@ xsdcpp::ChildElementInfo _optionData_Children[] = {
     {"ExerciseFeeSettlementPeriod", 18, (xsdcpp::get_field_t)&_get_optionData_ExerciseFeeSettlementPeriod, &domain::_optionData_ExerciseFeeSettlementPeriod_t_Info, 0, 1},
     {"ExerciseFeeSettlementCalendar", 19, (xsdcpp::get_field_t)&_get_optionData_ExerciseFeeSettlementCalendar, &domain::_optionData_ExerciseFeeSettlementCalendar_t_Info, 0, 1},
     {"ExerciseFeeSettlementConvention", 20, (xsdcpp::get_field_t)&_get_optionData_ExerciseFeeSettlementConvention, &domain::_optionData_ExerciseFeeSettlementConvention_t_Info, 0, 1},
-    {"AutomaticExercise", 21, (xsdcpp::get_field_t)&_get_optionData_AutomaticExercise, &domain::_bool__Info, 0, 1},
-    {"ExerciseData", 22, (xsdcpp::get_field_t)&_get_optionData_ExerciseData, &domain::_optionExerciseData_Info, 0, 1},
-    {"PaymentData", 23, (xsdcpp::get_field_t)&_get_optionData_PaymentData, &domain::_optionPaymentData_Info, 0, 1},
-    {"SettlementData", 24, (xsdcpp::get_field_t)&_get_optionData_SettlementData, &domain::_optionData_SettlementData_t_Info, 0, 1},
+    {"ExerciseDates", 21, (xsdcpp::get_field_t)&_get_optionData_exerciseDatesGroup_ExerciseDates, &domain::__ExerciseDates_t_Info, 0, 1},
+    {"ExerciseSchedule", 21, (xsdcpp::get_field_t)&_get_optionData_exerciseDatesGroup_ExerciseSchedule, &domain::_scheduleData_Info, 0, 1},
+    {"AutomaticExercise", 22, (xsdcpp::get_field_t)&_get_optionData_AutomaticExercise, &domain::_bool__Info, 0, 1},
+    {"ExerciseData", 23, (xsdcpp::get_field_t)&_get_optionData_ExerciseData, &domain::_optionExerciseData_Info, 0, 1},
+    {"PaymentData", 24, (xsdcpp::get_field_t)&_get_optionData_PaymentData, &domain::_optionPaymentData_Info, 0, 1},
+    {"SettlementData", 25, (xsdcpp::get_field_t)&_get_optionData_SettlementData, &domain::_optionData_SettlementData_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_fxOptionData_OptionData(domain::fxOptionData* parent) {return &parent->OptionData;}
@@ -6218,6 +6416,23 @@ void* _get_legData_capfloor_PaymentCalendar(domain::legData_capfloor* parent) {r
 void* _get_legData_capfloor_Notionals(domain::legData_capfloor* parent) {return &parent->Notionals;}
 void* _get_legData_capfloor_ScheduleData(domain::legData_capfloor* parent) {return &parent->ScheduleData;}
 void* _get_legData_capfloor_PaymentDates(domain::legData_capfloor* parent) {return &*(parent->PaymentDates = domain::legData_capfloor_PaymentDates_t());}
+void* _get_legData_capfloor_legDataType_CashflowData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CashflowData = domain::_CashflowData_t());}
+void* _get_legData_capfloor_legDataType_FixedLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.FixedLegData = domain::_FixedLegData_t());}
+void* _get_legData_capfloor_legDataType_FloatingLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.FloatingLegData = domain::_FloatingLegData_t());}
+void* _get_legData_capfloor_legDataType_CPILegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CPILegData = domain::_CPILegData_t());}
+void* _get_legData_capfloor_legDataType_YYLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.YYLegData = domain::_YYLegData_t());}
+void* _get_legData_capfloor_legDataType_CMSLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CMSLegData = domain::_CMSLegData_t());}
+void* _get_legData_capfloor_legDataType_CMBLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CMBLegData = domain::_CMBLegData_t());}
+void* _get_legData_capfloor_legDataType_DigitalCMSLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.DigitalCMSLegData = domain::_DigitalCMSLegData_t());}
+void* _get_legData_capfloor_legDataType_DurationAdjustedCMSLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.DurationAdjustedCMSLegData = domain::_DurationAdjustedCMSLegData_t());}
+void* _get_legData_capfloor_legDataType_CMSSpreadLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CMSSpreadLegData = domain::_CMSSpreadLegData_t());}
+void* _get_legData_capfloor_legDataType_DigitalCMSSpreadLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.DigitalCMSSpreadLegData = domain::_DigitalCMSSpreadLegData_t());}
+void* _get_legData_capfloor_legDataType_EquityLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.EquityLegData = domain::_EquityLegData_t());}
+void* _get_legData_capfloor_legDataType_ZeroCouponFixedLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.ZeroCouponFixedLegData = domain::_ZeroCouponFixedLegData_t());}
+void* _get_legData_capfloor_legDataType_EquityMarginLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.EquityMarginLegData = domain::_EquityMarginLegData_t());}
+void* _get_legData_capfloor_legDataType_CommodityFixedLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CommodityFixedLegData = domain::_CommodityFixedLegData_t());}
+void* _get_legData_capfloor_legDataType_CommodityFloatingLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.CommodityFloatingLegData = domain::_CommodityFloatingLegData_t());}
+void* _get_legData_capfloor_legDataType_FormulaBasedLegData(domain::legData_capfloor* parent) {return &*(parent->legDataType.FormulaBasedLegData = domain::_FormulaBasedLegData_t());}
 xsdcpp::ChildElementInfo _legData_capfloor_Children[] = {
     {"Payer", 0, (xsdcpp::get_field_t)&_get_legData_capfloor_Payer, &domain::_bool_Info, 0, 1},
     {"LegType", 1, (xsdcpp::get_field_t)&_get_legData_capfloor_LegType, &domain::_legType_Info, 1, 1},
@@ -6229,6 +6444,23 @@ xsdcpp::ChildElementInfo _legData_capfloor_Children[] = {
     {"Notionals", 7, (xsdcpp::get_field_t)&_get_legData_capfloor_Notionals, &domain::_legData_capfloor_Notionals_t_Info, 1, 1},
     {"ScheduleData", 8, (xsdcpp::get_field_t)&_get_legData_capfloor_ScheduleData, &domain::_scheduleData_Info, 1, 1},
     {"PaymentDates", 9, (xsdcpp::get_field_t)&_get_legData_capfloor_PaymentDates, &domain::_legData_capfloor_PaymentDates_t_Info, 0, 1},
+    {"CashflowData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CashflowData, &domain::__CashflowData_t_Info, 0, 1},
+    {"FixedLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_FixedLegData, &domain::__FixedLegData_t_Info, 0, 1},
+    {"FloatingLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_FloatingLegData, &domain::__FloatingLegData_t_Info, 0, 1},
+    {"CPILegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CPILegData, &domain::__CPILegData_t_Info, 0, 1},
+    {"YYLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_YYLegData, &domain::__YYLegData_t_Info, 0, 1},
+    {"CMSLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CMSLegData, &domain::__CMSLegData_t_Info, 0, 1},
+    {"CMBLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CMBLegData, &domain::__CMBLegData_t_Info, 0, 1},
+    {"DigitalCMSLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_DigitalCMSLegData, &domain::__DigitalCMSLegData_t_Info, 0, 1},
+    {"DurationAdjustedCMSLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_DurationAdjustedCMSLegData, &domain::__DurationAdjustedCMSLegData_t_Info, 0, 1},
+    {"CMSSpreadLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CMSSpreadLegData, &domain::__CMSSpreadLegData_t_Info, 0, 1},
+    {"DigitalCMSSpreadLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_DigitalCMSSpreadLegData, &domain::__DigitalCMSSpreadLegData_t_Info, 0, 1},
+    {"EquityLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_EquityLegData, &domain::__EquityLegData_t_Info, 0, 1},
+    {"ZeroCouponFixedLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_ZeroCouponFixedLegData, &domain::__ZeroCouponFixedLegData_t_Info, 0, 1},
+    {"EquityMarginLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_EquityMarginLegData, &domain::__EquityMarginLegData_t_Info, 0, 1},
+    {"CommodityFixedLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CommodityFixedLegData, &domain::__CommodityFixedLegData_t_Info, 0, 1},
+    {"CommodityFloatingLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CommodityFloatingLegData, &domain::__CommodityFloatingLegData_t_Info, 0, 1},
+    {"FormulaBasedLegData", 10, (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_FormulaBasedLegData, &domain::__FormulaBasedLegData_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_capFloorData_LongShort(domain::capFloorData* parent) {return &parent->LongShort;}
@@ -6251,27 +6483,43 @@ xsdcpp::ChildElementInfo _capFloorData_Children[] = {
     {nullptr}
 };
 void* _get_equityFutureOptionData_OptionData(domain::equityFutureOptionData* parent) {return &parent->OptionData;}
+void* _get_equityFutureOptionData_underlyingTypes_Name(domain::equityFutureOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_equityFutureOptionData_underlyingTypes_Underlying(domain::equityFutureOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_equityFutureOptionData_underlyingTypes_Underlyings(domain::equityFutureOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_equityFutureOptionData_Currency(domain::equityFutureOptionData* parent) {return &parent->Currency;}
 void* _get_equityFutureOptionData_Strike(domain::equityFutureOptionData* parent) {return &parent->Strike;}
 void* _get_equityFutureOptionData_Quantity(domain::equityFutureOptionData* parent) {return &parent->Quantity;}
 void* _get_equityFutureOptionData_FutureExpiryDate(domain::equityFutureOptionData* parent) {return &*(parent->FutureExpiryDate = domain::date());}
 xsdcpp::ChildElementInfo _equityFutureOptionData_Children[] = {
     {"OptionData", 0, (xsdcpp::get_field_t)&_get_equityFutureOptionData_OptionData, &domain::_optionData_Info, 1, 1},
-    {"Currency", 1, (xsdcpp::get_field_t)&_get_equityFutureOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
-    {"Strike", 2, (xsdcpp::get_field_t)&_get_equityFutureOptionData_Strike, &domain::_float_Info, 1, 1},
-    {"Quantity", 3, (xsdcpp::get_field_t)&_get_equityFutureOptionData_Quantity, &domain::_float_Info, 1, 1},
-    {"FutureExpiryDate", 4, (xsdcpp::get_field_t)&_get_equityFutureOptionData_FutureExpiryDate, &domain::_date_Info, 0, 1},
+    {"Name", 1, (xsdcpp::get_field_t)&_get_equityFutureOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 1, (xsdcpp::get_field_t)&_get_equityFutureOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 1, (xsdcpp::get_field_t)&_get_equityFutureOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"Currency", 2, (xsdcpp::get_field_t)&_get_equityFutureOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
+    {"Strike", 3, (xsdcpp::get_field_t)&_get_equityFutureOptionData_Strike, &domain::_float_Info, 1, 1},
+    {"Quantity", 4, (xsdcpp::get_field_t)&_get_equityFutureOptionData_Quantity, &domain::_float_Info, 1, 1},
+    {"FutureExpiryDate", 5, (xsdcpp::get_field_t)&_get_equityFutureOptionData_FutureExpiryDate, &domain::_date_Info, 0, 1},
     {nullptr}
 };
 void* _get_equityOptionData_OptionData(domain::equityOptionData* parent) {return &parent->OptionData;}
+void* _get_equityOptionData_underlyingTypes_Name(domain::equityOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_equityOptionData_underlyingTypes_Underlying(domain::equityOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_equityOptionData_underlyingTypes_Underlyings(domain::equityOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_equityOptionData_Currency(domain::equityOptionData* parent) {return &parent->Currency;}
 void* _get_equityOptionData_StrikeCurrency(domain::equityOptionData* parent) {return &*(parent->StrikeCurrency = domain::extendedCurrencyCode());}
 void* _get_equityOptionData_Quantity(domain::equityOptionData* parent) {return &parent->Quantity;}
+void* _get_equityOptionData_strikeGroup_Strike(domain::equityOptionData* parent) {return &*(parent->strikeGroup.Strike = domain::_Strike_t());}
+void* _get_equityOptionData_strikeGroup_StrikeData(domain::equityOptionData* parent) {return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());}
 xsdcpp::ChildElementInfo _equityOptionData_Children[] = {
     {"OptionData", 0, (xsdcpp::get_field_t)&_get_equityOptionData_OptionData, &domain::_optionData_Info, 1, 1},
-    {"Currency", 1, (xsdcpp::get_field_t)&_get_equityOptionData_Currency, &domain::_extendedCurrencyCode_Info, 1, 1},
-    {"StrikeCurrency", 2, (xsdcpp::get_field_t)&_get_equityOptionData_StrikeCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
-    {"Quantity", 3, (xsdcpp::get_field_t)&_get_equityOptionData_Quantity, &domain::_float_Info, 1, 1},
+    {"Name", 1, (xsdcpp::get_field_t)&_get_equityOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 1, (xsdcpp::get_field_t)&_get_equityOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 1, (xsdcpp::get_field_t)&_get_equityOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"Currency", 2, (xsdcpp::get_field_t)&_get_equityOptionData_Currency, &domain::_extendedCurrencyCode_Info, 1, 1},
+    {"StrikeCurrency", 3, (xsdcpp::get_field_t)&_get_equityOptionData_StrikeCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"Quantity", 4, (xsdcpp::get_field_t)&_get_equityOptionData_Quantity, &domain::_float_Info, 1, 1},
+    {"Strike", 5, (xsdcpp::get_field_t)&_get_equityOptionData_strikeGroup_Strike, &domain::__Strike_t_Info, 0, 1},
+    {"StrikeData", 5, (xsdcpp::get_field_t)&_get_equityOptionData_strikeGroup_StrikeData, &domain::__StrikeData_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_barrierData_Levels_t_Level(domain::barrierData_Levels_t* parent) {return (parent->Level.emplace_back(), &parent->Level.back());}
@@ -6303,7 +6551,12 @@ void* _get_eqBarrierOptionData_BarrierData(domain::eqBarrierOptionData* parent) 
 void* _get_eqBarrierOptionData_StartDate(domain::eqBarrierOptionData* parent) {return &*(parent->StartDate = domain::date());}
 void* _get_eqBarrierOptionData_Calendar(domain::eqBarrierOptionData* parent) {return &*(parent->Calendar = domain::calendar());}
 void* _get_eqBarrierOptionData_EQIndex(domain::eqBarrierOptionData* parent) {return &*(parent->EQIndex = domain::eqBarrierOptionData_EQIndex_t());}
+void* _get_eqBarrierOptionData_underlyingTypes_Name(domain::eqBarrierOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_eqBarrierOptionData_underlyingTypes_Underlying(domain::eqBarrierOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_eqBarrierOptionData_underlyingTypes_Underlyings(domain::eqBarrierOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_eqBarrierOptionData_Currency(domain::eqBarrierOptionData* parent) {return &parent->Currency;}
+void* _get_eqBarrierOptionData_strikeGroup_Strike(domain::eqBarrierOptionData* parent) {return &*(parent->strikeGroup.Strike = domain::_Strike_t());}
+void* _get_eqBarrierOptionData_strikeGroup_StrikeData(domain::eqBarrierOptionData* parent) {return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());}
 void* _get_eqBarrierOptionData_Quantity(domain::eqBarrierOptionData* parent) {return &parent->Quantity;}
 xsdcpp::ChildElementInfo _eqBarrierOptionData_Children[] = {
     {"OptionData", 0, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_OptionData, &domain::_optionData_Info, 1, 1},
@@ -6311,12 +6564,20 @@ xsdcpp::ChildElementInfo _eqBarrierOptionData_Children[] = {
     {"StartDate", 2, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_StartDate, &domain::_date_Info, 0, 1},
     {"Calendar", 3, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_Calendar, &domain::_calendar_Info, 0, 1},
     {"EQIndex", 4, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_EQIndex, &domain::_eqBarrierOptionData_EQIndex_t_Info, 0, 1},
-    {"Currency", 5, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
-    {"Quantity", 6, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_Quantity, &domain::_float_Info, 1, 1},
+    {"Name", 5, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 5, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 5, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"Currency", 6, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
+    {"Strike", 7, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_strikeGroup_Strike, &domain::__Strike_t_Info, 0, 1},
+    {"StrikeData", 7, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_strikeGroup_StrikeData, &domain::__StrikeData_t_Info, 0, 1},
+    {"Quantity", 8, (xsdcpp::get_field_t)&_get_eqBarrierOptionData_Quantity, &domain::_float_Info, 1, 1},
     {nullptr}
 };
 void* _get_equityForwardData_LongShort(domain::equityForwardData* parent) {return &parent->LongShort;}
 void* _get_equityForwardData_Maturity(domain::equityForwardData* parent) {return &parent->Maturity;}
+void* _get_equityForwardData_underlyingTypes_Name(domain::equityForwardData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_equityForwardData_underlyingTypes_Underlying(domain::equityForwardData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_equityForwardData_underlyingTypes_Underlyings(domain::equityForwardData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_equityForwardData_Currency(domain::equityForwardData* parent) {return &parent->Currency;}
 void* _get_equityForwardData_Strike(domain::equityForwardData* parent) {return &parent->Strike;}
 void* _get_equityForwardData_StrikeCurrency(domain::equityForwardData* parent) {return &*(parent->StrikeCurrency = domain::extendedCurrencyCode());}
@@ -6325,28 +6586,40 @@ void* _get_equityForwardData_SettlementData(domain::equityForwardData* parent) {
 xsdcpp::ChildElementInfo _equityForwardData_Children[] = {
     {"LongShort", 0, (xsdcpp::get_field_t)&_get_equityForwardData_LongShort, &domain::_longShort_Info, 1, 1},
     {"Maturity", 1, (xsdcpp::get_field_t)&_get_equityForwardData_Maturity, &domain::_date_Info, 1, 1},
-    {"Currency", 2, (xsdcpp::get_field_t)&_get_equityForwardData_Currency, &domain::_extendedCurrencyCode_Info, 1, 1},
-    {"Strike", 3, (xsdcpp::get_field_t)&_get_equityForwardData_Strike, &domain::_float_Info, 1, 1},
-    {"StrikeCurrency", 4, (xsdcpp::get_field_t)&_get_equityForwardData_StrikeCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
-    {"Quantity", 5, (xsdcpp::get_field_t)&_get_equityForwardData_Quantity, &domain::_float_Info, 1, 1},
-    {"SettlementData", 6, (xsdcpp::get_field_t)&_get_equityForwardData_SettlementData, &domain::_eqForwardSettlementData_Info, 0, 1},
+    {"Name", 2, (xsdcpp::get_field_t)&_get_equityForwardData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 2, (xsdcpp::get_field_t)&_get_equityForwardData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 2, (xsdcpp::get_field_t)&_get_equityForwardData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"Currency", 3, (xsdcpp::get_field_t)&_get_equityForwardData_Currency, &domain::_extendedCurrencyCode_Info, 1, 1},
+    {"Strike", 4, (xsdcpp::get_field_t)&_get_equityForwardData_Strike, &domain::_float_Info, 1, 1},
+    {"StrikeCurrency", 5, (xsdcpp::get_field_t)&_get_equityForwardData_StrikeCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"Quantity", 6, (xsdcpp::get_field_t)&_get_equityForwardData_Quantity, &domain::_float_Info, 1, 1},
+    {"SettlementData", 7, (xsdcpp::get_field_t)&_get_equityForwardData_SettlementData, &domain::_eqForwardSettlementData_Info, 0, 1},
     {nullptr}
 };
 void* _get_eqDigitalOptionData_OptionData(domain::eqDigitalOptionData* parent) {return &parent->OptionData;}
 void* _get_eqDigitalOptionData_Strike(domain::eqDigitalOptionData* parent) {return &parent->Strike;}
 void* _get_eqDigitalOptionData_PayoffCurrency(domain::eqDigitalOptionData* parent) {return &*(parent->PayoffCurrency = domain::currencyCode());}
 void* _get_eqDigitalOptionData_PayoffAmount(domain::eqDigitalOptionData* parent) {return &parent->PayoffAmount;}
+void* _get_eqDigitalOptionData_underlyingTypes_Name(domain::eqDigitalOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_eqDigitalOptionData_underlyingTypes_Underlying(domain::eqDigitalOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_eqDigitalOptionData_underlyingTypes_Underlyings(domain::eqDigitalOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_eqDigitalOptionData_Quantity(domain::eqDigitalOptionData* parent) {return &parent->Quantity;}
 xsdcpp::ChildElementInfo _eqDigitalOptionData_Children[] = {
     {"OptionData", 0, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_OptionData, &domain::_optionData_Info, 1, 1},
     {"Strike", 1, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_Strike, &domain::_float_Info, 1, 1},
     {"PayoffCurrency", 2, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_PayoffCurrency, &domain::_currencyCode_Info, 0, 1},
     {"PayoffAmount", 3, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_PayoffAmount, &domain::_float_Info, 1, 1},
-    {"Quantity", 4, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_Quantity, &domain::_float_Info, 1, 1},
+    {"Name", 4, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 4, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 4, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"Quantity", 5, (xsdcpp::get_field_t)&_get_eqDigitalOptionData_Quantity, &domain::_float_Info, 1, 1},
     {nullptr}
 };
 void* _get_eqTouchOptionData_OptionData(domain::eqTouchOptionData* parent) {return &parent->OptionData;}
 void* _get_eqTouchOptionData_BarrierData(domain::eqTouchOptionData* parent) {return &parent->BarrierData;}
+void* _get_eqTouchOptionData_underlyingTypes_Name(domain::eqTouchOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_eqTouchOptionData_underlyingTypes_Underlying(domain::eqTouchOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_eqTouchOptionData_underlyingTypes_Underlyings(domain::eqTouchOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_eqTouchOptionData_PayoffCurrency(domain::eqTouchOptionData* parent) {return &parent->PayoffCurrency;}
 void* _get_eqTouchOptionData_PayoffAmount(domain::eqTouchOptionData* parent) {return &parent->PayoffAmount;}
 void* _get_eqTouchOptionData_StartDate(domain::eqTouchOptionData* parent) {return &*(parent->StartDate = domain::date());}
@@ -6355,13 +6628,19 @@ void* _get_eqTouchOptionData_EQIndex(domain::eqTouchOptionData* parent) {return 
 xsdcpp::ChildElementInfo _eqTouchOptionData_Children[] = {
     {"OptionData", 0, (xsdcpp::get_field_t)&_get_eqTouchOptionData_OptionData, &domain::_optionData_Info, 1, 1},
     {"BarrierData", 1, (xsdcpp::get_field_t)&_get_eqTouchOptionData_BarrierData, &domain::_barrierData_Info, 1, 1},
-    {"PayoffCurrency", 2, (xsdcpp::get_field_t)&_get_eqTouchOptionData_PayoffCurrency, &domain::_currencyCode_Info, 1, 1},
-    {"PayoffAmount", 3, (xsdcpp::get_field_t)&_get_eqTouchOptionData_PayoffAmount, &domain::_float_Info, 1, 1},
-    {"StartDate", 4, (xsdcpp::get_field_t)&_get_eqTouchOptionData_StartDate, &domain::_date_Info, 0, 1},
-    {"Calendar", 5, (xsdcpp::get_field_t)&_get_eqTouchOptionData_Calendar, &domain::_calendar_Info, 0, 1},
-    {"EQIndex", 6, (xsdcpp::get_field_t)&_get_eqTouchOptionData_EQIndex, &domain::_eqTouchOptionData_EQIndex_t_Info, 0, 1},
+    {"Name", 2, (xsdcpp::get_field_t)&_get_eqTouchOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 2, (xsdcpp::get_field_t)&_get_eqTouchOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 2, (xsdcpp::get_field_t)&_get_eqTouchOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"PayoffCurrency", 3, (xsdcpp::get_field_t)&_get_eqTouchOptionData_PayoffCurrency, &domain::_currencyCode_Info, 1, 1},
+    {"PayoffAmount", 4, (xsdcpp::get_field_t)&_get_eqTouchOptionData_PayoffAmount, &domain::_float_Info, 1, 1},
+    {"StartDate", 5, (xsdcpp::get_field_t)&_get_eqTouchOptionData_StartDate, &domain::_date_Info, 0, 1},
+    {"Calendar", 6, (xsdcpp::get_field_t)&_get_eqTouchOptionData_Calendar, &domain::_calendar_Info, 0, 1},
+    {"EQIndex", 7, (xsdcpp::get_field_t)&_get_eqTouchOptionData_EQIndex, &domain::_eqTouchOptionData_EQIndex_t_Info, 0, 1},
     {nullptr}
 };
+void* _get_cliquetOptionData_underlyingTypes_Name(domain::cliquetOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_cliquetOptionData_underlyingTypes_Underlying(domain::cliquetOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_cliquetOptionData_underlyingTypes_Underlyings(domain::cliquetOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_cliquetOptionData_Currency(domain::cliquetOptionData* parent) {return &parent->Currency;}
 void* _get_cliquetOptionData_Notional(domain::cliquetOptionData* parent) {return &parent->Notional;}
 void* _get_cliquetOptionData_LongShort(domain::cliquetOptionData* parent) {return &parent->LongShort;}
@@ -6377,20 +6656,23 @@ void* _get_cliquetOptionData_Premium(domain::cliquetOptionData* parent) {return 
 void* _get_cliquetOptionData_PremiumPaymentDate(domain::cliquetOptionData* parent) {return &*(parent->PremiumPaymentDate = domain::date());}
 void* _get_cliquetOptionData_PremiumCurrency(domain::cliquetOptionData* parent) {return &*(parent->PremiumCurrency = domain::currencyCode());}
 xsdcpp::ChildElementInfo _cliquetOptionData_Children[] = {
-    {"Currency", 0, (xsdcpp::get_field_t)&_get_cliquetOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
-    {"Notional", 1, (xsdcpp::get_field_t)&_get_cliquetOptionData_Notional, &domain::_float_Info, 1, 1},
-    {"LongShort", 2, (xsdcpp::get_field_t)&_get_cliquetOptionData_LongShort, &domain::_longShort_Info, 1, 1},
-    {"OptionType", 3, (xsdcpp::get_field_t)&_get_cliquetOptionData_OptionType, &domain::_optionType_Info, 1, 1},
-    {"Moneyness", 4, (xsdcpp::get_field_t)&_get_cliquetOptionData_Moneyness, &domain::_float_Info, 1, 1},
-    {"LocalCap", 5, (xsdcpp::get_field_t)&_get_cliquetOptionData_LocalCap, &domain::_float_Info, 0, 1},
-    {"LocalFloor", 6, (xsdcpp::get_field_t)&_get_cliquetOptionData_LocalFloor, &domain::_float_Info, 0, 1},
-    {"GlobalCap", 7, (xsdcpp::get_field_t)&_get_cliquetOptionData_GlobalCap, &domain::_float_Info, 0, 1},
-    {"GlobalFloor", 8, (xsdcpp::get_field_t)&_get_cliquetOptionData_GlobalFloor, &domain::_float_Info, 0, 1},
-    {"ScheduleData", 9, (xsdcpp::get_field_t)&_get_cliquetOptionData_ScheduleData, &domain::_scheduleData_Info, 1, 1},
-    {"SettlementDays", 10, (xsdcpp::get_field_t)&_get_cliquetOptionData_SettlementDays, &domain::_int64_t_Info, 0, 1},
-    {"Premium", 11, (xsdcpp::get_field_t)&_get_cliquetOptionData_Premium, &domain::_float_Info, 0, 1},
-    {"PremiumPaymentDate", 12, (xsdcpp::get_field_t)&_get_cliquetOptionData_PremiumPaymentDate, &domain::_date_Info, 0, 1},
-    {"PremiumCurrency", 13, (xsdcpp::get_field_t)&_get_cliquetOptionData_PremiumCurrency, &domain::_currencyCode_Info, 0, 1},
+    {"Name", 0, (xsdcpp::get_field_t)&_get_cliquetOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 0, (xsdcpp::get_field_t)&_get_cliquetOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 0, (xsdcpp::get_field_t)&_get_cliquetOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"Currency", 1, (xsdcpp::get_field_t)&_get_cliquetOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
+    {"Notional", 2, (xsdcpp::get_field_t)&_get_cliquetOptionData_Notional, &domain::_float_Info, 1, 1},
+    {"LongShort", 3, (xsdcpp::get_field_t)&_get_cliquetOptionData_LongShort, &domain::_longShort_Info, 1, 1},
+    {"OptionType", 4, (xsdcpp::get_field_t)&_get_cliquetOptionData_OptionType, &domain::_optionType_Info, 1, 1},
+    {"Moneyness", 5, (xsdcpp::get_field_t)&_get_cliquetOptionData_Moneyness, &domain::_float_Info, 1, 1},
+    {"LocalCap", 6, (xsdcpp::get_field_t)&_get_cliquetOptionData_LocalCap, &domain::_float_Info, 0, 1},
+    {"LocalFloor", 7, (xsdcpp::get_field_t)&_get_cliquetOptionData_LocalFloor, &domain::_float_Info, 0, 1},
+    {"GlobalCap", 8, (xsdcpp::get_field_t)&_get_cliquetOptionData_GlobalCap, &domain::_float_Info, 0, 1},
+    {"GlobalFloor", 9, (xsdcpp::get_field_t)&_get_cliquetOptionData_GlobalFloor, &domain::_float_Info, 0, 1},
+    {"ScheduleData", 10, (xsdcpp::get_field_t)&_get_cliquetOptionData_ScheduleData, &domain::_scheduleData_Info, 1, 1},
+    {"SettlementDays", 11, (xsdcpp::get_field_t)&_get_cliquetOptionData_SettlementDays, &domain::_int64_t_Info, 0, 1},
+    {"Premium", 12, (xsdcpp::get_field_t)&_get_cliquetOptionData_Premium, &domain::_float_Info, 0, 1},
+    {"PremiumPaymentDate", 13, (xsdcpp::get_field_t)&_get_cliquetOptionData_PremiumPaymentDate, &domain::_date_Info, 0, 1},
+    {"PremiumCurrency", 14, (xsdcpp::get_field_t)&_get_cliquetOptionData_PremiumCurrency, &domain::_currencyCode_Info, 0, 1},
     {nullptr}
 };
 void* _get_bondData_IssuerId(domain::bondData* parent) {return &*(parent->IssuerId = domain::bondData_IssuerId_t());}
@@ -6515,6 +6797,23 @@ void* _get_legData_ScheduleData(domain::legData* parent) {return &*(parent->Sche
 void* _get_legData_PaymentDates(domain::legData* parent) {return &*(parent->PaymentDates = domain::legData_PaymentDates_t());}
 void* _get_legData_Indexings(domain::legData* parent) {return &*(parent->Indexings = domain::legData_Indexings_t());}
 void* _get_legData_LastPeriodDayCounter(domain::legData* parent) {return &*(parent->LastPeriodDayCounter = domain::dayCounter());}
+void* _get_legData_legDataType_CashflowData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CashflowData = domain::_CashflowData_t());}
+void* _get_legData_legDataType_FixedLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->FixedLegData = domain::_FixedLegData_t());}
+void* _get_legData_legDataType_FloatingLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->FloatingLegData = domain::_FloatingLegData_t());}
+void* _get_legData_legDataType_CPILegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CPILegData = domain::_CPILegData_t());}
+void* _get_legData_legDataType_YYLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->YYLegData = domain::_YYLegData_t());}
+void* _get_legData_legDataType_CMSLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CMSLegData = domain::_CMSLegData_t());}
+void* _get_legData_legDataType_CMBLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CMBLegData = domain::_CMBLegData_t());}
+void* _get_legData_legDataType_DigitalCMSLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->DigitalCMSLegData = domain::_DigitalCMSLegData_t());}
+void* _get_legData_legDataType_DurationAdjustedCMSLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->DurationAdjustedCMSLegData = domain::_DurationAdjustedCMSLegData_t());}
+void* _get_legData_legDataType_CMSSpreadLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CMSSpreadLegData = domain::_CMSSpreadLegData_t());}
+void* _get_legData_legDataType_DigitalCMSSpreadLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->DigitalCMSSpreadLegData = domain::_DigitalCMSSpreadLegData_t());}
+void* _get_legData_legDataType_EquityLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->EquityLegData = domain::_EquityLegData_t());}
+void* _get_legData_legDataType_ZeroCouponFixedLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->ZeroCouponFixedLegData = domain::_ZeroCouponFixedLegData_t());}
+void* _get_legData_legDataType_EquityMarginLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->EquityMarginLegData = domain::_EquityMarginLegData_t());}
+void* _get_legData_legDataType_CommodityFixedLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CommodityFixedLegData = domain::_CommodityFixedLegData_t());}
+void* _get_legData_legDataType_CommodityFloatingLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->CommodityFloatingLegData = domain::_CommodityFloatingLegData_t());}
+void* _get_legData_legDataType_FormulaBasedLegData(domain::legData* parent) {return &*((parent->legDataType = domain::legDataType_group_t())->FormulaBasedLegData = domain::_FormulaBasedLegData_t());}
 void* _get_legData_StrictNotionalDates(domain::legData* parent) {return &*(parent->StrictNotionalDates = bool());}
 void* _get_legData_PaymentSchedule(domain::legData* parent) {return &*(parent->PaymentSchedule = domain::scheduleData());}
 void* _get_legData_SettlementData(domain::legData* parent) {return &*(parent->SettlementData = domain::legData_SettlementData_t());}
@@ -6533,12 +6832,31 @@ xsdcpp::ChildElementInfo _legData_Children[] = {
     {"PaymentDates", 11, (xsdcpp::get_field_t)&_get_legData_PaymentDates, &domain::_legData_PaymentDates_t_Info, 0, 1},
     {"Indexings", 12, (xsdcpp::get_field_t)&_get_legData_Indexings, &domain::_legData_Indexings_t_Info, 0, 1},
     {"LastPeriodDayCounter", 13, (xsdcpp::get_field_t)&_get_legData_LastPeriodDayCounter, &domain::_dayCounter_Info, 0, 1},
-    {"StrictNotionalDates", 14, (xsdcpp::get_field_t)&_get_legData_StrictNotionalDates, &domain::_bool_Info, 0, 1},
-    {"PaymentSchedule", 15, (xsdcpp::get_field_t)&_get_legData_PaymentSchedule, &domain::_scheduleData_Info, 0, 1},
-    {"SettlementData", 16, (xsdcpp::get_field_t)&_get_legData_SettlementData, &domain::_legData_SettlementData_t_Info, 0, 1},
+    {"CashflowData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CashflowData, &domain::__CashflowData_t_Info, 0, 1},
+    {"FixedLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_FixedLegData, &domain::__FixedLegData_t_Info, 0, 1},
+    {"FloatingLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_FloatingLegData, &domain::__FloatingLegData_t_Info, 0, 1},
+    {"CPILegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CPILegData, &domain::__CPILegData_t_Info, 0, 1},
+    {"YYLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_YYLegData, &domain::__YYLegData_t_Info, 0, 1},
+    {"CMSLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CMSLegData, &domain::__CMSLegData_t_Info, 0, 1},
+    {"CMBLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CMBLegData, &domain::__CMBLegData_t_Info, 0, 1},
+    {"DigitalCMSLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_DigitalCMSLegData, &domain::__DigitalCMSLegData_t_Info, 0, 1},
+    {"DurationAdjustedCMSLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_DurationAdjustedCMSLegData, &domain::__DurationAdjustedCMSLegData_t_Info, 0, 1},
+    {"CMSSpreadLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CMSSpreadLegData, &domain::__CMSSpreadLegData_t_Info, 0, 1},
+    {"DigitalCMSSpreadLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_DigitalCMSSpreadLegData, &domain::__DigitalCMSSpreadLegData_t_Info, 0, 1},
+    {"EquityLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_EquityLegData, &domain::__EquityLegData_t_Info, 0, 1},
+    {"ZeroCouponFixedLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_ZeroCouponFixedLegData, &domain::__ZeroCouponFixedLegData_t_Info, 0, 1},
+    {"EquityMarginLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_EquityMarginLegData, &domain::__EquityMarginLegData_t_Info, 0, 1},
+    {"CommodityFixedLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CommodityFixedLegData, &domain::__CommodityFixedLegData_t_Info, 0, 1},
+    {"CommodityFloatingLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_CommodityFloatingLegData, &domain::__CommodityFloatingLegData_t_Info, 0, 1},
+    {"FormulaBasedLegData", 14, (xsdcpp::get_field_t)&_get_legData_legDataType_FormulaBasedLegData, &domain::__FormulaBasedLegData_t_Info, 0, 1},
+    {"StrictNotionalDates", 15, (xsdcpp::get_field_t)&_get_legData_StrictNotionalDates, &domain::_bool_Info, 0, 1},
+    {"PaymentSchedule", 16, (xsdcpp::get_field_t)&_get_legData_PaymentSchedule, &domain::_scheduleData_Info, 0, 1},
+    {"SettlementData", 17, (xsdcpp::get_field_t)&_get_legData_SettlementData, &domain::_legData_SettlementData_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_creditDefaultSwapData_IssuerId(domain::creditDefaultSwapData* parent) {return &*(parent->IssuerId = domain::creditDefaultSwapData_IssuerId_t());}
+void* _get_creditDefaultSwapData_creditCurveIdType_CreditCurveId(domain::creditDefaultSwapData* parent) {return &*(parent->creditCurveIdType.CreditCurveId = domain::_CreditCurveId_t());}
+void* _get_creditDefaultSwapData_creditCurveIdType_ReferenceInformation(domain::creditDefaultSwapData* parent) {return &*(parent->creditCurveIdType.ReferenceInformation = domain::_ReferenceInformation_t());}
 void* _get_creditDefaultSwapData_ReferenceObligation(domain::creditDefaultSwapData* parent) {return &*(parent->ReferenceObligation = domain::creditDefaultSwapData_ReferenceObligation_t());}
 void* _get_creditDefaultSwapData_SettlesAccrual(domain::creditDefaultSwapData* parent) {return &*(parent->SettlesAccrual = domain::bool_());}
 void* _get_creditDefaultSwapData_RebatesAccrual(domain::creditDefaultSwapData* parent) {return &*(parent->RebatesAccrual = domain::bool_());}
@@ -6553,18 +6871,20 @@ void* _get_creditDefaultSwapData_TradeDate(domain::creditDefaultSwapData* parent
 void* _get_creditDefaultSwapData_CashSettlementDays(domain::creditDefaultSwapData* parent) {return &*(parent->CashSettlementDays = uint64_t());}
 xsdcpp::ChildElementInfo _creditDefaultSwapData_Children[] = {
     {"IssuerId", 0, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_IssuerId, &domain::_creditDefaultSwapData_IssuerId_t_Info, 0, 1},
-    {"ReferenceObligation", 1, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_ReferenceObligation, &domain::_creditDefaultSwapData_ReferenceObligation_t_Info, 0, 1},
-    {"SettlesAccrual", 2, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_SettlesAccrual, &domain::_bool__Info, 0, 1},
-    {"RebatesAccrual", 3, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_RebatesAccrual, &domain::_bool__Info, 0, 1},
-    {"PaysAtDefaultTime", 4, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_PaysAtDefaultTime, &domain::_bool__Info, 0, 1},
-    {"ProtectionPaymentTime", 5, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_ProtectionPaymentTime, &domain::_creditDefaultSwapData_ProtectionPaymentTime_t_Info, 0, 1},
-    {"ProtectionStart", 6, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_ProtectionStart, &domain::_date_Info, 0, 1},
-    {"UpfrontDate", 7, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_UpfrontDate, &domain::_date_Info, 0, 1},
-    {"UpfrontFee", 8, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_UpfrontFee, &domain::_float_Info, 0, 1},
-    {"FixedRecoveryRate", 9, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_FixedRecoveryRate, &domain::_float_Info, 0, 1},
-    {"LegData", 10, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_LegData, &domain::_legData_Info, 1, 1},
-    {"TradeDate", 11, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_TradeDate, &domain::_date_Info, 0, 1},
-    {"CashSettlementDays", 12, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_CashSettlementDays, &domain::_uint64_t_Info, 0, 1},
+    {"CreditCurveId", 1, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_creditCurveIdType_CreditCurveId, &domain::__CreditCurveId_t_Info, 0, 1},
+    {"ReferenceInformation", 1, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_creditCurveIdType_ReferenceInformation, &domain::__ReferenceInformation_t_Info, 0, 1},
+    {"ReferenceObligation", 2, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_ReferenceObligation, &domain::_creditDefaultSwapData_ReferenceObligation_t_Info, 0, 1},
+    {"SettlesAccrual", 3, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_SettlesAccrual, &domain::_bool__Info, 0, 1},
+    {"RebatesAccrual", 4, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_RebatesAccrual, &domain::_bool__Info, 0, 1},
+    {"PaysAtDefaultTime", 5, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_PaysAtDefaultTime, &domain::_bool__Info, 0, 1},
+    {"ProtectionPaymentTime", 6, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_ProtectionPaymentTime, &domain::_creditDefaultSwapData_ProtectionPaymentTime_t_Info, 0, 1},
+    {"ProtectionStart", 7, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_ProtectionStart, &domain::_date_Info, 0, 1},
+    {"UpfrontDate", 8, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_UpfrontDate, &domain::_date_Info, 0, 1},
+    {"UpfrontFee", 9, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_UpfrontFee, &domain::_float_Info, 0, 1},
+    {"FixedRecoveryRate", 10, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_FixedRecoveryRate, &domain::_float_Info, 0, 1},
+    {"LegData", 11, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_LegData, &domain::_legData_Info, 1, 1},
+    {"TradeDate", 12, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_TradeDate, &domain::_date_Info, 0, 1},
+    {"CashSettlementDays", 13, (xsdcpp::get_field_t)&_get_creditDefaultSwapData_CashSettlementDays, &domain::_uint64_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_creditDefaultSwapOptionData_OptionData(domain::creditDefaultSwapOptionData* parent) {return &parent->OptionData;}
@@ -6802,6 +7122,8 @@ xsdcpp::ChildElementInfo _commodityPositionData_Children[] = {
 };
 void* _get_singleUnderlyingAsianOptionData_Currency(domain::singleUnderlyingAsianOptionData* parent) {return &parent->Currency;}
 void* _get_singleUnderlyingAsianOptionData_Quantity(domain::singleUnderlyingAsianOptionData* parent) {return &parent->Quantity;}
+void* _get_singleUnderlyingAsianOptionData_strikeGroup_Strike(domain::singleUnderlyingAsianOptionData* parent) {return &*(parent->strikeGroup.Strike = domain::_Strike_t());}
+void* _get_singleUnderlyingAsianOptionData_strikeGroup_StrikeData(domain::singleUnderlyingAsianOptionData* parent) {return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());}
 void* _get_singleUnderlyingAsianOptionData_Underlying(domain::singleUnderlyingAsianOptionData* parent) {return &*(parent->Underlying = domain::underlying());}
 void* _get_singleUnderlyingAsianOptionData_OptionData(domain::singleUnderlyingAsianOptionData* parent) {return &parent->OptionData;}
 void* _get_singleUnderlyingAsianOptionData_Settlement(domain::singleUnderlyingAsianOptionData* parent) {return &*(parent->Settlement = domain::singleUnderlyingAsianOptionData_Settlement_t());}
@@ -6809,23 +7131,29 @@ void* _get_singleUnderlyingAsianOptionData_ObservationDates(domain::singleUnderl
 xsdcpp::ChildElementInfo _singleUnderlyingAsianOptionData_Children[] = {
     {"Currency", 0, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_Currency, &domain::_currencyCode_Info, 1, 1},
     {"Quantity", 1, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_Quantity, &domain::_float_Info, 1, 1},
-    {"Underlying", 2, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_Underlying, &domain::_underlying_Info, 0, 1},
-    {"OptionData", 3, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_OptionData, &domain::_optionData_Info, 1, 1},
-    {"Settlement", 4, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_Settlement, &domain::_singleUnderlyingAsianOptionData_Settlement_t_Info, 0, 1},
-    {"ObservationDates", 5, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_ObservationDates, &domain::_scheduleData_Info, 0, 1},
+    {"Strike", 2, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_strikeGroup_Strike, &domain::__Strike_t_Info, 0, 1},
+    {"StrikeData", 2, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_strikeGroup_StrikeData, &domain::__StrikeData_t_Info, 0, 1},
+    {"Underlying", 3, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_Underlying, &domain::_underlying_Info, 0, 1},
+    {"OptionData", 4, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_OptionData, &domain::_optionData_Info, 1, 1},
+    {"Settlement", 5, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_Settlement, &domain::_singleUnderlyingAsianOptionData_Settlement_t_Info, 0, 1},
+    {"ObservationDates", 6, (xsdcpp::get_field_t)&_get_singleUnderlyingAsianOptionData_ObservationDates, &domain::_scheduleData_Info, 0, 1},
     {nullptr}
 };
 void* _get_bondOptionData_OptionData(domain::bondOptionData* parent) {return &parent->OptionData;}
+void* _get_bondOptionData_strikeGroup_Strike(domain::bondOptionData* parent) {return &*(parent->strikeGroup.Strike = domain::_Strike_t());}
+void* _get_bondOptionData_strikeGroup_StrikeData(domain::bondOptionData* parent) {return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());}
 void* _get_bondOptionData_Redemption(domain::bondOptionData* parent) {return &*(parent->Redemption = domain::bondOptionData_Redemption_t());}
 void* _get_bondOptionData_PriceType(domain::bondOptionData* parent) {return &*(parent->PriceType = domain::bondOptionData_PriceType_t());}
 void* _get_bondOptionData_KnocksOut(domain::bondOptionData* parent) {return &*(parent->KnocksOut = domain::bool_());}
 void* _get_bondOptionData_BondData(domain::bondOptionData* parent) {return &parent->BondData;}
 xsdcpp::ChildElementInfo _bondOptionData_Children[] = {
     {"OptionData", 0, (xsdcpp::get_field_t)&_get_bondOptionData_OptionData, &domain::_optionData_Info, 1, 1},
-    {"Redemption", 1, (xsdcpp::get_field_t)&_get_bondOptionData_Redemption, &domain::_bondOptionData_Redemption_t_Info, 0, 1},
-    {"PriceType", 2, (xsdcpp::get_field_t)&_get_bondOptionData_PriceType, &domain::_bondOptionData_PriceType_t_Info, 0, 1},
-    {"KnocksOut", 3, (xsdcpp::get_field_t)&_get_bondOptionData_KnocksOut, &domain::_bool__Info, 0, 1},
-    {"BondData", 4, (xsdcpp::get_field_t)&_get_bondOptionData_BondData, &domain::_bondData_Info, 1, 1},
+    {"Strike", 1, (xsdcpp::get_field_t)&_get_bondOptionData_strikeGroup_Strike, &domain::__Strike_t_Info, 0, 1},
+    {"StrikeData", 1, (xsdcpp::get_field_t)&_get_bondOptionData_strikeGroup_StrikeData, &domain::__StrikeData_t_Info, 0, 1},
+    {"Redemption", 2, (xsdcpp::get_field_t)&_get_bondOptionData_Redemption, &domain::_bondOptionData_Redemption_t_Info, 0, 1},
+    {"PriceType", 3, (xsdcpp::get_field_t)&_get_bondOptionData_PriceType, &domain::_bondOptionData_PriceType_t_Info, 0, 1},
+    {"KnocksOut", 4, (xsdcpp::get_field_t)&_get_bondOptionData_KnocksOut, &domain::_bool__Info, 0, 1},
+    {"BondData", 5, (xsdcpp::get_field_t)&_get_bondOptionData_BondData, &domain::_bondData_Info, 1, 1},
     {nullptr}
 };
 void* _get_bondRepoData_RepoData_t_LegData(domain::bondRepoData_RepoData_t* parent) {return &parent->LegData;}
@@ -8099,6 +8427,8 @@ xsdcpp::ChildElementInfo _accumulatorData_Children[] = {
 };
 void* _get_windowBarrierOptionData2_Currency(domain::windowBarrierOptionData2* parent) {return &parent->Currency;}
 void* _get_windowBarrierOptionData2_FixingAmount(domain::windowBarrierOptionData2* parent) {return &parent->FixingAmount;}
+void* _get_windowBarrierOptionData2_strikeGroup_Strike(domain::windowBarrierOptionData2* parent) {return &*(parent->strikeGroup.Strike = domain::_Strike_t());}
+void* _get_windowBarrierOptionData2_strikeGroup_StrikeData(domain::windowBarrierOptionData2* parent) {return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());}
 void* _get_windowBarrierOptionData2_Underlying(domain::windowBarrierOptionData2* parent) {return &parent->Underlying;}
 void* _get_windowBarrierOptionData2_OptionData(domain::windowBarrierOptionData2* parent) {return &parent->OptionData;}
 void* _get_windowBarrierOptionData2_StartDate(domain::windowBarrierOptionData2* parent) {return &parent->StartDate;}
@@ -8107,11 +8437,13 @@ void* _get_windowBarrierOptionData2_BarrierData(domain::windowBarrierOptionData2
 xsdcpp::ChildElementInfo _windowBarrierOptionData2_Children[] = {
     {"Currency", 0, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_Currency, &domain::_currencyCode_Info, 1, 1},
     {"FixingAmount", 1, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_FixingAmount, &domain::_float_Info, 1, 1},
-    {"Underlying", 2, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_Underlying, &domain::_underlying_Info, 1, 1},
-    {"OptionData", 3, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_OptionData, &domain::_optionData_Info, 1, 1},
-    {"StartDate", 4, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_StartDate, &domain::_date_Info, 1, 1},
-    {"EndDate", 5, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_EndDate, &domain::_date_Info, 1, 1},
-    {"BarrierData", 6, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_BarrierData, &domain::_barrierData_Info, 1, 1},
+    {"Strike", 2, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_strikeGroup_Strike, &domain::__Strike_t_Info, 0, 1},
+    {"StrikeData", 2, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_strikeGroup_StrikeData, &domain::__StrikeData_t_Info, 0, 1},
+    {"Underlying", 3, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_Underlying, &domain::_underlying_Info, 1, 1},
+    {"OptionData", 4, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_OptionData, &domain::_optionData_Info, 1, 1},
+    {"StartDate", 5, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_StartDate, &domain::_date_Info, 1, 1},
+    {"EndDate", 6, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_EndDate, &domain::_date_Info, 1, 1},
+    {"BarrierData", 7, (xsdcpp::get_field_t)&_get_windowBarrierOptionData2_BarrierData, &domain::_barrierData_Info, 1, 1},
     {nullptr}
 };
 void* _get_basketOptionData_Currency(domain::basketOptionData* parent) {return &parent->Currency;}
@@ -8145,6 +8477,9 @@ xsdcpp::ChildElementInfo _genericBarrierOptionData_Barriers_t_Children[] = {
     {nullptr}
 };
 void* _get_genericBarrierOptionData_PayCurrency(domain::genericBarrierOptionData* parent) {return &parent->PayCurrency;}
+void* _get_genericBarrierOptionData_underlyingTypes_Name(domain::genericBarrierOptionData* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get_genericBarrierOptionData_underlyingTypes_Underlying(domain::genericBarrierOptionData* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get_genericBarrierOptionData_underlyingTypes_Underlyings(domain::genericBarrierOptionData* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
 void* _get_genericBarrierOptionData_OptionData(domain::genericBarrierOptionData* parent) {return &parent->OptionData;}
 void* _get_genericBarrierOptionData_SettlementDate(domain::genericBarrierOptionData* parent) {return &*(parent->SettlementDate = domain::date());}
 void* _get_genericBarrierOptionData_SettlementLag(domain::genericBarrierOptionData* parent) {return &*(parent->SettlementLag = domain::genericBarrierOptionData_SettlementLag_t());}
@@ -8157,16 +8492,19 @@ void* _get_genericBarrierOptionData_Barriers(domain::genericBarrierOptionData* p
 void* _get_genericBarrierOptionData_TransatlanticBarrier(domain::genericBarrierOptionData* parent) {return &*(parent->TransatlanticBarrier = domain::genericBarrierOptionData_TransatlanticBarrier_t());}
 xsdcpp::ChildElementInfo _genericBarrierOptionData_Children[] = {
     {"PayCurrency", 0, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_PayCurrency, &domain::_currencyCode_Info, 1, 1},
-    {"OptionData", 1, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_OptionData, &domain::_optionData_Info, 1, 1},
-    {"SettlementDate", 2, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementDate, &domain::_date_Info, 0, 1},
-    {"SettlementLag", 3, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementLag, &domain::_genericBarrierOptionData_SettlementLag_t_Info, 0, 1},
-    {"SettlementCalendar", 4, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementCalendar, &domain::_calendar_Info, 0, 1},
-    {"SettlementConvention", 5, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementConvention, &domain::_businessDayConvention_Info, 0, 1},
-    {"Quantity", 6, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Quantity, &domain::_float_Info, 0, 1},
-    {"Strike", 7, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Strike, &domain::_float_Info, 0, 1},
-    {"Amount", 8, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Amount, &domain::_float_Info, 0, 1},
-    {"Barriers", 9, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Barriers, &domain::_genericBarrierOptionData_Barriers_t_Info, 1, 1},
-    {"TransatlanticBarrier", 10, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_TransatlanticBarrier, &domain::_genericBarrierOptionData_TransatlanticBarrier_t_Info, 0, 1},
+    {"Name", 1, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 1, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 1, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"OptionData", 2, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_OptionData, &domain::_optionData_Info, 1, 1},
+    {"SettlementDate", 3, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementDate, &domain::_date_Info, 0, 1},
+    {"SettlementLag", 4, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementLag, &domain::_genericBarrierOptionData_SettlementLag_t_Info, 0, 1},
+    {"SettlementCalendar", 5, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementCalendar, &domain::_calendar_Info, 0, 1},
+    {"SettlementConvention", 6, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_SettlementConvention, &domain::_businessDayConvention_Info, 0, 1},
+    {"Quantity", 7, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Quantity, &domain::_float_Info, 0, 1},
+    {"Strike", 8, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Strike, &domain::_float_Info, 0, 1},
+    {"Amount", 9, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Amount, &domain::_float_Info, 0, 1},
+    {"Barriers", 10, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_Barriers, &domain::_genericBarrierOptionData_Barriers_t_Info, 1, 1},
+    {"TransatlanticBarrier", 11, (xsdcpp::get_field_t)&_get_genericBarrierOptionData_TransatlanticBarrier, &domain::_genericBarrierOptionData_TransatlanticBarrier_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_rainbowOptionData_Currency(domain::rainbowOptionData* parent) {return &parent->Currency;}
@@ -10752,22 +11090,30 @@ xsdcpp::ChildElementInfo _bondYield_Children[] = {
     {"Guess", 6, (xsdcpp::get_field_t)&_get_bondYield_Guess, &domain::_float_Info, 0, 1},
     {nullptr}
 };
+void* _get_collateralBalances_CollateralBalance_t_nettingSetGroup_NettingSetId(domain::collateralBalances_CollateralBalance_t* parent) {return &*(parent->nettingSetGroup.NettingSetId = domain::_NettingSetId_t());}
+void* _get_collateralBalances_CollateralBalance_t_nettingSetGroup_NettingSetDetails(domain::collateralBalances_CollateralBalance_t* parent) {return &*(parent->nettingSetGroup.NettingSetDetails = domain::nettingSetDetails());}
 void* _get_collateralBalances_CollateralBalance_t_Currency(domain::collateralBalances_CollateralBalance_t* parent) {return &*(parent->Currency = domain::currencyCode());}
 void* _get_collateralBalances_CollateralBalance_t_InitialMargin(domain::collateralBalances_CollateralBalance_t* parent) {return &*(parent->InitialMargin = double());}
 void* _get_collateralBalances_CollateralBalance_t_VariationMargin(domain::collateralBalances_CollateralBalance_t* parent) {return &*(parent->VariationMargin = double());}
 xsdcpp::ChildElementInfo _collateralBalances_CollateralBalance_t_Children[] = {
-    {"Currency", 0, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_Currency, &domain::_currencyCode_Info, 0, 1},
-    {"InitialMargin", 1, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_InitialMargin, &domain::_double_Info, 0, 1},
-    {"VariationMargin", 2, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_VariationMargin, &domain::_double_Info, 0, 1},
+    {"NettingSetId", 0, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_nettingSetGroup_NettingSetId, &domain::__NettingSetId_t_Info, 0, 1},
+    {"NettingSetDetails", 0, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_nettingSetGroup_NettingSetDetails, &domain::_nettingSetDetails_Info, 0, 1},
+    {"Currency", 1, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_Currency, &domain::_currencyCode_Info, 0, 1},
+    {"InitialMargin", 2, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_InitialMargin, &domain::_double_Info, 0, 1},
+    {"VariationMargin", 3, (xsdcpp::get_field_t)&_get_collateralBalances_CollateralBalance_t_VariationMargin, &domain::_double_Info, 0, 1},
     {nullptr}
 };
+void* _get_nettingsetdefinitions_NettingSet_t_nettingSetGroup_NettingSetId(domain::nettingsetdefinitions_NettingSet_t* parent) {return &*(parent->nettingSetGroup.NettingSetId = domain::_NettingSetId_t());}
+void* _get_nettingsetdefinitions_NettingSet_t_nettingSetGroup_NettingSetDetails(domain::nettingsetdefinitions_NettingSet_t* parent) {return &*(parent->nettingSetGroup.NettingSetDetails = domain::nettingSetDetails());}
 void* _get_nettingsetdefinitions_NettingSet_t_ActiveCSAFlag(domain::nettingsetdefinitions_NettingSet_t* parent) {return &*(parent->ActiveCSAFlag = bool());}
 void* _get_nettingsetdefinitions_NettingSet_t_CSADetails(domain::nettingsetdefinitions_NettingSet_t* parent) {return &*(parent->CSADetails = domain::nettingsetdefinitions_NettingSet_t_CSADetails_t());}
 void* _get_nettingsetdefinitions_NettingSet_t_RiskWeight(domain::nettingsetdefinitions_NettingSet_t* parent) {return &*(parent->RiskWeight = double());}
 xsdcpp::ChildElementInfo _nettingsetdefinitions_NettingSet_t_Children[] = {
-    {"ActiveCSAFlag", 0, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_ActiveCSAFlag, &domain::_bool_Info, 0, 1},
-    {"CSADetails", 1, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_CSADetails, &domain::_nettingsetdefinitions_NettingSet_t_CSADetails_t_Info, 0, 1},
-    {"RiskWeight", 2, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_RiskWeight, &domain::_double_Info, 0, 1},
+    {"NettingSetId", 0, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_nettingSetGroup_NettingSetId, &domain::__NettingSetId_t_Info, 0, 1},
+    {"NettingSetDetails", 0, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_nettingSetGroup_NettingSetDetails, &domain::_nettingSetDetails_Info, 0, 1},
+    {"ActiveCSAFlag", 1, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_ActiveCSAFlag, &domain::_bool_Info, 0, 1},
+    {"CSADetails", 2, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_CSADetails, &domain::_nettingsetdefinitions_NettingSet_t_CSADetails_t_Info, 0, 1},
+    {"RiskWeight", 3, (xsdcpp::get_field_t)&_get_nettingsetdefinitions_NettingSet_t_RiskWeight, &domain::_double_Info, 0, 1},
     {nullptr}
 };
 void* _get_product_ModelParameters_t_Parameter(domain::product_ModelParameters_t* parent) {return (parent->Parameter.emplace_back(), &parent->Parameter.back());}
@@ -11290,6 +11636,19 @@ xsdcpp::ChildElementInfo _envelope_PortfolioIds_t_Children[] = {
     {"PortfolioId", 0, (xsdcpp::get_field_t)&_get_envelope_PortfolioIds_t_PortfolioId, &domain::_envelope_PortfolioIds_t_PortfolioId_t_Info, 0, 4294967295},
     {nullptr}
 };
+void* _get_nettingSetDetails_NettingSetId(domain::nettingSetDetails* parent) {return &parent->NettingSetId;}
+void* _get_nettingSetDetails_AgreementType(domain::nettingSetDetails* parent) {return &*(parent->AgreementType = domain::nettingSetDetails_AgreementType_t());}
+void* _get_nettingSetDetails_CallType(domain::nettingSetDetails* parent) {return &*(parent->CallType = domain::nettingSetDetails_CallType_t());}
+void* _get_nettingSetDetails_InitialMarginType(domain::nettingSetDetails* parent) {return &*(parent->InitialMarginType = domain::nettingSetDetails_InitialMarginType_t());}
+void* _get_nettingSetDetails_LegalEntityId(domain::nettingSetDetails* parent) {return &*(parent->LegalEntityId = domain::nettingSetDetails_LegalEntityId_t());}
+xsdcpp::ChildElementInfo _nettingSetDetails_Children[] = {
+    {"NettingSetId", 0, (xsdcpp::get_field_t)&_get_nettingSetDetails_NettingSetId, &domain::_nettingSetDetails_NettingSetId_t_Info, 1, 1},
+    {"AgreementType", 1, (xsdcpp::get_field_t)&_get_nettingSetDetails_AgreementType, &domain::_nettingSetDetails_AgreementType_t_Info, 0, 1},
+    {"CallType", 2, (xsdcpp::get_field_t)&_get_nettingSetDetails_CallType, &domain::_nettingSetDetails_CallType_t_Info, 0, 1},
+    {"InitialMarginType", 3, (xsdcpp::get_field_t)&_get_nettingSetDetails_InitialMarginType, &domain::_nettingSetDetails_InitialMarginType_t_Info, 0, 1},
+    {"LegalEntityId", 4, (xsdcpp::get_field_t)&_get_nettingSetDetails_LegalEntityId, &domain::_nettingSetDetails_LegalEntityId_t_Info, 0, 1},
+    {nullptr}
+};
 void* _get_tradeAction_Type(domain::tradeAction* parent) {return &parent->Type;}
 void* _get_tradeAction_Owner(domain::tradeAction* parent) {return &parent->Owner;}
 void* _get_tradeAction_Schedule(domain::tradeAction* parent) {return &parent->Schedule;}
@@ -11372,6 +11731,21 @@ xsdcpp::ChildElementInfo _scheduleData_Dates_t_Children[] = {
     {"Dates", 5, (xsdcpp::get_field_t)&_get_scheduleData_Dates_t_Dates, &domain::_scheduleData_Dates_t_Dates_t_Info, 1, 1},
     {nullptr}
 };
+void* _get_DerivedScheduleType_BaseSchedule(domain::DerivedScheduleType* parent) {return &parent->BaseSchedule;}
+void* _get_DerivedScheduleType_Shift(domain::DerivedScheduleType* parent) {return &*(parent->Shift = domain::DerivedScheduleType_Shift_t());}
+void* _get_DerivedScheduleType_Calendar(domain::DerivedScheduleType* parent) {return &*(parent->Calendar = domain::calendar());}
+void* _get_DerivedScheduleType_Convention(domain::DerivedScheduleType* parent) {return &*(parent->Convention = domain::businessDayConvention());}
+void* _get_DerivedScheduleType_RemoveFirstDate(domain::DerivedScheduleType* parent) {return &*(parent->RemoveFirstDate = bool());}
+void* _get_DerivedScheduleType_RemoveLastDate(domain::DerivedScheduleType* parent) {return &*(parent->RemoveLastDate = bool());}
+xsdcpp::ChildElementInfo _DerivedScheduleType_Children[] = {
+    {"BaseSchedule", 0, (xsdcpp::get_field_t)&_get_DerivedScheduleType_BaseSchedule, &domain::_DerivedScheduleType_BaseSchedule_t_Info, 1, 1},
+    {"Shift", 1, (xsdcpp::get_field_t)&_get_DerivedScheduleType_Shift, &domain::_DerivedScheduleType_Shift_t_Info, 0, 1},
+    {"Calendar", 2, (xsdcpp::get_field_t)&_get_DerivedScheduleType_Calendar, &domain::_calendar_Info, 0, 1},
+    {"Convention", 3, (xsdcpp::get_field_t)&_get_DerivedScheduleType_Convention, &domain::_businessDayConvention_Info, 0, 1},
+    {"RemoveFirstDate", 4, (xsdcpp::get_field_t)&_get_DerivedScheduleType_RemoveFirstDate, &domain::_bool_Info, 0, 1},
+    {"RemoveLastDate", 5, (xsdcpp::get_field_t)&_get_DerivedScheduleType_RemoveLastDate, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
 void* _get_premiumData_Premium(domain::premiumData* parent) {return (parent->Premium.emplace_back(), &parent->Premium.back());}
 xsdcpp::ChildElementInfo _premiumData_Children[] = {
     {"Premium", 0, (xsdcpp::get_field_t)&_get_premiumData_Premium, &domain::_premiumData_Premium_t_Info, 0, 4294967295},
@@ -11403,6 +11777,11 @@ xsdcpp::ChildElementInfo _optionData_SettlementData_t_Children[] = {
     {"PayCurrency", 0, (xsdcpp::get_field_t)&_get_optionData_SettlementData_t_PayCurrency, &domain::_currencyCode_Info, 1, 1},
     {"FXIndex", 1, (xsdcpp::get_field_t)&_get_optionData_SettlementData_t_FXIndex, &domain::_optionData_SettlementData_t_FXIndex_t_Info, 1, 1},
     {"FixingDate", 2, (xsdcpp::get_field_t)&_get_optionData_SettlementData_t_FixingDate, &domain::_optionData_SettlementData_t_FixingDate_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get__ExerciseDates_t_ExerciseDate(domain::_ExerciseDates_t* parent) {return (parent->ExerciseDate.emplace_back(), &parent->ExerciseDate.back());}
+xsdcpp::ChildElementInfo __ExerciseDates_t_Children[] = {
+    {"ExerciseDate", 0, (xsdcpp::get_field_t)&_get__ExerciseDates_t_ExerciseDate, &domain::_date_Info, 0, 4294967295},
     {nullptr}
 };
 void* _get_legData_capfloor_Notionals_t_Notional_t_startDate(domain::legData_capfloor_Notionals_t_Notional_t* elem) { return &*(elem->startDate = xsd::string()); }
@@ -11439,6 +11818,417 @@ xsdcpp::ChildElementInfo _legData_capfloor_PaymentDates_t_Children[] = {
     {"PaymentDate", 0, (xsdcpp::get_field_t)&_get_legData_capfloor_PaymentDates_t_PaymentDate, &domain::_date_Info, 1, 4294967295},
     {nullptr}
 };
+void* _get__CashflowData_t_Cashflow_t_Amount(domain::_CashflowData_t_Cashflow_t* parent) {return (parent->Amount.emplace_back(), &parent->Amount.back());}
+xsdcpp::ChildElementInfo __CashflowData_t_Cashflow_t_Children[] = {
+    {"Amount", 0, (xsdcpp::get_field_t)&_get__CashflowData_t_Cashflow_t_Amount, &domain::__CashflowData_t_Cashflow_t_Amount_t_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__CashflowData_t_Cashflow(domain::_CashflowData_t* parent) {return &parent->Cashflow;}
+xsdcpp::ChildElementInfo __CashflowData_t_Children[] = {
+    {"Cashflow", 0, (xsdcpp::get_field_t)&_get__CashflowData_t_Cashflow, &domain::__CashflowData_t_Cashflow_t_Info, 1, 1},
+    {nullptr}
+};
+void* _get__FixedLegData_t_Rates_t_Rate(domain::_FixedLegData_t_Rates_t* parent) {return (parent->Rate.emplace_back(), &parent->Rate.back());}
+xsdcpp::ChildElementInfo __FixedLegData_t_Rates_t_Children[] = {
+    {"Rate", 0, (xsdcpp::get_field_t)&_get__FixedLegData_t_Rates_t_Rate, &domain::__FixedLegData_t_Rates_t_Rate_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__FixedLegData_t_Rates(domain::_FixedLegData_t* parent) {return &parent->Rates;}
+xsdcpp::ChildElementInfo __FixedLegData_t_Children[] = {
+    {"Rates", 0, (xsdcpp::get_field_t)&_get__FixedLegData_t_Rates, &domain::__FixedLegData_t_Rates_t_Info, 1, 1},
+    {nullptr}
+};
+void* _get__FloatingLegData_t_Index(domain::_FloatingLegData_t* parent) {return &parent->Index;}
+void* _get__FloatingLegData_t_IsInArrears(domain::_FloatingLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__FloatingLegData_t_LastRecentPeriod(domain::_FloatingLegData_t* parent) {return &*(parent->LastRecentPeriod = domain::_FloatingLegData_t_LastRecentPeriod_t());}
+void* _get__FloatingLegData_t_LastRecentPeriodCalendar(domain::_FloatingLegData_t* parent) {return &*(parent->LastRecentPeriodCalendar = domain::calendar());}
+void* _get__FloatingLegData_t_FixingDays(domain::_FloatingLegData_t* parent) {return &*(parent->FixingDays = uint64_t());}
+void* _get__FloatingLegData_t_Lookback(domain::_FloatingLegData_t* parent) {return &*(parent->Lookback = domain::_FloatingLegData_t_Lookback_t());}
+void* _get__FloatingLegData_t_RateCutoff(domain::_FloatingLegData_t* parent) {return &*(parent->RateCutoff = int64_t());}
+void* _get__FloatingLegData_t_IsAveraged(domain::_FloatingLegData_t* parent) {return &*(parent->IsAveraged = bool());}
+void* _get__FloatingLegData_t_HasSubPeriods(domain::_FloatingLegData_t* parent) {return &*(parent->HasSubPeriods = bool());}
+void* _get__FloatingLegData_t_IncludeSpread(domain::_FloatingLegData_t* parent) {return &*(parent->IncludeSpread = bool());}
+void* _get__FloatingLegData_t_IsNotResettingXCCY(domain::_FloatingLegData_t* parent) {return &*(parent->IsNotResettingXCCY = bool());}
+void* _get__FloatingLegData_t_Spreads(domain::_FloatingLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__FloatingLegData_t_Caps(domain::_FloatingLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__FloatingLegData_t_Floors(domain::_FloatingLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__FloatingLegData_t_Gearings(domain::_FloatingLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__FloatingLegData_t_NakedOption(domain::_FloatingLegData_t* parent) {return &*(parent->NakedOption = bool());}
+void* _get__FloatingLegData_t_LocalCapFloor(domain::_FloatingLegData_t* parent) {return &*(parent->LocalCapFloor = bool());}
+void* _get__FloatingLegData_t_FixingSchedule(domain::_FloatingLegData_t* parent) {return &*(parent->FixingSchedule = domain::scheduleData());}
+void* _get__FloatingLegData_t_ResetSchedule(domain::_FloatingLegData_t* parent) {return &*(parent->ResetSchedule = domain::scheduleData());}
+void* _get__FloatingLegData_t_HistoricalFixings(domain::_FloatingLegData_t* parent) {return &*(parent->HistoricalFixings = domain::tradeLevelFixings());}
+void* _get__FloatingLegData_t_FrontStubInterpolation(domain::_FloatingLegData_t* parent) {return &*(parent->FrontStubInterpolation = domain::stubInterpolation());}
+void* _get__FloatingLegData_t_BackStubInterpolation(domain::_FloatingLegData_t* parent) {return &*(parent->BackStubInterpolation = domain::stubInterpolation());}
+void* _get__FloatingLegData_t_StubUseOriginalCurve(domain::_FloatingLegData_t* parent) {return &*(parent->StubUseOriginalCurve = bool());}
+xsdcpp::ChildElementInfo __FloatingLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__FloatingLegData_t_Index, &domain::_indexNameType_Info, 1, 1},
+    {"IsInArrears", 1, (xsdcpp::get_field_t)&_get__FloatingLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"LastRecentPeriod", 2, (xsdcpp::get_field_t)&_get__FloatingLegData_t_LastRecentPeriod, &domain::__FloatingLegData_t_LastRecentPeriod_t_Info, 0, 1},
+    {"LastRecentPeriodCalendar", 3, (xsdcpp::get_field_t)&_get__FloatingLegData_t_LastRecentPeriodCalendar, &domain::_calendar_Info, 0, 1},
+    {"FixingDays", 4, (xsdcpp::get_field_t)&_get__FloatingLegData_t_FixingDays, &domain::_uint64_t_Info, 0, 1},
+    {"Lookback", 5, (xsdcpp::get_field_t)&_get__FloatingLegData_t_Lookback, &domain::__FloatingLegData_t_Lookback_t_Info, 0, 1},
+    {"RateCutoff", 6, (xsdcpp::get_field_t)&_get__FloatingLegData_t_RateCutoff, &domain::_int64_t_Info, 0, 1},
+    {"IsAveraged", 7, (xsdcpp::get_field_t)&_get__FloatingLegData_t_IsAveraged, &domain::_bool_Info, 0, 1},
+    {"HasSubPeriods", 8, (xsdcpp::get_field_t)&_get__FloatingLegData_t_HasSubPeriods, &domain::_bool_Info, 0, 1},
+    {"IncludeSpread", 9, (xsdcpp::get_field_t)&_get__FloatingLegData_t_IncludeSpread, &domain::_bool_Info, 0, 1},
+    {"IsNotResettingXCCY", 10, (xsdcpp::get_field_t)&_get__FloatingLegData_t_IsNotResettingXCCY, &domain::_bool_Info, 0, 1},
+    {"Spreads", 11, (xsdcpp::get_field_t)&_get__FloatingLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 12, (xsdcpp::get_field_t)&_get__FloatingLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 13, (xsdcpp::get_field_t)&_get__FloatingLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 14, (xsdcpp::get_field_t)&_get__FloatingLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 15, (xsdcpp::get_field_t)&_get__FloatingLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {"LocalCapFloor", 16, (xsdcpp::get_field_t)&_get__FloatingLegData_t_LocalCapFloor, &domain::_bool_Info, 0, 1},
+    {"FixingSchedule", 17, (xsdcpp::get_field_t)&_get__FloatingLegData_t_FixingSchedule, &domain::_scheduleData_Info, 0, 1},
+    {"ResetSchedule", 18, (xsdcpp::get_field_t)&_get__FloatingLegData_t_ResetSchedule, &domain::_scheduleData_Info, 0, 1},
+    {"HistoricalFixings", 19, (xsdcpp::get_field_t)&_get__FloatingLegData_t_HistoricalFixings, &domain::_tradeLevelFixings_Info, 0, 1},
+    {"FrontStubInterpolation", 20, (xsdcpp::get_field_t)&_get__FloatingLegData_t_FrontStubInterpolation, &domain::_stubInterpolation_Info, 0, 1},
+    {"BackStubInterpolation", 21, (xsdcpp::get_field_t)&_get__FloatingLegData_t_BackStubInterpolation, &domain::_stubInterpolation_Info, 0, 1},
+    {"StubUseOriginalCurve", 22, (xsdcpp::get_field_t)&_get__FloatingLegData_t_StubUseOriginalCurve, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__CPILegData_t_Index(domain::_CPILegData_t* parent) {return (parent->Index.emplace_back(), &parent->Index.back());}
+void* _get__CPILegData_t_Rates(domain::_CPILegData_t* parent) {return (parent->Rates.emplace_back(), &parent->Rates.back());}
+void* _get__CPILegData_t_BaseCPI(domain::_CPILegData_t* parent) {return (parent->BaseCPI.emplace_back(), &parent->BaseCPI.back());}
+void* _get__CPILegData_t_StartDate(domain::_CPILegData_t* parent) {return (parent->StartDate.emplace_back(), &parent->StartDate.back());}
+void* _get__CPILegData_t_ObservationLag(domain::_CPILegData_t* parent) {return (parent->ObservationLag.emplace_back(), &parent->ObservationLag.back());}
+void* _get__CPILegData_t_Interpolation(domain::_CPILegData_t* parent) {return (parent->Interpolation.emplace_back(), &parent->Interpolation.back());}
+void* _get__CPILegData_t_Interpolated(domain::_CPILegData_t* parent) {return (parent->Interpolated.emplace_back(), &parent->Interpolated.back());}
+void* _get__CPILegData_t_SubtractInflationNotional(domain::_CPILegData_t* parent) {return (parent->SubtractInflationNotional.emplace_back(), &parent->SubtractInflationNotional.back());}
+void* _get__CPILegData_t_Caps(domain::_CPILegData_t* parent) {return (parent->Caps.emplace_back(), &parent->Caps.back());}
+void* _get__CPILegData_t_Floors(domain::_CPILegData_t* parent) {return (parent->Floors.emplace_back(), &parent->Floors.back());}
+void* _get__CPILegData_t_FinalFlowCap(domain::_CPILegData_t* parent) {return (parent->FinalFlowCap.emplace_back(), &parent->FinalFlowCap.back());}
+void* _get__CPILegData_t_FinalFlowFloor(domain::_CPILegData_t* parent) {return (parent->FinalFlowFloor.emplace_back(), &parent->FinalFlowFloor.back());}
+void* _get__CPILegData_t_NakedOption(domain::_CPILegData_t* parent) {return (parent->NakedOption.emplace_back(), &parent->NakedOption.back());}
+void* _get__CPILegData_t_SubtractInflationNotionalAllCoupons(domain::_CPILegData_t* parent) {return (parent->SubtractInflationNotionalAllCoupons.emplace_back(), &parent->SubtractInflationNotionalAllCoupons.back());}
+xsdcpp::ChildElementInfo __CPILegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__CPILegData_t_Index, &domain::__CPILegData_t_Index_t_Info, 0, 4294967295},
+    {"Rates", 1, (xsdcpp::get_field_t)&_get__CPILegData_t_Rates, &domain::__CPILegData_t_Rates_t_Info, 0, 4294967295},
+    {"BaseCPI", 2, (xsdcpp::get_field_t)&_get__CPILegData_t_BaseCPI, &domain::_float_Info, 0, 4294967295},
+    {"StartDate", 3, (xsdcpp::get_field_t)&_get__CPILegData_t_StartDate, &domain::_date_Info, 0, 4294967295},
+    {"ObservationLag", 4, (xsdcpp::get_field_t)&_get__CPILegData_t_ObservationLag, &domain::__CPILegData_t_ObservationLag_t_Info, 0, 4294967295},
+    {"Interpolation", 5, (xsdcpp::get_field_t)&_get__CPILegData_t_Interpolation, &domain::__CPILegData_t_Interpolation_t_Info, 0, 4294967295},
+    {"Interpolated", 6, (xsdcpp::get_field_t)&_get__CPILegData_t_Interpolated, &domain::_bool__Info, 0, 4294967295},
+    {"SubtractInflationNotional", 7, (xsdcpp::get_field_t)&_get__CPILegData_t_SubtractInflationNotional, &domain::_bool__Info, 0, 4294967295},
+    {"Caps", 8, (xsdcpp::get_field_t)&_get__CPILegData_t_Caps, &domain::_caps_Info, 0, 4294967295},
+    {"Floors", 9, (xsdcpp::get_field_t)&_get__CPILegData_t_Floors, &domain::_floors_Info, 0, 4294967295},
+    {"FinalFlowCap", 10, (xsdcpp::get_field_t)&_get__CPILegData_t_FinalFlowCap, &domain::_float_Info, 0, 4294967295},
+    {"FinalFlowFloor", 11, (xsdcpp::get_field_t)&_get__CPILegData_t_FinalFlowFloor, &domain::_float_Info, 0, 4294967295},
+    {"NakedOption", 12, (xsdcpp::get_field_t)&_get__CPILegData_t_NakedOption, &domain::_bool_Info, 0, 4294967295},
+    {"SubtractInflationNotionalAllCoupons", 13, (xsdcpp::get_field_t)&_get__CPILegData_t_SubtractInflationNotionalAllCoupons, &domain::_bool_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__YYLegData_t_Index(domain::_YYLegData_t* parent) {return &parent->Index;}
+void* _get__YYLegData_t_FixingDays(domain::_YYLegData_t* parent) {return &parent->FixingDays;}
+void* _get__YYLegData_t_ObservationLag(domain::_YYLegData_t* parent) {return &parent->ObservationLag;}
+void* _get__YYLegData_t_Gearings(domain::_YYLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__YYLegData_t_Spreads(domain::_YYLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__YYLegData_t_Caps(domain::_YYLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__YYLegData_t_Floors(domain::_YYLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__YYLegData_t_NakedOption(domain::_YYLegData_t* parent) {return &*(parent->NakedOption = bool());}
+void* _get__YYLegData_t_AddInflationNotional(domain::_YYLegData_t* parent) {return &*(parent->AddInflationNotional = bool());}
+void* _get__YYLegData_t_IrregularYoY(domain::_YYLegData_t* parent) {return &*(parent->IrregularYoY = bool());}
+xsdcpp::ChildElementInfo __YYLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__YYLegData_t_Index, &domain::__YYLegData_t_Index_t_Info, 1, 1},
+    {"FixingDays", 1, (xsdcpp::get_field_t)&_get__YYLegData_t_FixingDays, &domain::_int64_t_Info, 1, 1},
+    {"ObservationLag", 2, (xsdcpp::get_field_t)&_get__YYLegData_t_ObservationLag, &domain::__YYLegData_t_ObservationLag_t_Info, 1, 1},
+    {"Gearings", 3, (xsdcpp::get_field_t)&_get__YYLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"Spreads", 4, (xsdcpp::get_field_t)&_get__YYLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 5, (xsdcpp::get_field_t)&_get__YYLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 6, (xsdcpp::get_field_t)&_get__YYLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"NakedOption", 7, (xsdcpp::get_field_t)&_get__YYLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {"AddInflationNotional", 8, (xsdcpp::get_field_t)&_get__YYLegData_t_AddInflationNotional, &domain::_bool_Info, 0, 1},
+    {"IrregularYoY", 9, (xsdcpp::get_field_t)&_get__YYLegData_t_IrregularYoY, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__CMSLegData_t_Index(domain::_CMSLegData_t* parent) {return &parent->Index;}
+void* _get__CMSLegData_t_IsInArrears(domain::_CMSLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__CMSLegData_t_FixingDays(domain::_CMSLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__CMSLegData_t_Spreads(domain::_CMSLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__CMSLegData_t_Caps(domain::_CMSLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__CMSLegData_t_Floors(domain::_CMSLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__CMSLegData_t_Gearings(domain::_CMSLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__CMSLegData_t_NakedOption(domain::_CMSLegData_t* parent) {return &*(parent->NakedOption = bool());}
+xsdcpp::ChildElementInfo __CMSLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__CMSLegData_t_Index, &domain::_indexNameType_Info, 1, 1},
+    {"IsInArrears", 1, (xsdcpp::get_field_t)&_get__CMSLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 2, (xsdcpp::get_field_t)&_get__CMSLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"Spreads", 3, (xsdcpp::get_field_t)&_get__CMSLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 4, (xsdcpp::get_field_t)&_get__CMSLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 5, (xsdcpp::get_field_t)&_get__CMSLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 6, (xsdcpp::get_field_t)&_get__CMSLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 7, (xsdcpp::get_field_t)&_get__CMSLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__CMBLegData_t_Index(domain::_CMBLegData_t* parent) {return &parent->Index;}
+void* _get__CMBLegData_t_IsInArrears(domain::_CMBLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__CMBLegData_t_FixingDays(domain::_CMBLegData_t* parent) {return &parent->FixingDays;}
+void* _get__CMBLegData_t_Spreads(domain::_CMBLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__CMBLegData_t_Caps(domain::_CMBLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__CMBLegData_t_Floors(domain::_CMBLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__CMBLegData_t_Gearings(domain::_CMBLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__CMBLegData_t_NakedOption(domain::_CMBLegData_t* parent) {return &*(parent->NakedOption = bool());}
+void* _get__CMBLegData_t_CreditRisk(domain::_CMBLegData_t* parent) {return &*(parent->CreditRisk = bool());}
+xsdcpp::ChildElementInfo __CMBLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__CMBLegData_t_Index, &domain::__CMBLegData_t_Index_t_Info, 1, 1},
+    {"IsInArrears", 1, (xsdcpp::get_field_t)&_get__CMBLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 2, (xsdcpp::get_field_t)&_get__CMBLegData_t_FixingDays, &domain::_int64_t_Info, 1, 1},
+    {"Spreads", 3, (xsdcpp::get_field_t)&_get__CMBLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 4, (xsdcpp::get_field_t)&_get__CMBLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 5, (xsdcpp::get_field_t)&_get__CMBLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 6, (xsdcpp::get_field_t)&_get__CMBLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 7, (xsdcpp::get_field_t)&_get__CMBLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {"CreditRisk", 8, (xsdcpp::get_field_t)&_get__CMBLegData_t_CreditRisk, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__DigitalCMSLegData_t_CMSLegData(domain::_DigitalCMSLegData_t* parent) {return (parent->CMSLegData.emplace_back(), &parent->CMSLegData.back());}
+void* _get__DigitalCMSLegData_t_CallPosition(domain::_DigitalCMSLegData_t* parent) {return (parent->CallPosition.emplace_back(), &parent->CallPosition.back());}
+void* _get__DigitalCMSLegData_t_IsCallATMIncluded(domain::_DigitalCMSLegData_t* parent) {return (parent->IsCallATMIncluded.emplace_back(), &parent->IsCallATMIncluded.back());}
+void* _get__DigitalCMSLegData_t_CallStrikes(domain::_DigitalCMSLegData_t* parent) {return (parent->CallStrikes.emplace_back(), &parent->CallStrikes.back());}
+void* _get__DigitalCMSLegData_t_CallPayoffs(domain::_DigitalCMSLegData_t* parent) {return (parent->CallPayoffs.emplace_back(), &parent->CallPayoffs.back());}
+void* _get__DigitalCMSLegData_t_PutPosition(domain::_DigitalCMSLegData_t* parent) {return (parent->PutPosition.emplace_back(), &parent->PutPosition.back());}
+void* _get__DigitalCMSLegData_t_IsPutATMIncluded(domain::_DigitalCMSLegData_t* parent) {return (parent->IsPutATMIncluded.emplace_back(), &parent->IsPutATMIncluded.back());}
+void* _get__DigitalCMSLegData_t_PutStrikes(domain::_DigitalCMSLegData_t* parent) {return (parent->PutStrikes.emplace_back(), &parent->PutStrikes.back());}
+void* _get__DigitalCMSLegData_t_PutPayoffs(domain::_DigitalCMSLegData_t* parent) {return (parent->PutPayoffs.emplace_back(), &parent->PutPayoffs.back());}
+xsdcpp::ChildElementInfo __DigitalCMSLegData_t_Children[] = {
+    {"CMSLegData", 0, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData, &domain::__DigitalCMSLegData_t_CMSLegData_t_Info, 0, 4294967295},
+    {"CallPosition", 1, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CallPosition, &domain::__DigitalCMSLegData_t_CallPosition_t_Info, 0, 4294967295},
+    {"IsCallATMIncluded", 2, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_IsCallATMIncluded, &domain::_bool_Info, 0, 4294967295},
+    {"CallStrikes", 3, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CallStrikes, &domain::__DigitalCMSLegData_t_CallStrikes_t_Info, 0, 4294967295},
+    {"CallPayoffs", 4, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CallPayoffs, &domain::__DigitalCMSLegData_t_CallPayoffs_t_Info, 0, 4294967295},
+    {"PutPosition", 5, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_PutPosition, &domain::__DigitalCMSLegData_t_PutPosition_t_Info, 0, 4294967295},
+    {"IsPutATMIncluded", 6, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_IsPutATMIncluded, &domain::_bool_Info, 0, 4294967295},
+    {"PutStrikes", 7, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_PutStrikes, &domain::__DigitalCMSLegData_t_PutStrikes_t_Info, 0, 4294967295},
+    {"PutPayoffs", 8, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_PutPayoffs, &domain::__DigitalCMSLegData_t_PutPayoffs_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__DurationAdjustedCMSLegData_t_Index(domain::_DurationAdjustedCMSLegData_t* parent) {return &parent->Index;}
+void* _get__DurationAdjustedCMSLegData_t_Duration(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->Duration = int64_t());}
+void* _get__DurationAdjustedCMSLegData_t_IsInArrears(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__DurationAdjustedCMSLegData_t_FixingDays(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__DurationAdjustedCMSLegData_t_Spreads(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__DurationAdjustedCMSLegData_t_Caps(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__DurationAdjustedCMSLegData_t_Floors(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__DurationAdjustedCMSLegData_t_Gearings(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__DurationAdjustedCMSLegData_t_NakedOption(domain::_DurationAdjustedCMSLegData_t* parent) {return &*(parent->NakedOption = bool());}
+xsdcpp::ChildElementInfo __DurationAdjustedCMSLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_Index, &domain::_indexNameType_Info, 1, 1},
+    {"Duration", 1, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_Duration, &domain::_int64_t_Info, 0, 1},
+    {"IsInArrears", 2, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 3, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"Spreads", 4, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 5, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 6, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 7, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 8, (xsdcpp::get_field_t)&_get__DurationAdjustedCMSLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__CMSSpreadLegData_t_Index1(domain::_CMSSpreadLegData_t* parent) {return &parent->Index1;}
+void* _get__CMSSpreadLegData_t_Index2(domain::_CMSSpreadLegData_t* parent) {return &parent->Index2;}
+void* _get__CMSSpreadLegData_t_IsInArrears(domain::_CMSSpreadLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__CMSSpreadLegData_t_FixingDays(domain::_CMSSpreadLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__CMSSpreadLegData_t_Spreads(domain::_CMSSpreadLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__CMSSpreadLegData_t_Caps(domain::_CMSSpreadLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__CMSSpreadLegData_t_Floors(domain::_CMSSpreadLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__CMSSpreadLegData_t_Gearings(domain::_CMSSpreadLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__CMSSpreadLegData_t_NakedOption(domain::_CMSSpreadLegData_t* parent) {return &*(parent->NakedOption = bool());}
+xsdcpp::ChildElementInfo __CMSSpreadLegData_t_Children[] = {
+    {"Index1", 0, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_Index1, &domain::_indexNameType_Info, 1, 1},
+    {"Index2", 1, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_Index2, &domain::_indexNameType_Info, 1, 1},
+    {"IsInArrears", 2, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 3, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"Spreads", 4, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 5, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 6, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 7, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 8, (xsdcpp::get_field_t)&_get__CMSSpreadLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->CMSSpreadLegData.emplace_back(), &parent->CMSSpreadLegData.back());}
+void* _get__DigitalCMSSpreadLegData_t_CallPosition(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->CallPosition.emplace_back(), &parent->CallPosition.back());}
+void* _get__DigitalCMSSpreadLegData_t_IsCallATMIncluded(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->IsCallATMIncluded.emplace_back(), &parent->IsCallATMIncluded.back());}
+void* _get__DigitalCMSSpreadLegData_t_CallStrikes(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->CallStrikes.emplace_back(), &parent->CallStrikes.back());}
+void* _get__DigitalCMSSpreadLegData_t_CallPayoffs(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->CallPayoffs.emplace_back(), &parent->CallPayoffs.back());}
+void* _get__DigitalCMSSpreadLegData_t_PutPosition(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->PutPosition.emplace_back(), &parent->PutPosition.back());}
+void* _get__DigitalCMSSpreadLegData_t_IsPutATMIncluded(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->IsPutATMIncluded.emplace_back(), &parent->IsPutATMIncluded.back());}
+void* _get__DigitalCMSSpreadLegData_t_PutStrikes(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->PutStrikes.emplace_back(), &parent->PutStrikes.back());}
+void* _get__DigitalCMSSpreadLegData_t_PutPayoffs(domain::_DigitalCMSSpreadLegData_t* parent) {return (parent->PutPayoffs.emplace_back(), &parent->PutPayoffs.back());}
+xsdcpp::ChildElementInfo __DigitalCMSSpreadLegData_t_Children[] = {
+    {"CMSSpreadLegData", 0, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData, &domain::__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Info, 0, 4294967295},
+    {"CallPosition", 1, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CallPosition, &domain::__DigitalCMSSpreadLegData_t_CallPosition_t_Info, 0, 4294967295},
+    {"IsCallATMIncluded", 2, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_IsCallATMIncluded, &domain::_bool_Info, 0, 4294967295},
+    {"CallStrikes", 3, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CallStrikes, &domain::__DigitalCMSSpreadLegData_t_CallStrikes_t_Info, 0, 4294967295},
+    {"CallPayoffs", 4, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CallPayoffs, &domain::__DigitalCMSSpreadLegData_t_CallPayoffs_t_Info, 0, 4294967295},
+    {"PutPosition", 5, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_PutPosition, &domain::__DigitalCMSSpreadLegData_t_PutPosition_t_Info, 0, 4294967295},
+    {"IsPutATMIncluded", 6, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_IsPutATMIncluded, &domain::_bool_Info, 0, 4294967295},
+    {"PutStrikes", 7, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_PutStrikes, &domain::__DigitalCMSSpreadLegData_t_PutStrikes_t_Info, 0, 4294967295},
+    {"PutPayoffs", 8, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_PutPayoffs, &domain::__DigitalCMSSpreadLegData_t_PutPayoffs_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__EquityLegData_t_Quantity(domain::_EquityLegData_t* parent) {return &*(parent->Quantity = float());}
+void* _get__EquityLegData_t_ReturnType(domain::_EquityLegData_t* parent) {return &parent->ReturnType;}
+void* _get__EquityLegData_t_underlyingTypes_Name(domain::_EquityLegData_t* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get__EquityLegData_t_underlyingTypes_Underlying(domain::_EquityLegData_t* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get__EquityLegData_t_underlyingTypes_Underlyings(domain::_EquityLegData_t* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
+void* _get__EquityLegData_t_InitialPrice(domain::_EquityLegData_t* parent) {return &*(parent->InitialPrice = float());}
+void* _get__EquityLegData_t_InitialPriceCurrency(domain::_EquityLegData_t* parent) {return &*(parent->InitialPriceCurrency = domain::extendedCurrencyCode());}
+void* _get__EquityLegData_t_DividendFactor(domain::_EquityLegData_t* parent) {return &*(parent->DividendFactor = float());}
+void* _get__EquityLegData_t_NotionalReset(domain::_EquityLegData_t* parent) {return &*(parent->NotionalReset = bool());}
+void* _get__EquityLegData_t_ValuationSchedule(domain::_EquityLegData_t* parent) {return &*(parent->ValuationSchedule = domain::scheduleData());}
+void* _get__EquityLegData_t_FixingDays(domain::_EquityLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__EquityLegData_t_FXTerms(domain::_EquityLegData_t* parent) {return &*(parent->FXTerms = domain::_EquityLegData_t_FXTerms_t());}
+xsdcpp::ChildElementInfo __EquityLegData_t_Children[] = {
+    {"Quantity", 0, (xsdcpp::get_field_t)&_get__EquityLegData_t_Quantity, &domain::_float_Info, 0, 1},
+    {"ReturnType", 1, (xsdcpp::get_field_t)&_get__EquityLegData_t_ReturnType, &domain::__EquityLegData_t_ReturnType_t_Info, 1, 1},
+    {"Name", 2, (xsdcpp::get_field_t)&_get__EquityLegData_t_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 2, (xsdcpp::get_field_t)&_get__EquityLegData_t_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 2, (xsdcpp::get_field_t)&_get__EquityLegData_t_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"InitialPrice", 3, (xsdcpp::get_field_t)&_get__EquityLegData_t_InitialPrice, &domain::_float_Info, 0, 1},
+    {"InitialPriceCurrency", 4, (xsdcpp::get_field_t)&_get__EquityLegData_t_InitialPriceCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"DividendFactor", 5, (xsdcpp::get_field_t)&_get__EquityLegData_t_DividendFactor, &domain::_float_Info, 0, 1},
+    {"NotionalReset", 6, (xsdcpp::get_field_t)&_get__EquityLegData_t_NotionalReset, &domain::_bool_Info, 0, 1},
+    {"ValuationSchedule", 7, (xsdcpp::get_field_t)&_get__EquityLegData_t_ValuationSchedule, &domain::_scheduleData_Info, 0, 1},
+    {"FixingDays", 8, (xsdcpp::get_field_t)&_get__EquityLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"FXTerms", 9, (xsdcpp::get_field_t)&_get__EquityLegData_t_FXTerms, &domain::__EquityLegData_t_FXTerms_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get__ZeroCouponFixedLegData_t_Rates(domain::_ZeroCouponFixedLegData_t* parent) {return (parent->Rates.emplace_back(), &parent->Rates.back());}
+void* _get__ZeroCouponFixedLegData_t_Compounding(domain::_ZeroCouponFixedLegData_t* parent) {return (parent->Compounding.emplace_back(), &parent->Compounding.back());}
+void* _get__ZeroCouponFixedLegData_t_SubtractNotional(domain::_ZeroCouponFixedLegData_t* parent) {return (parent->SubtractNotional.emplace_back(), &parent->SubtractNotional.back());}
+xsdcpp::ChildElementInfo __ZeroCouponFixedLegData_t_Children[] = {
+    {"Rates", 0, (xsdcpp::get_field_t)&_get__ZeroCouponFixedLegData_t_Rates, &domain::__ZeroCouponFixedLegData_t_Rates_t_Info, 0, 4294967295},
+    {"Compounding", 1, (xsdcpp::get_field_t)&_get__ZeroCouponFixedLegData_t_Compounding, &domain::__ZeroCouponFixedLegData_t_Compounding_t_Info, 0, 4294967295},
+    {"SubtractNotional", 2, (xsdcpp::get_field_t)&_get__ZeroCouponFixedLegData_t_SubtractNotional, &domain::__ZeroCouponFixedLegData_t_SubtractNotional_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__EquityMarginLegData_t_Rates_t_Rate(domain::_EquityMarginLegData_t_Rates_t* parent) {return (parent->Rate.emplace_back(), &parent->Rate.back());}
+xsdcpp::ChildElementInfo __EquityMarginLegData_t_Rates_t_Children[] = {
+    {"Rate", 0, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_Rates_t_Rate, &domain::__EquityMarginLegData_t_Rates_t_Rate_t_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__EquityMarginLegData_t_EquityLegData_t_Quantity(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->Quantity = float());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_ReturnType(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &parent->ReturnType;}
+void* _get__EquityMarginLegData_t_EquityLegData_t_underlyingTypes_Name(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->underlyingTypes.Name = domain::_Name_t());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_underlyingTypes_Underlying(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->underlyingTypes.Underlying = domain::underlying());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_underlyingTypes_Underlyings(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->underlyingTypes.Underlyings = domain::underlyings());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_InitialPrice(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->InitialPrice = float());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_InitialPriceCurrency(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->InitialPriceCurrency = domain::extendedCurrencyCode());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_DividendFactor(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->DividendFactor = float());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_NotionalReset(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->NotionalReset = bool());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_ValuationSchedule(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->ValuationSchedule = domain::scheduleData());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_FixingDays(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_FXTerms(domain::_EquityMarginLegData_t_EquityLegData_t* parent) {return &*(parent->FXTerms = domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t());}
+xsdcpp::ChildElementInfo __EquityMarginLegData_t_EquityLegData_t_Children[] = {
+    {"Quantity", 0, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_Quantity, &domain::_float_Info, 0, 1},
+    {"ReturnType", 1, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_ReturnType, &domain::__EquityMarginLegData_t_EquityLegData_t_ReturnType_t_Info, 1, 1},
+    {"Name", 2, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_underlyingTypes_Name, &domain::__Name_t_Info, 0, 1},
+    {"Underlying", 2, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_underlyingTypes_Underlying, &domain::_underlying_Info, 0, 1},
+    {"Underlyings", 2, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_underlyingTypes_Underlyings, &domain::_underlyings_Info, 0, 1},
+    {"InitialPrice", 3, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_InitialPrice, &domain::_float_Info, 0, 1},
+    {"InitialPriceCurrency", 4, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_InitialPriceCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"DividendFactor", 5, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_DividendFactor, &domain::_float_Info, 0, 1},
+    {"NotionalReset", 6, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_NotionalReset, &domain::_bool_Info, 0, 1},
+    {"ValuationSchedule", 7, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_ValuationSchedule, &domain::_scheduleData_Info, 0, 1},
+    {"FixingDays", 8, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"FXTerms", 9, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_FXTerms, &domain::__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get__EquityMarginLegData_t_InitialMarginFactor(domain::_EquityMarginLegData_t* parent) {return &parent->InitialMarginFactor;}
+void* _get__EquityMarginLegData_t_Multiplier(domain::_EquityMarginLegData_t* parent) {return &parent->Multiplier;}
+void* _get__EquityMarginLegData_t_Rates(domain::_EquityMarginLegData_t* parent) {return &parent->Rates;}
+void* _get__EquityMarginLegData_t_EquityLegData(domain::_EquityMarginLegData_t* parent) {return &parent->EquityLegData;}
+xsdcpp::ChildElementInfo __EquityMarginLegData_t_Children[] = {
+    {"InitialMarginFactor", 0, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_InitialMarginFactor, &domain::_float_Info, 1, 1},
+    {"Multiplier", 1, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_Multiplier, &domain::_float_Info, 1, 1},
+    {"Rates", 2, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_Rates, &domain::__EquityMarginLegData_t_Rates_t_Info, 1, 1},
+    {"EquityLegData", 3, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData, &domain::__EquityMarginLegData_t_EquityLegData_t_Info, 1, 1},
+    {nullptr}
+};
+void* _get_pricesType_Price(domain::pricesType* parent) {return (parent->Price.emplace_back(), &parent->Price.back());}
+xsdcpp::ChildElementInfo _pricesType_Children[] = {
+    {"Price", 0, (xsdcpp::get_field_t)&_get_pricesType_Price, &domain::_pricesType_Price_t_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__CommodityFixedLegData_t_Quantities(domain::_CommodityFixedLegData_t* parent) {return &*(parent->Quantities = domain::quantitiesType());}
+void* _get__CommodityFixedLegData_t_Prices(domain::_CommodityFixedLegData_t* parent) {return &parent->Prices;}
+void* _get__CommodityFixedLegData_t_CommodityPayRelativeTo(domain::_CommodityFixedLegData_t* parent) {return &*(parent->CommodityPayRelativeTo = domain::commodityPayRelativeToType());}
+void* _get__CommodityFixedLegData_t_Tag(domain::_CommodityFixedLegData_t* parent) {return &*(parent->Tag = domain::_CommodityFixedLegData_t_Tag_t());}
+xsdcpp::ChildElementInfo __CommodityFixedLegData_t_Children[] = {
+    {"Quantities", 0, (xsdcpp::get_field_t)&_get__CommodityFixedLegData_t_Quantities, &domain::_quantitiesType_Info, 0, 1},
+    {"Prices", 1, (xsdcpp::get_field_t)&_get__CommodityFixedLegData_t_Prices, &domain::_pricesType_Info, 1, 1},
+    {"CommodityPayRelativeTo", 2, (xsdcpp::get_field_t)&_get__CommodityFixedLegData_t_CommodityPayRelativeTo, &domain::_commodityPayRelativeToType_Info, 0, 1},
+    {"Tag", 3, (xsdcpp::get_field_t)&_get__CommodityFixedLegData_t_Tag, &domain::__CommodityFixedLegData_t_Tag_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get_quantitiesType_Quantity(domain::quantitiesType* parent) {return (parent->Quantity.emplace_back(), &parent->Quantity.back());}
+xsdcpp::ChildElementInfo _quantitiesType_Children[] = {
+    {"Quantity", 0, (xsdcpp::get_field_t)&_get_quantitiesType_Quantity, &domain::_quantitiesType_Quantity_t_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__CommodityFloatingLegData_t_Name(domain::_CommodityFloatingLegData_t* parent) {return &parent->Name;}
+void* _get__CommodityFloatingLegData_t_PriceType(domain::_CommodityFloatingLegData_t* parent) {return &parent->PriceType;}
+void* _get__CommodityFloatingLegData_t_Quantities(domain::_CommodityFloatingLegData_t* parent) {return &parent->Quantities;}
+void* _get__CommodityFloatingLegData_t_CommodityQuantityFrequency(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->CommodityQuantityFrequency = domain::commodityQuantityFrequencyType());}
+void* _get__CommodityFloatingLegData_t_CommodityPayRelativeTo(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->CommodityPayRelativeTo = domain::commodityPayRelativeToType());}
+void* _get__CommodityFloatingLegData_t_Spreads(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__CommodityFloatingLegData_t_Gearings(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__CommodityFloatingLegData_t_PricingDateRule(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->PricingDateRule = domain::pricingDateRuleType());}
+void* _get__CommodityFloatingLegData_t_PricingCalendar(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->PricingCalendar = domain::calendar());}
+void* _get__CommodityFloatingLegData_t_PricingLag(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->PricingLag = int64_t());}
+void* _get__CommodityFloatingLegData_t_PricingDates(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->PricingDates = domain::_CommodityFloatingLegData_t_PricingDates_t());}
+void* _get__CommodityFloatingLegData_t_IsAveraged(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->IsAveraged = bool());}
+void* _get__CommodityFloatingLegData_t_IsInArrears(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__CommodityFloatingLegData_t_FutureMonthOffset(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->FutureMonthOffset = int64_t());}
+void* _get__CommodityFloatingLegData_t_DeliveryRollDays(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->DeliveryRollDays = uint64_t());}
+void* _get__CommodityFloatingLegData_t_DailyExpiryOffset(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->DailyExpiryOffset = uint64_t());}
+void* _get__CommodityFloatingLegData_t_IncludePeriodEnd(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->IncludePeriodEnd = bool());}
+void* _get__CommodityFloatingLegData_t_ExcludePeriodStart(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->ExcludePeriodStart = bool());}
+void* _get__CommodityFloatingLegData_t_HoursPerDay(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->HoursPerDay = uint64_t());}
+void* _get__CommodityFloatingLegData_t_UseBusinessDays(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->UseBusinessDays = bool());}
+void* _get__CommodityFloatingLegData_t_UnrealisedQuantity(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->UnrealisedQuantity = bool());}
+void* _get__CommodityFloatingLegData_t_LastNDays(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->LastNDays = uint64_t());}
+void* _get__CommodityFloatingLegData_t_Tag(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->Tag = domain::_CommodityFloatingLegData_t_Tag_t());}
+void* _get__CommodityFloatingLegData_t_FXIndex(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->FXIndex = domain::_CommodityFloatingLegData_t_FXIndex_t());}
+void* _get__CommodityFloatingLegData_t_AvgPricePrecision(domain::_CommodityFloatingLegData_t* parent) {return &*(parent->AvgPricePrecision = uint64_t());}
+xsdcpp::ChildElementInfo __CommodityFloatingLegData_t_Children[] = {
+    {"Name", 0, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_Name, &domain::__CommodityFloatingLegData_t_Name_t_Info, 1, 1},
+    {"PriceType", 1, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_PriceType, &domain::_priceType_Info, 1, 1},
+    {"Quantities", 2, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_Quantities, &domain::_quantitiesType_Info, 1, 1},
+    {"CommodityQuantityFrequency", 3, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_CommodityQuantityFrequency, &domain::_commodityQuantityFrequencyType_Info, 0, 1},
+    {"CommodityPayRelativeTo", 4, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_CommodityPayRelativeTo, &domain::_commodityPayRelativeToType_Info, 0, 1},
+    {"Spreads", 5, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Gearings", 6, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"PricingDateRule", 7, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_PricingDateRule, &domain::_pricingDateRuleType_Info, 0, 1},
+    {"PricingCalendar", 8, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_PricingCalendar, &domain::_calendar_Info, 0, 1},
+    {"PricingLag", 9, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_PricingLag, &domain::_int64_t_Info, 0, 1},
+    {"PricingDates", 10, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_PricingDates, &domain::__CommodityFloatingLegData_t_PricingDates_t_Info, 0, 1},
+    {"IsAveraged", 11, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_IsAveraged, &domain::_bool_Info, 0, 1},
+    {"IsInArrears", 12, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FutureMonthOffset", 13, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_FutureMonthOffset, &domain::_int64_t_Info, 0, 1},
+    {"DeliveryRollDays", 14, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_DeliveryRollDays, &domain::_uint64_t_Info, 0, 1},
+    {"DailyExpiryOffset", 15, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_DailyExpiryOffset, &domain::_uint64_t_Info, 0, 1},
+    {"IncludePeriodEnd", 16, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_IncludePeriodEnd, &domain::_bool_Info, 0, 1},
+    {"ExcludePeriodStart", 17, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_ExcludePeriodStart, &domain::_bool_Info, 0, 1},
+    {"HoursPerDay", 18, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_HoursPerDay, &domain::_uint64_t_Info, 0, 1},
+    {"UseBusinessDays", 19, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_UseBusinessDays, &domain::_bool_Info, 0, 1},
+    {"UnrealisedQuantity", 20, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_UnrealisedQuantity, &domain::_bool_Info, 0, 1},
+    {"LastNDays", 21, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_LastNDays, &domain::_uint64_t_Info, 0, 1},
+    {"Tag", 22, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_Tag, &domain::__CommodityFloatingLegData_t_Tag_t_Info, 0, 1},
+    {"FXIndex", 23, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_FXIndex, &domain::__CommodityFloatingLegData_t_FXIndex_t_Info, 0, 1},
+    {"AvgPricePrecision", 24, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_AvgPricePrecision, &domain::_uint64_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get__FormulaBasedLegData_t_Index(domain::_FormulaBasedLegData_t* parent) {return &parent->Index;}
+void* _get__FormulaBasedLegData_t_IsInArrears(domain::_FormulaBasedLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__FormulaBasedLegData_t_FixingDays(domain::_FormulaBasedLegData_t* parent) {return &parent->FixingDays;}
+void* _get__FormulaBasedLegData_t_FixingCalendar(domain::_FormulaBasedLegData_t* parent) {return &*(parent->FixingCalendar = domain::calendar());}
+xsdcpp::ChildElementInfo __FormulaBasedLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__FormulaBasedLegData_t_Index, &domain::__FormulaBasedLegData_t_Index_t_Info, 1, 1},
+    {"IsInArrears", 1, (xsdcpp::get_field_t)&_get__FormulaBasedLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 2, (xsdcpp::get_field_t)&_get__FormulaBasedLegData_t_FixingDays, &domain::_int64_t_Info, 1, 1},
+    {"FixingCalendar", 3, (xsdcpp::get_field_t)&_get__FormulaBasedLegData_t_FixingCalendar, &domain::_calendar_Info, 0, 1},
+    {nullptr}
+};
 void* _get_capFloorData_Caps_t_Cap(domain::capFloorData_Caps_t* parent) {return (parent->Cap.emplace_back(), &parent->Cap.back());}
 xsdcpp::ChildElementInfo _capFloorData_Caps_t_Children[] = {
     {"Cap", 0, (xsdcpp::get_field_t)&_get_capFloorData_Caps_t_Cap, &domain::_capFloorData_Caps_t_Cap_t_Info, 0, 4294967295},
@@ -11447,6 +12237,17 @@ xsdcpp::ChildElementInfo _capFloorData_Caps_t_Children[] = {
 void* _get_capFloorData_Floors_t_Floor(domain::capFloorData_Floors_t* parent) {return (parent->Floor.emplace_back(), &parent->Floor.back());}
 xsdcpp::ChildElementInfo _capFloorData_Floors_t_Children[] = {
     {"Floor", 0, (xsdcpp::get_field_t)&_get_capFloorData_Floors_t_Floor, &domain::_capFloorData_Floors_t_Floor_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__StrikeData_t_StrikePrice(domain::_StrikeData_t* parent) {return &*(parent->StrikePrice = domain::strikePriceData());}
+void* _get__StrikeData_t_StrikeYield(domain::_StrikeData_t* parent) {return &*(parent->StrikeYield = domain::strikeYieldData());}
+void* _get__StrikeData_t_Value(domain::_StrikeData_t* parent) {return &*(parent->Value = float());}
+void* _get__StrikeData_t_Currency(domain::_StrikeData_t* parent) {return &*(parent->Currency = domain::extendedCurrencyCode());}
+xsdcpp::ChildElementInfo __StrikeData_t_Children[] = {
+    {"StrikePrice", 0, (xsdcpp::get_field_t)&_get__StrikeData_t_StrikePrice, &domain::_strikePriceData_Info, 0, 1},
+    {"StrikeYield", 1, (xsdcpp::get_field_t)&_get__StrikeData_t_StrikeYield, &domain::_strikeYieldData_Info, 0, 1},
+    {"Value", 2, (xsdcpp::get_field_t)&_get__StrikeData_t_Value, &domain::_float_Info, 0, 1},
+    {"Currency", 3, (xsdcpp::get_field_t)&_get__StrikeData_t_Currency, &domain::_extendedCurrencyCode_Info, 0, 1},
     {nullptr}
 };
 void* _get_eqForwardSettlementData_FXIndex(domain::eqForwardSettlementData* parent) {return &*(parent->FXIndex = domain::eqForwardSettlementData_FXIndex_t());}
@@ -11468,6 +12269,17 @@ xsdcpp::ChildElementInfo _forwardBondData_PremiumData_t_Children[] = {
 void* _get_deliveryBasket_Id(domain::deliveryBasket* parent) {return (parent->Id.emplace_back(), &parent->Id.back());}
 xsdcpp::ChildElementInfo _deliveryBasket_Children[] = {
     {"Id", 0, (xsdcpp::get_field_t)&_get_deliveryBasket_Id, &domain::_deliveryBasket_Id_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get__ReferenceInformation_t_ReferenceEntityId(domain::_ReferenceInformation_t* parent) {return &parent->ReferenceEntityId;}
+void* _get__ReferenceInformation_t_Tier(domain::_ReferenceInformation_t* parent) {return &parent->Tier;}
+void* _get__ReferenceInformation_t_Currency(domain::_ReferenceInformation_t* parent) {return &parent->Currency;}
+void* _get__ReferenceInformation_t_DocClause(domain::_ReferenceInformation_t* parent) {return &*(parent->DocClause = domain::cdsDocClauseType());}
+xsdcpp::ChildElementInfo __ReferenceInformation_t_Children[] = {
+    {"ReferenceEntityId", 0, (xsdcpp::get_field_t)&_get__ReferenceInformation_t_ReferenceEntityId, &domain::__ReferenceInformation_t_ReferenceEntityId_t_Info, 1, 1},
+    {"Tier", 1, (xsdcpp::get_field_t)&_get__ReferenceInformation_t_Tier, &domain::_cdsTierType_Info, 1, 1},
+    {"Currency", 2, (xsdcpp::get_field_t)&_get__ReferenceInformation_t_Currency, &domain::_currencyCode_Info, 1, 1},
+    {"DocClause", 3, (xsdcpp::get_field_t)&_get__ReferenceInformation_t_DocClause, &domain::_cdsDocClauseType_Info, 0, 1},
     {nullptr}
 };
 void* _get_legData_Amortizations_t_AmortizationData(domain::legData_Amortizations_t* parent) {return (parent->AmortizationData.emplace_back(), &parent->AmortizationData.back());}
@@ -14985,6 +15797,184 @@ xsdcpp::ChildElementInfo _optionPaymentData_Rules_t_Children[] = {
     {"RelativeTo", 3, (xsdcpp::get_field_t)&_get_optionPaymentData_Rules_t_RelativeTo, &domain::_optionPayRelativeTo_Info, 0, 1},
     {nullptr}
 };
+void* _get__CashflowData_t_Cashflow_t_Amount_t_date(domain::_CashflowData_t_Cashflow_t_Amount_t* elem) { return &*(elem->date = xsd::string()); }
+xsdcpp::AttributeInfo __CashflowData_t_Cashflow_t_Amount_t_Attributes[] = {
+    {"date", 1ULL, (xsdcpp::get_field_t)&_get__CashflowData_t_Cashflow_t_Amount_t_date, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get__FixedLegData_t_Rates_t_Rate_t_startDate(domain::_FixedLegData_t_Rates_t_Rate_t* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo __FixedLegData_t_Rates_t_Rate_t_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get__FixedLegData_t_Rates_t_Rate_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get_spreads_Spread(domain::spreads* parent) {return (parent->Spread.emplace_back(), &parent->Spread.back());}
+xsdcpp::ChildElementInfo _spreads_Children[] = {
+    {"Spread", 0, (xsdcpp::get_field_t)&_get_spreads_Spread, &domain::_floatWithAttribute_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get_caps_Cap(domain::caps* parent) {return (parent->Cap.emplace_back(), &parent->Cap.back());}
+xsdcpp::ChildElementInfo _caps_Children[] = {
+    {"Cap", 0, (xsdcpp::get_field_t)&_get_caps_Cap, &domain::_floatWithAttribute_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get_floors_Floor(domain::floors* parent) {return (parent->Floor.emplace_back(), &parent->Floor.back());}
+xsdcpp::ChildElementInfo _floors_Children[] = {
+    {"Floor", 0, (xsdcpp::get_field_t)&_get_floors_Floor, &domain::_floatWithAttribute_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get_gearings_Gearing(domain::gearings* parent) {return (parent->Gearing.emplace_back(), &parent->Gearing.back());}
+xsdcpp::ChildElementInfo _gearings_Children[] = {
+    {"Gearing", 0, (xsdcpp::get_field_t)&_get_gearings_Gearing, &domain::_floatWithAttribute_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get_tradeLevelFixings_Fixing(domain::tradeLevelFixings* parent) {return (parent->Fixing.emplace_back(), &parent->Fixing.back());}
+xsdcpp::ChildElementInfo _tradeLevelFixings_Children[] = {
+    {"Fixing", 0, (xsdcpp::get_field_t)&_get_tradeLevelFixings_Fixing, &domain::_tradeLevelFixings_Fixing_t_Info, 0, 4294967295},
+    {nullptr}
+};
+void* _get_stubInterpolation_ShortIndex(domain::stubInterpolation* parent) {return &parent->ShortIndex;}
+void* _get_stubInterpolation_LongIndex(domain::stubInterpolation* parent) {return &parent->LongIndex;}
+void* _get_stubInterpolation_RoundingType(domain::stubInterpolation* parent) {return &*(parent->RoundingType = domain::roundingType());}
+void* _get_stubInterpolation_RoundingPrecision(domain::stubInterpolation* parent) {return &*(parent->RoundingPrecision = int64_t());}
+xsdcpp::ChildElementInfo _stubInterpolation_Children[] = {
+    {"ShortIndex", 0, (xsdcpp::get_field_t)&_get_stubInterpolation_ShortIndex, &domain::_indexNameType_Info, 1, 1},
+    {"LongIndex", 1, (xsdcpp::get_field_t)&_get_stubInterpolation_LongIndex, &domain::_indexNameType_Info, 1, 1},
+    {"RoundingType", 2, (xsdcpp::get_field_t)&_get_stubInterpolation_RoundingType, &domain::_roundingType_Info, 0, 1},
+    {"RoundingPrecision", 3, (xsdcpp::get_field_t)&_get_stubInterpolation_RoundingPrecision, &domain::_int64_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get__CPILegData_t_Rates_t_Rate(domain::_CPILegData_t_Rates_t* parent) {return (parent->Rate.emplace_back(), &parent->Rate.back());}
+xsdcpp::ChildElementInfo __CPILegData_t_Rates_t_Children[] = {
+    {"Rate", 0, (xsdcpp::get_field_t)&_get__CPILegData_t_Rates_t_Rate, &domain::__CPILegData_t_Rates_t_Rate_t_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSLegData_t_CMSLegData_t_Index(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &parent->Index;}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_IsInArrears(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_FixingDays(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_Spreads(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_Caps(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_Floors(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_Gearings(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__DigitalCMSLegData_t_CMSLegData_t_NakedOption(domain::_DigitalCMSLegData_t_CMSLegData_t* parent) {return &*(parent->NakedOption = bool());}
+xsdcpp::ChildElementInfo __DigitalCMSLegData_t_CMSLegData_t_Children[] = {
+    {"Index", 0, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_Index, &domain::_indexNameType_Info, 1, 1},
+    {"IsInArrears", 1, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 2, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"Spreads", 3, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 4, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 5, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 6, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 7, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CMSLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__DigitalCMSLegData_t_CallStrikes_t_Strike(domain::_DigitalCMSLegData_t_CallStrikes_t* parent) {return (parent->Strike.emplace_back(), &parent->Strike.back());}
+xsdcpp::ChildElementInfo __DigitalCMSLegData_t_CallStrikes_t_Children[] = {
+    {"Strike", 0, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CallStrikes_t_Strike, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSLegData_t_CallPayoffs_t_Payoff(domain::_DigitalCMSLegData_t_CallPayoffs_t* parent) {return (parent->Payoff.emplace_back(), &parent->Payoff.back());}
+xsdcpp::ChildElementInfo __DigitalCMSLegData_t_CallPayoffs_t_Children[] = {
+    {"Payoff", 0, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_CallPayoffs_t_Payoff, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSLegData_t_PutStrikes_t_Strike(domain::_DigitalCMSLegData_t_PutStrikes_t* parent) {return (parent->Strike.emplace_back(), &parent->Strike.back());}
+xsdcpp::ChildElementInfo __DigitalCMSLegData_t_PutStrikes_t_Children[] = {
+    {"Strike", 0, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_PutStrikes_t_Strike, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSLegData_t_PutPayoffs_t_Payoff(domain::_DigitalCMSLegData_t_PutPayoffs_t* parent) {return (parent->Payoff.emplace_back(), &parent->Payoff.back());}
+xsdcpp::ChildElementInfo __DigitalCMSLegData_t_PutPayoffs_t_Children[] = {
+    {"Payoff", 0, (xsdcpp::get_field_t)&_get__DigitalCMSLegData_t_PutPayoffs_t_Payoff, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Index1(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &parent->Index1;}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Index2(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &parent->Index2;}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_IsInArrears(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->IsInArrears = bool());}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_FixingDays(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->FixingDays = int64_t());}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Spreads(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->Spreads = domain::spreads());}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Caps(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->Caps = domain::caps());}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Floors(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->Floors = domain::floors());}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Gearings(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->Gearings = domain::gearings());}
+void* _get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_NakedOption(domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t* parent) {return &*(parent->NakedOption = bool());}
+xsdcpp::ChildElementInfo __DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Children[] = {
+    {"Index1", 0, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Index1, &domain::_indexNameType_Info, 1, 1},
+    {"Index2", 1, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Index2, &domain::_indexNameType_Info, 1, 1},
+    {"IsInArrears", 2, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_IsInArrears, &domain::_bool_Info, 0, 1},
+    {"FixingDays", 3, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_FixingDays, &domain::_int64_t_Info, 0, 1},
+    {"Spreads", 4, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Spreads, &domain::_spreads_Info, 0, 1},
+    {"Caps", 5, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Caps, &domain::_caps_Info, 0, 1},
+    {"Floors", 6, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Floors, &domain::_floors_Info, 0, 1},
+    {"Gearings", 7, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Gearings, &domain::_gearings_Info, 0, 1},
+    {"NakedOption", 8, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_NakedOption, &domain::_bool_Info, 0, 1},
+    {nullptr}
+};
+void* _get__DigitalCMSSpreadLegData_t_CallStrikes_t_Strike(domain::_DigitalCMSSpreadLegData_t_CallStrikes_t* parent) {return (parent->Strike.emplace_back(), &parent->Strike.back());}
+xsdcpp::ChildElementInfo __DigitalCMSSpreadLegData_t_CallStrikes_t_Children[] = {
+    {"Strike", 0, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CallStrikes_t_Strike, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSSpreadLegData_t_CallPayoffs_t_Payoff(domain::_DigitalCMSSpreadLegData_t_CallPayoffs_t* parent) {return (parent->Payoff.emplace_back(), &parent->Payoff.back());}
+xsdcpp::ChildElementInfo __DigitalCMSSpreadLegData_t_CallPayoffs_t_Children[] = {
+    {"Payoff", 0, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_CallPayoffs_t_Payoff, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSSpreadLegData_t_PutStrikes_t_Strike(domain::_DigitalCMSSpreadLegData_t_PutStrikes_t* parent) {return (parent->Strike.emplace_back(), &parent->Strike.back());}
+xsdcpp::ChildElementInfo __DigitalCMSSpreadLegData_t_PutStrikes_t_Children[] = {
+    {"Strike", 0, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_PutStrikes_t_Strike, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__DigitalCMSSpreadLegData_t_PutPayoffs_t_Payoff(domain::_DigitalCMSSpreadLegData_t_PutPayoffs_t* parent) {return (parent->Payoff.emplace_back(), &parent->Payoff.back());}
+xsdcpp::ChildElementInfo __DigitalCMSSpreadLegData_t_PutPayoffs_t_Children[] = {
+    {"Payoff", 0, (xsdcpp::get_field_t)&_get__DigitalCMSSpreadLegData_t_PutPayoffs_t_Payoff, &domain::_float_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__EquityLegData_t_FXTerms_t_EquityCurrency(domain::_EquityLegData_t_FXTerms_t* parent) {return &*(parent->EquityCurrency = domain::extendedCurrencyCode());}
+void* _get__EquityLegData_t_FXTerms_t_FXIndex(domain::_EquityLegData_t_FXTerms_t* parent) {return &*(parent->FXIndex = domain::_EquityLegData_t_FXTerms_t_FXIndex_t());}
+void* _get__EquityLegData_t_FXTerms_t_FXIndexFixingDays(domain::_EquityLegData_t_FXTerms_t* parent) {return &*(parent->FXIndexFixingDays = int64_t());}
+void* _get__EquityLegData_t_FXTerms_t_FXIndexCalendar(domain::_EquityLegData_t_FXTerms_t* parent) {return &*(parent->FXIndexCalendar = domain::_EquityLegData_t_FXTerms_t_FXIndexCalendar_t());}
+xsdcpp::ChildElementInfo __EquityLegData_t_FXTerms_t_Children[] = {
+    {"EquityCurrency", 0, (xsdcpp::get_field_t)&_get__EquityLegData_t_FXTerms_t_EquityCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"FXIndex", 1, (xsdcpp::get_field_t)&_get__EquityLegData_t_FXTerms_t_FXIndex, &domain::__EquityLegData_t_FXTerms_t_FXIndex_t_Info, 0, 1},
+    {"FXIndexFixingDays", 2, (xsdcpp::get_field_t)&_get__EquityLegData_t_FXTerms_t_FXIndexFixingDays, &domain::_int64_t_Info, 0, 1},
+    {"FXIndexCalendar", 3, (xsdcpp::get_field_t)&_get__EquityLegData_t_FXTerms_t_FXIndexCalendar, &domain::__EquityLegData_t_FXTerms_t_FXIndexCalendar_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get__ZeroCouponFixedLegData_t_Rates_t_Rate(domain::_ZeroCouponFixedLegData_t_Rates_t* parent) {return (parent->Rate.emplace_back(), &parent->Rate.back());}
+xsdcpp::ChildElementInfo __ZeroCouponFixedLegData_t_Rates_t_Children[] = {
+    {"Rate", 0, (xsdcpp::get_field_t)&_get__ZeroCouponFixedLegData_t_Rates_t_Rate, &domain::__ZeroCouponFixedLegData_t_Rates_t_Rate_t_Info, 1, 4294967295},
+    {nullptr}
+};
+void* _get__EquityMarginLegData_t_Rates_t_Rate_t_startDate(domain::_EquityMarginLegData_t_Rates_t_Rate_t* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo __EquityMarginLegData_t_Rates_t_Rate_t_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_Rates_t_Rate_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_EquityCurrency(domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t* parent) {return &*(parent->EquityCurrency = domain::extendedCurrencyCode());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex(domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t* parent) {return &*(parent->FXIndex = domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexFixingDays(domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t* parent) {return &*(parent->FXIndexFixingDays = int64_t());}
+void* _get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar(domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t* parent) {return &*(parent->FXIndexCalendar = domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t());}
+xsdcpp::ChildElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_Children[] = {
+    {"EquityCurrency", 0, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_EquityCurrency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"FXIndex", 1, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex, &domain::__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t_Info, 0, 1},
+    {"FXIndexFixingDays", 2, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexFixingDays, &domain::_int64_t_Info, 0, 1},
+    {"FXIndexCalendar", 3, (xsdcpp::get_field_t)&_get__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar, &domain::__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t_Info, 0, 1},
+    {nullptr}
+};
+void* _get_pricesType_Price_t_startDate(domain::pricesType_Price_t* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo _pricesType_Price_t_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get_pricesType_Price_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get_quantitiesType_Quantity_t_startDate(domain::quantitiesType_Quantity_t* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo _quantitiesType_Quantity_t_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get_quantitiesType_Quantity_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get__CommodityFloatingLegData_t_PricingDates_t_PricingDate(domain::_CommodityFloatingLegData_t_PricingDates_t* parent) {return (parent->PricingDate.emplace_back(), &parent->PricingDate.back());}
+xsdcpp::ChildElementInfo __CommodityFloatingLegData_t_PricingDates_t_Children[] = {
+    {"PricingDate", 0, (xsdcpp::get_field_t)&_get__CommodityFloatingLegData_t_PricingDates_t_PricingDate, &domain::_date_Info, 1, 4294967295},
+    {nullptr}
+};
 void* _get_capFloorData_Caps_t_Cap_t_startDate(domain::capFloorData_Caps_t_Cap_t* elem) { return &*(elem->startDate = xsd::string()); }
 xsdcpp::AttributeInfo _capFloorData_Caps_t_Cap_t_Attributes[] = {
     {"startDate", 1ULL, (xsdcpp::get_field_t)&_get_capFloorData_Caps_t_Cap_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
@@ -14993,6 +15983,20 @@ xsdcpp::AttributeInfo _capFloorData_Caps_t_Cap_t_Attributes[] = {
 void* _get_capFloorData_Floors_t_Floor_t_startDate(domain::capFloorData_Floors_t_Floor_t* elem) { return &*(elem->startDate = xsd::string()); }
 xsdcpp::AttributeInfo _capFloorData_Floors_t_Floor_t_Attributes[] = {
     {"startDate", 1ULL, (xsdcpp::get_field_t)&_get_capFloorData_Floors_t_Floor_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get_strikePriceData_Currency(domain::strikePriceData* parent) {return &*(parent->Currency = domain::extendedCurrencyCode());}
+void* _get_strikePriceData_Value(domain::strikePriceData* parent) {return &parent->Value;}
+xsdcpp::ChildElementInfo _strikePriceData_Children[] = {
+    {"Currency", 0, (xsdcpp::get_field_t)&_get_strikePriceData_Currency, &domain::_extendedCurrencyCode_Info, 0, 1},
+    {"Value", 1, (xsdcpp::get_field_t)&_get_strikePriceData_Value, &domain::_float_Info, 1, 1},
+    {nullptr}
+};
+void* _get_strikeYieldData_Compounding(domain::strikeYieldData* parent) {return &*(parent->Compounding = domain::compounding());}
+void* _get_strikeYieldData_Yield(domain::strikeYieldData* parent) {return &parent->Yield;}
+xsdcpp::ChildElementInfo _strikeYieldData_Children[] = {
+    {"Compounding", 0, (xsdcpp::get_field_t)&_get_strikeYieldData_Compounding, &domain::_compounding_Info, 0, 1},
+    {"Yield", 1, (xsdcpp::get_field_t)&_get_strikeYieldData_Yield, &domain::_float_Info, 1, 1},
     {nullptr}
 };
 void* _get_eqForwardSettlementData_Rules_t_PaymentLag(domain::eqForwardSettlementData_Rules_t* parent) {return &*(parent->PaymentLag = domain::paymentLag());}
@@ -15067,6 +16071,8 @@ xsdcpp::ChildElementInfo _strikes_Children[] = {
 };
 void* _get_nameData_IssuerId(domain::nameData* parent) {return &parent->IssuerId;}
 void* _get_nameData_Qualifier(domain::nameData* parent) {return &*(parent->Qualifier = domain::nameData_Qualifier_t());}
+void* _get_nameData_creditCurveIdType_CreditCurveId(domain::nameData* parent) {return &*(parent->creditCurveIdType.CreditCurveId = domain::_CreditCurveId_t());}
+void* _get_nameData_creditCurveIdType_ReferenceInformation(domain::nameData* parent) {return &*(parent->creditCurveIdType.ReferenceInformation = domain::_ReferenceInformation_t());}
 void* _get_nameData_Notional(domain::nameData* parent) {return &*(parent->Notional = float());}
 void* _get_nameData_Weight(domain::nameData* parent) {return &*(parent->Weight = float());}
 void* _get_nameData_Currency(domain::nameData* parent) {return &*(parent->Currency = domain::currencyCode());}
@@ -15080,16 +16086,18 @@ void* _get_nameData_EventDeterminationDate(domain::nameData* parent) {return &*(
 xsdcpp::ChildElementInfo _nameData_Children[] = {
     {"IssuerId", 0, (xsdcpp::get_field_t)&_get_nameData_IssuerId, &domain::_nameData_IssuerId_t_Info, 1, 1},
     {"Qualifier", 1, (xsdcpp::get_field_t)&_get_nameData_Qualifier, &domain::_nameData_Qualifier_t_Info, 0, 1},
-    {"Notional", 2, (xsdcpp::get_field_t)&_get_nameData_Notional, &domain::_float_Info, 0, 1},
-    {"Weight", 3, (xsdcpp::get_field_t)&_get_nameData_Weight, &domain::_float_Info, 0, 1},
-    {"Currency", 4, (xsdcpp::get_field_t)&_get_nameData_Currency, &domain::_currencyCode_Info, 0, 1},
-    {"PriorNotional", 5, (xsdcpp::get_field_t)&_get_nameData_PriorNotional, &domain::_non_negative_decimal_Info, 0, 1},
-    {"PriorWeight", 6, (xsdcpp::get_field_t)&_get_nameData_PriorWeight, &domain::_non_negative_decimal_Info, 0, 1},
-    {"RecoveryRate", 7, (xsdcpp::get_field_t)&_get_nameData_RecoveryRate, &domain::_recoveryRate_Info, 0, 1},
-    {"AuctionDate", 8, (xsdcpp::get_field_t)&_get_nameData_AuctionDate, &domain::_date_Info, 0, 1},
-    {"AuctionSettlementDate", 9, (xsdcpp::get_field_t)&_get_nameData_AuctionSettlementDate, &domain::_date_Info, 0, 1},
-    {"DefaultDate", 10, (xsdcpp::get_field_t)&_get_nameData_DefaultDate, &domain::_date_Info, 0, 1},
-    {"EventDeterminationDate", 11, (xsdcpp::get_field_t)&_get_nameData_EventDeterminationDate, &domain::_date_Info, 0, 1},
+    {"CreditCurveId", 2, (xsdcpp::get_field_t)&_get_nameData_creditCurveIdType_CreditCurveId, &domain::__CreditCurveId_t_Info, 0, 1},
+    {"ReferenceInformation", 2, (xsdcpp::get_field_t)&_get_nameData_creditCurveIdType_ReferenceInformation, &domain::__ReferenceInformation_t_Info, 0, 1},
+    {"Notional", 3, (xsdcpp::get_field_t)&_get_nameData_Notional, &domain::_float_Info, 0, 1},
+    {"Weight", 4, (xsdcpp::get_field_t)&_get_nameData_Weight, &domain::_float_Info, 0, 1},
+    {"Currency", 5, (xsdcpp::get_field_t)&_get_nameData_Currency, &domain::_currencyCode_Info, 0, 1},
+    {"PriorNotional", 6, (xsdcpp::get_field_t)&_get_nameData_PriorNotional, &domain::_non_negative_decimal_Info, 0, 1},
+    {"PriorWeight", 7, (xsdcpp::get_field_t)&_get_nameData_PriorWeight, &domain::_non_negative_decimal_Info, 0, 1},
+    {"RecoveryRate", 8, (xsdcpp::get_field_t)&_get_nameData_RecoveryRate, &domain::_recoveryRate_Info, 0, 1},
+    {"AuctionDate", 9, (xsdcpp::get_field_t)&_get_nameData_AuctionDate, &domain::_date_Info, 0, 1},
+    {"AuctionSettlementDate", 10, (xsdcpp::get_field_t)&_get_nameData_AuctionSettlementDate, &domain::_date_Info, 0, 1},
+    {"DefaultDate", 11, (xsdcpp::get_field_t)&_get_nameData_DefaultDate, &domain::_date_Info, 0, 1},
+    {"EventDeterminationDate", 12, (xsdcpp::get_field_t)&_get_nameData_EventDeterminationDate, &domain::_date_Info, 0, 1},
     {nullptr}
 };
 void* _get_cbCallData_Styles_t_Style_t_startDate(domain::cbCallData_Styles_t_Style_t* elem) { return &*(elem->startDate = xsd::string()); }
@@ -15287,11 +16295,45 @@ void* _get_cbotranche_Name(domain::cbotranche* parent) {return &parent->Name;}
 void* _get_cbotranche_ICRatio(domain::cbotranche* parent) {return &parent->ICRatio;}
 void* _get_cbotranche_OCRatio(domain::cbotranche* parent) {return &parent->OCRatio;}
 void* _get_cbotranche_Notional(domain::cbotranche* parent) {return &parent->Notional;}
+void* _get_cbotranche_legDataType_CashflowData(domain::cbotranche* parent) {return &*(parent->legDataType.CashflowData = domain::_CashflowData_t());}
+void* _get_cbotranche_legDataType_FixedLegData(domain::cbotranche* parent) {return &*(parent->legDataType.FixedLegData = domain::_FixedLegData_t());}
+void* _get_cbotranche_legDataType_FloatingLegData(domain::cbotranche* parent) {return &*(parent->legDataType.FloatingLegData = domain::_FloatingLegData_t());}
+void* _get_cbotranche_legDataType_CPILegData(domain::cbotranche* parent) {return &*(parent->legDataType.CPILegData = domain::_CPILegData_t());}
+void* _get_cbotranche_legDataType_YYLegData(domain::cbotranche* parent) {return &*(parent->legDataType.YYLegData = domain::_YYLegData_t());}
+void* _get_cbotranche_legDataType_CMSLegData(domain::cbotranche* parent) {return &*(parent->legDataType.CMSLegData = domain::_CMSLegData_t());}
+void* _get_cbotranche_legDataType_CMBLegData(domain::cbotranche* parent) {return &*(parent->legDataType.CMBLegData = domain::_CMBLegData_t());}
+void* _get_cbotranche_legDataType_DigitalCMSLegData(domain::cbotranche* parent) {return &*(parent->legDataType.DigitalCMSLegData = domain::_DigitalCMSLegData_t());}
+void* _get_cbotranche_legDataType_DurationAdjustedCMSLegData(domain::cbotranche* parent) {return &*(parent->legDataType.DurationAdjustedCMSLegData = domain::_DurationAdjustedCMSLegData_t());}
+void* _get_cbotranche_legDataType_CMSSpreadLegData(domain::cbotranche* parent) {return &*(parent->legDataType.CMSSpreadLegData = domain::_CMSSpreadLegData_t());}
+void* _get_cbotranche_legDataType_DigitalCMSSpreadLegData(domain::cbotranche* parent) {return &*(parent->legDataType.DigitalCMSSpreadLegData = domain::_DigitalCMSSpreadLegData_t());}
+void* _get_cbotranche_legDataType_EquityLegData(domain::cbotranche* parent) {return &*(parent->legDataType.EquityLegData = domain::_EquityLegData_t());}
+void* _get_cbotranche_legDataType_ZeroCouponFixedLegData(domain::cbotranche* parent) {return &*(parent->legDataType.ZeroCouponFixedLegData = domain::_ZeroCouponFixedLegData_t());}
+void* _get_cbotranche_legDataType_EquityMarginLegData(domain::cbotranche* parent) {return &*(parent->legDataType.EquityMarginLegData = domain::_EquityMarginLegData_t());}
+void* _get_cbotranche_legDataType_CommodityFixedLegData(domain::cbotranche* parent) {return &*(parent->legDataType.CommodityFixedLegData = domain::_CommodityFixedLegData_t());}
+void* _get_cbotranche_legDataType_CommodityFloatingLegData(domain::cbotranche* parent) {return &*(parent->legDataType.CommodityFloatingLegData = domain::_CommodityFloatingLegData_t());}
+void* _get_cbotranche_legDataType_FormulaBasedLegData(domain::cbotranche* parent) {return &*(parent->legDataType.FormulaBasedLegData = domain::_FormulaBasedLegData_t());}
 xsdcpp::ChildElementInfo _cbotranche_Children[] = {
     {"Name", 0, (xsdcpp::get_field_t)&_get_cbotranche_Name, &domain::_cbotranche_Name_t_Info, 1, 1},
     {"ICRatio", 1, (xsdcpp::get_field_t)&_get_cbotranche_ICRatio, &domain::_float_Info, 1, 1},
     {"OCRatio", 2, (xsdcpp::get_field_t)&_get_cbotranche_OCRatio, &domain::_float_Info, 1, 1},
     {"Notional", 3, (xsdcpp::get_field_t)&_get_cbotranche_Notional, &domain::_float_Info, 1, 1},
+    {"CashflowData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CashflowData, &domain::__CashflowData_t_Info, 0, 1},
+    {"FixedLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_FixedLegData, &domain::__FixedLegData_t_Info, 0, 1},
+    {"FloatingLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_FloatingLegData, &domain::__FloatingLegData_t_Info, 0, 1},
+    {"CPILegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CPILegData, &domain::__CPILegData_t_Info, 0, 1},
+    {"YYLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_YYLegData, &domain::__YYLegData_t_Info, 0, 1},
+    {"CMSLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CMSLegData, &domain::__CMSLegData_t_Info, 0, 1},
+    {"CMBLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CMBLegData, &domain::__CMBLegData_t_Info, 0, 1},
+    {"DigitalCMSLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_DigitalCMSLegData, &domain::__DigitalCMSLegData_t_Info, 0, 1},
+    {"DurationAdjustedCMSLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_DurationAdjustedCMSLegData, &domain::__DurationAdjustedCMSLegData_t_Info, 0, 1},
+    {"CMSSpreadLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CMSSpreadLegData, &domain::__CMSSpreadLegData_t_Info, 0, 1},
+    {"DigitalCMSSpreadLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_DigitalCMSSpreadLegData, &domain::__DigitalCMSSpreadLegData_t_Info, 0, 1},
+    {"EquityLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_EquityLegData, &domain::__EquityLegData_t_Info, 0, 1},
+    {"ZeroCouponFixedLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_ZeroCouponFixedLegData, &domain::__ZeroCouponFixedLegData_t_Info, 0, 1},
+    {"EquityMarginLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_EquityMarginLegData, &domain::__EquityMarginLegData_t_Info, 0, 1},
+    {"CommodityFixedLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CommodityFixedLegData, &domain::__CommodityFixedLegData_t_Info, 0, 1},
+    {"CommodityFloatingLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CommodityFloatingLegData, &domain::__CommodityFloatingLegData_t_Info, 0, 1},
+    {"FormulaBasedLegData", 4, (xsdcpp::get_field_t)&_get_cbotranche_legDataType_FormulaBasedLegData, &domain::__FormulaBasedLegData_t_Info, 0, 1},
     {nullptr}
 };
 void* _get_compositeTradeComponents_Trade_t_TradeType(domain::compositeTradeComponents_Trade_t* parent) {return &parent->TradeType;}
@@ -16938,6 +17980,26 @@ xsdcpp::ChildElementInfo _premiumData_Premium_t_SettlementData_t_Children[] = {
     {"FixingDate", 2, (xsdcpp::get_field_t)&_get_premiumData_Premium_t_SettlementData_t_FixingDate, &domain::_premiumData_Premium_t_SettlementData_t_FixingDate_t_Info, 0, 1},
     {nullptr}
 };
+void* _get_floatWithAttribute_startDate(domain::floatWithAttribute* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo _floatWithAttribute_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get_floatWithAttribute_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get_tradeLevelFixings_Fixing_t_fixingDate(domain::tradeLevelFixings_Fixing_t* elem) { return &*(elem->fixingDate = xsd::string()); }
+xsdcpp::AttributeInfo _tradeLevelFixings_Fixing_t_Attributes[] = {
+    {"fixingDate", 1ULL, (xsdcpp::get_field_t)&_get_tradeLevelFixings_Fixing_t_fixingDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get__CPILegData_t_Rates_t_Rate_t_startDate(domain::_CPILegData_t_Rates_t_Rate_t* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo __CPILegData_t_Rates_t_Rate_t_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get__CPILegData_t_Rates_t_Rate_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
+void* _get__ZeroCouponFixedLegData_t_Rates_t_Rate_t_startDate(domain::_ZeroCouponFixedLegData_t_Rates_t_Rate_t* elem) { return &*(elem->startDate = xsd::string()); }
+xsdcpp::AttributeInfo __ZeroCouponFixedLegData_t_Rates_t_Rate_t_Attributes[] = {
+    {"startDate", 1ULL, (xsdcpp::get_field_t)&_get__ZeroCouponFixedLegData_t_Rates_t_Rate_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
+    {nullptr}
+};
 void* _get_cbCallData_Soft_t_Soft_t_startDate(domain::cbCallData_Soft_t_Soft_t* elem) { return &*(elem->startDate = xsd::string()); }
 xsdcpp::AttributeInfo _cbCallData_Soft_t_Soft_t_Attributes[] = {
     {"startDate", 1ULL, (xsdcpp::get_field_t)&_get_cbCallData_Soft_t_Soft_t_startDate, (xsdcpp::set_value_t)&xsdcpp::set_string, false, nullptr},
@@ -17430,6 +18492,14 @@ void _serialize_oreTradeType(xsdcpp::XmlWriter& w, const char* name, const domai
 void _serialize_envelope(xsdcpp::XmlWriter& w, const char* name, const domain::envelope& v);
 void _serialize_envelope_CounterParty_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_CounterParty_t& v);
 void _serialize_xsd__string(xsdcpp::XmlWriter& w, const char* name, const xsd::string& v);
+void _serialize_nettingSetGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::nettingSetGroup_group_t& v);
+void _serialize__NettingSetId_t(xsdcpp::XmlWriter& w, const char* name, const domain::_NettingSetId_t& v);
+void _serialize_nettingSetDetails(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails& v);
+void _serialize_nettingSetDetails_NettingSetId_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_NettingSetId_t& v);
+void _serialize_nettingSetDetails_AgreementType_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_AgreementType_t& v);
+void _serialize_nettingSetDetails_CallType_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_CallType_t& v);
+void _serialize_nettingSetDetails_InitialMarginType_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_InitialMarginType_t& v);
+void _serialize_nettingSetDetails_LegalEntityId_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_LegalEntityId_t& v);
 void _serialize_envelope_PortfolioIds_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_PortfolioIds_t& v);
 void _serialize_envelope_PortfolioIds_t_PortfolioId_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_PortfolioIds_t_PortfolioId_t& v);
 void _serialize_envelope_AdditionalFields_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_AdditionalFields_t& v);
@@ -17449,6 +18519,10 @@ void _serialize_bool(xsdcpp::XmlWriter& w, const char* name, bool v);
 void _serialize_scheduleData_Dates_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Dates_t& v);
 void _serialize_scheduleData_Dates_t_Tenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Dates_t_Tenor_t& v);
 void _serialize_scheduleData_Dates_t_Dates_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Dates_t_Dates_t& v);
+void _serialize_DerivedScheduleGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::DerivedScheduleGroup_group_t& v);
+void _serialize_DerivedScheduleType(xsdcpp::XmlWriter& w, const char* name, const domain::DerivedScheduleType& v);
+void _serialize_DerivedScheduleType_BaseSchedule_t(xsdcpp::XmlWriter& w, const char* name, const domain::DerivedScheduleType_BaseSchedule_t& v);
+void _serialize_DerivedScheduleType_Shift_t(xsdcpp::XmlWriter& w, const char* name, const domain::DerivedScheduleType_Shift_t& v);
 void _serialize_swapData(xsdcpp::XmlWriter& w, const char* name, const domain::swapData& v);
 void _serialize_uint64_t(xsdcpp::XmlWriter& w, const char* name, uint64_t v);
 void _serialize_settlementType(xsdcpp::XmlWriter& w, const char* name, const domain::settlementType& v);
@@ -17481,6 +18555,104 @@ void _serialize_indexingData(xsdcpp::XmlWriter& w, const char* name, const domai
 void _serialize_indexingData_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::indexingData_Index_t& v);
 void _serialize_indexingData_IndexFixingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::indexingData_IndexFixingCalendar_t& v);
 void _serialize_indexingData_FixingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::indexingData_FixingCalendar_t& v);
+void _serialize_legDataType_group_t(xsdcpp::XmlWriter& w, const char*, const domain::legDataType_group_t& v);
+void _serialize__CashflowData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CashflowData_t& v);
+void _serialize__CashflowData_t_Cashflow_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CashflowData_t_Cashflow_t& v);
+void _serialize__CashflowData_t_Cashflow_t_Amount_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CashflowData_t_Cashflow_t_Amount_t& v);
+void _serialize__FixedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FixedLegData_t& v);
+void _serialize__FixedLegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FixedLegData_t_Rates_t& v);
+void _serialize__FixedLegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FixedLegData_t_Rates_t_Rate_t& v);
+void _serialize__FloatingLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FloatingLegData_t& v);
+void _serialize_indexNameType(xsdcpp::XmlWriter& w, const char* name, const domain::indexNameType& v);
+void _serialize__FloatingLegData_t_LastRecentPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FloatingLegData_t_LastRecentPeriod_t& v);
+void _serialize__FloatingLegData_t_Lookback_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FloatingLegData_t_Lookback_t& v);
+void _serialize_spreads(xsdcpp::XmlWriter& w, const char* name, const domain::spreads& v);
+void _serialize_floatWithAttribute(xsdcpp::XmlWriter& w, const char* name, const domain::floatWithAttribute& v);
+void _serialize_caps(xsdcpp::XmlWriter& w, const char* name, const domain::caps& v);
+void _serialize_floors(xsdcpp::XmlWriter& w, const char* name, const domain::floors& v);
+void _serialize_gearings(xsdcpp::XmlWriter& w, const char* name, const domain::gearings& v);
+void _serialize_tradeLevelFixings(xsdcpp::XmlWriter& w, const char* name, const domain::tradeLevelFixings& v);
+void _serialize_tradeLevelFixings_Fixing_t(xsdcpp::XmlWriter& w, const char* name, const domain::tradeLevelFixings_Fixing_t& v);
+void _serialize_stubInterpolation(xsdcpp::XmlWriter& w, const char* name, const domain::stubInterpolation& v);
+void _serialize_roundingType(xsdcpp::XmlWriter& w, const char* name, const domain::roundingType& v);
+void _serialize__CPILegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t& v);
+void _serialize__CPILegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Index_t& v);
+void _serialize__CPILegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Rates_t& v);
+void _serialize__CPILegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Rates_t_Rate_t& v);
+void _serialize__CPILegData_t_ObservationLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_ObservationLag_t& v);
+void _serialize__CPILegData_t_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Interpolation_t& v);
+void _serialize__YYLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_YYLegData_t& v);
+void _serialize__YYLegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_YYLegData_t_Index_t& v);
+void _serialize__YYLegData_t_ObservationLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_YYLegData_t_ObservationLag_t& v);
+void _serialize__CMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMSLegData_t& v);
+void _serialize__CMBLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMBLegData_t& v);
+void _serialize__CMBLegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMBLegData_t_Index_t& v);
+void _serialize__DigitalCMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t& v);
+void _serialize__DigitalCMSLegData_t_CMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CMSLegData_t& v);
+void _serialize__DigitalCMSLegData_t_CallPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CallPosition_t& v);
+void _serialize__DigitalCMSLegData_t_CallStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CallStrikes_t& v);
+void _serialize__DigitalCMSLegData_t_CallPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CallPayoffs_t& v);
+void _serialize__DigitalCMSLegData_t_PutPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_PutPosition_t& v);
+void _serialize__DigitalCMSLegData_t_PutStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_PutStrikes_t& v);
+void _serialize__DigitalCMSLegData_t_PutPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_PutPayoffs_t& v);
+void _serialize__DurationAdjustedCMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DurationAdjustedCMSLegData_t& v);
+void _serialize__CMSSpreadLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMSSpreadLegData_t& v);
+void _serialize__DigitalCMSSpreadLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_CallPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CallPosition_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_CallStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CallStrikes_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_CallPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CallPayoffs_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_PutPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_PutPosition_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_PutStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_PutStrikes_t& v);
+void _serialize__DigitalCMSSpreadLegData_t_PutPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_PutPayoffs_t& v);
+void _serialize__EquityLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t& v);
+void _serialize__EquityLegData_t_ReturnType_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_ReturnType_t& v);
+void _serialize_underlyingTypes_group_t(xsdcpp::XmlWriter& w, const char*, const domain::underlyingTypes_group_t& v);
+void _serialize__Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::_Name_t& v);
+void _serialize_underlying(xsdcpp::XmlWriter& w, const char* name, const domain::underlying& v);
+void _serialize_underlying_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Type_t& v);
+void _serialize_underlying_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Name_t& v);
+void _serialize_underlying_IdentifierType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_IdentifierType_t& v);
+void _serialize_underlying_Exchange_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Exchange_t& v);
+void _serialize_underlying_PriceType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_PriceType_t& v);
+void _serialize_underlying_DeliveryRollCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_DeliveryRollCalendar_t& v);
+void _serialize_underlying_FutureExpiryDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureExpiryDate_t& v);
+void _serialize_underlying_FutureContractMonth_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureContractMonth_t& v);
+void _serialize_underlying_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Interpolation_t& v);
+void _serialize_underlyings(xsdcpp::XmlWriter& w, const char* name, const domain::underlyings& v);
+void _serialize__EquityLegData_t_FXTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_FXTerms_t& v);
+void _serialize__EquityLegData_t_FXTerms_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_FXTerms_t_FXIndex_t& v);
+void _serialize__EquityLegData_t_FXTerms_t_FXIndexCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_FXTerms_t_FXIndexCalendar_t& v);
+void _serialize__ZeroCouponFixedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t& v);
+void _serialize__ZeroCouponFixedLegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_Rates_t& v);
+void _serialize__ZeroCouponFixedLegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_Rates_t_Rate_t& v);
+void _serialize__ZeroCouponFixedLegData_t_Compounding_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_Compounding_t& v);
+void _serialize__ZeroCouponFixedLegData_t_SubtractNotional_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_SubtractNotional_t& v);
+void _serialize__EquityMarginLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t& v);
+void _serialize__EquityMarginLegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_Rates_t& v);
+void _serialize__EquityMarginLegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_Rates_t_Rate_t& v);
+void _serialize__EquityMarginLegData_t_EquityLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t& v);
+void _serialize__EquityMarginLegData_t_EquityLegData_t_ReturnType_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_ReturnType_t& v);
+void _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t& v);
+void _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t& v);
+void _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t& v);
+void _serialize__CommodityFixedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFixedLegData_t& v);
+void _serialize_quantitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::quantitiesType& v);
+void _serialize_quantitiesType_Quantity_t(xsdcpp::XmlWriter& w, const char* name, const domain::quantitiesType_Quantity_t& v);
+void _serialize_pricesType(xsdcpp::XmlWriter& w, const char* name, const domain::pricesType& v);
+void _serialize_pricesType_Price_t(xsdcpp::XmlWriter& w, const char* name, const domain::pricesType_Price_t& v);
+void _serialize_commodityPayRelativeToType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityPayRelativeToType& v);
+void _serialize__CommodityFixedLegData_t_Tag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFixedLegData_t_Tag_t& v);
+void _serialize__CommodityFloatingLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t& v);
+void _serialize__CommodityFloatingLegData_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_Name_t& v);
+void _serialize_priceType(xsdcpp::XmlWriter& w, const char* name, const domain::priceType& v);
+void _serialize_commodityQuantityFrequencyType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityQuantityFrequencyType& v);
+void _serialize_pricingDateRuleType(xsdcpp::XmlWriter& w, const char* name, const domain::pricingDateRuleType& v);
+void _serialize__CommodityFloatingLegData_t_PricingDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_PricingDates_t& v);
+void _serialize__CommodityFloatingLegData_t_Tag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_Tag_t& v);
+void _serialize__CommodityFloatingLegData_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_FXIndex_t& v);
+void _serialize__FormulaBasedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FormulaBasedLegData_t& v);
+void _serialize__FormulaBasedLegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FormulaBasedLegData_t_Index_t& v);
 void _serialize_legData_SettlementData_t(xsdcpp::XmlWriter& w, const char* name, const domain::legData_SettlementData_t& v);
 void _serialize_legData_SettlementData_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::legData_SettlementData_t_FXIndex_t& v);
 void _serialize_legData_SettlementData_t_FixingDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::legData_SettlementData_t_FixingDate_t& v);
@@ -17511,6 +18683,8 @@ void _serialize_optionData_ExerciseFees_t_ExerciseFee_t(xsdcpp::XmlWriter& w, co
 void _serialize_optionData_ExerciseFeeSettlementPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::optionData_ExerciseFeeSettlementPeriod_t& v);
 void _serialize_optionData_ExerciseFeeSettlementCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::optionData_ExerciseFeeSettlementCalendar_t& v);
 void _serialize_optionData_ExerciseFeeSettlementConvention_t(xsdcpp::XmlWriter& w, const char* name, const domain::optionData_ExerciseFeeSettlementConvention_t& v);
+void _serialize_exerciseDatesGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::exerciseDatesGroup_group_t& v);
+void _serialize__ExerciseDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ExerciseDates_t& v);
 void _serialize_optionExerciseData(xsdcpp::XmlWriter& w, const char* name, const domain::optionExerciseData& v);
 void _serialize_optionPaymentData(xsdcpp::XmlWriter& w, const char* name, const domain::optionPaymentData& v);
 void _serialize_optionPaymentData_Dates_t(xsdcpp::XmlWriter& w, const char* name, const domain::optionPaymentData_Dates_t& v);
@@ -17585,6 +18759,12 @@ void _serialize_capFloorData_PremiumAmount_t(xsdcpp::XmlWriter& w, const char* n
 void _serialize_capFloorData_PremiumPayDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorData_PremiumPayDate_t& v);
 void _serialize_equityFutureOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::equityFutureOptionData& v);
 void _serialize_equityOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::equityOptionData& v);
+void _serialize_strikeGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::strikeGroup_group_t& v);
+void _serialize__Strike_t(xsdcpp::XmlWriter& w, const char* name, const domain::_Strike_t& v);
+void _serialize__StrikeData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_StrikeData_t& v);
+void _serialize_strikePriceData(xsdcpp::XmlWriter& w, const char* name, const domain::strikePriceData& v);
+void _serialize_strikeYieldData(xsdcpp::XmlWriter& w, const char* name, const domain::strikeYieldData& v);
+void _serialize_compounding(xsdcpp::XmlWriter& w, const char* name, const domain::compounding& v);
 void _serialize_eqBarrierOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::eqBarrierOptionData& v);
 void _serialize_eqBarrierOptionData_EQIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::eqBarrierOptionData_EQIndex_t& v);
 void _serialize_equityForwardData(xsdcpp::XmlWriter& w, const char* name, const domain::equityForwardData& v);
@@ -17644,6 +18824,12 @@ void _serialize_deliveryBasket(xsdcpp::XmlWriter& w, const char* name, const dom
 void _serialize_deliveryBasket_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::deliveryBasket_Id_t& v);
 void _serialize_creditDefaultSwapData(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapData& v);
 void _serialize_creditDefaultSwapData_IssuerId_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapData_IssuerId_t& v);
+void _serialize_creditCurveIdType_group_t(xsdcpp::XmlWriter& w, const char*, const domain::creditCurveIdType_group_t& v);
+void _serialize__CreditCurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CreditCurveId_t& v);
+void _serialize__ReferenceInformation_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ReferenceInformation_t& v);
+void _serialize__ReferenceInformation_t_ReferenceEntityId_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ReferenceInformation_t_ReferenceEntityId_t& v);
+void _serialize_cdsTierType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsTierType& v);
+void _serialize_cdsDocClauseType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsDocClauseType& v);
 void _serialize_creditDefaultSwapData_ReferenceObligation_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapData_ReferenceObligation_t& v);
 void _serialize_creditDefaultSwapData_ProtectionPaymentTime_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapData_ProtectionPaymentTime_t& v);
 void _serialize_creditDefaultSwapOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapOptionData& v);
@@ -17660,10 +18846,7 @@ void _serialize_commodityOptionData(xsdcpp::XmlWriter& w, const char* name, cons
 void _serialize_commodityOptionData_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityOptionData_Name_t& v);
 void _serialize_commodityDigitalAveragePriceOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::commodityDigitalAveragePriceOptionData& v);
 void _serialize_commodityDigitalAveragePriceOptionData_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityDigitalAveragePriceOptionData_Name_t& v);
-void _serialize_priceType(xsdcpp::XmlWriter& w, const char* name, const domain::priceType& v);
 void _serialize_positiveDecimal(xsdcpp::XmlWriter& w, const char* name, const domain::positiveDecimal& v);
-void _serialize_commodityQuantityFrequencyType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityQuantityFrequencyType& v);
-void _serialize_commodityPayRelativeToType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityPayRelativeToType& v);
 void _serialize_commodityDigitalAveragePriceOptionData_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityDigitalAveragePriceOptionData_FXIndex_t& v);
 void _serialize_commodityDigitalOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::commodityDigitalOptionData& v);
 void _serialize_commodityDigitalOptionData_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityDigitalOptionData_Name_t& v);
@@ -17682,16 +18865,6 @@ void _serialize_commodityOptionStripData_PremiumAmount_t(xsdcpp::XmlWriter& w, c
 void _serialize_commodityOptionStripData_PremiumPayDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityOptionStripData_PremiumPayDate_t& v);
 void _serialize_commodityOptionStripData_Style_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityOptionStripData_Style_t& v);
 void _serialize_commodityPositionData(xsdcpp::XmlWriter& w, const char* name, const domain::commodityPositionData& v);
-void _serialize_underlying(xsdcpp::XmlWriter& w, const char* name, const domain::underlying& v);
-void _serialize_underlying_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Type_t& v);
-void _serialize_underlying_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Name_t& v);
-void _serialize_underlying_IdentifierType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_IdentifierType_t& v);
-void _serialize_underlying_Exchange_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Exchange_t& v);
-void _serialize_underlying_PriceType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_PriceType_t& v);
-void _serialize_underlying_DeliveryRollCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_DeliveryRollCalendar_t& v);
-void _serialize_underlying_FutureExpiryDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureExpiryDate_t& v);
-void _serialize_underlying_FutureContractMonth_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureContractMonth_t& v);
-void _serialize_underlying_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Interpolation_t& v);
 void _serialize_singleUnderlyingAsianOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::singleUnderlyingAsianOptionData& v);
 void _serialize_singleUnderlyingAsianOptionData_Settlement_t(xsdcpp::XmlWriter& w, const char* name, const domain::singleUnderlyingAsianOptionData_Settlement_t& v);
 void _serialize_bondOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::bondOptionData& v);
@@ -17871,7 +19044,6 @@ void _serialize_stFreeStyleOptionType(xsdcpp::XmlWriter& w, const char* name, co
 void _serialize_basketVarianceSwapData(xsdcpp::XmlWriter& w, const char* name, const domain::basketVarianceSwapData& v);
 void _serialize_stFreeStyleBool(xsdcpp::XmlWriter& w, const char* name, const domain::stFreeStyleBool& v);
 void _serialize_basketVarianceSwapData2(xsdcpp::XmlWriter& w, const char* name, const domain::basketVarianceSwapData2& v);
-void _serialize_underlyings(xsdcpp::XmlWriter& w, const char* name, const domain::underlyings& v);
 void _serialize_extendedAccumulatorData(xsdcpp::XmlWriter& w, const char* name, const domain::extendedAccumulatorData& v);
 void _serialize_varianceOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::varianceOptionData& v);
 void _serialize_varianceDispersionSwapData(xsdcpp::XmlWriter& w, const char* name, const domain::varianceDispersionSwapData& v);
@@ -18226,7 +19398,6 @@ void _serialize_market_FxRates_t(xsdcpp::XmlWriter& w, const char* name, const d
 void _serialize_market_FxRates_t_CurrencyPairs_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxRates_t_CurrencyPairs_t& v);
 void _serialize_currencyPair(xsdcpp::XmlWriter& w, const char* name, const domain::currencyPair& v);
 void _serialize_market_Indices_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Indices_t& v);
-void _serialize_indexNameType(xsdcpp::XmlWriter& w, const char* name, const domain::indexNameType& v);
 void _serialize_market_SwapIndices_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwapIndices_t& v);
 void _serialize_market_SwapIndices_t_SwapIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwapIndices_t_SwapIndex_t& v);
 void _serialize_market_SwapIndices_t_SwapIndex_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwapIndices_t_SwapIndex_t_Name_t& v);
@@ -18781,7 +19952,6 @@ void _serialize_correlation_OptionTenors_t(xsdcpp::XmlWriter& w, const char* nam
 void _serialize_conventions(xsdcpp::XmlWriter& w, const char* name, const domain::conventions& v);
 void _serialize_zeroType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType& v);
 void _serialize_zeroType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_Id_t& v);
-void _serialize_compounding(xsdcpp::XmlWriter& w, const char* name, const domain::compounding& v);
 void _serialize_zeroType_TenorCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_TenorCalendar_t& v);
 void _serialize_zeroType_SpotCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_SpotCalendar_t& v);
 void _serialize_cdsConventionsType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsConventionsType& v);
@@ -19198,7 +20368,6 @@ void _serialize_currencyDefinition_ISOCode_t(xsdcpp::XmlWriter& w, const char* n
 void _serialize_currencyDefinition_MinorUnitCodes_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_MinorUnitCodes_t& v);
 void _serialize_currencyDefinition_Symbol_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_Symbol_t& v);
 void _serialize_currencyDefinition_FractionSymbol_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_FractionSymbol_t& v);
-void _serialize_roundingType(xsdcpp::XmlWriter& w, const char* name, const domain::roundingType& v);
 void _serialize_currencyDefinition_CurrencyType_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_CurrencyType_t& v);
 void _serialize_counterpartyInformation(xsdcpp::XmlWriter& w, const char* name, const domain::counterpartyInformation& v);
 void _serialize_counterparties(xsdcpp::XmlWriter& w, const char* name, const domain::counterparties& v);
@@ -19226,6 +20395,57 @@ XSDCPP_MAYBE_UNUSED void _serialize_envelope_CounterParty_t(xsdcpp::XmlWriter& w
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize__NettingSetId_t(xsdcpp::XmlWriter& w, const char* name, const domain::_NettingSetId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetDetails_NettingSetId_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_NettingSetId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetDetails_AgreementType_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_AgreementType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetDetails_CallType_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_CallType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetDetails_InitialMarginType_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_InitialMarginType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetDetails_LegalEntityId_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails_LegalEntityId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetDetails(xsdcpp::XmlWriter& w, const char* name, const domain::nettingSetDetails& v) {
+    w.startElement(name);
+    _serialize_nettingSetDetails_NettingSetId_t(w, "NettingSetId", v.NettingSetId);
+    if (v.AgreementType) _serialize_nettingSetDetails_AgreementType_t(w, "AgreementType", *v.AgreementType);
+    if (v.CallType) _serialize_nettingSetDetails_CallType_t(w, "CallType", *v.CallType);
+    if (v.InitialMarginType) _serialize_nettingSetDetails_InitialMarginType_t(w, "InitialMarginType", *v.InitialMarginType);
+    if (v.LegalEntityId) _serialize_nettingSetDetails_LegalEntityId_t(w, "LegalEntityId", *v.LegalEntityId);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingSetGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::nettingSetGroup_group_t& v) {
+    if ((&v)->NettingSetId) _serialize__NettingSetId_t(w, "NettingSetId", *(&v)->NettingSetId);
+    else if ((&v)->NettingSetDetails) _serialize_nettingSetDetails(w, "NettingSetDetails", *(&v)->NettingSetDetails);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_envelope_PortfolioIds_t_PortfolioId_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_PortfolioIds_t_PortfolioId_t& v) {
     w.startElement(name);
     w.writeText(static_cast<const xsd::string&>(v));
@@ -19246,6 +20466,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_envelope_AdditionalFields_t(xsdcpp::XmlWrite
 XSDCPP_MAYBE_UNUSED void _serialize_envelope(xsdcpp::XmlWriter& w, const char* name, const domain::envelope& v) {
     w.startElement(name);
     if (v.CounterParty) _serialize_envelope_CounterParty_t(w, "CounterParty", *v.CounterParty);
+    if (v.nettingSetGroup) _serialize_nettingSetGroup_group_t(w, "nettingSetGroup", *v.nettingSetGroup);
     if (v.PortfolioIds) _serialize_envelope_PortfolioIds_t(w, "PortfolioIds", *v.PortfolioIds);
     if (v.AdditionalFields) _serialize_envelope_AdditionalFields_t(w, "AdditionalFields", *v.AdditionalFields);
     w.endElement(name);
@@ -19347,10 +20568,39 @@ XSDCPP_MAYBE_UNUSED void _serialize_scheduleData_Dates_t(xsdcpp::XmlWriter& w, c
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleType_BaseSchedule_t(xsdcpp::XmlWriter& w, const char* name, const domain::DerivedScheduleType_BaseSchedule_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleType_Shift_t(xsdcpp::XmlWriter& w, const char* name, const domain::DerivedScheduleType_Shift_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleType(xsdcpp::XmlWriter& w, const char* name, const domain::DerivedScheduleType& v) {
+    w.startElement(name);
+    _serialize_DerivedScheduleType_BaseSchedule_t(w, "BaseSchedule", v.BaseSchedule);
+    if (v.Shift) _serialize_DerivedScheduleType_Shift_t(w, "Shift", *v.Shift);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.Convention) _serialize_businessDayConvention(w, "Convention", *v.Convention);
+    if (v.RemoveFirstDate) _serialize_bool(w, "RemoveFirstDate", *v.RemoveFirstDate);
+    if (v.RemoveLastDate) _serialize_bool(w, "RemoveLastDate", *v.RemoveLastDate);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::DerivedScheduleGroup_group_t& v) {
+    if ((&v)->DerivedSchedule) _serialize_DerivedScheduleType(w, "DerivedSchedule", *(&v)->DerivedSchedule);
+    else if ((&v)->Derived) _serialize_DerivedScheduleType(w, "Derived", *(&v)->Derived);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_scheduleData(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData& v) {
     w.startElement(name);
     for (const auto& item : v.Rules) _serialize_scheduleData_Rules_t(w, "Rules", item);
     for (const auto& item : v.Dates) _serialize_scheduleData_Dates_t(w, "Dates", item);
+    for (const auto& item : v.DerivedScheduleGroup) _serialize_DerivedScheduleGroup_group_t(w, "DerivedScheduleGroup", item);
     w.endElement(name);
 }
 
@@ -19577,6 +20827,798 @@ XSDCPP_MAYBE_UNUSED void _serialize_legData_Indexings_t(xsdcpp::XmlWriter& w, co
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize__CashflowData_t_Cashflow_t_Amount_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CashflowData_t_Cashflow_t_Amount_t& v) {
+    w.startElement(name);
+    if ((&v)->date) w.writeAttribute("date", *(&v)->date);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CashflowData_t_Cashflow_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CashflowData_t_Cashflow_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Amount) _serialize__CashflowData_t_Cashflow_t_Amount_t(w, "Amount", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CashflowData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CashflowData_t& v) {
+    w.startElement(name);
+    _serialize__CashflowData_t_Cashflow_t(w, "Cashflow", v.Cashflow);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FixedLegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FixedLegData_t_Rates_t_Rate_t& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FixedLegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FixedLegData_t_Rates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Rate) _serialize__FixedLegData_t_Rates_t_Rate_t(w, "Rate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FixedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FixedLegData_t& v) {
+    w.startElement(name);
+    _serialize__FixedLegData_t_Rates_t(w, "Rates", v.Rates);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexNameType(xsdcpp::XmlWriter& w, const char* name, const domain::indexNameType& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FloatingLegData_t_LastRecentPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FloatingLegData_t_LastRecentPeriod_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FloatingLegData_t_Lookback_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FloatingLegData_t_Lookback_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_floatWithAttribute(xsdcpp::XmlWriter& w, const char* name, const domain::floatWithAttribute& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_spreads(xsdcpp::XmlWriter& w, const char* name, const domain::spreads& v) {
+    w.startElement(name);
+    for (const auto& item : v.Spread) _serialize_floatWithAttribute(w, "Spread", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_caps(xsdcpp::XmlWriter& w, const char* name, const domain::caps& v) {
+    w.startElement(name);
+    for (const auto& item : v.Cap) _serialize_floatWithAttribute(w, "Cap", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_floors(xsdcpp::XmlWriter& w, const char* name, const domain::floors& v) {
+    w.startElement(name);
+    for (const auto& item : v.Floor) _serialize_floatWithAttribute(w, "Floor", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_gearings(xsdcpp::XmlWriter& w, const char* name, const domain::gearings& v) {
+    w.startElement(name);
+    for (const auto& item : v.Gearing) _serialize_floatWithAttribute(w, "Gearing", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tradeLevelFixings_Fixing_t(xsdcpp::XmlWriter& w, const char* name, const domain::tradeLevelFixings_Fixing_t& v) {
+    w.startElement(name);
+    if ((&v)->fixingDate) w.writeAttribute("fixingDate", *(&v)->fixingDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tradeLevelFixings(xsdcpp::XmlWriter& w, const char* name, const domain::tradeLevelFixings& v) {
+    w.startElement(name);
+    for (const auto& item : v.Fixing) _serialize_tradeLevelFixings_Fixing_t(w, "Fixing", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_roundingType(xsdcpp::XmlWriter& w, const char* name, const domain::roundingType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stubInterpolation(xsdcpp::XmlWriter& w, const char* name, const domain::stubInterpolation& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "ShortIndex", v.ShortIndex);
+    _serialize_indexNameType(w, "LongIndex", v.LongIndex);
+    if (v.RoundingType) _serialize_roundingType(w, "RoundingType", *v.RoundingType);
+    if (v.RoundingPrecision) _serialize_int64_t(w, "RoundingPrecision", *v.RoundingPrecision);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FloatingLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FloatingLegData_t& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "Index", v.Index);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.LastRecentPeriod) _serialize__FloatingLegData_t_LastRecentPeriod_t(w, "LastRecentPeriod", *v.LastRecentPeriod);
+    if (v.LastRecentPeriodCalendar) _serialize_calendar(w, "LastRecentPeriodCalendar", *v.LastRecentPeriodCalendar);
+    if (v.FixingDays) _serialize_uint64_t(w, "FixingDays", *v.FixingDays);
+    if (v.Lookback) _serialize__FloatingLegData_t_Lookback_t(w, "Lookback", *v.Lookback);
+    if (v.RateCutoff) _serialize_int64_t(w, "RateCutoff", *v.RateCutoff);
+    if (v.IsAveraged) _serialize_bool(w, "IsAveraged", *v.IsAveraged);
+    if (v.HasSubPeriods) _serialize_bool(w, "HasSubPeriods", *v.HasSubPeriods);
+    if (v.IncludeSpread) _serialize_bool(w, "IncludeSpread", *v.IncludeSpread);
+    if (v.IsNotResettingXCCY) _serialize_bool(w, "IsNotResettingXCCY", *v.IsNotResettingXCCY);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    if (v.LocalCapFloor) _serialize_bool(w, "LocalCapFloor", *v.LocalCapFloor);
+    if (v.FixingSchedule) _serialize_scheduleData(w, "FixingSchedule", *v.FixingSchedule);
+    if (v.ResetSchedule) _serialize_scheduleData(w, "ResetSchedule", *v.ResetSchedule);
+    if (v.HistoricalFixings) _serialize_tradeLevelFixings(w, "HistoricalFixings", *v.HistoricalFixings);
+    if (v.FrontStubInterpolation) _serialize_stubInterpolation(w, "FrontStubInterpolation", *v.FrontStubInterpolation);
+    if (v.BackStubInterpolation) _serialize_stubInterpolation(w, "BackStubInterpolation", *v.BackStubInterpolation);
+    if (v.StubUseOriginalCurve) _serialize_bool(w, "StubUseOriginalCurve", *v.StubUseOriginalCurve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Rates_t_Rate_t& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Rates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Rate) _serialize__CPILegData_t_Rates_t_Rate_t(w, "Rate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t_ObservationLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_ObservationLag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t_Interpolation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CPILegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CPILegData_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Index) _serialize__CPILegData_t_Index_t(w, "Index", item);
+    for (const auto& item : v.Rates) _serialize__CPILegData_t_Rates_t(w, "Rates", item);
+    for (const auto& item : v.BaseCPI) _serialize_float(w, "BaseCPI", item);
+    for (const auto& item : v.StartDate) _serialize_date(w, "StartDate", item);
+    for (const auto& item : v.ObservationLag) _serialize__CPILegData_t_ObservationLag_t(w, "ObservationLag", item);
+    for (const auto& item : v.Interpolation) _serialize__CPILegData_t_Interpolation_t(w, "Interpolation", item);
+    for (const auto& item : v.Interpolated) _serialize_bool_(w, "Interpolated", item);
+    for (const auto& item : v.SubtractInflationNotional) _serialize_bool_(w, "SubtractInflationNotional", item);
+    for (const auto& item : v.Caps) _serialize_caps(w, "Caps", item);
+    for (const auto& item : v.Floors) _serialize_floors(w, "Floors", item);
+    for (const auto& item : v.FinalFlowCap) _serialize_float(w, "FinalFlowCap", item);
+    for (const auto& item : v.FinalFlowFloor) _serialize_float(w, "FinalFlowFloor", item);
+    for (const auto& item : v.NakedOption) _serialize_bool(w, "NakedOption", item);
+    for (const auto& item : v.SubtractInflationNotionalAllCoupons) _serialize_bool(w, "SubtractInflationNotionalAllCoupons", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__YYLegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_YYLegData_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__YYLegData_t_ObservationLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_YYLegData_t_ObservationLag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__YYLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_YYLegData_t& v) {
+    w.startElement(name);
+    _serialize__YYLegData_t_Index_t(w, "Index", v.Index);
+    _serialize_int64_t(w, "FixingDays", v.FixingDays);
+    _serialize__YYLegData_t_ObservationLag_t(w, "ObservationLag", v.ObservationLag);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    if (v.AddInflationNotional) _serialize_bool(w, "AddInflationNotional", *v.AddInflationNotional);
+    if (v.IrregularYoY) _serialize_bool(w, "IrregularYoY", *v.IrregularYoY);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMSLegData_t& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "Index", v.Index);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CMBLegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMBLegData_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CMBLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMBLegData_t& v) {
+    w.startElement(name);
+    _serialize__CMBLegData_t_Index_t(w, "Index", v.Index);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    _serialize_int64_t(w, "FixingDays", v.FixingDays);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    if (v.CreditRisk) _serialize_bool(w, "CreditRisk", *v.CreditRisk);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_CMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CMSLegData_t& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "Index", v.Index);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_CallPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CallPosition_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_CallStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CallStrikes_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Strike) _serialize_float(w, "Strike", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_CallPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_CallPayoffs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Payoff) _serialize_float(w, "Payoff", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_PutPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_PutPosition_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_PutStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_PutStrikes_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Strike) _serialize_float(w, "Strike", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t_PutPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t_PutPayoffs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Payoff) _serialize_float(w, "Payoff", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSLegData_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CMSLegData) _serialize__DigitalCMSLegData_t_CMSLegData_t(w, "CMSLegData", item);
+    for (const auto& item : v.CallPosition) _serialize__DigitalCMSLegData_t_CallPosition_t(w, "CallPosition", item);
+    for (const auto& item : v.IsCallATMIncluded) _serialize_bool(w, "IsCallATMIncluded", item);
+    for (const auto& item : v.CallStrikes) _serialize__DigitalCMSLegData_t_CallStrikes_t(w, "CallStrikes", item);
+    for (const auto& item : v.CallPayoffs) _serialize__DigitalCMSLegData_t_CallPayoffs_t(w, "CallPayoffs", item);
+    for (const auto& item : v.PutPosition) _serialize__DigitalCMSLegData_t_PutPosition_t(w, "PutPosition", item);
+    for (const auto& item : v.IsPutATMIncluded) _serialize_bool(w, "IsPutATMIncluded", item);
+    for (const auto& item : v.PutStrikes) _serialize__DigitalCMSLegData_t_PutStrikes_t(w, "PutStrikes", item);
+    for (const auto& item : v.PutPayoffs) _serialize__DigitalCMSLegData_t_PutPayoffs_t(w, "PutPayoffs", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DurationAdjustedCMSLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DurationAdjustedCMSLegData_t& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "Index", v.Index);
+    if (v.Duration) _serialize_int64_t(w, "Duration", *v.Duration);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CMSSpreadLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CMSSpreadLegData_t& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "Index1", v.Index1);
+    _serialize_indexNameType(w, "Index2", v.Index2);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t& v) {
+    w.startElement(name);
+    _serialize_indexNameType(w, "Index1", v.Index1);
+    _serialize_indexNameType(w, "Index2", v.Index2);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Caps) _serialize_caps(w, "Caps", *v.Caps);
+    if (v.Floors) _serialize_floors(w, "Floors", *v.Floors);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.NakedOption) _serialize_bool(w, "NakedOption", *v.NakedOption);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_CallPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CallPosition_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_CallStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CallStrikes_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Strike) _serialize_float(w, "Strike", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_CallPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_CallPayoffs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Payoff) _serialize_float(w, "Payoff", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_PutPosition_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_PutPosition_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_PutStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_PutStrikes_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Strike) _serialize_float(w, "Strike", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t_PutPayoffs_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t_PutPayoffs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Payoff) _serialize_float(w, "Payoff", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__DigitalCMSSpreadLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_DigitalCMSSpreadLegData_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CMSSpreadLegData) _serialize__DigitalCMSSpreadLegData_t_CMSSpreadLegData_t(w, "CMSSpreadLegData", item);
+    for (const auto& item : v.CallPosition) _serialize__DigitalCMSSpreadLegData_t_CallPosition_t(w, "CallPosition", item);
+    for (const auto& item : v.IsCallATMIncluded) _serialize_bool(w, "IsCallATMIncluded", item);
+    for (const auto& item : v.CallStrikes) _serialize__DigitalCMSSpreadLegData_t_CallStrikes_t(w, "CallStrikes", item);
+    for (const auto& item : v.CallPayoffs) _serialize__DigitalCMSSpreadLegData_t_CallPayoffs_t(w, "CallPayoffs", item);
+    for (const auto& item : v.PutPosition) _serialize__DigitalCMSSpreadLegData_t_PutPosition_t(w, "PutPosition", item);
+    for (const auto& item : v.IsPutATMIncluded) _serialize_bool(w, "IsPutATMIncluded", item);
+    for (const auto& item : v.PutStrikes) _serialize__DigitalCMSSpreadLegData_t_PutStrikes_t(w, "PutStrikes", item);
+    for (const auto& item : v.PutPayoffs) _serialize__DigitalCMSSpreadLegData_t_PutPayoffs_t(w, "PutPayoffs", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityLegData_t_ReturnType_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_ReturnType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_IdentifierType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_IdentifierType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_Exchange_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Exchange_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_PriceType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_PriceType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_DeliveryRollCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_DeliveryRollCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_FutureExpiryDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureExpiryDate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_FutureContractMonth_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureContractMonth_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Interpolation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlying(xsdcpp::XmlWriter& w, const char* name, const domain::underlying& v) {
+    w.startElement(name);
+    _serialize_underlying_Type_t(w, "Type", v.Type);
+    _serialize_underlying_Name_t(w, "Name", v.Name);
+    if (v.IdentifierType) _serialize_underlying_IdentifierType_t(w, "IdentifierType", *v.IdentifierType);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    if (v.Exchange) _serialize_underlying_Exchange_t(w, "Exchange", *v.Exchange);
+    if (v.Weight) _serialize_float(w, "Weight", *v.Weight);
+    if (v.PriceType) _serialize_underlying_PriceType_t(w, "PriceType", *v.PriceType);
+    if (v.FutureMonthOffset) _serialize_uint64_t(w, "FutureMonthOffset", *v.FutureMonthOffset);
+    if (v.DeliveryRollDays) _serialize_uint64_t(w, "DeliveryRollDays", *v.DeliveryRollDays);
+    if (v.DeliveryRollCalendar) _serialize_underlying_DeliveryRollCalendar_t(w, "DeliveryRollCalendar", *v.DeliveryRollCalendar);
+    if (v.FutureExpiryDate) _serialize_underlying_FutureExpiryDate_t(w, "FutureExpiryDate", *v.FutureExpiryDate);
+    if (v.FutureContractMonth) _serialize_underlying_FutureContractMonth_t(w, "FutureContractMonth", *v.FutureContractMonth);
+    if (v.Interpolation) _serialize_underlying_Interpolation_t(w, "Interpolation", *v.Interpolation);
+    if (v.BidAskAdjustment) _serialize_float(w, "BidAskAdjustment", *v.BidAskAdjustment);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlyings(xsdcpp::XmlWriter& w, const char* name, const domain::underlyings& v) {
+    w.startElement(name);
+    for (const auto& item : v.Underlying) _serialize_underlying(w, "Underlying", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_underlyingTypes_group_t(xsdcpp::XmlWriter& w, const char*, const domain::underlyingTypes_group_t& v) {
+    if ((&v)->Name) _serialize__Name_t(w, "Name", *(&v)->Name);
+    else if ((&v)->Underlying) _serialize_underlying(w, "Underlying", *(&v)->Underlying);
+    else if ((&v)->Underlyings) _serialize_underlyings(w, "Underlyings", *(&v)->Underlyings);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityLegData_t_FXTerms_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_FXTerms_t_FXIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityLegData_t_FXTerms_t_FXIndexCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_FXTerms_t_FXIndexCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityLegData_t_FXTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t_FXTerms_t& v) {
+    w.startElement(name);
+    if (v.EquityCurrency) _serialize_extendedCurrencyCode(w, "EquityCurrency", *v.EquityCurrency);
+    if (v.FXIndex) _serialize__EquityLegData_t_FXTerms_t_FXIndex_t(w, "FXIndex", *v.FXIndex);
+    if (v.FXIndexFixingDays) _serialize_int64_t(w, "FXIndexFixingDays", *v.FXIndexFixingDays);
+    if (v.FXIndexCalendar) _serialize__EquityLegData_t_FXTerms_t_FXIndexCalendar_t(w, "FXIndexCalendar", *v.FXIndexCalendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityLegData_t& v) {
+    w.startElement(name);
+    if (v.Quantity) _serialize_float(w, "Quantity", *v.Quantity);
+    _serialize__EquityLegData_t_ReturnType_t(w, "ReturnType", v.ReturnType);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
+    if (v.InitialPrice) _serialize_float(w, "InitialPrice", *v.InitialPrice);
+    if (v.InitialPriceCurrency) _serialize_extendedCurrencyCode(w, "InitialPriceCurrency", *v.InitialPriceCurrency);
+    if (v.DividendFactor) _serialize_float(w, "DividendFactor", *v.DividendFactor);
+    if (v.NotionalReset) _serialize_bool(w, "NotionalReset", *v.NotionalReset);
+    if (v.ValuationSchedule) _serialize_scheduleData(w, "ValuationSchedule", *v.ValuationSchedule);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.FXTerms) _serialize__EquityLegData_t_FXTerms_t(w, "FXTerms", *v.FXTerms);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ZeroCouponFixedLegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_Rates_t_Rate_t& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ZeroCouponFixedLegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_Rates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Rate) _serialize__ZeroCouponFixedLegData_t_Rates_t_Rate_t(w, "Rate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ZeroCouponFixedLegData_t_Compounding_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_Compounding_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ZeroCouponFixedLegData_t_SubtractNotional_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t_SubtractNotional_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ZeroCouponFixedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ZeroCouponFixedLegData_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Rates) _serialize__ZeroCouponFixedLegData_t_Rates_t(w, "Rates", item);
+    for (const auto& item : v.Compounding) _serialize__ZeroCouponFixedLegData_t_Compounding_t(w, "Compounding", item);
+    for (const auto& item : v.SubtractNotional) _serialize__ZeroCouponFixedLegData_t_SubtractNotional_t(w, "SubtractNotional", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_Rates_t_Rate_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_Rates_t_Rate_t& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_Rates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_Rates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Rate) _serialize__EquityMarginLegData_t_Rates_t_Rate_t(w, "Rate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_EquityLegData_t_ReturnType_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_ReturnType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t& v) {
+    w.startElement(name);
+    if (v.EquityCurrency) _serialize_extendedCurrencyCode(w, "EquityCurrency", *v.EquityCurrency);
+    if (v.FXIndex) _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t(w, "FXIndex", *v.FXIndex);
+    if (v.FXIndexFixingDays) _serialize_int64_t(w, "FXIndexFixingDays", *v.FXIndexFixingDays);
+    if (v.FXIndexCalendar) _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t(w, "FXIndexCalendar", *v.FXIndexCalendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t_EquityLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t_EquityLegData_t& v) {
+    w.startElement(name);
+    if (v.Quantity) _serialize_float(w, "Quantity", *v.Quantity);
+    _serialize__EquityMarginLegData_t_EquityLegData_t_ReturnType_t(w, "ReturnType", v.ReturnType);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
+    if (v.InitialPrice) _serialize_float(w, "InitialPrice", *v.InitialPrice);
+    if (v.InitialPriceCurrency) _serialize_extendedCurrencyCode(w, "InitialPriceCurrency", *v.InitialPriceCurrency);
+    if (v.DividendFactor) _serialize_float(w, "DividendFactor", *v.DividendFactor);
+    if (v.NotionalReset) _serialize_bool(w, "NotionalReset", *v.NotionalReset);
+    if (v.ValuationSchedule) _serialize_scheduleData(w, "ValuationSchedule", *v.ValuationSchedule);
+    if (v.FixingDays) _serialize_int64_t(w, "FixingDays", *v.FixingDays);
+    if (v.FXTerms) _serialize__EquityMarginLegData_t_EquityLegData_t_FXTerms_t(w, "FXTerms", *v.FXTerms);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__EquityMarginLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_EquityMarginLegData_t& v) {
+    w.startElement(name);
+    _serialize_float(w, "InitialMarginFactor", v.InitialMarginFactor);
+    _serialize_float(w, "Multiplier", v.Multiplier);
+    _serialize__EquityMarginLegData_t_Rates_t(w, "Rates", v.Rates);
+    _serialize__EquityMarginLegData_t_EquityLegData_t(w, "EquityLegData", v.EquityLegData);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_quantitiesType_Quantity_t(xsdcpp::XmlWriter& w, const char* name, const domain::quantitiesType_Quantity_t& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_quantitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::quantitiesType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Quantity) _serialize_quantitiesType_Quantity_t(w, "Quantity", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_pricesType_Price_t(xsdcpp::XmlWriter& w, const char* name, const domain::pricesType_Price_t& v) {
+    w.startElement(name);
+    if ((&v)->startDate) w.writeAttribute("startDate", *(&v)->startDate);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_pricesType(xsdcpp::XmlWriter& w, const char* name, const domain::pricesType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Price) _serialize_pricesType_Price_t(w, "Price", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityPayRelativeToType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityPayRelativeToType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFixedLegData_t_Tag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFixedLegData_t_Tag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFixedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFixedLegData_t& v) {
+    w.startElement(name);
+    if (v.Quantities) _serialize_quantitiesType(w, "Quantities", *v.Quantities);
+    _serialize_pricesType(w, "Prices", v.Prices);
+    if (v.CommodityPayRelativeTo) _serialize_commodityPayRelativeToType(w, "CommodityPayRelativeTo", *v.CommodityPayRelativeTo);
+    if (v.Tag) _serialize__CommodityFixedLegData_t_Tag_t(w, "Tag", *v.Tag);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFloatingLegData_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceType(xsdcpp::XmlWriter& w, const char* name, const domain::priceType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityQuantityFrequencyType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityQuantityFrequencyType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_pricingDateRuleType(xsdcpp::XmlWriter& w, const char* name, const domain::pricingDateRuleType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFloatingLegData_t_PricingDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_PricingDates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.PricingDate) _serialize_date(w, "PricingDate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFloatingLegData_t_Tag_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_Tag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFloatingLegData_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_FXIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__CommodityFloatingLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t& v) {
+    w.startElement(name);
+    _serialize__CommodityFloatingLegData_t_Name_t(w, "Name", v.Name);
+    _serialize_priceType(w, "PriceType", v.PriceType);
+    _serialize_quantitiesType(w, "Quantities", v.Quantities);
+    if (v.CommodityQuantityFrequency) _serialize_commodityQuantityFrequencyType(w, "CommodityQuantityFrequency", *v.CommodityQuantityFrequency);
+    if (v.CommodityPayRelativeTo) _serialize_commodityPayRelativeToType(w, "CommodityPayRelativeTo", *v.CommodityPayRelativeTo);
+    if (v.Spreads) _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Gearings) _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.PricingDateRule) _serialize_pricingDateRuleType(w, "PricingDateRule", *v.PricingDateRule);
+    if (v.PricingCalendar) _serialize_calendar(w, "PricingCalendar", *v.PricingCalendar);
+    if (v.PricingLag) _serialize_int64_t(w, "PricingLag", *v.PricingLag);
+    if (v.PricingDates) _serialize__CommodityFloatingLegData_t_PricingDates_t(w, "PricingDates", *v.PricingDates);
+    if (v.IsAveraged) _serialize_bool(w, "IsAveraged", *v.IsAveraged);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    if (v.FutureMonthOffset) _serialize_int64_t(w, "FutureMonthOffset", *v.FutureMonthOffset);
+    if (v.DeliveryRollDays) _serialize_uint64_t(w, "DeliveryRollDays", *v.DeliveryRollDays);
+    if (v.DailyExpiryOffset) _serialize_uint64_t(w, "DailyExpiryOffset", *v.DailyExpiryOffset);
+    if (v.IncludePeriodEnd) _serialize_bool(w, "IncludePeriodEnd", *v.IncludePeriodEnd);
+    if (v.ExcludePeriodStart) _serialize_bool(w, "ExcludePeriodStart", *v.ExcludePeriodStart);
+    if (v.HoursPerDay) _serialize_uint64_t(w, "HoursPerDay", *v.HoursPerDay);
+    if (v.UseBusinessDays) _serialize_bool(w, "UseBusinessDays", *v.UseBusinessDays);
+    if (v.UnrealisedQuantity) _serialize_bool(w, "UnrealisedQuantity", *v.UnrealisedQuantity);
+    if (v.LastNDays) _serialize_uint64_t(w, "LastNDays", *v.LastNDays);
+    if (v.Tag) _serialize__CommodityFloatingLegData_t_Tag_t(w, "Tag", *v.Tag);
+    if (v.FXIndex) _serialize__CommodityFloatingLegData_t_FXIndex_t(w, "FXIndex", *v.FXIndex);
+    if (v.AvgPricePrecision) _serialize_uint64_t(w, "AvgPricePrecision", *v.AvgPricePrecision);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FormulaBasedLegData_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FormulaBasedLegData_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__FormulaBasedLegData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_FormulaBasedLegData_t& v) {
+    w.startElement(name);
+    _serialize__FormulaBasedLegData_t_Index_t(w, "Index", v.Index);
+    if (v.IsInArrears) _serialize_bool(w, "IsInArrears", *v.IsInArrears);
+    _serialize_int64_t(w, "FixingDays", v.FixingDays);
+    if (v.FixingCalendar) _serialize_calendar(w, "FixingCalendar", *v.FixingCalendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_legDataType_group_t(xsdcpp::XmlWriter& w, const char*, const domain::legDataType_group_t& v) {
+    if ((&v)->CashflowData) _serialize__CashflowData_t(w, "CashflowData", *(&v)->CashflowData);
+    else if ((&v)->FixedLegData) _serialize__FixedLegData_t(w, "FixedLegData", *(&v)->FixedLegData);
+    else if ((&v)->FloatingLegData) _serialize__FloatingLegData_t(w, "FloatingLegData", *(&v)->FloatingLegData);
+    else if ((&v)->CPILegData) _serialize__CPILegData_t(w, "CPILegData", *(&v)->CPILegData);
+    else if ((&v)->YYLegData) _serialize__YYLegData_t(w, "YYLegData", *(&v)->YYLegData);
+    else if ((&v)->CMSLegData) _serialize__CMSLegData_t(w, "CMSLegData", *(&v)->CMSLegData);
+    else if ((&v)->CMBLegData) _serialize__CMBLegData_t(w, "CMBLegData", *(&v)->CMBLegData);
+    else if ((&v)->DigitalCMSLegData) _serialize__DigitalCMSLegData_t(w, "DigitalCMSLegData", *(&v)->DigitalCMSLegData);
+    else if ((&v)->DurationAdjustedCMSLegData) _serialize__DurationAdjustedCMSLegData_t(w, "DurationAdjustedCMSLegData", *(&v)->DurationAdjustedCMSLegData);
+    else if ((&v)->CMSSpreadLegData) _serialize__CMSSpreadLegData_t(w, "CMSSpreadLegData", *(&v)->CMSSpreadLegData);
+    else if ((&v)->DigitalCMSSpreadLegData) _serialize__DigitalCMSSpreadLegData_t(w, "DigitalCMSSpreadLegData", *(&v)->DigitalCMSSpreadLegData);
+    else if ((&v)->EquityLegData) _serialize__EquityLegData_t(w, "EquityLegData", *(&v)->EquityLegData);
+    else if ((&v)->ZeroCouponFixedLegData) _serialize__ZeroCouponFixedLegData_t(w, "ZeroCouponFixedLegData", *(&v)->ZeroCouponFixedLegData);
+    else if ((&v)->EquityMarginLegData) _serialize__EquityMarginLegData_t(w, "EquityMarginLegData", *(&v)->EquityMarginLegData);
+    else if ((&v)->CommodityFixedLegData) _serialize__CommodityFixedLegData_t(w, "CommodityFixedLegData", *(&v)->CommodityFixedLegData);
+    else if ((&v)->CommodityFloatingLegData) _serialize__CommodityFloatingLegData_t(w, "CommodityFloatingLegData", *(&v)->CommodityFloatingLegData);
+    else if ((&v)->FormulaBasedLegData) _serialize__FormulaBasedLegData_t(w, "FormulaBasedLegData", *(&v)->FormulaBasedLegData);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_legData_SettlementData_t_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::legData_SettlementData_t_FXIndex_t& v) {
     w.startElement(name);
     w.writeText(static_cast<const xsd::string&>(v));
@@ -19612,6 +21654,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_legData(xsdcpp::XmlWriter& w, const char* na
     if (v.PaymentDates) _serialize_legData_PaymentDates_t(w, "PaymentDates", *v.PaymentDates);
     if (v.Indexings) _serialize_legData_Indexings_t(w, "Indexings", *v.Indexings);
     if (v.LastPeriodDayCounter) _serialize_dayCounter(w, "LastPeriodDayCounter", *v.LastPeriodDayCounter);
+    if (v.legDataType) _serialize_legDataType_group_t(w, "legDataType", *v.legDataType);
     if (v.StrictNotionalDates) _serialize_bool(w, "StrictNotionalDates", *v.StrictNotionalDates);
     if (v.PaymentSchedule) _serialize_scheduleData(w, "PaymentSchedule", *v.PaymentSchedule);
     if (v.SettlementData) _serialize_legData_SettlementData_t(w, "SettlementData", *v.SettlementData);
@@ -19784,6 +21827,17 @@ XSDCPP_MAYBE_UNUSED void _serialize_optionData_ExerciseFeeSettlementConvention_t
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize__ExerciseDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ExerciseDates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.ExerciseDate) _serialize_date(w, "ExerciseDate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_exerciseDatesGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::exerciseDatesGroup_group_t& v) {
+    if ((&v)->ExerciseDates) _serialize__ExerciseDates_t(w, "ExerciseDates", *(&v)->ExerciseDates);
+    else if ((&v)->ExerciseSchedule) _serialize_scheduleData(w, "ExerciseSchedule", *(&v)->ExerciseSchedule);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_optionExerciseData(xsdcpp::XmlWriter& w, const char* name, const domain::optionExerciseData& v) {
     w.startElement(name);
     _serialize_date(w, "Date", v.Date);
@@ -19862,6 +21916,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_optionData(xsdcpp::XmlWriter& w, const char*
     if (v.ExerciseFeeSettlementPeriod) _serialize_optionData_ExerciseFeeSettlementPeriod_t(w, "ExerciseFeeSettlementPeriod", *v.ExerciseFeeSettlementPeriod);
     if (v.ExerciseFeeSettlementCalendar) _serialize_optionData_ExerciseFeeSettlementCalendar_t(w, "ExerciseFeeSettlementCalendar", *v.ExerciseFeeSettlementCalendar);
     if (v.ExerciseFeeSettlementConvention) _serialize_optionData_ExerciseFeeSettlementConvention_t(w, "ExerciseFeeSettlementConvention", *v.ExerciseFeeSettlementConvention);
+    if (v.exerciseDatesGroup) _serialize_exerciseDatesGroup_group_t(w, "exerciseDatesGroup", *v.exerciseDatesGroup);
     if (v.AutomaticExercise) _serialize_bool_(w, "AutomaticExercise", *v.AutomaticExercise);
     if (v.ExerciseData) _serialize_optionExerciseData(w, "ExerciseData", *v.ExerciseData);
     if (v.PaymentData) _serialize_optionPaymentData(w, "PaymentData", *v.PaymentData);
@@ -19999,6 +22054,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_varianceSwapData(xsdcpp::XmlWriter& w, const
     _serialize_date(w, "StartDate", v.StartDate);
     _serialize_date(w, "EndDate", v.EndDate);
     _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_varianceSwapData_LongShort_t(w, "LongShort", v.LongShort);
     _serialize_float(w, "Strike", v.Strike);
     _serialize_float(w, "Notional", v.Notional);
@@ -20347,6 +22403,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_legData_capfloor(xsdcpp::XmlWriter& w, const
     _serialize_legData_capfloor_Notionals_t(w, "Notionals", v.Notionals);
     _serialize_scheduleData(w, "ScheduleData", v.ScheduleData);
     if (v.PaymentDates) _serialize_legData_capfloor_PaymentDates_t(w, "PaymentDates", *v.PaymentDates);
+    _serialize_legDataType_group_t(w, "legDataType", v.legDataType);
     w.endElement(name);
 }
 
@@ -20404,6 +22461,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_capFloorData(xsdcpp::XmlWriter& w, const cha
 XSDCPP_MAYBE_UNUSED void _serialize_equityFutureOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::equityFutureOptionData& v) {
     w.startElement(name);
     _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_currencyCode(w, "Currency", v.Currency);
     _serialize_float(w, "Strike", v.Strike);
     _serialize_float(w, "Quantity", v.Quantity);
@@ -20411,12 +22469,54 @@ XSDCPP_MAYBE_UNUSED void _serialize_equityFutureOptionData(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize__Strike_t(xsdcpp::XmlWriter& w, const char* name, const domain::_Strike_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_strikePriceData(xsdcpp::XmlWriter& w, const char* name, const domain::strikePriceData& v) {
+    w.startElement(name);
+    if (v.Currency) _serialize_extendedCurrencyCode(w, "Currency", *v.Currency);
+    _serialize_float(w, "Value", v.Value);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_compounding(xsdcpp::XmlWriter& w, const char* name, const domain::compounding& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_strikeYieldData(xsdcpp::XmlWriter& w, const char* name, const domain::strikeYieldData& v) {
+    w.startElement(name);
+    if (v.Compounding) _serialize_compounding(w, "Compounding", *v.Compounding);
+    _serialize_float(w, "Yield", v.Yield);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__StrikeData_t(xsdcpp::XmlWriter& w, const char* name, const domain::_StrikeData_t& v) {
+    w.startElement(name);
+    if (v.StrikePrice) _serialize_strikePriceData(w, "StrikePrice", *v.StrikePrice);
+    if (v.StrikeYield) _serialize_strikeYieldData(w, "StrikeYield", *v.StrikeYield);
+    if (v.Value) _serialize_float(w, "Value", *v.Value);
+    if (v.Currency) _serialize_extendedCurrencyCode(w, "Currency", *v.Currency);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_strikeGroup_group_t(xsdcpp::XmlWriter& w, const char*, const domain::strikeGroup_group_t& v) {
+    if ((&v)->Strike) _serialize__Strike_t(w, "Strike", *(&v)->Strike);
+    else if ((&v)->StrikeData) _serialize__StrikeData_t(w, "StrikeData", *(&v)->StrikeData);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_equityOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::equityOptionData& v) {
     w.startElement(name);
     _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_extendedCurrencyCode(w, "Currency", v.Currency);
     if (v.StrikeCurrency) _serialize_extendedCurrencyCode(w, "StrikeCurrency", *v.StrikeCurrency);
     _serialize_float(w, "Quantity", v.Quantity);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     w.endElement(name);
 }
 
@@ -20433,7 +22533,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_eqBarrierOptionData(xsdcpp::XmlWriter& w, co
     if (v.StartDate) _serialize_date(w, "StartDate", *v.StartDate);
     if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
     if (v.EQIndex) _serialize_eqBarrierOptionData_EQIndex_t(w, "EQIndex", *v.EQIndex);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     _serialize_float(w, "Quantity", v.Quantity);
     w.endElement(name);
 }
@@ -20464,6 +22566,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_equityForwardData(xsdcpp::XmlWriter& w, cons
     w.startElement(name);
     _serialize_longShort(w, "LongShort", v.LongShort);
     _serialize_date(w, "Maturity", v.Maturity);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_extendedCurrencyCode(w, "Currency", v.Currency);
     _serialize_float(w, "Strike", v.Strike);
     if (v.StrikeCurrency) _serialize_extendedCurrencyCode(w, "StrikeCurrency", *v.StrikeCurrency);
@@ -20478,6 +22581,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_eqDigitalOptionData(xsdcpp::XmlWriter& w, co
     _serialize_float(w, "Strike", v.Strike);
     if (v.PayoffCurrency) _serialize_currencyCode(w, "PayoffCurrency", *v.PayoffCurrency);
     _serialize_float(w, "PayoffAmount", v.PayoffAmount);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_float(w, "Quantity", v.Quantity);
     w.endElement(name);
 }
@@ -20492,6 +22596,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_eqTouchOptionData(xsdcpp::XmlWriter& w, cons
     w.startElement(name);
     _serialize_optionData(w, "OptionData", v.OptionData);
     _serialize_barrierData(w, "BarrierData", v.BarrierData);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_currencyCode(w, "PayoffCurrency", v.PayoffCurrency);
     _serialize_float(w, "PayoffAmount", v.PayoffAmount);
     if (v.StartDate) _serialize_date(w, "StartDate", *v.StartDate);
@@ -20508,6 +22613,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_optionType(xsdcpp::XmlWriter& w, const char*
 
 XSDCPP_MAYBE_UNUSED void _serialize_cliquetOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::cliquetOptionData& v) {
     w.startElement(name);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_currencyCode(w, "Currency", v.Currency);
     _serialize_float(w, "Notional", v.Notional);
     _serialize_longShort(w, "LongShort", v.LongShort);
@@ -20852,6 +22958,44 @@ XSDCPP_MAYBE_UNUSED void _serialize_creditDefaultSwapData_IssuerId_t(xsdcpp::Xml
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize__CreditCurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::_CreditCurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ReferenceInformation_t_ReferenceEntityId_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ReferenceInformation_t_ReferenceEntityId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsTierType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsTierType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsDocClauseType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsDocClauseType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__ReferenceInformation_t(xsdcpp::XmlWriter& w, const char* name, const domain::_ReferenceInformation_t& v) {
+    w.startElement(name);
+    _serialize__ReferenceInformation_t_ReferenceEntityId_t(w, "ReferenceEntityId", v.ReferenceEntityId);
+    _serialize_cdsTierType(w, "Tier", v.Tier);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    if (v.DocClause) _serialize_cdsDocClauseType(w, "DocClause", *v.DocClause);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditCurveIdType_group_t(xsdcpp::XmlWriter& w, const char*, const domain::creditCurveIdType_group_t& v) {
+    if ((&v)->CreditCurveId) _serialize__CreditCurveId_t(w, "CreditCurveId", *(&v)->CreditCurveId);
+    else if ((&v)->ReferenceInformation) _serialize__ReferenceInformation_t(w, "ReferenceInformation", *(&v)->ReferenceInformation);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_creditDefaultSwapData_ReferenceObligation_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapData_ReferenceObligation_t& v) {
     w.startElement(name);
     w.writeText(static_cast<const xsd::string&>(v));
@@ -20867,6 +23011,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_creditDefaultSwapData_ProtectionPaymentTime_
 XSDCPP_MAYBE_UNUSED void _serialize_creditDefaultSwapData(xsdcpp::XmlWriter& w, const char* name, const domain::creditDefaultSwapData& v) {
     w.startElement(name);
     if (v.IssuerId) _serialize_creditDefaultSwapData_IssuerId_t(w, "IssuerId", *v.IssuerId);
+    _serialize_creditCurveIdType_group_t(w, "creditCurveIdType", v.creditCurveIdType);
     if (v.ReferenceObligation) _serialize_creditDefaultSwapData_ReferenceObligation_t(w, "ReferenceObligation", *v.ReferenceObligation);
     if (v.SettlesAccrual) _serialize_bool_(w, "SettlesAccrual", *v.SettlesAccrual);
     if (v.RebatesAccrual) _serialize_bool_(w, "RebatesAccrual", *v.RebatesAccrual);
@@ -20987,26 +23132,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityDigitalAveragePriceOptionData_Name_
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void _serialize_priceType(xsdcpp::XmlWriter& w, const char* name, const domain::priceType& v) {
-    w.startElement(name);
-    w.writeText(domain::to_string(v));
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void _serialize_positiveDecimal(xsdcpp::XmlWriter& w, const char* name, const domain::positiveDecimal& v) {
     _serialize_double(w, name, v);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_commodityQuantityFrequencyType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityQuantityFrequencyType& v) {
-    w.startElement(name);
-    w.writeText(domain::to_string(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_commodityPayRelativeToType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityPayRelativeToType& v) {
-    w.startElement(name);
-    w.writeText(domain::to_string(v));
-    w.endElement(name);
 }
 
 XSDCPP_MAYBE_UNUSED void _serialize_commodityDigitalAveragePriceOptionData_FXIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityDigitalAveragePriceOptionData_FXIndex_t& v) {
@@ -21186,79 +23313,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityOptionStripData(xsdcpp::XmlWriter& 
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Type_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Name_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_IdentifierType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_IdentifierType_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_Exchange_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Exchange_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_PriceType_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_PriceType_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_DeliveryRollCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_DeliveryRollCalendar_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_FutureExpiryDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureExpiryDate_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_FutureContractMonth_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_FutureContractMonth_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::underlying_Interpolation_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlying(xsdcpp::XmlWriter& w, const char* name, const domain::underlying& v) {
-    w.startElement(name);
-    _serialize_underlying_Type_t(w, "Type", v.Type);
-    _serialize_underlying_Name_t(w, "Name", v.Name);
-    if (v.IdentifierType) _serialize_underlying_IdentifierType_t(w, "IdentifierType", *v.IdentifierType);
-    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
-    if (v.Exchange) _serialize_underlying_Exchange_t(w, "Exchange", *v.Exchange);
-    if (v.Weight) _serialize_float(w, "Weight", *v.Weight);
-    if (v.PriceType) _serialize_underlying_PriceType_t(w, "PriceType", *v.PriceType);
-    if (v.FutureMonthOffset) _serialize_uint64_t(w, "FutureMonthOffset", *v.FutureMonthOffset);
-    if (v.DeliveryRollDays) _serialize_uint64_t(w, "DeliveryRollDays", *v.DeliveryRollDays);
-    if (v.DeliveryRollCalendar) _serialize_underlying_DeliveryRollCalendar_t(w, "DeliveryRollCalendar", *v.DeliveryRollCalendar);
-    if (v.FutureExpiryDate) _serialize_underlying_FutureExpiryDate_t(w, "FutureExpiryDate", *v.FutureExpiryDate);
-    if (v.FutureContractMonth) _serialize_underlying_FutureContractMonth_t(w, "FutureContractMonth", *v.FutureContractMonth);
-    if (v.Interpolation) _serialize_underlying_Interpolation_t(w, "Interpolation", *v.Interpolation);
-    if (v.BidAskAdjustment) _serialize_float(w, "BidAskAdjustment", *v.BidAskAdjustment);
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void _serialize_commodityPositionData(xsdcpp::XmlWriter& w, const char* name, const domain::commodityPositionData& v) {
     w.startElement(name);
     _serialize_float(w, "Quantity", v.Quantity);
@@ -21276,6 +23330,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_singleUnderlyingAsianOptionData(xsdcpp::XmlW
     w.startElement(name);
     _serialize_currencyCode(w, "Currency", v.Currency);
     _serialize_float(w, "Quantity", v.Quantity);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     if (v.Underlying) _serialize_underlying(w, "Underlying", *v.Underlying);
     _serialize_optionData(w, "OptionData", v.OptionData);
     if (v.Settlement) _serialize_singleUnderlyingAsianOptionData_Settlement_t(w, "Settlement", *v.Settlement);
@@ -21298,6 +23353,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_bondOptionData_PriceType_t(xsdcpp::XmlWriter
 XSDCPP_MAYBE_UNUSED void _serialize_bondOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::bondOptionData& v) {
     w.startElement(name);
     _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     if (v.Redemption) _serialize_bondOptionData_Redemption_t(w, "Redemption", *v.Redemption);
     if (v.PriceType) _serialize_bondOptionData_PriceType_t(w, "PriceType", *v.PriceType);
     if (v.KnocksOut) _serialize_bool_(w, "KnocksOut", *v.KnocksOut);
@@ -21444,6 +23500,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_nameData(xsdcpp::XmlWriter& w, const char* n
     w.startElement(name);
     _serialize_nameData_IssuerId_t(w, "IssuerId", v.IssuerId);
     if (v.Qualifier) _serialize_nameData_Qualifier_t(w, "Qualifier", *v.Qualifier);
+    _serialize_creditCurveIdType_group_t(w, "creditCurveIdType", v.creditCurveIdType);
     if (v.Notional) _serialize_float(w, "Notional", *v.Notional);
     if (v.Weight) _serialize_float(w, "Weight", *v.Weight);
     if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
@@ -22218,6 +24275,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_cbotranche(xsdcpp::XmlWriter& w, const char*
     _serialize_float(w, "ICRatio", v.ICRatio);
     _serialize_float(w, "OCRatio", v.OCRatio);
     _serialize_float(w, "Notional", v.Notional);
+    _serialize_legDataType_group_t(w, "legDataType", v.legDataType);
     w.endElement(name);
 }
 
@@ -22565,12 +24623,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_basketVarianceSwapData(xsdcpp::XmlWriter& w,
     _serialize_stFreeStyleNumber(w, "Floor", v.Floor);
     _serialize_stFreeStyleEvent(w, "SettlementDate", v.SettlementDate);
     _serialize_stFreeStyleCurrency(w, "PayCcy", v.PayCcy);
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_underlyings(xsdcpp::XmlWriter& w, const char* name, const domain::underlyings& v) {
-    w.startElement(name);
-    for (const auto& item : v.Underlying) _serialize_underlying(w, "Underlying", item);
     w.endElement(name);
 }
 
@@ -23055,6 +25107,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_windowBarrierOptionData2(xsdcpp::XmlWriter& 
     w.startElement(name);
     _serialize_currencyCode(w, "Currency", v.Currency);
     _serialize_float(w, "FixingAmount", v.FixingAmount);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     _serialize_underlying(w, "Underlying", v.Underlying);
     _serialize_optionData(w, "OptionData", v.OptionData);
     _serialize_date(w, "StartDate", v.StartDate);
@@ -23112,6 +25165,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_genericBarrierOptionData_TransatlanticBarrie
 XSDCPP_MAYBE_UNUSED void _serialize_genericBarrierOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::genericBarrierOptionData& v) {
     w.startElement(name);
     _serialize_currencyCode(w, "PayCurrency", v.PayCurrency);
+    _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_optionData(w, "OptionData", v.OptionData);
     if (v.SettlementDate) _serialize_date(w, "SettlementDate", *v.SettlementDate);
     if (v.SettlementLag) _serialize_genericBarrierOptionData_SettlementLag_t(w, "SettlementLag", *v.SettlementLag);
@@ -26647,12 +28701,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_FxRates_t(xsdcpp::XmlWriter& w, const
     w.startElement(name);
     if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
     if (v.CurrencyPairs) _serialize_market_FxRates_t_CurrencyPairs_t(w, "CurrencyPairs", *v.CurrencyPairs);
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_indexNameType(xsdcpp::XmlWriter& w, const char* name, const domain::indexNameType& v) {
-    w.startElement(name);
-    w.writeText(v);
     w.endElement(name);
 }
 
@@ -30723,12 +32771,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_zeroType_Id_t(xsdcpp::XmlWriter& w, const ch
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void _serialize_compounding(xsdcpp::XmlWriter& w, const char* name, const domain::compounding& v) {
-    w.startElement(name);
-    w.writeText(domain::to_string(v));
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void _serialize_zeroType_TenorCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_TenorCalendar_t& v) {
     w.startElement(name);
     w.writeText(static_cast<const xsd::string&>(v));
@@ -31947,6 +33989,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_conventions(xsdcpp::XmlWriter& w, const char
 
 XSDCPP_MAYBE_UNUSED void _serialize_collateralBalances_CollateralBalance_t(xsdcpp::XmlWriter& w, const char* name, const domain::collateralBalances_CollateralBalance_t& v) {
     w.startElement(name);
+    _serialize_nettingSetGroup_group_t(w, "nettingSetGroup", v.nettingSetGroup);
     if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
     if (v.InitialMargin) _serialize_double(w, "InitialMargin", *v.InitialMargin);
     if (v.VariationMargin) _serialize_double(w, "VariationMargin", *v.VariationMargin);
@@ -32053,6 +34096,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetail
 
 XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t& v) {
     w.startElement(name);
+    _serialize_nettingSetGroup_group_t(w, "nettingSetGroup", v.nettingSetGroup);
     if (v.ActiveCSAFlag) _serialize_bool(w, "ActiveCSAFlag", *v.ActiveCSAFlag);
     if (v.CSADetails) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t(w, "CSADetails", *v.CSADetails);
     if (v.RiskWeight) _serialize_double(w, "RiskWeight", *v.RiskWeight);
@@ -33855,12 +35899,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_FractionSymbol_t(xsdcpp::
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void _serialize_roundingType(xsdcpp::XmlWriter& w, const char* name, const domain::roundingType& v) {
-    w.startElement(name);
-    w.writeText(domain::to_string(v));
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_CurrencyType_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_CurrencyType_t& v) {
     w.startElement(name);
     w.writeText(static_cast<const xsd::string&>(v));
@@ -33977,7 +36015,7 @@ const xsdcpp::ElementInfo _currencyDefinition_FractionSymbol_t_Info = { xsdcpp::
 const xsdcpp::ElementInfo _currencyDefinition_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _currencyDefinition_Children, 10, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _counterpartyInformation_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _counterpartyInformation_Children, 2, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo __root_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __root_t_Children, 18, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _envelope_Info = { 0, nullptr, _envelope_Children, 3, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _envelope_Info = { 0, nullptr, _envelope_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _tradeActions_Info = { 0, nullptr, _tradeActions_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _swapData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _swapData_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _callableSwapData_Info = { 0, nullptr, _callableSwapData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
@@ -33991,15 +36029,15 @@ const xsdcpp::ElementInfo _stFreeStyleCurrency_Info = { xsdcpp::ElementInfo::Rea
 const xsdcpp::ElementInfo _arcOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _arcOptionData_Children, 11, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _swaptionData_Info = { 0, nullptr, _swaptionData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _varianceSwapData_LongShort_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_varianceSwapData_LongShort_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _varianceSwapData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _varianceSwapData_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _varianceSwapData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _varianceSwapData_Children, 10, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _forwardRateAgreementData_Index_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_forwardRateAgreementData_Index_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _forwardRateAgreementData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _forwardRateAgreementData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxForwardData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxForwardData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _scheduleData_Info = { 0, nullptr, _scheduleData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _scheduleData_Info = { 0, nullptr, _scheduleData_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxAverageForwardData_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxAverageForwardData_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxAverageForwardData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxAverageForwardData_Children, 9, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_LongShort_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_LongShort_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _optionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _optionData_Children, 25, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _optionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _optionData_Children, 26, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxOptionData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxBarrierOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxBarrierOptionData_Children, 11, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxDigitalOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxDigitalOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
@@ -34009,17 +36047,17 @@ const xsdcpp::ElementInfo _fxDigitalBarrierOptionData_Info = { xsdcpp::ElementIn
 const xsdcpp::ElementInfo _fxTouchOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxTouchOptionData_Children, 11, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxSwapData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxSwapData_Children, 9, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _legData_capfloor_Notionals_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _legData_capfloor_Notionals_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _legData_capfloor_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _legData_capfloor_Children, 10, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _legData_capfloor_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _legData_capfloor_Children, 11, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _capFloorData_Children, 8, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _equityFutureOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _equityFutureOptionData_Children, 5, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _equityOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _equityOptionData_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _equityFutureOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _equityFutureOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _equityOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _equityOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _barrierData_Levels_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _barrierData_Levels_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _barrierData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _barrierData_Children, 8, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _eqBarrierOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _eqBarrierOptionData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _equityForwardData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _equityForwardData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _eqDigitalOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _eqDigitalOptionData_Children, 5, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _eqTouchOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _eqTouchOptionData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _cliquetOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _cliquetOptionData_Children, 14, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _eqBarrierOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _eqBarrierOptionData_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _equityForwardData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _equityForwardData_Children, 8, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _eqDigitalOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _eqDigitalOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _eqTouchOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _eqTouchOptionData_Children, 8, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _cliquetOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _cliquetOptionData_Children, 15, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondData_SecurityId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_bondData_SecurityId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondData_Children, 18, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _settlementData_ForwardMaturityDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_settlementData_ForwardMaturityDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34030,8 +36068,8 @@ const xsdcpp::ElementInfo _bondFutureData_ContractName_t_Info = { xsdcpp::Elemen
 const xsdcpp::ElementInfo _bondFutureData_ContractNotional_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_bondFutureData_ContractNotional_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondFutureData_LongShort_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_bondFutureData_LongShort_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondFutureData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondFutureData_Children, 17, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _legData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _legData_Children, 17, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _creditDefaultSwapData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _creditDefaultSwapData_Children, 13, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _legData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _legData_Children, 18, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _creditDefaultSwapData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _creditDefaultSwapData_Children, 14, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _creditDefaultSwapOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _creditDefaultSwapOptionData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _commodityForwardData_Name_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_commodityForwardData_Name_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _commodityForwardData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _commodityForwardData_Children, 13, nullptr, 0ULL, nullptr, nullptr };
@@ -34048,8 +36086,8 @@ const xsdcpp::ElementInfo _commodityAveragePriceOptionData_Name_t_Info = { xsdcp
 const xsdcpp::ElementInfo _commodityAveragePriceOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _commodityAveragePriceOptionData_Children, 22, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _commodityOptionStripData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _commodityOptionStripData_Children, 11, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _commodityPositionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _commodityPositionData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _singleUnderlyingAsianOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _singleUnderlyingAsianOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _bondOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondOptionData_Children, 5, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _singleUnderlyingAsianOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _singleUnderlyingAsianOptionData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _bondOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondRepoData_RepoData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondRepoData_RepoData_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondRepoData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondRepoData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _totalReturnData_Payer_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_totalReturnData_Payer_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34126,10 +36164,10 @@ const xsdcpp::ElementInfo _tarfData2_Barriers_t_Info = { xsdcpp::ElementInfo::Ch
 const xsdcpp::ElementInfo _tarfData2_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _tarfData2_Children, 15, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _accumulatorData_RangeBounds_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _accumulatorData_RangeBounds_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _accumulatorData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _accumulatorData_Children, 19, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _windowBarrierOptionData2_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _windowBarrierOptionData2_Children, 7, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _windowBarrierOptionData2_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _windowBarrierOptionData2_Children, 8, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _basketOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _basketOptionData_Children, 7, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _genericBarrierOptionData_Barriers_t_Info = { 0, nullptr, _genericBarrierOptionData_Barriers_t_Children, 5, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _genericBarrierOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _genericBarrierOptionData_Children, 11, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _genericBarrierOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _genericBarrierOptionData_Children, 12, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _rainbowOptionData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _rainbowOptionData_Children, 6, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _autocallable01Data_FixingDates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _autocallable01Data_FixingDates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _autocallable01Data_SettlementDates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _autocallable01Data_SettlementDates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
@@ -34345,8 +36383,8 @@ const xsdcpp::ElementInfo _zeroInflationIndexType_Info = { xsdcpp::ElementInfo::
 const xsdcpp::ElementInfo _bondYield_Id_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_bondYield_Id_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondYield_Compounding_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_bondYield_Compounding_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _bondYield_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _bondYield_Children, 7, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _collateralBalances_CollateralBalance_t_Info = { 0, nullptr, _collateralBalances_CollateralBalance_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _nettingsetdefinitions_NettingSet_t_Info = { 0, nullptr, _nettingsetdefinitions_NettingSet_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _collateralBalances_CollateralBalance_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _collateralBalances_CollateralBalance_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingsetdefinitions_NettingSet_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _nettingsetdefinitions_NettingSet_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _product_Model_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_product_Model_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _product_ModelParameters_t_Info = { 0, nullptr, _product_ModelParameters_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _product_Engine_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_product_Engine_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34414,17 +36452,23 @@ const xsdcpp::ElementInfo _counterPartyCorrelations_Info = { 0, nullptr, _counte
 const xsdcpp::ElementInfo _envelope_CounterParty_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_envelope_CounterParty_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _envelope_PortfolioIds_t_Info = { 0, nullptr, _envelope_PortfolioIds_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _envelope_AdditionalFields_t_Info = { 0, nullptr, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __NettingSetId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__NettingSetId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingSetDetails_NettingSetId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_NettingSetId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingSetDetails_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _nettingSetDetails_Children, 5, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _tradeAction_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _tradeAction_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _stFreeStyleEventScheduleBase_DerivedSchedule_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __Name_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__Name_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxForwardSettlementData_Info = { 0, nullptr, _fxForwardSettlementData_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _scheduleData_Rules_t_Tenor_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_scheduleData_Rules_t_Tenor_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _scheduleData_Rules_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _scheduleData_Rules_t_Children, 14, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _scheduleData_Dates_t_Dates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _scheduleData_Dates_t_Dates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _scheduleData_Dates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _scheduleData_Dates_t_Children, 6, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _DerivedScheduleType_BaseSchedule_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_DerivedScheduleType_BaseSchedule_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _DerivedScheduleType_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _DerivedScheduleType_Children, 6, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_OptionType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_OptionType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_PayoffType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_PayoffType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_PayoffType2_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_PayoffType2_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34446,6 +36490,7 @@ const xsdcpp::ElementInfo _optionExerciseData_Info = { xsdcpp::ElementInfo::Chec
 const xsdcpp::ElementInfo _optionPaymentData_Info = { 0, nullptr, _optionPaymentData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_SettlementData_t_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_SettlementData_t_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_SettlementData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _optionData_SettlementData_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ExerciseDates_t_Info = { 0, nullptr, __ExerciseDates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxOptionData_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxOptionData_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxBarrierOptionData_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxBarrierOptionData_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxBarrierOptionData_FXIndexDailyLows_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxBarrierOptionData_FXIndexDailyLows_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34464,10 +36509,42 @@ const xsdcpp::ElementInfo _fxreset_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadT
 const xsdcpp::ElementInfo _fxreset_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _fxreset_Children, 6, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _exchanges_Info = { 0, nullptr, _exchanges_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _legData_capfloor_PaymentDates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _legData_capfloor_PaymentDates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CashflowData_t_Cashflow_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CashflowData_t_Cashflow_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CashflowData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CashflowData_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FixedLegData_t_Rates_t_Info = { 0, nullptr, __FixedLegData_t_Rates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FixedLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __FixedLegData_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FloatingLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __FloatingLegData_t_Children, 23, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CPILegData_t_Info = { 0, nullptr, __CPILegData_t_Children, 14, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __YYLegData_t_Index_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__YYLegData_t_Index_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __YYLegData_t_ObservationLag_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__YYLegData_t_ObservationLag_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __YYLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __YYLegData_t_Children, 10, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CMSLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CMSLegData_t_Children, 8, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CMBLegData_t_Index_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CMBLegData_t_Index_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CMBLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CMBLegData_t_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_Info = { 0, nullptr, __DigitalCMSLegData_t_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DurationAdjustedCMSLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DurationAdjustedCMSLegData_t_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CMSSpreadLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CMSSpreadLegData_t_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_Info = { 0, nullptr, __DigitalCMSSpreadLegData_t_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityLegData_t_ReturnType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityLegData_t_ReturnType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __EquityLegData_t_Children, 10, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Info = { 0, nullptr, __ZeroCouponFixedLegData_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_Rates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __EquityMarginLegData_t_Rates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_ReturnType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityMarginLegData_t_EquityLegData_t_ReturnType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __EquityMarginLegData_t_EquityLegData_t_Children, 10, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __EquityMarginLegData_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _pricesType_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _pricesType_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFixedLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CommodityFixedLegData_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Name_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CommodityFloatingLegData_t_Name_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _quantitiesType_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _quantitiesType_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CommodityFloatingLegData_t_Children, 25, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FormulaBasedLegData_t_Index_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__FormulaBasedLegData_t_Index_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FormulaBasedLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __FormulaBasedLegData_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_Caps_t_Info = { 0, nullptr, _capFloorData_Caps_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_Floors_t_Info = { 0, nullptr, _capFloorData_Floors_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_PremiumAmount_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_capFloorData_PremiumAmount_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_PremiumPayDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_capFloorData_PremiumPayDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __Strike_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__Strike_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __StrikeData_t_Info = { 0, nullptr, __StrikeData_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _eqBarrierOptionData_EQIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_eqBarrierOptionData_EQIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _eqForwardSettlementData_Info = { 0, nullptr, _eqForwardSettlementData_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _eqTouchOptionData_EQIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_eqTouchOptionData_EQIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34506,6 +36583,9 @@ const xsdcpp::ElementInfo _bondFutureData_LastTradingDate_t_Info = { xsdcpp::Ele
 const xsdcpp::ElementInfo _bondFutureData_LastDeliveryDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_bondFutureData_LastDeliveryDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _deliveryBasket_Info = { 0, nullptr, _deliveryBasket_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _creditDefaultSwapData_IssuerId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_creditDefaultSwapData_IssuerId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CreditCurveId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CreditCurveId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ReferenceInformation_t_ReferenceEntityId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__ReferenceInformation_t_ReferenceEntityId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ReferenceInformation_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __ReferenceInformation_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _creditDefaultSwapData_ReferenceObligation_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_creditDefaultSwapData_ReferenceObligation_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _creditDefaultSwapData_ProtectionPaymentTime_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_creditDefaultSwapData_ProtectionPaymentTime_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _legData_PaymentCalendar_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_legData_PaymentCalendar_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -34995,9 +37075,14 @@ const xsdcpp::ElementInfo _counterparty_CounterpartyId_t_Info = { xsdcpp::Elemen
 const xsdcpp::ElementInfo _counterparty_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _counterparty_Children, 6, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _counterPartyCorrelations_Correlation_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_counterPartyCorrelations_Correlation_t, nullptr, 0, _counterPartyCorrelations_Correlation_t_Attributes, 3ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _envelope_PortfolioIds_t_PortfolioId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_envelope_PortfolioIds_t_PortfolioId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingSetDetails_AgreementType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_AgreementType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingSetDetails_CallType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_CallType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingSetDetails_InitialMarginType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_InitialMarginType_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nettingSetDetails_LegalEntityId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_LegalEntityId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxForwardSettlementData_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxForwardSettlementData_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxForwardSettlementData_Rules_t_Info = { 0, nullptr, _fxForwardSettlementData_Rules_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _scheduleData_Dates_t_Tenor_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_scheduleData_Dates_t_Tenor_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _DerivedScheduleType_Shift_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_DerivedScheduleType_Shift_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _premiumData_Premium_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _premiumData_Premium_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionData_ExerciseFees_t_ExerciseFee_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_ExerciseFees_t_ExerciseFee_t, nullptr, 0, _optionData_ExerciseFees_t_ExerciseFee_t_Attributes, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _optionPaymentData_Dates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _optionPaymentData_Dates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
@@ -35005,8 +37090,50 @@ const xsdcpp::ElementInfo _optionPaymentData_Rules_t_Info = { xsdcpp::ElementInf
 const xsdcpp::ElementInfo _optionData_SettlementData_t_FixingDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_optionData_SettlementData_t_FixingDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxreset_StartDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxreset_StartDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxreset_FixingCalendar_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxreset_FixingCalendar_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CashflowData_t_Cashflow_t_Amount_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CashflowData_t_Cashflow_t_Amount_t, nullptr, 0, __CashflowData_t_Cashflow_t_Amount_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FixedLegData_t_Rates_t_Rate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__FixedLegData_t_Rates_t_Rate_t, nullptr, 0, __FixedLegData_t_Rates_t_Rate_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FloatingLegData_t_LastRecentPeriod_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__FloatingLegData_t_LastRecentPeriod_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __FloatingLegData_t_Lookback_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__FloatingLegData_t_Lookback_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _spreads_Info = { 0, nullptr, _spreads_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _caps_Info = { 0, nullptr, _caps_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _floors_Info = { 0, nullptr, _floors_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _gearings_Info = { 0, nullptr, _gearings_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _tradeLevelFixings_Info = { 0, nullptr, _tradeLevelFixings_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _stubInterpolation_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _stubInterpolation_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CPILegData_t_Index_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CPILegData_t_Index_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CPILegData_t_Rates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CPILegData_t_Rates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CPILegData_t_ObservationLag_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CPILegData_t_ObservationLag_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CPILegData_t_Interpolation_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CPILegData_t_Interpolation_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_CMSLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSLegData_t_CMSLegData_t_Children, 8, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_CallPosition_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__DigitalCMSLegData_t_CallPosition_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_CallStrikes_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSLegData_t_CallStrikes_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_CallPayoffs_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSLegData_t_CallPayoffs_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_PutPosition_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__DigitalCMSLegData_t_PutPosition_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_PutStrikes_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSLegData_t_PutStrikes_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSLegData_t_PutPayoffs_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSLegData_t_PutPayoffs_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSSpreadLegData_t_CMSSpreadLegData_t_Children, 9, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CallPosition_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__DigitalCMSSpreadLegData_t_CallPosition_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CallStrikes_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSSpreadLegData_t_CallStrikes_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_CallPayoffs_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSSpreadLegData_t_CallPayoffs_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_PutPosition_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__DigitalCMSSpreadLegData_t_PutPosition_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_PutStrikes_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSSpreadLegData_t_PutStrikes_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __DigitalCMSSpreadLegData_t_PutPayoffs_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __DigitalCMSSpreadLegData_t_PutPayoffs_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityLegData_t_FXTerms_t_Info = { 0, nullptr, __EquityLegData_t_FXTerms_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Rates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __ZeroCouponFixedLegData_t_Rates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Compounding_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__ZeroCouponFixedLegData_t_Compounding_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_SubtractNotional_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__ZeroCouponFixedLegData_t_SubtractNotional_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_Rates_t_Rate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityMarginLegData_t_Rates_t_Rate_t, nullptr, 0, __EquityMarginLegData_t_Rates_t_Rate_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_Info = { 0, nullptr, __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _pricesType_Price_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_pricesType_Price_t, nullptr, 0, _pricesType_Price_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFixedLegData_t_Tag_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CommodityFixedLegData_t_Tag_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _quantitiesType_Quantity_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_quantitiesType_Quantity_t, nullptr, 0, _quantitiesType_Quantity_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFloatingLegData_t_PricingDates_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, __CommodityFloatingLegData_t_PricingDates_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Tag_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CommodityFloatingLegData_t_Tag_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CommodityFloatingLegData_t_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CommodityFloatingLegData_t_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_Caps_t_Cap_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_capFloorData_Caps_t_Cap_t, nullptr, 0, _capFloorData_Caps_t_Cap_t_Attributes, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _capFloorData_Floors_t_Floor_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_capFloorData_Floors_t_Floor_t, nullptr, 0, _capFloorData_Floors_t_Floor_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _strikePriceData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _strikePriceData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _strikeYieldData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _strikeYieldData_Children, 2, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _eqForwardSettlementData_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_eqForwardSettlementData_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _eqForwardSettlementData_Rules_t_Info = { 0, nullptr, _eqForwardSettlementData_Rules_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _deliveryBasket_Id_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_deliveryBasket_Id_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
@@ -35019,7 +37146,7 @@ const xsdcpp::ElementInfo _strikes_Info = { 0, nullptr, _strikes_Children, 1, nu
 const xsdcpp::ElementInfo _fxTermsData_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxTermsData_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _fxTermsData_FXIndexCalendar_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_fxTermsData_FXIndexCalendar_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _nameData_IssuerId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nameData_IssuerId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _nameData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _nameData_Children, 12, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _nameData_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _nameData_Children, 13, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _cbCallData_Styles_t_Style_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cbCallData_Styles_t_Style_t, nullptr, 0, _cbCallData_Styles_t_Style_t_Attributes, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _cbCallData_Prices_t_Price_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cbCallData_Prices_t_Price_t, nullptr, 0, _cbCallData_Prices_t_Price_t_Attributes, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _cbCallData_PriceTypes_t_PriceType_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cbCallData_PriceTypes_t_PriceType_t, nullptr, 0, _cbCallData_PriceTypes_t_PriceType_t_Attributes, 0ULL, nullptr, nullptr };
@@ -35056,7 +37183,7 @@ const xsdcpp::ElementInfo _callableBondCallData_IncludeAccruals_t_IncludeAccrual
 const xsdcpp::ElementInfo _cboStructure_ReinvestmentEndDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cboStructure_ReinvestmentEndDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _cboBondBasketData_Trade_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _cboBondBasketData_Trade_t_Children, 3, _cboBondBasketData_Trade_t_Attributes, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _cbotranche_Name_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_cbotranche_Name_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _cbotranche_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _cbotranche_Children, 4, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _cbotranche_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _cbotranche_Children, 5, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _compositeTradeComponents_Trade_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _compositeTradeComponents_Trade_t_Children, 179, _compositeTradeComponents_Trade_t_Attributes, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _flexiSwapData_LowerNotionalBounds_t_Notional_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_flexiSwapData_LowerNotionalBounds_t_Notional_t, nullptr, 0, _flexiSwapData_LowerNotionalBounds_t_Notional_t_Attributes, 0ULL, nullptr, nullptr };
@@ -35409,6 +37536,14 @@ const xsdcpp::ElementInfo _survivalprobability_ShiftTenors_t_Info = { xsdcpp::El
 const xsdcpp::ElementInfo _survivalprobability_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _survivalprobability_Children, 6, _survivalprobability_Attributes, 1ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _premiumData_Premium_t_SettlementData_t_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_premiumData_Premium_t_SettlementData_t_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _premiumData_Premium_t_SettlementData_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _premiumData_Premium_t_SettlementData_t_Children, 3, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _floatWithAttribute_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_floatWithAttribute, nullptr, 0, _floatWithAttribute_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _tradeLevelFixings_Fixing_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_tradeLevelFixings_Fixing_t, nullptr, 0, _tradeLevelFixings_Fixing_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __CPILegData_t_Rates_t_Rate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__CPILegData_t_Rates_t_Rate_t, nullptr, 0, __CPILegData_t_Rates_t_Rate_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityLegData_t_FXTerms_t_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityLegData_t_FXTerms_t_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityLegData_t_FXTerms_t_FXIndexCalendar_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityLegData_t_FXTerms_t_FXIndexCalendar_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __ZeroCouponFixedLegData_t_Rates_t_Rate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__ZeroCouponFixedLegData_t_Rates_t_Rate_t, nullptr, 0, __ZeroCouponFixedLegData_t_Rates_t_Rate_t_Attributes, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo __EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _amortizationData_StartDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_amortizationData_StartDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _amortizationData_EndDate_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_amortizationData_EndDate_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _amortizationData_Frequency_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_amortizationData_Frequency_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };

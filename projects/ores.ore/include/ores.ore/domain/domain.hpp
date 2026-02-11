@@ -11,6 +11,13 @@ struct portfolio;
 struct trade;
 struct envelope;
 struct envelope_CounterParty_t;
+struct _NettingSetId_t;
+struct nettingSetDetails;
+struct nettingSetDetails_NettingSetId_t;
+struct nettingSetDetails_AgreementType_t;
+struct nettingSetDetails_CallType_t;
+struct nettingSetDetails_InitialMarginType_t;
+struct nettingSetDetails_LegalEntityId_t;
 struct envelope_PortfolioIds_t;
 struct envelope_PortfolioIds_t_PortfolioId_t;
 struct envelope_AdditionalFields_t;
@@ -22,6 +29,9 @@ struct scheduleData_Rules_t_Tenor_t;
 struct scheduleData_Dates_t;
 struct scheduleData_Dates_t_Tenor_t;
 struct scheduleData_Dates_t_Dates_t;
+struct DerivedScheduleType;
+struct DerivedScheduleType_BaseSchedule_t;
+struct DerivedScheduleType_Shift_t;
 struct swapData;
 struct legData;
 struct legData_PaymentCalendar_t;
@@ -43,6 +53,96 @@ struct indexingData;
 struct indexingData_Index_t;
 struct indexingData_IndexFixingCalendar_t;
 struct indexingData_FixingCalendar_t;
+struct _CashflowData_t;
+struct _CashflowData_t_Cashflow_t;
+struct _CashflowData_t_Cashflow_t_Amount_t;
+struct _FixedLegData_t;
+struct _FixedLegData_t_Rates_t;
+struct _FixedLegData_t_Rates_t_Rate_t;
+struct _FloatingLegData_t;
+struct _FloatingLegData_t_LastRecentPeriod_t;
+struct _FloatingLegData_t_Lookback_t;
+struct spreads;
+struct floatWithAttribute;
+struct caps;
+struct floors;
+struct gearings;
+struct tradeLevelFixings;
+struct tradeLevelFixings_Fixing_t;
+struct stubInterpolation;
+struct _CPILegData_t;
+struct _CPILegData_t_Index_t;
+struct _CPILegData_t_Rates_t;
+struct _CPILegData_t_Rates_t_Rate_t;
+struct _CPILegData_t_ObservationLag_t;
+struct _CPILegData_t_Interpolation_t;
+struct _YYLegData_t;
+struct _YYLegData_t_Index_t;
+struct _YYLegData_t_ObservationLag_t;
+struct _CMSLegData_t;
+struct _CMBLegData_t;
+struct _CMBLegData_t_Index_t;
+struct _DigitalCMSLegData_t;
+struct _DigitalCMSLegData_t_CMSLegData_t;
+struct _DigitalCMSLegData_t_CallPosition_t;
+struct _DigitalCMSLegData_t_CallStrikes_t;
+struct _DigitalCMSLegData_t_CallPayoffs_t;
+struct _DigitalCMSLegData_t_PutPosition_t;
+struct _DigitalCMSLegData_t_PutStrikes_t;
+struct _DigitalCMSLegData_t_PutPayoffs_t;
+struct _DurationAdjustedCMSLegData_t;
+struct _CMSSpreadLegData_t;
+struct _DigitalCMSSpreadLegData_t;
+struct _DigitalCMSSpreadLegData_t_CMSSpreadLegData_t;
+struct _DigitalCMSSpreadLegData_t_CallPosition_t;
+struct _DigitalCMSSpreadLegData_t_CallStrikes_t;
+struct _DigitalCMSSpreadLegData_t_CallPayoffs_t;
+struct _DigitalCMSSpreadLegData_t_PutPosition_t;
+struct _DigitalCMSSpreadLegData_t_PutStrikes_t;
+struct _DigitalCMSSpreadLegData_t_PutPayoffs_t;
+struct _EquityLegData_t;
+struct _EquityLegData_t_ReturnType_t;
+struct _Name_t;
+struct underlying;
+struct underlying_Type_t;
+struct underlying_Name_t;
+struct underlying_IdentifierType_t;
+struct underlying_Exchange_t;
+struct underlying_PriceType_t;
+struct underlying_DeliveryRollCalendar_t;
+struct underlying_FutureExpiryDate_t;
+struct underlying_FutureContractMonth_t;
+struct underlying_Interpolation_t;
+struct underlyings;
+struct _EquityLegData_t_FXTerms_t;
+struct _EquityLegData_t_FXTerms_t_FXIndex_t;
+struct _EquityLegData_t_FXTerms_t_FXIndexCalendar_t;
+struct _ZeroCouponFixedLegData_t;
+struct _ZeroCouponFixedLegData_t_Rates_t;
+struct _ZeroCouponFixedLegData_t_Rates_t_Rate_t;
+struct _ZeroCouponFixedLegData_t_Compounding_t;
+struct _ZeroCouponFixedLegData_t_SubtractNotional_t;
+struct _EquityMarginLegData_t;
+struct _EquityMarginLegData_t_Rates_t;
+struct _EquityMarginLegData_t_Rates_t_Rate_t;
+struct _EquityMarginLegData_t_EquityLegData_t;
+struct _EquityMarginLegData_t_EquityLegData_t_ReturnType_t;
+struct _EquityMarginLegData_t_EquityLegData_t_FXTerms_t;
+struct _EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t;
+struct _EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t;
+struct _CommodityFixedLegData_t;
+struct quantitiesType;
+struct quantitiesType_Quantity_t;
+struct pricesType;
+struct pricesType_Price_t;
+struct _CommodityFixedLegData_t_Tag_t;
+struct _CommodityFloatingLegData_t;
+struct _CommodityFloatingLegData_t_Name_t;
+struct _CommodityFloatingLegData_t_PricingDates_t;
+struct _CommodityFloatingLegData_t_Tag_t;
+struct _CommodityFloatingLegData_t_FXIndex_t;
+struct _FormulaBasedLegData_t;
+struct _FormulaBasedLegData_t_Index_t;
 struct legData_SettlementData_t;
 struct legData_SettlementData_t_FXIndex_t;
 struct legData_SettlementData_t_FixingDate_t;
@@ -71,6 +171,7 @@ struct optionData_ExerciseFees_t_ExerciseFee_t;
 struct optionData_ExerciseFeeSettlementPeriod_t;
 struct optionData_ExerciseFeeSettlementCalendar_t;
 struct optionData_ExerciseFeeSettlementConvention_t;
+struct _ExerciseDates_t;
 struct optionExerciseData;
 struct optionPaymentData;
 struct optionPaymentData_Dates_t;
@@ -138,6 +239,10 @@ struct capFloorData_PremiumAmount_t;
 struct capFloorData_PremiumPayDate_t;
 struct equityFutureOptionData;
 struct equityOptionData;
+struct _Strike_t;
+struct _StrikeData_t;
+struct strikePriceData;
+struct strikeYieldData;
 struct eqBarrierOptionData;
 struct eqBarrierOptionData_EQIndex_t;
 struct equityForwardData;
@@ -195,6 +300,9 @@ struct deliveryBasket;
 struct deliveryBasket_Id_t;
 struct creditDefaultSwapData;
 struct creditDefaultSwapData_IssuerId_t;
+struct _CreditCurveId_t;
+struct _ReferenceInformation_t;
+struct _ReferenceInformation_t_ReferenceEntityId_t;
 struct creditDefaultSwapData_ReferenceObligation_t;
 struct creditDefaultSwapData_ProtectionPaymentTime_t;
 struct creditDefaultSwapOptionData;
@@ -228,16 +336,6 @@ struct commodityOptionStripData_PremiumAmount_t;
 struct commodityOptionStripData_PremiumPayDate_t;
 struct commodityOptionStripData_Style_t;
 struct commodityPositionData;
-struct underlying;
-struct underlying_Type_t;
-struct underlying_Name_t;
-struct underlying_IdentifierType_t;
-struct underlying_Exchange_t;
-struct underlying_PriceType_t;
-struct underlying_DeliveryRollCalendar_t;
-struct underlying_FutureExpiryDate_t;
-struct underlying_FutureContractMonth_t;
-struct underlying_Interpolation_t;
 struct singleUnderlyingAsianOptionData;
 struct singleUnderlyingAsianOptionData_Settlement_t;
 struct bondOptionData;
@@ -411,7 +509,6 @@ struct stFreeStyleOptionType;
 struct basketVarianceSwapData;
 struct stFreeStyleBool;
 struct basketVarianceSwapData2;
-struct underlyings;
 struct extendedAccumulatorData;
 struct varianceOptionData;
 struct varianceDispersionSwapData;
@@ -1672,6 +1769,13 @@ struct counterparty;
 struct counterparty_CounterpartyId_t;
 struct counterPartyCorrelations;
 struct counterPartyCorrelations_Correlation_t;
+struct nettingSetGroup_group_t;
+struct DerivedScheduleGroup_group_t;
+struct legDataType_group_t;
+struct underlyingTypes_group_t;
+struct exerciseDatesGroup_group_t;
+struct strikeGroup_group_t;
+struct creditCurveIdType_group_t;
 
 struct portfolio
 {
@@ -2542,6 +2646,7 @@ struct counterpartyInformation
 struct envelope
 {
     xsd::optional<domain::envelope_CounterParty_t> CounterParty;
+    xsd::optional<domain::nettingSetGroup_group_t> nettingSetGroup;
     xsd::optional<domain::envelope_PortfolioIds_t> PortfolioIds;
     xsd::optional<domain::envelope_AdditionalFields_t> AdditionalFields;
 };
@@ -2639,6 +2744,13 @@ struct swaptionData
     xsd::vector<domain::legData> LegData;
 };
 
+struct underlyingTypes_group_t
+{
+    xsd::optional<domain::_Name_t> Name;
+    xsd::optional<domain::underlying> Underlying;
+    xsd::optional<domain::underlyings> Underlyings;
+};
+
 struct varianceSwapData_LongShort_t : xsd::string
 {
 };
@@ -2658,6 +2770,7 @@ struct varianceSwapData
     domain::date StartDate;
     domain::date EndDate;
     domain::currencyCode Currency;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::varianceSwapData_LongShort_t LongShort;
     float Strike;
     float Notional;
@@ -2704,6 +2817,7 @@ struct scheduleData
 {
     xsd::vector<domain::scheduleData_Rules_t> Rules;
     xsd::vector<domain::scheduleData_Dates_t> Dates;
+    xsd::vector<domain::DerivedScheduleGroup_group_t> DerivedScheduleGroup;
 };
 
 struct fxAverageForwardData_FXIndex_t : xsd::string
@@ -2762,6 +2876,7 @@ struct optionData
     xsd::optional<domain::optionData_ExerciseFeeSettlementPeriod_t> ExerciseFeeSettlementPeriod;
     xsd::optional<domain::optionData_ExerciseFeeSettlementCalendar_t> ExerciseFeeSettlementCalendar;
     xsd::optional<domain::optionData_ExerciseFeeSettlementConvention_t> ExerciseFeeSettlementConvention;
+    xsd::optional<domain::exerciseDatesGroup_group_t> exerciseDatesGroup;
     xsd::optional<domain::bool_> AutomaticExercise;
     xsd::optional<domain::optionExerciseData> ExerciseData;
     xsd::optional<domain::optionPaymentData> PaymentData;
@@ -3008,6 +3123,27 @@ struct legData_capfloor_Notionals_t
     xsd::vector<domain::exchanges> Exchanges;
 };
 
+struct legDataType_group_t
+{
+    xsd::optional<domain::_CashflowData_t> CashflowData;
+    xsd::optional<domain::_FixedLegData_t> FixedLegData;
+    xsd::optional<domain::_FloatingLegData_t> FloatingLegData;
+    xsd::optional<domain::_CPILegData_t> CPILegData;
+    xsd::optional<domain::_YYLegData_t> YYLegData;
+    xsd::optional<domain::_CMSLegData_t> CMSLegData;
+    xsd::optional<domain::_CMBLegData_t> CMBLegData;
+    xsd::optional<domain::_DigitalCMSLegData_t> DigitalCMSLegData;
+    xsd::optional<domain::_DurationAdjustedCMSLegData_t> DurationAdjustedCMSLegData;
+    xsd::optional<domain::_CMSSpreadLegData_t> CMSSpreadLegData;
+    xsd::optional<domain::_DigitalCMSSpreadLegData_t> DigitalCMSSpreadLegData;
+    xsd::optional<domain::_EquityLegData_t> EquityLegData;
+    xsd::optional<domain::_ZeroCouponFixedLegData_t> ZeroCouponFixedLegData;
+    xsd::optional<domain::_EquityMarginLegData_t> EquityMarginLegData;
+    xsd::optional<domain::_CommodityFixedLegData_t> CommodityFixedLegData;
+    xsd::optional<domain::_CommodityFloatingLegData_t> CommodityFloatingLegData;
+    xsd::optional<domain::_FormulaBasedLegData_t> FormulaBasedLegData;
+};
+
 struct legData_capfloor
 {
     xsd::optional<bool> Payer;
@@ -3020,6 +3156,7 @@ struct legData_capfloor
     domain::legData_capfloor_Notionals_t Notionals;
     domain::scheduleData ScheduleData;
     xsd::optional<domain::legData_capfloor_PaymentDates_t> PaymentDates;
+    domain::legDataType_group_t legDataType;
 };
 
 struct capFloorData
@@ -3037,6 +3174,7 @@ struct capFloorData
 struct equityFutureOptionData
 {
     domain::optionData OptionData;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::currencyCode Currency;
     float Strike;
     float Quantity;
@@ -3045,12 +3183,20 @@ struct equityFutureOptionData
 
 typedef xsd::string extendedCurrencyCode;
 
+struct strikeGroup_group_t
+{
+    xsd::optional<domain::_Strike_t> Strike;
+    xsd::optional<domain::_StrikeData_t> StrikeData;
+};
+
 struct equityOptionData
 {
     domain::optionData OptionData;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::extendedCurrencyCode Currency;
     xsd::optional<domain::extendedCurrencyCode> StrikeCurrency;
     float Quantity;
+    domain::strikeGroup_group_t strikeGroup;
 };
 
 enum class barrierType
@@ -3118,7 +3264,9 @@ struct eqBarrierOptionData
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::eqBarrierOptionData_EQIndex_t> EQIndex;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::currencyCode Currency;
+    domain::strikeGroup_group_t strikeGroup;
     float Quantity;
 };
 
@@ -3126,6 +3274,7 @@ struct equityForwardData
 {
     domain::longShort LongShort;
     domain::date Maturity;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::extendedCurrencyCode Currency;
     float Strike;
     xsd::optional<domain::extendedCurrencyCode> StrikeCurrency;
@@ -3139,6 +3288,7 @@ struct eqDigitalOptionData
     float Strike;
     xsd::optional<domain::currencyCode> PayoffCurrency;
     float PayoffAmount;
+    domain::underlyingTypes_group_t underlyingTypes;
     float Quantity;
 };
 
@@ -3146,6 +3296,7 @@ struct eqTouchOptionData
 {
     domain::optionData OptionData;
     domain::barrierData BarrierData;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::currencyCode PayoffCurrency;
     float PayoffAmount;
     xsd::optional<domain::date> StartDate;
@@ -3163,6 +3314,7 @@ std::string to_string(optionType);
 
 struct cliquetOptionData
 {
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::currencyCode Currency;
     float Notional;
     domain::longShort LongShort;
@@ -3275,6 +3427,12 @@ struct bondFutureData
     xsd::optional<domain::deliveryBasket> DeliveryBasket;
 };
 
+struct creditCurveIdType_group_t
+{
+    xsd::optional<domain::_CreditCurveId_t> CreditCurveId;
+    xsd::optional<domain::_ReferenceInformation_t> ReferenceInformation;
+};
+
 struct legData
 {
     bool Payer;
@@ -3291,6 +3449,7 @@ struct legData
     xsd::optional<domain::legData_PaymentDates_t> PaymentDates;
     xsd::optional<domain::legData_Indexings_t> Indexings;
     xsd::optional<domain::dayCounter> LastPeriodDayCounter;
+    xsd::optional<domain::legDataType_group_t> legDataType;
     xsd::optional<bool> StrictNotionalDates;
     xsd::optional<domain::scheduleData> PaymentSchedule;
     xsd::optional<domain::legData_SettlementData_t> SettlementData;
@@ -3299,6 +3458,7 @@ struct legData
 struct creditDefaultSwapData
 {
     xsd::optional<domain::creditDefaultSwapData_IssuerId_t> IssuerId;
+    domain::creditCurveIdType_group_t creditCurveIdType;
     xsd::optional<domain::creditDefaultSwapData_ReferenceObligation_t> ReferenceObligation;
     xsd::optional<domain::bool_> SettlesAccrual;
     xsd::optional<domain::bool_> RebatesAccrual;
@@ -3519,6 +3679,7 @@ struct singleUnderlyingAsianOptionData
 {
     domain::currencyCode Currency;
     float Quantity;
+    domain::strikeGroup_group_t strikeGroup;
     xsd::optional<domain::underlying> Underlying;
     domain::optionData OptionData;
     xsd::optional<domain::singleUnderlyingAsianOptionData_Settlement_t> Settlement;
@@ -3528,6 +3689,7 @@ struct singleUnderlyingAsianOptionData
 struct bondOptionData
 {
     domain::optionData OptionData;
+    domain::strikeGroup_group_t strikeGroup;
     xsd::optional<domain::bondOptionData_Redemption_t> Redemption;
     xsd::optional<domain::bondOptionData_PriceType_t> PriceType;
     xsd::optional<domain::bool_> KnocksOut;
@@ -4412,6 +4574,7 @@ struct windowBarrierOptionData2
 {
     domain::currencyCode Currency;
     float FixingAmount;
+    domain::strikeGroup_group_t strikeGroup;
     domain::underlying Underlying;
     domain::optionData OptionData;
     domain::date StartDate;
@@ -4451,6 +4614,7 @@ struct genericBarrierOptionData_Barriers_t
 struct genericBarrierOptionData
 {
     domain::currencyCode PayCurrency;
+    domain::underlyingTypes_group_t underlyingTypes;
     domain::optionData OptionData;
     xsd::optional<domain::date> SettlementDate;
     xsd::optional<domain::genericBarrierOptionData_SettlementLag_t> SettlementLag;
@@ -6632,8 +6796,15 @@ struct bondYield
     xsd::optional<float> Guess;
 };
 
+struct nettingSetGroup_group_t
+{
+    xsd::optional<domain::_NettingSetId_t> NettingSetId;
+    xsd::optional<domain::nettingSetDetails> NettingSetDetails;
+};
+
 struct collateralBalances_CollateralBalance_t
 {
+    domain::nettingSetGroup_group_t nettingSetGroup;
     xsd::optional<domain::currencyCode> Currency;
     xsd::optional<double> InitialMargin;
     xsd::optional<double> VariationMargin;
@@ -6641,6 +6812,7 @@ struct collateralBalances_CollateralBalance_t
 
 struct nettingsetdefinitions_NettingSet_t
 {
+    domain::nettingSetGroup_group_t nettingSetGroup;
     xsd::optional<bool> ActiveCSAFlag;
     xsd::optional<domain::nettingsetdefinitions_NettingSet_t_CSADetails_t> CSADetails;
     xsd::optional<double> RiskWeight;
@@ -7076,6 +7248,23 @@ struct envelope_AdditionalFields_t
 {
 };
 
+struct _NettingSetId_t : xsd::string
+{
+};
+
+struct nettingSetDetails_NettingSetId_t : xsd::string
+{
+};
+
+struct nettingSetDetails
+{
+    domain::nettingSetDetails_NettingSetId_t NettingSetId;
+    xsd::optional<domain::nettingSetDetails_AgreementType_t> AgreementType;
+    xsd::optional<domain::nettingSetDetails_CallType_t> CallType;
+    xsd::optional<domain::nettingSetDetails_InitialMarginType_t> InitialMarginType;
+    xsd::optional<domain::nettingSetDetails_LegalEntityId_t> LegalEntityId;
+};
+
 enum class tradeActionType
 {
     Break,
@@ -7125,6 +7314,10 @@ struct stFreeStyleEventScheduleBase_DerivedSchedule_t
     domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t Convention;
 };
 
+struct _Name_t : xsd::string
+{
+};
+
 struct fxForwardSettlementData
 {
     xsd::optional<domain::currencyCode> Currency;
@@ -7168,6 +7361,26 @@ struct scheduleData_Dates_t
     xsd::optional<domain::bool_> EndOfMonth;
     xsd::optional<domain::bool_> IncludeDuplicateDates;
     domain::scheduleData_Dates_t_Dates_t Dates;
+};
+
+struct DerivedScheduleGroup_group_t
+{
+    xsd::optional<domain::DerivedScheduleType> DerivedSchedule;
+    xsd::optional<domain::DerivedScheduleType> Derived;
+};
+
+struct DerivedScheduleType_BaseSchedule_t : xsd::string
+{
+};
+
+struct DerivedScheduleType
+{
+    domain::DerivedScheduleType_BaseSchedule_t BaseSchedule;
+    xsd::optional<domain::DerivedScheduleType_Shift_t> Shift;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::businessDayConvention> Convention;
+    xsd::optional<bool> RemoveFirstDate;
+    xsd::optional<bool> RemoveLastDate;
 };
 
 struct optionData_OptionType_t : xsd::string
@@ -7240,6 +7453,12 @@ struct optionData_ExerciseFeeSettlementConvention_t : xsd::string
 {
 };
 
+struct exerciseDatesGroup_group_t
+{
+    xsd::optional<domain::_ExerciseDates_t> ExerciseDates;
+    xsd::optional<domain::scheduleData> ExerciseSchedule;
+};
+
 struct optionExerciseData
 {
     domain::date Date;
@@ -7261,6 +7480,11 @@ struct optionData_SettlementData_t
     domain::currencyCode PayCurrency;
     domain::optionData_SettlementData_t_FXIndex_t FXIndex;
     xsd::optional<domain::optionData_SettlementData_t_FixingDate_t> FixingDate;
+};
+
+struct _ExerciseDates_t
+{
+    xsd::vector<domain::date> ExerciseDate;
 };
 
 struct fxOptionData_FXIndex_t : xsd::string
@@ -7346,6 +7570,303 @@ struct legData_capfloor_PaymentDates_t
     xsd::vector<domain::date> PaymentDate;
 };
 
+struct _CashflowData_t_Cashflow_t
+{
+    xsd::vector<domain::_CashflowData_t_Cashflow_t_Amount_t> Amount;
+};
+
+struct _CashflowData_t
+{
+    domain::_CashflowData_t_Cashflow_t Cashflow;
+};
+
+struct _FixedLegData_t_Rates_t
+{
+    xsd::vector<domain::_FixedLegData_t_Rates_t_Rate_t> Rate;
+};
+
+struct _FixedLegData_t
+{
+    domain::_FixedLegData_t_Rates_t Rates;
+};
+
+typedef xsd::string indexNameType;
+
+struct _FloatingLegData_t
+{
+    domain::indexNameType Index;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<domain::_FloatingLegData_t_LastRecentPeriod_t> LastRecentPeriod;
+    xsd::optional<domain::calendar> LastRecentPeriodCalendar;
+    xsd::optional<uint64_t> FixingDays;
+    xsd::optional<domain::_FloatingLegData_t_Lookback_t> Lookback;
+    xsd::optional<int64_t> RateCutoff;
+    xsd::optional<bool> IsAveraged;
+    xsd::optional<bool> HasSubPeriods;
+    xsd::optional<bool> IncludeSpread;
+    xsd::optional<bool> IsNotResettingXCCY;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+    xsd::optional<bool> LocalCapFloor;
+    xsd::optional<domain::scheduleData> FixingSchedule;
+    xsd::optional<domain::scheduleData> ResetSchedule;
+    xsd::optional<domain::tradeLevelFixings> HistoricalFixings;
+    xsd::optional<domain::stubInterpolation> FrontStubInterpolation;
+    xsd::optional<domain::stubInterpolation> BackStubInterpolation;
+    xsd::optional<bool> StubUseOriginalCurve;
+};
+
+struct _CPILegData_t
+{
+    xsd::vector<domain::_CPILegData_t_Index_t> Index;
+    xsd::vector<domain::_CPILegData_t_Rates_t> Rates;
+    xsd::vector<float> BaseCPI;
+    xsd::vector<domain::date> StartDate;
+    xsd::vector<domain::_CPILegData_t_ObservationLag_t> ObservationLag;
+    xsd::vector<domain::_CPILegData_t_Interpolation_t> Interpolation;
+    xsd::vector<domain::bool_> Interpolated;
+    xsd::vector<domain::bool_> SubtractInflationNotional;
+    xsd::vector<domain::caps> Caps;
+    xsd::vector<domain::floors> Floors;
+    xsd::vector<float> FinalFlowCap;
+    xsd::vector<float> FinalFlowFloor;
+    xsd::vector<bool> NakedOption;
+    xsd::vector<bool> SubtractInflationNotionalAllCoupons;
+};
+
+struct _YYLegData_t_Index_t : xsd::string
+{
+};
+
+struct _YYLegData_t_ObservationLag_t : xsd::string
+{
+};
+
+struct _YYLegData_t
+{
+    domain::_YYLegData_t_Index_t Index;
+    int64_t FixingDays;
+    domain::_YYLegData_t_ObservationLag_t ObservationLag;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<bool> NakedOption;
+    xsd::optional<bool> AddInflationNotional;
+    xsd::optional<bool> IrregularYoY;
+};
+
+struct _CMSLegData_t
+{
+    domain::indexNameType Index;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+};
+
+struct _CMBLegData_t_Index_t : xsd::string
+{
+};
+
+struct _CMBLegData_t
+{
+    domain::_CMBLegData_t_Index_t Index;
+    xsd::optional<bool> IsInArrears;
+    int64_t FixingDays;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+    xsd::optional<bool> CreditRisk;
+};
+
+struct _DigitalCMSLegData_t
+{
+    xsd::vector<domain::_DigitalCMSLegData_t_CMSLegData_t> CMSLegData;
+    xsd::vector<domain::_DigitalCMSLegData_t_CallPosition_t> CallPosition;
+    xsd::vector<bool> IsCallATMIncluded;
+    xsd::vector<domain::_DigitalCMSLegData_t_CallStrikes_t> CallStrikes;
+    xsd::vector<domain::_DigitalCMSLegData_t_CallPayoffs_t> CallPayoffs;
+    xsd::vector<domain::_DigitalCMSLegData_t_PutPosition_t> PutPosition;
+    xsd::vector<bool> IsPutATMIncluded;
+    xsd::vector<domain::_DigitalCMSLegData_t_PutStrikes_t> PutStrikes;
+    xsd::vector<domain::_DigitalCMSLegData_t_PutPayoffs_t> PutPayoffs;
+};
+
+struct _DurationAdjustedCMSLegData_t
+{
+    domain::indexNameType Index;
+    xsd::optional<int64_t> Duration;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+};
+
+struct _CMSSpreadLegData_t
+{
+    domain::indexNameType Index1;
+    domain::indexNameType Index2;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+};
+
+struct _DigitalCMSSpreadLegData_t
+{
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_CMSSpreadLegData_t> CMSSpreadLegData;
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_CallPosition_t> CallPosition;
+    xsd::vector<bool> IsCallATMIncluded;
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_CallStrikes_t> CallStrikes;
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_CallPayoffs_t> CallPayoffs;
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_PutPosition_t> PutPosition;
+    xsd::vector<bool> IsPutATMIncluded;
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_PutStrikes_t> PutStrikes;
+    xsd::vector<domain::_DigitalCMSSpreadLegData_t_PutPayoffs_t> PutPayoffs;
+};
+
+struct _EquityLegData_t_ReturnType_t : xsd::string
+{
+};
+
+struct _EquityLegData_t
+{
+    xsd::optional<float> Quantity;
+    domain::_EquityLegData_t_ReturnType_t ReturnType;
+    domain::underlyingTypes_group_t underlyingTypes;
+    xsd::optional<float> InitialPrice;
+    xsd::optional<domain::extendedCurrencyCode> InitialPriceCurrency;
+    xsd::optional<float> DividendFactor;
+    xsd::optional<bool> NotionalReset;
+    xsd::optional<domain::scheduleData> ValuationSchedule;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::_EquityLegData_t_FXTerms_t> FXTerms;
+};
+
+struct _ZeroCouponFixedLegData_t
+{
+    xsd::vector<domain::_ZeroCouponFixedLegData_t_Rates_t> Rates;
+    xsd::vector<domain::_ZeroCouponFixedLegData_t_Compounding_t> Compounding;
+    xsd::vector<domain::_ZeroCouponFixedLegData_t_SubtractNotional_t> SubtractNotional;
+};
+
+struct _EquityMarginLegData_t_Rates_t
+{
+    xsd::vector<domain::_EquityMarginLegData_t_Rates_t_Rate_t> Rate;
+};
+
+struct _EquityMarginLegData_t_EquityLegData_t_ReturnType_t : xsd::string
+{
+};
+
+struct _EquityMarginLegData_t_EquityLegData_t
+{
+    xsd::optional<float> Quantity;
+    domain::_EquityMarginLegData_t_EquityLegData_t_ReturnType_t ReturnType;
+    domain::underlyingTypes_group_t underlyingTypes;
+    xsd::optional<float> InitialPrice;
+    xsd::optional<domain::extendedCurrencyCode> InitialPriceCurrency;
+    xsd::optional<float> DividendFactor;
+    xsd::optional<bool> NotionalReset;
+    xsd::optional<domain::scheduleData> ValuationSchedule;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t> FXTerms;
+};
+
+struct _EquityMarginLegData_t
+{
+    float InitialMarginFactor;
+    float Multiplier;
+    domain::_EquityMarginLegData_t_Rates_t Rates;
+    domain::_EquityMarginLegData_t_EquityLegData_t EquityLegData;
+};
+
+struct pricesType
+{
+    xsd::vector<domain::pricesType_Price_t> Price;
+};
+
+struct _CommodityFixedLegData_t
+{
+    xsd::optional<domain::quantitiesType> Quantities;
+    domain::pricesType Prices;
+    xsd::optional<domain::commodityPayRelativeToType> CommodityPayRelativeTo;
+    xsd::optional<domain::_CommodityFixedLegData_t_Tag_t> Tag;
+};
+
+struct _CommodityFloatingLegData_t_Name_t : xsd::string
+{
+};
+
+struct quantitiesType
+{
+    xsd::vector<domain::quantitiesType_Quantity_t> Quantity;
+};
+
+enum class pricingDateRuleType
+{
+    FutureExpiryDate,
+    None,
+};
+
+std::string to_string(pricingDateRuleType);
+
+struct _CommodityFloatingLegData_t
+{
+    domain::_CommodityFloatingLegData_t_Name_t Name;
+    domain::priceType PriceType;
+    domain::quantitiesType Quantities;
+    xsd::optional<domain::commodityQuantityFrequencyType> CommodityQuantityFrequency;
+    xsd::optional<domain::commodityPayRelativeToType> CommodityPayRelativeTo;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<domain::pricingDateRuleType> PricingDateRule;
+    xsd::optional<domain::calendar> PricingCalendar;
+    xsd::optional<int64_t> PricingLag;
+    xsd::optional<domain::_CommodityFloatingLegData_t_PricingDates_t> PricingDates;
+    xsd::optional<bool> IsAveraged;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<int64_t> FutureMonthOffset;
+    xsd::optional<uint64_t> DeliveryRollDays;
+    xsd::optional<uint64_t> DailyExpiryOffset;
+    xsd::optional<bool> IncludePeriodEnd;
+    xsd::optional<bool> ExcludePeriodStart;
+    xsd::optional<uint64_t> HoursPerDay;
+    xsd::optional<bool> UseBusinessDays;
+    xsd::optional<bool> UnrealisedQuantity;
+    xsd::optional<uint64_t> LastNDays;
+    xsd::optional<domain::_CommodityFloatingLegData_t_Tag_t> Tag;
+    xsd::optional<domain::_CommodityFloatingLegData_t_FXIndex_t> FXIndex;
+    xsd::optional<uint64_t> AvgPricePrecision;
+};
+
+struct _FormulaBasedLegData_t_Index_t : xsd::string
+{
+};
+
+struct _FormulaBasedLegData_t
+{
+    domain::_FormulaBasedLegData_t_Index_t Index;
+    xsd::optional<bool> IsInArrears;
+    int64_t FixingDays;
+    xsd::optional<domain::calendar> FixingCalendar;
+};
+
 struct capFloorData_Caps_t
 {
     xsd::vector<domain::capFloorData_Caps_t_Cap_t> Cap;
@@ -7362,6 +7883,18 @@ struct capFloorData_PremiumAmount_t : xsd::string
 
 struct capFloorData_PremiumPayDate_t : xsd::string
 {
+};
+
+struct _Strike_t : xsd::string
+{
+};
+
+struct _StrikeData_t
+{
+    xsd::optional<domain::strikePriceData> StrikePrice;
+    xsd::optional<domain::strikeYieldData> StrikeYield;
+    xsd::optional<float> Value;
+    xsd::optional<domain::extendedCurrencyCode> Currency;
 };
 
 struct eqBarrierOptionData_EQIndex_t : xsd::string
@@ -7520,6 +8053,48 @@ struct deliveryBasket
 
 struct creditDefaultSwapData_IssuerId_t : xsd::string
 {
+};
+
+struct _CreditCurveId_t : xsd::string
+{
+};
+
+struct _ReferenceInformation_t_ReferenceEntityId_t : xsd::string
+{
+};
+
+enum class cdsTierType
+{
+    SNRFOR,
+    SUBLT2,
+    SNRLAC,
+    SECDOM,
+    JRSUBUT2,
+    PREFT1,
+};
+
+std::string to_string(cdsTierType);
+
+enum class cdsDocClauseType
+{
+    CR,
+    MM,
+    MR,
+    XR,
+    CR14,
+    MM14,
+    MR14,
+    XR14,
+};
+
+std::string to_string(cdsDocClauseType);
+
+struct _ReferenceInformation_t
+{
+    domain::_ReferenceInformation_t_ReferenceEntityId_t ReferenceEntityId;
+    domain::cdsTierType Tier;
+    domain::currencyCode Currency;
+    xsd::optional<domain::cdsDocClauseType> DocClause;
 };
 
 struct creditDefaultSwapData_ReferenceObligation_t : xsd::string
@@ -8565,8 +9140,6 @@ struct market_FxRates_t
     xsd::optional<domain::bool_> Simulate;
     xsd::optional<domain::market_FxRates_t_CurrencyPairs_t> CurrencyPairs;
 };
-
-typedef xsd::string indexNameType;
 
 struct market_Indices_t
 {
@@ -11138,6 +11711,22 @@ struct envelope_PortfolioIds_t_PortfolioId_t : xsd::string
 {
 };
 
+struct nettingSetDetails_AgreementType_t : xsd::string
+{
+};
+
+struct nettingSetDetails_CallType_t : xsd::string
+{
+};
+
+struct nettingSetDetails_InitialMarginType_t : xsd::string
+{
+};
+
+struct nettingSetDetails_LegalEntityId_t : xsd::string
+{
+};
+
 struct fxForwardSettlementData_FXIndex_t : xsd::string
 {
 };
@@ -11150,6 +11739,10 @@ struct fxForwardSettlementData_Rules_t
 };
 
 struct scheduleData_Dates_t_Tenor_t : xsd::string
+{
+};
+
+struct DerivedScheduleType_Shift_t : xsd::string
 {
 };
 
@@ -11200,6 +11793,216 @@ struct fxreset_FixingCalendar_t : xsd::string
 {
 };
 
+struct _CashflowData_t_Cashflow_t_Amount_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> date;
+};
+
+struct _FixedLegData_t_Rates_t_Rate_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct _FloatingLegData_t_LastRecentPeriod_t : xsd::string
+{
+};
+
+struct _FloatingLegData_t_Lookback_t : xsd::string
+{
+};
+
+struct spreads
+{
+    xsd::vector<domain::floatWithAttribute> Spread;
+};
+
+struct caps
+{
+    xsd::vector<domain::floatWithAttribute> Cap;
+};
+
+struct floors
+{
+    xsd::vector<domain::floatWithAttribute> Floor;
+};
+
+struct gearings
+{
+    xsd::vector<domain::floatWithAttribute> Gearing;
+};
+
+struct tradeLevelFixings
+{
+    xsd::vector<domain::tradeLevelFixings_Fixing_t> Fixing;
+};
+
+struct stubInterpolation
+{
+    domain::indexNameType ShortIndex;
+    domain::indexNameType LongIndex;
+    xsd::optional<domain::roundingType> RoundingType;
+    xsd::optional<int64_t> RoundingPrecision;
+};
+
+struct _CPILegData_t_Index_t : xsd::string
+{
+};
+
+struct _CPILegData_t_Rates_t
+{
+    xsd::vector<domain::_CPILegData_t_Rates_t_Rate_t> Rate;
+};
+
+struct _CPILegData_t_ObservationLag_t : xsd::string
+{
+};
+
+struct _CPILegData_t_Interpolation_t : xsd::string
+{
+};
+
+struct _DigitalCMSLegData_t_CMSLegData_t
+{
+    domain::indexNameType Index;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+};
+
+struct _DigitalCMSLegData_t_CallPosition_t : xsd::string
+{
+};
+
+struct _DigitalCMSLegData_t_CallStrikes_t
+{
+    xsd::vector<float> Strike;
+};
+
+struct _DigitalCMSLegData_t_CallPayoffs_t
+{
+    xsd::vector<float> Payoff;
+};
+
+struct _DigitalCMSLegData_t_PutPosition_t : xsd::string
+{
+};
+
+struct _DigitalCMSLegData_t_PutStrikes_t
+{
+    xsd::vector<float> Strike;
+};
+
+struct _DigitalCMSLegData_t_PutPayoffs_t
+{
+    xsd::vector<float> Payoff;
+};
+
+struct _DigitalCMSSpreadLegData_t_CMSSpreadLegData_t
+{
+    domain::indexNameType Index1;
+    domain::indexNameType Index2;
+    xsd::optional<bool> IsInArrears;
+    xsd::optional<int64_t> FixingDays;
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::caps> Caps;
+    xsd::optional<domain::floors> Floors;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<bool> NakedOption;
+};
+
+struct _DigitalCMSSpreadLegData_t_CallPosition_t : xsd::string
+{
+};
+
+struct _DigitalCMSSpreadLegData_t_CallStrikes_t
+{
+    xsd::vector<float> Strike;
+};
+
+struct _DigitalCMSSpreadLegData_t_CallPayoffs_t
+{
+    xsd::vector<float> Payoff;
+};
+
+struct _DigitalCMSSpreadLegData_t_PutPosition_t : xsd::string
+{
+};
+
+struct _DigitalCMSSpreadLegData_t_PutStrikes_t
+{
+    xsd::vector<float> Strike;
+};
+
+struct _DigitalCMSSpreadLegData_t_PutPayoffs_t
+{
+    xsd::vector<float> Payoff;
+};
+
+struct _EquityLegData_t_FXTerms_t
+{
+    xsd::optional<domain::extendedCurrencyCode> EquityCurrency;
+    xsd::optional<domain::_EquityLegData_t_FXTerms_t_FXIndex_t> FXIndex;
+    xsd::optional<int64_t> FXIndexFixingDays;
+    xsd::optional<domain::_EquityLegData_t_FXTerms_t_FXIndexCalendar_t> FXIndexCalendar;
+};
+
+struct _ZeroCouponFixedLegData_t_Rates_t
+{
+    xsd::vector<domain::_ZeroCouponFixedLegData_t_Rates_t_Rate_t> Rate;
+};
+
+struct _ZeroCouponFixedLegData_t_Compounding_t : xsd::string
+{
+};
+
+struct _ZeroCouponFixedLegData_t_SubtractNotional_t : xsd::string
+{
+};
+
+struct _EquityMarginLegData_t_Rates_t_Rate_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct _EquityMarginLegData_t_EquityLegData_t_FXTerms_t
+{
+    xsd::optional<domain::extendedCurrencyCode> EquityCurrency;
+    xsd::optional<domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t> FXIndex;
+    xsd::optional<int64_t> FXIndexFixingDays;
+    xsd::optional<domain::_EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t> FXIndexCalendar;
+};
+
+struct pricesType_Price_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct _CommodityFixedLegData_t_Tag_t : xsd::string
+{
+};
+
+struct quantitiesType_Quantity_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct _CommodityFloatingLegData_t_PricingDates_t
+{
+    xsd::vector<domain::date> PricingDate;
+};
+
+struct _CommodityFloatingLegData_t_Tag_t : xsd::string
+{
+};
+
+struct _CommodityFloatingLegData_t_FXIndex_t : xsd::string
+{
+};
+
 struct capFloorData_Caps_t_Cap_t : xsd::base<float>
 {
     xsd::optional<xsd::string> startDate;
@@ -11208,6 +12011,18 @@ struct capFloorData_Caps_t_Cap_t : xsd::base<float>
 struct capFloorData_Floors_t_Floor_t : xsd::base<float>
 {
     xsd::optional<xsd::string> startDate;
+};
+
+struct strikePriceData
+{
+    xsd::optional<domain::extendedCurrencyCode> Currency;
+    float Value;
+};
+
+struct strikeYieldData
+{
+    xsd::optional<domain::compounding> Compounding;
+    float Yield;
 };
 
 struct eqForwardSettlementData_FXIndex_t : xsd::string
@@ -11301,6 +12116,7 @@ struct nameData
 {
     domain::nameData_IssuerId_t IssuerId;
     xsd::optional<domain::nameData_Qualifier_t> Qualifier;
+    domain::creditCurveIdType_group_t creditCurveIdType;
     xsd::optional<float> Notional;
     xsd::optional<float> Weight;
     xsd::optional<domain::currencyCode> Currency;
@@ -11512,6 +12328,7 @@ struct cbotranche
     float ICRatio;
     float OCRatio;
     float Notional;
+    domain::legDataType_group_t legDataType;
 };
 
 struct trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t : xsd::string
@@ -13598,6 +14415,42 @@ struct premiumData_Premium_t_SettlementData_t
     domain::currencyCode PayCurrency;
     domain::premiumData_Premium_t_SettlementData_t_FXIndex_t FXIndex;
     xsd::optional<domain::premiumData_Premium_t_SettlementData_t_FixingDate_t> FixingDate;
+};
+
+struct floatWithAttribute : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct tradeLevelFixings_Fixing_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> fixingDate;
+};
+
+struct _CPILegData_t_Rates_t_Rate_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct _EquityLegData_t_FXTerms_t_FXIndex_t : xsd::string
+{
+};
+
+struct _EquityLegData_t_FXTerms_t_FXIndexCalendar_t : xsd::string
+{
+};
+
+struct _ZeroCouponFixedLegData_t_Rates_t_Rate_t : xsd::base<float>
+{
+    xsd::optional<xsd::string> startDate;
+};
+
+struct _EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndex_t : xsd::string
+{
+};
+
+struct _EquityMarginLegData_t_EquityLegData_t_FXTerms_t_FXIndexCalendar_t : xsd::string
+{
 };
 
 struct amortizationData_StartDate_t : xsd::string

@@ -26,6 +26,9 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
@@ -567,23 +570,22 @@ void PublishProgressPage::startPublish() {
     // Get published_by from current session
     const std::string publishedBy = clientManager->currentUsername();
 
-    // Build opted_in_datasets array
-    const QSet<QString>& optedIn = wizard_->optedInDatasets();
-    std::string optedInJson = "[";
-    bool first = true;
-    for (const auto& ds : optedIn) {
-        if (!first) optedInJson += ",";
-        optedInJson += "\"" + ds.toStdString() + "\"";
-        first = false;
-    }
-    optedInJson += "]";
+    // Build params_json using Qt JSON classes
+    QJsonObject paramsObject;
 
-    // Build params_json
-    std::string paramsJson = "{\"opted_in_datasets\":" + optedInJson;
-    if (needsLei && !rootLei.empty()) {
-        paramsJson += ",\"lei_parties\":{\"root_lei\":\"" + rootLei + "\"}";
+    QJsonArray optedInArray;
+    for (const auto& ds : wizard_->optedInDatasets()) {
+        optedInArray.append(ds);
     }
-    paramsJson += "}";
+    paramsObject.insert("opted_in_datasets", optedInArray);
+
+    if (needsLei && !rootLei.empty()) {
+        paramsObject.insert("lei_parties",
+            QJsonObject{{"root_lei", QString::fromStdString(rootLei)}});
+    }
+
+    const std::string paramsJson =
+        QJsonDocument(paramsObject).toJson(QJsonDocument::Compact).toStdString();
 
     using ResponseType = dq::messaging::publish_bundle_response;
 

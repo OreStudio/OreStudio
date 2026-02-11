@@ -69,12 +69,13 @@ declare
     v_inserted_parties bigint := 0;
     v_inserted_identifiers bigint := 0;
     v_dataset_name text;
+    v_dataset_code text;
     v_dataset_size text;
     v_entity_dataset_id uuid;
     v_rel_dataset_id uuid;
 begin
-    -- Validate dataset exists
-    select name into v_dataset_name
+    -- Validate dataset exists and get code for size derivation
+    select name, code into v_dataset_name, v_dataset_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
       and valid_to = ores_utility_infinity_timestamp_fn();
@@ -83,8 +84,12 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
-    -- Determine which LEI dataset to use (default: large)
-    v_dataset_size := coalesce(p_params ->> 'lei_dataset_size', 'large');
+    -- Derive size from dataset code (e.g. 'gleif.lei_parties.small' -> 'small')
+    -- Falls back to params or 'small' as default.
+    v_dataset_size := coalesce(
+        substring(v_dataset_code from '[^.]+$'),
+        p_params ->> 'lei_dataset_size',
+        'small');
 
     select id into v_entity_dataset_id
     from ores_dq_datasets_tbl

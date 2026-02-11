@@ -786,7 +786,7 @@ Highlights:
   as unused, streamlining the codebase.
 #+end_quote
 
-*** STARTED Add party 0 support                                        :code:
+*** COMPLETED Add system party support                               :code:
     :LOGBOOK:
     CLOCK: [2026-02-11 Wed 17:40]--[2026-02-11 Wed 18:00] =>  0:20
     CLOCK: [2026-02-11 Wed 11:50]--[2026-02-11 Wed 12:14] =>  0:24
@@ -863,6 +863,48 @@ Highlights:
   creation, population, and teardown processes. It covers multi-environment
   architecture, database roles, user management, and testing infrastructure,
   providing a central reference for developers.
+#+end_quote
+
+*** STARTED Add customer party support
+    :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 22:00]
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the data librarian's publication
+capabilities by introducing optional dataset members and a new wizard page for
+their selection. This change addresses previous issues with LEI data publication
+dependencies and provides greater flexibility for users to choose which datasets
+to include. It also includes a protocol version bump and a utility script
+improvement for database environment management, laying the groundwork for
+future party-scoped counterparty features.
+
+Highlights:
+
+- Optional Dataset Bundle Members: Introduced an 'optional' flag for dataset
+  bundle members, allowing certain datasets (like LEI) to be selectively
+  published based on user choice.
+- Enhanced Publish Bundle Wizard: Implemented a new 'OptionalDatasetsPage' in
+  the publish bundle wizard, providing a user interface to opt-in or opt-out of
+  optional datasets. Counterparty datasets are initially disabled with a
+  tooltip, pending a future migration.
+- Improved LEI Publication Dependencies: Added crucial missing dataset
+  dependencies for LEI parties and counterparties to ensure correct publication
+  ordering and data integrity, resolving a previous tenant provisioning failure.
+- Dynamic Dataset Publication Logic: Modified the SQL publish function to
+  automatically skip optional datasets that are not explicitly selected by the
+  user in the wizard, streamlining the publication process.
+- Protocol Version Update: Bumped the communication protocol version from 28.0
+  to 29.0 to accommodate the new 'optional' field serialization for dataset
+  bundle members.
+- Database Environment Management: Added a '--kill' flag to the
+  'recreate_env.sh' script, enabling termination of active database connections
+  before environment recreation, improving developer workflow.
+- Product Backlog Refinement: Cleaned up the product backlog by removing several
+  outdated or completed items, and moved some items to a sprint backlog.
+- Librarian Publication Design Document: Added a new design document detailing
+  the strategy for moving LEI party and counterparty publication to the data
+  librarian, outlining a two-phase approach for future development.
 #+end_quote
 
 *** STARTED Add counterparty wizard                                    :code:

@@ -56,8 +56,10 @@ create table if not exists "ores_refdata_parties_tbl" (
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
--- Unique full_name for active records
-create unique index if not exists ores_refdata_parties_full_name_uniq_idx
+-- Non-unique full_name index for search. Full names are not unique in
+-- real-world data (e.g. "CAISSE LOCALE CREDIT AGRICOLE" appears for
+-- multiple branches, each with a distinct LEI).
+create index if not exists ores_refdata_parties_full_name_idx
 on "ores_refdata_parties_tbl" (tenant_id, full_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

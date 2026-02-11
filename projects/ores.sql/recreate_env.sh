@@ -37,6 +37,7 @@ Required arguments:
 
 Optional arguments:
     -y, --yes                           Assume yes to all prompts (skip confirmation)
+    -k, --kill                          Kill active database connections before recreating
     --no-sql-validation                 Skip input validation in seed functions (faster)
     -H, --help                          Show this help message
 
@@ -46,6 +47,7 @@ Environment Variables:
 
 Example:
     $(basename "$0") -e local2
+    $(basename "$0") --env local1 -y --kill
     $(basename "$0") --env local1 -y --no-sql-validation
 
 Database naming convention:
@@ -56,7 +58,7 @@ EOF
 }
 
 # Parse arguments
-OPTS=$(getopt -o e:yH --long env:,yes,no-sql-validation,help -n "$(basename "$0")" -- "$@")
+OPTS=$(getopt -o e:ykH --long env:,yes,kill,no-sql-validation,help -n "$(basename "$0")" -- "$@")
 if [[ $? -ne 0 ]]; then
     usage
 fi
@@ -65,6 +67,7 @@ POSTGRES_PASSWORD="${PGPASSWORD:-}"
 DDL_PASSWORD="${ORES_DB_DDL_PASSWORD:-}"
 ENVIRONMENT=""
 ASSUME_YES=""
+KILL_CONNECTIONS=""
 SKIP_VALIDATION="off"
 
 eval set -- "$OPTS"
@@ -77,6 +80,10 @@ while true; do
             ;;
         -y|--yes)
             ASSUME_YES="1"
+            shift
+            ;;
+        -k|--kill)
+            KILL_CONNECTIONS="1"
             shift
             ;;
         --no-sql-validation)
@@ -132,7 +139,13 @@ source "${SCRIPT_DIR}/utility/check_db_connections.sh"
 
 # Check for active connections before proceeding
 if ! check_db_connections "${DB_NAME}"; then
-    exit 1
+    if [[ -n "${KILL_CONNECTIONS}" ]]; then
+        echo "Killing active connections (--kill flag is set)..."
+        "${SCRIPT_DIR}/utility/kill_db_connections.sh" "${DB_NAME}"
+    else
+        echo "Hint: Use --kill (-k) flag to automatically terminate connections."
+        exit 1
+    fi
 fi
 
 # Confirmation prompt

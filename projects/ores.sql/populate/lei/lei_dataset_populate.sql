@@ -111,3 +111,43 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'lei_relationships'
 );
 
+-- GLEIF LEI Parties (Small)
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_parties.small',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'LEI',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI Parties (Small)',
+    '',
+    'GLEIF',
+    'GLEIF LEI entities published as parties',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_parties'
+);
+
+-- GLEIF LEI Counterparties (Small)
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_counterparties.small',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'LEI',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI Counterparties (Small)',
+    '',
+    'GLEIF',
+    'GLEIF LEI entities published as counterparties',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_counterparties'
+);
+

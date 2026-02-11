@@ -266,14 +266,6 @@ void OptionalDatasetsPage::initializePage() {
         auto* cb = new QCheckBox(
             QString::fromStdString(member.dataset_code), this);
 
-        // Counterparty datasets are disabled (Phase 2)
-        if (member.dataset_code.find("counterpart") != std::string::npos) {
-            cb->setEnabled(false);
-            cb->setChecked(false);
-            cb->setToolTip(tr("Coming soon - requires party-scoped "
-                              "counterparty migration."));
-        }
-
         checkboxLayout_->addWidget(cb);
         checkboxes_.push_back(cb);
     }

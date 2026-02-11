@@ -19,6 +19,8 @@
  */
 #include "ores.refdata/generators/party_contact_information_generator.hpp"
 
+#include <array>
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -29,18 +31,23 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::party_contact_information generate_synthetic_party_contact_information() {
     static uuid_v7_generator uuid_gen;
+    static constexpr std::array<const char*, 4> contact_types = {
+        "Legal", "Operations", "Settlement", "Billing"
+    };
+    static std::atomic<int> counter{0};
+    const auto idx = counter++;
 
     domain::party_contact_information r;
     r.version = 1;
     r.tenant_id = "system";
     r.id = uuid_gen();
     r.party_id = uuid_gen();
-    r.contact_type = std::string("Legal");
+    r.contact_type = std::string(contact_types[idx % contact_types.size()]);
     r.street_line_1 = std::string("123 Test Street");
     r.street_line_2 = std::string("Suite 100");
     r.city = std::string("London");
     r.state = std::string("");
-    r.country_code = std::string("GB");
+    r.country_code = std::string("");
     r.postal_code = std::string("EC2V 8AS");
     r.phone = std::string("+44 20 7000 0000");
     r.email = std::string("contact@example.com");

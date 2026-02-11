@@ -29,29 +29,41 @@
 #include "ores.refdata/domain/party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/generators/party_generator.hpp"
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party;
 using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
+namespace {
+
+const std::string_view test_suite("ores.refdata.tests");
+const std::string tags("[repository]");
+
+boost::uuids::uuid find_system_party_id(
+    party_repository& repo, const std::string& tid) {
+    auto parties = repo.read_latest();
+    for (const auto& p : parties)
+        if (p.tenant_id == tid)
+            return p.id;
+    throw std::runtime_error("No system party for tenant: " + tid);
+}
+
+}
+
 TEST_CASE("write_single_party", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository repo(h.context());
+    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+
     auto p = generate_synthetic_party();
     p.tenant_id = h.tenant_id().to_string();
     p.change_reason_code = "system.test";
+    p.parent_party_id = parent_id;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 
-    party_repository repo(h.context());
     CHECK_NOTHROW(repo.write(p));
 }
 
@@ -59,14 +71,17 @@ TEST_CASE("write_multiple_parties", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository repo(h.context());
+    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+
     auto parties = generate_synthetic_parties(3);
     for (auto& p : parties) {
         p.tenant_id = h.tenant_id().to_string();
         p.change_reason_code = "system.test";
+        p.parent_party_id = parent_id;
     }
     BOOST_LOG_SEV(lg, debug) << "Parties: " << parties;
 
-    party_repository repo(h.context());
     CHECK_NOTHROW(repo.write(parties));
 }
 
@@ -74,14 +89,17 @@ TEST_CASE("read_latest_parties", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository repo(h.context());
+    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+
     auto written_parties = generate_synthetic_parties(3);
     for (auto& p : written_parties) {
         p.tenant_id = h.tenant_id().to_string();
         p.change_reason_code = "system.test";
+        p.parent_party_id = parent_id;
     }
     BOOST_LOG_SEV(lg, debug) << "Written parties: " << written_parties;
 
-    party_repository repo(h.context());
     repo.write(written_parties);
 
     auto read_parties = repo.read_latest();
@@ -94,13 +112,16 @@ TEST_CASE("read_latest_party_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository repo(h.context());
+    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+
     auto p = generate_synthetic_party();
     p.tenant_id = h.tenant_id().to_string();
     p.change_reason_code = "system.test";
+    p.parent_party_id = parent_id;
     const auto original_full_name = p.full_name;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
 
-    party_repository repo(h.context());
     repo.write(p);
 
     p.full_name = original_full_name + " v2";

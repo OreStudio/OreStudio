@@ -49,10 +49,14 @@ TEST_CASE("write_single_party_contact_information", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository party_repo(h.context());
     auto party = generate_synthetic_party();
     party.tenant_id = h.tenant_id().to_string();
     party.change_reason_code = "system.test";
-    party_repository party_repo(h.context());
+    auto existing = party_repo.read_latest();
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+    }
     party_repo.write(party);
 
     auto pci = generate_synthetic_party_contact_information();
@@ -69,10 +73,14 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository party_repo(h.context());
     auto party = generate_synthetic_party();
     party.tenant_id = h.tenant_id().to_string();
     party.change_reason_code = "system.test";
-    party_repository party_repo(h.context());
+    auto existing = party_repo.read_latest();
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+    }
     party_repo.write(party);
 
     auto party_contact_informations =
@@ -93,10 +101,14 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository party_repo(h.context());
     auto party = generate_synthetic_party();
     party.tenant_id = h.tenant_id().to_string();
     party.change_reason_code = "system.test";
-    party_repository party_repo(h.context());
+    auto existing = party_repo.read_latest();
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+    }
     party_repo.write(party);
 
     auto written_party_contact_informations =
@@ -124,10 +136,14 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    party_repository party_repo(h.context());
     auto party = generate_synthetic_party();
     party.tenant_id = h.tenant_id().to_string();
     party.change_reason_code = "system.test";
-    party_repository party_repo(h.context());
+    auto existing = party_repo.read_latest();
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+    }
     party_repo.write(party);
 
     auto pci = generate_synthetic_party_contact_information();

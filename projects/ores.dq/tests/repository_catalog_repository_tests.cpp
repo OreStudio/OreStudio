@@ -135,7 +135,7 @@ TEST_CASE("read_all_catalog_versions", tags) {
     BOOST_LOG_SEV(lg, debug) << "Catalog v1: " << cat1;
 
     auto cat2 = cat1;
-    cat2.version = cat1.version + 1;
+    cat2.version = 0;
     cat2.description = "Updated description for version test";
     BOOST_LOG_SEV(lg, debug) << "Catalog v2: " << cat2;
 

@@ -19,6 +19,7 @@
  */
 #include "ores.refdata/generators/counterparty_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -29,16 +30,18 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::counterparty generate_synthetic_counterparty() {
     static uuid_v7_generator uuid_gen;
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
 
     domain::counterparty r;
     r.version = 1;
     r.tenant_id = "system";
     r.id = uuid_gen();
-    r.full_name = faker::company::companyName();
-    r.short_code = std::string(faker::string::alpha(6));
+    r.full_name = faker::company::companyName() + " " + std::to_string(idx);
+    r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);
     r.party_type = std::string("Bank");
     r.parent_counterparty_id = std::nullopt;
-    r.business_center_code = std::string("USNY");
+    r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
     r.recorded_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());

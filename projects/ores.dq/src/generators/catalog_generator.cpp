@@ -19,15 +19,18 @@
  */
 #include "ores.dq/generators/catalog_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::dq::generators {
 
 domain::catalog generate_synthetic_catalog() {
+    static std::atomic<int> counter{0};
+
     domain::catalog r;
     r.version = 1;
-    r.name = std::string(faker::word::noun());
+    r.name = std::string(faker::word::noun()) + "_" + std::to_string(++counter);
     r.description = std::string(faker::lorem::sentence());
     if (faker::datatype::boolean()) {
         r.owner = faker::company::companyName();

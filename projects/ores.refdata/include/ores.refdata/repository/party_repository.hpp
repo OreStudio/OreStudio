@@ -60,6 +60,18 @@ public:
     std::vector<domain::party> read_latest_by_code(const std::string& code);
 
     /**
+     * @brief Reads the system party for a given tenant.
+     *
+     * Every tenant has exactly one system party (party_category='system')
+     * which serves as the root of the party hierarchy.
+     *
+     * @param tenant_id The tenant identifier
+     * @return Vector containing the system party, or empty if not found
+     */
+    std::vector<domain::party>
+    read_system_party(const std::string& tenant_id);
+
+    /**
      * @brief Reads latest parties with pagination support.
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return

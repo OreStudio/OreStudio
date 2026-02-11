@@ -99,6 +99,23 @@ party_repository::read_latest_by_code(const std::string& code) {
 }
 
 std::vector<domain::party>
+party_repository::read_system_party(const std::string& tenant_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: "
+                               << tenant_id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+        where("tenant_id"_c == tenant_id &&
+              "party_category"_c == "system" &&
+              "valid_to"_c == max.value());
+
+    return execute_read_query<party_entity, domain::party>(
+        ctx_, query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(), "Reading system party by tenant.");
+}
+
+std::vector<domain::party>
 party_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest parties with offset: "
                                << offset << " and limit: " << limit;

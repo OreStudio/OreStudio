@@ -19,18 +19,27 @@
  */
 #include "ores.refdata/generators/party_id_scheme_generator.hpp"
 
+#include <array>
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::refdata::generators {
 
 domain::party_id_scheme generate_synthetic_party_id_scheme() {
+    static constexpr std::array<const char*, 10> coding_schemes = {
+        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
+        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"
+    };
+    static std::atomic<int> counter{0};
+    const auto idx = counter++;
+
     domain::party_id_scheme r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_scheme";
+    r.code = std::string(faker::word::noun()) + "_scheme_" + std::to_string(idx + 1);
     r.name = std::string(faker::word::adjective()) + " Scheme";
     r.description = std::string(faker::lorem::sentence());
-    r.coding_scheme_code = std::string(faker::word::noun());
+    r.coding_scheme_code = coding_schemes[idx % coding_schemes.size()];
     r.display_order = faker::number::integer(1, 100);
     r.recorded_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());

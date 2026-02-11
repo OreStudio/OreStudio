@@ -19,6 +19,8 @@
  */
 #include "ores.refdata/generators/party_identifier_generator.hpp"
 
+#include <array>
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -29,14 +31,20 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::party_identifier generate_synthetic_party_identifier() {
     static uuid_v7_generator uuid_gen;
+    static std::atomic<int> counter{0};
 
     domain::party_identifier r;
     r.version = 1;
     r.tenant_id = "system";
     r.id = uuid_gen();
+    static constexpr std::array<const char*, 10> id_schemes = {
+        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
+        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"
+    };
+
     r.party_id = uuid_gen();
-    r.id_scheme = std::string("LEI");
-    r.id_value = std::string(faker::string::alphanumeric(20));
+    r.id_scheme = std::string(id_schemes[counter % id_schemes.size()]);
+    r.id_value = std::string(faker::string::alphanumeric(20)) + "_" + std::to_string(++counter);
     r.description = std::string("Test identifier");
     r.recorded_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());

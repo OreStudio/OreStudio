@@ -19,15 +19,18 @@
  */
 #include "ores.refdata/generators/party_status_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::refdata::generators {
 
 domain::party_status generate_synthetic_party_status() {
+    static std::atomic<int> counter{0};
+
     domain::party_status r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_status";
+    r.code = std::string(faker::word::noun()) + "_status_" + std::to_string(++counter);
     r.name = std::string(faker::word::adjective()) + " Status";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);

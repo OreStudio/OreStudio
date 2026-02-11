@@ -40,8 +40,8 @@ counterparty_mapper::map(const counterparty_entity& v) {
     r.full_name = v.full_name;
     r.short_code = v.short_code;
     r.party_type = v.party_type;
-    if (!v.parent_counterparty_id.empty())
-        r.parent_counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.parent_counterparty_id);
+    if (v.parent_counterparty_id.has_value() && !v.parent_counterparty_id->empty())
+        r.parent_counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_counterparty_id);
     r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.recorded_by = v.modified_by;

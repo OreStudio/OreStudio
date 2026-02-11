@@ -202,6 +202,10 @@ echo ""
 # Change to script directory so relative paths in SQL files work
 cd "${SCRIPT_DIR}"
 
+# Export PGPASSWORD so that sourced utilities (e.g. check_db_connections.sh)
+# and child psql processes can authenticate.
+export PGPASSWORD="${POSTGRES_PASSWORD}"
+
 # Source the connection check utility
 source "${SCRIPT_DIR}/utility/check_db_connections.sh"
 

@@ -19,15 +19,18 @@
  */
 #include "ores.refdata/generators/party_type_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::refdata::generators {
 
 domain::party_type generate_synthetic_party_type() {
+    static std::atomic<int> counter{0};
+
     domain::party_type r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_type";
+    r.code = std::string(faker::word::noun()) + "_type_" + std::to_string(++counter);
     r.name = std::string(faker::word::adjective()) + " Party";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);

@@ -20,6 +20,7 @@
 #ifndef ORES_REFDATA_REPOSITORY_COUNTERPARTY_ENTITY_HPP
 #define ORES_REFDATA_REPOSITORY_COUNTERPARTY_ENTITY_HPP
 
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -39,7 +40,7 @@ struct counterparty_entity {
     std::string full_name;
     std::string short_code;
     std::string party_type;
-    std::string parent_counterparty_id;
+    std::optional<std::string> parent_counterparty_id;
     std::string business_center_code;
     std::string status;
     std::string modified_by;

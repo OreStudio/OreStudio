@@ -81,7 +81,7 @@ jobs:
 
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2
-        if: ${{matrix.compiler}} == clang
+        if: ${{ matrix.compiler == 'clang' }}
         with:
           version: "19"
           arch: x64
@@ -118,36 +118,26 @@ jobs:
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
         with:
-          username: ores
+          username: postgres
           password: ${{ steps.db_passwords.outputs.admin_password }}
           database: oresdb
           port: 5432
           postgres-version: "18"
         id: postgres
 
-      - name: Setup Roles and Users
+      - name: Setup Database
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} \
-            -v ddl_password='${{ steps.db_passwords.outputs.ddl_password }}' \
-            -v cli_password='${{ steps.db_passwords.outputs.cli_password }}' \
-            -v wt_password='${{ steps.db_passwords.outputs.wt_password }}' \
-            -v comms_password='${{ steps.db_passwords.outputs.comms_password }}' \
-            -v http_password='${{ steps.db_passwords.outputs.http_password }}' \
-            -v test_ddl_password='${{ steps.db_passwords.outputs.test_ddl_password }}' \
-            -v test_dml_password='${{ steps.db_passwords.outputs.test_dml_password }}' \
-            -v ro_password='${{ steps.db_passwords.outputs.ro_password }}' \
-            -f ./projects/ores.sql/setup_user.sql
-
-      - name: Create Database
-        run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} \
-            -v db_name=ores_ci -f ./projects/ores.sql/create_database.sql
-
-      - name: Setup Schema
-        run: |
-          PGPASSWORD=${{ steps.db_passwords.outputs.ddl_password }} \
-          psql -h localhost -p 5432 -U ores_ddl_user -d ores_ci \
-            -f ./projects/ores.sql/setup_schema.sql
+          ./projects/ores.sql/recreate_database.sh -y \
+            -p '${{ steps.db_passwords.outputs.admin_password }}' \
+            -d '${{ steps.db_passwords.outputs.ddl_password }}' \
+            -c '${{ steps.db_passwords.outputs.cli_password }}' \
+            -w '${{ steps.db_passwords.outputs.wt_password }}' \
+            -m '${{ steps.db_passwords.outputs.comms_password }}' \
+            -h '${{ steps.db_passwords.outputs.http_password }}' \
+            -t '${{ steps.db_passwords.outputs.test_ddl_password }}' \
+            -T '${{ steps.db_passwords.outputs.test_dml_password }}' \
+            -r '${{ steps.db_passwords.outputs.ro_password }}' \
+            -D ores_ci
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.2.3

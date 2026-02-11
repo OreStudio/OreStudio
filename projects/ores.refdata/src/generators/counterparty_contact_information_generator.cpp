@@ -19,6 +19,8 @@
  */
 #include "ores.refdata/generators/counterparty_contact_information_generator.hpp"
 
+#include <array>
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -29,18 +31,23 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::counterparty_contact_information generate_synthetic_counterparty_contact_information() {
     static uuid_v7_generator uuid_gen;
+    static constexpr std::array<const char*, 4> contact_types = {
+        "Legal", "Operations", "Settlement", "Billing"
+    };
+    static std::atomic<int> counter{0};
+    const auto idx = counter++;
 
     domain::counterparty_contact_information r;
     r.version = 1;
     r.tenant_id = "system";
     r.id = uuid_gen();
     r.counterparty_id = uuid_gen();
-    r.contact_type = std::string("Legal");
+    r.contact_type = std::string(contact_types[idx % contact_types.size()]);
     r.street_line_1 = std::string("456 Test Avenue");
     r.street_line_2 = std::string("Floor 10");
     r.city = std::string("New York");
     r.state = std::string("NY");
-    r.country_code = std::string("US");
+    r.country_code = std::string("");
     r.postal_code = std::string("10001");
     r.phone = std::string("+1 212 555 0100");
     r.email = std::string("info@example.com");

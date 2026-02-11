@@ -19,6 +19,7 @@
  */
 #include "ores.dq/generators/dataset_bundle_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -29,12 +30,14 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::dataset_bundle generate_synthetic_dataset_bundle() {
     static uuid_v7_generator uuid_gen;
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
 
     domain::dataset_bundle r;
     r.version = 1;
     r.id = uuid_gen();
-    r.code = std::string(faker::word::noun()) + "_bundle";
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle";
+    r.code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle " + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.recorded_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";

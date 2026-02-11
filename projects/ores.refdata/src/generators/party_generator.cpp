@@ -19,6 +19,7 @@
  */
 #include "ores.refdata/generators/party_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -29,16 +30,19 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::party generate_synthetic_party() {
     static uuid_v7_generator uuid_gen;
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
 
     domain::party r;
     r.version = 1;
     r.tenant_id = "system";
     r.id = uuid_gen();
-    r.full_name = faker::company::companyName();
-    r.short_code = std::string(faker::string::alpha(6));
+    r.full_name = faker::company::companyName() + " " + std::to_string(idx);
+    r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);
+    r.party_category = "operational";
     r.party_type = std::string("Corporate");
     r.parent_party_id = std::nullopt;
-    r.business_center_code = std::string("GBLO");
+    r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
     r.recorded_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());

@@ -19,19 +19,24 @@
  */
 #include "ores.dq/generators/dataset_bundle_member_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::dq::generators {
 
 domain::dataset_bundle_member generate_synthetic_dataset_bundle_member() {
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
+
     domain::dataset_bundle_member r;
     r.version = 1;
-    r.bundle_code = std::string(faker::word::noun()) + "_bundle";
-    r.dataset_code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun());
+    r.bundle_code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
+    r.dataset_code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
+        + "_" + std::to_string(idx);
     r.display_order = faker::number::integer(1, 100);
     r.recorded_by = std::string(faker::internet::username());
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.new_record";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

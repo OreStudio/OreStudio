@@ -19,19 +19,29 @@
  */
 #include "ores.dq/generators/coding_scheme_generator.hpp"
 
+#include <array>
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::dq::generators {
 
 domain::coding_scheme generate_synthetic_coding_scheme() {
+    static constexpr std::array<const char*, 3> authority_types = {
+        "official", "industry", "internal"
+    };
+    static std::atomic<int> counter{0};
+    const auto idx = counter++;
+
     domain::coding_scheme r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun());
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
-    r.authority_type = std::string(faker::word::noun());
-    r.subject_area_name = std::string(faker::word::noun());
-    r.domain_name = std::string(faker::word::noun());
+    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun())
+        + "_" + std::to_string(idx + 1);
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
+        + " " + std::to_string(idx + 1);
+    r.authority_type = std::string(authority_types[idx % authority_types.size()]);
+    r.subject_area_name = std::string("General");
+    r.domain_name = std::string("Reference Data");
     if (faker::datatype::boolean()) {
         r.uri = "https://example.org/schemes/" + r.code;
     }

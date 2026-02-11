@@ -71,6 +71,14 @@ struct dataset_bundle_member final {
     int display_order = 0;
 
     /**
+     * @brief Whether this dataset is optional in the bundle.
+     *
+     * Optional datasets require explicit opt-in during publication.
+     * They are skipped unless the user selects them in the wizard.
+     */
+    bool optional = false;
+
+    /**
      * @brief Username of the person who last modified this membership.
      */
     std::string recorded_by;

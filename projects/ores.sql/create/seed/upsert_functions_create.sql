@@ -836,19 +836,20 @@ create or replace function ores_dq_dataset_bundle_members_upsert_fn(
     p_tenant_id uuid,
     p_bundle_code text,
     p_dataset_code text,
-    p_display_order integer
+    p_display_order integer,
+    p_optional boolean default false
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_bundle_code, 'Bundle code');
     perform ores_seed_validate_not_empty_fn(p_dataset_code, 'Dataset code');
 
     insert into ores_dq_dataset_bundle_members_tbl (
-        tenant_id, bundle_code, dataset_code, version, display_order,
+        tenant_id, bundle_code, dataset_code, version, display_order, optional,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_tenant_id, p_bundle_code, p_dataset_code, 0, p_display_order,
+        p_tenant_id, p_bundle_code, p_dataset_code, 0, p_display_order, p_optional,
         current_user, current_user, 'system.new_record', 'System seed data - dataset bundle member',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )

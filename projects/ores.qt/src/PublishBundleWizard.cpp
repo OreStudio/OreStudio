@@ -65,6 +65,7 @@ PublishBundleWizard::PublishBundleWizard(
 
 void PublishBundleWizard::setupPages() {
     setPage(Page_BundleSummary, new BundleSummaryPage(this));
+    setPage(Page_OptionalDatasets, new OptionalDatasetsPage(this));
     setPage(Page_LeiPartyConfig, new LeiPartyConfigPage(this));
     setPage(Page_Confirm, new ConfirmPublishPage(this));
     setPage(Page_Progress, new PublishProgressPage(this));
@@ -97,9 +98,9 @@ void BundleSummaryPage::setupUI() {
     layout->addSpacing(10);
 
     // Members table
-    membersModel_ = new QStandardItemModel(0, 3, this);
+    membersModel_ = new QStandardItemModel(0, 4, this);
     membersModel_->setHorizontalHeaderLabels({
-        tr("Order"), tr("Dataset"), tr("Dataset Code")
+        tr("Order"), tr("Dataset"), tr("Dataset Code"), tr("Optional")
     });
 
     membersTable_ = new QTableView(this);
@@ -148,19 +149,27 @@ void BundleSummaryPage::loadMembers() {
     wizard_->setMembers(std::move(result->members));
     membersLoaded_ = true;
 
-    // Scan for lei_parties datasets
+    // Scan for lei_parties datasets and optional members
     bool hasLeiParties = false;
+    bool hasOptional = false;
     for (const auto& member : wizard_->members()) {
         if (member.dataset_code.find("lei_parties") != std::string::npos) {
             hasLeiParties = true;
-            break;
+        }
+        if (member.optional) {
+            hasOptional = true;
         }
     }
     wizard_->setNeedsLeiPartyConfig(hasLeiParties);
+    wizard_->setHasOptionalDatasets(hasOptional);
 
     if (hasLeiParties) {
         BOOST_LOG_SEV(lg(), info)
             << "Bundle contains lei_parties dataset; LEI configuration required.";
+    }
+    if (hasOptional) {
+        BOOST_LOG_SEV(lg(), info)
+            << "Bundle contains optional datasets.";
     }
 
     populateTable();
@@ -188,16 +197,116 @@ void BundleSummaryPage::populateTable() {
 
         membersModel_->setItem(row, 2, new QStandardItem(
             QString::fromStdString(member.dataset_code)));
+
+        auto* optionalItem = new QStandardItem(
+            member.optional ? tr("Yes") : tr("No"));
+        optionalItem->setTextAlignment(Qt::AlignCenter);
+        membersModel_->setItem(row, 3, optionalItem);
     }
 
     // Resize columns
     membersTable_->resizeColumnsToContents();
     membersTable_->setColumnWidth(0, 60);
+    membersTable_->setColumnWidth(3, 70);
 }
 
 int BundleSummaryPage::nextId() const {
+    if (wizard_->hasOptionalDatasets()) {
+        return PublishBundleWizard::Page_OptionalDatasets;
+    }
     if (wizard_->needsLeiPartyConfig()) {
         return PublishBundleWizard::Page_LeiPartyConfig;
+    }
+    return PublishBundleWizard::Page_Confirm;
+}
+
+// ============================================================================
+// OptionalDatasetsPage
+// ============================================================================
+
+OptionalDatasetsPage::OptionalDatasetsPage(PublishBundleWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Optional Datasets"));
+    setSubTitle(tr("Select which optional datasets to include in this "
+                   "publication."));
+
+    setupUI();
+}
+
+void OptionalDatasetsPage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+
+    auto* infoLabel = new QLabel(
+        tr("The following datasets are optional. Check the ones you want to "
+           "publish. Unchecked datasets will be skipped."), this);
+    infoLabel->setWordWrap(true);
+    layout->addWidget(infoLabel);
+
+    layout->addSpacing(10);
+
+    checkboxLayout_ = new QVBoxLayout();
+    layout->addLayout(checkboxLayout_);
+
+    layout->addStretch();
+}
+
+void OptionalDatasetsPage::initializePage() {
+    // Clear previous checkboxes
+    for (auto* cb : checkboxes_) {
+        checkboxLayout_->removeWidget(cb);
+        delete cb;
+    }
+    checkboxes_.clear();
+
+    // Create a checkbox for each optional member
+    for (const auto& member : wizard_->members()) {
+        if (!member.optional) continue;
+
+        auto* cb = new QCheckBox(
+            QString::fromStdString(member.dataset_code), this);
+
+        // Counterparty datasets are disabled (Phase 2)
+        if (member.dataset_code.find("counterpart") != std::string::npos) {
+            cb->setEnabled(false);
+            cb->setChecked(false);
+            cb->setToolTip(tr("Coming soon - requires party-scoped "
+                              "counterparty migration."));
+        }
+
+        checkboxLayout_->addWidget(cb);
+        checkboxes_.push_back(cb);
+    }
+}
+
+bool OptionalDatasetsPage::validatePage() {
+    QSet<QString> opted;
+    for (auto* cb : checkboxes_) {
+        if (cb->isChecked()) {
+            opted.insert(cb->text());
+        }
+    }
+    wizard_->setOptedInDatasets(opted);
+
+    // Update needsLeiPartyConfig based on whether lei_parties is opted in
+    bool leiOptedIn = false;
+    for (const auto& ds : opted) {
+        if (ds.contains("lei_parties")) {
+            leiOptedIn = true;
+            break;
+        }
+    }
+    wizard_->setNeedsLeiPartyConfig(leiOptedIn);
+
+    return true;
+}
+
+int OptionalDatasetsPage::nextId() const {
+    // Check if lei_parties is currently checked (for dynamic nextId)
+    for (auto* cb : checkboxes_) {
+        if (cb->isChecked() && cb->text().contains("lei_parties")) {
+            return PublishBundleWizard::Page_LeiPartyConfig;
+        }
     }
     return PublishBundleWizard::Page_Confirm;
 }
@@ -231,20 +340,6 @@ void LeiPartyConfigPage::setupUI() {
     layout->addWidget(instructionLabel_);
 
     layout->addSpacing(10);
-
-    // Dataset size selection
-    auto* datasetLayout = new QHBoxLayout();
-    auto* datasetLabel = new QLabel(tr("LEI Dataset:"), this);
-    datasetSizeCombo_ = new QComboBox(this);
-    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), "large");
-    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"), "small");
-    datasetSizeCombo_->setCurrentIndex(0);
-    datasetLayout->addWidget(datasetLabel);
-    datasetLayout->addWidget(datasetSizeCombo_);
-    datasetLayout->addStretch();
-    layout->addLayout(datasetLayout);
-
-    layout->addSpacing(5);
 
     // LEI entity picker
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
@@ -294,8 +389,6 @@ bool LeiPartyConfigPage::validatePage() {
             tr("Please select a root LEI entity before continuing."));
         return false;
     }
-    wizard_->setLeiDatasetSize(
-        datasetSizeCombo_->currentData().toString());
     return true;
 }
 
@@ -474,13 +567,23 @@ void PublishProgressPage::startPublish() {
     // Get published_by from current session
     const std::string publishedBy = clientManager->currentUsername();
 
-    // Build params_json
-    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-    std::string paramsJson = "{}";
-    if (needsLei && !rootLei.empty()) {
-        paramsJson = "{\"lei_parties\":{\"root_lei\":\"" + rootLei + "\"},"
-                     "\"lei_dataset_size\":\"" + datasetSize + "\"}";
+    // Build opted_in_datasets array
+    const QSet<QString>& optedIn = wizard_->optedInDatasets();
+    std::string optedInJson = "[";
+    bool first = true;
+    for (const auto& ds : optedIn) {
+        if (!first) optedInJson += ",";
+        optedInJson += "\"" + ds.toStdString() + "\"";
+        first = false;
     }
+    optedInJson += "]";
+
+    // Build params_json
+    std::string paramsJson = "{\"opted_in_datasets\":" + optedInJson;
+    if (needsLei && !rootLei.empty()) {
+        paramsJson += ",\"lei_parties\":{\"root_lei\":\"" + rootLei + "\"}";
+    }
+    paramsJson += "}";
 
     using ResponseType = dq::messaging::publish_bundle_response;
 

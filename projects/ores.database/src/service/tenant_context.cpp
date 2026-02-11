@@ -131,10 +131,22 @@ using namespace ores::logging;
  */
 utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string& tenant) {
     if (tenant_context::is_uuid(tenant)) {
-        BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant;
         auto result = utility::uuid::tenant_id::from_string(tenant);
         if (!result) {
             throw std::runtime_error("Invalid tenant ID: " + result.error());
+        }
+
+        // Try to resolve the tenant name for better log output.
+        std::string name;
+        try {
+            name = tenant_context::lookup_name(ctx, *result);
+        } catch (...) {}
+
+        if (name.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant;
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: "
+                                       << tenant << " [" << name << "]";
         }
         return *result;
     }

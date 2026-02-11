@@ -168,7 +168,7 @@ void PartyDetailDialog::updateUiFromParty() {
     ui_->partyCategoryCombo->setCurrentText(QString::fromStdString(party_.party_category));
     ui_->partyTypeCombo->setCurrentText(QString::fromStdString(party_.party_type));
     ui_->statusCombo->setCurrentText(QString::fromStdString(party_.status));
-    ui_->businessCenterEdit->setText(QString::fromStdString(party_.business_center_code.value_or("")));
+    ui_->businessCenterEdit->setText(QString::fromStdString(party_.business_center_code));
 
     ui_->versionEdit->setText(QString::number(party_.version));
     ui_->recordedByEdit->setText(QString::fromStdString(party_.recorded_by));
@@ -185,7 +185,7 @@ void PartyDetailDialog::updatePartyFromUi() {
     party_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
     party_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     const auto bcc = ui_->businessCenterEdit->text().trimmed().toStdString();
-    party_.business_center_code = bcc.empty() ? std::nullopt : std::optional(bcc);
+    party_.business_center_code = bcc.empty() ? std::string("WRLD") : bcc;
     party_.recorded_by = username_;
     party_.performed_by = username_;
 }

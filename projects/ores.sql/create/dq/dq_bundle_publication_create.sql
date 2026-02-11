@@ -420,10 +420,15 @@ begin
             for v_result_row in execute v_sql
             loop
                 case v_result_row.action
-                    when 'inserted' then v_row_inserted := v_result_row.record_count;
-                    when 'updated' then v_row_updated := v_result_row.record_count;
-                    when 'skipped' then v_row_skipped := v_result_row.record_count;
-                    when 'deleted' then v_row_deleted := v_result_row.record_count;
+                    when 'inserted' then v_row_inserted := v_row_inserted + v_result_row.record_count;
+                    when 'inserted_identifiers' then v_row_inserted := v_row_inserted + v_result_row.record_count;
+                    when 'updated' then v_row_updated := v_row_updated + v_result_row.record_count;
+                    when 'skipped' then v_row_skipped := v_row_skipped + v_result_row.record_count;
+                    when 'deleted' then v_row_deleted := v_row_deleted + v_result_row.record_count;
+                    else
+                        raise notice 'Unknown action % from dataset %, treating as inserted',
+                            v_result_row.action, v_dataset.dataset_code;
+                        v_row_inserted := v_row_inserted + v_result_row.record_count;
                 end case;
             end loop;
 

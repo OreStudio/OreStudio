@@ -296,8 +296,8 @@ void PartyHistoryDialog::updateChangesTable(int currentVersionIndex) {
 
     if (current.business_center_code != previous.business_center_code) {
         addChange("Business Center",
-                  QString::fromStdString(previous.business_center_code.value_or("")),
-                  QString::fromStdString(current.business_center_code.value_or("")));
+                  QString::fromStdString(previous.business_center_code),
+                  QString::fromStdString(current.business_center_code));
     }
 
 
@@ -323,7 +323,7 @@ void PartyHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->partyCategoryValue->setText(QString::fromStdString(version.party_category));
     ui_->partyTypeValue->setText(QString::fromStdString(version.party_type));
     ui_->statusValue->setText(QString::fromStdString(version.status));
-    ui_->businessCenterValue->setText(QString::fromStdString(version.business_center_code.value_or("")));
+    ui_->businessCenterValue->setText(QString::fromStdString(version.business_center_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

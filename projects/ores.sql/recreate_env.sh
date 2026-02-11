@@ -122,10 +122,17 @@ fi
 
 DB_NAME="ores_dev_${ENVIRONMENT}"
 
-echo "=== ORE Studio Environment Database Recreation ==="
-echo "Environment: ${ENVIRONMENT}"
-echo "Database: ${DB_NAME}"
-echo "Skip validation: ${SKIP_VALIDATION}"
+echo ""
+echo "=========================================="
+echo "  ORE Studio Environment DB Recreation"
+echo "=========================================="
+echo ""
+echo "  Environment : ${ENVIRONMENT}"
+echo "  Database    : ${DB_NAME}"
+echo "  Host        : ${ORES_TEST_DB_HOST:-localhost}"
+echo "  Validation  : ${SKIP_VALIDATION}"
+echo ""
+echo "=========================================="
 echo ""
 
 cd "${SCRIPT_DIR}"
@@ -183,9 +190,9 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -f ./setup_schema.sql
 
 echo ""
-echo "=== Environment database recreation complete ==="
-echo ""
-echo "Database: ${DB_NAME}"
+echo "=========================================="
+echo "  Recreation complete: ${DB_NAME}"
+echo "=========================================="
 echo ""
 echo "Connect with:"
 echo "  psql -U ores_cli_user -d ${DB_NAME}"

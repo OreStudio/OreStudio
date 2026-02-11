@@ -37,7 +37,7 @@ create table if not exists "ores_refdata_counterparties_tbl" (
     "short_code" text not null,
     "party_type" text not null,
     "parent_counterparty_id" uuid null,
-    "business_center_code" text null,
+    "business_center_code" text not null,
     "status" text not null default 'Active',
     "modified_by" text not null,
     "performed_by" text not null,
@@ -107,11 +107,13 @@ begin
         end if;
     end if;
 
-    -- Validate business_center_code (nullable, skip if null/empty)
-    if NEW.business_center_code is not null and NEW.business_center_code != '' then
-        NEW.business_center_code := ores_refdata_validate_business_centre_fn(
-            NEW.tenant_id, NEW.business_center_code);
+    -- Validate business_center_code (mandatory)
+    if NEW.business_center_code is null or NEW.business_center_code = '' then
+        raise exception 'business_center_code is required for counterparties'
+            using errcode = '23502';
     end if;
+    NEW.business_center_code := ores_refdata_validate_business_centre_fn(
+        NEW.tenant_id, NEW.business_center_code);
 
     -- Version management
     select version into current_version

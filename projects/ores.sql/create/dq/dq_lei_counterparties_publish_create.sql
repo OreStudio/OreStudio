@@ -178,17 +178,35 @@ begin
             insert into ores_refdata_counterparties_tbl (
                 tenant_id,
                 id, version, full_name, short_code, party_type,
-                parent_counterparty_id, status,
+                parent_counterparty_id, business_center_code, status,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
                 p_target_tenant_id,
                 m.counterparty_uuid, 0, m.entity_legal_name, m.lei, 'Corporate',
-                parent_map.counterparty_uuid, 'Active',
+                parent_map.counterparty_uuid,
+                -- Default business centre from country
+                coalesce(bc_map.business_center_code, 'WRLD'),
+                'Active',
                 current_user, current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
             from lei_counterparty_uuid_map m
             left join lei_counterparty_uuid_map parent_map on parent_map.lei = m.parent_lei
+            left join (values
+                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
+                ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
+                ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
+                ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),
+                ('GB', 'GBLO'), ('GR', 'GRAT'), ('HK', 'HKHK'), ('HU', 'HUBU'),
+                ('ID', 'IDJA'), ('IE', 'IEDU'), ('IL', 'ILTA'), ('IN', 'INMU'),
+                ('IT', 'ITMI'), ('JP', 'JPTO'), ('KR', 'KRSE'), ('KY', 'KYGE'),
+                ('LU', 'LULU'), ('MX', 'MXMC'), ('MY', 'MYKL'), ('NL', 'NLAM'),
+                ('NO', 'NOOS'), ('NZ', 'NZAU'), ('PH', 'PHMA'), ('PL', 'PLWA'),
+                ('PT', 'PTLI'), ('RO', 'ROBU'), ('RU', 'RUMO'), ('SA', 'SARI'),
+                ('SE', 'SEST'), ('SG', 'SGSI'), ('TH', 'THBA'), ('TR', 'TRIS'),
+                ('TW', 'TWTA'), ('US', 'USNY'), ('ZA', 'ZAJO')
+            ) as bc_map(country_code, business_center_code)
+                on bc_map.country_code = m.entity_legal_address_country
             where m.depth = v_current_depth;
 
             get diagnostics v_level_count = row_count;

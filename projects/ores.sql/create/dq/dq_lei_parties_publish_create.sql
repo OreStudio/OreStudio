@@ -213,14 +213,14 @@ begin
                 m.lei, 'operational', 'Corporate',
                 parent_map.party_uuid,
                 -- Default business centre from country
-                bc_map.business_center_code,
+                coalesce(bc_map.business_center_code, 'WRLD'),
                 'Active',
                 current_user, current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
             from lei_party_subtree m
             left join lei_party_subtree parent_map on parent_map.lei = m.parent_lei
             left join (values
-                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBB'),
+                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
                 ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
                 ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
                 ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),

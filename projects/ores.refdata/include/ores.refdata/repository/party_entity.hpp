@@ -42,7 +42,7 @@ struct party_entity {
     std::string party_category;
     std::string party_type;
     std::optional<std::string> parent_party_id;
-    std::optional<std::string> business_center_code;
+    std::string business_center_code;
     std::string status;
     std::string modified_by;
     std::string performed_by;

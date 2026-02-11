@@ -43,7 +43,7 @@ party_mapper::map(const party_entity& v) {
     r.party_type = v.party_type;
     if (v.parent_party_id.has_value() && !v.parent_party_id->empty())
         r.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_party_id);
-    r.business_center_code = v.business_center_code;  // optional to optional
+    r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.recorded_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -19,10 +19,14 @@
  */
 #include "ores.refdata/repository/party_repository.hpp"
 
+#include <array>
+#include <algorithm>
 #include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata/domain/party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/repository/party_entity.hpp"
 #include "ores.refdata/repository/party_mapper.hpp"
@@ -96,6 +100,54 @@ party_repository::read_latest_by_code(const std::string& code) {
         ctx_, query,
         [](const auto& entities) { return party_mapper::map(entities); },
         lg(), "Reading latest party by code.");
+}
+
+std::vector<domain::party>
+party_repository::read_system_party(const std::string& tenant_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: "
+                               << tenant_id;
+
+    const std::string sql =
+        "SELECT * FROM ores_refdata_read_system_party_fn('" +
+        tenant_id + "'::uuid)";
+
+    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
+        "Reading system party by tenant");
+
+    std::vector<domain::party> result;
+    result.reserve(rows.size());
+
+    static constexpr std::array required_columns =
+        {0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14};
+
+    for (const auto& row : rows) {
+        if (row.size() >= 16 &&
+            std::ranges::all_of(required_columns,
+                [&row](int i) { return static_cast<bool>(row[i]); })) {
+            domain::party p;
+            p.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            p.tenant_id = *row[1];
+            p.version = std::stoi(*row[2]);
+            p.full_name = *row[3];
+            p.short_code = *row[4];
+            p.party_category = *row[5];
+            p.party_type = *row[6];
+            if (row[7])
+                p.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(*row[7]);
+            if (row[8])
+                p.business_center_code = *row[8];
+            p.status = *row[9];
+            p.recorded_by = *row[10];
+            p.performed_by = *row[11];
+            p.change_reason_code = *row[12];
+            p.change_commentary = *row[13];
+            p.recorded_at = timestamp_to_timepoint(std::string_view{*row[14]});
+            result.push_back(std::move(p));
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read system party. Total: " << result.size();
+    return result;
 }
 
 std::vector<domain::party>

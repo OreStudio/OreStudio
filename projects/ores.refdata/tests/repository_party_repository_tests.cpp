@@ -40,15 +40,6 @@ namespace {
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository]");
 
-boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const std::string& tid) {
-    auto parties = repo.read_latest();
-    for (const auto& p : parties)
-        if (p.tenant_id == tid)
-            return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid);
-}
-
 }
 
 TEST_CASE("write_single_party", tags) {
@@ -56,7 +47,7 @@ TEST_CASE("write_single_party", tags) {
 
     scoped_database_helper h;
     party_repository repo(h.context());
-    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
     auto p = generate_synthetic_party();
     p.tenant_id = h.tenant_id().to_string();
@@ -72,7 +63,7 @@ TEST_CASE("write_multiple_parties", tags) {
 
     scoped_database_helper h;
     party_repository repo(h.context());
-    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
     auto parties = generate_synthetic_parties(3);
     for (auto& p : parties) {
@@ -90,7 +81,7 @@ TEST_CASE("read_latest_parties", tags) {
 
     scoped_database_helper h;
     party_repository repo(h.context());
-    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
     auto written_parties = generate_synthetic_parties(3);
     for (auto& p : written_parties) {
@@ -113,7 +104,7 @@ TEST_CASE("read_latest_party_by_id", tags) {
 
     scoped_database_helper h;
     party_repository repo(h.context());
-    const auto parent_id = find_system_party_id(repo, h.tenant_id().to_string());
+    const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
     auto p = generate_synthetic_party();
     p.tenant_id = h.tenant_id().to_string();

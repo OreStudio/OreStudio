@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 0929B047-1A31-3514-9EDB-EF7B4F012C5D
+:ROAM_ALIASES: SSI
+:END:
+#+title: Standing Settlement Instructions
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+In the financial world, *SSI* stands for *Standing Settlement Instructions*.
+
+The "S" for *Standing* is the most important part of the acronym. It means these
+instructions are "on file" and intended to be used for *all* future trades of a
+specific type until they are explicitly changed.
+
+* Why "Standing"?
+
+In high-volume trading, it would be incredibly risky and inefficient to
+negotiate bank account details for every single trade. Instead, counterparties
+agree on SSIs once during the onboarding process.
+
+- *Efficiency:* When a trader hits "Execute," the back-office system
+  automatically looks up the "Standing" instruction for that currency and asset
+  class.
+- *Risk Mitigation:* By using "Standing" instructions, you prevent
+  "Man-in-the-Middle" attacks. A rogue trader can't tell you to "send the money
+  to this new account just for this one trade." The money *only* goes to the
+  pre-verified, standing account.
+- *Automation:* It allows for *STP (Straight-Through Processing)*. The system
+  picks the SSI, generates the `pacs.009`, and sends it without human
+  intervention.
+
+* The Anatomy of an SSI
+
+An SSI is not just a bank account number; it’s a specific "route." A single
+counterparty (like JP Morgan) will have hundreds of different SSIs. To pick the
+right one, your system needs to filter by:
+
+- 1. *Currency:* (e.g., I send USD to this account, but EUR to that one).
+- 2. *Asset Class:* (e.g., FX settlement goes to one bank, but Bond settlement
+  goes to a Custodian).
+- 3. *Settlement Method:* (e.g., CLS, Gross, or Net).
+
+* SSI in your C++ System Logic
+
+When implementing your `Settlement Engine`, you should think of the SSI as a
+*Unique Key Lookup*:
+
+#+begin_src cpp
+// Pseudocode for SSI Selection
+SSI get_active_ssi(EntityID counterparty, Currency ccy, AssetClass asset) {
+    // We look for the 'Standing' instruction that matches the criteria
+    return db.query("SELECT * FROM ssi_table
+                     WHERE entity_id = ?
+                     AND currency = ?
+                     AND asset_class = ?
+                     AND is_active = true",
+                     counterparty, ccy, asset);
+}
+#+end_src
+
+* The "Four-Eyes" Requirement
+
+Because the "Standing" nature of these instructions makes them so powerful, the
+*Security* tab in your UI must be ironclad. If a hacker changes a "Standing"
+instruction, they can divert *every single future payment* for that client to a
+fraudulent account.
+
+- *Verification:* This is why your SSI wireframe had a "Verified By" field.
+- *Effective Dates:* Often, SSIs have an "Effective Date" so you can prep a new
+  bank route weeks before a bank migration happens.
+
+Would you like me to show you how to structure the *SSI Table* in your database
+to handle *Intermediary Banks* (cases where the counterparty's bank doesn't have
+a direct relationship with yours)?

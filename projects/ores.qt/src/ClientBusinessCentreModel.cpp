@@ -230,14 +230,13 @@ void ClientBusinessCentreModel::load_page(std::uint32_t offset,
 void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset,
                                                        std::uint32_t limit) {
     is_fetching_ = true;
-    QPointer<ClientBusinessCentreModel> self = this;
 
     QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        QtConcurrent::run([cm = clientManager_, offset, limit]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 BOOST_LOG_SEV(lg(), debug) << "Making business centres request with offset="
                                            << offset << ", limit=" << limit;
-                if (!self || !self->clientManager_) {
+                if (!cm) {
                     return {.success = false, .business_centres = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
@@ -254,7 +253,7 @@ void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset,
                     0, std::move(payload)
                 );
 
-                auto response_result = self->clientManager_->sendRequest(
+                auto response_result = cm->sendRequest(
                     std::move(request_frame));
                 if (!response_result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request";

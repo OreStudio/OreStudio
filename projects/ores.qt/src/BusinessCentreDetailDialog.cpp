@@ -181,8 +181,8 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, business_centre = business_centre_]() -> SaveResult {
-        if (!self || !self->clientManager_) {
+    auto task = [cm = clientManager_, business_centre = business_centre_]() -> SaveResult {
+        if (!cm) {
             return {false, "Dialog closed"};
         }
 
@@ -195,7 +195,7 @@ void BusinessCentreDetailDialog::onSaveClicked() {
             0, std::move(payload)
         );
 
-        auto response_result = self->clientManager_->sendRequest(
+        auto response_result = cm->sendRequest(
             std::move(request_frame));
 
         if (!response_result) {
@@ -265,8 +265,8 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code_str = business_centre_.code]() -> DeleteResult {
-        if (!self || !self->clientManager_) {
+    auto task = [cm = clientManager_, code_str = business_centre_.code]() -> DeleteResult {
+        if (!cm) {
             return {false, "Dialog closed"};
         }
 
@@ -279,7 +279,7 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
             0, std::move(payload)
         );
 
-        auto response_result = self->clientManager_->sendRequest(
+        auto response_result = cm->sendRequest(
             std::move(request_frame));
 
         if (!response_result) {

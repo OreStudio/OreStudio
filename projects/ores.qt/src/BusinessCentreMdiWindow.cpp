@@ -347,9 +347,9 @@ void BusinessCentreMdiWindow::deleteSelected() {
     QPointer<BusinessCentreMdiWindow> self = this;
     using DeleteResult = std::vector<std::tuple<std::string, bool, std::string>>;
 
-    auto task = [self, codes]() -> DeleteResult {
+    auto task = [cm = clientManager_, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!cm) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << codes.size() << " business centres";
@@ -363,7 +363,7 @@ void BusinessCentreMdiWindow::deleteSelected() {
             0, std::move(payload)
         );
 
-        auto response_result = self->clientManager_->sendRequest(
+        auto response_result = cm->sendRequest(
             std::move(request_frame));
 
         if (!response_result) {

@@ -125,8 +125,8 @@ void BusinessCentreHistoryDialog::loadHistory() {
         std::vector<refdata::domain::business_centre> versions;
     };
 
-    auto task = [self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
+    auto task = [cm = clientManager_, code = code_.toStdString()]() -> HistoryResult {
+        if (!cm) {
             return {false, "Dialog closed", {}};
         }
 
@@ -139,7 +139,7 @@ void BusinessCentreHistoryDialog::loadHistory() {
             0, std::move(payload)
         );
 
-        auto response_result = self->clientManager_->sendRequest(
+        auto response_result = cm->sendRequest(
             std::move(request_frame));
 
         if (!response_result) {

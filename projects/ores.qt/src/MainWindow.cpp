@@ -1342,7 +1342,7 @@ void MainWindow::createControllers() {
 
     // Create business centre controller
     businessCentreController_ = std::make_unique<BusinessCentreController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
 
     connect(businessCentreController_.get(), &BusinessCentreController::statusMessage,
             this, [this](const QString& message) {

@@ -25,6 +25,7 @@
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -56,6 +57,7 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
+        Flag,
         Code,
         Source,
         Description,
@@ -68,6 +70,7 @@ public:
     };
 
     explicit ClientBusinessCentreModel(ClientManager* clientManager,
+                                       ImageCache* imageCache,
                                        QObject* parent = nullptr);
     ~ClientBusinessCentreModel() override = default;
 
@@ -141,6 +144,7 @@ private:
     void fetch_business_centres(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::vector<refdata::domain::business_centre> business_centres_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

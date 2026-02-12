@@ -37,8 +37,8 @@ struct business_centre_entity {
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
-    std::string source;
-    std::string description;
+    std::optional<std::string> source;
+    std::optional<std::string> description;
     std::string coding_scheme_code;
     std::optional<std::string> country_alpha2_code;
     std::optional<std::string> image_id;  // UUID stored as string, converted in mapper

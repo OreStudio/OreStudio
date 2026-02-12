@@ -36,10 +36,12 @@ BusinessCentreController::BusinessCentreController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      imageCache_(imageCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -56,7 +58,7 @@ void BusinessCentreController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BusinessCentreMdiWindow(clientManager_, username_);
+    listWindow_ = new BusinessCentreMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &BusinessCentreMdiWindow::statusChanged,

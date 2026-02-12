@@ -38,10 +38,12 @@ using namespace ores::logging;
 
 BusinessCentreMdiWindow::BusinessCentreMdiWindow(
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
@@ -132,7 +134,7 @@ void BusinessCentreMdiWindow::setupToolbar() {
 }
 
 void BusinessCentreMdiWindow::setupTable() {
-    model_ = new ClientBusinessCentreModel(clientManager_, this);
+    model_ = new ClientBusinessCentreModel(clientManager_, imageCache_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -147,8 +149,9 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
+    tableView_->setColumnWidth(ClientBusinessCentreModel::Flag, 60);
     tableView_->setColumnWidth(ClientBusinessCentreModel::Code, 100);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::Source, 100);
+    tableView_->setColumnWidth(ClientBusinessCentreModel::Source, 80);
     tableView_->setColumnWidth(ClientBusinessCentreModel::Description, 250);
     tableView_->setColumnWidth(ClientBusinessCentreModel::CodingScheme, 130);
     tableView_->setColumnWidth(ClientBusinessCentreModel::CountryAlpha2, 80);

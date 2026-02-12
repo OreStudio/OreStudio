@@ -21,6 +21,7 @@
 
 #include <unordered_set>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
@@ -40,9 +41,10 @@ namespace {
 }
 
 ClientBusinessCentreModel::ClientBusinessCentreModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(business_centre_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -54,6 +56,25 @@ ClientBusinessCentreModel::ClientBusinessCentreModel(
             this, &ClientBusinessCentreModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientBusinessCentreModel::onPulsingComplete);
+
+    // Connect to image cache to refresh decorations when images are loaded
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
+            if (!business_centres_.empty()) {
+                emit dataChanged(index(0, Column::Flag),
+                    index(rowCount() - 1, Column::Flag),
+                    {Qt::DecorationRole});
+            }
+        });
+
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
+            if (!business_centres_.empty()) {
+                emit dataChanged(index(0, Column::Flag),
+                    index(rowCount() - 1, Column::Flag),
+                    {Qt::DecorationRole});
+            }
+        });
+    }
 }
 
 int ClientBusinessCentreModel::rowCount(const QModelIndex& parent) const {
@@ -79,8 +100,21 @@ QVariant ClientBusinessCentreModel::data(
 
     const auto& bc = business_centres_[row];
 
+    if (role == Qt::DecorationRole && index.column() == Column::Flag) {
+        if (imageCache_) {
+            if (bc.image_id) {
+                const auto image_id_str = boost::uuids::to_string(*bc.image_id);
+                return imageCache_->getIcon(image_id_str);
+            }
+            return imageCache_->getNoFlagIcon();
+        }
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case Flag:
+            return {};
         case Code:
             return QString::fromStdString(bc.code);
         case Source:
@@ -115,6 +149,8 @@ QVariant ClientBusinessCentreModel::headerData(
         return {};
 
     switch (section) {
+    case Flag:
+        return tr("Flag");
     case Code:
         return tr("Code");
     case Source:

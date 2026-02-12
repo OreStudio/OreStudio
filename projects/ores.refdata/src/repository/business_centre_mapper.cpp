@@ -38,8 +38,8 @@ domain::business_centre business_centre_mapper::map(const business_centre_entity
     BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
                                << " -> domain.version=" << r.version;
     r.code = v.code.value();
-    r.source = v.source;
-    r.description = v.description;
+    r.source = v.source.value_or("");
+    r.description = v.description.value_or("");
     r.coding_scheme_code = v.coding_scheme_code;
     r.country_alpha2_code = v.country_alpha2_code.value_or("");
     if (v.image_id) {
@@ -61,8 +61,12 @@ business_centre_entity business_centre_mapper::map(const domain::business_centre
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.source = v.source;
-    r.description = v.description;
+    if (!v.source.empty()) {
+        r.source = v.source;
+    }
+    if (!v.description.empty()) {
+        r.description = v.description;
+    }
     r.coding_scheme_code = v.coding_scheme_code;
     if (!v.country_alpha2_code.empty()) {
         r.country_alpha2_code = v.country_alpha2_code;

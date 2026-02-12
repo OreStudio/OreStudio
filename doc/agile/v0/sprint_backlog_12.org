@@ -16,44 +16,51 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-12 Thu 00:24], for Thursday, February 12, 2026.
+#+CAPTION: Clock summary at [2026-02-12 Thu 22:01], for Thursday, February 12, 2026.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:24* |      |      | 100.0 |
+|       | *Total time*                          | *5:43* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:24   |      |      | 100.0 |
-|       | Active                                |        | 0:24 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:24 | 100.0 |
+|       | Stories                               | 5:43   |      |      | 100.0 |
+|       | Active                                |        | 5:43 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:24 |   7.0 |
+| code  | Fix OSX build                         |        |      | 0:19 |   5.5 |
+| code  | Add pagination to counterparty        |        |      | 0:58 |  16.9 |
+| code  | Add support for business centres      |        |      | 3:47 |  66.2 |
+| code  | Add a setup new tenant wizard         |        |      | 0:15 |   4.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-12 Thu 00:24]
+#+CAPTION: Clock summary at [2026-02-12 Thu 22:01]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *37:02* |       |      | 100.0 |
+|       | *Total time*                                       | *42:21* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 37:02   |       |      | 100.0 |
-|       | Active                                             |         | 37:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 1:42 |   4.6 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.3 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   1.5 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  11.8 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   1.0 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  18.0 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  18.0 |
-| code  | Brainstorm on multi-party support                  |         |       | 4:00 |  10.8 |
+|       | Stories                                            | 42:21   |       |      | 100.0 |
+|       | Active                                             |         | 42:21 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 1:42 |   4.0 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.0 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   1.3 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  10.4 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   0.9 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  15.8 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  15.8 |
+| code  | Brainstorm on multi-party support                  |         |       | 4:00 |   9.4 |
 | code  | Improve code coverage                              |         |       | 0:14 |   0.6 |
-| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   4.7 |
-| code  | Enable all skipped tests                           |         |       | 0:29 |   1.3 |
-| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.6 |
-| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   2.2 |
-| code  | Add system party support                           |         |       | 3:58 |  10.7 |
-| code  | Add customer party support                         |         |       | 1:33 |   4.2 |
-| code  | Add counterparty wizard                            |         |       | 1:12 |   3.2 |
-| code  | Add workspace as a container                       |         |       | 1:13 |   3.3 |
+| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   4.1 |
+| code  | Enable all skipped tests                           |         |       | 0:29 |   1.1 |
+| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.4 |
+| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   1.9 |
+| code  | Add system party support                           |         |       | 3:58 |   9.4 |
+| code  | Add customer party support                         |         |       | 1:33 |   3.7 |
+| code  | Fix OSX build                                      |         |       | 0:19 |   0.7 |
+| code  | Add pagination to counterparty                     |         |       | 0:58 |   2.3 |
+| code  | Add support for business centres                   |         |       | 3:47 |   8.9 |
+| code  | Add a setup new tenant wizard                      |         |       | 1:27 |   3.4 |
+| code  | Add workspace as a container                       |         |       | 1:13 |   2.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1055,7 +1062,7 @@ Now we have an event bus, we should create events for:
 - connect, disconnect, retry
 - login, logout
 
-*** STARTED Fix OSX build                                              :code:
+*** COMPLETED Fix OSX build                                            :code:
     :LOGBOOK:
     CLOCK: [2026-02-12 Thu 00:24]--[2026-02-12 Thu 00:43] =>  0:19
     :END:
@@ -1101,9 +1108,89 @@ Highlights:
   across various categories like UI, database features, and infrastructure.
 #+end_quote
 
+*** COMPLETED Add pagination to counterparty                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 10:33]--[2026-02-12 Thu 10:39] =>  0:06
+    CLOCK: [2026-02-12 Thu 09:40]--[2026-02-12 Thu 10:32] =>  0:52
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the counterparty dialog by introducing
+comprehensive pagination support across the application stack. It modifies the
+communication protocol to include offset and limit parameters for requests and a
+total count for responses, enabling efficient retrieval of large datasets. The
+UI has been updated with a dedicated pagination widget, providing users with
+intuitive controls for navigating through counterparty lists and dynamically
+adjusting page sizes.
+
+Highlights:
+
+- Protocol Updates for Pagination: Introduced pagination parameters (offset,
+  limit) to the get_counterparties_request protocol message and added
+  total_available_count to the get_counterparties_response to inform the client
+  about the total number of available records. The major protocol version was
+  bumped to 31.0 due to these wire format changes.
+- Client-Side Pagination Logic: Implemented comprehensive pagination logic
+  within the ClientCounterpartyModel, including new methods for loading specific
+  pages (load_page), fetching more data (fetchMore), and dynamically adjusting
+  page sizes (set_page_size). This also includes handling duplicate entries
+  during incremental loads.
+- User Interface Integration: Integrated a new PaginationWidget into the
+  CounterpartyMdiWindow to provide users with intuitive UI controls for page
+  navigation, dynamic page size adjustment, and a 'Load All' functionality for
+  smaller datasets.
+- Backend Pagination Support: Extended the counterparty_repository and
+  counterparty_service layers with new methods to support paginated data
+  retrieval (read_latest(offset, limit)) and efficient total count calculation
+  (get_total_count()) directly from the database.
+#+end_quote
+
+*** STARTED Add support for business centres                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 21:30]--[2026-02-12 Thu 22:00] =>  0:30
+    CLOCK: [2026-02-12 Thu 17:01]--[2026-02-12 Thu 17:53] =>  0:52
+    CLOCK: [2026-02-12 Thu 13:00]--[2026-02-12 Thu 13:35] =>  0:35
+    CLOCK: [2026-02-12 Thu 10:40]--[2026-02-12 Thu 12:30] =>  1:50
+    :END:
+
+At present we do not have full support for CRUD on business centres.
+
+#+begin_quote
+This pull request introduces a new business_centre reference data type,
+providing a complete end-to-end solution for its management. It encompasses the
+full C++ backend, including data persistence, business logic, and communication
+protocols, alongside a rich Qt user interface for interactive data handling. The
+changes also include crucial database schema updates and a UI stability fix,
+significantly expanding the application's capabilities in managing financial
+reference data.
+
+Highlights:
+
+- New Business Centre Domain Type: Introduced a comprehensive C++ backend for
+  the business_centre domain type, including its domain class, database entity,
+  data mapper, repository, service, protocol messages (0x1061-0x1068), data
+  generator, eventing, and JSON/table I/O capabilities. This establishes a full
+  data management lifecycle for business centre reference data.
+- Full Qt User Interface: Developed a complete Qt-based user interface for
+  managing business centres. This UI features a paginated list window, a detail
+  dialog for creating, editing, and viewing individual business centre records,
+  and a version history dialog that includes field-by-field diffs. A dedicated
+  controller manages the window lifecycle and interactions.
+- Database Schema and Population Enhancements: Added a country_alpha2_code
+  column to the business_centres SQL schema. Corresponding population functions
+  were updated to derive and validate this country code from the business
+  centre's code, ensuring data integrity and consistency.
+- UI Bug Fix: Resolved an issue where combo boxes in detail dialogs would appear
+  blank due to incorrect cross-thread QPointer access, improving the stability
+  and usability of the Qt application.
+- Documentation Updates: Expanded documentation to include details on LEI-to-BIC
+  mapping data and a new domain documentation file for Standing Settlement
+  Instructions (SSI), enhancing the knowledge base for financial reference data.
+#+end_quote
+
 *** STARTED Add a setup new tenant wizard                              :code:
     :LOGBOOK:
-    CLOCK: [2026-02-12 Thu 07:20]
+    CLOCK: [2026-02-12 Thu 07:20]--[2026-02-12 Thu 07:35] =>  0:15
     CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
     :END:
 
@@ -1135,43 +1222,43 @@ architecture.
 - Leaf party users see only their own data.
 - Mid-level party users see their subtree.
 
+*** Add LEI to BIC dataset                                             :code:
+
+In order to simulate settlements it seems we also need the BIC. We have added
+the CSV to external, but we need to create dataset, population scripts and the
+associated publisher.
+
+Links:
+
+- [[https://www.gleif.org/en/lei-data/lei-mapping/download-bic-to-lei-relationship-files][Download BIC-to-LEI Relationship Files]]
+
 *** Advanced counterparty dialog                                       :code:
 
 We've implemented a basic CRUD based counterparty dialog. However, real
 counterparty dialogs are much more complex. We've asked Gemini to sketch one
 out.
 
-**** Trading System Entity & Counterparty Management Specification
+- 1. The "Four-Eyes" Status. In trading systems, you shouldn't be able to change
+  a BIC code or a Credit Limit without a second person "approving" it.
+  - UI Idea: Place a yellow banner at the top saying: "Pending Approval: Changes
+    to Credit Limit (Requested by User A)".
+- 2. Hierarchy Visualization: Since you are dealing with a System Tenant and a
+  System Party, your users need to see the "Parent-Child" relationship clearly.
+  If a trade happens with a subsidiary, the system should automatically "roll
+  up" the risk to the parent.
+- 3. Asset Class Matrix: Not every counterparty is allowed to trade every
+  product. A simple grid with checkboxes or toggle switches for "Product
+  Permissions" is the industry standard for this.
+- 4. The "System Party" Identifier: For your internal System Party, I recommend
+  adding a "System-Owned" flag.
+  - UI treatment: Use a specific icon (like a gear or a building) next to the
+    name to signify that this record is used for internal accounting and is not
+    an external client.
 
- 1. SYSTEM CORE ENTITIES
-** System Tenant
-- **Name:** =Nexus_Kernel=
-- **Purpose:** Storage of global system data and reference data.
-** System Party
-- **Name:** =Platform_Operator_Entity=
-- **Purpose:** Internal legal entity for the system itself (House Account).
+*UI Wireframe Specifications*
 
-* 2. DATA ARCHITECTURE (JSON)
-#+begin_src json
-{
-  "entity_id": "UUID-99201",
-  "is_system_owned": false,
-  "legal_name": "J.P. Morgan Securities LLC",
-  "lei": "7H6GLXDR0MBN8G7RUT71",
-  "bic_swift": "CHASUS33",
-  "status": "ACTIVE",
-  "hierarchy": { "parent_id": "UUID-ROOT-JPM", "aggregate_risk": true },
-  "trading_limits": [
-    { "asset_class": "FX_SPOT", "limit_usd": 50000000, "utilization_usd": 25000000 }
-  ],
-  "ssi": [
-    { "currency": "USD", "bank_name": "BNY MELLON NY", "status": "VERIFIED" }
-  ]
-}
-#+end_src
+Tab 1: General Info
 
-* 3. UI WIREFRAME SPECIFICATIONS
-** Tab 1: General Info
 #+begin_example
 _____________________________________________________________________________________
 [ GENERAL INFO ]   [ Hierarchy ]   [ Trading Limits ]   [ Settlement (SSI) ]
@@ -1185,7 +1272,8 @@ Country:      US (United States)             Phone:    +1 212 555 0198
 -------------------------------------------------------------------------------
 #+end_example
 
-** Tab 2: Hierarchy
+Tab 2: Hierarchy
+
 #+begin_example
 _____________________________________________________________________________________
 [ General Info ]   [[ HIERARCHY ]]   [ Trading Limits ]   [ Settlement (SSI) ]
@@ -1199,7 +1287,8 @@ RELATIONSHIP STRUCTURE
 -------------------------------------------------------------------------------
 #+end_example
 
-** Tab 3: Trading Limits
+Tab 3: Trading Limits
+
 #+begin_example
 _____________________________________________________________________________________
 [ General Info ]   [ Hierarchy ]   [[ TRADING LIMITS ]]   [ Settlement (SSI) ]
@@ -1212,7 +1301,8 @@ Equities      |  [YES]  | N/A       | 100,000,000     | [||||||||--] 80%
 -------------------------------------------------------------------------------
 #+end_example
 
-** Tab 4: Settlement (SSI)
+Tab 4: Settlement (SSI)
+
 #+begin_example
 _____________________________________________________________________________________
 [ General Info ]   [ Hierarchy ]   [ Trading Limits ]   [[ SETTLEMENT (SSI) ]]
@@ -1224,11 +1314,74 @@ EUR | SWIFT  | DEUTSCHE BANK AG  | DE9100223344...  | DEUTDEFF    | [VERIFIED]
 -------------------------------------------------------------------------------
 #+end_example
 
-* 4. BUSINESS LOGIC & CONSTRAINTS
-1. **System Party Identification:** If =is_system_owned= is true, UI should apply a distinct CSS theme (e.g., subtle blue background).
-2. **Limit Validation:** If =utilization_usd= > =limit_usd=, the Status indicator in Tab 3 must change to [OVERLIMIT] in red.
-3. **Four-Eyes Principle:** Any change to SSI or Trading Limits must enter a 'PENDING' state until approved by a second user.
-4. **GLEIF Integration:** Use ISO 17442 for LEI validation.
+*** Understanding Settlements and SSI                                 :agile:
+
+This is a very complicated topic. We should try to summarise it and see what is
+the smallest subset that we need in order to see full trade lifecycle.
+
+Links:
+
+- [[https://www.cslucas.com/user-guide/how-to-set-up-counterparty-ssi/][How to Set Up Counterparty SSI]]
+- [[https://docs.oracle.com/cd/E99951_01/html/Settlements/Settlements_Manual_Intro_002.htm][Settlements Service]]
+
+*** Add ISO 20022 Support                                              :code:
+
+As per Gemini:
+
+#+begin_quote
+Summary Mapping for your C++ Logic
+
+| Internal Event  | ISO 20022 Message | Action                                          |
+|-----------------+-------------------+-------------------------------------------------|
+| TradeExecuted   | fxtr.014          | Confirm terms with counterparty.                |
+| Send Funds      | pacs.009          | Instruct the  bank to move cash.                |
+| Check Progress  | pacs.002          | Update UI "Settlement Status" to 'In Progress'. |
+| Funds Confirmed | camt.054          | Update UI to 'Settled'.                         |
+| EOD Reconcile   | camt.053          | Verify internal ledger vs bank balance.         |
+|                 |                   |                                                 |
+
+Pro-Tip for your Implementation: Since you're using C++, don't try to build
+every message at once:
+
+- Start with pacs.009 (Sending money).
+- Follow with pacs.002 (Handling the response).
+- Add camt.053 (Reconciling at night).
+
+*ISO 20022 Asset Class Mapping*
+
+If you move beyond FX, you switch "prefixes." Here is how the ISO 20022 world is
+carved up:
+
+| Message Prefix | Asset Class / Domain  | Example Use Case                                     |
+|----------------+-----------------------+------------------------------------------------------|
+| fxtr           | Foreign Exchange      | "Spot, Forwards, NDFs, FX Swaps."                    |
+| sese           | Securities Settlement | "Settlement of Equities, Bonds, ETNs."               |
+| semt           | Securities Management | "Custody statements, holding reports."               |
+| setr           | Securities Trade      | Trade capture/subscription for Mutual Funds.         |
+| auth           | Regulatory Reporting  | "OTC Derivatives (IRS, CDS), Transaction reporting." |
+| pacs           | Payments              | The cash resulting from any of the above.            |
+
+*FPML vs ISO 20022*
+
+For Swaps and other Derivatives, the messaging is split between Trade Reporting
+and Lifecycle/Confirmation.
+
+- auth (Authorities): In the modern MX world, Interest Rate Swaps are largely
+  reported using the auth series (specifically under EMIR or MiFIR regulations).
+  - auth.030: Derived from the "Trade Reporting" business area, used for
+    Reporting of OTC derivatives.
+- FpML (The "De Facto" standard): As we discussed earlier, while ISO 20022 has
+  auth messages for regulation, FpML remains the industry standard for the
+  actual bilateral confirmation of IRS trades. Most modern systems use FpML for
+  the "contract" and then use pacs for the resulting cash flows.
+
+| Feature         | FpML (Financial products Markup Language)                                   | ISO 20022 (MX)                                                          |
+|-----------------+-----------------------------------------------------------------------------+-------------------------------------------------------------------------|
+| Primary Domain  | "Derivatives & OTC Trades (Swaps, Options, Forwards)."                      | Payments & Securities Settlement.                                       |
+| Focus           | "The economics of the trade (strike price, tenors, floating rate indexes)." | "The movement of value (sender, receiver, amount, intermediary banks)." |
+| Lifecycle Stage | "Front-to-Middle Office: Execution, Affirmation, and Confirmation."         | "Back Office: Payment clearing, settlement, and reporting."             |
+| Complexity      | Extremely deep. Can describe a 30-year complex interest rate swap.          | Broad. Designed to move money across any border or system.              |
+#+end_quote
 
 *** Extend login flow with party selection                             :code:
 

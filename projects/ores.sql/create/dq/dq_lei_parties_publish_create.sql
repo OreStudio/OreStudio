@@ -129,14 +129,14 @@ begin
     end if;
 
     -- Validate target tenant has no existing operational root party.
-    -- The system party (party_category='system') is excluded — it is
+    -- The system party (party_category='System') is excluded — it is
     -- a platform-level entity, not the operational party hierarchy root.
     if exists (
         select 1
         from ores_refdata_parties_tbl p
         where p.tenant_id = p_target_tenant_id
           and p.parent_party_id is null
-          and p.party_category <> 'system'
+          and p.party_category <> 'System'
           and p.valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Target tenant already has a root party. Cannot publish LEI parties.';
@@ -244,7 +244,7 @@ begin
                 m.party_uuid, 0,
                 m.entity_legal_name,
                 m.short_code, m.entity_transliterated_name_1,
-                'operational', 'Corporate',
+                'Operational', 'Corporate',
                 parent_map.party_uuid,
                 -- Default business centre from country
                 coalesce(bc_map.business_center_code, 'WRLD'),

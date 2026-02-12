@@ -22,7 +22,7 @@
  * System Party Population Script
  *
  * Creates the system party for the system tenant. Every tenant has exactly one
- * system party (party_category='system') representing the organisation itself.
+ * system party (party_category='System') representing the organisation itself.
  * This party serves as the root of the party hierarchy (parent_party_id=NULL).
  *
  * Must run after: party_categories, party_types, party_statuses, change_reasons.
@@ -39,7 +39,7 @@ begin
     if not exists (
         select 1 from ores_refdata_parties_tbl
         where tenant_id = ores_iam_system_tenant_id_fn()
-        and party_category = 'system'
+        and party_category = 'System'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         insert into ores_refdata_parties_tbl (
@@ -48,7 +48,7 @@ begin
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             gen_random_uuid(), ores_iam_system_tenant_id_fn(),
-            'System Party', 'system_party', 'system',
+            'System Party', 'system_party', 'System',
             'Internal', 'WRLD', null, 'Active',
             current_user, current_user, 'system.initial_load',
             'Root system party for the platform tenant'

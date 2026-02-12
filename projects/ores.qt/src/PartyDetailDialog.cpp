@@ -61,6 +61,8 @@ void PartyDetailDialog::setupUi() {
         QString::fromUtf8(party_categories::operational));
     ui_->partyCategoryCombo->addItem(
         QString::fromUtf8(party_categories::system));
+    ui_->partyCategoryCombo->addItem(
+        QString::fromUtf8(party_categories::internal));
 }
 
 void PartyDetailDialog::setupConnections() {

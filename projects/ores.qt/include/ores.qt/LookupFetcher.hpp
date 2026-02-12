@@ -32,8 +32,9 @@ class ClientManager;
  * @brief Fixed party category values (foundation data, not server-fetched).
  */
 namespace party_categories {
-inline constexpr std::string_view operational = "operational";
-inline constexpr std::string_view system = "system";
+inline constexpr std::string_view operational = "Operational";
+inline constexpr std::string_view system = "System";
+inline constexpr std::string_view internal = "Internal";
 }
 
 /**

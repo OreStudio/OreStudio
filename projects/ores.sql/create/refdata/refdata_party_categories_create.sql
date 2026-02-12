@@ -26,7 +26,7 @@ set schema 'public';
 -- platform administration) and operational parties (business entities that
 -- participate in financial transactions).
 --
--- Values: 'system', 'operational'
+-- Values: 'System', 'Operational'
 -- =============================================================================
 
 create table if not exists "ores_refdata_party_categories_tbl" (

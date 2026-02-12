@@ -75,13 +75,13 @@ select is(
 -- Test: Validation - party_category
 -- =============================================================================
 
--- Test 3: party_category defaults to 'operational'
+-- Test 3: party_category defaults to 'Operational'
 select is(
     (select party_category from ores_refdata_parties_tbl
      where id = 'a0000000-0000-0000-0000-000000000001'::uuid
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    'operational',
-    'party insert: party_category defaults to operational'
+    'Operational',
+    'party insert: party_category defaults to Operational'
 );
 
 -- Test 4: Invalid party_category is rejected

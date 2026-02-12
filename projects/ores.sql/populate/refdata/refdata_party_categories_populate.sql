@@ -22,8 +22,8 @@
  * Party Categories Population Script
  *
  * Populates structural classifications for parties:
- * - system: Auto-created with the tenant for platform administration.
- * - operational: Business entities that participate in financial transactions.
+ * - System: Auto-created with the tenant for platform administration.
+ * - Operational: Business entities that participate in financial transactions.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
@@ -35,10 +35,10 @@ insert into ores_refdata_party_categories_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'system', 0, 'System',
+    (ores_iam_system_tenant_id_fn(), 'System', 0, 'System',
      'Auto-created with the tenant for platform administration. Every tenant has exactly one system party.',
      0, current_user, current_user, 'system.initial_load', 'Initial population of party categories'),
-    (ores_iam_system_tenant_id_fn(), 'operational', 0, 'Operational',
+    (ores_iam_system_tenant_id_fn(), 'Operational', 0, 'Operational',
      'Business entities that participate in financial transactions. Created during normal system operation.',
      10, current_user, current_user, 'system.initial_load', 'Initial population of party categories')
 on conflict (tenant_id, code)

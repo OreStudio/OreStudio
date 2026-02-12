@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SplashScreen.hpp"
+#include "ores.qt/FontUtils.hpp"
 
 #include <QPainter>
 #include <QLinearGradient>
@@ -91,7 +92,8 @@ void SplashScreen::paintEvent(QPaintEvent* e) {
         painter.save();
 
         // Set the font to a small, sans-serif font
-        QFont font("Sans Serif", 6);
+        QFont font = FontUtils::monospace();
+        font.setPointSize(6);
         painter.setFont(font);
 
         // Set the text color to white

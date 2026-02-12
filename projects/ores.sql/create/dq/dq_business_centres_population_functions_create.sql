@@ -45,6 +45,7 @@ returns table (
     coding_scheme_code text,
     description text,
     has_image boolean,
+    derived_country_alpha2 text,
     reason text
 ) as $$
 begin
@@ -58,6 +59,7 @@ begin
         dq.coding_scheme_code,
         dq.description,
         dq.image_id is not null as has_image,
+        left(dq.code, 2) as derived_country_alpha2,
         case
             when existing.code is not null then 'Record already exists'
             else 'New record'
@@ -105,6 +107,7 @@ declare
     r record;
     v_exists boolean;
     v_new_version integer;
+    v_country_alpha2 text;
 begin
     -- Validate dataset exists
     select name into v_dataset_name
@@ -156,14 +159,27 @@ begin
             continue;
         end if;
 
+        -- Derive country_alpha2_code from the first 2 characters of the code
+        v_country_alpha2 := left(r.code, 2);
+        if not exists (
+            select 1 from ores_refdata_countries_tbl
+            where alpha2_code = v_country_alpha2
+              and tenant_id = p_target_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            v_country_alpha2 := null;
+        end if;
+
         -- Insert record - trigger handles versioning automatically
         insert into ores_refdata_business_centres_tbl (
             tenant_id,
-            code, version, coding_scheme_code, source, description, image_id,
+            code, version, coding_scheme_code, country_alpha2_code,
+            source, description, image_id,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
-            r.code, 0, r.coding_scheme_code, r.source, r.description, r.image_id,
+            r.code, 0, r.coding_scheme_code, v_country_alpha2,
+            r.source, r.description, r.image_id,
             current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

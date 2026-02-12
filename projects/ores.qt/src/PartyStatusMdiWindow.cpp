@@ -27,6 +27,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.refdata/messaging/party_status_protocol.hpp"
@@ -138,6 +139,16 @@ void PartyStatusMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
+    using cs = column_style;
+    tableView_->setItemDelegate(new EntityItemDelegate({
+        cs::text_left,   // Code
+        cs::text_left,   // Name
+        cs::text_left,   // Description
+        cs::mono_center, // DisplayOrder
+        cs::mono_center, // Version
+        cs::text_left,   // RecordedBy
+        cs::mono_left    // RecordedAt
+    }, tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);

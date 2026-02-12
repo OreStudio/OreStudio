@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,27 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_COUNTRY_ITEM_DELEGATE_HPP
-#define ORES_QT_COUNTRY_ITEM_DELEGATE_HPP
+#include "ores.refdata/domain/business_centre_table_io.hpp"
 
-#include <QStyledItemDelegate>
-#include <QFont>
+#include <ostream>
+#include "ores.refdata/domain/business_centre_table.hpp"
 
-namespace ores::qt {
+namespace ores::refdata::domain {
 
-class CountryItemDelegate : public QStyledItemDelegate {
-    Q_OBJECT
-
-public:
-    explicit CountryItemDelegate(QObject* parent = nullptr);
-
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-               const QModelIndex& index) const override;
-
-private:
-    QFont monospaceFont_;
-};
-
+void print_business_centre_table(std::ostream& s, const std::vector<business_centre>& v) {
+    s << convert_to_table(v);
 }
 
-#endif
+std::ostream& operator<<(std::ostream& s, const std::vector<business_centre>& v) {
+    print_business_centre_table(s, v);
+    return s;
+}
+
+}

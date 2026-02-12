@@ -26,6 +26,7 @@
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/service/currency_service.hpp"
 #include "ores.refdata/service/country_service.hpp"
+#include "ores.refdata/service/business_centre_service.hpp"
 #include "ores.refdata/service/party_type_service.hpp"
 #include "ores.refdata/service/party_status_service.hpp"
 #include "ores.refdata/service/party_id_scheme_service.hpp"
@@ -67,6 +68,15 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_delete_currency_request(payload, remote_address);
     case comms::messaging::message_type::get_currency_history_request:
         co_return co_await handle_get_currency_history_request(payload, remote_address);
+    // Business centre handlers
+    case comms::messaging::message_type::get_business_centres_request:
+        co_return co_await handle_get_business_centres_request(payload, remote_address);
+    case comms::messaging::message_type::save_business_centre_request:
+        co_return co_await handle_save_business_centre_request(payload, remote_address);
+    case comms::messaging::message_type::delete_business_centre_request:
+        co_return co_await handle_delete_business_centre_request(payload, remote_address);
+    case comms::messaging::message_type::get_business_centre_history_request:
+        co_return co_await handle_get_business_centre_history_request(payload, remote_address);
     // Country handlers
     case comms::messaging::message_type::get_countries_request:
         co_return co_await handle_get_countries_request(payload, remote_address);
@@ -356,6 +366,201 @@ handle_get_currency_history_request(std::span<const std::byte> payload,
         response.message = std::string("Failed to retrieve history: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error retrieving history for "
                                    << request.iso_code << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// Business centre handlers
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_business_centres_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_business_centres_request.";
+
+    auto auth = require_authentication(remote_address, "Get business centres");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_centre_service svc(ctx);
+
+    auto request_result = get_business_centres_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_business_centres_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    constexpr std::uint32_t max_limit = 1000;
+    if (request.limit == 0 || request.limit > max_limit) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
+                                  << ". Must be between 1 and " << max_limit;
+        co_return std::unexpected(ores::utility::serialization::error_code::limit_exceeded);
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Fetching business centres with offset: "
+                               << request.offset << ", limit: " << request.limit;
+
+    auto business_centres = svc.list_business_centres(request.offset, request.limit);
+    auto total_count = svc.count_business_centres();
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << business_centres.size()
+                              << " business centres (total available: " << total_count << ")";
+
+    get_business_centres_response response{
+        .business_centres = std::move(business_centres),
+        .total_available_count = total_count
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_business_centre_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_business_centre_request.";
+
+    auto auth = require_authentication(remote_address, "Save business centre");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_centre_service svc(ctx);
+
+    auto request_result = save_business_centre_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_business_centre_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving business centre: " << request.business_centre.code;
+
+    request.business_centre.recorded_by = auth->username;
+
+    save_business_centre_response response;
+    try {
+        svc.save_business_centre(request.business_centre);
+        response.success = true;
+        response.message = "Business centre saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved business centre: "
+                                  << request.business_centre.code
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save business centre: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving business centre "
+                                   << request.business_centre.code << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_business_centre_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_business_centre_request.";
+
+    auto auth = require_authentication(remote_address, "Delete business centre");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_centre_service svc(ctx);
+
+    auto request_result = delete_business_centre_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_business_centre_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size()
+                              << " business centre(s)";
+
+    delete_business_centre_response response;
+
+    for (const auto& code : request.codes) {
+        delete_business_centre_result result;
+        result.code = code;
+
+        try {
+            svc.delete_business_centre(code);
+            result.success = true;
+            result.message = "Business centre deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted business centre: " << code;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete business centre: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting business centre "
+                                       << code << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                              << response.results.size() << " results";
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_business_centre_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_business_centre_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get business centre history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_centre_service svc(ctx);
+
+    auto request_result = get_business_centre_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_business_centre_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for business centre: " << request.code;
+
+    get_business_centre_history_response response;
+    try {
+        auto history = svc.get_business_centre_history(request.code);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Business centre not found: " + request.code;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for business centre: " << request.code;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.history = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.history.size()
+                                  << " versions for business centre: " << request.code;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for business centre "
+                                   << request.code << ": " << e.what();
     }
 
     co_return response.serialize();

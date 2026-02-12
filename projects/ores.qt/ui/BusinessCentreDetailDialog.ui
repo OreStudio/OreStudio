@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BusinessCentreDetailDialog</class>
+ <widget class="QWidget" name="BusinessCentreDetailDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>450</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Business Centre Details</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="basicInfoGroup">
+     <property name="title">
+      <string>Basic Information</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_codeEdit">
+        <property name="text">
+         <string>Code:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="codeEdit">
+        <property name="placeholderText">
+         <string>Enter business centre code (e.g. USNY)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_sourceEdit">
+        <property name="text">
+         <string>Source:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="sourceEdit">
+        <property name="placeholderText">
+         <string>Enter data source (e.g. FpML)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_descriptionEdit">
+        <property name="text">
+         <string>Description:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="descriptionEdit">
+        <property name="placeholderText">
+         <string>Enter description</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_codingSchemeEdit">
+        <property name="text">
+         <string>Coding Scheme:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="codingSchemeEdit">
+        <property name="placeholderText">
+         <string>Enter coding scheme code</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_countryAlpha2Edit">
+        <property name="text">
+         <string>Country:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="countryAlpha2Edit">
+        <property name="placeholderText">
+         <string>Enter ISO 3166-1 alpha-2 code (e.g. US)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="metadataGroup">
+     <property name="title">
+      <string>Metadata (Read-only)</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelVersion">
+        <property name="text">
+         <string>Version:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="versionEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelRecordedBy">
+        <property name="text">
+         <string>Recorded By:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="recordedByEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelRecordedAt">
+        <property name="text">
+         <string>Recorded At:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="recordedAtEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelCommentary">
+        <property name="text">
+         <string>Commentary:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="commentaryEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

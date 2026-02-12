@@ -28,6 +28,7 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
@@ -139,6 +140,15 @@ void DatasetBundleMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
+    using cs = column_style;
+    tableView_->setItemDelegate(new EntityItemDelegate({
+        cs::text_left,   // Code
+        cs::text_left,   // Name
+        cs::text_left,   // Description
+        cs::mono_center, // Version
+        cs::text_left,   // RecordedBy
+        cs::mono_left    // RecordedAt
+    }, tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);

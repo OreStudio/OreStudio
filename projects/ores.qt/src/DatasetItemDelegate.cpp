@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
+#include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 
 #include <QPainter>
@@ -64,7 +65,6 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     // Check if this is the Tags column
     if (index.column() == ClientDatasetModel::Tags) {
-        // Draw the background (for selection highlighting)
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
@@ -82,19 +82,19 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QRect badgeRect = opt.rect;
         badgeRect.adjust(4, 0, 0, 0);
 
-        // Draw Origin badge
         if (!origin.isEmpty()) {
-            drawBadge(painter, badgeRect, origin, getOriginColor(origin), dbc::text, badgeFont);
+            DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
+                origin, getOriginColor(origin), dbc::text, badgeFont);
         }
 
-        // Draw Nature badge
         if (!nature.isEmpty()) {
-            drawBadge(painter, badgeRect, nature, getNatureColor(nature), dbc::text, badgeFont);
+            DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
+                nature, getNatureColor(nature), dbc::text, badgeFont);
         }
 
-        // Draw Treatment badge
         if (!treatment.isEmpty()) {
-            drawBadge(painter, badgeRect, treatment, getTreatmentColor(treatment), dbc::text, badgeFont);
+            DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
+                treatment, getTreatmentColor(treatment), dbc::text, badgeFont);
         }
 
         return;
@@ -114,41 +114,6 @@ QSize DatasetItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     }
 
     return size;
-}
-
-void DatasetItemDelegate::drawBadge(QPainter* painter, QRect& rect,
-                                    const QString& text, const QColor& backgroundColor,
-                                    const QColor& textColor, const QFont& font) const {
-    painter->save();
-    painter->setRenderHint(QPainter::Antialiasing, true);
-
-    // Calculate badge dimensions
-    QFontMetrics fm(font);
-    int textWidth = fm.horizontalAdvance(text);
-    int padding = 4;
-    int badgeWidth = textWidth + padding * 2;
-    int badgeHeight = fm.height() + 2;
-    int spacing = 3;
-
-    // Position badge vertically centered
-    int y = rect.center().y() - badgeHeight / 2;
-    QRect badgeRect(rect.left(), y, badgeWidth, badgeHeight);
-
-    // Draw pill-shaped background
-    int radius = badgeHeight / 2;
-    painter->setBrush(backgroundColor);
-    painter->setPen(Qt::NoPen);
-    painter->drawRoundedRect(badgeRect, radius, radius);
-
-    // Draw text
-    painter->setFont(font);
-    painter->setPen(textColor);
-    painter->drawText(badgeRect, Qt::AlignCenter, text);
-
-    painter->restore();
-
-    // Move rect for next badge
-    rect.setLeft(rect.left() + badgeWidth + spacing);
 }
 
 }

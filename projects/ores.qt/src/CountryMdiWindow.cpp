@@ -41,7 +41,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/CountryItemDelegate.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -135,8 +135,18 @@ CountryMdiWindow(ClientManager* clientManager,
     countryTableView_->setSortingEnabled(true);
     countryTableView_->sortByColumn(ClientCountryModel::Name, Qt::AscendingOrder);
 
-    countryTableView_->setItemDelegate(
-        new CountryItemDelegate(countryTableView_));
+    using cs = column_style;
+    countryTableView_->setItemDelegate(new EntityItemDelegate({
+        cs::icon_centered,    // Flag
+        cs::text_left,        // Name
+        cs::mono_bold_center, // Alpha2Code
+        cs::mono_bold_center, // Alpha3Code
+        cs::mono_center,      // NumericCode
+        cs::text_left,        // OfficialName
+        cs::mono_center,      // Version
+        cs::text_left,        // RecordedBy
+        cs::mono_left         // RecordedAt
+    }, countryTableView_));
 
     QHeaderView* horizontalHeader(countryTableView_->horizontalHeader());
     countryTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);

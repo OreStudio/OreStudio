@@ -159,6 +159,15 @@ enum class message_type : std::uint16_t {
     delete_counterparty_contact_information_response = 0x105E,
     get_counterparty_contact_information_history_request = 0x105F,
     get_counterparty_contact_information_history_response = 0x1060,
+    // Refdata subsystem - Business centres
+    get_business_centres_request = 0x1061,
+    get_business_centres_response = 0x1062,
+    save_business_centre_request = 0x1063,
+    save_business_centre_response = 0x1064,
+    delete_business_centre_request = 0x1065,
+    delete_business_centre_response = 0x1066,
+    get_business_centre_history_request = 0x1067,
+    get_business_centre_history_response = 0x1068,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -551,6 +560,14 @@ enum class message_type : std::uint16_t {
     case message_type::delete_counterparty_contact_information_response: return "delete_counterparty_contact_information_response";
     case message_type::get_counterparty_contact_information_history_request: return "get_counterparty_contact_information_history_request";
     case message_type::get_counterparty_contact_information_history_response: return "get_counterparty_contact_information_history_response";
+    case message_type::get_business_centres_request: return "get_business_centres_request";
+    case message_type::get_business_centres_response: return "get_business_centres_response";
+    case message_type::save_business_centre_request: return "save_business_centre_request";
+    case message_type::save_business_centre_response: return "save_business_centre_response";
+    case message_type::delete_business_centre_request: return "delete_business_centre_request";
+    case message_type::delete_business_centre_response: return "delete_business_centre_response";
+    case message_type::get_business_centre_history_request: return "get_business_centre_history_request";
+    case message_type::get_business_centre_history_response: return "get_business_centre_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

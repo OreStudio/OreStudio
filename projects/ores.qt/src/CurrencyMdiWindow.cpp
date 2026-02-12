@@ -47,7 +47,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/CurrencyItemDelegate.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/ImportCurrencyDialog.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -178,8 +178,23 @@ CurrencyMdiWindow(ClientManager* clientManager,
     currencyTableView_->setSortingEnabled(true);
     currencyTableView_->sortByColumn(0, Qt::AscendingOrder);  // Default sort by name
 
-    currencyTableView_->setItemDelegate(
-        new CurrencyItemDelegate(currencyTableView_));
+    using cs = column_style;
+    currencyTableView_->setItemDelegate(new EntityItemDelegate({
+        cs::icon_centered,    // Flag
+        cs::text_left,        // CurrencyName
+        cs::mono_bold_center, // IsoCode
+        cs::mono_center,      // Version
+        cs::mono_center,      // NumericCode
+        cs::mono_center,      // Symbol
+        cs::mono_center,      // FractionSymbol
+        cs::mono_right,       // FractionsPerUnit
+        cs::text_left,        // RoundingType
+        cs::mono_right,       // RoundingPrecision
+        cs::text_left,        // Format
+        cs::text_left,        // CurrencyType
+        cs::text_left,        // RecordedBy
+        cs::mono_left         // RecordedAt
+    }, currencyTableView_));
 
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
     currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);

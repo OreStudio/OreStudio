@@ -23,6 +23,7 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QTextCharFormat>
+#include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
@@ -148,12 +149,12 @@ void ShellMdiWindow::setup_ui() {
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(max_shell_output_lines);
     output_area_->setStyleSheet(
-        "QPlainTextEdit { font-family: monospace; font-size: 11px; }");
+        "QPlainTextEdit { " + FontUtils::monospaceCssFragment() + " }");
 
     // Input line
     input_line_ = new QLineEdit(this);
     input_line_->setStyleSheet(
-        "QLineEdit { font-family: monospace; font-size: 11px; }");
+        "QLineEdit { " + FontUtils::monospaceCssFragment() + " }");
     input_line_->setPlaceholderText("Enter command...");
 
     layout->addWidget(output_area_);

@@ -91,10 +91,10 @@ void TenantDetailDialog::populateLookups() {
     }
 
     QPointer<TenantDetailDialog> self = this;
+    auto* cm = clientManager_;
 
-    auto task = [self]() -> lookup_result {
-        if (!self || !self->clientManager_) return {};
-        return fetch_tenant_lookups(self->clientManager_);
+    auto task = [cm]() -> lookup_result {
+        return fetch_tenant_lookups(cm);
     };
 
     auto* watcher = new QFutureWatcher<lookup_result>(self);

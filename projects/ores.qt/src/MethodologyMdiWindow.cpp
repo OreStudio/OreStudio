@@ -26,6 +26,7 @@
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -62,6 +63,15 @@ void MethodologyMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
+    using cs = column_style;
+    tableView_->setItemDelegate(new EntityItemDelegate({
+        cs::text_left,   // Name
+        cs::text_left,   // Description
+        cs::text_left,   // LogicReference
+        cs::mono_center, // Version
+        cs::text_left,   // RecordedBy
+        cs::mono_left    // RecordedAt
+    }, tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);

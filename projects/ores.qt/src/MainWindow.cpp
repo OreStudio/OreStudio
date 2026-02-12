@@ -71,6 +71,7 @@
 #include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/PartyController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
+#include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -157,6 +158,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionContactTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
     ui_->ActionParties->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));
     ui_->ActionCounterparties->setIcon(IconUtils::createRecoloredIcon(Icon::Handshake, IconUtils::DefaultIconColor));
+    ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::Building, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -538,6 +540,12 @@ MainWindow::MainWindow(QWidget* parent) :
             counterpartyController_->showListWindow();
     });
 
+    // Connect Business Centres action to controller
+    connect(ui_->ActionBusinessCentres, &QAction::triggered, this, [this]() {
+        if (businessCentreController_)
+            businessCentreController_->showListWindow();
+    });
+
     // Connect Data Librarian action
     connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
         if (dataLibrarianWindow_) {
@@ -850,6 +858,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionContactTypes->setEnabled(isLoggedIn);
     ui_->ActionParties->setEnabled(isLoggedIn);
     ui_->ActionCounterparties->setEnabled(isLoggedIn);
+    ui_->ActionBusinessCentres->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1329,6 +1338,23 @@ void MainWindow::createControllers() {
     connect(counterpartyController_.get(), &CounterpartyController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(counterpartyController_.get(), &CounterpartyController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create business centre controller
+    businessCentreController_ = std::make_unique<BusinessCentreController>(
+        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+
+    connect(businessCentreController_.get(), &BusinessCentreController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessCentreController_.get(), &BusinessCentreController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessCentreController_.get(), &BusinessCentreController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(businessCentreController_.get(), &BusinessCentreController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";

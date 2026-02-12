@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,26 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_ITEM_DELEGATE_HPP
-#define ORES_QT_CURRENCY_ITEM_DELEGATE_HPP
+#ifndef ORES_REFDATA_DOMAIN_BUSINESS_CENTRE_JSON_IO_HPP
+#define ORES_REFDATA_DOMAIN_BUSINESS_CENTRE_JSON_IO_HPP
 
-#include <QStyledItemDelegate>
-#include <QFont>
+#include <iosfwd>
+#include "ores.refdata/domain/business_centre.hpp"
 
-namespace ores::qt {
+namespace ores::refdata::domain {
 
-class CurrencyItemDelegate : public QStyledItemDelegate {
-    Q_OBJECT
-
-public:
-    explicit CurrencyItemDelegate(QObject* parent = nullptr);
-
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-               const QModelIndex& index) const override;
-
-private:
-    QFont monospaceFont_;
-};
+std::ostream& operator<<(std::ostream& s, const business_centre& v);
 
 }
 

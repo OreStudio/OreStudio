@@ -38,9 +38,6 @@ public:
                    const QModelIndex& index) const override;
 
 private:
-    void drawBadge(QPainter* painter, QRect& rect, const QString& text,
-                   const QColor& backgroundColor, const QColor& textColor,
-                   const QFont& font) const;
 };
 
 }

@@ -37,6 +37,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
@@ -89,6 +90,15 @@ RoleMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(roleModel_.get());
     roleTableView_->setModel(proxyModel_);
     roleTableView_->setSortingEnabled(true);
+    using cs = column_style;
+    roleTableView_->setItemDelegate(new EntityItemDelegate({
+        cs::text_left,   // Name
+        cs::text_left,   // Description
+        cs::mono_center, // PermissionCount
+        cs::mono_center, // Version
+        cs::text_left,   // RecordedBy
+        cs::mono_left    // RecordedAt
+    }, roleTableView_));
     roleTableView_->sortByColumn(0, Qt::AscendingOrder);
 
     QHeaderView* horizontalHeader(roleTableView_->horizontalHeader());

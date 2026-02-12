@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_business_centres_tbl" (
     "source" text null,
     "description" text null,
     "coding_scheme_code" text not null,
+    "country_alpha2_code" text null,
     "image_id" uuid,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -70,6 +71,10 @@ create index if not exists ores_refdata_business_centres_coding_scheme_idx
 on "public"."ores_refdata_business_centres_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists ores_refdata_business_centres_country_idx
+on "public"."ores_refdata_business_centres_tbl" (tenant_id, country_alpha2_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function public.ores_refdata_business_centres_insert_fn()
 returns trigger as $$
 declare
@@ -85,6 +90,19 @@ begin
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
+
+    -- Validate country_alpha2_code foreign key
+    if NEW.country_alpha2_code is not null
+       and exists (select 1 from ores_refdata_countries_tbl limit 1)
+       and not exists (
+        select 1 from ores_refdata_countries_tbl
+        where alpha2_code = NEW.country_alpha2_code
+          and tenant_id = NEW.tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid country_alpha2_code: %. Country must exist.', NEW.country_alpha2_code
         using errcode = '23503';
     end if;
 

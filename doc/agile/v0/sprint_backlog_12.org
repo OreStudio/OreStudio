@@ -1135,6 +1135,101 @@ architecture.
 - Leaf party users see only their own data.
 - Mid-level party users see their subtree.
 
+*** Advanced counterparty dialog                                       :code:
+
+We've implemented a basic CRUD based counterparty dialog. However, real
+counterparty dialogs are much more complex. We've asked Gemini to sketch one
+out.
+
+**** Trading System Entity & Counterparty Management Specification
+
+ 1. SYSTEM CORE ENTITIES
+** System Tenant
+- **Name:** =Nexus_Kernel=
+- **Purpose:** Storage of global system data and reference data.
+** System Party
+- **Name:** =Platform_Operator_Entity=
+- **Purpose:** Internal legal entity for the system itself (House Account).
+
+* 2. DATA ARCHITECTURE (JSON)
+#+begin_src json
+{
+  "entity_id": "UUID-99201",
+  "is_system_owned": false,
+  "legal_name": "J.P. Morgan Securities LLC",
+  "lei": "7H6GLXDR0MBN8G7RUT71",
+  "bic_swift": "CHASUS33",
+  "status": "ACTIVE",
+  "hierarchy": { "parent_id": "UUID-ROOT-JPM", "aggregate_risk": true },
+  "trading_limits": [
+    { "asset_class": "FX_SPOT", "limit_usd": 50000000, "utilization_usd": 25000000 }
+  ],
+  "ssi": [
+    { "currency": "USD", "bank_name": "BNY MELLON NY", "status": "VERIFIED" }
+  ]
+}
+#+end_src
+
+* 3. UI WIREFRAME SPECIFICATIONS
+** Tab 1: General Info
+#+begin_example
+_____________________________________________________________________________________
+[ GENERAL INFO ]   [ Hierarchy ]   [ Trading Limits ]   [ Settlement (SSI) ]
+_____________________________________________________________________________________
+IDENTIFIERS                                  CONTACTS
+------------------------------------------   ----------------------------------
+Internal ID:  ENT-99201                      Primary:  Sarah Jenkins
+LEI:          7H6GLXDR0MBN8G7RUT71           Role:     Head of Desk
+BIC/SWIFT:    CHASUS33                       Email:    s.jenkins@jpm.com
+Country:      US (United States)             Phone:    +1 212 555 0198
+-------------------------------------------------------------------------------
+#+end_example
+
+** Tab 2: Hierarchy
+#+begin_example
+_____________________________________________________________________________________
+[ General Info ]   [[ HIERARCHY ]]   [ Trading Limits ]   [ Settlement (SSI) ]
+_____________________________________________________________________________________
+RELATIONSHIP STRUCTURE
+-------------------------------------------------------------------------------
+[Root] JP Morgan Chase & Co (Global Parent)
+  |-- [Sub] J.P. Morgan Securities LLC
+  |    `-- [THIS] J.P. Morgan Prime Brokerage [Direct Subsidiary]
+  `-- [Sub] J.P. Morgan Bank NA (Europe)
+-------------------------------------------------------------------------------
+#+end_example
+
+** Tab 3: Trading Limits
+#+begin_example
+_____________________________________________________________________________________
+[ General Info ]   [ Hierarchy ]   [[ TRADING LIMITS ]]   [ Settlement (SSI) ]
+_____________________________________________________________________________________
+PRODUCT       | ALLOWED | MAX TENOR | NET LIMIT (USD) | UTILIZATION
+--------------|---------|-----------|-----------------|--------------------------
+FX Spot       |  [YES]  | N/A       | 50,000,000      | [|||||-----] 50%
+FX Forwards   |  [YES]  | 2 Years   | 20,000,000      | [||--------] 20%
+Equities      |  [YES]  | N/A       | 100,000,000     | [||||||||--] 80%
+-------------------------------------------------------------------------------
+#+end_example
+
+** Tab 4: Settlement (SSI)
+#+begin_example
+_____________________________________________________________________________________
+[ General Info ]   [ Hierarchy ]   [ Trading Limits ]   [[ SETTLEMENT (SSI) ]]
+_____________________________________________________________________________________
+CCY | METHOD | NOSTRO BANK       | ACCOUNT NO.      | BIC/SWIFT   | STATUS
+----|--------|-------------------|------------------|-------------|--------------
+USD | SWIFT  | BNY MELLON NY     | 9900881234       | IRVTUS3N    | [VERIFIED]
+EUR | SWIFT  | DEUTSCHE BANK AG  | DE9100223344...  | DEUTDEFF    | [VERIFIED]
+-------------------------------------------------------------------------------
+#+end_example
+
+* 4. BUSINESS LOGIC & CONSTRAINTS
+1. **System Party Identification:** If =is_system_owned= is true, UI should apply a distinct CSS theme (e.g., subtle blue background).
+2. **Limit Validation:** If =utilization_usd= > =limit_usd=, the Status indicator in Tab 3 must change to [OVERLIMIT] in red.
+3. **Four-Eyes Principle:** Any change to SSI or Trading Limits must enter a 'PENDING' state until approved by a second user.
+4. **GLEIF Integration:** Use ISO 17442 for LEI validation.
+
 *** Extend login flow with party selection                             :code:
 
 After authentication, look up the user's associated parties from

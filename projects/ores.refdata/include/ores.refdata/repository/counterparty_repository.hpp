@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -55,8 +56,12 @@ public:
     void write(const std::vector<domain::counterparty>& counterparties);
 
     std::vector<domain::counterparty> read_latest();
+    std::vector<domain::counterparty> read_latest(std::uint32_t offset,
+                                                   std::uint32_t limit);
     std::vector<domain::counterparty> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::counterparty> read_latest_by_code(const std::string& code);
+
+    std::uint32_t get_total_count();
 
     std::vector<domain::counterparty> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

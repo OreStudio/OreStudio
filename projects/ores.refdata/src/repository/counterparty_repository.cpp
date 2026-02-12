@@ -70,6 +70,47 @@ counterparty_repository::read_latest() {
 }
 
 std::vector<domain::counterparty>
+counterparty_repository::read_latest(std::uint32_t offset,
+                                      std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<counterparty_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("full_name"_c) |
+        sqlgen::offset(offset) |
+        sqlgen::limit(limit);
+
+    return execute_read_query<counterparty_entity, domain::counterparty>(
+        ctx_, query,
+        [](const auto& entities) { return counterparty_mapper::map(entities); },
+        lg(), "Reading latest counterparties with pagination.");
+}
+
+std::uint32_t counterparty_repository::get_total_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty count";
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<counterparty_entity>(
+        sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active counterparty count: " << count;
+    return count;
+}
+
+std::vector<domain::counterparty>
 counterparty_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty. Id: " << id;
 

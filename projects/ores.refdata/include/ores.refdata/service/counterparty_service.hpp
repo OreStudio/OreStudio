@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -59,9 +60,15 @@ public:
     explicit counterparty_service(context ctx);
 
     /**
-     * @brief Lists all counterparties.
+     * @brief Lists counterparties with pagination.
      */
-    std::vector<domain::counterparty> list_counterparties();
+    std::vector<domain::counterparty> list_counterparties(
+        std::uint32_t offset = 0, std::uint32_t limit = 100);
+
+    /**
+     * @brief Returns total number of active counterparties.
+     */
+    std::uint32_t count_counterparties();
 
     /**
      * @brief Finds a counterparty by its ID.

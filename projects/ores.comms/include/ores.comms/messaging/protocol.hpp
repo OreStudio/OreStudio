@@ -254,7 +254,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 30.0 makes business_center_code mandatory (non-optional) for parties.
 // Previously serialized as optional (bool + conditional string), now always
 // present as a plain string. Defaults to 'WRLD' for unmapped countries.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 30;
+//
+// Version 31.0 adds pagination support to get_counterparties_request (offset,
+// limit) and get_counterparties_response (total_available_count). Breaking
+// change as the wire format is incompatible with previous versions.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 31;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

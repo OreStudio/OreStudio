@@ -21,6 +21,8 @@
 #define ORES_QT_CLIENT_COUNTERPARTY_MODEL_HPP
 
 #include <vector>
+#include <cstdint>
+#include <unordered_set>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
@@ -79,8 +81,24 @@ public:
 
     /**
      * @brief Refresh counterparty data from server asynchronously.
+     *
+     * When replace is true, existing data is cleared before loading.
+     * When false, new data is appended (for pagination).
+     *
+     * @param replace If true, replace existing data; if false, append.
      */
-    void refresh();
+    void refresh(bool replace = true);
+
+    /**
+     * @brief Load a specific page of counterparty data.
+     *
+     * @param offset Number of records to skip
+     * @param limit Number of records to fetch
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
+    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
 
     /**
      * @brief Get counterparty at the specified row.
@@ -89,6 +107,10 @@ public:
      * @return The counterparty, or nullptr if row is invalid.
      */
     const refdata::domain::counterparty* getCounterparty(int row) const;
+
+    std::uint32_t page_size() const { return page_size_; }
+    void set_page_size(std::uint32_t size);
+    std::uint32_t total_available_count() const { return total_available_count_; }
 
 signals:
     /**
@@ -112,13 +134,18 @@ private:
     struct FetchResult {
         bool success;
         std::vector<refdata::domain::counterparty> counterparties;
+        std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
+    void fetch_counterparties(std::uint32_t offset, std::uint32_t limit);
+
     ClientManager* clientManager_;
     std::vector<refdata::domain::counterparty> counterparties_;
     QFutureWatcher<FetchResult>* watcher_;
+    std::uint32_t page_size_{100};
+    std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using CounterpartyKeyExtractor = std::string(*)(const refdata::domain::counterparty&);

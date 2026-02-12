@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,25 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_COUNTRY_ITEM_DELEGATE_HPP
-#define ORES_QT_COUNTRY_ITEM_DELEGATE_HPP
+#ifndef ORES_QT_FONT_UTILS_HPP
+#define ORES_QT_FONT_UTILS_HPP
 
-#include <QStyledItemDelegate>
 #include <QFont>
+#include <QString>
 
 namespace ores::qt {
 
-class CountryItemDelegate : public QStyledItemDelegate {
-    Q_OBJECT
+struct FontUtils {
+    static constexpr const char* MonospaceFontFamily = "Fira Code";
+    static constexpr int DefaultPointSize = 10;
+    static constexpr int DefaultPixelSize = 11;
 
-public:
-    explicit CountryItemDelegate(QObject* parent = nullptr);
+    static QFont monospace() {
+        QFont f(MonospaceFontFamily);
+        f.setPointSize(DefaultPointSize);
+        return f;
+    }
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-               const QModelIndex& index) const override;
+    static QFont monospaceBold() {
+        QFont f = monospace();
+        f.setBold(true);
+        return f;
+    }
 
-private:
-    QFont monospaceFont_;
+    /**
+     * @brief Returns a CSS font-family/font-size snippet for use in stylesheets.
+     */
+    static QString monospaceCssFragment() {
+        return QString("font-family: \"%1\"; font-size: %2px;")
+            .arg(MonospaceFontFamily)
+            .arg(DefaultPixelSize);
+    }
 };
 
 }

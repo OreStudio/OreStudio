@@ -19,7 +19,9 @@
  */
 #include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/ClientTelemetryLogModel.hpp"
+#include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/FontUtils.hpp"
 
 #include <QPainter>
 #include <QApplication>
@@ -29,8 +31,7 @@ namespace ores::qt {
 
 TelemetryLogDelegate::TelemetryLogDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
-    monospaceFont_ = QFont("Fira Code");
-    monospaceFont_.setPointSize(10);
+    monospaceFont_ = FontUtils::monospace();
 
     badgeFont_ = QFont();
     badgeFont_.setPointSize(7);
@@ -78,7 +79,8 @@ void TelemetryLogDelegate::paint(QPainter* painter,
             badgeText = level.toUpper();
         }
 
-        drawBadge(painter, opt.rect, badgeText, bgColor, textColor);
+        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
+            badgeText, bgColor, textColor, badgeFont_);
         return;
     }
 
@@ -116,35 +118,6 @@ QSize TelemetryLogDelegate::sizeHint(const QStyleOptionViewItem& option,
     }
 
     return size;
-}
-
-void TelemetryLogDelegate::drawBadge(QPainter* painter, const QRect& rect,
-                                      const QString& text,
-                                      const QColor& backgroundColor,
-                                      const QColor& textColor) const {
-    painter->save();
-    painter->setRenderHint(QPainter::Antialiasing, true);
-
-    QFontMetrics fm(badgeFont_);
-    int textWidth = fm.horizontalAdvance(text);
-    int padding = 5;
-    int badgeWidth = textWidth + padding * 2;
-    int badgeHeight = fm.height() + 2;
-
-    int x = rect.center().x() - badgeWidth / 2;
-    int y = rect.center().y() - badgeHeight / 2;
-    QRect badgeRect(x, y, badgeWidth, badgeHeight);
-
-    int radius = badgeHeight / 2;
-    painter->setBrush(backgroundColor);
-    painter->setPen(Qt::NoPen);
-    painter->drawRoundedRect(badgeRect, radius, radius);
-
-    painter->setFont(badgeFont_);
-    painter->setPen(textColor);
-    painter->drawText(badgeRect, Qt::AlignCenter, text);
-
-    painter->restore();
 }
 
 }

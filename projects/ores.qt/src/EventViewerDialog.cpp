@@ -20,6 +20,7 @@
  */
 #include "ores.qt/EventViewerDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FontUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -569,7 +570,7 @@ void EventViewerWindow::onEventDoubleClicked(const QModelIndex& index) {
     auto* jsonText = new QTextEdit(&detailDialog);
     jsonText->setReadOnly(true);
     jsonText->setPlainText(event.jsonPayload);
-    jsonText->setFont(QFont("Monospace", 10));
+    jsonText->setFont(FontUtils::monospace());
     layout->addWidget(jsonText);
 
     // Buttons

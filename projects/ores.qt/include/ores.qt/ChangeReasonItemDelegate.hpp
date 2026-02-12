@@ -45,19 +45,6 @@ public:
                    const QModelIndex& index) const override;
 
 private:
-    /**
-     * @brief Draw a pill-shaped badge with text.
-     *
-     * @param painter The painter to use.
-     * @param rect The bounding rectangle for the badge.
-     * @param text The text to display in the badge.
-     * @param backgroundColor The badge background color.
-     * @param textColor The badge text color.
-     */
-    void drawBadge(QPainter* painter, const QRect& rect,
-                   const QString& text, const QColor& backgroundColor,
-                   const QColor& textColor) const;
-
     QFont monospaceFont_;
     QFont badgeFont_;
 };

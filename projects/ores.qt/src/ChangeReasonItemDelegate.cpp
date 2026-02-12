@@ -19,6 +19,8 @@
  */
 #include "ores.qt/ChangeReasonItemDelegate.hpp"
 #include "ores.qt/ClientChangeReasonModel.hpp"
+#include "ores.qt/DelegatePaintUtils.hpp"
+#include "ores.qt/FontUtils.hpp"
 
 #include <QPainter>
 #include <QApplication>
@@ -38,8 +40,7 @@ const QColor no_badge_text(255, 255, 255);     // White
 
 ChangeReasonItemDelegate::ChangeReasonItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
-    monospaceFont_ = QFont("Fira Code");
-    monospaceFont_.setPointSize(10);
+    monospaceFont_ = FontUtils::monospace();
 
     badgeFont_ = QFont();
     badgeFont_.setPointSize(7);
@@ -56,11 +57,9 @@ void ChangeReasonItemDelegate::paint(QPainter* painter,
         index.column() == ClientChangeReasonModel::AppliesToDelete ||
         index.column() == ClientChangeReasonModel::RequiresCommentary) {
 
-        // Draw the background (for selection highlighting)
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
-        // Get the display text to determine badge type
         QString text = index.data(Qt::DisplayRole).toString();
         QColor bgColor, textColor;
         QString badgeText;
@@ -75,17 +74,12 @@ void ChangeReasonItemDelegate::paint(QPainter* painter,
             badgeText = tr("No");
         }
 
-        // Draw the badge
-        drawBadge(painter, opt.rect, badgeText, bgColor, textColor);
+        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
+            badgeText, bgColor, textColor, badgeFont_);
         return;
     }
 
-    // Check if model provides a custom foreground color (e.g., recency coloring)
-    QVariant fgData = index.data(Qt::ForegroundRole);
-    if (fgData.isValid()) {
-        opt.palette.setColor(QPalette::Text, fgData.value<QColor>());
-        opt.palette.setColor(QPalette::HighlightedText, fgData.value<QColor>());
-    }
+    DelegatePaintUtils::apply_foreground_role(opt, index);
 
     // Apply formatting based on column
     switch (index.column()) {
@@ -113,7 +107,6 @@ void ChangeReasonItemDelegate::paint(QPainter* painter,
             break;
     }
 
-    // Draw the item using the modified options
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
 
@@ -121,7 +114,6 @@ QSize ChangeReasonItemDelegate::sizeHint(const QStyleOptionViewItem& option,
                                           const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-    // Ensure minimum height and width for badge columns
     if (index.column() == ClientChangeReasonModel::AppliesToAmend ||
         index.column() == ClientChangeReasonModel::AppliesToDelete ||
         index.column() == ClientChangeReasonModel::RequiresCommentary) {
@@ -130,39 +122,6 @@ QSize ChangeReasonItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     }
 
     return size;
-}
-
-void ChangeReasonItemDelegate::drawBadge(QPainter* painter, const QRect& rect,
-                                          const QString& text,
-                                          const QColor& backgroundColor,
-                                          const QColor& textColor) const {
-    painter->save();
-    painter->setRenderHint(QPainter::Antialiasing, true);
-
-    // Calculate badge dimensions (compact size)
-    QFontMetrics fm(badgeFont_);
-    int textWidth = fm.horizontalAdvance(text);
-    int padding = 5;
-    int badgeWidth = textWidth + padding * 2;
-    int badgeHeight = fm.height() + 2;
-
-    // Center the badge in the cell
-    int x = rect.center().x() - badgeWidth / 2;
-    int y = rect.center().y() - badgeHeight / 2;
-    QRect badgeRect(x, y, badgeWidth, badgeHeight);
-
-    // Draw pill-shaped background (rounded rectangle)
-    int radius = badgeHeight / 2;
-    painter->setBrush(backgroundColor);
-    painter->setPen(Qt::NoPen);
-    painter->drawRoundedRect(badgeRect, radius, radius);
-
-    // Draw text
-    painter->setFont(badgeFont_);
-    painter->setPen(textColor);
-    painter->drawText(badgeRect, Qt::AlignCenter, text);
-
-    painter->restore();
 }
 
 }

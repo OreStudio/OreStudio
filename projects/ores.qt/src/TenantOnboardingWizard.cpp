@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TenantOnboardingWizard.hpp"
+#include "ores.qt/FontUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -474,7 +475,7 @@ ApplyOnboardingPage::ApplyOnboardingPage(TenantOnboardingWizard* wizard)
 
     logOutput_ = new QTextEdit(this);
     logOutput_->setReadOnly(true);
-    logOutput_->setFont(QFont("monospace", 9));
+    logOutput_->setFont(FontUtils::monospace());
     layout->addWidget(logOutput_);
 }
 

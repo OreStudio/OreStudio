@@ -26,6 +26,7 @@
 #include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -146,18 +147,23 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
-    tableView_->verticalHeader()->setVisible(false);
 
-    // Set column widths
-    tableView_->setColumnWidth(ClientBusinessCentreModel::Flag, 60);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::Code, 100);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::Source, 80);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::Description, 250);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::CodingScheme, 130);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::CountryAlpha2, 80);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::Version, 80);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::RecordedBy, 120);
-    tableView_->setColumnWidth(ClientBusinessCentreModel::RecordedAt, 150);
+    using cs = column_style;
+    tableView_->setItemDelegate(new EntityItemDelegate({
+        cs::icon_centered,    // Flag
+        cs::mono_bold_left,   // Code
+        cs::text_left,        // Source
+        cs::text_left,        // Description
+        cs::mono_left,        // CodingScheme
+        cs::mono_bold_center, // CountryAlpha2
+        cs::mono_center,      // Version
+        cs::text_left,        // RecordedBy
+        cs::mono_left         // RecordedAt
+    }, tableView_));
+
+    QHeaderView* horizontalHeader(tableView_->horizontalHeader());
+    tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

@@ -26,6 +26,7 @@
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -62,6 +63,23 @@ void DatasetMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
+    using cs = column_style;
+    tableView_->setItemDelegate(new EntityItemDelegate({
+        cs::text_left,   // Code
+        cs::text_left,   // Name
+        cs::text_left,   // Catalog
+        cs::text_left,   // SubjectArea
+        cs::text_left,   // Domain
+        cs::text_left,   // Origin
+        cs::text_left,   // Nature
+        cs::text_left,   // Treatment
+        cs::text_left,   // SourceSystem
+        cs::mono_left,   // AsOfDate
+        cs::mono_center, // Version
+        cs::text_left,   // RecordedBy
+        cs::mono_left,   // RecordedAt
+        cs::text_left    // Tags
+    }, tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);

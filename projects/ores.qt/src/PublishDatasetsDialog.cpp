@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/PublishDatasetsDialog.hpp"
+#include "ores.qt/FontUtils.hpp"
 
 #include <algorithm>
 #include <QVBoxLayout>
@@ -495,7 +496,7 @@ ResultsPage::ResultsPage(PublishDatasetsDialog* wizard)
     logOutput_->setMinimumHeight(200);
     logOutput_->setStyleSheet(
         "QTextEdit { background-color: #1e1e1e; color: #d4d4d4; "
-        "font-family: monospace; font-size: 11px; }");
+        + FontUtils::monospaceCssFragment() + " }");
     layout->addWidget(logOutput_, 1);
 }
 

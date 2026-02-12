@@ -41,7 +41,7 @@ domain::business_centre business_centre_mapper::map(const business_centre_entity
     r.source = v.source;
     r.description = v.description;
     r.coding_scheme_code = v.coding_scheme_code;
-    r.country_alpha2_code = v.country_alpha2_code;
+    r.country_alpha2_code = v.country_alpha2_code.value_or("");
     if (v.image_id) {
         r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
     }
@@ -64,7 +64,9 @@ business_centre_entity business_centre_mapper::map(const domain::business_centre
     r.source = v.source;
     r.description = v.description;
     r.coding_scheme_code = v.coding_scheme_code;
-    r.country_alpha2_code = v.country_alpha2_code;
+    if (!v.country_alpha2_code.empty()) {
+        r.country_alpha2_code = v.country_alpha2_code;
+    }
     if (v.image_id) {
         r.image_id = boost::uuids::to_string(*v.image_id);
     }

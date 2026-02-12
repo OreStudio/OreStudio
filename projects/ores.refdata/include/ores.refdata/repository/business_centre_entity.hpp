@@ -40,7 +40,7 @@ struct business_centre_entity {
     std::string source;
     std::string description;
     std::string coding_scheme_code;
-    std::string country_alpha2_code;
+    std::optional<std::string> country_alpha2_code;
     std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
     std::string modified_by;
     std::string performed_by;

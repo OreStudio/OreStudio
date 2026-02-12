@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,18 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_PROTOCOL_HPP
-#define ORES_REFDATA_MESSAGING_PROTOCOL_HPP
+#ifndef ORES_REFDATA_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
+#define ORES_REFDATA_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
 
-#include "ores.refdata/messaging/currency_protocol.hpp"
-#include "ores.refdata/messaging/currency_history_protocol.hpp"
-#include "ores.refdata/messaging/country_protocol.hpp"
-#include "ores.refdata/messaging/party_type_protocol.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
-#include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
-#include "ores.refdata/messaging/contact_type_protocol.hpp"
-#include "ores.refdata/messaging/party_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
-#include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include <iosfwd>
+#include <vector>
+#include "ores.refdata/domain/business_centre.hpp"
+
+namespace ores::refdata::domain {
+
+/**
+ * @brief Prints business centres to a stream in table format.
+ */
+void print_business_centre_table(std::ostream& s, const std::vector<business_centre>& v);
+
+/**
+ * @brief Dumps the business centre objects to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<business_centre>& v);
+
+}
 
 #endif

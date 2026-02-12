@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_PROTOCOL_HPP
-#define ORES_REFDATA_MESSAGING_PROTOCOL_HPP
+#include "ores.refdata/domain/business_centre_json_io.hpp"
 
-#include "ores.refdata/messaging/currency_protocol.hpp"
-#include "ores.refdata/messaging/currency_history_protocol.hpp"
-#include "ores.refdata/messaging/country_protocol.hpp"
-#include "ores.refdata/messaging/party_type_protocol.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
-#include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
-#include "ores.refdata/messaging/contact_type_protocol.hpp"
-#include "ores.refdata/messaging/party_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
-#include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
-#endif
+namespace ores::refdata::domain {
+
+std::ostream& operator<<(std::ostream& s, const business_centre& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

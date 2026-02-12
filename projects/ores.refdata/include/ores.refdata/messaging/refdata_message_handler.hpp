@@ -37,6 +37,7 @@ namespace ores::refdata::messaging {
  * Currently handles:
  * - Currency CRUD + history
  * - Country CRUD + history
+ * - Business centre CRUD + history
  * - Party type CRUD + history
  * - Party status CRUD + history
  * - Party ID scheme CRUD + history
@@ -209,6 +210,20 @@ private:
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_party_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Business centre handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_business_centres_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_business_centre_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_business_centre_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_business_centre_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     // Counterparty handlers

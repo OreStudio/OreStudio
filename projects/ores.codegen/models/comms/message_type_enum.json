@@ -44,6 +44,15 @@
       {"name": "get_country_history_request", "value": "0x100F"},
       {"name": "get_country_history_response", "value": "0x1010"},
 
+      {"name": "get_business_centres_request", "value": "0x1061", "comment": "Refdata subsystem - Business centres"},
+      {"name": "get_business_centres_response", "value": "0x1062"},
+      {"name": "save_business_centre_request", "value": "0x1063"},
+      {"name": "save_business_centre_response", "value": "0x1064"},
+      {"name": "delete_business_centre_request", "value": "0x1065"},
+      {"name": "delete_business_centre_response", "value": "0x1066"},
+      {"name": "get_business_centre_history_request", "value": "0x1067"},
+      {"name": "get_business_centre_history_response", "value": "0x1068"},
+
       {"name": "get_accounts_request", "value": "0x2003", "comment": "IAM subsystem - Accounts"},
       {"name": "get_accounts_response", "value": "0x2004"},
       {"name": "login_request", "value": "0x2005"},

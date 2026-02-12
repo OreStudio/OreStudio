@@ -286,21 +286,29 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     {
         total_available_count_ = result.total_available_count;
 
-        // Build set of existing ISO codes for duplicate detection
-        std::unordered_set<std::string> existing_codes;
-        for (const auto& curr : currencies_) {
-            existing_codes.insert(curr.iso_code);
-        }
-
-        // Filter out duplicates from new results
         std::vector<refdata::domain::currency> new_currencies;
-        for (auto& curr : result.currencies) {
-            if (existing_codes.find(curr.iso_code) == existing_codes.end()) {
-                new_currencies.push_back(std::move(curr));
+        const auto received_count = result.currencies.size();
+
+        if (currencies_.empty()) {
+            // Full refresh or first page load, no duplicates to check.
+            new_currencies = std::move(result.currencies);
+        } else {
+            // Appending data, check for duplicates.
+            std::unordered_set<std::string> existing_codes;
+            existing_codes.reserve(currencies_.size());
+            for (const auto& curr : currencies_) {
                 existing_codes.insert(curr.iso_code);
-            } else {
-                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate currency: "
-                                           << curr.iso_code;
+            }
+
+            new_currencies.reserve(received_count);
+            for (auto& curr : result.currencies) {
+                if (existing_codes.find(curr.iso_code) == existing_codes.end()) {
+                    new_currencies.push_back(std::move(curr));
+                    existing_codes.insert(curr.iso_code);
+                } else {
+                    BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate currency: "
+                                               << curr.iso_code;
+                }
             }
         }
 
@@ -325,8 +333,8 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
         }
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new currencies "
-                                  << "(received " << result.currencies.size()
-                                  << ", filtered " << (result.currencies.size() - new_count)
+                                  << "(received " << received_count
+                                  << ", filtered " << (received_count - new_count)
                                   << " duplicates). Total in model: " << currencies_.size()
                                   << ", Total available: " << total_available_count_;
 

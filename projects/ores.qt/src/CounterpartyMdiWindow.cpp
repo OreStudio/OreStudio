@@ -46,6 +46,7 @@ CounterpartyMdiWindow::CounterpartyMdiWindow(
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
+      pagination_widget_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
       reloadAction_(nullptr),
@@ -73,6 +74,9 @@ void CounterpartyMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    pagination_widget_ = new PaginationWidget(this);
+    layout->addWidget(pagination_widget_);
 }
 
 void CounterpartyMdiWindow::setupToolbar() {
@@ -170,6 +174,37 @@ void CounterpartyMdiWindow::setupConnections() {
             this, &CounterpartyMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked,
             this, &CounterpartyMdiWindow::onDoubleClicked);
+
+    // Connect pagination widget signals
+    connect(pagination_widget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+        model_->set_page_size(size);
+        model_->refresh(true);
+    });
+
+    connect(pagination_widget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            emit statusChanged("Loading all counterparties...");
+            model_->set_page_size(total);
+            model_->refresh(true);
+        } else if (total > 1000) {
+            BOOST_LOG_SEV(lg(), warn) << "Total count " << total
+                                      << " exceeds maximum page size of 1000";
+            emit statusChanged("Cannot load all - too many records (max 1000)");
+        }
+    });
+
+    connect(pagination_widget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        BOOST_LOG_SEV(lg(), debug) << "Page requested: offset=" << offset
+                                   << ", limit=" << limit;
+        emit statusChanged("Loading counterparties...");
+        model_->load_page(offset, limit);
+    });
 }
 
 void CounterpartyMdiWindow::reload() {
@@ -180,7 +215,18 @@ void CounterpartyMdiWindow::reload() {
 }
 
 void CounterpartyMdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 counterparties").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+
+    pagination_widget_->update_state(loaded, total);
+
+    const bool has_more = loaded < total && total > 0 && total <= 1000;
+    pagination_widget_->set_load_all_enabled(has_more);
+
+    const QString message = QString("Loaded %1 of %2 counterparties")
+                              .arg(loaded)
+                              .arg(total);
+    emit statusChanged(message);
 }
 
 void CounterpartyMdiWindow::onLoadError(const QString& error_message,

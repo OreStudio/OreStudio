@@ -1485,11 +1485,28 @@ handle_get_counterparties_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    auto counterparties = svc.list_counterparties();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << counterparties.size() << " counterparties";
+    const auto& request = *request_result;
+
+    // Validate pagination parameters
+    constexpr std::uint32_t max_limit = 1000;
+    if (request.limit == 0 || request.limit > max_limit) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
+                                  << ". Must be between 1 and " << max_limit;
+        co_return std::unexpected(ores::utility::serialization::error_code::limit_exceeded);
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Fetching counterparties with offset: "
+                               << request.offset << ", limit: " << request.limit;
+
+    auto counterparties = svc.list_counterparties(request.offset, request.limit);
+    auto total_count = svc.count_counterparties();
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << counterparties.size()
+                              << " counterparties (total available: " << total_count << ")";
 
     get_counterparties_response response{
-        .counterparties = std::move(counterparties)
+        .counterparties = std::move(counterparties),
+        .total_available_count = total_count
     };
     co_return response.serialize();
 }

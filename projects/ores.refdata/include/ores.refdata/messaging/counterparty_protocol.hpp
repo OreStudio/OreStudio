@@ -23,6 +23,7 @@
 #include <span>
 #include <iosfwd>
 #include <vector>
+#include <cstdint>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
@@ -37,9 +38,12 @@ namespace ores::refdata::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all counterparties.
+ * @brief Request to retrieve counterparties with pagination support.
  */
 struct get_counterparties_request final {
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_counterparties_request,
                          ores::utility::serialization::error_code>
@@ -49,10 +53,11 @@ struct get_counterparties_request final {
 std::ostream& operator<<(std::ostream& s, const get_counterparties_request& v);
 
 /**
- * @brief Response containing all counterparties.
+ * @brief Response containing counterparties with pagination metadata.
  */
 struct get_counterparties_response final {
     std::vector<domain::counterparty> counterparties;
+    std::uint32_t total_available_count = 0;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_counterparties_response,

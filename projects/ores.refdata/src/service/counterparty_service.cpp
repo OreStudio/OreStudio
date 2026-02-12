@@ -29,9 +29,16 @@ using namespace ores::logging;
 counterparty_service::counterparty_service(context ctx)
     : repo_(ctx) {}
 
-std::vector<domain::counterparty> counterparty_service::list_counterparties() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all counterparties";
-    return repo_.read_latest();
+std::vector<domain::counterparty> counterparty_service::list_counterparties(
+    std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing counterparties with offset: "
+                               << offset << ", limit: " << limit;
+    return repo_.read_latest(offset, limit);
+}
+
+std::uint32_t counterparty_service::count_counterparties() {
+    BOOST_LOG_SEV(lg(), debug) << "Counting counterparties";
+    return repo_.get_total_count();
 }
 
 std::optional<domain::counterparty>

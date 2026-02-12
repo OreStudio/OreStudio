@@ -1554,6 +1554,8 @@ TEST_CASE("get_counterparties_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_counterparties_request original;
+    original.offset = 50;
+    original.limit = 25;
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1562,6 +1564,8 @@ TEST_CASE("get_counterparties_request_serialize_deserialize", tags) {
     const auto result = get_counterparties_request::deserialize(serialized);
 
     REQUIRE(result.has_value());
+    CHECK(result->offset == 50);
+    CHECK(result->limit == 25);
     BOOST_LOG_SEV(lg, debug) << "Deserialized request successfully";
 }
 
@@ -1570,6 +1574,7 @@ TEST_CASE("get_counterparties_response_serialize_deserialize", tags) {
 
     get_counterparties_response original;
     original.counterparties = generate_synthetic_counterparties(3);
+    original.total_available_count = 42;
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.counterparties.size() << " counterparties";
 
@@ -1583,6 +1588,7 @@ TEST_CASE("get_counterparties_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, debug) << "Deserialized response with "
                              << des.counterparties.size() << " counterparties";
 
+    CHECK(des.total_available_count == 42);
     REQUIRE(des.counterparties.size() == original.counterparties.size());
     for (size_t i = 0; i < original.counterparties.size(); ++i) {
         CHECK(des.counterparties[i].id == original.counterparties[i].id);

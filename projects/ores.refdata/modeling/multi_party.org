@@ -81,7 +81,7 @@ desks, subsidiaries. They:
 - Form an arbitrarily nested hierarchy via =parent_party_id=.
 - Have tree-scoped visibility: a party can see its own data and all descendant
   party data.
-- Own business data: counterparties, books, portfolios, trades.
+- Own business data: counterparty relationships, books, portfolios, trades.
 
 * Data Ownership Patterns
 
@@ -111,22 +111,73 @@ Reference data defined once at the tenant level, sourced from standards bodies
 
 Entities in this category:
 
-| Entity           | Source     | Party Relationship              |
-|------------------+------------+---------------------------------|
-| Currencies       | ISO 4217   | Visibility scoped via junction  |
-| Countries        | ISO 3166-1 | Visibility scoped via junction  |
-| Business centres | ORE        | Visibility scoped via junction  |
+| Entity                   | Source     | Party Relationship              |
+|--------------------------+------------+---------------------------------|
+| Currencies               | ISO 4217   | Visibility scoped via junction  |
+| Countries                | ISO 3166-1 | Visibility scoped via junction  |
+| Business centres         | ORE        | Visibility scoped via junction  |
+| Counterparty identities  | GLEIF      | Shared golden source            |
 
 Party-level visibility is controlled through junction tables (e.g.
 =party_currencies=) that define which currencies a given party can see and use.
 The underlying currency definitions remain shared.
 
-** Party-Scoped Data (Isolated Operational Data)
+** Counterparty Identity vs Relationship
 
-Operational data owned by a specific party. Each party maintains its own records
-independently. Even when two parties deal with the same external legal entity,
-they each have separate records with different KYC status, credit limits, and
-documentation.
+Counterparties are modelled as a two-tier structure that separates identity
+(factual, shared) from relationship (party-specific, isolated).
+
+*** Counterparty Identity (Tenant-Scoped)
+
+The identity of a counterparty -- its LEI, legal name, jurisdiction, registered
+address, entity status, parent hierarchy -- is factual, public data sourced from
+registries such as GLEIF. There is no reason for Party A and Party B within the
+same group to maintain separate copies of "Goldman Sachs Group Inc, LEI
+784F5XWPLTWKTBV3E584".
+
+Counterparty identity records live in =ores_refdata_counterparties_tbl= and are
+scoped to the tenant, not to any individual party. All parties within the tenant
+share a single golden source of counterparty reference data, imported from GLEIF
+LEI data via the data librarian.
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────┐
+│                     Tenant: ACME Corp                        │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │     Counterparty Identity (tenant-scoped, shared)      │  │
+│  │   Deutsche Bank AG    LEI: 7LTWFZYICNSX8D621K86        │  │
+│  │   Goldman Sachs Inc   LEI: 784F5XWPLTWKTBV3E584        │  │
+│  │   BNP Paribas SA      LEI: R0MUWSFPU8MPRO8K5P83        │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│  All parties see the same counterparty identities.           │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+#+end_example
+
+*** Counterparty Relationship (Party-Scoped, Future)
+
+The business relationship between a party and a counterparty -- KYC/AML status,
+onboarding date, credit limit, internal rating, netting agreements, ISDA/CSA
+details, trading permissions -- is party-specific. Each regulated entity within
+a group has independent legal obligations:
+
+- *KYC/AML*: A legal obligation on each regulated entity individually; it cannot
+  be delegated up the group hierarchy.
+- *Credit limits and netting*: Agreed per legal entity pair, not at group level.
+- *Ring-fencing regulations* (post-2008): Require separation between e.g. a
+  retail bank and its investment arm.
+- *Jurisdictional requirements*: Different subsidiaries in different
+  jurisdictions face different due diligence rules.
+
+Even in a highly automated system where LLMs perform the KYC checks, the legal
+accountability for the outcome remains with each individual regulated entity.
+Automation makes the process fast but does not eliminate the per-party scoping
+requirement.
+
+The counterparty relationship table (future =ores_refdata_counterparty_relationships_tbl=)
+will be party-scoped, referencing the shared identity record:
 
 #+begin_example
 ┌──────────────────────────────────────────────────────────────┐
@@ -136,30 +187,41 @@ documentation.
 │  │    ACME London     │    │   ACME New York    │            │
 │  │    (party A)       │    │   (party B)        │            │
 │  ├────────────────────┤    ├────────────────────┤            │
-│  │ Counterparties:    │    │ Counterparties:    │            │
-│  │  - Deutsche Bank   │    │  - Deutsche Bank   │  ← separate│
+│  │ Relationships:     │    │ Relationships:     │            │
+│  │  → Deutsche Bank   │    │  → Deutsche Bank   │  ← separate│
 │  │    KYC: Approved   │    │    KYC: Pending    │    records │
-│  │  - BNP Paribas     │    │  - Goldman Sachs   │            │
+│  │    Limit: €50M     │    │    Limit: $30M     │            │
+│  │  → BNP Paribas     │    │  → Goldman Sachs   │            │
+│  │    KYC: Approved   │    │    KYC: Approved   │            │
 │  ├────────────────────┤    ├────────────────────┤            │
 │  │ Books:             │    │ Books:             │            │
 │  │  - Main Trading    │    │  - Main Trading    │  ← separate│
 │  │  - Hedge Book      │    │  - Prop Book       │    records │
 │  └────────────────────┘    └────────────────────┘            │
 │                                                              │
-│  Party A CANNOT see Party B's data. Party B CANNOT see       │
-│  Party A's data. Both are invisible to each other.           │
+│  Identity is shared. Relationships are isolated.             │
+│  Party A CANNOT see Party B's relationships.                 │
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
 #+end_example
 
+** Party-Scoped Data (Isolated Operational Data)
+
+Operational data owned by a specific party. Each party maintains its own records
+independently.
+
 Entities in this category:
 
-| Entity           | Isolation Mechanism        | Notes                      |
-|------------------+----------------------------+----------------------------|
-| Counterparties   | =party_id= column + RLS    | Own KYC, own records       |
-| Books            | =party_id= column + RLS    | Trading books              |
-| Portfolios       | =party_id= column + RLS    | Position aggregations      |
-| Trades           | =party_id= column + RLS    | Individual transactions    |
+| Entity                        | Isolation Mechanism     | Notes                             |
+|-------------------------------+-------------------------+-----------------------------------|
+| Counterparty relationships    | =party_id= column + RLS | KYC, credit limits, agreements    |
+| Books                         | =party_id= column + RLS | Trading books                     |
+| Portfolios                    | =party_id= column + RLS | Position aggregations             |
+| Trades                        | =party_id= column + RLS | Individual transactions           |
+
+Note: Counterparty identity (LEI, legal name, hierarchy) is tenant-scoped shared
+reference data; only the party-specific relationship overlay is party-scoped. See
+the section above for details.
 
 * Party-Level Row-Level Security
 
@@ -211,7 +273,7 @@ system party, this query returns all parties in the tenant.
 Party-scoped tables use a single RLS policy:
 
 #+begin_src sql
-CREATE POLICY party_isolation ON ores_refdata_counterparties_tbl
+CREATE POLICY party_isolation ON ores_refdata_counterparty_relationships_tbl
   USING (
     party_id = ANY(current_setting('app.visible_party_ids')::uuid[])
   );
@@ -440,9 +502,11 @@ allows scoping the view to a specific party or subtree.
 ** Intercompany Considerations
 
 When viewing data across multiple parties, some records may appear to be
-duplicates (e.g. both Party A and Party B have a counterparty "Deutsche Bank").
-These are distinct records with independent lifecycles. The party column
-disambiguates them.
+duplicates (e.g. both Party A and Party B have a relationship with "Deutsche
+Bank"). These are distinct relationship records with independent lifecycles --
+different KYC status, credit limits, and trading agreements. The party column
+disambiguates them. The underlying counterparty identity (LEI, legal name) is
+shared and appears only once.
 
 For aggregated views (group-level risk, consolidated P&L), intercompany
 positions between parties in the same group require special handling
@@ -494,7 +558,7 @@ Party isolation is a strict refinement of tenant isolation:
 │  │  │   Isolates parties within a tenant              │  │  │
 │  │  │                                                 │  │  │
 │  │  │   Only applies to party-scoped tables           │  │  │
-│  │  │   (counterparties, books, trades, etc.)         │  │  │
+│  │  │   (counterparty relationships, books, trades)   │  │  │
 │  │  │                                                 │  │  │
 │  │  │   Tenant-scoped tables (currencies, countries)  │  │  │
 │  │  │   are filtered by tenant RLS only               │  │  │

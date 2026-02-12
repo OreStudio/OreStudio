@@ -81,8 +81,8 @@ select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 
 -- GLEIF LEI
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'gleif.lei_entities.small', 200);
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'gleif.lei_relationships.small', 201);
-select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'gleif.lei_counterparties.small', 202);
-select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'gleif.lei_parties.small', 203);
+select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'gleif.lei_counterparties.small', 202, true);
+select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'gleif.lei_parties.small', 203, true);
 
 -- =============================================================================
 -- Crypto Bundle Members

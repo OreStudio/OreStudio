@@ -31,6 +31,14 @@ using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
 
 // ============================================================================
+// publish_bundle_params
+// ============================================================================
+
+std::string build_params_json(const publish_bundle_params& params) {
+    return rfl::json::write(params);
+}
+
+// ============================================================================
 // bundle_dataset_result
 // ============================================================================
 

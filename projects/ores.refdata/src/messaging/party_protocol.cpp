@@ -51,10 +51,7 @@ void write_party(std::vector<std::byte>& buffer,
     if (p.parent_party_id.has_value()) {
         writer::write_uuid(buffer, *p.parent_party_id);
     }
-    writer::write_bool(buffer, p.business_center_code.has_value());
-    if (p.business_center_code.has_value()) {
-        writer::write_string(buffer, *p.business_center_code);
-    }
+    writer::write_string(buffer, p.business_center_code);
     writer::write_string(buffer, p.status);
     writer::write_string(buffer, p.recorded_by);
     writer::write_string(buffer, p.performed_by);
@@ -100,13 +97,9 @@ read_party(std::span<const std::byte>& data) {
         p.parent_party_id = *parent_party_id_result;
     }
 
-    auto has_business_center_code_result = reader::read_bool(data);
-    if (!has_business_center_code_result) return std::unexpected(has_business_center_code_result.error());
-    if (*has_business_center_code_result) {
-        auto business_center_code_result = reader::read_string(data);
-        if (!business_center_code_result) return std::unexpected(business_center_code_result.error());
-        p.business_center_code = *business_center_code_result;
-    }
+    auto business_center_code_result = reader::read_string(data);
+    if (!business_center_code_result) return std::unexpected(business_center_code_result.error());
+    p.business_center_code = *business_center_code_result;
 
     auto status_result = reader::read_string(data);
     if (!status_result) return std::unexpected(status_result.error());

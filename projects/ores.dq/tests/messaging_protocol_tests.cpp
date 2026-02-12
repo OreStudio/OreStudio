@@ -1806,6 +1806,31 @@ TEST_CASE("get_dataset_bundle_members_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_dataset_bundle_members_response e;
+
+    dataset_bundle_member m1;
+    m1.version = 1;
+    m1.bundle_code = "base";
+    m1.dataset_code = "iso.countries";
+    m1.display_order = 10;
+    m1.optional = false;
+    m1.recorded_by = "admin";
+    m1.change_reason_code = "system.new_record";
+    m1.change_commentary = "Initial";
+    m1.recorded_at = std::chrono::system_clock::now();
+    e.members.push_back(m1);
+
+    dataset_bundle_member m2;
+    m2.version = 1;
+    m2.bundle_code = "base";
+    m2.dataset_code = "gleif.lei_parties.small";
+    m2.display_order = 203;
+    m2.optional = true;
+    m2.recorded_by = "admin";
+    m2.change_reason_code = "system.new_record";
+    m2.change_commentary = "Optional LEI dataset";
+    m2.recorded_at = std::chrono::system_clock::now();
+    e.members.push_back(m2);
+
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1815,7 +1840,11 @@ TEST_CASE("get_dataset_bundle_members_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.members.size() == e.members.size());
+    REQUIRE(a.members.size() == 2);
+    CHECK(a.members[0].dataset_code == "iso.countries");
+    CHECK(a.members[0].optional == false);
+    CHECK(a.members[1].dataset_code == "gleif.lei_parties.small");
+    CHECK(a.members[1].optional == true);
 }
 
 TEST_CASE("get_dataset_bundle_members_by_bundle_request_serialize_deserialize", tags) {
@@ -1839,6 +1868,31 @@ TEST_CASE("get_dataset_bundle_members_by_bundle_response_serialize_deserialize",
     auto lg(make_logger(test_suite));
 
     get_dataset_bundle_members_by_bundle_response e;
+
+    dataset_bundle_member m1;
+    m1.version = 1;
+    m1.bundle_code = "base";
+    m1.dataset_code = "fpml.business_center";
+    m1.display_order = 105;
+    m1.optional = false;
+    m1.recorded_by = "admin";
+    m1.change_reason_code = "system.new_record";
+    m1.change_commentary = "Seed data";
+    m1.recorded_at = std::chrono::system_clock::now();
+    e.members.push_back(m1);
+
+    dataset_bundle_member m2;
+    m2.version = 1;
+    m2.bundle_code = "base";
+    m2.dataset_code = "gleif.lei_counterparties.small";
+    m2.display_order = 202;
+    m2.optional = true;
+    m2.recorded_by = "admin";
+    m2.change_reason_code = "system.new_record";
+    m2.change_commentary = "Optional counterparty dataset";
+    m2.recorded_at = std::chrono::system_clock::now();
+    e.members.push_back(m2);
+
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1848,7 +1902,11 @@ TEST_CASE("get_dataset_bundle_members_by_bundle_response_serialize_deserialize",
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.members.size() == e.members.size());
+    REQUIRE(a.members.size() == 2);
+    CHECK(a.members[0].dataset_code == "fpml.business_center");
+    CHECK(a.members[0].optional == false);
+    CHECK(a.members[1].dataset_code == "gleif.lei_counterparties.small");
+    CHECK(a.members[1].optional == true);
 }
 
 TEST_CASE("delete_dataset_bundle_member_request_serialize_deserialize", tags) {

@@ -246,7 +246,15 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // provision_tenant_request and parties_created from provision_tenant_response.
 // Tenant provisioning now creates evaluation-only tenants (tenant record,
 // system party, admin account). LEI party import deferred to Phase 2.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 28;
+//
+// Version 29.0 adds optional flag to dataset_bundle_member serialization.
+// Optional bundle members require explicit opt-in during publication and
+// are skipped unless selected by the user in the publish bundle wizard.
+//
+// Version 30.0 makes business_center_code mandatory (non-optional) for parties.
+// Previously serialized as optional (bool + conditional string), now always
+// present as a plain string. Defaults to 'WRLD' for unmapped countries.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 30;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

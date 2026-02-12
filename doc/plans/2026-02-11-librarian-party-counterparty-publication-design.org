@@ -1,0 +1,348 @@
+:PROPERTIES:
+:ID: 7a3d1e52-b8f4-4c91-a9e7-6f2c3d841b05
+:END:
+#+title: Librarian Party & Counterparty Publication Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Move LEI party and counterparty publication from the tenant provisioning wizard
+into the data librarian's publish pipeline. Parties and counterparties become
+optional, dependency-aware steps within the existing bundle publication wizard.
+
+This supersedes the LEI publication block that was removed from tenant
+provisioning in PR #437 (protocol version 28.0). Tenant provisioning now creates
+evaluation-only tenants (tenant record, system party, admin account). LEI data
+import is handled exclusively by the librarian.
+
+** Related Documents
+
+| Document                                                 | Relationship                                  |
+|----------------------------------------------------------+-----------------------------------------------|
+| [[id:5c83c9d5-f4ae-4707-ba7a-85d82fb2292b][GLEIF Dataset Librarian Integration Design]]               | Original design for parameterised publication |
+| [[id:9a726128-0e7e-4a82-a61b-c6b1c5cfc070][Party & Counterparty SQL Support Design]]                  | Table schemas and codegen models              |
+| [[id:046217E8-7259-492B-A713-A4043C867FE5][Party-Level Isolation and Tenant Types Design]]            | Party-scoped data ownership patterns          |
+| [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]                                 | RLS, session management, visibility sets      |
+
+* Problem Statement
+
+** Original Bug
+
+Tenant provisioning failed when using GLEIF mode because
+=ores_dq_lei_parties_publish_fn()= inserts parties with country-derived
+=business_center_code= values (e.g. GBLO for GB entities) that do not exist in
+the new tenant. Only WRLD is seeded during provisioning; the full business centre
+set comes from =fpml.business_center= which is published by the librarian.
+
+** Missing Dataset Dependencies
+
+The LEI dependency file (=lei_dataset_dependency_populate.sql=) only declares:
+
+- =gleif.lei_relationships.small= depends on =gleif.lei_entities.small=
+
+It has *no dependencies declared* for =lei_counterparties= or =lei_parties=.
+Both publish functions write to production tables with soft FK validations against
+=business_centres=, =party_types=, =party_statuses=, etc.
+
+Party reference data (=party_types=, =party_statuses=, =party_id_schemes=,
+=contact_types=) is populated in the foundation layer and is always present. The
+only missing piece at publish time is *business centres*.
+
+** Counterparties Lack Party Scope
+
+The counterparty table (=ores_refdata_counterparties_tbl=) currently has only
+=tenant_id= -- counterparties are tenant-wide, shared across all parties. But the
+multi-party architecture document explicitly places counterparties as
+*party-scoped data*:
+
+#+begin_quote
+| Counterparties | =party_id= column + RLS | Own KYC, own records |
+#+end_quote
+
+Each party should maintain its own counterparty records independently (e.g. ACME
+London has its own Deutsche Bank counterparty with its own KYC status, separate
+from ACME New York's).
+
+* Current State
+
+** Bundle Layout (base)
+
+| Position | Dataset                          | Params?       | Dependencies Declared |
+|----------+----------------------------------+---------------+-----------------------|
+|      105 | =fpml.business_center=           | No            | =assets.country_flags= |
+|      200 | =gleif.lei_entities.small=       | No (staging)  | None                  |
+|      201 | =gleif.lei_relationships.small=  | No (staging)  | =lei_entities.small=  |
+|      202 | =gleif.lei_counterparties.small= | No            | *None (gap)*          |
+|      203 | =gleif.lei_parties.small=        | Yes (root_lei)| *None (gap)*          |
+
+Position ordering means business centres (105) publishes before LEI data (200+),
+but there are no explicit dependencies enforcing this.
+
+** Foundation Layer (Always Present)
+
+The following are populated in =foundation_populate.sql= and baked into the
+template database:
+
+- =ores_refdata_party_types_tbl= (Bank, Corporate, CorporateGroup, etc.)
+- =ores_refdata_party_statuses_tbl= (Active, Inactive, Suspended)
+- =ores_refdata_party_id_schemes_tbl= (LEI, BIC, NationalId, etc.)
+- =ores_refdata_contact_types_tbl= (Legal, Operations, Settlement, Billing)
+- =ores_refdata_party_categories_tbl= (system, operational)
+- WRLD business centre
+
+** Publish Functions
+
+| Function                                | Input                     | Output                               |
+|-----------------------------------------+---------------------------+--------------------------------------|
+| =ores_dq_lei_parties_publish_fn=        | =root_lei= (from params) | Parties + party identifiers (subtree)|
+| =ores_dq_lei_counterparties_publish_fn= | None (publishes all)      | Counterparties + identifiers (all)   |
+
+=lei_parties= uses a recursive CTE to resolve only the subtree under =root_lei=.
+=lei_counterparties= publishes all LEI entities as counterparties, preserving
+IS_DIRECTLY_CONSOLIDATED_BY hierarchy via =parent_counterparty_id=.
+
+* Design
+
+** Phase 1: Optional Bundle Members + Party Publication
+
+Add optional bundle member infrastructure and wire LEI parties into the librarian
+wizard as an optional, parameterised step. Counterparties are deferred to Phase 2
+because they require a schema migration (adding =party_id=).
+
+*** 1.1 Dataset Dependencies (SQL)
+
+Add missing dependencies to =lei_dataset_dependency_populate.sql=:
+
+| Dataset                          | Depends On                       | Role               |
+|----------------------------------+----------------------------------+--------------------|
+| =gleif.lei_parties.small=        | =fpml.business_center=           | =business_centres= |
+| =gleif.lei_parties.small=        | =gleif.lei_entities.small=       | =entity_reference= |
+| =gleif.lei_parties.small=        | =gleif.lei_relationships.small=  | =hierarchy=        |
+| =gleif.lei_counterparties.small= | =fpml.business_center=           | =business_centres= |
+| =gleif.lei_counterparties.small= | =gleif.lei_entities.small=       | =entity_reference= |
+| =gleif.lei_counterparties.small= | =gleif.lei_relationships.small=  | =hierarchy=        |
+| =gleif.lei_counterparties.small= | =gleif.lei_parties.small=        | =party_reference=  |
+
+The counterparty-depends-on-parties dependency is declared now even though
+counterparty publication is deferred to Phase 2. This ensures the dependency
+resolver orders them correctly when both are eventually active.
+
+*** 1.2 Optional Bundle Members (SQL Schema)
+
+Add an =optional= column to =ores_dq_dataset_bundle_members_tbl=:
+
+#+begin_src sql
+ALTER TABLE ores_dq_dataset_bundle_members_tbl
+ADD COLUMN optional boolean NOT NULL DEFAULT false;
+#+end_src
+
+Mark the following datasets as optional in the base bundle:
+
+| Dataset                          | Optional |
+|----------------------------------+----------|
+| =gleif.lei_counterparties.small= | true     |
+| =gleif.lei_parties.small=        | true     |
+
+All other bundle members remain =optional = false= (required).
+
+*** 1.3 Publication Protocol Changes
+
+Extend =publish_bundle_request= to carry:
+
+- =opted_in_datasets=: list of optional dataset codes the user has enabled
+- =dataset_params=: map of dataset code to JSON params (e.g.
+  ={"gleif.lei_parties.small": {"root_lei": "529900T8BM49AURSDO55"}}=)
+
+The publication service skips optional datasets not present in
+=opted_in_datasets=. Required datasets are always published.
+
+*** 1.4 Publication Service Changes
+
+=publication_service::publish_bundle()= changes:
+
+1. After resolving topological sort, partition datasets into required and
+   optional.
+2. Required datasets publish unconditionally.
+3. Optional datasets publish only if present in =opted_in_datasets=.
+4. For parameterised datasets (those with =publication_params_schema= on their
+   artefact type), look up params from =dataset_params= map and pass as
+   =p_params= to the SQL function.
+
+*** 1.5 Qt Publish Wizard Changes
+
+Transform the publish wizard into a multi-step flow:
+
+| Step  | Content                                                            |
+|-------+--------------------------------------------------------------------|
+| 1     | Bundle selection (existing)                                        |
+| 2     | Optional datasets: checkboxes for each optional member             |
+| 2a    | If =lei_parties= opted in: LEI entity picker for root selection   |
+| Final | Summary and publish button                                         |
+
+Counterparties appear in the optional datasets list but are disabled/greyed out
+with a tooltip: "Coming soon -- requires party-scoped counterparty migration."
+This previews the future capability without breaking the wizard.
+
+*** 1.6 Files Modified
+
+| File                                                          | Change                                         |
+|---------------------------------------------------------------+------------------------------------------------|
+| =projects/ores.sql/populate/lei/lei_dataset_dependency_populate.sql= | Add missing dependencies                |
+| =projects/ores.sql/create/dq/dq_dataset_bundle_members_create.sql=   | Add =optional= column                  |
+| =projects/ores.sql/populate/governance/dq_dataset_bundle_member_populate.sql= | Mark LEI datasets optional     |
+| =projects/ores.dq/include/ores.dq/domain/dataset_bundle_member.hpp=  | Add =optional= field                   |
+| =projects/ores.dq/src/domain/dataset_bundle_member_*.cpp=            | Update serialization                    |
+| =projects/ores.dq/include/ores.dq/messaging/dataset_bundle_member_protocol.hpp= | Wire =optional= field          |
+| =projects/ores.comms/include/ores.comms/messaging/protocol.hpp=      | Protocol version bump                   |
+| Publication protocol (request/response)                              | Add =opted_in_datasets= + =dataset_params= |
+| =projects/ores.dq/src/service/publication_service.cpp=               | Skip unenabled optional datasets        |
+| =projects/ores.qt/src/PublishBundleWizard.cpp=                       | Multi-step wizard with optional steps   |
+
+** Phase 2: Party-Scoped Counterparties
+
+Add =party_id= to counterparties so they "belong to" a party. This enables the
+counterparty publication step in the librarian wizard.
+
+*** 2.1 Schema Migration
+
+Add =party_id= column to:
+
+- =ores_refdata_counterparties_tbl=
+- =ores_refdata_counterparty_identifiers_tbl=
+- =ores_refdata_counterparty_contact_informations_tbl=
+
+#+begin_src sql
+ALTER TABLE ores_refdata_counterparties_tbl
+ADD COLUMN party_id uuid NOT NULL;
+#+end_src
+
+Add soft FK validation for =party_id= in the insert trigger (must reference a
+valid active party in the same tenant).
+
+*** 2.2 Codegen Model Update
+
+Update =counterparty_domain_entity.json= (and identifier/contact models) to
+include the =party_id= column. Regenerate:
+
+- Domain type (C++ struct)
+- Repository (SQL queries include =party_id=)
+- Mapper (wire =party_id= to/from database)
+- Table I/O
+- Protocol serialization
+
+*** 2.3 Publish Function Update
+
+=lei_counterparties_publish_fn= gains a =target_party_ids= parameter (from
+=p_params=). For each target party:
+
+- Insert the full counterparty set with that party's =party_id=
+- Preserve hierarchy via =parent_counterparty_id=
+- Insert counterparty identifiers
+
+The artefact type for =lei_counterparties= gains a =publication_params_schema=:
+
+#+begin_src json
+{
+  "type": "object",
+  "properties": {
+    "target_party_ids": {
+      "type": "array",
+      "items": { "type": "string", "format": "uuid" },
+      "description": "Party UUIDs to populate counterparties into",
+      "minItems": 1
+    }
+  },
+  "required": ["target_party_ids"]
+}
+#+end_src
+
+*** 2.4 Wizard Changes
+
+The counterparties step in the publish wizard becomes active:
+
+1. Shows the party tree (just imported from LEI in the previous step, or
+   pre-existing in the tenant).
+2. User selects which parties should receive the counterparty set via checkboxes.
+3. Selected party UUIDs are passed as =target_party_ids= parameter.
+
+*** 2.5 Party RLS for Counterparties
+
+Once =party_id= is on counterparties, add the party isolation RLS policy:
+
+#+begin_src sql
+CREATE POLICY party_isolation ON ores_refdata_counterparties_tbl
+  USING (
+    party_id = ANY(current_setting('app.visible_party_ids')::uuid[])
+  );
+#+end_src
+
+This depends on the broader party-level RLS infrastructure (session variables,
+=with_party()= context, login flow changes) which is a separate body of work
+described in the multi-party architecture document.
+
+*** 2.6 Counterparty Hierarchy
+
+LEI counterparty hierarchy (IS_DIRECTLY_CONSOLIDATED_BY) is preserved via
+=parent_counterparty_id=. This supports group-level exposure reporting: "what is
+my exposure to group A?" can be answered by traversing the counterparty tree.
+
+The existing =lei_counterparties_publish_fn= already resolves and inserts this
+hierarchy. Phase 2 only adds =party_id= scoping; the hierarchy logic is
+unchanged.
+
+*** 2.7 Files Modified
+
+| File                                                           | Change                                  |
+|----------------------------------------------------------------+-----------------------------------------|
+| =projects/ores.sql/create/refdata/refdata_counterparties_create.sql= | Add =party_id= column + validation |
+| =projects/ores.sql/create/refdata/refdata_counterparty_identifiers_create.sql= | Add =party_id=         |
+| =projects/ores.sql/create/refdata/refdata_counterparty_contact_informations_create.sql= | Add =party_id= |
+| =projects/ores.codegen/models/refdata/counterparty_domain_entity.json= | Add =party_id= column         |
+| =projects/ores.codegen/models/refdata/counterparty_identifier_domain_entity.json= | Add =party_id=       |
+| =projects/ores.codegen/models/refdata/counterparty_contact_information_domain_entity.json= | Add =party_id= |
+| =projects/ores.sql/create/dq/dq_lei_counterparties_publish_create.sql= | Add =target_party_ids= param  |
+| =projects/ores.sql/populate/dq/dq_artefact_types_populate.sql= | Add params schema to =lei_counterparties= |
+| All counterparty C++ domain/repo/mapper/protocol files         | Regenerate with =party_id=              |
+| =projects/ores.qt/src/PublishBundleWizard.cpp=                 | Enable counterparty step with party picker |
+
+* Implementation Order
+
+#+begin_example
+Phase 1 (this PR)
+  |
+  +-- 1.1 Dataset dependencies (SQL)
+  +-- 1.2 Optional column on bundle members (SQL schema + domain type)
+  +-- 1.3 Publication protocol changes
+  +-- 1.4 Publication service (skip optional datasets)
+  +-- 1.5 Qt publish wizard (multi-step with optional datasets)
+  |
+Phase 2 (future PR)
+  |
+  +-- 2.1 Add party_id to counterparty schema
+  +-- 2.2 Codegen model update + regenerate
+  +-- 2.3 Update lei_counterparties_publish_fn
+  +-- 2.4 Enable counterparty wizard step
+  +-- 2.5 Party RLS for counterparties (when RLS infra is ready)
+#+end_example
+
+Phase 1 is self-contained and shippable: it fixes the original dependency bug,
+adds optional bundle member support, and wires LEI party publication into the
+librarian wizard. Phase 2 depends on Phase 1 and on the broader party-scoped data
+migration.
+
+* Open Questions
+
+- *Existing counterparty data*: When =party_id= is added (Phase 2), existing
+  counterparties have no party. Migration strategy: assign to the system party?
+  Require manual assignment?
+- *Multiple party imports*: Can a tenant publish LEI parties multiple times with
+  different roots (e.g., after an acquisition)? The root party uniqueness
+  constraint currently prevents this.
+- *Counterparty deduplication*: If the same LEI entity is imported as a
+  counterparty into multiple parties, should there be any cross-party
+  deduplication? The current design says no -- each party gets independent records.
+- *Large dataset support*: The =.large= variants of LEI datasets are also in the
+  dependency graph. Should they be in the base bundle as alternatives, or in a
+  separate "GLEIF Large" bundle?

@@ -29,6 +29,8 @@
 #include <QProgressBar>
 #include <QTableView>
 #include <QStandardItemModel>
+#include <QSet>
+#include <QVBoxLayout>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.dq/domain/dataset_bundle_member.hpp"
@@ -66,6 +68,7 @@ private:
 public:
     enum PageId {
         Page_BundleSummary,
+        Page_OptionalDatasets,
         Page_LeiPartyConfig,
         Page_Confirm,
         Page_Progress,
@@ -95,6 +98,14 @@ public:
 
     QString leiDatasetSize() const { return leiDatasetSize_; }
     void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+
+    bool hasOptionalDatasets() const { return hasOptionalDatasets_; }
+    void setHasOptionalDatasets(bool has) { hasOptionalDatasets_ = has; }
+
+    const QSet<QString>& optedInDatasets() const { return optedInDatasets_; }
+    void setOptedInDatasets(const QSet<QString>& datasets) {
+        optedInDatasets_ = datasets;
+    }
 
     /**
      * @brief Get the loaded bundle members.
@@ -139,6 +150,8 @@ private:
     QString bundleCode_;
     QString bundleName_;
     bool needsLeiPartyConfig_ = false;
+    bool hasOptionalDatasets_ = false;
+    QSet<QString> optedInDatasets_;
     QString rootLei_;
     QString rootLeiName_;
     QString leiDatasetSize_ = QStringLiteral("large");
@@ -150,6 +163,7 @@ private:
 
 // Forward declarations of page classes
 class BundleSummaryPage;
+class OptionalDatasetsPage;
 class LeiPartyConfigPage;
 class ConfirmPublishPage;
 class PublishProgressPage;
@@ -193,6 +207,31 @@ private:
 };
 
 /**
+ * @brief Page for opting in to optional datasets.
+ *
+ * Shown when the bundle contains optional datasets (e.g., LEI parties,
+ * counterparties). Each optional dataset is presented as a checkbox.
+ * Counterparty datasets are disabled with a tooltip explaining they
+ * require a future migration.
+ */
+class OptionalDatasetsPage final : public QWizardPage {
+    Q_OBJECT
+
+public:
+    explicit OptionalDatasetsPage(PublishBundleWizard* wizard);
+    void initializePage() override;
+    bool validatePage() override;
+    int nextId() const override;
+
+private:
+    void setupUI();
+
+    PublishBundleWizard* wizard_;
+    QVBoxLayout* checkboxLayout_;
+    std::vector<QCheckBox*> checkboxes_;
+};
+
+/**
  * @brief Page for configuring LEI entity parameters.
  *
  * Only shown when the bundle contains a lei_parties dataset. Embeds
@@ -211,7 +250,6 @@ private:
     void setupUI();
 
     PublishBundleWizard* wizard_;
-    QComboBox* datasetSizeCombo_;
     LeiEntityPicker* leiPicker_;
     QLabel* instructionLabel_;
     QLabel* selectedEntityLabel_;

@@ -94,7 +94,7 @@ struct party final {
      *
      * FpML business center code indicating primary location.
      */
-    std::optional<std::string> business_center_code;
+    std::string business_center_code;
 
     /**
      * @brief Current lifecycle status.

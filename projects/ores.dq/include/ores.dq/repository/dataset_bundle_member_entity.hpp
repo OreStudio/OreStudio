@@ -40,6 +40,7 @@ struct dataset_bundle_member_entity {
     std::string dataset_code;
     int version = 0;
     int display_order = 0;
+    bool optional = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

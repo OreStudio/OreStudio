@@ -65,12 +65,13 @@ declare
     v_inserted_counterparties bigint := 0;
     v_inserted_identifiers bigint := 0;
     v_dataset_name text;
+    v_dataset_code text;
     v_dataset_size text;
     v_entity_dataset_id uuid;
     v_rel_dataset_id uuid;
 begin
-    -- Validate dataset exists
-    select name into v_dataset_name
+    -- Validate dataset exists and get code for size derivation
+    select name, code into v_dataset_name, v_dataset_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
       and valid_to = ores_utility_infinity_timestamp_fn();
@@ -79,8 +80,12 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
-    -- Determine which LEI dataset to use (default: large)
-    v_dataset_size := coalesce(p_params ->> 'lei_dataset_size', 'large');
+    -- Derive size from dataset code (e.g. 'gleif.lei_counterparties.small' -> 'small')
+    -- Falls back to params or 'small' as default.
+    v_dataset_size := coalesce(
+        substring(v_dataset_code from '[^.]+$'),
+        p_params ->> 'lei_dataset_size',
+        'small');
 
     select id into v_entity_dataset_id
     from ores_dq_datasets_tbl
@@ -110,11 +115,12 @@ begin
         return;
     end if;
 
-    -- Create temp table mapping LEI codes to generated UUIDs
+    -- Create temp table mapping LEI codes to generated UUIDs with depth
     create temp table lei_counterparty_uuid_map (
         lei text primary key,
         counterparty_uuid uuid not null default gen_random_uuid(),
         parent_lei text null,
+        depth int not null default 0,
         entity_legal_name text not null,
         entity_legal_address_country text not null,
         entity_entity_status text not null
@@ -133,32 +139,80 @@ begin
 
     -- Set parent LEI from active IS_DIRECTLY_CONSOLIDATED_BY relationships
     -- relationship_start_node_node_id = child, relationship_end_node_node_id = parent
+    -- Only set parent when the parent entity is also in our dataset.
     update lei_counterparty_uuid_map m
     set parent_lei = r.relationship_end_node_node_id
     from ores_dq_lei_relationships_artefact_tbl r
     where r.relationship_start_node_node_id = m.lei
       and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
       and r.relationship_relationship_status = 'ACTIVE'
-      and r.dataset_id = v_rel_dataset_id;
+      and r.dataset_id = v_rel_dataset_id
+      and exists (select 1 from lei_counterparty_uuid_map p
+                  where p.lei = r.relationship_end_node_node_id);
 
-    -- Insert counterparties: parents first (parent_lei IS NULL), then children
-    -- Using a single INSERT with the parent UUID resolved via self-join
-    insert into ores_refdata_counterparties_tbl (
-        tenant_id,
-        id, version, full_name, short_code, party_type,
-        parent_counterparty_id, status,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        p_target_tenant_id,
-        m.counterparty_uuid, 0, m.entity_legal_name, m.lei, 'Corporate',
-        parent_map.counterparty_uuid, 'Active',
-        current_user, current_user, 'system.external_data_import',
-        'Imported from GLEIF LEI dataset: ' || v_dataset_name
-    from lei_counterparty_uuid_map m
-    left join lei_counterparty_uuid_map parent_map on parent_map.lei = m.parent_lei;
+    -- Compute depth: roots (no parent_lei) are 0, children are parent+1.
+    -- Iterative approach to handle arbitrary nesting.
+    declare
+        v_changed boolean := true;
+    begin
+        while v_changed loop
+            update lei_counterparty_uuid_map child
+            set depth = parent.depth + 1
+            from lei_counterparty_uuid_map parent
+            where child.parent_lei = parent.lei
+              and child.depth <= parent.depth;
+            v_changed := found;
+        end loop;
+    end;
 
-    get diagnostics v_inserted_counterparties = row_count;
+    -- Insert counterparties level by level (roots first, then children)
+    -- so that the insert trigger can validate parent_counterparty_id.
+    declare
+        v_current_depth int := 0;
+        v_max_depth int;
+        v_level_count bigint;
+    begin
+        select max(depth) into v_max_depth from lei_counterparty_uuid_map;
+
+        for v_current_depth in 0..coalesce(v_max_depth, 0) loop
+            insert into ores_refdata_counterparties_tbl (
+                tenant_id,
+                id, version, full_name, short_code, party_type,
+                parent_counterparty_id, business_center_code, status,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id,
+                m.counterparty_uuid, 0, m.entity_legal_name, m.lei, 'Corporate',
+                parent_map.counterparty_uuid,
+                -- Default business centre from country
+                coalesce(bc_map.business_center_code, 'WRLD'),
+                'Active',
+                current_user, current_user, 'system.external_data_import',
+                'Imported from GLEIF LEI dataset: ' || v_dataset_name
+            from lei_counterparty_uuid_map m
+            left join lei_counterparty_uuid_map parent_map on parent_map.lei = m.parent_lei
+            left join (values
+                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
+                ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
+                ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
+                ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),
+                ('GB', 'GBLO'), ('GR', 'GRAT'), ('HK', 'HKHK'), ('HU', 'HUBU'),
+                ('ID', 'IDJA'), ('IE', 'IEDU'), ('IL', 'ILTA'), ('IN', 'INMU'),
+                ('IT', 'ITMI'), ('JP', 'JPTO'), ('KR', 'KRSE'), ('KY', 'KYGE'),
+                ('LU', 'LULU'), ('MX', 'MXMC'), ('MY', 'MYKL'), ('NL', 'NLAM'),
+                ('NO', 'NOOS'), ('NZ', 'NZAU'), ('PH', 'PHMA'), ('PL', 'PLWA'),
+                ('PT', 'PTLI'), ('RO', 'ROBU'), ('RU', 'RUMO'), ('SA', 'SARI'),
+                ('SE', 'SEST'), ('SG', 'SGSI'), ('TH', 'THBA'), ('TR', 'TRIS'),
+                ('TW', 'TWTA'), ('US', 'USNY'), ('ZA', 'ZAJO')
+            ) as bc_map(country_code, business_center_code)
+                on bc_map.country_code = m.entity_legal_address_country
+            where m.depth = v_current_depth;
+
+            get diagnostics v_level_count = row_count;
+            v_inserted_counterparties := v_inserted_counterparties + v_level_count;
+        end loop;
+    end;
 
     -- Insert counterparty identifiers (LEI scheme)
     insert into ores_refdata_counterparty_identifiers_tbl (

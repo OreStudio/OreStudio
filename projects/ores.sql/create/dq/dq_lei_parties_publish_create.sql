@@ -69,12 +69,13 @@ declare
     v_inserted_parties bigint := 0;
     v_inserted_identifiers bigint := 0;
     v_dataset_name text;
+    v_dataset_code text;
     v_dataset_size text;
     v_entity_dataset_id uuid;
     v_rel_dataset_id uuid;
 begin
-    -- Validate dataset exists
-    select name into v_dataset_name
+    -- Validate dataset exists and get code for size derivation
+    select name, code into v_dataset_name, v_dataset_code
     from ores_dq_datasets_tbl
     where id = p_dataset_id
       and valid_to = ores_utility_infinity_timestamp_fn();
@@ -83,8 +84,12 @@ begin
         raise exception 'Dataset not found: %', p_dataset_id;
     end if;
 
-    -- Determine which LEI dataset to use (default: large)
-    v_dataset_size := coalesce(p_params ->> 'lei_dataset_size', 'large');
+    -- Derive size from dataset code (e.g. 'gleif.lei_parties.small' -> 'small')
+    -- Falls back to params or 'small' as default.
+    v_dataset_size := coalesce(
+        substring(v_dataset_code from '[^.]+$'),
+        p_params ->> 'lei_dataset_size',
+        'small');
 
     select id into v_entity_dataset_id
     from ores_dq_datasets_tbl
@@ -208,14 +213,14 @@ begin
                 m.lei, 'operational', 'Corporate',
                 parent_map.party_uuid,
                 -- Default business centre from country
-                bc_map.business_center_code,
+                coalesce(bc_map.business_center_code, 'WRLD'),
                 'Active',
                 current_user, current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
             from lei_party_subtree m
             left join lei_party_subtree parent_map on parent_map.lei = m.parent_lei
             left join (values
-                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBB'),
+                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
                 ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
                 ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
                 ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),

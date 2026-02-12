@@ -293,6 +293,7 @@ begin
         select
             m.dataset_code,
             m.display_order,
+            m.optional,
             d.id as dataset_id,
             d.name as dataset_name,
             d.artefact_type
@@ -310,6 +311,24 @@ begin
         v_row_skipped := 0;
         v_row_deleted := 0;
         v_error_msg := null;
+
+        -- Skip optional datasets not opted in
+        if v_dataset.optional = true then
+            if not (p_params ? 'opted_in_datasets'
+                    and p_params->'opted_in_datasets' @> to_jsonb(v_dataset.dataset_code)) then
+                v_datasets_skipped := v_datasets_skipped + 1;
+                dataset_code := v_dataset.dataset_code;
+                dataset_name := coalesce(v_dataset.dataset_name, '(not found)');
+                status := 'skipped';
+                records_inserted := 0;
+                records_updated := 0;
+                records_skipped := 0;
+                records_deleted := 0;
+                error_message := 'Optional dataset not opted in';
+                return next;
+                continue;
+            end if;
+        end if;
 
         -- Check if dataset exists
         if v_dataset.dataset_id is null then
@@ -401,10 +420,15 @@ begin
             for v_result_row in execute v_sql
             loop
                 case v_result_row.action
-                    when 'inserted' then v_row_inserted := v_result_row.record_count;
-                    when 'updated' then v_row_updated := v_result_row.record_count;
-                    when 'skipped' then v_row_skipped := v_result_row.record_count;
-                    when 'deleted' then v_row_deleted := v_result_row.record_count;
+                    when 'inserted' then v_row_inserted := v_row_inserted + v_result_row.record_count;
+                    when 'inserted_identifiers' then v_row_inserted := v_row_inserted + v_result_row.record_count;
+                    when 'updated' then v_row_updated := v_row_updated + v_result_row.record_count;
+                    when 'skipped' then v_row_skipped := v_row_skipped + v_result_row.record_count;
+                    when 'deleted' then v_row_deleted := v_row_deleted + v_result_row.record_count;
+                    else
+                        raise notice 'Unknown action % from dataset %, treating as inserted',
+                            v_result_row.action, v_dataset.dataset_code;
+                        v_row_inserted := v_row_inserted + v_result_row.record_count;
                 end case;
             end loop;
 

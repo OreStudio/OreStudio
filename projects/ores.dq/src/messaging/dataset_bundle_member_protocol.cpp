@@ -45,6 +45,7 @@ void write_dataset_bundle_member(std::vector<std::byte>& buffer,
     writer::write_string(buffer, m.bundle_code);
     writer::write_string(buffer, m.dataset_code);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(m.display_order));
+    writer::write_bool(buffer, m.optional);
     writer::write_string(buffer, m.recorded_by);
     writer::write_string(buffer, m.change_reason_code);
     writer::write_string(buffer, m.change_commentary);
@@ -71,6 +72,10 @@ read_dataset_bundle_member(std::span<const std::byte>& data) {
     auto display_order_result = reader::read_uint32(data);
     if (!display_order_result) return std::unexpected(display_order_result.error());
     m.display_order = static_cast<int>(*display_order_result);
+
+    auto optional_result = reader::read_bool(data);
+    if (!optional_result) return std::unexpected(optional_result.error());
+    m.optional = *optional_result;
 
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());

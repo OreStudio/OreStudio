@@ -38,6 +38,7 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.11.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
+#+html: <a href="https://deepwiki.com/OreStudio/OreStudio"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"/></a>
 #+HTML: </div>
 
 * In a nutshell

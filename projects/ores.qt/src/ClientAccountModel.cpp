@@ -271,7 +271,7 @@ void ClientAccountModel::onAccountsLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On accounts loaded event.";
     is_fetching_ = false;
 
-    const auto result = watcher_->result();
+    auto result = watcher_->result();
 
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
@@ -289,31 +289,45 @@ void ClientAccountModel::onAccountsLoaded() {
             login_info_map[boost::uuids::to_string(li.account_id)] = std::move(li);
         }
 
-        // Build set of existing IDs for duplicate detection
-        std::unordered_set<std::string> existing_ids;
-        for (const auto& item : accounts_) {
-            existing_ids.insert(boost::uuids::to_string(item.account.id));
-        }
-
-        // Filter out duplicates and join with login_info
         std::vector<AccountWithLoginInfo> new_items;
-        for (auto& acct : result.accounts) {
+        const auto received_count = result.accounts.size();
+
+        // Join accounts with login_info
+        auto join_account = [&](iam::domain::account& acct) {
+            AccountWithLoginInfo item;
             std::string id_str = boost::uuids::to_string(acct.id);
-            if (existing_ids.find(id_str) == existing_ids.end()) {
-                AccountWithLoginInfo item;
-                item.account = std::move(acct);
+            auto li_it = login_info_map.find(id_str);
+            if (li_it != login_info_map.end()) {
+                item.loginInfo = std::move(li_it->second);
+            }
+            item.account = std::move(acct);
+            return item;
+        };
 
-                // Join with login_info if available
-                auto li_it = login_info_map.find(id_str);
-                if (li_it != login_info_map.end()) {
-                    item.loginInfo = std::move(li_it->second);
+        if (accounts_.empty()) {
+            // Full refresh or first page load, no duplicates to check.
+            new_items.reserve(received_count);
+            for (auto& acct : result.accounts) {
+                new_items.push_back(join_account(acct));
+            }
+        } else {
+            // Appending data, check for duplicates.
+            std::unordered_set<std::string> existing_ids;
+            existing_ids.reserve(accounts_.size());
+            for (const auto& item : accounts_) {
+                existing_ids.insert(boost::uuids::to_string(item.account.id));
+            }
+
+            new_items.reserve(received_count);
+            for (auto& acct : result.accounts) {
+                std::string id_str = boost::uuids::to_string(acct.id);
+                if (existing_ids.find(id_str) == existing_ids.end()) {
+                    new_items.push_back(join_account(acct));
+                    existing_ids.insert(std::move(id_str));
+                } else {
+                    BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate account: "
+                                               << id_str;
                 }
-
-                new_items.push_back(std::move(item));
-                existing_ids.insert(id_str);
-            } else {
-                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate account: "
-                                           << id_str;
             }
         }
 
@@ -335,8 +349,8 @@ void ClientAccountModel::onAccountsLoaded() {
         }
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new accounts "
-                                  << "(received " << result.accounts.size()
-                                  << ", filtered " << (result.accounts.size() - new_count)
+                                  << "(received " << received_count
+                                  << ", filtered " << (received_count - new_count)
                                   << " duplicates). Total in model: " << accounts_.size()
                                   << ", Total available: " << total_available_count_;
 

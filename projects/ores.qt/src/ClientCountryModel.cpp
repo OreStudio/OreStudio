@@ -272,21 +272,29 @@ void ClientCountryModel::onCountriesLoaded() {
     {
         total_available_count_ = result.total_available_count;
 
-        // Build set of existing alpha-2 codes for duplicate detection
-        std::unordered_set<std::string> existing_codes;
-        for (const auto& country : countries_) {
-            existing_codes.insert(country.alpha2_code);
-        }
-
-        // Filter out duplicates from new results
         std::vector<refdata::domain::country> new_countries;
-        for (auto& country : result.countries) {
-            if (existing_codes.find(country.alpha2_code) == existing_codes.end()) {
-                new_countries.push_back(std::move(country));
+        const auto received_count = result.countries.size();
+
+        if (countries_.empty()) {
+            // Full refresh or first page load, no duplicates to check.
+            new_countries = std::move(result.countries);
+        } else {
+            // Appending data, check for duplicates.
+            std::unordered_set<std::string> existing_codes;
+            existing_codes.reserve(countries_.size());
+            for (const auto& country : countries_) {
                 existing_codes.insert(country.alpha2_code);
-            } else {
-                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate country: "
-                                           << country.alpha2_code;
+            }
+
+            new_countries.reserve(received_count);
+            for (auto& country : result.countries) {
+                if (existing_codes.find(country.alpha2_code) == existing_codes.end()) {
+                    new_countries.push_back(std::move(country));
+                    existing_codes.insert(country.alpha2_code);
+                } else {
+                    BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate country: "
+                                               << country.alpha2_code;
+                }
             }
         }
 
@@ -309,8 +317,8 @@ void ClientCountryModel::onCountriesLoaded() {
         }
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new countries "
-                                  << "(received " << result.countries.size()
-                                  << ", filtered " << (result.countries.size() - new_count)
+                                  << "(received " << received_count
+                                  << ", filtered " << (received_count - new_count)
                                   << " duplicates). Total in model: " << countries_.size()
                                   << ", Total available: " << total_available_count_;
 

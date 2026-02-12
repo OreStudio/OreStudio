@@ -284,21 +284,29 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    // Build set of existing codes for duplicate detection
-    std::unordered_set<std::string> existing_codes;
-    for (const auto& cp : counterparties_) {
-        existing_codes.insert(cp.short_code);
-    }
-
-    // Filter out duplicates from new results
     std::vector<refdata::domain::counterparty> new_counterparties;
-    for (auto& cp : result.counterparties) {
-        if (existing_codes.find(cp.short_code) == existing_codes.end()) {
-            new_counterparties.push_back(std::move(cp));
+    const auto received_count = result.counterparties.size();
+
+    if (counterparties_.empty()) {
+        // Full refresh or first page load, no duplicates to check.
+        new_counterparties = std::move(result.counterparties);
+    } else {
+        // Appending data, check for duplicates.
+        std::unordered_set<std::string> existing_codes;
+        existing_codes.reserve(counterparties_.size());
+        for (const auto& cp : counterparties_) {
             existing_codes.insert(cp.short_code);
-        } else {
-            BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate counterparty: "
-                                       << cp.short_code;
+        }
+
+        new_counterparties.reserve(received_count);
+        for (auto& cp : result.counterparties) {
+            if (existing_codes.find(cp.short_code) == existing_codes.end()) {
+                new_counterparties.push_back(std::move(cp));
+                existing_codes.insert(cp.short_code);
+            } else {
+                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate counterparty: "
+                                           << cp.short_code;
+            }
         }
     }
 
@@ -321,8 +329,8 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new counterparties "
-                              << "(received " << result.counterparties.size()
-                              << ", filtered " << (result.counterparties.size() - new_count)
+                              << "(received " << received_count
+                              << ", filtered " << (received_count - new_count)
                               << " duplicates). Total in model: " << counterparties_.size()
                               << ", Total available: " << total_available_count_;
 

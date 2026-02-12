@@ -84,12 +84,6 @@ EOF
     exit 1
 }
 
-# Parse arguments using getopt for long option support
-OPTS=$(getopt -o p:d:c:w:m:h:t:T:r:D:yH --long postgres-password:,ddl-password:,cli-password:,wt-password:,comms-password:,http-password:,test-ddl-password:,test-dml-password:,ro-password:,database:,yes,no-sql-validation,help -n "$(basename "$0")" -- "$@")
-if [[ $? -ne 0 ]]; then
-    usage
-fi
-
 # Initialize variables with environment variables as defaults
 POSTGRES_PASSWORD="${PGPASSWORD:-}"
 DDL_PASSWORD="${ORES_DB_DDL_PASSWORD:-}"
@@ -104,65 +98,23 @@ DB_NAME="${DEFAULT_DB_NAME}"
 ASSUME_YES=""
 SKIP_VALIDATION="off"
 
-eval set -- "$OPTS"
-
-while true; do
+# Parse arguments using portable while/case (works on both GNU and BSD).
+while [[ $# -gt 0 ]]; do
     case "$1" in
-        -p|--postgres-password)
-            POSTGRES_PASSWORD="$2"
-            shift 2
-            ;;
-        -d|--ddl-password)
-            DDL_PASSWORD="$2"
-            shift 2
-            ;;
-        -c|--cli-password)
-            CLI_PASSWORD="$2"
-            shift 2
-            ;;
-        -w|--wt-password)
-            WT_PASSWORD="$2"
-            shift 2
-            ;;
-        -m|--comms-password)
-            COMMS_PASSWORD="$2"
-            shift 2
-            ;;
-        -h|--http-password)
-            HTTP_PASSWORD="$2"
-            shift 2
-            ;;
-        -t|--test-ddl-password)
-            TEST_DDL_PASSWORD="$2"
-            shift 2
-            ;;
-        -T|--test-dml-password)
-            TEST_DML_PASSWORD="$2"
-            shift 2
-            ;;
-        -r|--ro-password)
-            RO_PASSWORD="$2"
-            shift 2
-            ;;
-        -D|--database)
-            DB_NAME="$2"
-            shift 2
-            ;;
-        -y|--yes)
-            ASSUME_YES="1"
-            shift
-            ;;
-        --no-sql-validation)
-            SKIP_VALIDATION="on"
-            shift
-            ;;
-        -H|--help)
-            usage
-            ;;
-        --)
-            shift
-            break
-            ;;
+        -p|--postgres-password)  POSTGRES_PASSWORD="$2";  shift 2 ;;
+        -d|--ddl-password)       DDL_PASSWORD="$2";       shift 2 ;;
+        -c|--cli-password)       CLI_PASSWORD="$2";       shift 2 ;;
+        -w|--wt-password)        WT_PASSWORD="$2";        shift 2 ;;
+        -m|--comms-password)     COMMS_PASSWORD="$2";     shift 2 ;;
+        -h|--http-password)      HTTP_PASSWORD="$2";      shift 2 ;;
+        -t|--test-ddl-password)  TEST_DDL_PASSWORD="$2";  shift 2 ;;
+        -T|--test-dml-password)  TEST_DML_PASSWORD="$2";  shift 2 ;;
+        -r|--ro-password)        RO_PASSWORD="$2";        shift 2 ;;
+        -D|--database)           DB_NAME="$2";            shift 2 ;;
+        -y|--yes)                ASSUME_YES="1";          shift   ;;
+        --no-sql-validation)     SKIP_VALIDATION="on";    shift   ;;
+        -H|--help)               usage ;;
+        --)                      shift; break ;;
         *)
             echo "Error: Invalid option $1" >&2
             usage

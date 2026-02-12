@@ -16,53 +16,49 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-11 Wed 23:33], for Wednesday, February 11, 2026.
-|       | <75>                                              |        |      |      |       |
-| Tags  | Headline                                          | Time   |      |      |     % |
-|-------+---------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                      | *5:59* |      |      | 100.0 |
-|-------+---------------------------------------------------+--------+------+------+-------|
-|       | Stories                                           | 5:59   |      |      | 100.0 |
-|       | Active                                            |        | 5:59 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |        |      | 0:14 |   3.9 |
-| code  | Improve generators with FK-aware test data        |        |      | 1:35 |  26.5 |
-| code  | Enable all skipped tests                          |        |      | 0:29 |   8.1 |
-| code  | Add central bank related LEIs                     |        |      | 0:35 |   9.7 |
-| code  | Expand unit test coverage for ORE codegened types |        |      | 0:49 |  13.6 |
-| code  | Add system party support                          |        |      | 0:44 |  12.3 |
-| code  | Add customer party support                        |        |      | 1:33 |  25.9 |
+#+CAPTION: Clock summary at [2026-02-12 Thu 00:24], for Thursday, February 12, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:24* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:24   |      |      | 100.0 |
+|       | Active                                |        | 0:24 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:24 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-11 Wed 23:33]
+#+CAPTION: Clock summary at [2026-02-12 Thu 00:24]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *34:59* |       |      | 100.0 |
+|       | *Total time*                                       | *37:02* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 34:59   |       |      | 100.0 |
-|       | Active                                             |         | 34:59 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 0:52 |   2.5 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.4 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   1.6 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  12.5 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   1.1 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  19.1 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  19.1 |
-| code  | Brainstorm on multi-party support                  |         |       | 4:00 |  11.4 |
-| code  | Improve code coverage                              |         |       | 0:14 |   0.7 |
-| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   5.0 |
-| code  | Enable all skipped tests                           |         |       | 0:29 |   1.4 |
-| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.7 |
-| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   2.3 |
-| code  | Add system party support                           |         |       | 3:58 |  11.3 |
-| code  | Add customer party support                         |         |       | 1:33 |   4.4 |
-| code  | Add counterparty wizard                            |         |       | 1:12 |   3.4 |
+|       | Stories                                            | 37:02   |       |      | 100.0 |
+|       | Active                                             |         | 37:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 1:42 |   4.6 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.3 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   1.5 |
+| code  | Implement party related entities at database level |         |       | 4:23 |  11.8 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   1.0 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  18.0 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  18.0 |
+| code  | Brainstorm on multi-party support                  |         |       | 4:00 |  10.8 |
+| code  | Improve code coverage                              |         |       | 0:14 |   0.6 |
+| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   4.7 |
+| code  | Enable all skipped tests                           |         |       | 0:29 |   1.3 |
+| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.6 |
+| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   2.2 |
+| code  | Add system party support                           |         |       | 3:58 |  10.7 |
+| code  | Add customer party support                         |         |       | 1:33 |   4.2 |
+| code  | Add counterparty wizard                            |         |       | 1:12 |   3.2 |
+| code  | Add workspace as a container                       |         |       | 1:13 |   3.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-02-11 Wed 23:34]--[2026-02-12 Thu 00:24] =>  0:50
     CLOCK: [2026-02-11 Wed 09:30]--[2026-02-11 Wed 09:44] =>  0:14
     CLOCK: [2026-02-09 Mon 09:30]--[2026-02-09 Mon 09:41] =>  0:11
     CLOCK: [2026-02-06 Fri 23:00]--[2026-02-06 Fri 23:27] =>  0:27
@@ -909,20 +905,55 @@ Highlights:
   librarian, outlining a two-phase approach for future development.
 #+end_quote
 
-*** STARTED Add counterparty wizard                                    :code:
-    :LOGBOOK:
-    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
-    :END:
+*** COMPLETED Add party types lookup table                             :code:
 
-We need a GLEIF based counterparty wizard.
+*Rationale*: implemented.
 
-*** Add country support                                                :code:
+Create =ores_refdata_party_types_tbl= (or similar) with two types: =system= and
+=operational=. The system party is auto-created during tenant provisioning. The
+operational type is for business entities created by users.
 
-We will probably need country support at some point. We should link the country
-to the currencies, where applicable.
+**** Acceptance Criteria
 
+- Party types table created with system and operational types.
+- Tenant provisioning auto-creates system party for new tenants.
+- Party creation validates type against lookup table.
 
-*** Rename tenant types                                                :code:
+*** COMPLETED Add RLS-aware tenant provisioning for tests              :code:
+
+*Rationale*: implemented.
+
+Repository tests for the =tenant= entity cannot use the standard
+=database_helper= because the database has Row-Level Security (RLS) policies on
+the =tenant= table. The test session runs under an existing test tenant context,
+and RLS prevents that session from inserting new tenants via the normal
+repository path.
+
+This is a separate problem from FK-aware generators (which solve dangling
+foreign key references). The tenant issue is that the security policy itself
+blocks the operation entirely.
+
+Possible approaches:
+
+- A privileged =tenant_provisioning_helper= that uses direct SQL with
+  =SET LOCAL role = 'admin'= or similar role escalation.
+- A superuser/admin database context that bypasses RLS for tenant provisioning.
+- Pre-seeding test tenants outside the RLS-scoped transaction.
+
+Affected tests:
+
+- =repository_tenant_repository_tests.cpp=: all 6 TEST_CASEs are currently
+  SKIP'd with "Requires RLS-aware tenant provisioning".
+
+Acceptance criteria:
+
+- Tenant repository tests can create, read, and query tenants in a test context.
+- The solution does not weaken RLS policies in production.
+- All 6 SKIP'd tenant tests are re-enabled and passing.
+
+*** COMPLETED Rename tenant types                                      :code:
+
+*Rationale*: implemented.
 
 Rename existing tenant types: =platform= to =system=, =organisation= to
 =production=, =test= to =automation=. Add new =evaluation= type. Update
@@ -939,20 +970,99 @@ rationale and full type descriptions.
 - All existing references to old type names updated.
 - Tenant provisioner uses new type names.
 
-*** Add party types lookup table                                       :code:
+*** COMPLETED Add tenant CRUD commands to CLI                          :code:
 
-Create =ores_refdata_party_types_tbl= (or similar) with two types: =system= and
-=operational=. The system party is auto-created during tenant provisioning. The
-operational type is for business entities created by users.
+*Rationale*: implemented.
 
-**** Acceptance Criteria
+We need to be able to add new tenants, list tenants, etc.
 
-- Party types table created with system and operational types.
-- Tenant provisioning auto-creates system party for new tenants.
-- Party creation validates type against lookup table.
+*** COMPLETED Add roles for Super Admin                                :code:
 
+*Rationale*: implemented.
 
-*** Implement party-level RLS isolation                                :code:
+We need to distinguish between the tenant admin and the "super" admin. These
+should have different roles.
+
+*** CANCELLED Split create schemas from main populate script           :code:
+
+*Rationale*: not using schemas any longer.
+
+We should probably add a create schemas script.
+
+*** COMPLETED Clicking save on connections causes exit                 :code:
+
+*Rationale*: implemented.
+
+Asks if we want to exit. Also clicking save several times creates folders with
+the same name.
+
+*** COMPLETED Make the icon theme "configurable"                       :code:
+
+*Rationale*: implemented.
+
+While we are trying to find a good icon theme, it should be possible to change
+the icons without having to rebuild. Ideally without having to restart, but if
+we have to restart that's not too bad.
+
+*** COMPLETED Tests are logging to stdout in github                    :code:
+
+*Rationale*: Seem to log correctly now. Maybe it's because logging is disabled.
+
+There is a lot of stdout output in CDash. We need to understand why that is.
+
+#+begin_src
+Test output
+[2025-12-16 20:31:44.600851] [0x00000001f1d1a200] [info]    Test run starting, creating test database
+[2025-12-16 20:31:44.601397] [0x00000001f1d1a200] [info]    Generated test database name: oresdb_test_4816_1242
+[2025-12-16 20:31:44.601401] [0x00000001f1d1a200] [info]    Creating test database: oresdb_test_4816_1242
+[2025-12-16 20:31:44.601434] [0x00000001f1d1a200] [info]    Creating context. Configuration: {"database_options":{"user":"ores","host":"localhost","database":"postgres","port":5432},"pool_size":1,"num_attempts":10,"wait_time_in_seconds":1}
+[2025-12-16 20:31:44.630284] [0x00000001f1d1a200] [info]    Finished creating context.
+[2025-12-16 20:31:44.771670] [0x00000001f1d1a200] [info]    Successfully created test database: oresdb_test_4816_1242
+[2025-12-16 20:31:44.771733] [0x00000001f1d1a200] [info]    Setting ORES_TEST_DB_DATABASE environment variable to: oresdb_test_4816_1242
+[2025-12-16 20:31:44.771738] [0x00000001f1d1a200] [info]    Environment variable set successfully
+[2025-12-16 20:31:44.771740] [0x00000001f1d1a200] [info]    Test database ready: oresdb_test_4816_1242
+[2025-12-16 20:31:44.772151] [0x00000001f1d1a200] [info]    Test case starting: delete_account_response_failure
+[2025-12-16 20:31:44.772158] [0x00000001f1d1a200] [info]      Tags: messaging #messaging_protocol_tests
+#+end_src
+
+*** COMPLETED Unsubscribe before logout                                :code:
+
+*Rationale*: implemented.
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
+*** COMPLETED Use events in comms and accounts                         :code:
+
+*Rationale*: implemented.
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
+
+*** STARTED Add counterparty wizard                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
+    :END:
+
+We need a GLEIF based counterparty wizard.
+
+*** STARTED Implement party-level RLS isolation                        :code:
 
 Add a second layer of Row-Level Security that isolates party-scoped data
 (counterparties, books, portfolios, trades) within a tenant. At login, compute
@@ -972,6 +1082,34 @@ architecture.
 - Leaf party users see only their own data.
 - Mid-level party users see their subtree.
 
+*** Extend login flow with party selection                             :code:
+
+After authentication, look up the user's associated parties from
+=account_parties=. If one party, auto-select. If multiple, return the party list
+to the client for selection. The client displays a party picker widget. After
+selection, compute the visible party set and bind to the session.
+
+**** Acceptance Criteria
+
+- Login response includes available parties.
+- Party picker displayed when user has multiple parties.
+- Selected party stored in session and displayed in application window.
+- Party context immutable for session lifetime.
+
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+
+*** Add country support                                                :code:
+
+We will probably need country support at some point. We should link the country
+to the currencies, where applicable.
+
+We now have country support, check that there is a link to currencies.
 
 *** Add party role scheme entity                                       :code:
 
@@ -1223,155 +1361,6 @@ Description
 Look for correct terminology (actor type?).
 
 
-*** Improve error message boxes                                        :code:
-
-Rename show details to just details. Icon should be red?
-
-*** Use exponential backoff for database problems                      :code:
-
-At present we have a constant retry:
-
-#+begin_quote
-2026-02-08 14:56:43.670204 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
-2026-02-08 14:56:48.685224 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
-2026-02-08 14:56:53.698886 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
-2026-02-08 14:56:58.712379 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
-2026-02-08 14:57:03.726010 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
-#+end_quote
-
-Notes:
-
-- we should allow clients to connect and return an error stating DB is
-  unavailable.
-- stop service does not show any log lines about shutting down.
-
-*** Add composite primary keys                                         :code:
-
-We probably already have a story for this.
-
-#+begin_quote
-projects/ores.iam/include/ores.iam/repository/account_party_entity.hpp
-
-    sqlgen::PrimaryKey<std::string> account_id;
-    std::string tenant_id;
-    std::string party_id;
-Contributor
-@gemini-code-assist
-gemini-code-assist bot
-15 hours ago
-high
-
-The comment on line 32 indicates a composite primary key. For a junction table,
-both account_id and party_id should be part of the composite primary key.
-party_id should also be wrapped in sqlgen::PrimaryKey to correctly define the
-composite key.
-
-Suggested change
-    std::string party_id;
-    sqlgen::PrimaryKey<std::string> party_id;
-Member
-Author
-@mcraveiro
-mcraveiro
-5 hours ago
-
-Won't fix. This follows the established junction entity pattern in the codebase
-(see dataset_bundle_member_entity.hpp): the left column uses
-sqlgen::PrimaryKey<std::string> and the right column uses plain std::string. The
-sqlgen library handles composite keys this way — the actual SQL DDL defines both
-columns as the composite primary key via the migration script, not via the C++
-entity annotation.
-#+end_quote
-
-*** Add RLS-aware tenant provisioning for tests                        :code:
-
-Repository tests for the =tenant= entity cannot use the standard
-=database_helper= because the database has Row-Level Security (RLS) policies on
-the =tenant= table. The test session runs under an existing test tenant context,
-and RLS prevents that session from inserting new tenants via the normal
-repository path.
-
-This is a separate problem from FK-aware generators (which solve dangling
-foreign key references). The tenant issue is that the security policy itself
-blocks the operation entirely.
-
-Possible approaches:
-
-- A privileged =tenant_provisioning_helper= that uses direct SQL with
-  =SET LOCAL role = 'admin'= or similar role escalation.
-- A superuser/admin database context that bypasses RLS for tenant provisioning.
-- Pre-seeding test tenants outside the RLS-scoped transaction.
-
-Affected tests:
-
-- =repository_tenant_repository_tests.cpp=: all 6 TEST_CASEs are currently
-  SKIP'd with "Requires RLS-aware tenant provisioning".
-
-Acceptance criteria:
-
-- Tenant repository tests can create, read, and query tenants in a test context.
-- The solution does not weaken RLS policies in production.
-- All 6 SKIP'd tenant tests are re-enabled and passing.
-
-*** Fix "informations" plural naming in contact information entities    :code:
-
-The plural of "information" is "information" (uncountable noun). Several codegen
-models and generated files incorrectly use "informations":
-
-- =party_contact_information_domain_entity.json=: =entity_plural= is
-  =party_contact_informations= (should be =party_contact_information=).
-- =counterparty_contact_information_domain_entity.json=: same issue.
-- Repository section: =entity_plural_short= and =entity_plural_words= also
-  affected.
-
-This naming propagates to C++ class names, function names, SQL table references,
-and protocol message names. Fixing requires:
-
-1. Update the codegen JSON models.
-2. Regenerate affected C++ files.
-3. Update SQL table names and population scripts if they use the plural form.
-4. Verify no downstream references break.
-
-Acceptance criteria:
-
-- No "informations" appears in model files, generated code, or SQL scripts.
-- Build and tests pass after renaming.
-
-*** Fix security bug with shell                                        :code:
-
-As reported by Gemini:
-
-#+begin_quote
-projects/ores.qt/include/ores.qt/ClientManager.hpp
-Comment on lines +302 to +305
-    /**
-     * @brief Get the stored password used for the current session.
-     */
-    std::string storedPassword() const { return stored_password_; }
-Contributor
-@gemini-code-assist
-gemini-code-assist bot
-2 hours ago
-security-critical critical
-
-Exposing the stored password via a public getter storedPassword() introduces a
-significant security risk. Storing raw passwords in memory after authentication
-is already a sensitive practice, but providing a public accessor increases the
-attack surface within the application. Any component that can access the
-ClientManager can now retrieve the user's password in plain text.
-
-A more secure approach should be considered:
-
-Token-based Authentication: The main session could request a short-lived,
-single-purpose token from the server, which the shell window can then use to
-authenticate its own session. This avoids passing the raw password around.
-Session Management within ClientManager: Instead of the ShellMdiWindow creating
-its own session, ClientManager could be responsible for creating and providing a
-fully authenticated client_session object to the shell window, without ever
-exposing the credentials used to create it.
-
-#+end_quote
-
 *** Investigate how performed by is being set                          :code:
 
 It should just be the database account.
@@ -1387,381 +1376,6 @@ Notes:
 - It should be possible to set the "output type" or format in the shell, from
   json to table. Find the correct terminology for this.
 
-*** Redesign Qt ImageCache invalidation strategy                       :code:
-
-The current ImageCache invalidation approach is brittle and error-prone. When
-datasets are published, the cache reload is triggered by pattern-matching
-dataset codes (e.g., checking for "flag", "icon", "currenc", "countr" in the
-code string). This is fragile because:
-
-- New dataset types require updating the pattern matching logic
-- The relationship between datasets and cached data is implicit
-- Cache invalidation relies on string matching rather than proper metadata
-
-Proposed improvements:
-
-- Use artefact_type metadata instead of code string matching to determine if
-  cache invalidation is needed
-- Consider a more general cache invalidation framework that can be extended to
-  other caches (ChangeReasonCache, etc.)
-- Investigate using server-side notifications to trigger cache invalidation
-  (similar to the notification system already in place)
-- Document the caching strategy and invalidation rules
-
-Acceptance criteria:
-
-- Cache invalidation is based on structured metadata, not string patterns
-- Adding new image-related datasets doesn't require code changes
-- Cache invalidation logic is documented and maintainable
-
-*** Support tenant specification in shell account commands             :code:
-
-Currently, shell commands like =accounts info <username>= only search within the
-current session's tenant. This creates a UX gap for SuperAdmins who need to
-manage accounts across multiple tenants.
-
-Affected commands:
-
-- =accounts info=
-- =accounts roles=
-- =accounts permissions=
-- =accounts assign-role=
-- =accounts revoke-role=
-
-Acceptance criteria:
-
-- Commands should accept an optional tenant identifier (hostname or tenant ID)
-- Format could be =accounts info user1@acme.localhost= or =accounts info user1 --tenant acme.localhost=
-- SuperAdmins should be able to view/manage accounts in any tenant
-- Regular users should only be able to view accounts in their own tenant
-- Clear error message when user lacks cross-tenant permissions
-
-
-*** Stop and start service does not trigger ores.qt reconnection       :code:
-
-We seem to just remain in a weird disconnected state. Clicking disconnect seems
-to freeze UI.
-
-*** Consider using UUID in the database layer                          :code:
-
-At present we are using std::string and then mapping to boost UUID.
-
-*** Generate protocol docs via codegen                                 :code:
-
-At present protocol documentation is very behind. We are not consistently
-generating it. Also, we keep making manual changes to document. We need to split
-it into two documents, the overview document which we maintain manually, and the
-list of versions, messages etc which is automatically generated. We should use
-mustache.
-
-*** Add database support for tests                                     :code:
-
-We could create a schema for logging:
-
-- test suite, test case. contain the names of test suites and test cases.
-- test suite run, test case run. specific runs. useful to get details of timing.
-  Is logging enabled, etc. Tenant ID. Debug or release.
-- time series for test duration, test suite duration.
-- we could add a simple UI to ores.qt to see what the tests are doing over time.
-- test count charts.
-
-Notes:
-
-- if we keep destroying the environment to test scripts we will lose valuable
-  historical test data. Maybe we should have a "test database" which we destroy
-  infrequently. In truth we just care about the test tables. So we use the test
-  database for telemetry etc but the environment database to exercise the tests.
-  Or perhaps we just need to capture some data into a time series DB.
-  For example =ores_test_local1=.
-- however, we want the service to be able to connect to the test database, so
-  that we can display test related information in the UI.
-- test database should link back to tenant ID in case we want to inspect data.
-- test failures are much easier to investigate, we can just browse the UI for
-  failed test and see it's log.
-- also upload information from Catch2 XML including exceptions etc.
-- group tests by component.
-- ideally we want all environments to write to the same test database. We want
-  to compare data across environments. But we need to know which run is which.
-- log the git commit version and if it's dirty or not.
-- we probably need a separate story for this but we should look into adding code
-  coverage as well.
-- Claude can then plug into all of this information. For a given test run, we
-  could generate a summary report and then have Claude analyse it.
-
-*** Instrument components with telemetry context                       :code:
-
-Now that logging has been integrated with telemetry, the next step is to
-instrument key components with the =TLOG_SEV= macro to enable trace correlation.
-
-Tasks:
-
-- Instrument =server_session= with root span on connection, child spans per
-  request.
-- Instrument =client_session= with spans for outgoing requests.
-- Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
-- Add spans for database operations in ores.database.
-
-*** Create span collection and export infrastructure                   :code:
-
-The telemetry component has span types defined but no infrastructure to collect
-and export completed spans.
-
-Tasks:
-
-- Create =span_collector= interface for accumulating completed spans.
-- Implement =span_exporter= interface (similar to =log_exporter=).
-- Create =file_span_exporter= that writes spans as JSON Lines.
-- Integrate span export with =lifecycle_manager= or create =telemetry_provider=.
-
-*** Add tenant CRUD commands to CLI                                    :code:
-
-We need to be able to add new tenants, list tenants, etc.
-
-*** Add a sample set of gravatars for profiles                         :code:
-
-We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled
-(img123.jpg etc). There are also too many of them. We need to label them so we
-can use them to generate synthetic profiles to test the system and to ensure
-diversity. We probably need the following classes: race (course approximation is
-fine), gender, age (again course approximation - kid, teenager, adult, senior or
-some such classification). Then we need to create a subset of the dataset which
-is a representative sample.
-
-Gemini script that uses ollama:
-
-#+begin_src python
-import ollama
-import os
-import pandas as pd
-import json
-
-# Configuration
-IMAGE_FOLDER = './human-profile-photos' # Path to your dataset
-OUTPUT_FILE = 'labeled_dataset.csv'
-MODEL = 'llama3.2-vision'
-
-# Prompt designed for structured output
-PROMPT = """
-Analyze the person in this image and provide a JSON response with exactly these keys:
-- "race": (e.g., White, Black, Asian, Hispanic, etc.)
-- "gender": (Male, Female)
-- "age_group": (Kid, Teenager, Adult, Senior)
-
-Return ONLY the JSON object.
-"""
-
-def label_images():
-    results = []
-    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
-
-    print(f"Starting labeling for {len(image_files)} images...")
-
-    for filename in image_files:
-        path = os.path.join(IMAGE_FOLDER, filename)
-
-        try:
-            response = ollama.chat(
-                model=MODEL,
-                format='json', # Forces the model to output valid JSON
-                messages=[{
-                    'role': 'user',
-                    'content': PROMPT,
-                    'images': [path]
-                }]
-            )
-
-            # Parse the response
-            data = json.loads(response['message']['content'])
-            data['filename'] = filename
-            results.append(data)
-            print(f"Labeled: {filename}")
-
-        except Exception as e:
-            print(f"Error processing {filename}: {e}")
-
-    # Save to CSV
-    df = pd.DataFrame(results)
-    df.to_csv(OUTPUT_FILE, index=False)
-    print(f"Done! Results saved to {OUTPUT_FILE}")
-
-if __name__ == "__main__":
-    label_images()
-#+end_src
-
-
-*** Add staging support                                                :code:
-
-We need to add support for staging for all entities, in preparation of
-authorisation queue. We probably should just call this "authq" rather than
-staging.
-
-Notes:
-
-- server side writes to staging table instead of production table. Write
-  contains signature.
-- user opens authq for an entity and sees entry. Authorises, which signs the
-  row. If there are enough signatures, row is promoted into production with the
-  last signature. This happens via stored proc which checks where we are in the
-  state machine. If we have finished, we mark the row in staging as completed
-  and copy it into production.
-- end users open the entity dialog. This shows all live rows (e.g. those in
-  production) plus recent deletes, plus "pre-live" rows which are rows waiting
-  for authorisation.
-
-*** Add support for row signing                                        :code:
-
-It would be good to have users sign the changes they make.
-
-Gemini:
-
-#+begin_src markdown
-# Specification: Zero-Knowledge Row-Level Data Signing
-
-## 1. Objective
-
-Implement a system within PostgreSQL and a Client-side application to ensure
-row-level data integrity using digital signatures. The system must support
-,**schema evolution** (changing which columns are signed) and **zero-knowledge
-key management** (the server never sees the user's plain-text private key).
-
-## 2. Core Components
-
-### A. The Signature Registry (The "Recipe")
-
-To handle schema changes, we use a versioned registry.
-
-- **Table:** `signature_registry`
-- **Purpose:** Defines which columns constitute the "canonical payload" for a
-  specific version.
-- **Mechanism:** A function/query that takes a table row, filters it by the
-  versioned column list, and produces a **Deterministic Canonical JSON**
-  (alphabetically sorted keys, consistent date formats).
-
-### B. Zero-Knowledge Key Management
-
-- **Storage:** A table (e.g., `user_keys`) stores the user's **Public Key** and
-  an **Encrypted Private Key** (the "Blob").
-- **Process:** The client encrypts the Private Key using a key derived from the
-  user's password before upload.
-- **Temporal Logic:** This table is **Temporal** (using System-Period
-  Versioning). This ensures that every historical Public Key is preserved,
-  allowing us to verify old signatures even after a user rotates their keys.
-
-### C. The Signing Workflow
-
-- 1. **Client** retrieves the "Active" Registry Version and their Encrypted
-  Private Key.
-- 2. **Client** decrypts the Private Key locally.
-- 3. **Client** constructs the Canonical JSON from the row data based on the
-  Registry Recipe.
-- 4. **Client** signs the JSON and sends the record to the DB along with the
-  `signature` and `registry_version_id`.
-
-## 3. Data Integrity Schema
-
-The target data tables must include:
-
-- `signature` (BYTEA/TEXT): The cryptographic result.
-- `sig_version_id` (FK): Links to `signature_registry`.
-- `key_version_id` (FK): Links to the specific version in the **Temporal Key
-  Table** to prevent clock-drift issues during verification.
-
-## Point 4: Unified Identity & System Signing
-
-While users sign with asymmetric keys (RSA/ECDSA), system processes—like
-automated batch updates or background tasks—use a high-speed **HMAC (Hash-based
-Message Authentication Code)** approach. This allows "System Accounts" to
-participate in the same signature infrastructure without the overhead of
-public/private key pairs.
-
-- **The Machine Secret:** The system uses a 256-bit secret key (stored as an
-  environment variable or a database configuration parameter).
-- **The "Secret" Signature:** When a system account updates a row, it generates
-  a signature using `HMAC_SHA256(canonical_json, system_secret)`.
-- **Verification:** The verification query treats the "Signature" column as
-  polymorphic. If the row belongs to a user, it uses the **Public Key**; if it
-  belongs to a system account, it re-calculates the **HMAC** using the internal
-  secret to verify integrity.
-
-## Point 5: The Checkpointed Merkle Chain (Timeline Lock)
-
-To prevent "Ghost Deletions" (where an attacker deletes an entire row) or
-"History Rewriting," the system implements a Merkle-style chain. This creates a
-mathematical dependency between rows, making it impossible to change one record
-without breaking every subsequent record.
-
-- **Row Chaining:** Every row includes a `row_hash` (generated by the fast
-  ,**XXH3** 64-bit algorithm). This hash is a combination of:
-  `Hash(Current_Data + Current_Signature + Previous_Row_Hash)`.
-- **The Genesis Salt:** The very first row in the database uses a well-known
-  value (`0xFFFFFFFFFFFFFFFF`) as its "Previous Hash" to start the chain.
-- **Periodic Checkpointing:** Every 1,000 records (or every hour), a background
-  service calculates a **Master Checkpoint Hash** (an HMAC of all `row_hash`
-  values in that block).
-- **The Audit Log:** This Master Hash is stored in a separate, append-only
-  `audit_checkpoints` table. This acts as a "Timeline Lock"—once a checkpoint is
-  written, the previous 1,000 rows are effectively "sealed" and cannot be
-  modified or deleted without the system detecting a break in the chain.
-
-## 6. Implementation Requirements for Claude
-
-- 1. **Database Layer:** * Create the `signature_registry` and temporal `user_keys` tables.
-  - Provide a PostgreSQL function to generate a sorted Canonical JSON string
-    from a record given a `version_id`.
-- 2. **Client Layer (JS/Node/Python):** * Logic to derive an encryption key from
-  a password (PBKDF2/Argon2).
-  - Logic to sign the Canonical JSON using the decrypted Private Key.
-- 3. **Verification Layer:**
-  - A query that joins the Data Table with the Temporal Key History and the
-    Registry to re-generate the hash and verify it against the stored signature.
-
-### The Final "Story" Summary for Claude:
-
-> "I am building a PostgreSQL-based row-level integrity system. Users sign rows
-> using an **E2EE Private Key** stored as an encrypted blob. System accounts use
-> an **HMAC secret** to sign their changes. To prevent row deletion or tampering
-> with history, I am using an **XXH3-based Merkle Chain** where each row points
-> to the hash of the previous row. Finally, a background service creates **HMAC
-> Checkpoints** of these hashes to provide a verifiable audit trail of the
-> database timeline. Please implement the SQL triggers and the verification
-> logic for this architecture."
-
-#+end_src
-
-Notes:
-
-- the system should be designed in such a way that any table which requires
-  signing can also require multiple signatures. For example, the query includes
-  the signature field itself. Then the next signature has a "parent ID" (look
-  for proper technical term). The main table just joins against the last
-  signature but we can follow the trail back. The state machine determines how
-  many signatures are required to promote from staging to main table.
-
-*** Add FSM support to postgres                                        :code:
-
-In order to manage aspects such as trade life-cycles, authorisation, etc. We
-will need to support finite state machines. We should probably implement this
-directly in postgres.
-
-Links:
-
-- [[https://raphael.medaer.me/2019/06/12/pgfsm.html][Versioned FSM (Finite-State Machine) with Postgresql]]
-- [[https://felixge.de/2017/07/27/implementing-state-machines-in-postgresql/][Implementing State Machines in PostgreSQL]]
-- [[https://github.com/michelp/pgfsm/blob/master/pgfsm--0.0.1.sql][pgfsm--0.0.1.sql]]
-
-*** Add pg_cron extension for scheduling                               :code:
-
-We should install pg_cron extension:
-
-#+begin_quote
-pg_cron is a simple cron-based job scheduler for PostgreSQL (10 or higher) that
-runs inside the database as an extension.
-#+end_quote
-
-Links:
-
-- [[https://github.com/citusdata/pg_cron][GH: pg_cron]]
-
 *** System provisioner needs an icon                                   :code:
 
 Dialog is using default ORE icon.
@@ -1772,80 +1386,6 @@ Modified by must always map to an existing account. We need to create an account
 that cannot login and which is used for all of the initial population.
 
 Publication should be done using the new admin account, not the system account.
-
-*** Add roles for Super Admin                                          :code:
-
-We need to distinguish between the tenant admin and the "super" admin. These
-should have different roles.
-
-*** Split create schemas from main populate script                     :code:
-
-We should probably add a create schemas script.
-
-*** Message handlers are not scalable                                  :code:
-
-Claude just mentioned this in passing:
-
-#+begin_quote
-Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
-  ⎿  Error: File content (25665 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.
-● Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
-  ⎿  Read 200 lines
-#+end_quote
-
-This will not work when we have hundreds of types in a component. We need to
-split these files by message type.
-
-*** Generate C++ code for FPML                                         :code:
-
-We need to fix any limitations we may have in xsdcpp.
-
-*** Clicking save on connections causes exit                           :code:
-
-Asks if we want to exit. Also clicking save several times creates folders with
-the same name.
-
-*** Analysis on database name service                                  :code:
-
-Is this used? If so, the service should not be connecting to the admin database.
-
-*** External data issues                                               :code:
-
-Problems observed:
-
-- missing =downloaded_at= for a lot of data.
-- spurious =manifest.txt=, we should only have =manifest.json=.
-- duplication of data in catalog and main manifest. The manifest is the catalog.
-  Remove duplication.
-- for github downloads, add git commit.
-- not clear who "owner" is. It has to map to an account or group in the system.
-- datasets have a catalog, but they shoud be forced to use the catalog of the
-  manifest:
-
-:             "catalog": "Open Source Risk Engine",
-
-- need a domain for data such as XML Schemas.
-- we should ensure the methodology is one of the defined methodologies in the
-  file.
-- since datasets refer to data in subdirectories, we should add the directory to
-  the manifest. Not needed in DB.
-
-*** Make the icon theme "configurable"                                 :code:
-
-While we are trying to find a good icon theme, it should be possible to change
-the icons without having to rebuild. Ideally without having to restart, but if
-we have to restart that's not too bad.
-
-*** Listener error in comms service                                    :code:
-
-Investigate this:
-
-#+begin_src logview
-2026-01-22 20:40:20.194383 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
-2026-01-22 20:40:20.194413 [INFO] [ores.comms.net.server_session] Sent notification for event type 'ores.refdata.currency_changed' with 1 entity IDs to 127.0.0.1:49354
-2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
-2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
-#+end_src
 
 *** Add a organisation type scheme entity                              :code:
 
@@ -2678,158 +2218,107 @@ the code.
 - Description: Harare, Zimbabwe
 
 
-*** Methodology screen review                                          :code:
+*** Add workspace as a container                                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
+    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
+    :END:
 
-- make name column bigger.
-- do not show description and URI by default.
-- use tabs in detail window
-- show all meta-data in details window.
+Core needs to have a container for all of the data stored within a context.
 
-*** Librarian errors                                                   :code:
+Actually, according to Data Priented Principles, we may not need it. This may be
+a UI concept but not a code concept.
 
-When there is a failure publishing a dataset we just see "failed" in the wizard
-without any further details. Server log file says:
+*** Add portfolio support                                              :code:
 
-#+begin_src logview
-2026-01-21 22:21:07.676351 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.currencies with artefact_type: Solvaris Currencies
-2026-01-21 22:21:07.676381 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Currencies for dataset: slovaris.currencies
-2026-01-21 22:21:07.676412 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.currencies: Unknown artefact_type: Solvaris Currencies
-2026-01-21 22:21:07.676437 [INFO] [ores.dq.service.publication_service] Publishing dataset: slovaris.country_flags (Solvaris Country Flag Images)
-2026-01-21 22:21:07.676460 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.country_flags with artefact_type: Solvaris Country Flag Images
-2026-01-21 22:21:07.676491 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Country Flag Images for dataset: slovaris.country_flags
-2026-01-21 22:21:07.676518 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.country_flags: Unknown artefact_type: Solvaris Country Flag Images
-2026-01-21 22:21:07.676542 [INFO] [ores.dq.service.publication_service] Publishing dataset: slovaris.countries (Solvaris Countries)
-2026-01-21 22:21:07.676566 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.countries with artefact_type: Solvaris Countries
-2026-01-21 22:21:07.676592 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Countries for dataset: slovaris.countries
-2026-01-21 22:21:07.676618 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.countries: Unknown artefact_type: Solvaris Countries
-#+end_src
+Links:
 
-To reproduce, change artefact type in codegen back to "Solvaris Currencies".
+- [[https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data][Modeling Hierarchical Tree Data in PostgreSQL]]
 
-*** General session dialog                                             :code:
 
-At present we can't see a dialog with sessions for all users. We need to go to
-accounts to see a specific user session. We need to modify this dialog to be
-able to show either all sessions or sessions for a specific user.
+*** Add GLEIF-based evaluation tenant onboarding wizard                :code:
 
-Notes:
+For evaluation tenants, provide a wizard that creates operational parties from
+GLEIF/LEI data. The wizard is a separate action (not part of tenant
+provisioning) gated by the =evaluation= tenant type. It imports a root LEI
+entity and its corporate descendants as operational parties.
 
-- it should be possible to kick out a user or selection of users.
-- it should be possible to send a message to a user or all users.
-- session icon is just a circle
-- add paging support.
+**** Acceptance Criteria
 
-*** Issues with event viewer                                           :code:
+- Wizard available only for evaluation tenants.
+- User selects root LEI entity from a searchable picker.
+- Root party and descendants imported with proper hierarchy.
+- Party identifiers (LEI codes) stored in junction table.
 
-- no icon.
-- can't filter by event type.
-- always collect events in ring buffer. Search for story on this.
+*** Add currency and country party-visibility junctions                :code:
 
-*** Add action type to trades                                          :code:
+Add junction tables (=party_currencies=, =party_countries=) that control which
+currencies and countries a given party can see and use. The underlying reference
+data definitions remain shared at the tenant level; only visibility is
+per-party.
 
-Seems like FPML has some kind of trade activity like actions:
+**** Acceptance Criteria
 
-- https://www.fpml.org/coding-scheme/action-type-1-0.xml
+- Junction tables created with proper constraints.
+- Party-scoped queries for currencies and countries filter through junctions.
+- Default: all currencies/countries visible to all parties (opt-in restriction).
 
-*** Improve tag support                                                :code:
 
-At present we are not tagging DQ entities very well. For example, crypto
-currencies should be tagged as both crypto and currencies, etc.
 
-Also tags have duplicates, and versioning does not seem to be working:
+*** Non-classified observations                                    :analysis:
 
-#+begin_src sql
-ores_frosty_leaf=> select * from dq_tags_artefact_tbl;
-              dataset_id              |                tag_id                | version |      name      |              description
---------------------------------------+--------------------------------------+---------+----------------+---------------------------------------
- 93d187a9-fa26-4569-ab26-18154b58c5c7 | 65bd2824-bd43-4090-9f1a-a97dfef529ca |       0 | flag           | Country and region flag images
- c8912e75-9238-4f97-b8da-065a11b8bcc8 | 75ee83a7-2c54-448c-b073-8d68107d136e |       0 | cryptocurrency | Cryptocurrency icon images
- 30c0e0b8-c486-4bc1-a6f4-19db8fa691c9 | 2d3eace5-733c-47b3-b328-f99a358fe2a8 |       0 | currency       | Currency reference data
- d8093e17-8954-4928-a705-4fc03e400eee | 71e0c456-94fb-4e44-83f1-33ae1139e333 |       0 | currency       | Non-ISO currency reference data
- d3a4e751-ae30-497c-96b1-f727201d536b | c57ee434-bbc2-48c1-9a59-c9799e701288 |       0 | cryptocurrency | Cryptocurrency reference data
- 44ff5afd-a1b7-42d2-84a7-432092616c40 | d6453cf6-f23b-4f97-b600-51fcad21c8aa |       0 | geolocation    | IP address geolocation reference data
-#+end_src
+Observations, snags and so forth that have not been analysed to form a proper
+story.
 
-We need a generic tags table and then a junction between say datasets and tags,
-etc. Delete all of the existing half-baked tags implementations. Also have a
-look at the story in backlog about tags and labels.
+- add configuration option not to confirm on quit.
+- no repository tests for change reason. We need to check all entities and the
+  coverage.
+- qt code processing for network error messages is duplicated.
+- raw SQL in image repository, should be a function.
+- session should record if telemetry is enabled or not enabled.
+- bootstrap mode flag change does not generate new version.
+- it is possible to create a country without a name. likely a currency too.
+- should be possible to click on user and see user profile details. If the user
+  is admin, show all details; if not, show only key ones like email, etc.
+- remove maximise button.
+- test suites need to log version at the start. info script needs to grep log
+  for version for all suites.
+- no generators for roles and permissions it seems.
+- we still have the legacy password salt field.
+- should role permission tables have change reasons?
+- missing ores.analyser from system model.
+- add flag "is iso compliant" or some such for currencies and countries which
+  are in the standard.
+- allow users displaying password in password boxes.
+- send and receive are empty in sessions.
+- next, can you explain the difference in window types between the main currency
+  dialog and say currency history and currency details. we switched of minimise
+  button on the currency history and currency details and that worked fine. we
+  tried switching it off on the main currency window twice and that never seems
+  to work. can we make all windows the same type? same as currency history /
+  currency details.
+- merge common functionality between entities in ores.qt.
+- updating email from my account does not raise an event.
+- fictional countries should also have X prefixes
+- generate button should only exist in new, not edit.
+- no save button in currency list, need for generation
+- would be nice to be able to "locally modify" entity and then press save for
+  the batch. in git we call this staging, what name should we use? and what
+  icon?
+- server should peridically house keep sessions. if not connected, just mark it
+  as orphan. also when connection is dropped mark session as finished.
+- shouldn't revert to version be a server side operation? e.g. current version,
+  target version.
+- in the history diff, add a "from version" combo which shows either latest or
+  previous.
 
-*** Authentication failed dialog does not have details                 :code:
 
-At present we show the C++ exception:
+*** Update currency details to use tabs                                :code:
 
-#+begin_quote
-Authentication failed: Failed to connect to server: Connection refused [system:111 at /home/marco/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/vcpkg_installed/x64-linux/include/boost/asio/detail/reactive_socket_connect_op.hpp:97:37 in function 'static void boost::asio::detail::reactive_socket_connect_op<boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, boost::asio::any_io_executor>::do_complete(void *, operation *, const boost::system::error_code &, std::size_t) [Handler = boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, IoExecutor = boost::asio::any_io_executor]']
-#+end_quote
-
-Add details button.
-
-*** Ensure DQ dataset checks use code                                  :code:
-
-We are still checking for Name:
-
-#+begin_src sql
-    -- Get the flags dataset ID (for linking images)
-    select id into v_flags_dataset_id
-    from ores.dq_datasets_tbl
-    where name = 'Country Flag Images'
-      and subject_area_name = 'Country Flags'
-      and domain_name = 'Reference Data'
-      and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_flags_dataset_id is null then
-        raise exception 'Dataset not found: Country Flag Images';
-    end if;
-#+end_src
-
-*** Create subsets of datasets                                         :code:
-
-In some cases we may just want to publish a subset of a dataset. For example,
-Majors, G11, etc. Or maybe these are just separate datasets?
-
-In fact that is what they are. Break apart the larger sets - in particular
-currencies, countries, cryptos.
-
-*** Management of roles                                                :code:
-
-At present we have system level roles. This is not ideal, you may want to delete
-roles, add them etc. Do some analysis on the best way to implement these. We
-could have curated datasets for roles as well. Admin is the exception.
-
-Notes:
-
-- should be possible to see which accounts have what roles.
-
-*** Publish history dialog is non-standard                             :code:
-
-- always on top.
-- no paging.
-
-*** Add purge button to all entities                                   :code:
-
-We should be able to completely trash all data. We probably need a special
-permission for this but admin should be able to do it. Ideally all entity
-dialogs should have a purge action.
-
-We should also have a "purge all" button which purges all data from all tables -
-ignores roles etc. This could be available on the data librarian.
-
-*** Improve icon for methodology and dimensions                        :code:
-
-At present we have icons which are not very sensible. For methodology we could
-use something that reminds one of a laboratory.
-
-*** Clicking on connection should provide info                         :code:
-
-- when never connected: nothing.
-- when connected: server, bytes sent, received, status of connection.
-- when disconnected: retries, disconnected since.
-
-*** Add coloured icons                                                 :code:
-
-At present we are using black and white icons. These are a bit hard to see. We
-should try the coloured ones and see if it improves readability.
-
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
 
 
 

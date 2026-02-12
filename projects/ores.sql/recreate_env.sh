@@ -57,12 +57,6 @@ EOF
     exit 1
 }
 
-# Parse arguments
-OPTS=$(getopt -o e:ykH --long env:,yes,kill,no-sql-validation,help -n "$(basename "$0")" -- "$@")
-if [[ $? -ne 0 ]]; then
-    usage
-fi
-
 POSTGRES_PASSWORD="${PGPASSWORD:-}"
 DDL_PASSWORD="${ORES_DB_DDL_PASSWORD:-}"
 ENVIRONMENT=""
@@ -70,33 +64,15 @@ ASSUME_YES=""
 KILL_CONNECTIONS=""
 SKIP_VALIDATION="off"
 
-eval set -- "$OPTS"
-
-while true; do
+# Parse arguments using portable while/case (works on both GNU and BSD).
+while [[ $# -gt 0 ]]; do
     case "$1" in
-        -e|--env)
-            ENVIRONMENT="$2"
-            shift 2
-            ;;
-        -y|--yes)
-            ASSUME_YES="1"
-            shift
-            ;;
-        -k|--kill)
-            KILL_CONNECTIONS="1"
-            shift
-            ;;
-        --no-sql-validation)
-            SKIP_VALIDATION="on"
-            shift
-            ;;
-        -H|--help)
-            usage
-            ;;
-        --)
-            shift
-            break
-            ;;
+        -e|--env)              ENVIRONMENT="$2";      shift 2 ;;
+        -y|--yes)              ASSUME_YES="1";        shift   ;;
+        -k|--kill)             KILL_CONNECTIONS="1";   shift   ;;
+        --no-sql-validation)   SKIP_VALIDATION="on";   shift   ;;
+        -H|--help)             usage ;;
+        --)                    shift; break ;;
         *)
             echo "Error: Invalid option $1" >&2
             usage

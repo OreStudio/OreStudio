@@ -1,0 +1,327 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/BusinessCentreDetailDialog.hpp"
+
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include "ui_BusinessCentreDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+BusinessCentreDetailDialog::BusinessCentreDetailDialog(QWidget* parent)
+    : DetailDialogBase(parent),
+      ui_(new Ui::BusinessCentreDetailDialog),
+      clientManager_(nullptr) {
+
+    ui_->setupUi(this);
+    setupUi();
+    setupConnections();
+}
+
+BusinessCentreDetailDialog::~BusinessCentreDetailDialog() {
+    delete ui_;
+}
+
+void BusinessCentreDetailDialog::setupUi() {
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+}
+
+void BusinessCentreDetailDialog::setupConnections() {
+    connect(ui_->saveButton, &QPushButton::clicked, this,
+            &BusinessCentreDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
+            &BusinessCentreDetailDialog::onDeleteClicked);
+
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+            &BusinessCentreDetailDialog::onCodeChanged);
+    connect(ui_->sourceEdit, &QLineEdit::textChanged, this,
+            &BusinessCentreDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
+            &BusinessCentreDetailDialog::onFieldChanged);
+    connect(ui_->codingSchemeEdit, &QLineEdit::textChanged, this,
+            &BusinessCentreDetailDialog::onFieldChanged);
+    connect(ui_->countryAlpha2Edit, &QLineEdit::textChanged, this,
+            &BusinessCentreDetailDialog::onFieldChanged);
+}
+
+void BusinessCentreDetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+}
+
+void BusinessCentreDetailDialog::setUsername(const std::string& username) {
+    username_ = username;
+}
+
+void BusinessCentreDetailDialog::setBusinessCentre(
+    const refdata::domain::business_centre& business_centre) {
+    business_centre_ = business_centre;
+    updateUiFromBusinessCentre();
+}
+
+void BusinessCentreDetailDialog::setCreateMode(bool createMode) {
+    createMode_ = createMode;
+    ui_->codeEdit->setReadOnly(!createMode);
+    ui_->deleteButton->setVisible(!createMode);
+
+    if (createMode) {
+        ui_->metadataGroup->setVisible(false);
+    }
+
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void BusinessCentreDetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->codeEdit->setReadOnly(true);
+    ui_->sourceEdit->setReadOnly(readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->codingSchemeEdit->setReadOnly(readOnly);
+    ui_->countryAlpha2Edit->setReadOnly(readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+}
+
+void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
+    ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));
+    ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
+    ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
+    ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
+    ui_->countryAlpha2Edit->setText(QString::fromStdString(business_centre_.country_alpha2_code));
+
+    ui_->versionEdit->setText(QString::number(business_centre_.version));
+    ui_->recordedByEdit->setText(QString::fromStdString(business_centre_.recorded_by));
+    ui_->recordedAtEdit->setText(relative_time_helper::format(business_centre_.recorded_at));
+    ui_->commentaryEdit->setText(QString::fromStdString(business_centre_.change_commentary));
+}
+
+void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
+    if (createMode_) {
+        business_centre_.code = ui_->codeEdit->text().trimmed().toStdString();
+    }
+    business_centre_.source = ui_->sourceEdit->text().trimmed().toStdString();
+    business_centre_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
+    business_centre_.country_alpha2_code = ui_->countryAlpha2Edit->text().trimmed().toStdString();
+    business_centre_.recorded_by = username_;
+    business_centre_.performed_by = username_;
+}
+
+void BusinessCentreDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void BusinessCentreDetailDialog::onFieldChanged() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void BusinessCentreDetailDialog::updateSaveButtonState() {
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
+    ui_->saveButton->setEnabled(canSave);
+}
+
+bool BusinessCentreDetailDialog::validateInput() {
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    return !code_val.isEmpty();
+}
+
+void BusinessCentreDetailDialog::onSaveClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot save business centre while disconnected from server.");
+        return;
+    }
+
+    if (!validateInput()) {
+        MessageBoxHelper::warning(this, "Invalid Input",
+            "Please fill in all required fields.");
+        return;
+    }
+
+    updateBusinessCentreFromUi();
+
+    BOOST_LOG_SEV(lg(), info) << "Saving business centre: " << business_centre_.code;
+
+    QPointer<BusinessCentreDetailDialog> self = this;
+
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, business_centre = business_centre_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        refdata::messaging::save_business_centre_request request;
+        request.business_centre = business_centre;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::save_business_centre_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, "Failed to decompress response"};
+        }
+
+        auto response = refdata::messaging::save_business_centre_response::
+            deserialize(*payload_result);
+
+        if (!response) {
+            return {false, "Invalid server response"};
+        }
+
+        return {response->success, response->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher, &QFutureWatcher<SaveResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Business centre saved successfully";
+            QString code = QString::fromStdString(self->business_centre_.code);
+            emit self->businessCentreSaved(code);
+            self->notifySaveSuccess(tr("Business centre '%1' saved").arg(code));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+        }
+    });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void BusinessCentreDetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete business centre while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString(business_centre_.code);
+    auto reply = MessageBoxHelper::question(this, "Delete Business Centre",
+        QString("Are you sure you want to delete business centre '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting business centre: " << business_centre_.code;
+
+    QPointer<BusinessCentreDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, code_str = business_centre_.code]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        refdata::messaging::delete_business_centre_request request;
+        request.codes = {code_str};
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::delete_business_centre_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, "Failed to decompress response"};
+        }
+
+        auto response = refdata::messaging::delete_business_centre_response::
+            deserialize(*payload_result);
+
+        if (!response || response->results.empty()) {
+            return {false, "Invalid server response"};
+        }
+
+        return {response->results[0].success, response->results[0].message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Business centre deleted successfully";
+            emit self->statusMessage(QString("Business centre '%1' deleted").arg(code));
+            emit self->businessCentreDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+}

@@ -65,6 +65,7 @@
      </widget>
      <addaction name="CurrenciesAction"/>
      <addaction name="CountriesAction"/>
+     <addaction name="ActionBusinessCentres"/>
      <addaction name="separator"/>
      <addaction name="menuParties"/>
     </widget>
@@ -193,6 +194,7 @@
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
    <addaction name="CountriesAction"/>
+   <addaction name="ActionBusinessCentres"/>
    <addaction name="ActionParties"/>
    <addaction name="ActionCounterparties"/>
    <addaction name="ActionAccounts"/>
@@ -505,6 +507,14 @@
    </property>
    <property name="toolTip">
     <string>Manage external counterparties</string>
+   </property>
+  </action>
+  <action name="ActionBusinessCentres">
+   <property name="text">
+    <string>&amp;Business Centres</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage business centre reference data</string>
    </property>
   </action>
   <action name="ActionOnboardTenant">

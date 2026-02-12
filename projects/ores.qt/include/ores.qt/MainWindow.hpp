@@ -75,6 +75,7 @@ class PartyIdSchemeController;
 class ContactTypeController;
 class PartyController;
 class CounterpartyController;
+class BusinessCentreController;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -546,6 +547,7 @@ private:
     std::unique_ptr<ContactTypeController> contactTypeController_;
     std::unique_ptr<PartyController> partyController_;
     std::unique_ptr<CounterpartyController> counterpartyController_;
+    std::unique_ptr<BusinessCentreController> businessCentreController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

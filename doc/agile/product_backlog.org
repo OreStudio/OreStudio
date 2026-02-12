@@ -1521,6 +1521,15 @@ Events:
 - new items (reload). Ideally entity specific option.
 - connect, disconnect.
 
+Notes:
+
+- one possibility is to use [[https://git.comtegra.pl/ajastrzebski/llama-cpp/-/tree/master/examples/tts][llama-tts]] to generate voice:
+
+: ./llama-tts --tts-oute-default -p "You have new currencies." && aplay output.wav
+
+  We could generate sounds up front for main events. This could be the speech
+  sound theme.
+
 *** Cli clean-ups                                                      :code:
 
 - we still seem to support =--entity currencies=. This should now be invalid.

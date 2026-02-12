@@ -1055,12 +1055,65 @@ Now we have an event bus, we should create events for:
 - connect, disconnect, retry
 - login, logout
 
-*** STARTED Add counterparty wizard                                    :code:
+*** STARTED Fix OSX build                                              :code:
     :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 00:24]--[2026-02-12 Thu 00:43] =>  0:19
+    :END:
+
+Build is broken at present in Setup Database step:
+
+#+begin_src sh
+0s
+Run ./projects/ores.sql/recreate_database.sh -y \
+Error: Missing required passwords:
+  - postgres (-p or PGPASSWORD)
+  - ddl (-d or ORES_DB_DDL_PASSWORD)
+  - cli (-c or ORES_DB_CLI_PASSWORD)
+  - wt (-w or ORES_DB_WT_PASSWORD)
+  - comms (-m or ORES_DB_COMMS_PASSWORD)
+  - http (-h or ORES_DB_HTTP_PASSWORD)
+  - test_ddl (-t or ORES_TEST_DB_DDL_PASSWORD)
+  - test_dml (-T or ORES_TEST_DB_PASSWORD)
+  - ro (-r or ORES_DB_READONLY_PASSWORD)
+
+Set via command line flags or environment variables.
+#+end_src
+
+#+begin_quote
+This pull request primarily addresses a critical compatibility issue affecting
+the macOS CI pipeline by implementing a more portable argument parsing solution
+in key database and environment setup scripts. This change ensures that the
+scripts execute correctly on macOS systems, which do not support GNU-specific
+getopt long options, thereby stabilizing the CI process. Additionally, the pull
+request includes a substantial update to the project's product backlog,
+reflecting ongoing planning and prioritization of future development tasks.
+
+Highlights:
+
+- macOS CI Fix: Replaced GNU getopt with a portable while/case argument parsing
+  mechanism in recreate_database.sh and recreate_env.sh to resolve CI failures
+  on macOS, which uses BSD getopt.
+- Argument Parsing Portability: Ensured all existing command-line options (-p,
+  -d, -c, -w, -m, -h, -t, -T, -r, -D, -y, --no-sql-validation, -H) are preserved
+  and function correctly across different getopt implementations.
+- Product Backlog Update: Significantly updated the product backlog document,
+  adding numerous new stories and removing several completed or cancelled items
+  across various categories like UI, database features, and infrastructure.
+#+end_quote
+
+*** STARTED Add a setup new tenant wizard                              :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 07:20]
     CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
     :END:
 
-We need a GLEIF based counterparty wizard.
+Just like we did a new system provisioner, we need a new tenant provisioner that
+takes into account:
+
+- GLEIF based party setup
+- GLEIF based counterparty setup
+
+We should make it clear it's evaluation.
 
 *** STARTED Implement party-level RLS isolation                        :code:
 

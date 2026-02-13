@@ -66,6 +66,12 @@ CounterpartyMdiWindow::CounterpartyMdiWindow(
 }
 
 QSize CounterpartyMdiWindow::sizeHint() const {
+    if (savedWindowSize_.isValid()) {
+        BOOST_LOG_SEV(lg(), debug) << "sizeHint returning saved size: "
+            << savedWindowSize_.width() << "x" << savedWindowSize_.height();
+        return savedWindowSize_;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "sizeHint returning default size: 900x400";
     return {900, 400};
 }
 
@@ -160,20 +166,9 @@ void CounterpartyMdiWindow::setupTable() {
         cs::mono_left      // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
-
-    // Set column widths
-    tableView_->setColumnWidth(ClientCounterpartyModel::Flag, 30);
-    tableView_->setColumnWidth(ClientCounterpartyModel::BusinessCenterCode, 80);
-    tableView_->setColumnWidth(ClientCounterpartyModel::ShortCode, 120);
-    tableView_->setColumnWidth(ClientCounterpartyModel::FullName, 250);
-    tableView_->setColumnWidth(ClientCounterpartyModel::TransliteratedName, 200);
-    tableView_->setColumnWidth(ClientCounterpartyModel::PartyType, 120);
-    tableView_->setColumnWidth(ClientCounterpartyModel::Status, 100);
-    tableView_->setColumnWidth(ClientCounterpartyModel::Version, 80);
-    tableView_->setColumnWidth(ClientCounterpartyModel::RecordedBy, 120);
-    tableView_->setColumnWidth(ClientCounterpartyModel::RecordedAt, 150);
+    tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Setup column visibility with context menu
     setupColumnVisibility();
@@ -518,30 +513,41 @@ void CounterpartyMdiWindow::saveSettings() {
 
     // Save window size
     settings.setValue("windowSize", size());
+    BOOST_LOG_SEV(lg(), debug) << "Saved counterparty window size: "
+        << size().width() << "x" << size().height();
 
     settings.endGroup();
 }
 
 void CounterpartyMdiWindow::restoreSettings() {
+    static constexpr int settings_version = 2;
+
     QSettings settings("OreStudio", "OreStudio");
     settings.beginGroup("CounterpartyListWindow");
 
     QHeaderView* header = tableView_->horizontalHeader();
 
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state
+    // Check if saved settings match current version
+    const auto saved_version = settings.value("settingsVersion", 0).toInt();
+    if (saved_version == settings_version && settings.contains("headerState")) {
         header->restoreState(settings.value("headerState").toByteArray());
         BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
     } else {
-        // Apply default column visibility
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-        header->hideSection(ClientCounterpartyModel::TransliteratedName);
+        if (saved_version != settings_version) {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Settings version changed (" << saved_version
+                << " -> " << settings_version << "), resetting to defaults";
+            settings.remove("headerState");
+            settings.setValue("settingsVersion", settings_version);
+        }
     }
 
-    // Restore window size if saved
+    // Always hide transliterated name (data merged into Name column)
+    header->hideSection(ClientCounterpartyModel::TransliteratedName);
+
+    // Restore window size if saved (used by sizeHint for MDI sub-window sizing)
     if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
+        savedWindowSize_ = settings.value("windowSize").toSize();
     }
 
     settings.endGroup();

@@ -36,6 +36,7 @@ create table if not exists "ores_refdata_party_id_schemes_tbl" (
     "description" text not null,
     "coding_scheme_code" text null,
     "display_order" integer not null default 0,
+    "max_cardinality" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -50,7 +51,8 @@ create table if not exists "ores_refdata_party_id_schemes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("change_reason_code" <> '')
+    check ("change_reason_code" <> ''),
+    check ("max_cardinality" is null or "max_cardinality" > 0)
 );
 
 create unique index if not exists ores_refdata_party_id_schemes_version_uniq_idx

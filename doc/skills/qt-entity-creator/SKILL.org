@@ -545,9 +545,72 @@ tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
 tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
 tableView_->setWordWrap(false);
 tableView_->setSortingEnabled(true);
+tableView_->verticalHeader()->setVisible(false);
 tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 #+end_src
+
+*Important*: Do NOT use =setColumnWidth()= or =setStretchLastSection(true)=.
+All list windows must use =ResizeToContents= consistently so columns auto-size
+to actual data and behave identically across all entity windows (countries,
+currencies, parties, counterparties, etc.).
+
+**** Settings versioning for column layout
+
+When column layout changes (columns added, removed, renamed, or reordered),
+bump the =settings_version= constant in =restoreSettings()= to invalidate
+cached header state. This forces users to get the new defaults on next launch.
+
+#+begin_src cpp
+void <Entity>MdiWindow::restoreSettings() {
+    static constexpr int settings_version = 1;
+
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("<Entity>ListWindow");
+
+    QHeaderView* header = tableView_->horizontalHeader();
+
+    const auto saved_version = settings.value("settingsVersion", 0).toInt();
+    if (saved_version == settings_version && settings.contains("headerState")) {
+        header->restoreState(settings.value("headerState").toByteArray());
+    } else {
+        if (saved_version != settings_version) {
+            settings.remove("headerState");
+            settings.setValue("settingsVersion", settings_version);
+        }
+    }
+
+    // Always enforce columns that must be hidden (regardless of saved state)
+    // header->hideSection(Client<Entity>Model::SomeColumn);
+
+    // Store saved size for sizeHint() so MDI sub-window gets correct dimensions
+    if (settings.contains("windowSize")) {
+        savedWindowSize_ = settings.value("windowSize").toSize();
+    }
+
+    settings.endGroup();
+}
+#+end_src
+
+**** Non-Latin text detection for transliterated names
+
+When an entity has both a =full_name= (possibly in non-Latin script) and a
+=transliterated_name=, merge them into the Name column display rather than
+showing a separate Transliterated Name column. Use =TextUtils= from
+=ores.qt/TextUtils.hpp=:
+
+#+begin_src cpp
+#include "ores.qt/TextUtils.hpp"
+// ...
+case FullName:
+    return TextUtils::display_name_with_transliteration(
+        entity.full_name, entity.transliterated_name);
+#+end_src
+
+This detects non-Latin characters (Korean, Chinese, Japanese, Arabic, Cyrillic,
+etc.) and appends the transliteration in parentheses, truncated to 30 characters
+with an ellipsis. The Transliterated Name column should be hidden by default
+(enforced in =restoreSettings()= regardless of saved state).
 
 **** Stale indicator pattern (using EntityListMdiWindow base class)
 

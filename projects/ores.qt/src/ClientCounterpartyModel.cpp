@@ -19,7 +19,6 @@
  */
 #include "ores.qt/ClientCounterpartyModel.hpp"
 
-#include <unordered_set>
 #include <QtConcurrent>
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -140,8 +139,8 @@ QVariant ClientCounterpartyModel::headerData(
     }
 }
 
-void ClientCounterpartyModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientCounterpartyModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
@@ -154,20 +153,16 @@ void ClientCounterpartyModel::refresh(bool replace) {
         return;
     }
 
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(counterparties_.size());
-
-    if (replace) {
-        if (!counterparties_.empty()) {
-            beginResetModel();
-            counterparties_.clear();
-            recencyTracker_.clear();
-            pulseManager_->stop_pulsing();
-            total_available_count_ = 0;
-            endResetModel();
-        }
+    if (!counterparties_.empty()) {
+        beginResetModel();
+        counterparties_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
     }
 
-    fetch_counterparties(offset, page_size_);
+    fetch_counterparties(0, page_size_);
 }
 
 void ClientCounterpartyModel::load_page(std::uint32_t offset,
@@ -288,40 +283,11 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    std::vector<refdata::domain::counterparty> new_counterparties;
-    const auto received_count = result.counterparties.size();
-
-    if (counterparties_.empty()) {
-        // Full refresh or first page load, no duplicates to check.
-        new_counterparties = std::move(result.counterparties);
-    } else {
-        // Appending data, check for duplicates.
-        std::unordered_set<std::string> existing_codes;
-        existing_codes.reserve(counterparties_.size());
-        for (const auto& cp : counterparties_) {
-            existing_codes.insert(cp.short_code);
-        }
-
-        new_counterparties.reserve(received_count);
-        for (auto& cp : result.counterparties) {
-            if (existing_codes.find(cp.short_code) == existing_codes.end()) {
-                new_counterparties.push_back(std::move(cp));
-                existing_codes.insert(cp.short_code);
-            } else {
-                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate counterparty: "
-                                           << cp.short_code;
-            }
-        }
-    }
-
-    const int old_size = static_cast<int>(counterparties_.size());
-    const int new_count = static_cast<int>(new_counterparties.size());
+    const int new_count = static_cast<int>(result.counterparties.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
-        counterparties_.insert(counterparties_.end(),
-            std::make_move_iterator(new_counterparties.begin()),
-            std::make_move_iterator(new_counterparties.end()));
+        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        counterparties_ = std::move(result.counterparties);
         endInsertRows();
 
         const bool has_recent = recencyTracker_.update(counterparties_);
@@ -332,11 +298,8 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new counterparties "
-                              << "(received " << received_count
-                              << ", filtered " << (received_count - new_count)
-                              << " duplicates). Total in model: " << counterparties_.size()
-                              << ", Total available: " << total_available_count_;
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " counterparties."
+                              << " Total available: " << total_available_count_;
 
     emit dataLoaded();
 }
@@ -347,26 +310,6 @@ ClientCounterpartyModel::getCounterparty(int row) const {
     if (idx >= counterparties_.size())
         return nullptr;
     return &counterparties_[idx];
-}
-
-bool ClientCounterpartyModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = counterparties_.size() < total_available_count_;
-    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
-                               << " (loaded: " << counterparties_.size()
-                               << ", page_size: " << page_size_
-                               << ", available: " << total_available_count_ << ")";
-    return has_more && !is_fetching_;
-}
-
-void ClientCounterpartyModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false);
 }
 
 void ClientCounterpartyModel::set_page_size(std::uint32_t size) {

@@ -141,8 +141,8 @@ QVariant ClientPartyModel::headerData(
     }
 }
 
-void ClientPartyModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientPartyModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
@@ -155,20 +155,16 @@ void ClientPartyModel::refresh(bool replace) {
         return;
     }
 
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(parties_.size());
-
-    if (replace) {
-        if (!parties_.empty()) {
-            beginResetModel();
-            parties_.clear();
-            recencyTracker_.clear();
-            pulseManager_->stop_pulsing();
-            total_available_count_ = 0;
-            endResetModel();
-        }
+    if (!parties_.empty()) {
+        beginResetModel();
+        parties_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
     }
 
-    fetch_parties(offset, page_size_);
+    fetch_parties(0, page_size_);
 }
 
 void ClientPartyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -240,22 +236,6 @@ void ClientPartyModel::fetch_parties(std::uint32_t offset,
     watcher_->setFuture(future);
 }
 
-bool ClientPartyModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = parties_.size() < total_available_count_;
-    return has_more && !is_fetching_;
-}
-
-void ClientPartyModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false);
-}
-
 void ClientPartyModel::set_page_size(std::uint32_t size) {
     if (size == 0 || size > 1000) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
@@ -282,14 +262,11 @@ void ClientPartyModel::onPartysLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int old_size = static_cast<int>(parties_.size());
     const int new_count = static_cast<int>(result.parties.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
-        parties_.insert(parties_.end(),
-            std::make_move_iterator(result.parties.begin()),
-            std::make_move_iterator(result.parties.end()));
+        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        parties_ = std::move(result.parties);
         endInsertRows();
 
         const bool has_recent = recencyTracker_.update(parties_);
@@ -300,9 +277,8 @@ void ClientPartyModel::onPartysLoaded() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new parties. "
-                              << "Total in model: " << parties_.size()
-                              << ", Total available: " << total_available_count_;
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " parties."
+                              << " Total available: " << total_available_count_;
     emit dataLoaded();
 }
 

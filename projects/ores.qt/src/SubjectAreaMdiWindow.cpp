@@ -68,7 +68,7 @@ void SubjectAreaMdiWindow::setupUi() {
         cs::text_left,   // DomainName
         cs::text_left,   // Description
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);

@@ -126,7 +126,7 @@ signup_result signup_service::register_user(const std::string& username,
     domain::account new_account {
         .version = 0,
         .id = id,
-        .recorded_by = username,  // Self-registered
+        .modified_by = username,  // Self-registered
         .username = username,
         .password_hash = password_hash,
         .password_salt = "", // FIXME remove

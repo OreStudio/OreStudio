@@ -101,7 +101,7 @@ void NatureDimensionDetailDialog::updateUiFromDimension() {
     ui_->nameEdit->setText(QString::fromStdString(dimension_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension_.description));
     ui_->versionEdit->setText(QString::number(dimension_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(dimension_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(dimension_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(dimension_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(dimension_.change_commentary));
 }
@@ -110,7 +110,7 @@ void NatureDimensionDetailDialog::updateDimensionFromUi() {
     if (createMode_) dimension_.code = ui_->codeEdit->text().trimmed().toStdString();
     dimension_.name = ui_->nameEdit->text().trimmed().toStdString();
     dimension_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    dimension_.recorded_by = username_;
+    dimension_.modified_by = username_;
 }
 
 void NatureDimensionDetailDialog::onCodeChanged(const QString&) {

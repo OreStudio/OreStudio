@@ -42,7 +42,7 @@ TEST_CASE("create_account_with_valid_fields", tags) {
 
     account sut;
     sut.version = 1;
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.id = boost::uuids::random_generator()();
     sut.username = "john.doe";
     sut.password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
@@ -52,7 +52,7 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.username == "john.doe");
     CHECK(sut.password_hash == "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
     CHECK(sut.password_salt == "randomly_generated_salt_value");
@@ -66,7 +66,7 @@ TEST_CASE("create_admin_account", tags) {
     // Note: Admin privileges are now managed via RBAC roles
     account sut;
     sut.version = 1;
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
     sut.username = "admin";
     sut.password_hash = "admin_hash_value";
@@ -76,7 +76,7 @@ TEST_CASE("create_admin_account", tags) {
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(sut.recorded_by == "system");
+    CHECK(sut.modified_by == "system");
     CHECK(sut.username == "admin");
     CHECK(sut.email == "admin@example.com");
 }
@@ -89,7 +89,7 @@ TEST_CASE("account_with_specific_uuid", tags) {
 
     account sut;
     sut.version = 2;
-    sut.recorded_by = "updater";
+    sut.modified_by = "updater";
     sut.id = specific_id;
     sut.username = "test.user";
     sut.password_hash = "test_hash";
@@ -107,7 +107,7 @@ TEST_CASE("account_insertion_operator", tags) {
 
     account sut;
     sut.version = 3;
-    sut.recorded_by = "developer";
+    sut.modified_by = "developer";
     sut.id = boost::uuids::random_generator()();
     sut.username = "serialization.test";
     sut.password_hash = "hash123";
@@ -130,7 +130,7 @@ TEST_CASE("create_account_with_faker", tags) {
 
     account sut;
     sut.version = faker::number::integer(1, 10);
-    sut.recorded_by = std::string(faker::internet::username());
+    sut.modified_by = std::string(faker::internet::username());
     sut.id = boost::uuids::random_generator()();
     sut.username = std::string(faker::internet::username());
     sut.password_hash = faker::number::hexadecimal(64);
@@ -142,7 +142,7 @@ TEST_CASE("create_account_with_faker", tags) {
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.username.empty());
     CHECK(sut.password_hash.length() == 66);
     CHECK(sut.password_salt.length() == 34);
@@ -156,7 +156,7 @@ TEST_CASE("create_multiple_random_accounts", tags) {
     for (int i = 0; i < 3; ++i) {
         account sut;
         sut.version = faker::number::integer(1, 100);
-        sut.recorded_by = std::string(faker::person::firstName()) + " " +
+        sut.modified_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
         sut.id = boost::uuids::random_generator()();
         sut.username = std::string(faker::internet::username());
@@ -177,7 +177,7 @@ TEST_CASE("account_convert_single_to_table", tags) {
 
     account acc;
     acc.version = 1;
-    acc.recorded_by = "admin";
+    acc.modified_by = "admin";
     acc.id = boost::uuids::random_generator()();
     acc.username = "john.doe";
     acc.password_hash = "hash123";
@@ -202,7 +202,7 @@ TEST_CASE("account_convert_multiple_to_table", tags) {
     for (int i = 0; i < 3; ++i) {
         account acc;
         acc.version = i + 1;
-        acc.recorded_by = "system";
+        acc.modified_by = "system";
         acc.id = boost::uuids::random_generator()();
         acc.username = "user" + std::to_string(i);
         acc.password_hash = "hash" + std::to_string(i);
@@ -230,7 +230,7 @@ TEST_CASE("account_convert_single_to_json", tags) {
 
     account acc;
     acc.version = 1;
-    acc.recorded_by = "admin";
+    acc.modified_by = "admin";
     acc.id = boost::uuids::random_generator()();
     acc.username = "john.doe";
     acc.password_hash = "hash123";
@@ -255,7 +255,7 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
     for (int i = 0; i < 3; ++i) {
         account acc;
         acc.version = i + 1;
-        acc.recorded_by = "system";
+        acc.modified_by = "system";
         acc.id = boost::uuids::random_generator()();
         acc.username = "user" + std::to_string(i);
         acc.password_hash = "hash" + std::to_string(i);
@@ -296,7 +296,7 @@ TEST_CASE("account_table_with_faker_data", tags) {
     for (int i = 0; i < 5; ++i) {
         account acc;
         acc.version = faker::number::integer(1, 10);
-        acc.recorded_by = std::string(faker::internet::username());
+        acc.modified_by = std::string(faker::internet::username());
         acc.id = boost::uuids::random_generator()();
         acc.username = std::string(faker::internet::username());
         acc.password_hash = faker::number::hexadecimal(64);

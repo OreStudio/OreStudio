@@ -184,7 +184,7 @@ void PartyDetailDialog::updateUiFromParty() {
     ui_->businessCenterCombo->setCurrentText(QString::fromStdString(party_.business_center_code));
 
     ui_->versionEdit->setText(QString::number(party_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(party_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(party_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(party_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(party_.change_commentary));
 }
@@ -201,7 +201,7 @@ void PartyDetailDialog::updatePartyFromUi() {
     party_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     const auto bcc = ui_->businessCenterCombo->currentText().trimmed().toStdString();
     party_.business_center_code = bcc.empty() ? std::string("WRLD") : bcc;
-    party_.recorded_by = username_;
+    party_.modified_by = username_;
     party_.performed_by = username_;
 }
 

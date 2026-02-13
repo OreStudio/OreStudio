@@ -207,7 +207,7 @@ TEST_CASE("get_currencies_response_with_empty_fields", tags) {
     ccy.rounding_precision = 0;
     ccy.format = "";
     ccy.currency_type = "";
-    ccy.recorded_by = "";
+    ccy.modified_by = "";
     ccy.recorded_at = {};
 
     resp.currencies.push_back(ccy);
@@ -251,11 +251,11 @@ TEST_CASE("get_currency_history_response_serialize_deserialize", tags) {
         ver.data.rounding_precision = 2;
         ver.data.format = "#,##0.00";
         ver.data.currency_type = "Major";
-        ver.data.recorded_by = "admin";
+        ver.data.modified_by = "admin";
         ver.data.recorded_at = ores::platform::time::datetime::parse_time_point(
             "2025-01-0" + std::to_string(i) + " 10:00:00");
         ver.version_number = i;
-        ver.recorded_by = "admin";
+        ver.modified_by = "admin";
         ver.recorded_at = ores::platform::time::datetime::parse_time_point(
             "2025-01-0" + std::to_string(i) + " 10:00:00");
         ver.change_summary = "Version " + std::to_string(i);

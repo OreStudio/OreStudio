@@ -48,7 +48,6 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.data.rounding_precision));
     writer::write_string(buffer, version.data.format);
     writer::write_string(buffer, version.data.currency_type);
-    writer::write_string(buffer, version.data.recorded_by);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(version.data.recorded_at));
 
@@ -60,7 +59,6 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
 
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
-    writer::write_string(buffer, version.recorded_by);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(version.recorded_at));
     writer::write_string(buffer, version.change_summary);
@@ -115,9 +113,6 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     if (!currency_type) return std::unexpected(currency_type.error());
     version.data.currency_type = *currency_type;
 
-    auto recorded_by = reader::read_string(data);
-    if (!recorded_by) return std::unexpected(recorded_by.error());
-    version.data.recorded_by = *recorded_by;
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
@@ -141,9 +136,6 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     if (!version_number) return std::unexpected(version_number.error());
     version.version_number = static_cast<int>(*version_number);
 
-    auto version_recorded_by = reader::read_string(data);
-    if (!version_recorded_by) return std::unexpected(version_recorded_by.error());
-    version.recorded_by = *version_recorded_by;
 
     auto version_recorded_at = reader::read_string(data);
     if (!version_recorded_at) return std::unexpected(version_recorded_at.error());

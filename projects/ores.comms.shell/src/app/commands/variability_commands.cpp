@@ -93,7 +93,7 @@ process_add_feature_flag(std::ostream& out, client_session& session,
         out << "✗ You must be logged in to add a feature flag." << std::endl;
         return;
     }
-    const auto& recorded_by = session.session_info()->username;
+    const auto& modified_by = session.session_info()->username;
 
     // Parse enabled flag
     bool is_enabled = (enabled == "true" || enabled == "1" || enabled == "yes");
@@ -109,7 +109,7 @@ process_add_feature_flag(std::ostream& out, client_session& session,
                 .enabled = is_enabled,
                 .name = std::move(name),
                 .description = std::move(description),
-                .recorded_by = recorded_by,
+                .modified_by = modified_by,
                 .change_reason_code = std::move(change_reason_code),
                 .change_commentary = std::move(change_commentary),
                 .recorded_at = std::chrono::system_clock::now()

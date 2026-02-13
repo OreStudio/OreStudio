@@ -26,7 +26,7 @@ namespace ores::cli::config {
 std::ostream& operator<<(std::ostream& s, const add_change_reason_category_options& v) {
     s << "{ code: " << v.code
       << ", description: " << v.description
-      << ", recorded_by: " << v.recorded_by;
+      << ", modified_by: " << v.modified_by;
 
     if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;
 

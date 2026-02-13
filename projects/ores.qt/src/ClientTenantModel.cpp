@@ -92,8 +92,8 @@ QVariant ClientTenantModel::data(
             return QString::fromStdString(tenant.status);
         case Version:
             return tenant.version;
-        case RecordedBy:
-            return QString::fromStdString(tenant.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(tenant.modified_by);
         case RecordedAt:
             return relative_time_helper::format(tenant.recorded_at);
         default:
@@ -126,8 +126,8 @@ QVariant ClientTenantModel::headerData(
         return tr("Status");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

@@ -514,7 +514,7 @@ void CurrencyController::onRevertCurrency(const refdata::domain::currency& curre
 
     // Create a copy of the currency for saving
     refdata::domain::currency currencyToSave = currency;
-    currencyToSave.recorded_by = username_.toStdString();
+    currencyToSave.modified_by = username_.toStdString();
 
     QPointer<CurrencyController> self = this;
     QFuture<std::pair<bool, std::string>> future =

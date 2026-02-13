@@ -58,7 +58,7 @@ MethodologyHistoryDialog::~MethodologyHistoryDialog() {
 void MethodologyHistoryDialog::setupUi() {
     ui_->titleLabel->setText(QString("Methodology History"));
     ui_->versionListWidget->setColumnCount(4);
-    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Recorded By", "Commentary"});
+    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -156,7 +156,7 @@ void MethodologyHistoryDialog::updateVersionList() {
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
         ui_->versionListWidget->setItem(row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
-        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.recorded_by)));
+        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
         ui_->versionListWidget->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
     }
 
@@ -220,7 +220,7 @@ void MethodologyHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->logicReferenceValue->setText(QString::fromStdString(version.logic_reference.value_or("")));
     ui_->implementationValue->setText(QString::fromStdString(version.implementation_details.value_or("")));
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }

@@ -78,7 +78,7 @@ options_description make_add_change_reason_options_description() {
             "Commentary is mandatory (default: false)")
         ("display-order", value<int>()->default_value(0),
             "Display order for UI (default: 0)")
-        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("modified-by", value<std::string>(), "Username of modifier (required)")
         ("change-commentary", value<std::string>(), "Change commentary");
 
     return r;
@@ -105,11 +105,11 @@ add_change_reason_options read_add_change_reason_options(const variables_map& vm
     }
     r.category_code = vm["category-code"].as<std::string>();
 
-    if (vm.count("recorded-by") == 0) {
+    if (vm.count("modified-by") == 0) {
         BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --recorded-by for add change-reason command."));
+            parser_exception("Must supply --modified-by for add change-reason command."));
     }
-    r.recorded_by = vm["recorded-by"].as<std::string>();
+    r.modified_by = vm["modified-by"].as<std::string>();
 
     r.applies_to_amend = vm["applies-to-amend"].as<bool>();
     r.applies_to_delete = vm["applies-to-delete"].as<bool>();

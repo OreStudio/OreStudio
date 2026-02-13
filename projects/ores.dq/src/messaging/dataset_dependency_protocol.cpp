@@ -40,7 +40,6 @@ void write_dataset_dependency(std::vector<std::byte>& buffer,
     writer::write_string(buffer, d.dataset_code);
     writer::write_string(buffer, d.dependency_code);
     writer::write_string(buffer, d.role);
-    writer::write_string(buffer, d.recorded_by);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(d.recorded_at));
 }
@@ -61,9 +60,6 @@ read_dataset_dependency(std::span<const std::byte>& data) {
     if (!role_result) return std::unexpected(role_result.error());
     d.role = *role_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    d.recorded_by = *recorded_by_result;
 
     auto recorded_at_result = reader::read_string(data);
     if (!recorded_at_result) return std::unexpected(recorded_at_result.error());

@@ -190,8 +190,8 @@ void ChangeReasonHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(QString::number(version.version));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(version.modified_by));
         auto* commentaryItem =
             new QTableWidgetItem(QString::fromStdString(version.change_commentary));
 
@@ -199,7 +199,7 @@ void ChangeReasonHistoryDialog::onHistoryLoaded() {
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
         ui_->versionListWidget->setItem(i, 3, commentaryItem);
     }
 
@@ -286,7 +286,7 @@ void ChangeReasonHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->requiresCommentaryValue->setText(reason.requires_commentary ? "Yes" : "No");
     ui_->displayOrderValue->setText(QString::number(reason.display_order));
     ui_->versionNumberValue->setText(QString::number(reason.version));
-    ui_->recordedByValue->setText(QString::fromStdString(reason.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(reason.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(reason.recorded_at));
     ui_->changeCommentaryValue->setText(QString::fromStdString(reason.change_commentary));
 }

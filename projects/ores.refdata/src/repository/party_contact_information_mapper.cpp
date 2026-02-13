@@ -48,7 +48,7 @@ party_contact_information_mapper::map(const party_contact_information_entity& v)
     r.phone = v.phone;
     r.email = v.email;
     r.web_page = v.web_page;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -77,7 +77,7 @@ party_contact_information_mapper::map(const domain::party_contact_information& v
     r.phone = v.phone;
     r.email = v.email;
     r.web_page = v.web_page;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

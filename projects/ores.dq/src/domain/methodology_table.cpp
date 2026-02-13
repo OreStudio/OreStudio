@@ -29,11 +29,11 @@ std::string convert_to_table(const std::vector<methodology>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "ID" << "Name" << "Description"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& m : v) {
         table << boost::uuids::to_string(m.id) << m.name << m.description
-              << m.recorded_by << m.version << fort::endr;
+              << m.modified_by << m.version << fort::endr;
     }
     return table.to_string();
 }

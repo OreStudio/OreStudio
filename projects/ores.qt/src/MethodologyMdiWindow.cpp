@@ -69,7 +69,7 @@ void MethodologyMdiWindow::setupUi() {
         cs::text_left,   // Description
         cs::text_left,   // LogicReference
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);

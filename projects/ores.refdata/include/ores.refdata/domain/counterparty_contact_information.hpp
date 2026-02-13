@@ -130,7 +130,7 @@ struct counterparty_contact_information final {
     /**
      * @brief Username of the person who last modified this counterparty contact information.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this action.

@@ -92,7 +92,7 @@ currency_service::get_currency_version_history(const std::string& iso_code) {
         domain::currency_version version;
         version.data = currency;
         version.version_number = currency.version;
-        version.recorded_by = currency.recorded_by;
+        version.modified_by = currency.modified_by;
         version.recorded_at = currency.recorded_at;
         version.change_summary = "Version " + std::to_string(version.version_number);
 

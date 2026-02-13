@@ -59,7 +59,7 @@ dq::domain::dataset generate_synthetic_dataset() {
     if (faker::datatype::boolean()) {
         r.license_info = "MIT License";
     }
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

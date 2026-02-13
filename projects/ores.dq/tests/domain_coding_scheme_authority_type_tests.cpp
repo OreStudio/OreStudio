@@ -41,14 +41,14 @@ TEST_CASE("create_coding_scheme_authority_type_with_valid_fields", tags) {
     sut.version = 1;
     sut.code = "ISO";
     sut.description = "International Organization for Standardization";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Coding scheme authority type: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "ISO");
     CHECK(sut.description == "International Organization for Standardization");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("coding_scheme_authority_type_convert_single_to_table", tags) {
     csat.version = 1;
     csat.code = "ISDA";
     csat.description = "International Swaps and Derivatives Association";
-    csat.recorded_by = "system";
+    csat.modified_by = "system";
 
     std::vector<coding_scheme_authority_type> types = {csat};
     auto table = convert_to_table(types);

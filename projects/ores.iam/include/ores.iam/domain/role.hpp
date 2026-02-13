@@ -67,7 +67,7 @@ struct role final {
     /**
      * @brief Username of the person who last modified this role.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Code identifying the reason for the change.

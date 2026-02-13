@@ -141,14 +141,14 @@
                 <widget class="QLabel" name="versionNumberValue"/>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="recordedByLabel">
+                <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
-                  <string>Recorded By:</string>
+                  <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLabel" name="recordedByValue"/>
+                <widget class="QLabel" name="modifiedByValue"/>
                </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="recordedAtLabel">

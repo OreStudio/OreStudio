@@ -112,7 +112,7 @@ void PartyStatusDetailDialog::updateUiFromStatus() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(status_.description));
 
     ui_->versionEdit->setText(QString::number(status_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(status_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(status_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(status_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(status_.change_commentary));
 }
@@ -123,7 +123,7 @@ void PartyStatusDetailDialog::updateStatusFromUi() {
     }
     status_.name = ui_->nameEdit->text().trimmed().toStdString();
     status_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    status_.recorded_by = username_;
+    status_.modified_by = username_;
     status_.performed_by = username_;
 }
 

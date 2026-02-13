@@ -155,7 +155,7 @@ TEST_CASE("get_images_response_roundtrip_single_image", tags) {
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg>...</svg>",
-        .recorded_by = "admin",
+        .modified_by = "admin",
         .recorded_at = time1
     });
 
@@ -169,7 +169,6 @@ TEST_CASE("get_images_response_roundtrip_single_image", tags) {
     REQUIRE(result->images[0].key == "us");
     REQUIRE(result->images[0].description == "United States flag");
     REQUIRE(result->images[0].svg_data == "<svg>...</svg>");
-    REQUIRE(result->images[0].recorded_by == "admin");
     REQUIRE(result->images[0].recorded_at == time1);
 }
 
@@ -189,7 +188,7 @@ TEST_CASE("get_images_response_roundtrip_multiple_images", tags) {
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg id='us'>...</svg>",
-        .recorded_by = "admin",
+        .modified_by = "admin",
         .recorded_at = time1
     });
     original.images.push_back({
@@ -198,7 +197,7 @@ TEST_CASE("get_images_response_roundtrip_multiple_images", tags) {
         .key = "gb",
         .description = "United Kingdom flag",
         .svg_data = "<svg id='gb'>...</svg>",
-        .recorded_by = "user1",
+        .modified_by = "user1",
         .recorded_at = time2
     });
 
@@ -227,7 +226,7 @@ TEST_CASE("get_images_response_roundtrip_with_unicode", tags) {
         .key = "jp",
         .description = "Japanese flag - \xe6\x97\xa5\xe6\x9c\xac",
         .svg_data = "<svg><!-- \xe6\x97\xa5\xe6\x9c\xac --></svg>",
-        .recorded_by = "\xe7\xab\xa0\xe5\xa4\xaa\xe9\x83\x8e",
+        .modified_by = "\xe7\xab\xa0\xe5\xa4\xaa\xe9\x83\x8e",
         .recorded_at = time1
     });
 
@@ -237,7 +236,6 @@ TEST_CASE("get_images_response_roundtrip_with_unicode", tags) {
     REQUIRE(result.has_value());
     REQUIRE(result->images.size() == 1);
     REQUIRE(result->images[0].description == "Japanese flag - \xe6\x97\xa5\xe6\x9c\xac");
-    REQUIRE(result->images[0].recorded_by == "\xe7\xab\xa0\xe5\xa4\xaa\xe9\x83\x8e");
 }
 
 TEST_CASE("get_images_response_stream_operator", tags) {
@@ -254,7 +252,7 @@ TEST_CASE("get_images_response_stream_operator", tags) {
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg>...</svg>",
-        .recorded_by = "admin",
+        .modified_by = "admin",
         .recorded_at = time1
     });
 
@@ -296,7 +294,7 @@ TEST_CASE("get_images_response_deserialize_truncated_data", tags) {
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg>...</svg>",
-        .recorded_by = "admin",
+        .modified_by = "admin",
         .recorded_at = time1
     });
 

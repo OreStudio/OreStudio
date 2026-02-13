@@ -197,7 +197,7 @@ void ChangeReasonDetailDialog::setChangeReason(
     ui_->requiresCommentaryCheckBox->setChecked(reason.requires_commentary);
 
     ui_->versionEdit->setText(QString::number(reason.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(reason.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(reason.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(reason.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(reason.change_commentary));
 
@@ -215,7 +215,7 @@ dq::domain::change_reason ChangeReasonDetailDialog::getChangeReason() const {
     reason.applies_to_amend = ui_->appliesToAmendCheckBox->isChecked();
     reason.applies_to_delete = ui_->appliesToDeleteCheckBox->isChecked();
     reason.requires_commentary = ui_->requiresCommentaryCheckBox->isChecked();
-    reason.recorded_by = modifiedByUsername_;
+    reason.modified_by = modifiedByUsername_;
     // change_commentary is set via the save dialog, not from the UI
     return reason;
 }
@@ -291,7 +291,7 @@ void ChangeReasonDetailDialog::clearDialog() {
     ui_->requiresCommentaryCheckBox->setChecked(false);
 
     ui_->versionEdit->clear();
-    ui_->recordedByEdit->clear();
+    ui_->modifiedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->commentaryEdit->clear();
 

@@ -49,7 +49,7 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     sut.code = "slovaris";
     sut.name = "Slovaris Bundle";
     sut.description = "Synthetic reference data for development and testing";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Initial creation";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -60,7 +60,7 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     CHECK(sut.code == "slovaris");
     CHECK(sut.name == "Slovaris Bundle");
     CHECK(sut.description == "Synthetic reference data for development and testing");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_reason_code == "system.new");
     CHECK(sut.change_commentary == "Initial creation");
 }
@@ -74,7 +74,7 @@ TEST_CASE("dataset_bundle_convert_single_to_table", tags) {
     db.code = "base";
     db.name = "Base Bundle";
     db.description = "Industry-standard reference data (ISO + FpML)";
-    db.recorded_by = "system";
+    db.modified_by = "system";
     db.change_reason_code = "system.new";
     db.change_commentary = "Initial setup";
     db.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -102,7 +102,7 @@ TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
 

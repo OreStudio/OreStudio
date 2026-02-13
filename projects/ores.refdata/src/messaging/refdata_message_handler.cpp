@@ -176,8 +176,9 @@ handle_save_currency_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving currency: " << request.currency.iso_code;
 
-    // Override recorded_by with authenticated username
-    request.currency.recorded_by = auth->username;
+    // Override modified_by with authenticated username
+    request.currency.modified_by = auth->username;
+    request.currency.performed_by.clear();
 
     save_currency_response response;
     try {
@@ -443,7 +444,8 @@ handle_save_business_centre_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving business centre: " << request.business_centre.code;
 
-    request.business_centre.recorded_by = auth->username;
+    request.business_centre.modified_by = auth->username;
+    request.business_centre.performed_by.clear();
 
     save_business_centre_response response;
     try {
@@ -650,8 +652,9 @@ handle_save_country_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving country: " << request.country.alpha2_code;
 
-    // Override recorded_by with authenticated username
-    request.country.recorded_by = auth->username;
+    // Override modified_by with authenticated username
+    request.country.modified_by = auth->username;
+    request.country.performed_by.clear();
 
     save_country_response response;
     try {
@@ -841,7 +844,8 @@ handle_save_party_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving party type: " << request.type.code;
 
-    request.type.recorded_by = auth->username;
+    request.type.modified_by = auth->username;
+    request.type.performed_by.clear();
 
     save_party_type_response response;
     try {
@@ -1014,7 +1018,8 @@ handle_save_party_status_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving party status: " << request.status.code;
 
-    request.status.recorded_by = auth->username;
+    request.status.modified_by = auth->username;
+    request.status.performed_by.clear();
 
     save_party_status_response response;
     try {
@@ -1187,7 +1192,8 @@ handle_save_party_id_scheme_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving party ID scheme: " << request.scheme.code;
 
-    request.scheme.recorded_by = auth->username;
+    request.scheme.modified_by = auth->username;
+    request.scheme.performed_by.clear();
 
     save_party_id_scheme_response response;
     try {
@@ -1360,7 +1366,8 @@ handle_save_contact_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving contact type: " << request.type.code;
 
-    request.type.recorded_by = auth->username;
+    request.type.modified_by = auth->username;
+    request.type.performed_by.clear();
 
     save_contact_type_response response;
     try {
@@ -1550,7 +1557,8 @@ handle_save_party_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving party: " << request.party.short_code;
 
-    request.party.recorded_by = auth->username;
+    request.party.modified_by = auth->username;
+    request.party.performed_by.clear();
 
     save_party_response response;
     try {
@@ -1740,7 +1748,8 @@ handle_save_counterparty_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving counterparty: " << request.counterparty.short_code;
 
-    request.counterparty.recorded_by = auth->username;
+    request.counterparty.modified_by = auth->username;
+    request.counterparty.performed_by.clear();
 
     save_counterparty_response response;
     try {

@@ -41,7 +41,7 @@ ores::variability::domain::feature_flags generate_feature_flag(const std::string
         faker::string::alphanumeric(4);
     flag.enabled = faker::datatype::boolean();
     flag.description = std::string(faker::lorem::sentence());
-    flag.recorded_by = std::string(faker::internet::username());
+    flag.modified_by = std::string(faker::internet::username());
     flag.change_reason_code = "system.test";
     flag.change_commentary = "Synthetic test data";
     return flag;
@@ -309,7 +309,7 @@ TEST_CASE("feature_flag_version_increment", tags) {
     // Update with incremented version
     flag.version = 1;
     flag.enabled = !flag.enabled;
-    flag.recorded_by = "version_updater";
+    flag.modified_by = "version_updater";
     BOOST_LOG_SEV(lg, debug) << "Updated flag: " << flag;
     repo.write(h.context(), {flag});
 
@@ -319,5 +319,5 @@ TEST_CASE("feature_flag_version_increment", tags) {
 
     REQUIRE(read_flags.size() == 1);
     CHECK(read_flags[0].version == 2);
-    CHECK(read_flags[0].recorded_by == "version_updater");
+    CHECK(read_flags[0].modified_by == "version_updater");
 }

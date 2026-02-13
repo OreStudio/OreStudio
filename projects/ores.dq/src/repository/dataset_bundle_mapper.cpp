@@ -40,7 +40,7 @@ dataset_bundle_mapper::map(const dataset_bundle_entity& v) {
     r.code = v.code;
     r.name = v.name;
     r.description = v.description;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -60,7 +60,7 @@ dataset_bundle_mapper::map(const domain::dataset_bundle& v) {
     r.code = v.code;
     r.name = v.name;
     r.description = v.description;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 

@@ -74,7 +74,7 @@ QVariant ClientDataDomainModel::data(const QModelIndex& index, int role) const {
         case Name: return QString::fromStdString(domain.name);
         case Description: return QString::fromStdString(domain.description);
         case Version: return domain.version;
-        case RecordedBy: return QString::fromStdString(domain.recorded_by);
+        case ModifiedBy: return QString::fromStdString(domain.modified_by);
         case RecordedAt: return relative_time_helper::format(domain.recorded_at);
         default: return {};
         }
@@ -96,7 +96,7 @@ QVariant ClientDataDomainModel::headerData(int section,
     case Name: return tr("Name");
     case Description: return tr("Description");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

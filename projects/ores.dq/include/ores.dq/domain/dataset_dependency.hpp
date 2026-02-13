@@ -75,7 +75,7 @@ struct dataset_dependency final {
     /**
      * @brief Username of the person who recorded this dependency.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this operation.

@@ -147,7 +147,7 @@ void PartyIdSchemeMdiWindow::setupTable() {
         cs::text_left,   // CodingSchemeCode
         cs::mono_center, // DisplayOrder
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -161,7 +161,7 @@ void PartyIdSchemeMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientPartyIdSchemeModel::CodingSchemeCode, 150);
     tableView_->setColumnWidth(ClientPartyIdSchemeModel::DisplayOrder, 80);
     tableView_->setColumnWidth(ClientPartyIdSchemeModel::Version, 80);
-    tableView_->setColumnWidth(ClientPartyIdSchemeModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientPartyIdSchemeModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientPartyIdSchemeModel::RecordedAt, 150);
 
     // Setup column visibility with context menu

@@ -75,7 +75,7 @@ QVariant ClientTreatmentDimensionModel::data(const QModelIndex& index, int role)
         case Name: return QString::fromStdString(dim.name);
         case Description: return QString::fromStdString(dim.description);
         case Version: return dim.version;
-        case RecordedBy: return QString::fromStdString(dim.recorded_by);
+        case ModifiedBy: return QString::fromStdString(dim.modified_by);
         case RecordedAt: return relative_time_helper::format(dim.recorded_at);
         default: return {};
         }
@@ -98,7 +98,7 @@ QVariant ClientTreatmentDimensionModel::headerData(int section,
     case Name: return tr("Name");
     case Description: return tr("Description");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

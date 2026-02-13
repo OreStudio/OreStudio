@@ -65,8 +65,8 @@ QVariant ClientDatasetDependencyModel::data(const QModelIndex& index,
         return QString::fromStdString(dep.dependency_code);
     case Role:
         return QString::fromStdString(dep.role);
-    case RecordedBy:
-        return QString::fromStdString(dep.recorded_by);
+    case ModifiedBy:
+        return QString::fromStdString(dep.modified_by);
     case RecordedAt:
         return relative_time_helper::format(dep.recorded_at);
     default:
@@ -84,7 +84,7 @@ QVariant ClientDatasetDependencyModel::headerData(int section,
     case DatasetCode: return tr("Dataset Code");
     case DependencyCode: return tr("Depends On");
     case Role: return tr("Role");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

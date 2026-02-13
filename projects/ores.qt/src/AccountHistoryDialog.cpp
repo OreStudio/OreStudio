@@ -190,14 +190,14 @@ void AccountHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(QString::number(version.version_number));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(version.modified_by));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
     }
 
     if (!history_.versions.empty())
@@ -282,7 +282,7 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->isAdminLabel->setVisible(false);
     ui_->isAdminValue->setVisible(false);
     ui_->versionNumberValue->setText(QString::number(version.version_number));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 

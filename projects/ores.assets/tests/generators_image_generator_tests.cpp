@@ -45,7 +45,7 @@ TEST_CASE("generate_single_image", tags) {
     CHECK(!image.key.empty());
     CHECK(!image.description.empty());
     CHECK(!image.svg_data.empty());
-    CHECK(!image.recorded_by.empty());
+    CHECK(!image.modified_by.empty());
     CHECK(image.recorded_at != std::chrono::system_clock::time_point{});
 }
 

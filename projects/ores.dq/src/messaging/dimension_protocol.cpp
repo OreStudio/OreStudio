@@ -44,7 +44,6 @@ void write_nature_dimension(std::vector<std::byte>& buffer, const domain::nature
     writer::write_string(buffer, n.code);
     writer::write_string(buffer, n.name);
     writer::write_string(buffer, n.description);
-    writer::write_string(buffer, n.recorded_by);
     writer::write_string(buffer, n.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(n.recorded_at));
@@ -70,9 +69,6 @@ read_nature_dimension(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     n.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    n.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -98,7 +94,6 @@ void write_origin_dimension(std::vector<std::byte>& buffer, const domain::origin
     writer::write_string(buffer, o.code);
     writer::write_string(buffer, o.name);
     writer::write_string(buffer, o.description);
-    writer::write_string(buffer, o.recorded_by);
     writer::write_string(buffer, o.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(o.recorded_at));
@@ -124,9 +119,6 @@ read_origin_dimension(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     o.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    o.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -152,7 +144,6 @@ void write_treatment_dimension(std::vector<std::byte>& buffer, const domain::tre
     writer::write_string(buffer, t.code);
     writer::write_string(buffer, t.name);
     writer::write_string(buffer, t.description);
-    writer::write_string(buffer, t.recorded_by);
     writer::write_string(buffer, t.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(t.recorded_at));
@@ -178,9 +169,6 @@ read_treatment_dimension(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     t.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    t.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());

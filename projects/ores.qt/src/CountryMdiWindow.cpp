@@ -144,7 +144,7 @@ CountryMdiWindow(ClientManager* clientManager,
         cs::mono_center,      // NumericCode
         cs::text_left,        // OfficialName
         cs::mono_center,      // Version
-        cs::text_left,        // RecordedBy
+        cs::text_left,        // ModifiedBy
         cs::mono_left         // RecordedAt
     }, countryTableView_));
 
@@ -543,7 +543,7 @@ void CountryMdiWindow::exportToCSV() {
     try {
         // Simple CSV export
         std::ostringstream oss;
-        oss << "Alpha2,Alpha3,Numeric,Name,OfficialName,Version,RecordedBy,RecordedAt\n";
+        oss << "Alpha2,Alpha3,Numeric,Name,OfficialName,Version,ModifiedBy,RecordedAt\n";
         for (const auto& c : countries) {
             oss << c.alpha2_code << ","
                 << c.alpha3_code << ","
@@ -551,7 +551,7 @@ void CountryMdiWindow::exportToCSV() {
                 << "\"" << c.name << "\","
                 << "\"" << c.official_name << "\","
                 << c.version << ","
-                << c.recorded_by << ","
+                << c.modified_by << ","
                 << std::chrono::duration_cast<std::chrono::seconds>(
                        c.recorded_at.time_since_epoch()).count()
                 << "\n";
@@ -681,18 +681,18 @@ void CountryMdiWindow::restoreSettings() {
             header->setSectionHidden(ClientCountryModel::NumericCode, true);
             header->setSectionHidden(ClientCountryModel::OfficialName, true);
             header->setSectionHidden(ClientCountryModel::Version, true);
-            header->setSectionHidden(ClientCountryModel::RecordedBy, true);
+            header->setSectionHidden(ClientCountryModel::ModifiedBy, true);
             header->setSectionHidden(ClientCountryModel::RecordedAt, true);
         }
     } else {
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
 
         // Hide these columns by default (still visible in detail view):
-        // NumericCode, OfficialName, Version, RecordedBy, RecordedAt
+        // NumericCode, OfficialName, Version, ModifiedBy, RecordedAt
         header->setSectionHidden(ClientCountryModel::NumericCode, true);
         header->setSectionHidden(ClientCountryModel::OfficialName, true);
         header->setSectionHidden(ClientCountryModel::Version, true);
-        header->setSectionHidden(ClientCountryModel::RecordedBy, true);
+        header->setSectionHidden(ClientCountryModel::ModifiedBy, true);
         header->setSectionHidden(ClientCountryModel::RecordedAt, true);
     }
 

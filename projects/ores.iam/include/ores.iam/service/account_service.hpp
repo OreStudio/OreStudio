@@ -75,13 +75,13 @@ public:
      * @param username The unique username for the account
      * @param email The email address for the account
      * @param password The plaintext password (will be hashed)
-     * @param recorded_by The username of the person creating the account
+     * @param modified_by The username of the person creating the account
      * @param change_commentary Optional commentary explaining account creation
      * @return The created account with computed fields
      */
     domain::account create_account(const std::string& username,
         const std::string& email, const std::string& password,
-        const std::string& recorded_by,
+        const std::string& modified_by,
         const std::string& change_commentary = "Account created");
 
     /**
@@ -93,14 +93,14 @@ public:
      * @param username The unique username for the service account
      * @param email The email address for the service account
      * @param account_type The type of service account ('service', 'algorithm', 'llm')
-     * @param recorded_by The username of the person creating the account
+     * @param modified_by The username of the person creating the account
      * @param change_commentary Optional commentary explaining account creation
      * @return The created service account
      * @throws std::invalid_argument If account_type is 'user' or invalid
      */
     domain::account create_service_account(const std::string& username,
         const std::string& email, const std::string& account_type,
-        const std::string& recorded_by,
+        const std::string& modified_by,
         const std::string& change_commentary = "Service account created");
 
     /**
@@ -212,14 +212,14 @@ public:
      *
      * @param account_id The ID of the account to update
      * @param email The new email address
-     * @param recorded_by The username making the change
+     * @param modified_by The username making the change
      * @param change_reason_code The change reason code for audit trail
      * @param change_commentary Free-text commentary explaining the change
      * @return true if the account was updated successfully, false otherwise
      * @throws std::invalid_argument If account does not exist
      */
     bool update_account(const boost::uuids::uuid& account_id,
-        const std::string& email, const std::string& recorded_by,
+        const std::string& email, const std::string& modified_by,
         const std::string& change_reason_code,
         const std::string& change_commentary);
 

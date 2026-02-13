@@ -47,7 +47,6 @@ void serialize_business_centre(std::vector<std::byte>& buffer,
     if (bc.image_id) {
         writer::write_uuid(buffer, *bc.image_id);
     }
-    writer::write_string(buffer, bc.recorded_by);
     writer::write_string(buffer, bc.change_reason_code);
     writer::write_string(buffer, bc.change_commentary);
     writer::write_string(buffer,
@@ -90,9 +89,6 @@ deserialize_business_centre(std::span<const std::byte>& data) {
         bc.image_id = *image_id;
     }
 
-    auto recorded_by = reader::read_string(data);
-    if (!recorded_by) return std::unexpected(recorded_by.error());
-    bc.recorded_by = *recorded_by;
 
     auto change_reason_code = reader::read_string(data);
     if (!change_reason_code) return std::unexpected(change_reason_code.error());

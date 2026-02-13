@@ -59,7 +59,7 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
     r.format = "";  // Not in XSD
     r.currency_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
-    r.recorded_by = "ores";
+    r.modified_by = "ores";
     r.change_reason_code = "system.external_data_import";
     r.change_commentary = "Imported from ORE XML";
 

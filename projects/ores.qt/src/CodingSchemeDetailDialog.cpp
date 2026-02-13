@@ -259,7 +259,7 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     scheme.authority_type = authorityType.toStdString();
     scheme.subject_area_name = subjectArea.toStdString();
     scheme.domain_name = domain.toStdString();
-    scheme.recorded_by = username_;
+    scheme.modified_by = username_;
     scheme.version = isCreateMode_ ? 0 : scheme_.version;
 
     if (!uri.isEmpty()) {

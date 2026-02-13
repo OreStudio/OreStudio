@@ -64,7 +64,7 @@ public:
         CodingScheme,
         CountryAlpha2,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

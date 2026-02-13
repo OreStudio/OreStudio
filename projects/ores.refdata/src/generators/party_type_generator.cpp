@@ -34,7 +34,7 @@ domain::party_type generate_synthetic_party_type() {
     r.name = std::string(faker::word::adjective()) + " Party";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

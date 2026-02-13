@@ -100,12 +100,12 @@ public:
      *
      * @param flag The system flag to modify.
      * @param enabled The new enabled state.
-     * @param recorded_by Username of the user making the change.
+     * @param modified_by Username of the user making the change.
      * @param change_reason_code Code identifying the reason for the change.
      * @param change_commentary Free-text commentary explaining the change.
      */
     void set_enabled(domain::system_flag flag, bool enabled,
-        std::string_view recorded_by,
+        std::string_view modified_by,
         std::string_view change_reason_code,
         std::string_view change_commentary);
 
@@ -124,11 +124,11 @@ public:
      * Persists to database and updates the cache.
      *
      * @param enabled The new bootstrap mode state.
-     * @param recorded_by Username of the user making the change.
+     * @param modified_by Username of the user making the change.
      * @param change_reason_code Code identifying the reason for the change.
      * @param change_commentary Free-text commentary explaining the change.
      */
-    void set_bootstrap_mode(bool enabled, std::string_view recorded_by,
+    void set_bootstrap_mode(bool enabled, std::string_view modified_by,
         std::string_view change_reason_code, std::string_view change_commentary);
 
     /**
@@ -144,11 +144,11 @@ public:
      * Persists to database and updates the cache.
      *
      * @param enabled The new user signups state.
-     * @param recorded_by Username of the user making the change.
+     * @param modified_by Username of the user making the change.
      * @param change_reason_code Code identifying the reason for the change.
      * @param change_commentary Free-text commentary explaining the change.
      */
-    void set_user_signups(bool enabled, std::string_view recorded_by,
+    void set_user_signups(bool enabled, std::string_view modified_by,
         std::string_view change_reason_code, std::string_view change_commentary);
 
     /**
@@ -164,12 +164,12 @@ public:
      * Persists to database and updates the cache.
      *
      * @param enabled The new signup requires authorization state.
-     * @param recorded_by Username of the user making the change.
+     * @param modified_by Username of the user making the change.
      * @param change_reason_code Code identifying the reason for the change.
      * @param change_commentary Free-text commentary explaining the change.
      */
     void set_signup_requires_authorization(bool enabled,
-        std::string_view recorded_by,
+        std::string_view modified_by,
         std::string_view change_reason_code, std::string_view change_commentary);
 
 private:

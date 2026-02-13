@@ -30,7 +30,7 @@ domain::subject_area generate_synthetic_subject_area() {
     r.name = std::string(faker::word::noun());
     r.domain_name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

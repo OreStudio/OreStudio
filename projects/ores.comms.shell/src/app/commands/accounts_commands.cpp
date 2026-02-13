@@ -745,7 +745,7 @@ process_account_info(std::ostream& out, client_session& session,
     out << "  Type:      " << account.account_type << std::endl;
     out << "  Version:   " << current.version_number << std::endl;
     out << "  Recorded:  " << format_time(current.recorded_at)
-        << " by " << current.recorded_by << std::endl;
+        << " by " << current.modified_by << std::endl;
 
     // Step 2: Get roles for this account
     using iam::messaging::get_account_roles_request;

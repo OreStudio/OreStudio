@@ -101,7 +101,7 @@ void CatalogDetailDialog::updateCatalogFromUi() {
 
     catalog_.change_commentary =
         ui_->commentaryEdit->toPlainText().trimmed().toStdString();
-    catalog_.recorded_by = username_;
+    catalog_.modified_by = username_;
 }
 
 void CatalogDetailDialog::onSaveClicked() {

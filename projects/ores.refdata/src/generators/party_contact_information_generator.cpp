@@ -52,7 +52,7 @@ domain::party_contact_information generate_synthetic_party_contact_information()
     r.phone = std::string("+44 20 7000 0000");
     r.email = std::string("contact@example.com");
     r.web_page = std::string("https://example.com");
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

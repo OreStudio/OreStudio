@@ -55,10 +55,10 @@ TEST_CASE("currency_version_serialization_to_json", tags) {
     cv.data.rounding_precision = 2;
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
-    cv.data.recorded_by = "admin";
+    cv.data.modified_by = "admin";
     cv.data.recorded_at = datetime::make_timepoint(2025, 1, 15);
     cv.version_number = 3;
-    cv.recorded_by = "system";
+    cv.modified_by = "system";
     cv.recorded_at = datetime::make_timepoint(2025, 1, 20);
     cv.change_summary = "Updated symbol format";
 
@@ -90,10 +90,10 @@ TEST_CASE("currency_version_json_with_all_fields", tags) {
     cv.data.rounding_precision = 2;
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
-    cv.data.recorded_by = "admin";
+    cv.data.modified_by = "admin";
     cv.data.recorded_at = datetime::make_timepoint(2025, 2, 1);
     cv.version_number = 1;
-    cv.recorded_by = "creator";
+    cv.modified_by = "creator";
     cv.recorded_at = datetime::make_timepoint(2025, 2, 1);
     cv.change_summary = "Created currency";
 
@@ -126,10 +126,10 @@ TEST_CASE("currency_version_json_with_faker_data", tags) {
     cv.data.rounding_precision = faker::number::integer(0, 4);
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
-    cv.data.recorded_by = std::string(faker::internet::username());
+    cv.data.modified_by = std::string(faker::internet::username());
     cv.data.recorded_at = std::chrono::system_clock::now();
     cv.version_number = faker::number::integer(1, 50);
-    cv.recorded_by = std::string(faker::internet::username());
+    cv.modified_by = std::string(faker::internet::username());
     cv.recorded_at = std::chrono::system_clock::now();
     cv.change_summary = std::string(faker::lorem::sentence());
 
@@ -161,10 +161,10 @@ TEST_CASE("currency_version_history_serialization_to_json", tags) {
     v1.data.rounding_precision = 2;
     v1.data.format = "%3% %1$.2f";
     v1.data.currency_type = "Fiat";
-    v1.data.recorded_by = "admin";
+    v1.data.modified_by = "admin";
     v1.data.recorded_at = datetime::make_timepoint(2025, 1, 1);
     v1.version_number = 1;
-    v1.recorded_by = "admin";
+    v1.modified_by = "admin";
     v1.recorded_at = datetime::make_timepoint(2025, 1, 1);
     v1.change_summary = "Created currency";
     cvh.versions.push_back(v1);
@@ -180,10 +180,10 @@ TEST_CASE("currency_version_history_serialization_to_json", tags) {
     v2.data.rounding_precision = 2;
     v2.data.format = "%3% %1$.2f";
     v2.data.currency_type = "Fiat";
-    v2.data.recorded_by = "editor";
+    v2.data.modified_by = "editor";
     v2.data.recorded_at = datetime::make_timepoint(2025, 1, 15);
     v2.version_number = 2;
-    v2.recorded_by = "editor";
+    v2.modified_by = "editor";
     v2.recorded_at = datetime::make_timepoint(2025, 1, 15);
     v2.change_summary = "Updated name";
     cvh.versions.push_back(v2);
@@ -239,10 +239,10 @@ TEST_CASE("currency_version_history_json_with_faker_data", tags) {
         cv.data.rounding_precision = faker::number::integer(0, 4);
         cv.data.format = "%3% %1$.2f";
         cv.data.currency_type = "Fiat";
-        cv.data.recorded_by = std::string(faker::internet::username());
+        cv.data.modified_by = std::string(faker::internet::username());
         cv.data.recorded_at = std::chrono::system_clock::now();
         cv.version_number = i + 1;
-        cv.recorded_by = std::string(faker::internet::username());
+        cv.modified_by = std::string(faker::internet::username());
         cv.recorded_at = std::chrono::system_clock::now();
         cv.change_summary = std::string(faker::lorem::sentence());
         cvh.versions.push_back(cv);
@@ -276,10 +276,10 @@ TEST_CASE("multiple_currency_versions_json_output", tags) {
         cv.data.rounding_precision = 2;
         cv.data.format = "%3% %1$.2f";
         cv.data.currency_type = "Fiat";
-        cv.data.recorded_by = "user" + std::to_string(i);
+        cv.data.modified_by = "user" + std::to_string(i);
         cv.data.recorded_at = std::chrono::system_clock::now();
         cv.version_number = i + 1;
-        cv.recorded_by = "user" + std::to_string(i);
+        cv.modified_by = "user" + std::to_string(i);
         cv.recorded_at = std::chrono::system_clock::now();
         cv.change_summary = "Version " + std::to_string(i + 1);
 

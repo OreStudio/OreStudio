@@ -55,10 +55,10 @@ TEST_CASE("create_currency_version_with_valid_fields", tags) {
     cv.data.rounding_precision = 2;
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
-    cv.data.recorded_by = "admin";
+    cv.data.modified_by = "admin";
     cv.data.recorded_at = datetime::make_timepoint(2025, 1, 1);
     cv.version_number = 1;
-    cv.recorded_by = "admin";
+    cv.modified_by = "admin";
     cv.recorded_at = datetime::make_timepoint(2025, 1, 1, 10);
     cv.change_summary = "Created currency";
 
@@ -66,7 +66,7 @@ TEST_CASE("create_currency_version_with_valid_fields", tags) {
 
     CHECK(cv.version_number == 1);
     CHECK(cv.data.iso_code == "USD");
-    CHECK(cv.recorded_by == "admin");
+    CHECK(cv.modified_by == "admin");
     CHECK(cv.change_summary == "Created currency");
 }
 
@@ -86,10 +86,10 @@ TEST_CASE("create_currency_version_with_faker", tags) {
     cv.data.rounding_precision = faker::number::integer(0, 5);
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
-    cv.data.recorded_by = std::string(faker::internet::username());
+    cv.data.modified_by = std::string(faker::internet::username());
     cv.data.recorded_at = {};
     cv.version_number = faker::number::integer(1, 100);
-    cv.recorded_by = std::string(faker::internet::username());
+    cv.modified_by = std::string(faker::internet::username());
     cv.recorded_at = datetime::make_timepoint(2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
     cv.change_summary = std::string(faker::lorem::sentence());
 
@@ -97,7 +97,7 @@ TEST_CASE("create_currency_version_with_faker", tags) {
 
     CHECK(cv.version_number >= 1);
     CHECK(!cv.data.iso_code.empty());
-    CHECK(!cv.recorded_by.empty());
+    CHECK(!cv.modified_by.empty());
 }
 
 TEST_CASE("currency_version_convert_multiple_to_table", tags) {
@@ -116,10 +116,10 @@ TEST_CASE("currency_version_convert_multiple_to_table", tags) {
         cv.data.rounding_precision = 2;
         cv.data.format = "%3% %1$.2f";
         cv.data.currency_type = "Fiat";
-        cv.data.recorded_by = "admin";
+        cv.data.modified_by = "admin";
         cv.data.recorded_at = {};
         cv.version_number = i + 1;
-        cv.recorded_by = "user" + std::to_string(i);
+        cv.modified_by = "user" + std::to_string(i);
         cv.recorded_at = datetime::make_timepoint(2025, 1, i + 1);
         cv.change_summary = "Change " + std::to_string(i);
         versions.push_back(cv);
@@ -154,10 +154,10 @@ TEST_CASE("currency_version_table_with_faker_data", tags) {
         cv.data.rounding_precision = faker::number::integer(0, 5);
         cv.data.format = "%3% %1$.2f";
         cv.data.currency_type = "Fiat";
-        cv.data.recorded_by = std::string(faker::internet::username());
+        cv.data.modified_by = std::string(faker::internet::username());
         cv.data.recorded_at = {};
         cv.version_number = i + 1;
-        cv.recorded_by = std::string(faker::internet::username());
+        cv.modified_by = std::string(faker::internet::username());
         cv.recorded_at = datetime::make_timepoint(2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
         cv.change_summary = std::string(faker::lorem::sentence());
         versions.push_back(cv);
@@ -183,7 +183,7 @@ TEST_CASE("create_currency_version_history_with_valid_fields", tags) {
     cv1.data.iso_code = "USD";
     cv1.data.name = "United States Dollar";
     cv1.version_number = 1;
-    cv1.recorded_by = "admin";
+    cv1.modified_by = "admin";
     cv1.recorded_at = datetime::make_timepoint(2025, 1, 1);
     cv1.change_summary = "Created currency";
 
@@ -191,7 +191,7 @@ TEST_CASE("create_currency_version_history_with_valid_fields", tags) {
     cv2.data.iso_code = "USD";
     cv2.data.name = "US Dollar";
     cv2.version_number = 2;
-    cv2.recorded_by = "admin";
+    cv2.modified_by = "admin";
     cv2.recorded_at = datetime::make_timepoint(2025, 1, 2);
     cv2.change_summary = "Updated name";
 
@@ -219,7 +219,7 @@ TEST_CASE("currency_version_history_convert_multiple_to_table", tags) {
             cv.data.iso_code = cvh.iso_code;
             cv.data.name = "Currency " + std::to_string(i);
             cv.version_number = j + 1;
-            cv.recorded_by = "user";
+            cv.modified_by = "user";
             cv.recorded_at = datetime::make_timepoint(2025, 1, 1);
             cv.change_summary = "Version " + std::to_string(j + 1);
             cvh.versions.push_back(cv);
@@ -252,7 +252,7 @@ TEST_CASE("currency_version_history_table_with_faker_data", tags) {
             cv.data.iso_code = cvh.iso_code;
             cv.data.name = fakerCcy.name;
             cv.version_number = j + 1;
-            cv.recorded_by = std::string(faker::internet::username());
+            cv.modified_by = std::string(faker::internet::username());
             cv.recorded_at = datetime::make_timepoint(2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
             cv.change_summary = std::string(faker::lorem::sentence());
             cvh.versions.push_back(cv);

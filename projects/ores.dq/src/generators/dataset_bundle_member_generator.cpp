@@ -35,7 +35,7 @@ domain::dataset_bundle_member generate_synthetic_dataset_bundle_member() {
     r.dataset_code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
         + "_" + std::to_string(idx);
     r.display_order = faker::number::integer(1, 100);
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new_record";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();

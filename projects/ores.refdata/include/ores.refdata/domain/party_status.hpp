@@ -71,7 +71,7 @@ struct party_status final {
     /**
      * @brief Username of the person who last modified this party status.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this action.

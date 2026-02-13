@@ -26,7 +26,7 @@ namespace ores::cli::config {
 std::ostream& operator<<(std::ostream& s, const add_role_options& v) {
     s << "{ name: " << v.name
       << ", description: " << v.description
-      << ", recorded_by: " << v.recorded_by;
+      << ", modified_by: " << v.modified_by;
 
     if (v.change_reason_code) s << ", change_reason_code: " << *v.change_reason_code;
     if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;

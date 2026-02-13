@@ -33,7 +33,7 @@ std::ostream& operator<<(std::ostream& s, const add_change_reason_options& v) {
     if (v.requires_commentary) s << ", requires_commentary: " << (*v.requires_commentary ? "true" : "false");
     if (v.display_order) s << ", display_order: " << *v.display_order;
 
-    s << ", recorded_by: " << v.recorded_by;
+    s << ", modified_by: " << v.modified_by;
 
     if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;
 

@@ -96,7 +96,7 @@ RoleMdiWindow(ClientManager* clientManager,
         cs::text_left,   // Description
         cs::mono_center, // PermissionCount
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, roleTableView_));
     roleTableView_->sortByColumn(0, Qt::AscendingOrder);

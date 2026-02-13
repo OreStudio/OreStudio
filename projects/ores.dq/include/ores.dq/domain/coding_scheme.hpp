@@ -91,7 +91,7 @@ struct coding_scheme final {
     /**
      * @brief Username of the person who last modified this scheme.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Free-text commentary explaining the change.

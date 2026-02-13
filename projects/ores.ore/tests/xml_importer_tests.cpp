@@ -181,7 +181,7 @@ TEST_CASE("import_currency_config_from_currencies_xml", tags) {
     CHECK(first.rounding_type == "Closest");
     CHECK(first.rounding_precision == 2);
     CHECK(first.currency_type == "Major");
-    CHECK(first.recorded_by == "ores");
+    CHECK(first.modified_by == "ores");
     CHECK(first.change_reason_code == "system.external_data_import");
 }
 

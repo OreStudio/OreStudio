@@ -157,7 +157,7 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
     ui_->versionEdit->setText(QString::number(account.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(account.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(account.modified_by));
     ui_->changeReasonEdit->setText(QString::fromStdString(account.change_reason_code));
     ui_->changeCommentaryEdit->setPlainText(QString::fromStdString(account.change_commentary));
 
@@ -199,7 +199,7 @@ iam::domain::account AccountDetailDialog::getAccount() const {
     iam::domain::account account = currentAccount_;
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
-    account.recorded_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
+    account.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return account;
 }
@@ -341,11 +341,9 @@ void AccountDetailDialog::onSaveClicked() {
         const std::string username = ui_->usernameEdit->text().toStdString();
         const std::string password = ui_->passwordEdit->text().toStdString();
         const std::string email = ui_->emailEdit->text().toStdString();
-        const std::string recorded_by = modifiedByUsername_.empty()
-            ? "qt_user" : modifiedByUsername_;
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, username, password, email, recorded_by]()
+            QtConcurrent::run([self, username, password, email]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -356,7 +354,6 @@ void AccountDetailDialog::onSaveClicked() {
                 request.principal = username;
                 request.password = password;
                 request.email = email;
-                request.recorded_by = recorded_by;
                 request.totp_secret = "";
 
                 auto payload = request.serialize();
@@ -429,11 +426,9 @@ void AccountDetailDialog::onSaveClicked() {
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
-        const std::string recorded_by = modifiedByUsername_.empty()
-            ? "qt_user" : modifiedByUsername_;
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, account_id, email, recorded_by]()
+            QtConcurrent::run([self, account_id, email]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -443,7 +438,6 @@ void AccountDetailDialog::onSaveClicked() {
                 iam::messaging::save_account_request request;
                 request.account_id = account_id;
                 request.email = email;
-                request.recorded_by = recorded_by;
 
                 auto payload = request.serialize();
                 frame request_frame(message_type::save_account_request,

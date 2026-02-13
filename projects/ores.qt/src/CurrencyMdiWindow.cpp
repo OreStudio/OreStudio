@@ -192,7 +192,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
         cs::mono_right,       // RoundingPrecision
         cs::text_left,        // Format
         cs::text_left,        // CurrencyType
-        cs::text_left,        // RecordedBy
+        cs::text_left,        // ModifiedBy
         cs::mono_left         // RecordedAt
     }, currencyTableView_));
 
@@ -1026,9 +1026,9 @@ void CurrencyMdiWindow::generateSynthetic() {
             return;
         }
 
-        // Set recorded_by for all generated currencies
+        // Set modified_by for all generated currencies
         for (auto& currency : currencies) {
-            currency.recorded_by = username_.toStdString();
+            currency.modified_by = username_.toStdString();
         }
 
         currencyModel_->add_synthetic_currencies(std::move(currencies));

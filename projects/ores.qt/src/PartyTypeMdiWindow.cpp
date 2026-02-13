@@ -146,7 +146,7 @@ void PartyTypeMdiWindow::setupTable() {
         cs::text_left,   // Description
         cs::mono_center, // DisplayOrder
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -159,7 +159,7 @@ void PartyTypeMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientPartyTypeModel::Description, 300);
     tableView_->setColumnWidth(ClientPartyTypeModel::DisplayOrder, 80);
     tableView_->setColumnWidth(ClientPartyTypeModel::Version, 80);
-    tableView_->setColumnWidth(ClientPartyTypeModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientPartyTypeModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientPartyTypeModel::RecordedAt, 150);
 
     // Setup column visibility with context menu

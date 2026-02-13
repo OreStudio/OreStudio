@@ -90,8 +90,8 @@ QVariant ClientContactTypeModel::data(
             return type.display_order;
         case Version:
             return type.version;
-        case RecordedBy:
-            return QString::fromStdString(type.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(type.modified_by);
         case RecordedAt:
             return relative_time_helper::format(type.recorded_at);
         default:
@@ -122,8 +122,8 @@ QVariant ClientContactTypeModel::headerData(
         return tr("Order");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

@@ -91,8 +91,6 @@ struct get_countries_response final {
      *   - N bytes: official_name (UTF-8)
      *   - 1 byte: has_image_id (0 or 1)
      *   - 16 bytes: image_id (UUID, only if has_image_id)
-     *   - 2 bytes: recorded_by length
-     *   - N bytes: recorded_by (UTF-8)
      *   - 2 bytes: recorded_at length
      *   - N bytes: recorded_at (UTF-8, ISO 8601 format)
      */

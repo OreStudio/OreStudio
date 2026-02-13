@@ -39,7 +39,7 @@ namespace ores::synthetic::domain {
  * This structure contains all related entities that form a complete
  * synthetic data catalog. All entities are properly linked: datasets reference
  * their catalogs, subject areas, domains, and dimensions; all entities
- * have consistent recorded_by values from the accounts collection.
+ * have consistent modified_by values from the accounts collection.
  *
  * The catalog includes:
  * - IAM accounts for user references
@@ -63,7 +63,7 @@ struct synthetic_catalog final {
     /**
      * @brief IAM accounts for user references.
      *
-     * These accounts are used as recorded_by values across all entities.
+     * These accounts are used as modified_by values across all entities.
      */
     std::vector<iam::domain::account> accounts;
 

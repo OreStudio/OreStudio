@@ -92,7 +92,7 @@ std::vector<domain::tenant> tenant_repository::read_all_latest() {
             t.description = row[6].value_or("");
             t.hostname = *row[7];
             t.status = *row[8];
-            t.recorded_by = *row[9];
+            t.modified_by = *row[9];
             t.change_reason_code = *row[10];
             t.change_commentary = *row[11];
             t.recorded_at = timestamp_to_timepoint(std::string_view{*row[12]});

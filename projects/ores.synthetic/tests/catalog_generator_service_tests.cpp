@@ -152,8 +152,8 @@ TEST_CASE("generate_datasets_reference_existing_entities", tags) {
 
     for (const auto& ds : result.datasets) {
         CHECK(!ds.name.empty());
-        CHECK(!ds.recorded_by.empty());
-        CHECK(account_names.count(ds.recorded_by) == 1);
+        CHECK(!ds.modified_by.empty());
+        CHECK(account_names.count(ds.modified_by) == 1);
         CHECK(!ds.domain_name.empty());
         CHECK(!ds.origin_code.empty());
         CHECK(origin_codes.count(ds.origin_code) == 1);

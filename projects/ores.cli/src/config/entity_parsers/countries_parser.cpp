@@ -72,7 +72,7 @@ options_description make_add_country_options_description() {
         ("name", value<std::string>(), "Country name (required)")
         ("numeric-code", value<std::string>(), "ISO 3166-1 numeric code")
         ("official-name", value<std::string>(), "Official country name")
-        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("modified-by", value<std::string>(), "Username of modifier (required)")
         ("change-reason-code", value<std::string>(), "Change reason code")
         ("change-commentary", value<std::string>(), "Change commentary");
 
@@ -100,11 +100,11 @@ add_country_options read_add_country_options(const variables_map& vm) {
     }
     r.name = vm["name"].as<std::string>();
 
-    if (vm.count("recorded-by") == 0) {
+    if (vm.count("modified-by") == 0) {
         BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --recorded-by for add country command."));
+            parser_exception("Must supply --modified-by for add country command."));
     }
-    r.recorded_by = vm["recorded-by"].as<std::string>();
+    r.modified_by = vm["modified-by"].as<std::string>();
 
     if (vm.count("numeric-code") != 0)
         r.numeric_code = vm["numeric-code"].as<std::string>();

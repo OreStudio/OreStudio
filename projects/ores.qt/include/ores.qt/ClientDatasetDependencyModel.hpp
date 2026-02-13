@@ -52,7 +52,7 @@ public:
         DatasetCode = 0,
         DependencyCode,
         Role,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

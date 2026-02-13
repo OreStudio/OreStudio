@@ -111,7 +111,7 @@ public:
      * @brief Retrieves currency version history with version metadata.
      *
      * Converts raw currency records to currency_version objects with
-     * version numbers, recorded_by, and recorded_at metadata. Versions
+     * version numbers, modified_by, and recorded_at metadata. Versions
      * are ordered from newest to oldest.
      *
      * @param iso_code The ISO code of the currency.

@@ -79,7 +79,7 @@ QVariant ClientSubjectAreaModel::data(const QModelIndex& index, int role) const 
         case DomainName: return QString::fromStdString(subject_area.domain_name);
         case Description: return QString::fromStdString(subject_area.description);
         case Version: return subject_area.version;
-        case RecordedBy: return QString::fromStdString(subject_area.recorded_by);
+        case ModifiedBy: return QString::fromStdString(subject_area.modified_by);
         case RecordedAt: return relative_time_helper::format(subject_area.recorded_at);
         default: return {};
         }
@@ -102,7 +102,7 @@ QVariant ClientSubjectAreaModel::headerData(int section,
     case DomainName: return tr("Domain");
     case Description: return tr("Description");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

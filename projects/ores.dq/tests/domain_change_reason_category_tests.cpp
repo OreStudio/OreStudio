@@ -41,13 +41,13 @@ TEST_CASE("create_change_reason_category_with_valid_fields", tags) {
     sut.version = 1;
     sut.code = "static_data";
     sut.description = "Static/reference data changes";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     BOOST_LOG_SEV(lg, info) << "Change reason category: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "static_data");
     CHECK(sut.description == "Static/reference data changes");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
 }
 
 TEST_CASE("change_reason_category_convert_single_to_table", tags) {
@@ -57,7 +57,7 @@ TEST_CASE("change_reason_category_convert_single_to_table", tags) {
     cat.version = 1;
     cat.code = "system";
     cat.description = "System-level operations";
-    cat.recorded_by = "system";
+    cat.modified_by = "system";
 
     std::vector<change_reason_category> categories = {cat};
     auto table = convert_to_table(categories);

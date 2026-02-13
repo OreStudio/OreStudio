@@ -110,6 +110,35 @@ database also receives writes from normal operational processes:
 | Can I extend the governance model?          | Yes, add to =ores_dq_*=             |
 | Can I create custom derived datasets?       | Yes, same workflow as shipped data  |
 
+*** Audit Trail Metadata Conventions
+
+Every versioned table includes four audit metadata columns:
+
+| Column              | Type      | Set by                            | Meaning                                                    |
+|---------------------+-----------+-----------------------------------+------------------------------------------------------------|
+| =modified_by=       | =text=    | Server (from =auth->username=)    | The end user who requested the change.                     |
+| =performed_by=      | =text=    | DB trigger (=current_user=)       | The database service account that executed the write.      |
+| =change_reason_code=| =text=    | Client (soft FK to change reasons)| Categorises why the change was made.                       |
+| =change_commentary= | =text=    | Client                            | Free-text explanation of the change.                       |
+
+- =modified_by=: identifies *who* requested the change (the human or API
+  account). The application server sets this from the authenticated session. For
+  seed/bootstrap data where no session exists, the trigger defaults it to
+  =current_user= (the DB role).
+- =performed_by=: identifies *how* the change was executed (which DB service
+  account). Always set by the database trigger to =current_user=. Application
+  code must never set this field; it should be left empty so the trigger fills
+  it.
+- =change_reason_code=: soft foreign key to =ores_dq_change_reasons_tbl=. Used
+  for governance audit trails to categorise modifications.
+- =change_commentary=: optional free-text explanation providing additional
+  context for the change.
+
+*Future improvement*: =modified_by= and =performed_by= should have a soft FK to
+=ores_iam_accounts_tbl.username= to prevent inconsistencies and enable
+referential auditing. This requires handling seed/bootstrap rows where no account
+exists yet (e.g. by using a sentinel system account).
+
 ** Schema Contents Summary
 
 *** Data Governance Tables (=ores_dq_*= prefix)

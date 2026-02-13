@@ -61,7 +61,7 @@ void CatalogHistoryDialog::setupUi() {
 
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Recorded By", "Commentary"});
+        {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(
@@ -190,7 +190,7 @@ void CatalogHistoryDialog::updateVersionList() {
                 relative_time_helper::format(version.recorded_at)));
         ui_->versionListWidget->setItem(
             row, 2,
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by)));
+            new QTableWidgetItem(QString::fromStdString(version.modified_by)));
         ui_->versionListWidget->setItem(
             row, 3,
             new QTableWidgetItem(
@@ -275,7 +275,7 @@ void CatalogHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->ownerValue->setText(
         version.owner ? QString::fromStdString(*version.owner) : QString());
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(
         relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(

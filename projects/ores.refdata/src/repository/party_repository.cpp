@@ -137,7 +137,7 @@ party_repository::read_system_party(const std::string& tenant_id) {
             if (row[8])
                 p.business_center_code = *row[8];
             p.status = *row[9];
-            p.recorded_by = *row[10];
+            p.modified_by = *row[10];
             p.performed_by = *row[11];
             p.change_reason_code = *row[12];
             p.change_commentary = *row[13];

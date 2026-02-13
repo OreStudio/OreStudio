@@ -190,7 +190,7 @@ void FeatureFlagHistoryDialog::onHistoryLoaded() {
 
         BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
                                    << "version=" << flag.version
-                                   << ", recorded_by=" << flag.recorded_by;
+                                   << ", modified_by=" << flag.modified_by;
 
         auto* versionItem =
             new QTableWidgetItem(QString::number(flag.version));
@@ -198,15 +198,15 @@ void FeatureFlagHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(flag.enabled ? "Yes" : "No");
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(flag.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(flag.recorded_by));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(flag.modified_by));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, enabledItem);
         ui_->versionListWidget->setItem(i, 2, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 3, recordedByItem);
+        ui_->versionListWidget->setItem(i, 3, modifiedByItem);
     }
 
     if (!history_.empty())
@@ -296,7 +296,7 @@ void FeatureFlagHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->enabledValue->setText(flag.enabled ? "Yes" : "No");
     ui_->descriptionValue->setText(QString::fromStdString(flag.description));
     ui_->versionNumberValue->setText(QString::number(flag.version));
-    ui_->recordedByValue->setText(QString::fromStdString(flag.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(flag.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(flag.recorded_at));
 }
 

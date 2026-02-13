@@ -101,7 +101,7 @@ struct change_reason final {
     /**
      * @brief Username of the person who last modified this reason.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Free-text commentary explaining the change.

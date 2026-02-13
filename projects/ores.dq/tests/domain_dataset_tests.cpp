@@ -58,7 +58,7 @@ TEST_CASE("create_dataset_with_valid_fields", tags) {
     sut.lineage_depth = 0;
     sut.as_of_date = datetime::make_timepoint(2023, 1, 1);
     sut.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Dataset: " << sut;
 
@@ -72,7 +72,7 @@ TEST_CASE("create_dataset_with_valid_fields", tags) {
     CHECK(sut.treatment_code == "live");
     CHECK(sut.name == "Currency Codes");
     CHECK(sut.lineage_depth == 0);
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -93,7 +93,7 @@ TEST_CASE("dataset_convert_single_to_table", tags) {
     ds.business_context = "Reference country data";
     ds.as_of_date = datetime::make_timepoint(2023, 1, 1);
     ds.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
-    ds.recorded_by = "system";
+    ds.modified_by = "system";
 
     std::vector<dataset> datasets = {ds};
     auto table = convert_to_table(datasets);
@@ -128,7 +128,7 @@ TEST_CASE("dataset_with_lineage", tags) {
     derived.lineage_depth = 1;
     derived.as_of_date = datetime::make_timepoint(2023, 1, 1);
     derived.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
-    derived.recorded_by = "etl_process";
+    derived.modified_by = "etl_process";
 
     BOOST_LOG_SEV(lg, info) << "Derived dataset: " << derived;
 

@@ -103,7 +103,7 @@ private:
         Description,
         PermissionCount,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

@@ -91,8 +91,8 @@ QVariant ClientFeatureFlagModel::data(const QModelIndex& index, int role) const 
             return flag.enabled ? tr("Yes") : tr("No");
         case Version:
             return QString::number(flag.version);
-        case RecordedBy:
-            return QString::fromStdString(flag.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(flag.modified_by);
         case RecordedAt:
             return relative_time_helper::format(flag.recorded_at);
         default:
@@ -115,8 +115,8 @@ QVariant ClientFeatureFlagModel::headerData(int section, Qt::Orientation orienta
         return tr("Enabled");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

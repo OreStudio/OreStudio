@@ -42,7 +42,7 @@ TEST_CASE("create_subject_area_with_valid_fields", tags) {
     sut.name = "Currencies";
     sut.domain_name = "Reference Data";
     sut.description = "Currency codes and related information";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Subject area: " << sut;
 
@@ -50,7 +50,7 @@ TEST_CASE("create_subject_area_with_valid_fields", tags) {
     CHECK(sut.name == "Currencies");
     CHECK(sut.domain_name == "Reference Data");
     CHECK(sut.description == "Currency codes and related information");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -62,7 +62,7 @@ TEST_CASE("subject_area_convert_single_to_table", tags) {
     sa.name = "Countries";
     sa.domain_name = "Reference Data";
     sa.description = "Country codes and geographic data";
-    sa.recorded_by = "system";
+    sa.modified_by = "system";
 
     std::vector<subject_area> areas = {sa};
     auto table = convert_to_table(areas);

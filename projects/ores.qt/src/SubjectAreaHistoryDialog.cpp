@@ -61,7 +61,7 @@ void SubjectAreaHistoryDialog::setupUi() {
         QString("History for: %1 (Domain: %2)").arg(name_, domain_name_));
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Recorded By", "Commentary"});
+        {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(
@@ -189,7 +189,7 @@ void SubjectAreaHistoryDialog::updateVersionList() {
                 relative_time_helper::format(version.recorded_at)));
         ui_->versionListWidget->setItem(
             row, 2,
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by)));
+            new QTableWidgetItem(QString::fromStdString(version.modified_by)));
         ui_->versionListWidget->setItem(
             row, 3,
             new QTableWidgetItem(
@@ -266,7 +266,7 @@ void SubjectAreaHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->domainNameValue->setText(QString::fromStdString(version.domain_name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(
         relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(

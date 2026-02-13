@@ -41,14 +41,14 @@ TEST_CASE("create_origin_dimension_with_valid_fields", tags) {
     sut.version = 1;
     sut.code = "internal";
     sut.description = "Data sourced from internal systems";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Origin dimension: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "internal");
     CHECK(sut.description == "Data sourced from internal systems");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("origin_dimension_convert_single_to_table", tags) {
     od.version = 1;
     od.code = "external";
     od.description = "Data sourced from external providers";
-    od.recorded_by = "system";
+    od.modified_by = "system";
 
     std::vector<origin_dimension> dimensions = {od};
     auto table = convert_to_table(dimensions);

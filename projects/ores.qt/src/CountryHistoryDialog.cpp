@@ -191,14 +191,14 @@ void CountryHistoryDialog::onHistoryLoaded() {
 
         BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
                                    << "version=" << country.version
-                                   << ", recorded_by=" << country.recorded_by;
+                                   << ", modified_by=" << country.modified_by;
 
         auto* versionItem =
             new QTableWidgetItem(QString::number(country.version));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(country.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(country.recorded_by));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(country.modified_by));
         auto* changeReasonItem =
             new QTableWidgetItem(QString::fromStdString(country.change_reason_code));
         auto* commentaryItem =
@@ -208,7 +208,7 @@ void CountryHistoryDialog::onHistoryLoaded() {
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
         ui_->versionListWidget->setItem(i, 3, changeReasonItem);
         ui_->versionListWidget->setItem(i, 4, commentaryItem);
     }
@@ -337,7 +337,7 @@ void CountryHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->nameValue->setText(QString::fromStdString(country.name));
     ui_->officialNameValue->setText(QString::fromStdString(country.official_name));
     ui_->versionNumberValue->setText(QString::number(country.version));
-    ui_->recordedByValue->setText(QString::fromStdString(country.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(country.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(country.recorded_at));
 }
 

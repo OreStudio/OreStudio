@@ -89,7 +89,7 @@ struct tenant final {
     /**
      * @brief Username of the person who last modified this tenant.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Code identifying the reason for the change.

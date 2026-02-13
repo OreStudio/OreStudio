@@ -128,7 +128,8 @@ handle_save_feature_flag_request(std::span<const std::byte> payload,
         // Override tenant_id from server-side context (don't trust client)
         auto flag = request_result->flag;
         flag.tenant_id = ctx.tenant_id().to_string();
-        flag.recorded_by = auth->username;
+        flag.modified_by = auth->username;
+        flag.performed_by.clear();
 
         // Save the feature flag
         repo.write(ctx, flag);

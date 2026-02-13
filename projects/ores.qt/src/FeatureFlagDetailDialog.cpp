@@ -171,7 +171,7 @@ void FeatureFlagDetailDialog::setFeatureFlag(
     ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);  // 0=Yes, 1=No
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     ui_->versionEdit->setText(QString::number(flag.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(flag.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(flag.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
 
     isDirty_ = false;
@@ -194,7 +194,7 @@ variability::domain::feature_flags FeatureFlagDetailDialog::getFeatureFlag() con
     flag.name = ui_->nameEdit->text().toStdString();
     flag.enabled = ui_->enabledComboBox->currentIndex() == 0;  // 0=Yes, 1=No
     flag.description = ui_->descriptionEdit->toPlainText().toStdString();
-    flag.recorded_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
+    flag.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return flag;
 }
@@ -204,7 +204,7 @@ void FeatureFlagDetailDialog::clearDialog() {
     ui_->enabledComboBox->setCurrentIndex(1);  // Default to No
     ui_->descriptionEdit->clear();
     ui_->versionEdit->clear();
-    ui_->recordedByEdit->clear();
+    ui_->modifiedByEdit->clear();
 
     currentFlag_ = {};
     isDirty_ = false;
@@ -481,7 +481,7 @@ void FeatureFlagDetailDialog::displayCurrentVersion() {
     ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     ui_->versionEdit->setText(QString::number(flag.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(flag.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(flag.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
 
     updateVersionNavButtonStates();

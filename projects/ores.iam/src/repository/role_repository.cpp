@@ -168,7 +168,7 @@ role_repository::read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids) 
             r.version = std::stoi(*row[1]);
             r.name = *row[2];
             r.description = *row[3];
-            r.recorded_by = *row[4];
+            r.modified_by = *row[4];
             result.push_back(std::move(r));
         }
     }

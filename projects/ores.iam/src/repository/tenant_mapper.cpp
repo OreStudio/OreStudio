@@ -42,7 +42,7 @@ domain::tenant tenant_mapper::map(const tenant_entity& v) {
     r.description = v.description;
     r.hostname = v.hostname;
     r.status = v.status;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -66,7 +66,7 @@ tenant_entity tenant_mapper::map(const domain::tenant& v) {
     r.description = v.description;
     r.hostname = v.hostname;
     r.status = v.status;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 

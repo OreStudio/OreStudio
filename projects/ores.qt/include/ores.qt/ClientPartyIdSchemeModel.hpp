@@ -61,7 +61,7 @@ public:
         CodingSchemeCode,
         DisplayOrder,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

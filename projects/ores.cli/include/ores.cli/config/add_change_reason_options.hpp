@@ -37,7 +37,7 @@ struct add_change_reason_options final {
     std::optional<bool> applies_to_delete;
     std::optional<bool> requires_commentary;
     std::optional<int> display_order;
-    std::string recorded_by;
+    std::string modified_by;
     std::optional<std::string> change_commentary;
 };
 

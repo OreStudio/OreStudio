@@ -46,7 +46,7 @@ TEST_CASE("create_change_reason_with_valid_fields", tags) {
     sut.applies_to_delete = false;
     sut.requires_commentary = true;
     sut.display_order = 10;
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     BOOST_LOG_SEV(lg, info) << "Change reason: " << sut;
 
     CHECK(sut.version == 1);
@@ -57,7 +57,7 @@ TEST_CASE("create_change_reason_with_valid_fields", tags) {
     CHECK(sut.applies_to_delete == false);
     CHECK(sut.requires_commentary == true);
     CHECK(sut.display_order == 10);
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
 }
 
 TEST_CASE("change_reason_convert_single_to_table", tags) {
@@ -68,7 +68,7 @@ TEST_CASE("change_reason_convert_single_to_table", tags) {
     cr.code = "system.new";
     cr.description = "Initial record creation";
     cr.category_code = "system";
-    cr.recorded_by = "system";
+    cr.modified_by = "system";
 
     std::vector<change_reason> reasons = {cr};
     auto table = convert_to_table(reasons);

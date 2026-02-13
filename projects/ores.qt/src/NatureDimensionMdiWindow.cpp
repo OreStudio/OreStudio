@@ -132,7 +132,7 @@ void NatureDimensionMdiWindow::setupTable() {
         cs::text_left,   // Name
         cs::text_left,   // Description
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -143,7 +143,7 @@ void NatureDimensionMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientNatureDimensionModel::Name, 200);
     tableView_->setColumnWidth(ClientNatureDimensionModel::Description, 250);
     tableView_->setColumnWidth(ClientNatureDimensionModel::Version, 80);
-    tableView_->setColumnWidth(ClientNatureDimensionModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientNatureDimensionModel::ModifiedBy, 120);
 
     setupColumnVisibility();
     restoreSettings();

@@ -82,7 +82,7 @@ struct party_identifier final {
     /**
      * @brief Username of the person who last modified this party identifier.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this action.

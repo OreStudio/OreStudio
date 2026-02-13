@@ -31,7 +31,7 @@ iam::domain::account generate_synthetic_account(domain::generation_context& ctx)
     iam::domain::account r;
     r.version = 1;
     r.id = ctx.generate_uuid();
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_reason_code = "SYNTHETIC";
     r.change_commentary = "Synthetic test data";
     r.username = std::string(faker::internet::username());
@@ -49,7 +49,7 @@ iam::domain::account generate_synthetic_account() {
     iam::domain::account r;
     r.version = 1;
     r.id = uuid_gen();
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_reason_code = "SYNTHETIC";
     r.change_commentary = "Synthetic test data";
     r.username = std::string(faker::internet::username());

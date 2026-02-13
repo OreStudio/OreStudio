@@ -29,7 +29,7 @@ domain::change_reason_category generate_synthetic_change_reason_category() {
     r.version = 1;
     r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

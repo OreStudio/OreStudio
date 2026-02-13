@@ -42,13 +42,13 @@ TEST_CASE("create_feature_flag_with_valid_fields", tags) {
     sut.name = "enable_dark_mode";
     sut.enabled = true;
     sut.description = "Enables dark mode across the application";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
     CHECK(sut.name == "enable_dark_mode");
     CHECK(sut.enabled == true);
     CHECK(sut.description == "Enables dark mode across the application");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
 }
 
 TEST_CASE("create_disabled_feature_flag", tags) {
@@ -58,13 +58,13 @@ TEST_CASE("create_disabled_feature_flag", tags) {
     sut.name = "experimental_feature";
     sut.enabled = false;
     sut.description = "Experimental feature under development";
-    sut.recorded_by = "developer";
+    sut.modified_by = "developer";
     BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
     CHECK(sut.name == "experimental_feature");
     CHECK(sut.enabled == false);
     CHECK(!sut.description.empty());
-    CHECK(sut.recorded_by == "developer");
+    CHECK(sut.modified_by == "developer");
 }
 
 TEST_CASE("feature_flag_serialization_to_json", tags) {
@@ -74,7 +74,7 @@ TEST_CASE("feature_flag_serialization_to_json", tags) {
     sut.name = "api_rate_limiting";
     sut.enabled = true;
     sut.description = "Controls API rate limiting behavior";
-    sut.recorded_by = "sysadmin";
+    sut.modified_by = "sysadmin";
     BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
     std::ostringstream os;
@@ -94,12 +94,12 @@ TEST_CASE("create_feature_flag_with_faker", tags) {
         std::string(faker::word::verb());
     sut.enabled = faker::datatype::boolean();
     sut.description = std::string(faker::lorem::sentence());
-    sut.recorded_by = std::string(faker::internet::username());
+    sut.modified_by = std::string(faker::internet::username());
     BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
 }
 
 TEST_CASE("create_multiple_random_feature_flags", tags) {
@@ -125,14 +125,14 @@ TEST_CASE("create_multiple_random_feature_flags", tags) {
         sut.name = prefix + "_" + subject;
         sut.enabled = faker::datatype::boolean();
         sut.description = std::string(faker::lorem::sentence());
-        sut.recorded_by = std::string(faker::internet::username());
+        sut.modified_by = std::string(faker::internet::username());
 
         BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
         CHECK(!sut.name.empty());
         CHECK(sut.name.find("_") != std::string::npos);
         CHECK(!sut.description.empty());
-        CHECK(!sut.recorded_by.empty());
+        CHECK(!sut.modified_by.empty());
     }
 }
 
@@ -143,11 +143,11 @@ TEST_CASE("create_system_feature_flags", tags) {
     sut.name = "maintenance_mode";
     sut.enabled = faker::datatype::boolean();
     sut.description = "When enabled, puts the system into maintenance mode";
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
     CHECK(sut.name == "maintenance_mode");
-    CHECK(sut.recorded_by == "system");
+    CHECK(sut.modified_by == "system");
 }
 
 TEST_CASE("feature_flags_convert_single_to_table", tags) {
@@ -157,7 +157,7 @@ TEST_CASE("feature_flags_convert_single_to_table", tags) {
     ff.name = "dark_mode";
     ff.enabled = true;
     ff.description = "Enables dark mode";
-    ff.recorded_by = "admin";
+    ff.modified_by = "admin";
 
     std::vector<feature_flags> flags = {ff};
     auto table = convert_to_table(flags);
@@ -178,7 +178,7 @@ TEST_CASE("feature_flags_convert_multiple_to_table", tags) {
         ff.name = "feature_" + std::to_string(i);
         ff.enabled = (i % 2 == 0);
         ff.description = "Description for feature " + std::to_string(i);
-        ff.recorded_by = "system";
+        ff.modified_by = "system";
         flags.push_back(ff);
     }
 
@@ -201,7 +201,7 @@ TEST_CASE("feature_flags_table_with_faker_data", tags) {
         ff.name = std::string(faker::word::noun()) + "_feature";
         ff.enabled = faker::datatype::boolean();
         ff.description = std::string(faker::lorem::sentence());
-        ff.recorded_by = std::string(faker::internet::username());
+        ff.modified_by = std::string(faker::internet::username());
         flags.push_back(ff);
     }
 

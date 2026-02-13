@@ -87,8 +87,8 @@ QVariant ClientChangeReasonCategoryModel::data(
             return QString::fromStdString(category.description);
         case Version:
             return category.version;
-        case RecordedBy:
-            return QString::fromStdString(category.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(category.modified_by);
         case RecordedAt:
             return relative_time_helper::format(category.recorded_at);
         default:
@@ -115,8 +115,8 @@ QVariant ClientChangeReasonCategoryModel::headerData(
         return tr("Description");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

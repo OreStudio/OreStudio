@@ -892,7 +892,7 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
             iam::domain::account_version ver;
             ver.data = account;
             ver.version_number = account.version;  // Use database version field
-            ver.recorded_by = account.recorded_by;
+            ver.modified_by = account.modified_by;
             ver.recorded_at = account.recorded_at;
             ver.change_summary = "Version " + std::to_string(ver.version_number);
             resp.history.versions.push_back(std::move(ver));

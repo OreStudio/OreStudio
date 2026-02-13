@@ -162,7 +162,7 @@ void CounterpartyMdiWindow::setupTable() {
         cs::text_left,     // PartyType
         cs::text_left,     // Status
         cs::mono_center,   // Version
-        cs::text_left,     // RecordedBy
+        cs::text_left,     // ModifiedBy
         cs::mono_left      // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);

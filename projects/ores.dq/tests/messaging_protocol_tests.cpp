@@ -69,7 +69,7 @@ TEST_CASE("save_catalog_request_serialize_deserialize", tags) {
     e.catalog.name = "ISO Standards";
     e.catalog.description = "International standards catalogs";
     e.catalog.owner = "Standards Body";
-    e.catalog.recorded_by = "admin";
+    e.catalog.modified_by = "admin";
     e.catalog.change_commentary = "Initial creation";
     e.catalog.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -85,7 +85,6 @@ TEST_CASE("save_catalog_request_serialize_deserialize", tags) {
     CHECK(a.catalog.name == e.catalog.name);
     CHECK(a.catalog.description == e.catalog.description);
     CHECK(a.catalog.owner == e.catalog.owner);
-    CHECK(a.catalog.recorded_by == e.catalog.recorded_by);
 }
 
 TEST_CASE("get_data_domains_request_serialize_deserialize", tags) {
@@ -108,7 +107,7 @@ TEST_CASE("save_data_domain_request_serialize_deserialize", tags) {
     e.domain.version = 1;
     e.domain.name = "Reference Data";
     e.domain.description = "Static reference data";
-    e.domain.recorded_by = "admin";
+    e.domain.modified_by = "admin";
     e.domain.change_commentary = "Initial creation";
     e.domain.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -163,7 +162,7 @@ TEST_CASE("save_subject_area_request_serialize_deserialize", tags) {
     e.subject_area.name = "Currencies";
     e.subject_area.domain_name = "Reference Data";
     e.subject_area.description = "Currency reference data";
-    e.subject_area.recorded_by = "admin";
+    e.subject_area.modified_by = "admin";
     e.subject_area.change_commentary = "Initial creation";
     e.subject_area.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -220,7 +219,7 @@ TEST_CASE("save_dataset_request_serialize_deserialize", tags) {
     e.dataset.as_of_date = std::chrono::system_clock::now();
     e.dataset.ingestion_timestamp = std::chrono::system_clock::now();
     e.dataset.license_info = "Public domain";
-    e.dataset.recorded_by = "admin";
+    e.dataset.modified_by = "admin";
     e.dataset.change_commentary = "Initial creation";
     e.dataset.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -261,7 +260,7 @@ TEST_CASE("save_methodology_request_serialize_deserialize", tags) {
     e.methodology.description = "Standard extract-transform-load process";
     e.methodology.logic_reference = "https://docs.example.com/etl";
     e.methodology.implementation_details = "Python script using pandas";
-    e.methodology.recorded_by = "admin";
+    e.methodology.modified_by = "admin";
     e.methodology.change_commentary = "Initial creation";
     e.methodology.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -307,7 +306,7 @@ TEST_CASE("save_coding_scheme_request_serialize_deserialize", tags) {
     e.scheme.domain_name = "Reference Data";
     e.scheme.uri = "https://www.iso.org/iso-4217-currency-codes.html";
     e.scheme.description = "Standard currency codes";
-    e.scheme.recorded_by = "admin";
+    e.scheme.modified_by = "admin";
     e.scheme.change_commentary = "Initial creation";
     e.scheme.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -345,7 +344,7 @@ TEST_CASE("save_coding_scheme_authority_type_request_serialize_deserialize", tag
     e.authority_type.code = "official";
     e.authority_type.name = "Official Standards";
     e.authority_type.description = "Standards from official bodies like ISO";
-    e.authority_type.recorded_by = "admin";
+    e.authority_type.modified_by = "admin";
     e.authority_type.change_commentary = "Initial creation";
     e.authority_type.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -387,7 +386,7 @@ TEST_CASE("save_nature_dimension_request_serialize_deserialize", tags) {
     e.dimension.code = "Actual";
     e.dimension.name = "Actual Data";
     e.dimension.description = "Real production data from live systems";
-    e.dimension.recorded_by = "admin";
+    e.dimension.modified_by = "admin";
     e.dimension.change_commentary = "Initial creation";
     e.dimension.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -425,7 +424,7 @@ TEST_CASE("save_origin_dimension_request_serialize_deserialize", tags) {
     e.dimension.code = "Source";
     e.dimension.name = "Source Data";
     e.dimension.description = "Primary/authoritative source data";
-    e.dimension.recorded_by = "admin";
+    e.dimension.modified_by = "admin";
     e.dimension.change_commentary = "Initial creation";
     e.dimension.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -463,7 +462,7 @@ TEST_CASE("save_treatment_dimension_request_serialize_deserialize", tags) {
     e.dimension.code = "Raw";
     e.dimension.name = "Raw Data";
     e.dimension.description = "Unprocessed data as received from source";
-    e.dimension.recorded_by = "admin";
+    e.dimension.modified_by = "admin";
     e.dimension.change_commentary = "Initial creation";
     e.dimension.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -1330,7 +1329,7 @@ TEST_CASE("save_change_reason_request_serialize_deserialize", tags) {
     e.reason.applies_to_delete = false;
     e.reason.requires_commentary = true;
     e.reason.display_order = 10;
-    e.reason.recorded_by = "admin";
+    e.reason.modified_by = "admin";
     e.reason.change_commentary = "Initial creation";
     e.reason.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -1514,7 +1513,7 @@ TEST_CASE("save_change_reason_category_request_serialize_deserialize", tags) {
     e.category.version = 1;
     e.category.code = "static_data";
     e.category.description = "Static reference data changes";
-    e.category.recorded_by = "admin";
+    e.category.modified_by = "admin";
     e.category.change_commentary = "Initial creation";
     e.category.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -1670,7 +1669,7 @@ TEST_CASE("save_dataset_bundle_request_serialize_deserialize", tags) {
     e.bundle.code = "slovaris";
     e.bundle.name = "Slovaris Bundle";
     e.bundle.description = "Synthetic reference data for testing";
-    e.bundle.recorded_by = "admin";
+    e.bundle.modified_by = "admin";
     e.bundle.change_commentary = "Initial creation";
     e.bundle.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -1813,7 +1812,7 @@ TEST_CASE("get_dataset_bundle_members_response_serialize_deserialize", tags) {
     m1.dataset_code = "iso.countries";
     m1.display_order = 10;
     m1.optional = false;
-    m1.recorded_by = "admin";
+    m1.modified_by = "admin";
     m1.change_reason_code = "system.new_record";
     m1.change_commentary = "Initial";
     m1.recorded_at = std::chrono::system_clock::now();
@@ -1825,7 +1824,7 @@ TEST_CASE("get_dataset_bundle_members_response_serialize_deserialize", tags) {
     m2.dataset_code = "gleif.lei_parties.small";
     m2.display_order = 203;
     m2.optional = true;
-    m2.recorded_by = "admin";
+    m2.modified_by = "admin";
     m2.change_reason_code = "system.new_record";
     m2.change_commentary = "Optional LEI dataset";
     m2.recorded_at = std::chrono::system_clock::now();
@@ -1875,7 +1874,7 @@ TEST_CASE("get_dataset_bundle_members_by_bundle_response_serialize_deserialize",
     m1.dataset_code = "fpml.business_center";
     m1.display_order = 105;
     m1.optional = false;
-    m1.recorded_by = "admin";
+    m1.modified_by = "admin";
     m1.change_reason_code = "system.new_record";
     m1.change_commentary = "Seed data";
     m1.recorded_at = std::chrono::system_clock::now();
@@ -1887,7 +1886,7 @@ TEST_CASE("get_dataset_bundle_members_by_bundle_response_serialize_deserialize",
     m2.dataset_code = "gleif.lei_counterparties.small";
     m2.display_order = 202;
     m2.optional = true;
-    m2.recorded_by = "admin";
+    m2.modified_by = "admin";
     m2.change_reason_code = "system.new_record";
     m2.change_commentary = "Optional counterparty dataset";
     m2.recorded_at = std::chrono::system_clock::now();

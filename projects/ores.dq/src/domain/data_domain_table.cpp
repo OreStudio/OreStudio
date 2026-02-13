@@ -27,11 +27,11 @@ std::string convert_to_table(const std::vector<data_domain>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Description" << "Recorded By"
+    table << fort::header << "Name" << "Description" << "Modified By"
           << "Version" << fort::endr;
 
     for (const auto& d : v) {
-        table << d.name << d.description << d.recorded_by
+        table << d.name << d.description << d.modified_by
               << d.version << fort::endr;
     }
     return table.to_string();

@@ -52,14 +52,12 @@ TEST_CASE("save_account_request_with_valid_fields", tags) {
     rq.password = "test_password";
     rq.totp_secret = "JBSWY3DPEHPK3PXP";
     rq.email = "test@example.com";
-    rq.recorded_by = "admin";
     BOOST_LOG_SEV(lg, info) << "Rrequest: " << rq;
 
     CHECK(rq.principal == "testuser");
     CHECK(rq.password == "test_password");
     CHECK(rq.totp_secret == "JBSWY3DPEHPK3PXP");
     CHECK(rq.email == "test@example.com");
-    CHECK(rq.recorded_by == "admin");
 }
 
 TEST_CASE("save_account_request_with_faker", tags) {
@@ -70,14 +68,12 @@ TEST_CASE("save_account_request_with_faker", tags) {
     rq.password = std::string(faker::internet::password());
     rq.totp_secret = faker::string::alphanumeric(16);
     rq.email = std::string(faker::internet::email());
-    rq.recorded_by = std::string(faker::internet::username());
     BOOST_LOG_SEV(lg, info) << "save_account_request: " << rq;
 
     CHECK(!rq.principal.empty());
     CHECK(!rq.password.empty());
     CHECK(rq.totp_secret.length() == 16);
     CHECK(!rq.email.empty());
-    CHECK(!rq.recorded_by.empty());
 }
 
 TEST_CASE("save_account_request_serialize_deserialize", tags) {
@@ -88,7 +84,6 @@ TEST_CASE("save_account_request_serialize_deserialize", tags) {
     e.password = std::string(faker::internet::password());
     e.totp_secret = faker::string::alphanumeric(20);
     e.email = std::string(faker::internet::email());
-    e.recorded_by = std::string(faker::internet::username());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -155,7 +150,7 @@ TEST_CASE("get_accounts_response_with_faker", tags) {
     for (int i = 0; i < expected_size; ++i) {
         account a;
         a.version = faker::number::integer(1, 100);
-        a.recorded_by = std::string(faker::internet::username());
+        a.modified_by = std::string(faker::internet::username());
         a.id = boost::uuids::random_generator()();
         a.username = std::string(faker::internet::username());
         a.password_hash = std::string(faker::crypto::sha256());
@@ -179,7 +174,7 @@ TEST_CASE("get_accounts_response_serialize_deserialize", tags) {
     for (int i = 0; i < expected_size; ++i) {
         account a;
         a.version = i + 1;
-        a.recorded_by = "user" + std::to_string(i);
+        a.modified_by = "user" + std::to_string(i);
         a.id = boost::uuids::random_generator()();
         a.username = "username" + std::to_string(i);
         a.password_hash = std::string(faker::crypto::sha256());
@@ -484,8 +479,6 @@ TEST_CASE("create_multiple_random_save_account_requests", tags) {
         rq.password = std::string(faker::internet::password());
         rq.totp_secret = faker::string::alphanumeric(16);
         rq.email = std::string(faker::internet::email());
-        rq.recorded_by = std::string(faker::person::firstName()) + " " +
-            std::string(faker::person::lastName());
         BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;
 
         CHECK(!rq.principal.empty());
@@ -883,7 +876,7 @@ TEST_CASE("save_tenant_request_serialize_deserialize", tags) {
     e.tenant.description = "A test tenant";
     e.tenant.status = "active";
     e.tenant.type = "standard";
-    e.tenant.recorded_by = "admin";
+    e.tenant.modified_by = "admin";
     e.tenant.change_commentary = "Initial creation";
     e.tenant.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -903,7 +896,6 @@ TEST_CASE("save_tenant_request_serialize_deserialize", tags) {
     CHECK(a.tenant.description == e.tenant.description);
     CHECK(a.tenant.status == e.tenant.status);
     CHECK(a.tenant.type == e.tenant.type);
-    CHECK(a.tenant.recorded_by == e.tenant.recorded_by);
     CHECK(a.tenant.change_commentary == e.tenant.change_commentary);
 }
 
@@ -1101,7 +1093,7 @@ TEST_CASE("save_tenant_type_request_serialize_deserialize", tags) {
     e.type.type = "standard";
     e.type.name = "Standard";
     e.type.description = "Standard tenant";
-    e.type.recorded_by = "admin";
+    e.type.modified_by = "admin";
     e.type.change_commentary = "test";
     e.type.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -1117,7 +1109,6 @@ TEST_CASE("save_tenant_type_request_serialize_deserialize", tags) {
     CHECK(a.type.type == e.type.type);
     CHECK(a.type.name == e.type.name);
     CHECK(a.type.description == e.type.description);
-    CHECK(a.type.recorded_by == e.type.recorded_by);
     CHECK(a.type.change_commentary == e.type.change_commentary);
 }
 
@@ -1263,7 +1254,7 @@ TEST_CASE("save_tenant_status_request_serialize_deserialize", tags) {
     e.status.status = "active";
     e.status.name = "Active";
     e.status.description = "Active tenant";
-    e.status.recorded_by = "admin";
+    e.status.modified_by = "admin";
     e.status.change_commentary = "test";
     e.status.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -1279,7 +1270,6 @@ TEST_CASE("save_tenant_status_request_serialize_deserialize", tags) {
     CHECK(a.status.status == e.status.status);
     CHECK(a.status.name == e.status.name);
     CHECK(a.status.description == e.status.description);
-    CHECK(a.status.recorded_by == e.status.recorded_by);
     CHECK(a.status.change_commentary == e.status.change_commentary);
 }
 
@@ -1467,7 +1457,6 @@ TEST_CASE("save_account_party_request_serialize_deserialize", tags) {
     CHECK(a.account_party.version == e.account_party.version);
     CHECK(a.account_party.account_id == e.account_party.account_id);
     CHECK(a.account_party.party_id == e.account_party.party_id);
-    CHECK(a.account_party.recorded_by == e.account_party.recorded_by);
 }
 
 TEST_CASE("save_account_party_response_serialize_deserialize", tags) {

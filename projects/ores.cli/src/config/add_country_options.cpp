@@ -31,7 +31,7 @@ std::ostream& operator<<(std::ostream& s, const add_country_options& v) {
     if (v.numeric_code) s << ", numeric_code: " << *v.numeric_code;
     if (v.official_name) s << ", official_name: " << *v.official_name;
 
-    s << ", recorded_by: " << v.recorded_by;
+    s << ", modified_by: " << v.modified_by;
 
     if (v.change_reason_code) s << ", change_reason_code: " << *v.change_reason_code;
     if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;

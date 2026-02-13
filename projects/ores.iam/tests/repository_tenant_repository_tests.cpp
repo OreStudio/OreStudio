@@ -53,7 +53,7 @@ tenant make_tenant() {
     t.hostname = std::string(faker::string::alphanumeric(8))
         + "_" + std::to_string(idx) + ".example.com";
     t.status = "active";
-    t.recorded_by = std::string(faker::internet::username());
+    t.modified_by = std::string(faker::internet::username());
     t.change_reason_code = "system.test";
     t.change_commentary = "Synthetic test data";
     t.performed_by = std::string(faker::internet::username());

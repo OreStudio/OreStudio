@@ -57,7 +57,7 @@ TEST_CASE("party_generator_produces_valid_instance", tags) {
     CHECK(sut.party_type == "Corporate");
     CHECK(sut.business_center_code == "WRLD");
     CHECK(sut.status == "Active");
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -88,7 +88,7 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     CHECK(sut.party_type == "Bank");
     CHECK(sut.business_center_code == "WRLD");
     CHECK(sut.status == "Active");
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -117,7 +117,7 @@ TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
     CHECK(!sut.description.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -145,7 +145,7 @@ TEST_CASE("party_type_generator_produces_valid_instance", tags) {
     CHECK(!sut.description.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -173,7 +173,7 @@ TEST_CASE("party_status_generator_produces_valid_instance", tags) {
     CHECK(!sut.description.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -202,7 +202,7 @@ TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
     CHECK(!sut.coding_scheme_code.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -231,7 +231,7 @@ TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
     CHECK(!sut.id_scheme.empty());
     CHECK(sut.id_value.size() >= 20);
     CHECK(sut.description == "Test identifier");
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -261,7 +261,7 @@ TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
     CHECK(!sut.id_scheme.empty());
     CHECK(sut.id_value.size() >= 20);
     CHECK(sut.description == "Test identifier");
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -295,7 +295,7 @@ TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
     CHECK(!sut.postal_code.empty());
     CHECK(!sut.phone.empty());
     CHECK(!sut.email.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
 
@@ -328,7 +328,7 @@ TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", 
     CHECK(!sut.postal_code.empty());
     CHECK(!sut.phone.empty());
     CHECK(!sut.email.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
 

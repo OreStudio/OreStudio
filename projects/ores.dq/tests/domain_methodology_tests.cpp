@@ -45,7 +45,7 @@ TEST_CASE("create_methodology_with_valid_fields", tags) {
     sut.description = "Calculates simple moving average over a time window";
     sut.logic_reference = "https://docs.example.com/moving-average";
     sut.implementation_details = "Uses 30-day rolling window";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Methodology: " << sut;
 
@@ -54,7 +54,7 @@ TEST_CASE("create_methodology_with_valid_fields", tags) {
     CHECK(sut.description == "Calculates simple moving average over a time window");
     CHECK(sut.logic_reference == "https://docs.example.com/moving-average");
     CHECK(sut.implementation_details == "Uses 30-day rolling window");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -66,7 +66,7 @@ TEST_CASE("methodology_convert_single_to_table", tags) {
     m.id = boost::uuids::random_generator()();
     m.name = "Data Validation";
     m.description = "Validates data against schema rules";
-    m.recorded_by = "system";
+    m.modified_by = "system";
 
     std::vector<methodology> methodologies = {m};
     auto table = convert_to_table(methodologies);

@@ -75,7 +75,7 @@ QVariant ClientCodingSchemeAuthorityTypeModel::data(const QModelIndex& index, in
         case Name: return QString::fromStdString(at.name);
         case Description: return QString::fromStdString(at.description);
         case Version: return at.version;
-        case RecordedBy: return QString::fromStdString(at.recorded_by);
+        case ModifiedBy: return QString::fromStdString(at.modified_by);
         case RecordedAt: return relative_time_helper::format(at.recorded_at);
         default: return {};
         }
@@ -98,7 +98,7 @@ QVariant ClientCodingSchemeAuthorityTypeModel::headerData(int section,
     case Name: return tr("Name");
     case Description: return tr("Description");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

@@ -108,7 +108,7 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
     at.name = name.toStdString();
     at.description = description.toStdString();
     at.change_commentary = commentary.toStdString();
-    at.recorded_by = username_;
+    at.modified_by = username_;
     at.version = isCreateMode_ ? 0 : authorityType_.version;
 
     QPointer<CodingSchemeAuthorityTypeDetailDialog> self = this;

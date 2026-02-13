@@ -55,7 +55,7 @@ public:
         Description,
         Owner,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

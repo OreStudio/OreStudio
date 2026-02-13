@@ -127,7 +127,7 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
     case Column::NumericCode: return QString::fromStdString(country.numeric_code);
     case Column::OfficialName: return QString::fromStdString(country.official_name);
     case Column::Version: return country.version;
-    case Column::RecordedBy: return QString::fromStdString(country.recorded_by);
+    case Column::ModifiedBy: return QString::fromStdString(country.modified_by);
     case Column::RecordedAt: return relative_time_helper::format(country.recorded_at);
     default: return {};
     }
@@ -147,7 +147,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::NumericCode: return tr("Numeric");
         case Column::OfficialName: return tr("Official Name");
         case Column::Version: return tr("Version");
-        case Column::RecordedBy: return tr("Recorded By");
+        case Column::ModifiedBy: return tr("Modified By");
         case Column::RecordedAt: return tr("Recorded At");
         default: return {};
         }

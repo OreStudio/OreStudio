@@ -140,7 +140,7 @@ domain::role authorization_service::create_role(
     const std::string& name,
     const std::string& description,
     const std::vector<std::string>& permission_codes,
-    const std::string& recorded_by) {
+    const std::string& modified_by) {
     BOOST_LOG_SEV(lg(), info) << "Creating role: " << name;
 
     if (name.empty()) {
@@ -170,7 +170,7 @@ domain::role authorization_service::create_role(
     role.version = 0;
     role.name = name;
     role.description = description;
-    role.recorded_by = recorded_by;
+    role.modified_by = modified_by;
     role.permission_codes = permission_codes;
 
     role_repo_.write(role);

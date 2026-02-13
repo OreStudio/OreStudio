@@ -507,7 +507,7 @@ void CountryController::onRevertCountry(const refdata::domain::country& country)
     }
 
     refdata::domain::country countryToSave = country;
-    countryToSave.recorded_by = username_.toStdString();
+    countryToSave.modified_by = username_.toStdString();
 
     QPointer<CountryController> self = this;
     QFuture<std::pair<bool, std::string>> future =

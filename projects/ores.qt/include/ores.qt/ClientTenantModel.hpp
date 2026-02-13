@@ -61,7 +61,7 @@ public:
         Hostname,
         Status,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

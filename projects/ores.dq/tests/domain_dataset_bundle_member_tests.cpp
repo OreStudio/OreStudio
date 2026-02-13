@@ -47,7 +47,7 @@ TEST_CASE("create_dataset_bundle_member_with_valid_fields", tags) {
     sut.bundle_code = "slovaris";
     sut.dataset_code = "slovaris.countries";
     sut.display_order = 1;
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Initial creation";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -58,7 +58,7 @@ TEST_CASE("create_dataset_bundle_member_with_valid_fields", tags) {
     CHECK(sut.bundle_code == "slovaris");
     CHECK(sut.dataset_code == "slovaris.countries");
     CHECK(sut.display_order == 1);
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_reason_code == "system.new");
     CHECK(sut.change_commentary == "Initial creation");
 }
@@ -71,7 +71,7 @@ TEST_CASE("dataset_bundle_member_convert_single_to_table", tags) {
     dbm.bundle_code = "base";
     dbm.dataset_code = "iso.currencies";
     dbm.display_order = 10;
-    dbm.recorded_by = "system";
+    dbm.modified_by = "system";
     dbm.change_reason_code = "system.new";
     dbm.change_commentary = "Initial setup";
     dbm.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -100,7 +100,7 @@ TEST_CASE("dataset_bundle_member_generator_produces_valid_instance", tags) {
     CHECK(!sut.dataset_code.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new_record");
 }
 

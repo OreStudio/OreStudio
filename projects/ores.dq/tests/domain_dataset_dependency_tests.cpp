@@ -41,7 +41,7 @@ TEST_CASE("create_dataset_dependency_with_valid_fields", tags) {
     sut.dataset_code = "iso.countries";
     sut.dependency_code = "assets.country_flags";
     sut.role = "visual_assets";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.recorded_at = std::chrono::system_clock::now();
 
     BOOST_LOG_SEV(lg, info) << "Dataset dependency: " << sut;
@@ -49,7 +49,7 @@ TEST_CASE("create_dataset_dependency_with_valid_fields", tags) {
     CHECK(sut.dataset_code == "iso.countries");
     CHECK(sut.dependency_code == "assets.country_flags");
     CHECK(sut.role == "visual_assets");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
 }
 
 TEST_CASE("dataset_dependency_uses_standard_codes", tags) {
@@ -60,13 +60,13 @@ TEST_CASE("dataset_dependency_uses_standard_codes", tags) {
     dep1.dataset_code = "iso.currencies";
     dep1.dependency_code = "assets.country_flags";
     dep1.role = "visual_assets";
-    dep1.recorded_by = "system";
+    dep1.modified_by = "system";
 
     dataset_dependency dep2;
     dep2.dataset_code = "crypto.large";
     dep2.dependency_code = "assets.crypto_icons";
     dep2.role = "visual_assets";
-    dep2.recorded_by = "system";
+    dep2.modified_by = "system";
 
     CHECK(dep1.dataset_code == "iso.currencies");
     CHECK(dep1.dependency_code == "assets.country_flags");
@@ -85,7 +85,7 @@ TEST_CASE("dataset_dependency_supports_custom_codes", tags) {
     sut.dataset_code = "custom.my_dataset";
     sut.dependency_code = "custom.reference_data";
     sut.role = "reference_data";
-    sut.recorded_by = "user123";
+    sut.modified_by = "user123";
     sut.recorded_at = std::chrono::system_clock::now();
 
     BOOST_LOG_SEV(lg, info) << "Custom dataset dependency: " << sut;
@@ -102,14 +102,14 @@ TEST_CASE("dataset_dependency_convert_to_table", tags) {
     dep1.dataset_code = "iso.countries";
     dep1.dependency_code = "assets.country_flags";
     dep1.role = "visual_assets";
-    dep1.recorded_by = "admin";
+    dep1.modified_by = "admin";
     dep1.recorded_at = std::chrono::system_clock::now();
 
     dataset_dependency dep2;
     dep2.dataset_code = "crypto.large";
     dep2.dependency_code = "assets.crypto_icons";
     dep2.role = "visual_assets";
-    dep2.recorded_by = "admin";
+    dep2.modified_by = "admin";
     dep2.recorded_at = std::chrono::system_clock::now();
 
     std::vector<dataset_dependency> deps = {dep1, dep2};

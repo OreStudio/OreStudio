@@ -37,7 +37,7 @@ struct dataset_dependency_entity {
     std::string tenant_id;
     std::string dependency_code;
     std::string role;
-    std::string recorded_by;
+    std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";

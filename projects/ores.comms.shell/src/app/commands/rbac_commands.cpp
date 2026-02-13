@@ -236,7 +236,7 @@ process_get_role(std::ostream& out, client_session& session,
     out << "Version:       " << found_role.version << std::endl;
     out << "Change Reason: " << found_role.change_reason_code << std::endl;
     out << "Commentary:    " << found_role.change_commentary << std::endl;
-    out << "Recorded By:   " << found_role.recorded_by << std::endl;
+    out << "Modified By:   " << found_role.modified_by << std::endl;
     out << "Recorded At:   " << found_role.recorded_at << std::endl;
     out << std::endl;
     out << "Permissions (" << found_role.permission_codes.size() << "):" << std::endl;

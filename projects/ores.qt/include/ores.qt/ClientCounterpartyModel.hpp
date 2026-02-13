@@ -67,7 +67,7 @@ public:
         PartyType,
         Status,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

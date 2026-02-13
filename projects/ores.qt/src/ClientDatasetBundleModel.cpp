@@ -88,8 +88,8 @@ QVariant ClientDatasetBundleModel::data(
             return QString::fromStdString(bundle.description);
         case Version:
             return bundle.version;
-        case RecordedBy:
-            return QString::fromStdString(bundle.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(bundle.modified_by);
         case RecordedAt:
             return relative_time_helper::format(bundle.recorded_at);
         default:
@@ -118,8 +118,8 @@ QVariant ClientDatasetBundleModel::headerData(
         return tr("Description");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

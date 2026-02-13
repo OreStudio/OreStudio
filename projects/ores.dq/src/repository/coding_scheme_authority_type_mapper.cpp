@@ -37,7 +37,7 @@ coding_scheme_authority_type_mapper::map(const coding_scheme_authority_type_enti
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -55,7 +55,7 @@ coding_scheme_authority_type_mapper::map(const domain::coding_scheme_authority_t
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

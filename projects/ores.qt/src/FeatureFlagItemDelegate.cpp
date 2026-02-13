@@ -82,7 +82,7 @@ void FeatureFlagItemDelegate::paint(QPainter* painter, const QStyleOptionViewIte
         case ClientFeatureFlagModel::Name:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case ClientFeatureFlagModel::RecordedBy:
+        case ClientFeatureFlagModel::ModifiedBy:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
         case ClientFeatureFlagModel::RecordedAt:

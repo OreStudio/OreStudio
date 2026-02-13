@@ -69,7 +69,7 @@ TEST_CASE("map_currency_definition_to_domain_with_all_fields", tags) {
     CHECK(result.rounding_type == "Closest");
     CHECK(result.rounding_precision == 2);
     CHECK(result.currency_type == "Major");
-    CHECK(result.recorded_by == "ores");
+    CHECK(result.modified_by == "ores");
     CHECK(result.change_reason_code == "system.external_data_import");
     CHECK(result.change_commentary == "Imported from ORE XML");
 }

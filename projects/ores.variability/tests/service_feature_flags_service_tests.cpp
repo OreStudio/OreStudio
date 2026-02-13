@@ -58,7 +58,7 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     flag.name = "test_flag";
     flag.enabled = true;
     flag.description = "Test Description";
-    flag.recorded_by = "tester";
+    flag.modified_by = "tester";
     flag.change_reason_code = "system.test";
     flag.change_commentary = "Test data";
 
@@ -69,8 +69,8 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     CHECK(result->name == "test_flag");
     CHECK(result->enabled == true);
     CHECK(result->description == "Test Description");
-    INFO("Actual recorded_by: " << result->recorded_by);
-    CHECK(result->recorded_by == "tester");
+    INFO("Actual modified_by: " << result->modified_by);
+    CHECK(result->modified_by == "tester");
 }
 
 TEST_CASE("feature_flags_service_update_feature_flag", tags) {
@@ -86,7 +86,7 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     flag.name = "update_flag";
     flag.enabled = true;
     flag.description = "Initial Description";
-    flag.recorded_by = "tester";
+    flag.modified_by = "tester";
     flag.change_reason_code = "system.test";
     flag.change_commentary = "Test data";
     sut.save_feature_flag(flag);
@@ -94,7 +94,7 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     // Update
     flag.enabled = false;
     flag.description = "Updated Description";
-    flag.recorded_by = "updater";
+    flag.modified_by = "updater";
     sut.save_feature_flag(flag);
 
     // Verify update
@@ -102,8 +102,8 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     REQUIRE(result.has_value());
     CHECK(result->enabled == false);
     CHECK(result->description == "Updated Description");
-    INFO("Actual recorded_by after update: " << result->recorded_by);
-    CHECK(result->recorded_by == "updater");
+    INFO("Actual modified_by after update: " << result->modified_by);
+    CHECK(result->modified_by == "updater");
 }
 
 TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
@@ -117,7 +117,7 @@ TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
     flag.tenant_id = db_helper.tenant_id().to_string();
     flag.name = "delete_flag_unique_test";
     flag.enabled = true;
-    flag.recorded_by = "deleter";
+    flag.modified_by = "deleter";
     flag.change_reason_code = "system.test";
     flag.change_commentary = "Test data";
     sut.save_feature_flag(flag);
@@ -141,7 +141,7 @@ TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     flag1.tenant_id = db_helper.tenant_id().to_string();
     flag1.name = "unique_flag1_xyz";
     flag1.enabled = true;
-    flag1.recorded_by = "tester";
+    flag1.modified_by = "tester";
     flag1.change_reason_code = "system.test";
     flag1.change_commentary = "Test data";
     sut.save_feature_flag(flag1);
@@ -150,7 +150,7 @@ TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     flag2.tenant_id = db_helper.tenant_id().to_string();
     flag2.name = "unique_flag2_xyz";
     flag2.enabled = false;
-    flag2.recorded_by = "tester";
+    flag2.modified_by = "tester";
     flag2.change_reason_code = "system.test";
     flag2.change_commentary = "Test data";
     sut.save_feature_flag(flag2);

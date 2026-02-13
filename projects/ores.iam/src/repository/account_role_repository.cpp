@@ -198,7 +198,7 @@ account_role_repository::read_roles_with_permissions(
             r.version = std::stoi(*row[1]);
             r.name = *row[2];
             r.description = *row[3];
-            r.recorded_by = *row[4];
+            r.modified_by = *row[4];
 
             // Parse comma-separated permission codes
             if (row[5]) {

@@ -59,7 +59,7 @@ public:
         SourceSystem,
         AsOfDate,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         Tags,
         ColumnCount

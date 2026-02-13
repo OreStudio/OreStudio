@@ -108,7 +108,7 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
     dim.name = name.toStdString();
     dim.description = description.toStdString();
     dim.change_commentary = commentary.toStdString();
-    dim.recorded_by = username_;
+    dim.modified_by = username_;
     dim.version = isCreateMode_ ? 0 : dimension_.version;
 
     QPointer<TreatmentDimensionDetailDialog> self = this;

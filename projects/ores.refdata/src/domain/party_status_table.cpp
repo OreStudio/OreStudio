@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<party_status>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Recorded By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& ps : v) {
-        table << ps.code << ps.name << ps.description << ps.display_order << ps.recorded_by << ps.version << fort::endr;
+        table << ps.code << ps.name << ps.description << ps.display_order << ps.modified_by << ps.version << fort::endr;
     }
     return table.to_string();
 }

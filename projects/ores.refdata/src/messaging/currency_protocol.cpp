@@ -52,7 +52,6 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
     if (currency.image_id) {
         writer::write_uuid(buffer, *currency.image_id);
     }
-    writer::write_string(buffer, currency.recorded_by);
     writer::write_string(buffer, currency.change_reason_code);
     writer::write_string(buffer, currency.change_commentary);
     writer::write_string(buffer,
@@ -116,9 +115,6 @@ deserialize_currency(std::span<const std::byte>& data) {
         currency.image_id = *image_id;
     }
 
-    auto recorded_by = reader::read_string(data);
-    if (!recorded_by) return std::unexpected(recorded_by.error());
-    currency.recorded_by = *recorded_by;
 
     auto change_reason_code = reader::read_string(data);
     if (!change_reason_code) return std::unexpected(change_reason_code.error());

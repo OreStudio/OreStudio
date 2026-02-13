@@ -47,8 +47,6 @@ void write_counterparty_identifier(std::vector<std::byte>& buffer,
     writer::write_string(buffer, ci.id_scheme);
     writer::write_string(buffer, ci.id_value);
     writer::write_string(buffer, ci.description);
-    writer::write_string(buffer, ci.recorded_by);
-    writer::write_string(buffer, ci.performed_by);
     writer::write_string(buffer, ci.change_reason_code);
     writer::write_string(buffer, ci.change_commentary);
     writer::write_string(buffer,
@@ -83,13 +81,7 @@ read_counterparty_identifier(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     ci.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    ci.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    ci.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

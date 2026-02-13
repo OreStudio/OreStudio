@@ -35,7 +35,7 @@ domain::tag tag_mapper::map(const tag_entity& v) {
     r.tag_id = v.tag_id.value();
     r.name = v.name;
     r.description = v.description;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from.value().str();
@@ -53,7 +53,7 @@ tag_entity tag_mapper::map(const domain::tag& v) {
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers

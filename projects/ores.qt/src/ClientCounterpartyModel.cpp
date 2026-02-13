@@ -121,8 +121,8 @@ QVariant ClientCounterpartyModel::data(
             return QString::fromStdString(counterparty.business_center_code);
         case Version:
             return counterparty.version;
-        case RecordedBy:
-            return QString::fromStdString(counterparty.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(counterparty.modified_by);
         case RecordedAt:
             return relative_time_helper::format(counterparty.recorded_at);
         default:
@@ -159,8 +159,8 @@ QVariant ClientCounterpartyModel::headerData(
         return tr("Centre");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

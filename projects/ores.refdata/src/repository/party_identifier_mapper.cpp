@@ -41,7 +41,7 @@ party_identifier_mapper::map(const party_identifier_entity& v) {
     r.id_scheme = v.id_scheme;
     r.id_value = v.id_value;
     r.description = v.description;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -63,7 +63,7 @@ party_identifier_mapper::map(const domain::party_identifier& v) {
     r.id_scheme = v.id_scheme;
     r.id_value = v.id_value;
     r.description = v.description;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

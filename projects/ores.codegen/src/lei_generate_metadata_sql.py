@@ -159,9 +159,10 @@ def find_csv_files(lei_dir: Path) -> dict:
 
 
 def find_lei_bic_csv(lei_dir: Path) -> Path | None:
-    """Find the LEI-BIC mapping CSV file."""
-    for csv_file in sorted(lei_dir.glob('lei-bic-*.csv')):
-        return csv_file
+    """Find the latest LEI-BIC mapping CSV file."""
+    files = sorted(lei_dir.glob('lei-bic-*.csv'))
+    if files:
+        return files[-1]
     return None
 
 

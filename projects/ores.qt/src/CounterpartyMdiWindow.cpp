@@ -164,8 +164,8 @@ void CounterpartyMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
-    tableView_->setColumnWidth(ClientCounterpartyModel::Flag, 40);
-    tableView_->setColumnWidth(ClientCounterpartyModel::BusinessCenterCode, 130);
+    tableView_->setColumnWidth(ClientCounterpartyModel::Flag, 30);
+    tableView_->setColumnWidth(ClientCounterpartyModel::BusinessCenterCode, 80);
     tableView_->setColumnWidth(ClientCounterpartyModel::ShortCode, 120);
     tableView_->setColumnWidth(ClientCounterpartyModel::FullName, 250);
     tableView_->setColumnWidth(ClientCounterpartyModel::TransliteratedName, 200);

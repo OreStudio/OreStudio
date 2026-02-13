@@ -165,8 +165,8 @@ void PartyMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
-    tableView_->setColumnWidth(ClientPartyModel::Flag, 40);
-    tableView_->setColumnWidth(ClientPartyModel::BusinessCenterCode, 130);
+    tableView_->setColumnWidth(ClientPartyModel::Flag, 30);
+    tableView_->setColumnWidth(ClientPartyModel::BusinessCenterCode, 80);
     tableView_->setColumnWidth(ClientPartyModel::ShortCode, 120);
     tableView_->setColumnWidth(ClientPartyModel::FullName, 250);
     tableView_->setColumnWidth(ClientPartyModel::TransliteratedName, 200);

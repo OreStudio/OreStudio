@@ -535,6 +535,7 @@ void PartyMdiWindow::restoreSettings() {
     } else {
         // Apply default column visibility
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
+        header->hideSection(ClientPartyModel::TransliteratedName);
     }
 
     // Restore window size if saved

@@ -210,7 +210,7 @@ begin
             select
                 p_target_tenant_id,
                 m.counterparty_uuid, 0,
-                ores_utility_proper_name_fn(m.entity_legal_name),
+                m.entity_legal_name,
                 m.short_code, m.entity_transliterated_name_1, 'Corporate',
                 parent_map.counterparty_uuid,
                 -- Default business centre from country

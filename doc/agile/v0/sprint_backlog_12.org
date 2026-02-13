@@ -1147,7 +1147,7 @@ Highlights:
   (get_total_count()) directly from the database.
 #+end_quote
 
-*** STARTED Add support for business centres                           :code:
+*** COMPLETED Add support for business centres                         :code:
     :LOGBOOK:
     CLOCK: [2026-02-12 Thu 21:30]--[2026-02-12 Thu 22:00] =>  0:30
     CLOCK: [2026-02-12 Thu 17:01]--[2026-02-12 Thu 17:53] =>  0:52
@@ -1224,93 +1224,94 @@ architecture.
 - Leaf party users see only their own data.
 - Mid-level party users see their subtree.
 
+*** STARTED Add proper party short-codes                               :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 23:11]
+    :END:
 
-*** Add HBAC support for books and portfolios                          :code:
+At present we have fairly random short-codes. Seems like we are incorrectly
+using the LEI.
 
 Gemini:
 
 #+begin_quote
-In a professional trading system, you are describing Hierarchical Role-Based
-Access Control (HRBAC). To make this idiomatic and scalable, you need to
-decouple the "Who" (Users/Groups) from the "What" (Portfolios/Books) using an
-Access Control List (ACL) that supports Inheritance.
+In the trading world, these are often referred to as Mnemonic Codes or Ticker
+Aliases. While large institutions rely on LEIs or SWIFT BICs for settlement,
+traders and middle-office users prefer "Short Codes" (usually 4–8 characters)
+for quick data entry and terminal commands.
 
-Here is how to structure this to avoid the nightmare of manual user management.
+There isn't a single universal standard, but there are several industry-standard
+heuristics used to generate them automatically while ensuring they remain
+human-readable.1.
 
-1. The Domain Model: Groups and Roles
+*The "Consonant-Heavy" Heuristic*
 
-Instead of assigning a user directly to a book, you introduce a User Group
-(e.g., "North America FX Traders").
+This is the most common algorithm for generating readable abbreviations. It
+mimics how humans naturally "speed-read" words.
 
-- User Group: A collection of Users.
-- Role: A collection of Permissions (e.g., View, Trade, Close_Book).
-- Access Grant: The link that says Group A has Role X on Portfolio Y.
+- Rule: Keep the first letter, then strip all vowels (A, E, I, O, U) and
+  spaces/symbols, keeping only the subsequent consonants until a length limit is
+  reached.
+- Example: GOLDMAN SACHS -> GLDMN
+- Example: BARCLAYS -> BRCLYS2.
 
-2. Permission Inheritance (The "Cascading" Rule)
+*The "3-3" or "4-2" Chunking Heuristic*
 
-This is the most critical part of your requirement: "Permissioned to a portfolio
-= permissioned to all children."
+Used frequently in older European banking systems (like the early days of SWIFT
+or Reuters).Rule: Take the first 3 characters of the first word and the first 3
+characters of the second word.
 
-*The Logic*
+- Example: MORGAN STANLEY -> MORSTA
+- Example: DEUTSCHE BANK -> DEUBAN
+- Refinement: If it's a single word, take the first 6 characters (APPLE ->
+  APPLE_)
 
-When a user attempts to access a Book, the system should check for a permission
-record at:
+*The Acronym + Location Heuristic*
 
-- The Book itself.
-- If not found, its parent Portfolio.
-- If not found, its parent Business Unit, and so on up to the Party.
+Professional systems often need to distinguish between branches of the same
+legal entity.
 
-*The "Effective Permission" Calculation*
+- Rule: [Acronym of Name] + [ISO Country/City Code]
+- Example: JP Morgan London -> JPMLON
+- Example: Société Générale Paris -> SOCGENPAR4.
 
-In your Qt UI or API, you calculate the Effective Permission.
+*Algorithmic Handling of Collisions*
 
-If I am in the "Senior Managers" group and that group is assigned View access at
-the Global Equities Portfolio level, I automatically see every book under it.
+No matter how good your heuristic is, you will eventually hit a collision (e.g.,
+CITI for Citibank and Citigroup). In a trading system, a short code must be
+unique.
 
-- Override Rule: Usually, an explicit "Deny" at a lower level beats an "Allow"
-  from a higher level (though most trading systems stick to additive permissions
-  for simplicity).
+The Collision Workflow:
 
-3. Idiomatic Table Structure
-
-To support this in your Postgres schema (with your Staging/Master setup), you
-need a permission table that points to your entity hierarchy.
-
-| Column         | Description                                       |
-|----------------+---------------------------------------------------|
-| Subject_ID     | The ID of the User Group (e.g., "FX_Desk_Group"). |
-| Object_Type    | PARTY, PORTFOLIO, or BOOK.                        |
-| Object_ID      | The UUID of the specific entity.                  |
-| Role_ID        | The Role (e.g., READ_ONLY, FULL_TRADER).          |
-| Is_Inheritable | Boolean (usually defaults to True).               |
-
-4. UI Implementation: The "Access" Tab
-
-In your Organization Manager Qt screen, when you select a Portfolio or Book in
-the tree, the detail pane should have an "Access Control" tab.
-
-- Inherited Permissions List: A read-only list showing groups that have access
-  because of a parent node (e.g., "Group: Risk_Admin (Inherited from: The
-  House)").
-- Explicit Permissions List: Where you add/remove groups specifically for this
-  node.
-
-5. Security and "The House" Context
-
-Since your system runs in the context of "The House" (the Tenant), you need a
-"God Role" (System Admin) that is implicitly permissioned at the Party (Root)
-level. This ensures you never get locked out of a branch of the tree.
-
-*The "Four-Eyes" for Permissions*
-
-Because permissions are sensitive, changes to this table should also go through
-your staging schema.
-
-- Maker: Proposes adding "Group B" to "Portfolio C".
-- Checker: Approves the grant.
-- Audit: The temporal table tracks exactly when a user gained access to a
-  specific book—crucial for regulatory "Who saw what" inquiries.
+- Generate the base mnemonic (e.g., MS).
+- Check the database (Master + Staging).
+- Iterate: If MS exists, append a digit or take the next consonant.
+- MS -> MS2
+- GLDMN -> GLDMS
 #+end_quote
+
+*** Add LEI to BIC dataset                                             :code:
+
+In order to simulate settlements it seems we also need the BIC. We have added
+the CSV to external, but we need to create dataset, population scripts and the
+associated publisher.
+
+Links:
+
+- [[https://www.gleif.org/en/lei-data/lei-mapping/download-bic-to-lei-relationship-files][Download BIC-to-LEI Relationship Files]]
+
+*** Separate party identifiers (LEI, BIC) into dedicated table         :code:
+
+LEI is currently used as the party/counterparty code, which prevents internal
+entities that don't have an LEI. Identifiers like LEI, BIC, and other schemes
+need to live in a separate junction table (=party_identifiers=).
+
+- LEI should not be the primary code for parties or counterparties.
+- Internal counterparties have no LEI; need a generated short code instead.
+- LEI, BIC, and other identifier schemes belong in a dedicated table.
+- Party and counterparty detail dialogs need tabs to display identifiers.
+
+Related story: "Add proper party short-codes".
 
 *** Fix audit trail metadata for recorded_by and modified_by           :code:
 
@@ -1328,19 +1329,6 @@ information.
 
 Related stories: "Add entity messages should not set modified by", "Investigate
 how performed by is being set", "Add system account".
-
-*** Separate party identifiers (LEI, BIC) into dedicated table         :code:
-
-LEI is currently used as the party/counterparty code, which prevents internal
-entities that don't have an LEI. Identifiers like LEI, BIC, and other schemes
-need to live in a separate junction table (=party_identifiers=).
-
-- LEI should not be the primary code for parties or counterparties.
-- Internal counterparties have no LEI; need a generated short code instead.
-- LEI, BIC, and other identifier schemes belong in a dedicated table.
-- Party and counterparty detail dialogs need tabs to display identifiers.
-
-Related story: "Add proper party short-codes".
 
 *** Enforce root party uniqueness constraints                          :code:
 
@@ -1542,78 +1530,92 @@ Should role and permission junction tables have change reason support? Analyse
 whether the audit trail benefit justifies the additional complexity for these
 administrative tables.
 
-*** Add proper party short-codes                                       :code:
-
-At present we have fairly random short-codes. Seems like we are incorrectly
-using the LEI.
+*** Add HBAC support for books and portfolios                          :code:
 
 Gemini:
 
 #+begin_quote
-In the trading world, these are often referred to as Mnemonic Codes or Ticker
-Aliases. While large institutions rely on LEIs or SWIFT BICs for settlement,
-traders and middle-office users prefer "Short Codes" (usually 4–8 characters)
-for quick data entry and terminal commands.
+In a professional trading system, you are describing Hierarchical Role-Based
+Access Control (HRBAC). To make this idiomatic and scalable, you need to
+decouple the "Who" (Users/Groups) from the "What" (Portfolios/Books) using an
+Access Control List (ACL) that supports Inheritance.
 
-There isn't a single universal standard, but there are several industry-standard
-heuristics used to generate them automatically while ensuring they remain
-human-readable.1.
+Here is how to structure this to avoid the nightmare of manual user management.
 
-*The "Consonant-Heavy" Heuristic*
+1. The Domain Model: Groups and Roles
 
-This is the most common algorithm for generating readable abbreviations. It
-mimics how humans naturally "speed-read" words.
+Instead of assigning a user directly to a book, you introduce a User Group
+(e.g., "North America FX Traders").
 
-- Rule: Keep the first letter, then strip all vowels (A, E, I, O, U) and
-  spaces/symbols, keeping only the subsequent consonants until a length limit is
-  reached.
-- Example: GOLDMAN SACHS -> GLDMN
-- Example: BARCLAYS -> BRCLYS2.
+- User Group: A collection of Users.
+- Role: A collection of Permissions (e.g., View, Trade, Close_Book).
+- Access Grant: The link that says Group A has Role X on Portfolio Y.
 
-*The "3-3" or "4-2" Chunking Heuristic*
+2. Permission Inheritance (The "Cascading" Rule)
 
-Used frequently in older European banking systems (like the early days of SWIFT
-or Reuters).Rule: Take the first 3 characters of the first word and the first 3
-characters of the second word.
+This is the most critical part of your requirement: "Permissioned to a portfolio
+= permissioned to all children."
 
-- Example: MORGAN STANLEY -> MORSTA
-- Example: DEUTSCHE BANK -> DEUBAN
-- Refinement: If it's a single word, take the first 6 characters (APPLE ->
-  APPLE_)
+*The Logic*
 
-*The Acronym + Location Heuristic*
+When a user attempts to access a Book, the system should check for a permission
+record at:
 
-Professional systems often need to distinguish between branches of the same
-legal entity.
+- The Book itself.
+- If not found, its parent Portfolio.
+- If not found, its parent Business Unit, and so on up to the Party.
 
-- Rule: [Acronym of Name] + [ISO Country/City Code]
-- Example: JP Morgan London -> JPMLON
-- Example: Société Générale Paris -> SOCGENPAR4.
+*The "Effective Permission" Calculation*
 
-*Algorithmic Handling of Collisions*
+In your Qt UI or API, you calculate the Effective Permission.
 
-No matter how good your heuristic is, you will eventually hit a collision (e.g.,
-CITI for Citibank and Citigroup). In a trading system, a short code must be
-unique.
+If I am in the "Senior Managers" group and that group is assigned View access at
+the Global Equities Portfolio level, I automatically see every book under it.
 
-The Collision Workflow:
+- Override Rule: Usually, an explicit "Deny" at a lower level beats an "Allow"
+  from a higher level (though most trading systems stick to additive permissions
+  for simplicity).
 
-- Generate the base mnemonic (e.g., MS).
-- Check the database (Master + Staging).
-- Iterate: If MS exists, append a digit or take the next consonant.
-- MS -> MS2
-- GLDMN -> GLDMS
+3. Idiomatic Table Structure
+
+To support this in your Postgres schema (with your Staging/Master setup), you
+need a permission table that points to your entity hierarchy.
+
+| Column         | Description                                       |
+|----------------+---------------------------------------------------|
+| Subject_ID     | The ID of the User Group (e.g., "FX_Desk_Group"). |
+| Object_Type    | PARTY, PORTFOLIO, or BOOK.                        |
+| Object_ID      | The UUID of the specific entity.                  |
+| Role_ID        | The Role (e.g., READ_ONLY, FULL_TRADER).          |
+| Is_Inheritable | Boolean (usually defaults to True).               |
+
+4. UI Implementation: The "Access" Tab
+
+In your Organization Manager Qt screen, when you select a Portfolio or Book in
+the tree, the detail pane should have an "Access Control" tab.
+
+- Inherited Permissions List: A read-only list showing groups that have access
+  because of a parent node (e.g., "Group: Risk_Admin (Inherited from: The
+  House)").
+- Explicit Permissions List: Where you add/remove groups specifically for this
+  node.
+
+5. Security and "The House" Context
+
+Since your system runs in the context of "The House" (the Tenant), you need a
+"God Role" (System Admin) that is implicitly permissioned at the Party (Root)
+level. This ensures you never get locked out of a branch of the tree.
+
+*The "Four-Eyes" for Permissions*
+
+Because permissions are sensitive, changes to this table should also go through
+your staging schema.
+
+- Maker: Proposes adding "Group B" to "Portfolio C".
+- Checker: Approves the grant.
+- Audit: The temporal table tracks exactly when a user gained access to a
+  specific book—crucial for regulatory "Who saw what" inquiries.
 #+end_quote
-
-*** Add LEI to BIC dataset                                             :code:
-
-In order to simulate settlements it seems we also need the BIC. We have added
-the CSV to external, but we need to create dataset, population scripts and the
-associated publisher.
-
-Links:
-
-- [[https://www.gleif.org/en/lei-data/lei-mapping/download-bic-to-lei-relationship-files][Download BIC-to-LEI Relationship Files]]
 
 *** Advanced counterparty dialog                                       :code:
 

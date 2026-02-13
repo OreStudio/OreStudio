@@ -20,6 +20,7 @@
 #ifndef ORES_QT_TEXT_UTILS_HPP
 #define ORES_QT_TEXT_UTILS_HPP
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <QString>
@@ -36,14 +37,11 @@ struct TextUtils {
      * (e.g. Korean, CJK, Cyrillic, Arabic).
      */
     static bool contains_non_latin(const QString& text) {
-        for (const auto& ch : text) {
+        return std::any_of(text.begin(), text.end(), [](const QChar& ch) {
             auto s = ch.script();
-            if (s != QChar::Script_Common && s != QChar::Script_Latin &&
-                s != QChar::Script_Inherited) {
-                return true;
-            }
-        }
-        return false;
+            return s != QChar::Script_Common && s != QChar::Script_Latin &&
+                   s != QChar::Script_Inherited;
+        });
     }
 
     /**

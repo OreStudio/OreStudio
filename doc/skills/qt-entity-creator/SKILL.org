@@ -583,8 +583,9 @@ void <Entity>MdiWindow::restoreSettings() {
     // Always enforce columns that must be hidden (regardless of saved state)
     // header->hideSection(Client<Entity>Model::SomeColumn);
 
+    // Store saved size for sizeHint() so MDI sub-window gets correct dimensions
     if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
+        savedWindowSize_ = settings.value("windowSize").toSize();
     }
 
     settings.endGroup();
@@ -595,36 +596,21 @@ void <Entity>MdiWindow::restoreSettings() {
 
 When an entity has both a =full_name= (possibly in non-Latin script) and a
 =transliterated_name=, merge them into the Name column display rather than
-showing a separate Transliterated Name column. Use =QChar::script()= to detect
-non-Latin characters:
+showing a separate Transliterated Name column. Use =TextUtils= from
+=ores.qt/TextUtils.hpp=:
 
 #+begin_src cpp
-case FullName: {
-    auto name = QString::fromStdString(entity.full_name);
-    if (entity.transliterated_name.has_value() &&
-        !entity.transliterated_name->empty()) {
-        bool non_latin = false;
-        for (const auto& ch : name) {
-            auto s = ch.script();
-            if (s != QChar::Script_Common && s != QChar::Script_Latin &&
-                s != QChar::Script_Inherited) {
-                non_latin = true;
-                break;
-            }
-        }
-        if (non_latin) {
-            return name + u" ("
-                + QString::fromStdString(*entity.transliterated_name)
-                + u")";
-        }
-    }
-    return name;
-}
+#include "ores.qt/TextUtils.hpp"
+// ...
+case FullName:
+    return TextUtils::display_name_with_transliteration(
+        entity.full_name, entity.transliterated_name);
 #+end_src
 
-The Transliterated Name column should be hidden by default (enforced in
-=restoreSettings()= regardless of saved state). This covers Korean, Chinese,
-Japanese, Arabic, Cyrillic, and all other non-Latin scripts.
+This detects non-Latin characters (Korean, Chinese, Japanese, Arabic, Cyrillic,
+etc.) and appends the transliteration in parentheses, truncated to 30 characters
+with an ellipsis. The Transliterated Name column should be hidden by default
+(enforced in =restoreSettings()= regardless of saved state).
 
 **** Stale indicator pattern (using EntityListMdiWindow base class)
 

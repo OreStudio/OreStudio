@@ -16,51 +16,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-12 Thu 23:09], for Thursday, February 12, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *6:31* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 6:31   |      |      | 100.0 |
-|       | Active                                |        | 6:31 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:12 |  18.4 |
-| code  | Fix OSX build                         |        |      | 0:19 |   4.9 |
-| code  | Add pagination to counterparty        |        |      | 0:58 |  14.8 |
-| code  | Add support for business centres      |        |      | 3:47 |  58.1 |
-| code  | Add a setup new tenant wizard         |        |      | 0:15 |   3.8 |
+#+CAPTION: Clock summary at [2026-02-13 Fri 01:29], for Friday, February 13, 2026.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *1:29* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 1:29   |      |      | 100.0 |
+|      | Active                       |        | 1:29 |      | 100.0 |
+| code | Add proper party short-codes |        |      | 1:29 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-12 Thu 23:09]
+#+CAPTION: Clock summary at [2026-02-13 Fri 01:30]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *43:09* |       |      | 100.0 |
+|       | *Total time*                                       | *45:27* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 43:09   |       |      | 100.0 |
-|       | Active                                             |         | 43:09 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 2:30 |   5.8 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   2.0 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   1.3 |
-| code  | Implement party related entities at database level |         |       | 4:23 |  10.2 |
-| code  | Add party related support at the domain level      |         |       | 0:23 |   0.9 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  15.5 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  15.5 |
-| code  | Brainstorm on multi-party support                  |         |       | 4:00 |   9.3 |
+|       | Stories                                            | 45:27   |       |      | 100.0 |
+|       | Active                                             |         | 45:27 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 2:30 |   5.5 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   1.9 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   1.2 |
+| code  | Implement party related entities at database level |         |       | 4:23 |   9.6 |
+| code  | Add party related support at the domain level      |         |       | 0:23 |   0.8 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  14.7 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  14.7 |
+| code  | Brainstorm on multi-party support                  |         |       | 4:00 |   8.8 |
 | code  | Improve code coverage                              |         |       | 0:14 |   0.5 |
-| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   4.0 |
+| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   3.8 |
 | code  | Enable all skipped tests                           |         |       | 0:29 |   1.1 |
-| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.4 |
-| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   1.9 |
-| code  | Add system party support                           |         |       | 3:58 |   9.2 |
-| code  | Add customer party support                         |         |       | 1:33 |   3.6 |
+| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.3 |
+| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   1.8 |
+| code  | Add system party support                           |         |       | 3:58 |   8.7 |
+| code  | Add customer party support                         |         |       | 1:33 |   3.4 |
 | code  | Fix OSX build                                      |         |       | 0:19 |   0.7 |
-| code  | Add pagination to counterparty                     |         |       | 0:58 |   2.2 |
-| code  | Add support for business centres                   |         |       | 3:47 |   8.8 |
-| code  | Add a setup new tenant wizard                      |         |       | 1:27 |   3.4 |
-| code  | Add workspace as a container                       |         |       | 1:13 |   2.8 |
+| code  | Add pagination to counterparty                     |         |       | 0:58 |   2.1 |
+| code  | Add support for business centres                   |         |       | 3:47 |   8.3 |
+| code  | Add a setup new tenant wizard                      |         |       | 1:27 |   3.2 |
+| code  | Add proper party short-codes                       |         |       | 2:18 |   5.1 |
+| code  | Add workspace as a container                       |         |       | 1:13 |   2.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1226,13 +1223,49 @@ architecture.
 
 *** STARTED Add proper party short-codes                               :code:
     :LOGBOOK:
-    CLOCK: [2026-02-12 Thu 23:11]
+    CLOCK: [2026-02-12 Thu 23:11]--[2026-02-13 Fri 01:29] =>  2:18
     :END:
 
 At present we have fairly random short-codes. Seems like we are incorrectly
 using the LEI.
 
-Gemini:
+#+begin_quote
+This pull request significantly enhances the system's ability to manage and
+display entity information by introducing robust short code generation and
+comprehensive support for transliterated names. These changes improve data
+quality and user experience, particularly for global entities. Additionally, it
+refactors the Qt UI's data fetching mechanisms to standardize pagination and
+network requests, leading to a more consistent and maintainable codebase.
+
+Highlights:
+
+- Short Code Generation: Introduced new SQL utility functions,
+  ores_utility_strip_corporate_suffix_fn and
+  ores_utility_generate_short_code_fn, to create 4-8 character mnemonic short
+  codes from entity names, including collision resolution. This enhances entity
+  identification, especially for internal entities without LEIs.
+- Transliterated Name Support: Added a transliterated_name column across the
+  entire stack (SQL, C++ domain/entity/mapper/protocol, Qt UI) for party and
+  counterparty entities. This supports non-Latin entity names from sources like
+  GLEIF data, improving global data handling.
+- LEI Data Integration: Updated the LEI entities artefact staging table to
+  include entity_transliterated_name_1 and its type, and registered
+  gleif.lei_parties and gleif.lei_counterparties datasets to enable their
+  publication via the bundle publisher.
+- Qt Pagination Standardization: Removed infinite-scroll
+  (canFetchMore/fetchMore) from all six Qt entity models, standardizing data
+  loading on the PaginationWidget for explicit page controls, improving UI
+  consistency and control.
+- Network Request Refactoring: Standardized all Qt entity models to use
+  process_authenticated_request for network communication, replacing manual
+  sendRequest and frame construction, which streamlines and secures network
+  interactions.
+- Protocol Version Bump: Incremented PROTOCOL_VERSION_MAJOR from 31 to 32 to
+  reflect the breaking change introduced by the new optional transliterated_name
+  wire field.
+#+end_quote
+
+**** Analysis by Gemini
 
 #+begin_quote
 In the trading world, these are often referred to as Mnemonic Codes or Ticker
@@ -1290,6 +1323,36 @@ The Collision Workflow:
 - GLDMN -> GLDMS
 #+end_quote
 
+*** STARTED Polish party and counterparty list UI                      :code:
+
+Several UI polish items for the party and counterparty list windows.
+
+- Capitalise party category values properly (Operational, System, Internal).
+- Add country flag icon to parties and counterparties based on business centre.
+- Business centre field should be a combo box (not free text).
+
+#+begin_quote
+This pull request significantly enhances the user interface for managing parties
+and counterparties by improving data consistency and usability. It standardizes
+party category values to a capitalized format across the backend and frontend,
+introduces visual cues with country flag icons in list views for better
+identification, and upgrades the business center input to a server-populated,
+editable combo box, streamlining data entry and reducing errors.
+
+Highlights:
+
+- Party Category Standardization: Standardized party category values (System,
+  Operational, Internal) to use capitalization across database schemas, C++
+  constants, and related scripts for consistency.
+- Country Flag Icons in List Views: Introduced country flag icons in the party
+  and counterparty list views, reordering columns to display the flag and
+  business center code prominently for improved visual identification.
+- Enhanced Business Center Input: Converted the free-text business center input
+  field in party and counterparty detail dialogs into an editable combo box,
+  populated dynamically from the server, streamlining data entry and reducing
+  errors.
+#+end_quote
+
 *** Add LEI to BIC dataset                                             :code:
 
 In order to simulate settlements it seems we also need the BIC. We have added
@@ -1336,14 +1399,6 @@ Each tenant must have exactly two root parties: one system party (auto-created
 during provisioning) and one operational root party (the "house"). Validate this
 constraint at the service layer and prevent additional root parties from being
 created.
-
-*** Polish party and counterparty list UI                              :code:
-
-Several UI polish items for the party and counterparty list windows.
-
-- Capitalise party category values properly (Operational, System, Internal).
-- Add country flag icon to parties and counterparties based on business centre.
-- Business centre field should be a combo box (not free text).
 
 *** Gate party and counterparty wizard steps by tenant type            :code:
 

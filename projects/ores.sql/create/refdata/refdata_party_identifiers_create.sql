@@ -66,14 +66,16 @@ create index if not exists ores_refdata_party_identifiers_tenant_idx
 on "ores_refdata_party_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_party_identifiers_party_scheme_uniq_idx
-on "ores_refdata_party_identifiers_tbl" (tenant_id, party_id, id_scheme)
+create unique index if not exists ores_refdata_party_identifiers_party_scheme_value_uniq_idx
+on "ores_refdata_party_identifiers_tbl" (tenant_id, party_id, id_scheme, id_value)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_party_identifiers_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
+    v_max_cardinality integer;
+    v_current_count integer;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
@@ -90,6 +92,29 @@ begin
         raise exception 'Invalid party_id: %. No active party found with this id.',
             NEW.party_id
             using errcode = '23503';
+    end if;
+
+    -- Validate max_cardinality for this scheme
+    select max_cardinality into v_max_cardinality
+    from ores_refdata_party_id_schemes_tbl
+    where tenant_id = ores_iam_system_tenant_id_fn()
+      and code = NEW.id_scheme
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_max_cardinality is not null then
+        select count(*) into v_current_count
+        from ores_refdata_party_identifiers_tbl
+        where tenant_id = NEW.tenant_id
+          and party_id = NEW.party_id
+          and id_scheme = NEW.id_scheme
+          and id != NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_current_count >= v_max_cardinality then
+            raise exception 'Cardinality violation for scheme %: party % already has % identifier(s) (max %).',
+                NEW.id_scheme, NEW.party_id, v_current_count, v_max_cardinality
+                using errcode = '23514';
+        end if;
     end if;
 
     -- Version management

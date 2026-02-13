@@ -24,7 +24,6 @@
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QSortFilterProxyModel>
-#include <QCloseEvent>
 #include <memory>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -104,11 +103,8 @@ private:
     void updateGenerateActionVisibility();
     void setupColumnVisibility();
     void showHeaderContextMenu(const QPoint& pos);
-    void saveSettings();
+    void saveSettings() override;
     void restoreSettings();
-
-protected:
-    void closeEvent(QCloseEvent* event) override;
 
 private:
     QVBoxLayout* verticalLayout_;

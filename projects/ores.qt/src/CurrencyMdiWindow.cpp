@@ -808,19 +808,14 @@ void CurrencyMdiWindow::exportToXML() {
 }
 
 QSize CurrencyMdiWindow::sizeHint() const {
-    // Define a sensible, consistent default size for this MDI window. This is
-    // the preferred minimum size for a good user experience.
+    if (savedWindowSize_.isValid())
+        return savedWindowSize_;
+
     const int minimumWidth = 1000;
     const int minimumHeight = 600;
 
-    // Get the base size hint calculated by the QVBoxLayout and its contents.
-    // This ensures that if the toolbar or table headers require a width > 1000,
-    // the size hint respects that.
     QSize baseSize = QWidget::sizeHint();
 
-    // Return the maximum of the base size and our defined minimum size. This
-    // guarantees the window will open at a reasonable size but can grow if
-    // required by the layout manager.
     return { qMax(baseSize.width(), minimumWidth),
              qMax(baseSize.height(), minimumHeight) };
 }
@@ -942,16 +937,11 @@ void CurrencyMdiWindow::restoreSettings() {
 
     // Restore window size if saved
     if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
+        savedWindowSize_ = settings.value("windowSize").toSize();
         BOOST_LOG_SEV(lg(), debug) << "Restored window size from settings";
     }
 
     settings.endGroup();
-}
-
-void CurrencyMdiWindow::closeEvent(QCloseEvent* event) {
-    saveSettings();
-    QWidget::closeEvent(event);
 }
 
 void CurrencyMdiWindow::setupGenerateAction() {

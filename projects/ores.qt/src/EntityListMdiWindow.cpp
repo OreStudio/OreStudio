@@ -33,6 +33,11 @@ EntityListMdiWindow::EntityListMdiWindow(QWidget* parent)
 
 EntityListMdiWindow::~EntityListMdiWindow() = default;
 
+void EntityListMdiWindow::closeEvent(QCloseEvent* event) {
+    saveSettings();
+    QWidget::closeEvent(event);
+}
+
 void EntityListMdiWindow::initializeStaleIndicator(QAction* refreshAction,
                                                     const QString& iconPath) {
     refreshAction_ = refreshAction;

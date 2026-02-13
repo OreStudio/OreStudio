@@ -585,6 +585,9 @@ void CountryMdiWindow::exportToCSV() {
 }
 
 QSize CountryMdiWindow::sizeHint() const {
+    if (savedWindowSize_.isValid())
+        return savedWindowSize_;
+
     const int minimumWidth = 900;
     const int minimumHeight = 600;
 
@@ -694,16 +697,11 @@ void CountryMdiWindow::restoreSettings() {
     }
 
     if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
+        savedWindowSize_ = settings.value("windowSize").toSize();
         BOOST_LOG_SEV(lg(), debug) << "Restored window size from settings";
     }
 
     settings.endGroup();
-}
-
-void CountryMdiWindow::closeEvent(QCloseEvent* event) {
-    saveSettings();
-    EntityListMdiWindow::closeEvent(event);
 }
 
 }

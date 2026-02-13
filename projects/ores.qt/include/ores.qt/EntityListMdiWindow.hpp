@@ -24,6 +24,7 @@
 #include <QAction>
 #include <QTimer>
 #include <QIcon>
+#include <QCloseEvent>
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -94,7 +95,16 @@ public slots:
      */
     virtual void reload() = 0;
 
+    /**
+     * @brief Save window settings (column visibility, window size, etc.).
+     *
+     * Override this in subclasses to persist window-specific settings.
+     * Called automatically on close via closeEvent().
+     */
+    virtual void saveSettings() {}
+
 protected:
+    void closeEvent(QCloseEvent* event) override;
     /**
      * @brief Initialize the stale indicator support.
      *
@@ -133,6 +143,16 @@ private:
     QIcon pulseReloadIcon_;
     bool pulseState_{false};
     int pulseCount_{0};
+
+protected:
+    /**
+     * @brief Saved window size from QSettings.
+     *
+     * Set this in restoreSettings() when loading a previously saved window size.
+     * Check it in sizeHint() to return the saved size instead of the default,
+     * so that the controller's resize(sizeHint()) uses the persisted size.
+     */
+    QSize savedWindowSize_;
 };
 
 }

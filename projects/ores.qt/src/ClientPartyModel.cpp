@@ -25,6 +25,7 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/TextUtils.hpp"
 #include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
@@ -108,7 +109,8 @@ QVariant ClientPartyModel::data(
         case ShortCode:
             return QString::fromStdString(party.short_code);
         case FullName:
-            return QString::fromStdString(party.full_name);
+            return TextUtils::display_name_with_transliteration(
+                party.full_name, party.transliterated_name);
         case TransliteratedName:
             return QString::fromStdString(party.transliterated_name.value_or(""));
         case PartyCategory:
@@ -158,7 +160,7 @@ QVariant ClientPartyModel::headerData(
     case Status:
         return tr("Status");
     case BusinessCenterCode:
-        return tr("Business Center");
+        return tr("Centre");
     case Version:
         return tr("Version");
     case RecordedBy:

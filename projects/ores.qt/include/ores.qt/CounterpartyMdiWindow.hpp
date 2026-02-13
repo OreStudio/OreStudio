@@ -92,7 +92,6 @@ protected:
     QString normalRefreshTooltip() const override {
         return tr("Refresh counterparties");
     }
-
 private:
     void setupUi();
     void setupToolbar();
@@ -100,7 +99,7 @@ private:
     void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings();
+    void saveSettings() override;
     void restoreSettings();
 
     ClientManager* clientManager_;

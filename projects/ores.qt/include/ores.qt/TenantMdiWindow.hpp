@@ -98,7 +98,7 @@ private:
     void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings();
+    void saveSettings() override;
     void restoreSettings();
 
     ClientManager* clientManager_;

@@ -77,8 +77,8 @@ struct party final {
     /**
      * @brief Structural classification of this party.
      *
-     * References the party_category lookup table. Values: 'system' (one per
-     * tenant, auto-created during provisioning) or 'operational' (business
+     * References the party_category lookup table. Values: 'System' (one per
+     * tenant, auto-created during provisioning) or 'Operational' (business
      * entities created during normal system operation).
      */
     std::string party_category;

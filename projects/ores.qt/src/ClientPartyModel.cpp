@@ -23,6 +23,7 @@
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
 
@@ -37,9 +38,10 @@ namespace {
 }
 
 ClientPartyModel::ClientPartyModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(party_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -51,6 +53,18 @@ ClientPartyModel::ClientPartyModel(
             this, &ClientPartyModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientPartyModel::onPulsingComplete);
+
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imageLoaded,
+                this, [this](const QString&) {
+            if (!parties_.empty()) {
+                emit dataChanged(index(0, Flag),
+                    index(rowCount() - 1, Flag), {Qt::DecorationRole});
+            }
+        });
+    }
+
+    fetch_business_centres();
 }
 
 int ClientPartyModel::rowCount(const QModelIndex& parent) const {
@@ -76,8 +90,21 @@ QVariant ClientPartyModel::data(
 
     const auto& party = parties_[row];
 
+    if (role == Qt::DecorationRole && index.column() == Flag) {
+        if (imageCache_) {
+            auto it = bc_code_to_image_id_.find(party.business_center_code);
+            if (it != bc_code_to_image_id_.end() && !it->second.empty()) {
+                return imageCache_->getIcon(it->second);
+            }
+            return imageCache_->getNoFlagIcon();
+        }
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case Flag:
+            return {};
         case ShortCode:
             return QString::fromStdString(party.short_code);
         case FullName:
@@ -116,6 +143,8 @@ QVariant ClientPartyModel::headerData(
         return {};
 
     switch (section) {
+    case Flag:
+        return tr("Flag");
     case ShortCode:
         return tr("Code");
     case FullName:
@@ -308,6 +337,34 @@ void ClientPartyModel::onPulseStateChanged(bool /*isOn*/) {
 void ClientPartyModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
+}
+
+void ClientPartyModel::fetch_business_centres() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    using MapType = std::unordered_map<std::string, std::string>;
+    QPointer<ClientPartyModel> self = this;
+
+    auto* watcher = new QFutureWatcher<MapType>(this);
+    connect(watcher, &QFutureWatcher<MapType>::finished,
+            this, [self, watcher]() {
+        auto mapping = watcher->result();
+        watcher->deleteLater();
+        if (!self || mapping.empty())
+            return;
+
+        self->bc_code_to_image_id_ = std::move(mapping);
+
+        if (!self->parties_.empty()) {
+            emit self->dataChanged(self->index(0, Flag),
+                self->index(self->rowCount() - 1, Flag),
+                {Qt::DecorationRole});
+        }
+    });
+
+    watcher->setFuture(QtConcurrent::run(
+        [cm = clientManager_]() { return fetch_business_centre_image_map(cm); }));
 }
 
 }

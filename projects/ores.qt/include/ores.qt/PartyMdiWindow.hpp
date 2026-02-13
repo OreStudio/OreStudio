@@ -25,6 +25,7 @@
 #include <QSortFilterProxyModel>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ClientPartyModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -54,6 +55,7 @@ private:
 public:
     explicit PartyMdiWindow(
         ClientManager* clientManager,
+        ImageCache* imageCache,
         const QString& username,
         QWidget* parent = nullptr);
     ~PartyMdiWindow() override = default;
@@ -102,6 +104,7 @@ private:
     void restoreSettings();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString username_;
 
     QToolBar* toolbar_;

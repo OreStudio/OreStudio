@@ -19,8 +19,10 @@
  */
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata/messaging/party_type_protocol.hpp"
 #include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -73,6 +75,17 @@ lookup_result fetch_party_lookups(ClientManager* cm) {
         }
     }
 
+    {
+        refdata::messaging::get_business_centres_request request;
+        request.limit = 1000;
+        auto response = cm->process_authenticated_request(std::move(request));
+        if (response) {
+            for (const auto& bc : response->business_centres) {
+                result.business_centre_codes.push_back(bc.code);
+            }
+        }
+    }
+
     return result;
 }
 
@@ -121,6 +134,25 @@ lookup_result fetch_tenant_lookups(ClientManager* cm) {
     }
 
     return result;
+}
+
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm) {
+    std::unordered_map<std::string, std::string> mapping;
+    if (!cm) return mapping;
+
+    refdata::messaging::get_business_centres_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& bc : response->business_centres) {
+            std::string image_id_str;
+            if (bc.image_id)
+                image_id_str = boost::uuids::to_string(*bc.image_id);
+            mapping.emplace(bc.code, std::move(image_id_str));
+        }
+    }
+    return mapping;
 }
 
 }

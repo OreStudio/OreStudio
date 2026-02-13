@@ -40,10 +40,12 @@ using namespace ores::logging;
 
 CounterpartyMdiWindow::CounterpartyMdiWindow(
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
@@ -134,7 +136,7 @@ void CounterpartyMdiWindow::setupToolbar() {
 }
 
 void CounterpartyMdiWindow::setupTable() {
-    model_ = new ClientCounterpartyModel(clientManager_, this);
+    model_ = new ClientCounterpartyModel(clientManager_, imageCache_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -146,27 +148,29 @@ void CounterpartyMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // ShortCode
-        cs::text_left,   // FullName
-        cs::text_left,   // TransliteratedName
-        cs::text_left,   // PartyType
-        cs::text_left,   // Status
-        cs::text_left,   // BusinessCenterCode
-        cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
-        cs::mono_left    // RecordedAt
+        cs::icon_centered, // Flag
+        cs::text_left,     // BusinessCenterCode
+        cs::text_left,     // ShortCode
+        cs::text_left,     // FullName
+        cs::text_left,     // TransliteratedName
+        cs::text_left,     // PartyType
+        cs::text_left,     // Status
+        cs::mono_center,   // Version
+        cs::text_left,     // RecordedBy
+        cs::mono_left      // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
+    tableView_->setColumnWidth(ClientCounterpartyModel::Flag, 30);
+    tableView_->setColumnWidth(ClientCounterpartyModel::BusinessCenterCode, 80);
     tableView_->setColumnWidth(ClientCounterpartyModel::ShortCode, 120);
     tableView_->setColumnWidth(ClientCounterpartyModel::FullName, 250);
     tableView_->setColumnWidth(ClientCounterpartyModel::TransliteratedName, 200);
     tableView_->setColumnWidth(ClientCounterpartyModel::PartyType, 120);
     tableView_->setColumnWidth(ClientCounterpartyModel::Status, 100);
-    tableView_->setColumnWidth(ClientCounterpartyModel::BusinessCenterCode, 130);
     tableView_->setColumnWidth(ClientCounterpartyModel::Version, 80);
     tableView_->setColumnWidth(ClientCounterpartyModel::RecordedBy, 120);
     tableView_->setColumnWidth(ClientCounterpartyModel::RecordedAt, 150);

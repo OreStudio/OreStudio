@@ -23,7 +23,7 @@
 -- =============================================================================
 
 -- Read the system party for a given tenant.
--- Every tenant has exactly one system party (party_category='system') which
+-- Every tenant has exactly one system party (party_category='System') which
 -- serves as the root of the party hierarchy. Returns the current (active)
 -- version of the system party.
 create or replace function ores_refdata_read_system_party_fn(
@@ -68,7 +68,7 @@ begin
         p.valid_to
     from ores_refdata_parties_tbl p
     where p.tenant_id = p_tenant_id
-      and p.party_category = 'system'
+      and p.party_category = 'System'
       and p.valid_to = ores_utility_infinity_timestamp_fn();
 end;
 $$ language plpgsql security definer;

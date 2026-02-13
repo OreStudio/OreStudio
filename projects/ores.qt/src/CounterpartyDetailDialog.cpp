@@ -74,7 +74,7 @@ void CounterpartyDetailDialog::setupConnections() {
             &CounterpartyDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
-    connect(ui_->businessCenterEdit, &QLineEdit::textChanged, this,
+    connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
 }
 
@@ -119,6 +119,12 @@ void CounterpartyDetailDialog::populateLookups() {
                 QString::fromStdString(code));
         }
 
+        self->ui_->businessCenterCombo->clear();
+        for (const auto& code : result.business_centre_codes) {
+            self->ui_->businessCenterCombo->addItem(
+                QString::fromStdString(code));
+        }
+
         self->updateUiFromCounterparty();
     });
 
@@ -152,7 +158,7 @@ void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
     ui_->transliteratedNameEdit->setReadOnly(readOnly);
     ui_->partyTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
-    ui_->businessCenterEdit->setReadOnly(readOnly);
+    ui_->businessCenterCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -164,7 +170,7 @@ void CounterpartyDetailDialog::updateUiFromCounterparty() {
         QString::fromStdString(counterparty_.transliterated_name.value_or("")));
     ui_->partyTypeCombo->setCurrentText(QString::fromStdString(counterparty_.party_type));
     ui_->statusCombo->setCurrentText(QString::fromStdString(counterparty_.status));
-    ui_->businessCenterEdit->setText(QString::fromStdString(counterparty_.business_center_code));
+    ui_->businessCenterCombo->setCurrentText(QString::fromStdString(counterparty_.business_center_code));
 
     ui_->versionEdit->setText(QString::number(counterparty_.version));
     ui_->recordedByEdit->setText(QString::fromStdString(counterparty_.recorded_by));
@@ -181,7 +187,7 @@ void CounterpartyDetailDialog::updateCounterpartyFromUi() {
     counterparty_.transliterated_name = tlit.empty() ? std::nullopt : std::optional<std::string>(tlit);
     counterparty_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
     counterparty_.status = ui_->statusCombo->currentText().trimmed().toStdString();
-    counterparty_.business_center_code = ui_->businessCenterEdit->text().trimmed().toStdString();
+    counterparty_.business_center_code = ui_->businessCenterCombo->currentText().trimmed().toStdString();
     counterparty_.recorded_by = username_;
     counterparty_.performed_by = username_;
 }

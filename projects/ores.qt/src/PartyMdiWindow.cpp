@@ -40,10 +40,12 @@ using namespace ores::logging;
 
 PartyMdiWindow::PartyMdiWindow(
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
@@ -134,7 +136,7 @@ void PartyMdiWindow::setupToolbar() {
 }
 
 void PartyMdiWindow::setupTable() {
-    model_ = new ClientPartyModel(clientManager_, this);
+    model_ = new ClientPartyModel(clientManager_, imageCache_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -146,29 +148,31 @@ void PartyMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // ShortCode
-        cs::text_left,   // FullName
-        cs::text_left,   // TransliteratedName
-        cs::text_left,   // PartyCategory
-        cs::text_left,   // PartyType
-        cs::text_left,   // Status
-        cs::text_left,   // BusinessCenterCode
-        cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
-        cs::mono_left    // RecordedAt
+        cs::icon_centered, // Flag
+        cs::text_left,     // BusinessCenterCode
+        cs::text_left,     // ShortCode
+        cs::text_left,     // FullName
+        cs::text_left,     // TransliteratedName
+        cs::text_left,     // PartyCategory
+        cs::text_left,     // PartyType
+        cs::text_left,     // Status
+        cs::mono_center,   // Version
+        cs::text_left,     // RecordedBy
+        cs::mono_left      // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
+    tableView_->setColumnWidth(ClientPartyModel::Flag, 30);
+    tableView_->setColumnWidth(ClientPartyModel::BusinessCenterCode, 80);
     tableView_->setColumnWidth(ClientPartyModel::ShortCode, 120);
     tableView_->setColumnWidth(ClientPartyModel::FullName, 250);
     tableView_->setColumnWidth(ClientPartyModel::TransliteratedName, 200);
     tableView_->setColumnWidth(ClientPartyModel::PartyCategory, 100);
     tableView_->setColumnWidth(ClientPartyModel::PartyType, 120);
     tableView_->setColumnWidth(ClientPartyModel::Status, 100);
-    tableView_->setColumnWidth(ClientPartyModel::BusinessCenterCode, 130);
     tableView_->setColumnWidth(ClientPartyModel::Version, 80);
     tableView_->setColumnWidth(ClientPartyModel::RecordedBy, 120);
     tableView_->setColumnWidth(ClientPartyModel::RecordedAt, 150);

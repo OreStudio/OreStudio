@@ -22,6 +22,7 @@
 
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::qt {
@@ -32,8 +33,9 @@ class ClientManager;
  * @brief Fixed party category values (foundation data, not server-fetched).
  */
 namespace party_categories {
-inline constexpr std::string_view operational = "operational";
-inline constexpr std::string_view system = "system";
+inline constexpr std::string_view operational = "Operational";
+inline constexpr std::string_view system = "System";
+inline constexpr std::string_view internal = "Internal";
 }
 
 /**
@@ -45,6 +47,7 @@ inline constexpr std::string_view system = "system";
 struct lookup_result {
     std::vector<std::string> type_codes;
     std::vector<std::string> status_codes;
+    std::vector<std::string> business_centre_codes;
 };
 
 /**
@@ -62,6 +65,16 @@ lookup_result fetch_party_lookups(ClientManager* cm);
  * Returns empty vectors on failure.
  */
 lookup_result fetch_tenant_lookups(ClientManager* cm);
+
+/**
+ * @brief Fetches business centre code to image ID mapping from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by list models that display country flag icons for business centres.
+ * Returns empty map on failure.
+ */
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm);
 
 }
 

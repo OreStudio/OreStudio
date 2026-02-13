@@ -1308,7 +1308,8 @@ void MainWindow::createControllers() {
 
     // Create party controller
     partyController_ = std::make_unique<PartyController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_,
+        QString::fromStdString(username_), this);
 
     connect(partyController_.get(), &PartyController::statusMessage,
             this, [this](const QString& message) {
@@ -1325,7 +1326,8 @@ void MainWindow::createControllers() {
 
     // Create counterparty controller
     counterpartyController_ = std::make_unique<CounterpartyController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_,
+        QString::fromStdString(username_), this);
 
     connect(counterpartyController_.get(), &CounterpartyController::statusMessage,
             this, [this](const QString& message) {

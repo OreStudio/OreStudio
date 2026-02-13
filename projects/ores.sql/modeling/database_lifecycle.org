@@ -505,7 +505,7 @@ When a new tenant is onboarded (via the SystemProvisionerWizard or the
 1. Tenant record created in =ores_iam_tenants_tbl=
 2. IAM data copied from system tenant: permissions, roles, role_permissions
 3. WRLD business centre seeded in =ores_refdata_business_centres_tbl=
-4. System party created in =ores_refdata_parties_tbl= (party_category='system',
+4. System party created in =ores_refdata_parties_tbl= (party_category='System',
    party_type='Internal', business_center_code='WRLD', root of party hierarchy)
 
 Reference data (currencies, countries, etc.) is NOT copied during provisioning.

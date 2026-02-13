@@ -23,6 +23,7 @@
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -37,9 +38,10 @@ namespace {
 }
 
 ClientCounterpartyModel::ClientCounterpartyModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(counterparty_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -51,6 +53,18 @@ ClientCounterpartyModel::ClientCounterpartyModel(
             this, &ClientCounterpartyModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientCounterpartyModel::onPulsingComplete);
+
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imageLoaded,
+                this, [this](const QString&) {
+            if (!counterparties_.empty()) {
+                emit dataChanged(index(0, Flag),
+                    index(rowCount() - 1, Flag), {Qt::DecorationRole});
+            }
+        });
+    }
+
+    fetch_business_centres();
 }
 
 int ClientCounterpartyModel::rowCount(const QModelIndex& parent) const {
@@ -76,8 +90,21 @@ QVariant ClientCounterpartyModel::data(
 
     const auto& counterparty = counterparties_[row];
 
+    if (role == Qt::DecorationRole && index.column() == Flag) {
+        if (imageCache_) {
+            auto it = bc_code_to_image_id_.find(counterparty.business_center_code);
+            if (it != bc_code_to_image_id_.end() && !it->second.empty()) {
+                return imageCache_->getIcon(it->second);
+            }
+            return imageCache_->getNoFlagIcon();
+        }
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case Flag:
+            return {};
         case ShortCode:
             return QString::fromStdString(counterparty.short_code);
         case FullName:
@@ -114,6 +141,8 @@ QVariant ClientCounterpartyModel::headerData(
         return {};
 
     switch (section) {
+    case Flag:
+        return tr("Flag");
     case ShortCode:
         return tr("Code");
     case FullName:
@@ -307,6 +336,34 @@ void ClientCounterpartyModel::onPulseStateChanged(bool /*isOn*/) {
 void ClientCounterpartyModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
+}
+
+void ClientCounterpartyModel::fetch_business_centres() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    using MapType = std::unordered_map<std::string, std::string>;
+    QPointer<ClientCounterpartyModel> self = this;
+
+    auto* watcher = new QFutureWatcher<MapType>(this);
+    connect(watcher, &QFutureWatcher<MapType>::finished,
+            this, [self, watcher]() {
+        auto mapping = watcher->result();
+        watcher->deleteLater();
+        if (!self || mapping.empty())
+            return;
+
+        self->bc_code_to_image_id_ = std::move(mapping);
+
+        if (!self->counterparties_.empty()) {
+            emit self->dataChanged(self->index(0, Flag),
+                self->index(self->rowCount() - 1, Flag),
+                {Qt::DecorationRole});
+        }
+    });
+
+    watcher->setFuture(QtConcurrent::run(
+        [cm = clientManager_]() { return fetch_business_centre_image_map(cm); }));
 }
 
 }

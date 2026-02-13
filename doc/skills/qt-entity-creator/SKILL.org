@@ -1945,6 +1945,135 @@ This ensures badges scale correctly with system font settings and high-DPI
 displays. Do NOT store a hardcoded =badgeFont_= member.
 
 
+** Populating combo boxes and columns with external entity data
+
+Entities often have fields that reference other entities (e.g. a party's
+=business_center_code= references a business centre). These fields need combo
+boxes in detail dialogs and may need enriched display (e.g. flag icons) in list
+models. The key principle is: *centralise the data fetching in =LookupFetcher=*
+so multiple consumers share a single implementation.
+
+*** Adding external data to =LookupFetcher=
+
+=LookupFetcher= (=include/ores.qt/LookupFetcher.hpp=, =src/LookupFetcher.cpp=)
+provides synchronous fetch functions designed to be called from
+=QtConcurrent::run=. There are two patterns depending on the consumer:
+
+1. *For detail dialog combo boxes*: Add the codes to =lookup_result= and fetch
+   them inside the existing =fetch_party_lookups()= or =fetch_tenant_lookups()=.
+   The dialog's =populateLookups()= already runs these asynchronously and
+   populates combos from the result.
+
+2. *For list model enrichment* (e.g. icon lookups, display name resolution): Add
+   a standalone function that returns the mapping. This keeps it decoupled from
+   the lookup result struct.
+
+Both patterns must use =process_authenticated_request= rather than the low-level
+=sendRequest= / frame construction pattern.
+
+Example - adding a standalone fetch function:
+
+#+begin_src cpp
+// In LookupFetcher.hpp:
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm);
+
+// In LookupFetcher.cpp:
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm) {
+    std::unordered_map<std::string, std::string> mapping;
+    if (!cm) return mapping;
+
+    refdata::messaging::get_business_centres_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& bc : response->business_centres) {
+            std::string image_id_str;
+            if (bc.image_id)
+                image_id_str = boost::uuids::to_string(*bc.image_id);
+            mapping.emplace(bc.code, std::move(image_id_str));
+        }
+    }
+    return mapping;
+}
+#+end_src
+
+*** Using external data in detail dialog combo boxes
+
+When a detail dialog has a field that references another entity:
+
+1. Use =QComboBox= (set =editable=true= if free text should be allowed) in the
+   =.ui= file.
+2. Add the codes to the =lookup_result= struct if not already present.
+3. Fetch them inside the appropriate =fetch_*_lookups()= function.
+4. Populate the combo in the dialog's =populateLookups()= callback:
+
+#+begin_src cpp
+self->ui_->businessCenterCombo->clear();
+for (const auto& code : result.business_centre_codes) {
+    self->ui_->businessCenterCombo->addItem(QString::fromStdString(code));
+}
+#+end_src
+
+5. Use =setCurrentText()= / =currentText()= for reading/writing the value.
+6. Use =setEnabled(!readOnly)= instead of =setReadOnly()= for read-only mode.
+
+Reference: =PartyDetailDialog= and =CounterpartyDetailDialog= (business centre
+combo).
+
+*** Using external data in list model columns
+
+When a list model needs to display enriched data from another entity (e.g.
+country flag icons from business centres):
+
+1. Add the shared fetch function to =LookupFetcher= (see above).
+2. In the model, call the shared function via =QtConcurrent::run= and store
+   the result. The async boilerplate stays in the model because it needs to
+   update model-specific state and emit =dataChanged=:
+
+#+begin_src cpp
+void Client<Entity>Model::fetch_external_data() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    using MapType = std::unordered_map<std::string, std::string>;
+    QPointer<Client<Entity>Model> self = this;
+
+    auto* watcher = new QFutureWatcher<MapType>(this);
+    connect(watcher, &QFutureWatcher<MapType>::finished,
+            this, [self, watcher]() {
+        auto mapping = watcher->result();
+        watcher->deleteLater();
+        if (!self || mapping.empty())
+            return;
+
+        self->code_to_value_ = std::move(mapping);
+
+        if (!self->entries_.empty()) {
+            emit self->dataChanged(self->index(0, TargetColumn),
+                self->index(self->rowCount() - 1, TargetColumn),
+                {Qt::DecorationRole});
+        }
+    });
+
+    watcher->setFuture(QtConcurrent::run(
+        [cm = clientManager_]() { return fetch_the_shared_function(cm); }));
+}
+#+end_src
+
+*Important*: Never duplicate the server-fetch logic across models. The async
+watcher wrapper is model-specific, but the data fetching must be in
+=LookupFetcher=.
+
+Reference: =ClientPartyModel= and =ClientCounterpartyModel= (flag icons from
+business centres via =fetch_business_centre_image_map=).
+
+*Note on server limits*: The server enforces a maximum request limit (currently
+1000). Do not exceed this. If an entity has more than 1000 records, you will
+need pagination in the fetch function.
+
+
 ** Related skills
 
 - [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] - For selecting appropriate icons

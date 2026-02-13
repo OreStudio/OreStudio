@@ -31,6 +31,7 @@
  *
  * REQUIRED EXTENSIONS:
  *   - btree_gist: GiST index support for temporal exclusion constraints
+ *   - unaccent: Accent-insensitive text search for normalised name generation
  *
  * OPTIONAL EXTENSIONS:
  *   - timescaledb: Time-series database for session analytics (recommended)
@@ -71,6 +72,10 @@
 create extension if not exists btree_gist;
 \echo 'Installed: btree_gist'
 
+-- unaccent: Required for accent-insensitive text search (e.g. normalised_name)
+create extension if not exists unaccent;
+\echo 'Installed: unaccent'
+
 -- TimescaleDB: Time-series database extension (OPTIONAL)
 -- Provides hypertables, compression, continuous aggregates, and retention policies
 -- If not available, sessions will use regular tables instead.
@@ -101,7 +106,7 @@ end $$;
 -- Show what was installed
 \echo 'Installed extensions:'
 select extname, extversion from pg_extension
-where extname in ('btree_gist', 'timescaledb')
+where extname in ('btree_gist', 'unaccent', 'timescaledb')
 order by extname;
 
 \echo ''

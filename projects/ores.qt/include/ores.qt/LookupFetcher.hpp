@@ -46,6 +46,7 @@ inline constexpr std::string_view internal = "Internal";
 struct lookup_result {
     std::vector<std::string> type_codes;
     std::vector<std::string> status_codes;
+    std::vector<std::string> business_centre_codes;
 };
 
 /**

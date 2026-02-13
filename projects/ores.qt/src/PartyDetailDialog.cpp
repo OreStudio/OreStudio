@@ -83,7 +83,7 @@ void PartyDetailDialog::setupConnections() {
             &PartyDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &PartyDetailDialog::onFieldChanged);
-    connect(ui_->businessCenterEdit, &QLineEdit::textChanged, this,
+    connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
             &PartyDetailDialog::onFieldChanged);
 }
 
@@ -128,6 +128,12 @@ void PartyDetailDialog::populateLookups() {
                 QString::fromStdString(code));
         }
 
+        self->ui_->businessCenterCombo->clear();
+        for (const auto& code : result.business_centre_codes) {
+            self->ui_->businessCenterCombo->addItem(
+                QString::fromStdString(code));
+        }
+
         self->updateUiFromParty();
     });
 
@@ -162,7 +168,7 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
     ui_->partyCategoryCombo->setEnabled(!readOnly);
     ui_->partyTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
-    ui_->businessCenterEdit->setReadOnly(readOnly);
+    ui_->businessCenterCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -175,7 +181,7 @@ void PartyDetailDialog::updateUiFromParty() {
     ui_->partyCategoryCombo->setCurrentText(QString::fromStdString(party_.party_category));
     ui_->partyTypeCombo->setCurrentText(QString::fromStdString(party_.party_type));
     ui_->statusCombo->setCurrentText(QString::fromStdString(party_.status));
-    ui_->businessCenterEdit->setText(QString::fromStdString(party_.business_center_code));
+    ui_->businessCenterCombo->setCurrentText(QString::fromStdString(party_.business_center_code));
 
     ui_->versionEdit->setText(QString::number(party_.version));
     ui_->recordedByEdit->setText(QString::fromStdString(party_.recorded_by));
@@ -193,7 +199,7 @@ void PartyDetailDialog::updatePartyFromUi() {
     party_.party_category = ui_->partyCategoryCombo->currentText().trimmed().toStdString();
     party_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
     party_.status = ui_->statusCombo->currentText().trimmed().toStdString();
-    const auto bcc = ui_->businessCenterEdit->text().trimmed().toStdString();
+    const auto bcc = ui_->businessCenterCombo->currentText().trimmed().toStdString();
     party_.business_center_code = bcc.empty() ? std::string("WRLD") : bcc;
     party_.recorded_by = username_;
     party_.performed_by = username_;

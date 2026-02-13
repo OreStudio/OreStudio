@@ -19,8 +19,6 @@
  */
 #include "ores.qt/ClientCurrencyModel.hpp"
 
-#include <algorithm>
-#include <unordered_set>
 #include <QtConcurrent>
 #include <QColor>
 #include <QDateTime>
@@ -166,37 +164,30 @@ headerData(int section, Qt::Orientation orientation, int role) const {
     return {};
 }
 
-void ClientCurrencyModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientCurrencyModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
-    // If not connected, we can't fetch.
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot refresh currency model: disconnected.";
         return;
     }
 
-    // If replacing, start from offset 0; otherwise append to existing data
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(currencies_.size());
-
-    if (replace) {
-        // Clear existing data when replacing
-        if (!currencies_.empty()) {
-            beginResetModel();
-            currencies_.clear();
-            recencyTracker_.clear();
-            synthetic_iso_codes_.clear();
-            pulseManager_->stop_pulsing();
-            total_available_count_ = 0;
-            endResetModel();
-        }
+    if (!currencies_.empty()) {
+        beginResetModel();
+        currencies_.clear();
+        recencyTracker_.clear();
+        synthetic_iso_codes_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
     }
 
-    fetch_currencies(offset, page_size_);
+    fetch_currencies(0, page_size_);
 }
 
 void ClientCurrencyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -283,63 +274,27 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
         return;
     }
 
-    {
-        total_available_count_ = result.total_available_count;
+    total_available_count_ = result.total_available_count;
 
-        std::vector<refdata::domain::currency> new_currencies;
-        const auto received_count = result.currencies.size();
+    const int new_count = static_cast<int>(result.currencies.size());
 
-        if (currencies_.empty()) {
-            // Full refresh or first page load, no duplicates to check.
-            new_currencies = std::move(result.currencies);
-        } else {
-            // Appending data, check for duplicates.
-            std::unordered_set<std::string> existing_codes;
-            existing_codes.reserve(currencies_.size());
-            for (const auto& curr : currencies_) {
-                existing_codes.insert(curr.iso_code);
-            }
+    if (new_count > 0) {
+        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        currencies_ = std::move(result.currencies);
+        endInsertRows();
 
-            new_currencies.reserve(received_count);
-            for (auto& curr : result.currencies) {
-                if (existing_codes.find(curr.iso_code) == existing_codes.end()) {
-                    new_currencies.push_back(std::move(curr));
-                    existing_codes.insert(curr.iso_code);
-                } else {
-                    BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate currency: "
-                                               << curr.iso_code;
-                }
-            }
+        const bool has_recent = recencyTracker_.update(currencies_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " currencies newer than last reload";
         }
-
-        const int old_size = static_cast<int>(currencies_.size());
-        const int new_count = static_cast<int>(new_currencies.size());
-
-        if (new_count > 0) {
-            // Append new data to existing currencies
-            beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
-            currencies_.insert(currencies_.end(),
-                std::make_move_iterator(new_currencies.begin()),
-                std::make_move_iterator(new_currencies.end()));
-            endInsertRows();
-
-            // Update the set of recent currencies for recency coloring
-            const bool has_recent = recencyTracker_.update(currencies_);
-            if (has_recent && !pulseManager_->is_pulsing()) {
-                pulseManager_->start_pulsing();
-                BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                           << " currencies newer than last reload";
-            }
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new currencies "
-                                  << "(received " << received_count
-                                  << ", filtered " << (received_count - new_count)
-                                  << " duplicates). Total in model: " << currencies_.size()
-                                  << ", Total available: " << total_available_count_;
-
-        emit dataLoaded();
     }
+
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " currencies."
+                              << " Total available: " << total_available_count_;
+
+    emit dataLoaded();
 }
 
 const refdata::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
@@ -351,27 +306,6 @@ const refdata::domain::currency* ClientCurrencyModel::getCurrency(int row) const
 
 std::vector<refdata::domain::currency> ClientCurrencyModel::getCurrencies() const {
     return currencies_;
-}
-
-bool ClientCurrencyModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = currencies_.size() < total_available_count_;
-
-    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
-                               << " (loaded: " << currencies_.size()
-                               << ", page_size: " << page_size_
-                               << ", available: " << total_available_count_ << ")";
-    return has_more && !is_fetching_;
-}
-
-void ClientCurrencyModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false); // false = append, don't replace
 }
 
 void ClientCurrencyModel::set_page_size(std::uint32_t size) {

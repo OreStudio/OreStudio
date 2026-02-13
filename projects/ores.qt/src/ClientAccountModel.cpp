@@ -20,7 +20,6 @@
 #include "ores.qt/ClientAccountModel.hpp"
 
 #include <algorithm>
-#include <unordered_set>
 #include <unordered_map>
 #include <QtConcurrent>
 #include <QColor>
@@ -146,36 +145,29 @@ headerData(int section, Qt::Orientation orientation, int role) const {
     return {};
 }
 
-void ClientAccountModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientAccountModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
-    // If not connected, we can't fetch.
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot refresh account model: disconnected.";
         return;
     }
 
-    // If replacing, start from offset 0; otherwise append to existing data
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(accounts_.size());
-
-    if (replace) {
-        // Clear existing data when replacing
-        if (!accounts_.empty()) {
-            beginResetModel();
-            accounts_.clear();
-            total_available_count_ = 0;
-            recencyTracker_.clear();
-            pulseManager_->stop_pulsing();
-            endResetModel();
-        }
+    if (!accounts_.empty()) {
+        beginResetModel();
+        accounts_.clear();
+        total_available_count_ = 0;
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
     }
 
-    fetch_accounts(offset, page_size_);
+    fetch_accounts(0, page_size_);
 }
 
 void ClientAccountModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -280,20 +272,21 @@ void ClientAccountModel::onAccountsLoaded() {
         return;
     }
 
-    {
-        total_available_count_ = result.total_available_count;
+    total_available_count_ = result.total_available_count;
 
-        // Build map of login_info by account_id for joining
-        std::unordered_map<std::string, iam::domain::login_info> login_info_map;
-        for (auto& li : result.loginInfos) {
-            login_info_map[boost::uuids::to_string(li.account_id)] = std::move(li);
-        }
+    // Build map of login_info by account_id for joining
+    std::unordered_map<std::string, iam::domain::login_info> login_info_map;
+    for (auto& li : result.loginInfos) {
+        login_info_map[boost::uuids::to_string(li.account_id)] = std::move(li);
+    }
 
+    const int new_count = static_cast<int>(result.accounts.size());
+
+    if (new_count > 0) {
+        // Join accounts with login_info and sort by username
         std::vector<AccountWithLoginInfo> new_items;
-        const auto received_count = result.accounts.size();
-
-        // Join accounts with login_info
-        auto join_account = [&](iam::domain::account& acct) {
+        new_items.reserve(new_count);
+        for (auto& acct : result.accounts) {
             AccountWithLoginInfo item;
             std::string id_str = boost::uuids::to_string(acct.id);
             auto li_it = login_info_map.find(id_str);
@@ -301,61 +294,18 @@ void ClientAccountModel::onAccountsLoaded() {
                 item.loginInfo = std::move(li_it->second);
             }
             item.account = std::move(acct);
-            return item;
-        };
-
-        if (accounts_.empty()) {
-            // Full refresh or first page load, no duplicates to check.
-            new_items.reserve(received_count);
-            for (auto& acct : result.accounts) {
-                new_items.push_back(join_account(acct));
-            }
-        } else {
-            // Appending data, check for duplicates.
-            std::unordered_set<std::string> existing_ids;
-            existing_ids.reserve(accounts_.size());
-            for (const auto& item : accounts_) {
-                existing_ids.insert(boost::uuids::to_string(item.account.id));
-            }
-
-            new_items.reserve(received_count);
-            for (auto& acct : result.accounts) {
-                std::string id_str = boost::uuids::to_string(acct.id);
-                if (existing_ids.find(id_str) == existing_ids.end()) {
-                    new_items.push_back(join_account(acct));
-                    existing_ids.insert(std::move(id_str));
-                } else {
-                    BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate account: "
-                                               << id_str;
-                }
-            }
+            new_items.push_back(std::move(item));
         }
 
-        const int new_count = static_cast<int>(new_items.size());
+        std::ranges::sort(new_items, [](auto const& a, auto const& b) {
+            return a.account.username < b.account.username;
+        });
 
-        if (new_count > 0) {
-            // Use model reset since we're inserting and then sorting
-            // (sorting is a structural change that requires full reset)
-            beginResetModel();
-            accounts_.insert(accounts_.end(),
-                std::make_move_iterator(new_items.begin()),
-                std::make_move_iterator(new_items.end()));
-
-            // Sort all accounts by username
-            std::ranges::sort(accounts_, [](auto const& a, auto const& b) {
-                return a.account.username < b.account.username;
-            });
-            endResetModel();
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new accounts "
-                                  << "(received " << received_count
-                                  << ", filtered " << (received_count - new_count)
-                                  << " duplicates). Total in model: " << accounts_.size()
-                                  << ", Total available: " << total_available_count_;
+        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        accounts_ = std::move(new_items);
+        endInsertRows();
 
         // Update the set of recent accounts for recency coloring
-        // We need to extract accounts from AccountWithLoginInfo for the tracker
         std::vector<iam::domain::account> accounts_for_tracker;
         accounts_for_tracker.reserve(accounts_.size());
         for (const auto& item : accounts_) {
@@ -367,9 +317,12 @@ void ClientAccountModel::onAccountsLoaded() {
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
                                        << " accounts newer than last reload";
         }
-
-        emit dataLoaded();
     }
+
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " accounts."
+                              << " Total available: " << total_available_count_;
+
+    emit dataLoaded();
 }
 
 const AccountWithLoginInfo* ClientAccountModel::getAccountWithLoginInfo(int row) const {
@@ -388,26 +341,6 @@ const iam::domain::account* ClientAccountModel::getAccount(int row) const {
 
 std::vector<AccountWithLoginInfo> ClientAccountModel::getAccountsWithLoginInfo() const {
     return accounts_;
-}
-
-bool ClientAccountModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = accounts_.size() < total_available_count_;
-
-    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
-                               << " (loaded: " << accounts_.size()
-                               << ", available: " << total_available_count_ << ")";
-    return has_more && !is_fetching_;
-}
-
-void ClientAccountModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false); // false = append, don't replace
 }
 
 void ClientAccountModel::set_page_size(std::uint32_t size) {

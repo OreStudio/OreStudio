@@ -97,16 +97,6 @@ public:
     void load_page(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Check if more data can be fetched from the server.
-     */
-    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
-
-    /**
-     * @brief Fetch the next page of data from the server.
-     */
-    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
-
-    /**
      * @brief Get country at the specified row.
      *
      * @param row The row index.

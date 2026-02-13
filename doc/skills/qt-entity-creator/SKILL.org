@@ -177,12 +177,11 @@ public:
     // Data access
     const <component>::domain::<entity>* get<Entity>(int row) const;
     void refresh();
-    void clear();
 
-    // Pagination (if needed)
+    // Pagination
     std::uint32_t page_size() const { return page_size_; }
     void set_page_size(std::uint32_t size);
-    std::uint64_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const { return total_available_count_; }
     void load_page(std::uint32_t offset, std::uint32_t limit);
 
 signals:
@@ -196,20 +195,19 @@ private:
     struct FetchResult {
         bool success;
         std::vector<<component>::domain::<entity>> entries;
-        std::uint64_t total_count;
+        std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_data();
+    void fetch_data(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
     std::vector<<component>::domain::<entity>> entries_;
     QFutureWatcher<FetchResult>* watcher_;
 
     std::uint32_t page_size_{100};
-    std::uint32_t current_offset_{0};
-    std::uint64_t total_available_count_{0};
+    std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 };
 
@@ -246,7 +244,7 @@ void Client<Entity>Model::fetch_data(std::uint32_t offset, std::uint32_t limit) 
         QtConcurrent::run([self, offset, limit]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .entries = {}, .total_count = 0,
+                    return {.success = false, .entries = {}, .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
@@ -260,7 +258,7 @@ void Client<Entity>Model::fetch_data(std::uint32_t offset, std::uint32_t limit) 
                     process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    return {.success = false, .entries = {}, .total_count = 0,
+                    return {.success = false, .entries = {}, .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch: " + comms::net::to_string(result.error())),
                             .error_details = {}};
@@ -268,7 +266,7 @@ void Client<Entity>Model::fetch_data(std::uint32_t offset, std::uint32_t limit) 
 
                 return {.success = true,
                         .entries = std::move(result-><entity>s),
-                        .total_count = result->total_available_count,
+                        .total_available_count = result->total_available_count,
                         .error_message = {}, .error_details = {}};
             }, "<entity>s");  // Entity name for error messages
         });
@@ -290,7 +288,7 @@ void Client<Entity>Model::onDataLoaded() {
 
     beginResetModel();
     entries_ = std::move(result.entries);
-    total_available_count_ = result.total_count;
+    total_available_count_ = result.total_available_count;
     endResetModel();
 
     emit dataLoaded();
@@ -603,7 +601,7 @@ layout->addWidget(pagination_widget_);
 connect(pagination_widget_, &PaginationWidget::page_size_changed,
         this, [this](std::uint32_t size) {
     model_->set_page_size(size);
-    model_->refresh(true);
+    model_->refresh();
 });
 
 connect(pagination_widget_, &PaginationWidget::load_all_requested,
@@ -611,7 +609,7 @@ connect(pagination_widget_, &PaginationWidget::load_all_requested,
     const auto total = model_->total_available_count();
     if (total > 0 && total <= 1000) {
         model_->set_page_size(total);
-        model_->refresh(true);
+        model_->refresh();
     }
 });
 

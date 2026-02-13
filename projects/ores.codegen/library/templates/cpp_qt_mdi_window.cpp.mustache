@@ -33,6 +33,7 @@ using namespace ores::logging;
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
+      paginationWidget_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
       editAction_(nullptr),
@@ -58,6 +59,9 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
@@ -150,6 +154,26 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupConnections() {
             this, &{{domain_entity.entity_pascal}}MdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked,
             this, &{{domain_entity.entity_pascal}}MdiWindow::onDoubleClicked);
+
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::reload() {
@@ -160,7 +184,13 @@ void {{domain_entity.entity_pascal}}MdiWindow::reload() {
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 {{domain_entity.entity_plural_words}}").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 {{domain_entity.entity_plural_words}}").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::onLoadError(const QString& error_message,

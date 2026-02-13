@@ -21,7 +21,6 @@
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
 #include <vector>
-#include <unordered_set>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
@@ -95,10 +94,6 @@ public:
      *
      * This method initiates an async request to fetch currencies.
      * The model will emit dataChanged() when the fetch completes.
-     * When replace is true, existing data is cleared before loading.
-     * When false, new data is appended (for pagination).
-     *
-     * @param replace If true, replace existing data; if false, append.
      */
     void refresh(bool replace = true);
 
@@ -112,21 +107,6 @@ public:
      * @param limit Number of records to fetch
      */
     void load_page(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Check if more data can be fetched from the server.
-     *
-     * @return true if there are more records available on the server
-     */
-    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
-
-    /**
-     * @brief Fetch the next page of data from the server.
-     *
-     * This is called automatically by Qt views when scrolling approaches
-     * the end of currently loaded data.
-     */
-    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
 
     /**
      * @brief Get currency at the specified row.

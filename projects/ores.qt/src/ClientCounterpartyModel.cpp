@@ -23,14 +23,12 @@
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string counterparty_key_extractor(const refdata::domain::counterparty& e) {
@@ -210,58 +208,26 @@ void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset,
                 refdata::messaging::get_counterparties_request request;
                 request.offset = offset;
                 request.limit = limit;
-                auto payload = request.serialize();
 
-                frame request_frame(
-                    message_type::get_counterparties_request,
-                    0, std::move(payload)
-                );
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-                auto response_result = self->clientManager_->sendRequest(
-                    std::move(request_frame));
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch counterparties: "
+                                               << comms::net::to_string(result.error());
                     return {.success = false, .counterparties = {},
                             .total_available_count = 0,
-                            .error_message = "Failed to send request",
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch counterparties: " + comms::net::to_string(result.error())),
                             .error_details = {}};
                 }
 
-                // Check for server error response
-                if (auto err = exception_helper::check_error_response(*response_result)) {
-                    BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                               << err->message.toStdString();
-                    return {.success = false, .counterparties = {},
-                            .total_available_count = 0,
-                            .error_message = err->message,
-                            .error_details = err->details};
-                }
-
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                    return {.success = false, .counterparties = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to decompress response",
-                            .error_details = {}};
-                }
-
-                auto response = refdata::messaging::get_counterparties_response::
-                    deserialize(*payload_result);
-                if (!response) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                    return {.success = false, .counterparties = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to deserialize response",
-                            .error_details = {}};
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->counterparties.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->counterparties.size()
                                            << " counterparties, total available: "
-                                           << response->total_available_count;
+                                           << result->total_available_count;
                 return {.success = true,
-                        .counterparties = std::move(response->counterparties),
-                        .total_available_count = response->total_available_count,
+                        .counterparties = std::move(result->counterparties),
+                        .total_available_count = result->total_available_count,
                         .error_message = {}, .error_details = {}};
             }, "counterparties");
         });

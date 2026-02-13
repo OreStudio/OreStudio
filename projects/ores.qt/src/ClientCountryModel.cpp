@@ -19,8 +19,6 @@
  */
 #include "ores.qt/ClientCountryModel.hpp"
 
-#include <algorithm>
-#include <unordered_set>
 #include <QtConcurrent>
 #include <QColor>
 #include <boost/uuid/uuid_io.hpp>
@@ -158,8 +156,8 @@ headerData(int section, Qt::Orientation orientation, int role) const {
     return {};
 }
 
-void ClientCountryModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientCountryModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
@@ -171,20 +169,16 @@ void ClientCountryModel::refresh(bool replace) {
         return;
     }
 
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(countries_.size());
-
-    if (replace) {
-        if (!countries_.empty()) {
-            beginResetModel();
-            countries_.clear();
-            recencyTracker_.clear();
-            pulseManager_->stop_pulsing();
-            total_available_count_ = 0;
-            endResetModel();
-        }
+    if (!countries_.empty()) {
+        beginResetModel();
+        countries_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
     }
 
-    fetch_countries(offset, page_size_);
+    fetch_countries(0, page_size_);
 }
 
 void ClientCountryModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -269,61 +263,27 @@ void ClientCountryModel::onCountriesLoaded() {
         return;
     }
 
-    {
-        total_available_count_ = result.total_available_count;
+    total_available_count_ = result.total_available_count;
 
-        std::vector<refdata::domain::country> new_countries;
-        const auto received_count = result.countries.size();
+    const int new_count = static_cast<int>(result.countries.size());
 
-        if (countries_.empty()) {
-            // Full refresh or first page load, no duplicates to check.
-            new_countries = std::move(result.countries);
-        } else {
-            // Appending data, check for duplicates.
-            std::unordered_set<std::string> existing_codes;
-            existing_codes.reserve(countries_.size());
-            for (const auto& country : countries_) {
-                existing_codes.insert(country.alpha2_code);
-            }
+    if (new_count > 0) {
+        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        countries_ = std::move(result.countries);
+        endInsertRows();
 
-            new_countries.reserve(received_count);
-            for (auto& country : result.countries) {
-                if (existing_codes.find(country.alpha2_code) == existing_codes.end()) {
-                    new_countries.push_back(std::move(country));
-                    existing_codes.insert(country.alpha2_code);
-                } else {
-                    BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate country: "
-                                               << country.alpha2_code;
-                }
-            }
+        const bool has_recent = recencyTracker_.update(countries_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " countries newer than last reload";
         }
-
-        const int old_size = static_cast<int>(countries_.size());
-        const int new_count = static_cast<int>(new_countries.size());
-
-        if (new_count > 0) {
-            beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
-            countries_.insert(countries_.end(),
-                std::make_move_iterator(new_countries.begin()),
-                std::make_move_iterator(new_countries.end()));
-            endInsertRows();
-
-            const bool has_recent = recencyTracker_.update(countries_);
-            if (has_recent && !pulseManager_->is_pulsing()) {
-                pulseManager_->start_pulsing();
-                BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                           << " countries newer than last reload";
-            }
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new countries "
-                                  << "(received " << received_count
-                                  << ", filtered " << (received_count - new_count)
-                                  << " duplicates). Total in model: " << countries_.size()
-                                  << ", Total available: " << total_available_count_;
-
-        emit dataLoaded();
     }
+
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " countries."
+                              << " Total available: " << total_available_count_;
+
+    emit dataLoaded();
 }
 
 const refdata::domain::country* ClientCountryModel::getCountry(int row) const {
@@ -335,27 +295,6 @@ const refdata::domain::country* ClientCountryModel::getCountry(int row) const {
 
 std::vector<refdata::domain::country> ClientCountryModel::getCountries() const {
     return countries_;
-}
-
-bool ClientCountryModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = countries_.size() < total_available_count_;
-
-    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
-                               << " (loaded: " << countries_.size()
-                               << ", page_size: " << page_size_
-                               << ", available: " << total_available_count_ << ")";
-    return has_more && !is_fetching_;
-}
-
-void ClientCountryModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false);
 }
 
 void ClientCountryModel::set_page_size(std::uint32_t size) {

@@ -143,7 +143,9 @@ begin
         depth int not null default 0,
         entity_legal_name text not null,
         entity_legal_address_country text not null,
-        entity_entity_status text not null
+        entity_entity_status text not null,
+        entity_transliterated_name_1 text null,
+        short_code text not null default ''
     ) on commit drop;
 
     -- Find all LEIs in the subtree with depth (filtered to selected dataset)
@@ -164,13 +166,14 @@ begin
           and r.relationship_relationship_status = 'ACTIVE'
           and r.dataset_id = v_rel_dataset_id
     )
-    insert into lei_party_subtree (lei, depth, entity_legal_name, entity_legal_address_country, entity_entity_status)
+    insert into lei_party_subtree (lei, depth, entity_legal_name, entity_legal_address_country, entity_entity_status, entity_transliterated_name_1)
     select distinct on (s.lei)
         s.lei,
         s.depth,
         e.entity_legal_name,
         e.entity_legal_address_country,
-        e.entity_entity_status
+        e.entity_entity_status,
+        e.entity_transliterated_name_1
     from subtree s
     join ores_dq_lei_entities_artefact_tbl e on e.lei = s.lei
         and e.dataset_id = v_entity_dataset_id
@@ -187,6 +190,29 @@ begin
       and r.dataset_id = v_rel_dataset_id
       and m.lei <> v_root_lei;  -- Root has no parent
 
+    -- Generate short codes with collision resolution
+    update lei_party_subtree m
+    set short_code = sub.resolved_code
+    from (
+        select lei,
+            case when cnt > 1 then base_code || rn::text
+                 else base_code end as resolved_code
+        from (
+            select lei,
+                ores_utility_generate_short_code_fn(
+                    entity_legal_name, entity_transliterated_name_1) as base_code,
+                row_number() over (
+                    partition by ores_utility_generate_short_code_fn(
+                        entity_legal_name, entity_transliterated_name_1)
+                    order by lei) as rn,
+                count(*) over (
+                    partition by ores_utility_generate_short_code_fn(
+                        entity_legal_name, entity_transliterated_name_1)) as cnt
+            from lei_party_subtree
+        ) numbered
+    ) sub
+    where sub.lei = m.lei;
+
     -- Insert parties level by level (root first, then children) so that
     -- the insert trigger can validate parent_party_id references.
     -- Names are normalised from ALL CAPS to Proper Case, with common
@@ -201,7 +227,7 @@ begin
         for v_current_depth in 0..coalesce(v_max_depth, 0) loop
             insert into ores_refdata_parties_tbl (
                 tenant_id,
-                id, version, full_name, short_code,
+                id, version, full_name, short_code, transliterated_name,
                 party_category, party_type,
                 parent_party_id, business_center_code, status,
                 modified_by, performed_by, change_reason_code, change_commentary
@@ -209,8 +235,9 @@ begin
             select
                 p_target_tenant_id,
                 m.party_uuid, 0,
-                m.entity_legal_name,
-                m.lei, 'operational', 'Corporate',
+                ores_utility_proper_name_fn(m.entity_legal_name),
+                m.short_code, m.entity_transliterated_name_1,
+                'operational', 'Corporate',
                 parent_map.party_uuid,
                 -- Default business centre from country
                 coalesce(bc_map.business_center_code, 'WRLD'),

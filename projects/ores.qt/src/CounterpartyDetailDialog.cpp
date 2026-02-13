@@ -68,6 +68,8 @@ void CounterpartyDetailDialog::setupConnections() {
             &CounterpartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
+    connect(ui_->transliteratedNameEdit, &QLineEdit::textChanged, this,
+            &CounterpartyDetailDialog::onFieldChanged);
     connect(ui_->partyTypeCombo, &QComboBox::currentTextChanged, this,
             &CounterpartyDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
@@ -147,6 +149,7 @@ void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
+    ui_->transliteratedNameEdit->setReadOnly(readOnly);
     ui_->partyTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
     ui_->businessCenterEdit->setReadOnly(readOnly);
@@ -157,6 +160,8 @@ void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
 void CounterpartyDetailDialog::updateUiFromCounterparty() {
     ui_->codeEdit->setText(QString::fromStdString(counterparty_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(counterparty_.full_name));
+    ui_->transliteratedNameEdit->setText(
+        QString::fromStdString(counterparty_.transliterated_name.value_or("")));
     ui_->partyTypeCombo->setCurrentText(QString::fromStdString(counterparty_.party_type));
     ui_->statusCombo->setCurrentText(QString::fromStdString(counterparty_.status));
     ui_->businessCenterEdit->setText(QString::fromStdString(counterparty_.business_center_code));
@@ -172,6 +177,8 @@ void CounterpartyDetailDialog::updateCounterpartyFromUi() {
         counterparty_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     counterparty_.full_name = ui_->nameEdit->text().trimmed().toStdString();
+    const auto tlit = ui_->transliteratedNameEdit->text().trimmed().toStdString();
+    counterparty_.transliterated_name = tlit.empty() ? std::nullopt : std::optional<std::string>(tlit);
     counterparty_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
     counterparty_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     counterparty_.business_center_code = ui_->businessCenterEdit->text().trimmed().toStdString();

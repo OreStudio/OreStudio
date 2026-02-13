@@ -148,6 +148,7 @@ void PartyMdiWindow::setupTable() {
     tableView_->setItemDelegate(new EntityItemDelegate({
         cs::text_left,   // ShortCode
         cs::text_left,   // FullName
+        cs::text_left,   // TransliteratedName
         cs::text_left,   // PartyCategory
         cs::text_left,   // PartyType
         cs::text_left,   // Status
@@ -163,6 +164,7 @@ void PartyMdiWindow::setupTable() {
     // Set column widths
     tableView_->setColumnWidth(ClientPartyModel::ShortCode, 120);
     tableView_->setColumnWidth(ClientPartyModel::FullName, 250);
+    tableView_->setColumnWidth(ClientPartyModel::TransliteratedName, 200);
     tableView_->setColumnWidth(ClientPartyModel::PartyCategory, 100);
     tableView_->setColumnWidth(ClientPartyModel::PartyType, 120);
     tableView_->setColumnWidth(ClientPartyModel::Status, 100);

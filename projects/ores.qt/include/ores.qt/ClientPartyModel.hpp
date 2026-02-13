@@ -57,6 +57,7 @@ public:
     enum Column {
         ShortCode,
         FullName,
+        TransliteratedName,
         PartyCategory,
         PartyType,
         Status,

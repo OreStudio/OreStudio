@@ -58,6 +58,10 @@ void write_counterparty(std::vector<std::byte>& buffer,
     writer::write_string(buffer, cp.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(cp.recorded_at));
+    writer::write_bool(buffer, cp.transliterated_name.has_value());
+    if (cp.transliterated_name.has_value()) {
+        writer::write_string(buffer, *cp.transliterated_name);
+    }
 }
 
 std::expected<domain::counterparty, error_code>
@@ -122,6 +126,14 @@ read_counterparty(std::span<const std::byte>& data) {
         cp.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at_result);
     } catch (const std::invalid_argument&) {
         return std::unexpected(error_code::invalid_request);
+    }
+
+    auto has_transliterated_name_result = reader::read_bool(data);
+    if (!has_transliterated_name_result) return std::unexpected(has_transliterated_name_result.error());
+    if (*has_transliterated_name_result) {
+        auto transliterated_name_result = reader::read_string(data);
+        if (!transliterated_name_result) return std::unexpected(transliterated_name_result.error());
+        cp.transliterated_name = *transliterated_name_result;
     }
 
     return cp;

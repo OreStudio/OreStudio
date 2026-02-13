@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_counterparties_tbl" (
     "version" integer not null,
     "full_name" text not null,
     "short_code" text not null,
+    "transliterated_name" text null,
     "party_type" text not null,
     "parent_counterparty_id" uuid null,
     "business_center_code" text not null,

@@ -85,6 +85,8 @@ QVariant ClientCounterpartyModel::data(
             return QString::fromStdString(counterparty.short_code);
         case FullName:
             return QString::fromStdString(counterparty.full_name);
+        case TransliteratedName:
+            return QString::fromStdString(counterparty.transliterated_name.value_or(""));
         case PartyType:
             return QString::fromStdString(counterparty.party_type);
         case Status:
@@ -119,6 +121,8 @@ QVariant ClientCounterpartyModel::headerData(
         return tr("Code");
     case FullName:
         return tr("Name");
+    case TransliteratedName:
+        return tr("Transliterated Name");
     case PartyType:
         return tr("Type");
     case Status:

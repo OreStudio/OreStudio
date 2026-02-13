@@ -67,6 +67,14 @@ struct counterparty final {
     std::string short_code;
 
     /**
+     * @brief ASCII transliteration of the entity name.
+     *
+     * Populated from GLEIF data for entities with non-Latin names
+     * (CJK, Cyrillic, Arabic, etc.). Null for entities already in Latin script.
+     */
+    std::optional<std::string> transliterated_name;
+
+    /**
      * @brief Classification of this counterparty.
      *
      * References the party_type lookup table.

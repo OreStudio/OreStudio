@@ -91,3 +91,131 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+/**
+ * Strips common corporate/legal suffixes from entity names.
+ *
+ * Used before short code generation so that "BARCLAYS PLC" becomes
+ * "BARCLAYS" and "BNP PARIBAS S.A." becomes "BNP PARIBAS".
+ *
+ * The suffix list mirrors ores_utility_proper_name_fn() plus dotted forms.
+ *
+ * Examples:
+ *   'BARCLAYS PLC'       -> 'BARCLAYS'
+ *   'BNP PARIBAS S.A.'   -> 'BNP PARIBAS'
+ *   'DEUTSCHE BANK AG'   -> 'DEUTSCHE BANK'
+ */
+CREATE OR REPLACE FUNCTION ores_utility_strip_corporate_suffix_fn(p_name text)
+RETURNS text AS $$
+DECLARE
+    v_result text;
+    v_suffix text;
+BEGIN
+    v_result := trim(p_name);
+
+    -- Strip dotted abbreviations first (longer patterns before shorter)
+    FOREACH v_suffix IN ARRAY ARRAY[
+        'S.C.A.', 'S.R.L.', 'S.P.A.', 'S.A.', 'B.V.', 'N.V.', 'K.K.', 'S.E.'
+    ] LOOP
+        IF v_result ILIKE '% ' || v_suffix THEN
+            v_result := trim(left(v_result, length(v_result) - length(v_suffix)));
+        END IF;
+    END LOOP;
+
+    -- Strip word suffixes (case-insensitive, whole-word match at end)
+    FOREACH v_suffix IN ARRAY ARRAY[
+        'AND CO.', '& CO.', 'CO.',
+        'PLC', 'LLC', 'LLP', 'LTD', 'INC', 'CORP',
+        'AG', 'NV', 'AB', 'ASA', 'GMBH', 'MBH',
+        'BV', 'BHD', 'SRL', 'SPA', 'SARL', 'KG',
+        'OYJ', 'TBK', 'LP', 'SE', 'SA', 'AS'
+    ] LOOP
+        v_result := regexp_replace(v_result,
+            '\s+' || v_suffix || '\s*$', '', 'i');
+    END LOOP;
+
+    RETURN trim(v_result);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+/**
+ * Generates a 3-8 character mnemonic short code from an entity name.
+ *
+ * Algorithm:
+ *   1. If p_transliterated_name is not null/empty, use it; else apply
+ *      unaccent(p_name) to strip diacritics.
+ *   2. Strip corporate suffixes.
+ *   3. Convert to UPPERCASE, remove non-alpha characters.
+ *   4. If empty after cleanup, return 'UNKNWN'.
+ *   5. Single word: consonant-heavy extraction (first letter + consonants,
+ *      up to 6 chars).
+ *   6. Multi-word:
+ *        - 2 words: first 3 chars of each (6 total)
+ *        - 3+ words: first 2 chars of each of first 3 words (6 total)
+ *   7. Pad to minimum 3 chars if needed.
+ *
+ * Note: This generates base codes only. Collision resolution (appending
+ * '2', '3', etc.) is handled by the caller.
+ *
+ * Examples:
+ *   'BARCLAYS PLC'       -> 'BRCLYS'
+ *   'BNP PARIBAS S.A.'   -> 'BNPPAR'
+ *   'DEUTSCHE BANK AG'   -> 'DEUBAN'
+ */
+CREATE OR REPLACE FUNCTION ores_utility_generate_short_code_fn(
+    p_name text,
+    p_transliterated_name text default null
+) RETURNS text AS $$
+DECLARE
+    v_input text;
+    v_clean text;
+    v_words text[];
+    v_word_count int;
+    v_result text;
+    v_consonants text;
+BEGIN
+    -- Step 1: choose transliterated name or unaccent the original
+    IF p_transliterated_name IS NOT NULL AND trim(p_transliterated_name) <> '' THEN
+        v_input := trim(p_transliterated_name);
+    ELSE
+        v_input := unaccent(trim(p_name));
+    END IF;
+
+    -- Step 2: strip corporate suffixes
+    v_input := ores_utility_strip_corporate_suffix_fn(v_input);
+
+    -- Step 3: uppercase, remove non-alpha characters (keep spaces for splitting)
+    v_input := upper(v_input);
+    v_clean := regexp_replace(v_input, '[^A-Z ]', '', 'g');
+    v_clean := regexp_replace(trim(v_clean), '\s+', ' ', 'g');
+
+    -- Step 4: empty check
+    IF v_clean = '' THEN
+        RETURN 'UNKNWN';
+    END IF;
+
+    -- Split into words
+    v_words := string_to_array(v_clean, ' ');
+    v_word_count := array_length(v_words, 1);
+
+    IF v_word_count = 1 THEN
+        -- Step 5: single word — first letter + consonants, up to 6 chars
+        v_consonants := regexp_replace(v_words[1], '[AEIOU]', '', 'g');
+        v_result := left(v_words[1], 1) || substr(v_consonants, 2);
+        v_result := left(v_result, 6);
+    ELSIF v_word_count = 2 THEN
+        -- Step 6a: two words — 3+3
+        v_result := left(v_words[1], 3) || left(v_words[2], 3);
+    ELSE
+        -- Step 6b: three or more words — 2+2+2
+        v_result := left(v_words[1], 2) || left(v_words[2], 2) || left(v_words[3], 2);
+    END IF;
+
+    -- Step 7: pad to minimum 3 chars
+    IF length(v_result) < 3 THEN
+        v_result := rpad(v_result, 3, 'X');
+    END IF;
+
+    RETURN v_result;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+

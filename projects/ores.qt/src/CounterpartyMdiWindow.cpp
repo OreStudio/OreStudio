@@ -148,6 +148,7 @@ void CounterpartyMdiWindow::setupTable() {
     tableView_->setItemDelegate(new EntityItemDelegate({
         cs::text_left,   // ShortCode
         cs::text_left,   // FullName
+        cs::text_left,   // TransliteratedName
         cs::text_left,   // PartyType
         cs::text_left,   // Status
         cs::text_left,   // BusinessCenterCode
@@ -162,6 +163,7 @@ void CounterpartyMdiWindow::setupTable() {
     // Set column widths
     tableView_->setColumnWidth(ClientCounterpartyModel::ShortCode, 120);
     tableView_->setColumnWidth(ClientCounterpartyModel::FullName, 250);
+    tableView_->setColumnWidth(ClientCounterpartyModel::TransliteratedName, 200);
     tableView_->setColumnWidth(ClientCounterpartyModel::PartyType, 120);
     tableView_->setColumnWidth(ClientCounterpartyModel::Status, 100);
     tableView_->setColumnWidth(ClientCounterpartyModel::BusinessCenterCode, 130);

@@ -39,6 +39,7 @@ party_mapper::map(const party_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.full_name = v.full_name;
     r.short_code = v.short_code;
+    r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
     r.party_type = v.party_type;
     if (v.parent_party_id.has_value() && !v.parent_party_id->empty())
@@ -65,6 +66,7 @@ party_mapper::map(const domain::party& v) {
     r.version = v.version;
     r.full_name = v.full_name;
     r.short_code = v.short_code;
+    r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
     r.party_type = v.party_type;
     if (v.parent_party_id)

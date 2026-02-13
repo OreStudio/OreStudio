@@ -9,6 +9,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/Client{{domain_entity.entity_pascal}}Model.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "{{domain_entity.qt.domain_include}}"
 
@@ -90,6 +91,7 @@ private:
     QTableView* tableView_;
     Client{{domain_entity.entity_pascal}}Model* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

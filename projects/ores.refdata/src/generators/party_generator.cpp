@@ -41,6 +41,7 @@ domain::party generate_synthetic_party() {
     r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);
     r.party_category = "operational";
     r.party_type = std::string("Corporate");
+    r.transliterated_name = std::nullopt;
     r.parent_party_id = std::nullopt;
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");

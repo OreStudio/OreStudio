@@ -6,14 +6,12 @@
 #include "{{domain_entity.qt.protocol_include}}"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string {{domain_entity.entity_snake}}_key_extractor(const {{domain_entity.qt.domain_class}}& e) {
@@ -103,78 +101,99 @@ QVariant Client{{domain_entity.entity_pascal}}Model::headerData(
 }
 
 void Client{{domain_entity.entity_pascal}}Model::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+
     if (is_fetching_) {
-        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh {{domain_entity.entity_singular_words}} model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting {{domain_entity.entity_singular_words}} fetch";
-    is_fetching_ = true;
+    if (!{{domain_entity.qt.collection_name}}_.empty()) {
+        beginResetModel();
+        {{domain_entity.qt.collection_name}}_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
+    }
 
+    fetch_{{domain_entity.qt.collection_name}}(0, page_size_);
+}
+
+void Client{{domain_entity.entity_pascal}}Model::load_page(std::uint32_t offset,
+                                          std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    if (!{{domain_entity.qt.collection_name}}_.empty()) {
+        beginResetModel();
+        {{domain_entity.qt.collection_name}}_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
+    }
+
+    fetch_{{domain_entity.qt.collection_name}}(offset, limit);
+}
+
+void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collection_name}}(
+    std::uint32_t offset, std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<Client{{domain_entity.entity_pascal}}Model> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+    QFuture<FetchResult> future =
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making {{domain_entity.entity_plural_words}} request with offset="
+                                           << offset << ", limit=" << limit;
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                            .total_available_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            {{domain_entity.qt.get_request_class}} request;
-            auto payload = request.serialize();
+                {{domain_entity.qt.get_request_class}} request;
+                request.offset = offset;
+                request.limit = limit;
 
-            frame request_frame(
-                message_type::{{domain_entity.qt.get_message_type}},
-                0, std::move(payload)
-            );
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch {{domain_entity.entity_plural_words}}: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .{{domain_entity.qt.collection_name}} = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch {{domain_entity.entity_plural_words}}: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response = {{domain_entity.qt.get_response_class}}::
-                deserialize(*payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .{{domain_entity.qt.collection_name}} = {},
-                        .error_message = "Failed to deserialize response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->{{domain_entity.qt.collection_name}}.size()
-                                       << " {{domain_entity.entity_plural_words}}";
-            return {.success = true, .{{domain_entity.qt.collection_name}} = std::move(response->{{domain_entity.qt.collection_name}}),
-                    .error_message = {}, .error_details = {}};
-        }, "{{domain_entity.entity_plural_words}}");
-    });
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.qt.collection_name}}.size()
+                                           << " {{domain_entity.entity_plural_words}}, total available: "
+                                           << result->total_available_count;
+                return {.success = true,
+                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.qt.collection_name}}),
+                        .total_available_count = result->total_available_count,
+                        .error_message = {}, .error_details = {}};
+            }, "{{domain_entity.entity_plural_words}}");
+        });
 
     watcher_->setFuture(future);
 }
@@ -191,19 +210,38 @@ void Client{{domain_entity.entity_pascal}}Model::on{{domain_entity.entity_pascal
         return;
     }
 
-    beginResetModel();
-    {{domain_entity.qt.collection_name}}_ = std::move(result.{{domain_entity.qt.collection_name}});
-    endResetModel();
+    total_available_count_ = result.total_available_count;
 
-    const bool has_recent = recencyTracker_.update({{domain_entity.qt.collection_name}}_);
-    if (has_recent && !pulseManager_->is_pulsing()) {
-        pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " {{domain_entity.entity_plural_words}} newer than last reload";
+    const int new_count = static_cast<int>(result.{{domain_entity.qt.collection_name}}.size());
+
+    if (new_count > 0) {
+        beginResetModel();
+        {{domain_entity.qt.collection_name}}_ = std::move(result.{{domain_entity.qt.collection_name}});
+        endResetModel();
+
+        const bool has_recent = recencyTracker_.update({{domain_entity.qt.collection_name}}_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " {{domain_entity.entity_plural_words}} newer than last reload";
+        }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << {{domain_entity.qt.collection_name}}_.size() << " {{domain_entity.entity_plural_words}}";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " {{domain_entity.entity_plural_words}}."
+                              << " Total available: " << total_available_count_;
+
     emit dataLoaded();
+}
+
+void Client{{domain_entity.entity_pascal}}Model::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 const {{domain_entity.qt.domain_class}}*

@@ -135,21 +135,6 @@ public:
     void load_page(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Check if more data can be fetched from the server.
-     *
-     * @return true if there are more records available on the server
-     */
-    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
-
-    /**
-     * @brief Fetch the next page of data from the server.
-     *
-     * This is called automatically by Qt views when scrolling approaches
-     * the end of currently loaded data.
-     */
-    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
-
-    /**
      * @brief Get account with login info at the specified row.
      *
      * @param row The row index.

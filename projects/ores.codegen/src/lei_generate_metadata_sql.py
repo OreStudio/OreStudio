@@ -54,6 +54,8 @@ LEI2_COLUMN_MAP = {
     'Registration.LastUpdateDate': 'registration_last_update_date',
     'Registration.NextRenewalDate': 'registration_next_renewal_date',
     'Registration.RegistrationStatus': 'registration_registration_status',
+    'Entity.TransliteratedOtherEntityNames.TransliteratedOtherEntityName.1': 'entity_transliterated_name_1',
+    'Entity.TransliteratedOtherEntityNames.TransliteratedOtherEntityName.1.type': 'entity_transliterated_name_1_type',
 }
 
 RR_COLUMN_MAP = {

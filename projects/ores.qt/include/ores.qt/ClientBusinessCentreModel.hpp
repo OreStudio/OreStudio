@@ -99,9 +99,6 @@ public:
      */
     void load_page(std::uint32_t offset, std::uint32_t limit);
 
-    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
-    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
-
     /**
      * @brief Get business centre at the specified row.
      *

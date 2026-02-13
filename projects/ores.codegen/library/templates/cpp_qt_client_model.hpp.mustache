@@ -68,6 +68,26 @@ public:
      */
     const {{domain_entity.qt.domain_class}}* get{{domain_entity.entity_pascal_short}}(int row) const;
 
+    /**
+     * @brief Load a specific page of data.
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Get the page size used for pagination.
+     */
+    std::uint32_t page_size() const { return page_size_; }
+
+    /**
+     * @brief Set the page size for pagination.
+     */
+    void set_page_size(std::uint32_t size);
+
+    /**
+     * @brief Get the total number of records available on the server.
+     */
+    std::uint32_t total_available_count() const { return total_available_count_; }
+
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.
@@ -90,13 +110,18 @@ private:
     struct FetchResult {
         bool success;
         std::vector<{{domain_entity.qt.domain_class}}> {{domain_entity.qt.collection_name}};
+        std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
+    void fetch_{{domain_entity.qt.collection_name}}(std::uint32_t offset, std::uint32_t limit);
+
     ClientManager* clientManager_;
     std::vector<{{domain_entity.qt.domain_class}}> {{domain_entity.qt.collection_name}}_;
     QFutureWatcher<FetchResult>* watcher_;
+    std::uint32_t page_size_{100};
+    std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using {{domain_entity.entity_pascal}}KeyExtractor = std::string(*)(const {{domain_entity.qt.domain_class}}&);

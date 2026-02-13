@@ -20,11 +20,10 @@
 #include "ores.qt/ClientCounterpartyModel.hpp"
 
 #include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
-#include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -343,24 +342,18 @@ void ClientCounterpartyModel::fetch_business_centres() {
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 
+    using MapType = std::unordered_map<std::string, std::string>;
     QPointer<ClientCounterpartyModel> self = this;
-    struct BcResult {
-        bool success;
-        std::vector<std::pair<std::string, std::string>> code_to_image;
-    };
 
-    auto* watcher = new QFutureWatcher<BcResult>(this);
-    connect(watcher, &QFutureWatcher<BcResult>::finished,
+    auto* watcher = new QFutureWatcher<MapType>(this);
+    connect(watcher, &QFutureWatcher<MapType>::finished,
             this, [self, watcher]() {
-        auto result = watcher->result();
+        auto mapping = watcher->result();
         watcher->deleteLater();
-        if (!self || !result.success)
+        if (!self || mapping.empty())
             return;
 
-        self->bc_code_to_image_id_.clear();
-        for (auto& [code, image_id] : result.code_to_image) {
-            self->bc_code_to_image_id_[std::move(code)] = std::move(image_id);
-        }
+        self->bc_code_to_image_id_ = std::move(mapping);
 
         if (!self->counterparties_.empty()) {
             emit self->dataChanged(self->index(0, Flag),
@@ -369,27 +362,8 @@ void ClientCounterpartyModel::fetch_business_centres() {
         }
     });
 
-    QFuture<BcResult> future = QtConcurrent::run(
-        [cm = clientManager_]() -> BcResult {
-            refdata::messaging::get_business_centres_request request;
-            request.offset = 0;
-            request.limit = 1000;
-
-            auto result = cm->process_authenticated_request(std::move(request));
-            if (!result)
-                return {false, {}};
-
-            std::vector<std::pair<std::string, std::string>> mapping;
-            for (const auto& bc : result->business_centres) {
-                std::string image_id_str;
-                if (bc.image_id)
-                    image_id_str = boost::uuids::to_string(*bc.image_id);
-                mapping.emplace_back(bc.code, std::move(image_id_str));
-            }
-            return {true, std::move(mapping)};
-        });
-
-    watcher->setFuture(future);
+    watcher->setFuture(QtConcurrent::run(
+        [cm = clientManager_]() { return fetch_business_centre_image_map(cm); }));
 }
 
 }

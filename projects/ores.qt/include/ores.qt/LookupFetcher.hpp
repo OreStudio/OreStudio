@@ -22,6 +22,7 @@
 
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::qt {
@@ -64,6 +65,16 @@ lookup_result fetch_party_lookups(ClientManager* cm);
  * Returns empty vectors on failure.
  */
 lookup_result fetch_tenant_lookups(ClientManager* cm);
+
+/**
+ * @brief Fetches business centre code to image ID mapping from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by list models that display country flag icons for business centres.
+ * Returns empty map on failure.
+ */
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm);
 
 }
 

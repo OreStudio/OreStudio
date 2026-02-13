@@ -19,20 +19,17 @@
  */
 #include "ores.qt/ClientBusinessCentreModel.hpp"
 
-#include <unordered_set>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string business_centre_key_extractor(const refdata::domain::business_centre& e) {
@@ -172,8 +169,8 @@ QVariant ClientBusinessCentreModel::headerData(
     }
 }
 
-void ClientBusinessCentreModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientBusinessCentreModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
@@ -186,20 +183,16 @@ void ClientBusinessCentreModel::refresh(bool replace) {
         return;
     }
 
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(business_centres_.size());
-
-    if (replace) {
-        if (!business_centres_.empty()) {
-            beginResetModel();
-            business_centres_.clear();
-            recencyTracker_.clear();
-            pulseManager_->stop_pulsing();
-            total_available_count_ = 0;
-            endResetModel();
-        }
+    if (!business_centres_.empty()) {
+        beginResetModel();
+        business_centres_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
     }
 
-    fetch_business_centres(offset, page_size_);
+    fetch_business_centres(0, page_size_);
 }
 
 void ClientBusinessCentreModel::load_page(std::uint32_t offset,
@@ -230,13 +223,14 @@ void ClientBusinessCentreModel::load_page(std::uint32_t offset,
 void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset,
                                                        std::uint32_t limit) {
     is_fetching_ = true;
+    QPointer<ClientBusinessCentreModel> self = this;
 
     QFuture<FetchResult> future =
-        QtConcurrent::run([cm = clientManager_, offset, limit]() -> FetchResult {
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 BOOST_LOG_SEV(lg(), debug) << "Making business centres request with offset="
                                            << offset << ", limit=" << limit;
-                if (!cm) {
+                if (!self || !self->clientManager_) {
                     return {.success = false, .business_centres = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
@@ -246,58 +240,26 @@ void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset,
                 refdata::messaging::get_business_centres_request request;
                 request.offset = offset;
                 request.limit = limit;
-                auto payload = request.serialize();
 
-                frame request_frame(
-                    message_type::get_business_centres_request,
-                    0, std::move(payload)
-                );
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-                auto response_result = cm->sendRequest(
-                    std::move(request_frame));
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch business centres: "
+                                               << comms::net::to_string(result.error());
                     return {.success = false, .business_centres = {},
                             .total_available_count = 0,
-                            .error_message = "Failed to send request",
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch business centres: " + comms::net::to_string(result.error())),
                             .error_details = {}};
                 }
 
-                // Check for server error response
-                if (auto err = exception_helper::check_error_response(*response_result)) {
-                    BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                               << err->message.toStdString();
-                    return {.success = false, .business_centres = {},
-                            .total_available_count = 0,
-                            .error_message = err->message,
-                            .error_details = err->details};
-                }
-
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                    return {.success = false, .business_centres = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to decompress response",
-                            .error_details = {}};
-                }
-
-                auto response = refdata::messaging::get_business_centres_response::
-                    deserialize(*payload_result);
-                if (!response) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                    return {.success = false, .business_centres = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to deserialize response",
-                            .error_details = {}};
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->business_centres.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->business_centres.size()
                                            << " business centres, total available: "
-                                           << response->total_available_count;
+                                           << result->total_available_count;
                 return {.success = true,
-                        .business_centres = std::move(response->business_centres),
-                        .total_available_count = response->total_available_count,
+                        .business_centres = std::move(result->business_centres),
+                        .total_available_count = result->total_available_count,
                         .error_message = {}, .error_details = {}};
             }, "business centres");
         });
@@ -319,41 +281,12 @@ void ClientBusinessCentreModel::onBusinessCentresLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    std::vector<refdata::domain::business_centre> new_business_centres;
-    const auto received_count = result.business_centres.size();
-
-    if (business_centres_.empty()) {
-        // Full refresh or first page load, no duplicates to check.
-        new_business_centres = std::move(result.business_centres);
-    } else {
-        // Appending data, check for duplicates.
-        std::unordered_set<std::string> existing_codes;
-        existing_codes.reserve(business_centres_.size());
-        for (const auto& bc : business_centres_) {
-            existing_codes.insert(bc.code);
-        }
-
-        new_business_centres.reserve(received_count);
-        for (auto& bc : result.business_centres) {
-            if (existing_codes.find(bc.code) == existing_codes.end()) {
-                new_business_centres.push_back(std::move(bc));
-                existing_codes.insert(bc.code);
-            } else {
-                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate business centre: "
-                                           << bc.code;
-            }
-        }
-    }
-
-    const int old_size = static_cast<int>(business_centres_.size());
-    const int new_count = static_cast<int>(new_business_centres.size());
+    const int new_count = static_cast<int>(result.business_centres.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
-        business_centres_.insert(business_centres_.end(),
-            std::make_move_iterator(new_business_centres.begin()),
-            std::make_move_iterator(new_business_centres.end()));
-        endInsertRows();
+        beginResetModel();
+        business_centres_ = std::move(result.business_centres);
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(business_centres_);
         if (has_recent && !pulseManager_->is_pulsing()) {
@@ -363,11 +296,8 @@ void ClientBusinessCentreModel::onBusinessCentresLoaded() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new business centres "
-                              << "(received " << received_count
-                              << ", filtered " << (received_count - new_count)
-                              << " duplicates). Total in model: " << business_centres_.size()
-                              << ", Total available: " << total_available_count_;
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " business centres."
+                              << " Total available: " << total_available_count_;
 
     emit dataLoaded();
 }
@@ -378,26 +308,6 @@ ClientBusinessCentreModel::getBusinessCentre(int row) const {
     if (idx >= business_centres_.size())
         return nullptr;
     return &business_centres_[idx];
-}
-
-bool ClientBusinessCentreModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = business_centres_.size() < total_available_count_;
-    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
-                               << " (loaded: " << business_centres_.size()
-                               << ", page_size: " << page_size_
-                               << ", available: " << total_available_count_ << ")";
-    return has_more && !is_fetching_;
-}
-
-void ClientBusinessCentreModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false);
 }
 
 void ClientBusinessCentreModel::set_page_size(std::uint32_t size) {

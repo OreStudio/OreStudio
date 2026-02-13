@@ -71,6 +71,7 @@ grant connect, temp on database :db_name to ores_rw, ores_ro;
 
 -- Install required extensions
 create extension if not exists btree_gist;
+create extension if not exists unaccent;
 
 -- Grant schema permissions to appropriate roles
 grant usage on schema public to ores_owner, ores_rw, ores_ro;

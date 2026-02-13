@@ -130,16 +130,19 @@ begin
         depth int not null default 0,
         entity_legal_name text not null,
         entity_legal_address_country text not null,
-        entity_entity_status text not null
+        entity_entity_status text not null,
+        entity_transliterated_name_1 text null,
+        short_code text not null default ''
     ) on commit drop;
 
     -- Populate LEI entities from the selected dataset
-    insert into lei_counterparty_uuid_map (lei, entity_legal_name, entity_legal_address_country, entity_entity_status)
+    insert into lei_counterparty_uuid_map (lei, entity_legal_name, entity_legal_address_country, entity_entity_status, entity_transliterated_name_1)
     select distinct on (e.lei)
         e.lei,
         e.entity_legal_name,
         e.entity_legal_address_country,
-        e.entity_entity_status
+        e.entity_entity_status,
+        e.entity_transliterated_name_1
     from ores_dq_lei_entities_artefact_tbl e
     where e.dataset_id = v_entity_dataset_id
     order by e.lei;
@@ -172,6 +175,29 @@ begin
         end loop;
     end;
 
+    -- Generate short codes with collision resolution
+    update lei_counterparty_uuid_map m
+    set short_code = sub.resolved_code
+    from (
+        select lei,
+            case when cnt > 1 then base_code || rn::text
+                 else base_code end as resolved_code
+        from (
+            select lei,
+                ores_utility_generate_short_code_fn(
+                    entity_legal_name, entity_transliterated_name_1) as base_code,
+                row_number() over (
+                    partition by ores_utility_generate_short_code_fn(
+                        entity_legal_name, entity_transliterated_name_1)
+                    order by lei) as rn,
+                count(*) over (
+                    partition by ores_utility_generate_short_code_fn(
+                        entity_legal_name, entity_transliterated_name_1)) as cnt
+            from lei_counterparty_uuid_map
+        ) numbered
+    ) sub
+    where sub.lei = m.lei;
+
     -- Insert counterparties level by level (roots first, then children)
     -- so that the insert trigger can validate parent_counterparty_id.
     declare
@@ -184,13 +210,15 @@ begin
         for v_current_depth in 0..coalesce(v_max_depth, 0) loop
             insert into ores_refdata_counterparties_tbl (
                 tenant_id,
-                id, version, full_name, short_code, party_type,
+                id, version, full_name, short_code, transliterated_name, party_type,
                 parent_counterparty_id, business_center_code, status,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
                 p_target_tenant_id,
-                m.counterparty_uuid, 0, m.entity_legal_name, m.lei, 'Corporate',
+                m.counterparty_uuid, 0,
+                m.entity_legal_name,
+                m.short_code, m.entity_transliterated_name_1, 'Corporate',
                 parent_map.counterparty_uuid,
                 -- Default business centre from country
                 coalesce(bc_map.business_center_code, 'WRLD'),

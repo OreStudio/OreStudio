@@ -259,11 +259,10 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // limit) and get_counterparties_response (total_available_count). Breaking
 // change as the wire format is incompatible with previous versions.
 //
-// Version 31.1 adds business centre CRUD and history messages (0x1061-0x1068)
-// for managing FpML-style business centre reference data used in holiday
-// calendar determination.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 31;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+// Version 32.0 adds transliterated_name optional field to party and
+// counterparty wire format.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 32;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

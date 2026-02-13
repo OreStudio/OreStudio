@@ -53,7 +53,9 @@ create table if not exists "ores_dq_lei_entities_artefact_tbl" (
     "registration_initial_registration_date" timestamp with time zone null,
     "registration_last_update_date" timestamp with time zone null,
     "registration_next_renewal_date" timestamp with time zone null,
-    "registration_registration_status" text null
+    "registration_registration_status" text null,
+    "entity_transliterated_name_1" text null,
+    "entity_transliterated_name_1_type" text null
 );
 
 create index if not exists dq_lei_entities_artefact_dataset_idx
@@ -98,7 +100,9 @@ create or replace function ores_dq_lei_entities_artefact_insert_fn(
     p_registration_initial_registration_date timestamp with time zone,
     p_registration_last_update_date timestamp with time zone,
     p_registration_next_renewal_date timestamp with time zone,
-    p_registration_registration_status text
+    p_registration_registration_status text,
+    p_entity_transliterated_name_1 text default null,
+    p_entity_transliterated_name_1_type text default null
 ) returns void as $$
 begin
     insert into ores_dq_lei_entities_artefact_tbl (
@@ -124,7 +128,9 @@ begin
         registration_initial_registration_date,
         registration_last_update_date,
         registration_next_renewal_date,
-        registration_registration_status
+        registration_registration_status,
+        entity_transliterated_name_1,
+        entity_transliterated_name_1_type
     )
     values (
         p_dataset_id, p_tenant_id, p_lei, p_version,
@@ -149,7 +155,9 @@ begin
         p_registration_initial_registration_date,
         p_registration_last_update_date,
         p_registration_next_renewal_date,
-        p_registration_registration_status
+        p_registration_registration_status,
+        p_entity_transliterated_name_1,
+        p_entity_transliterated_name_1_type
     );
 end;
 $$ language plpgsql;

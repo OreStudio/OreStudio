@@ -19,19 +19,16 @@
  */
 #include "ores.qt/ClientCounterpartyModel.hpp"
 
-#include <unordered_set>
 #include <QtConcurrent>
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string counterparty_key_extractor(const refdata::domain::counterparty& e) {
@@ -85,6 +82,8 @@ QVariant ClientCounterpartyModel::data(
             return QString::fromStdString(counterparty.short_code);
         case FullName:
             return QString::fromStdString(counterparty.full_name);
+        case TransliteratedName:
+            return QString::fromStdString(counterparty.transliterated_name.value_or(""));
         case PartyType:
             return QString::fromStdString(counterparty.party_type);
         case Status:
@@ -119,6 +118,8 @@ QVariant ClientCounterpartyModel::headerData(
         return tr("Code");
     case FullName:
         return tr("Name");
+    case TransliteratedName:
+        return tr("Transliterated Name");
     case PartyType:
         return tr("Type");
     case Status:
@@ -136,8 +137,8 @@ QVariant ClientCounterpartyModel::headerData(
     }
 }
 
-void ClientCounterpartyModel::refresh(bool replace) {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+void ClientCounterpartyModel::refresh(bool /*replace*/) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
@@ -150,20 +151,16 @@ void ClientCounterpartyModel::refresh(bool replace) {
         return;
     }
 
-    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(counterparties_.size());
-
-    if (replace) {
-        if (!counterparties_.empty()) {
-            beginResetModel();
-            counterparties_.clear();
-            recencyTracker_.clear();
-            pulseManager_->stop_pulsing();
-            total_available_count_ = 0;
-            endResetModel();
-        }
+    if (!counterparties_.empty()) {
+        beginResetModel();
+        counterparties_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
     }
 
-    fetch_counterparties(offset, page_size_);
+    fetch_counterparties(0, page_size_);
 }
 
 void ClientCounterpartyModel::load_page(std::uint32_t offset,
@@ -211,58 +208,26 @@ void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset,
                 refdata::messaging::get_counterparties_request request;
                 request.offset = offset;
                 request.limit = limit;
-                auto payload = request.serialize();
 
-                frame request_frame(
-                    message_type::get_counterparties_request,
-                    0, std::move(payload)
-                );
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-                auto response_result = self->clientManager_->sendRequest(
-                    std::move(request_frame));
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch counterparties: "
+                                               << comms::net::to_string(result.error());
                     return {.success = false, .counterparties = {},
                             .total_available_count = 0,
-                            .error_message = "Failed to send request",
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch counterparties: " + comms::net::to_string(result.error())),
                             .error_details = {}};
                 }
 
-                // Check for server error response
-                if (auto err = exception_helper::check_error_response(*response_result)) {
-                    BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                               << err->message.toStdString();
-                    return {.success = false, .counterparties = {},
-                            .total_available_count = 0,
-                            .error_message = err->message,
-                            .error_details = err->details};
-                }
-
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                    return {.success = false, .counterparties = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to decompress response",
-                            .error_details = {}};
-                }
-
-                auto response = refdata::messaging::get_counterparties_response::
-                    deserialize(*payload_result);
-                if (!response) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                    return {.success = false, .counterparties = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to deserialize response",
-                            .error_details = {}};
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->counterparties.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->counterparties.size()
                                            << " counterparties, total available: "
-                                           << response->total_available_count;
+                                           << result->total_available_count;
                 return {.success = true,
-                        .counterparties = std::move(response->counterparties),
-                        .total_available_count = response->total_available_count,
+                        .counterparties = std::move(result->counterparties),
+                        .total_available_count = result->total_available_count,
                         .error_message = {}, .error_details = {}};
             }, "counterparties");
         });
@@ -284,41 +249,12 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    std::vector<refdata::domain::counterparty> new_counterparties;
-    const auto received_count = result.counterparties.size();
-
-    if (counterparties_.empty()) {
-        // Full refresh or first page load, no duplicates to check.
-        new_counterparties = std::move(result.counterparties);
-    } else {
-        // Appending data, check for duplicates.
-        std::unordered_set<std::string> existing_codes;
-        existing_codes.reserve(counterparties_.size());
-        for (const auto& cp : counterparties_) {
-            existing_codes.insert(cp.short_code);
-        }
-
-        new_counterparties.reserve(received_count);
-        for (auto& cp : result.counterparties) {
-            if (existing_codes.find(cp.short_code) == existing_codes.end()) {
-                new_counterparties.push_back(std::move(cp));
-                existing_codes.insert(cp.short_code);
-            } else {
-                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate counterparty: "
-                                           << cp.short_code;
-            }
-        }
-    }
-
-    const int old_size = static_cast<int>(counterparties_.size());
-    const int new_count = static_cast<int>(new_counterparties.size());
+    const int new_count = static_cast<int>(result.counterparties.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
-        counterparties_.insert(counterparties_.end(),
-            std::make_move_iterator(new_counterparties.begin()),
-            std::make_move_iterator(new_counterparties.end()));
-        endInsertRows();
+        beginResetModel();
+        counterparties_ = std::move(result.counterparties);
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(counterparties_);
         if (has_recent && !pulseManager_->is_pulsing()) {
@@ -328,11 +264,8 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new counterparties "
-                              << "(received " << received_count
-                              << ", filtered " << (received_count - new_count)
-                              << " duplicates). Total in model: " << counterparties_.size()
-                              << ", Total available: " << total_available_count_;
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " counterparties."
+                              << " Total available: " << total_available_count_;
 
     emit dataLoaded();
 }
@@ -343,26 +276,6 @@ ClientCounterpartyModel::getCounterparty(int row) const {
     if (idx >= counterparties_.size())
         return nullptr;
     return &counterparties_[idx];
-}
-
-bool ClientCounterpartyModel::canFetchMore(const QModelIndex& parent) const {
-    if (parent.isValid())
-        return false;
-
-    const bool has_more = counterparties_.size() < total_available_count_;
-    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
-                               << " (loaded: " << counterparties_.size()
-                               << ", page_size: " << page_size_
-                               << ", available: " << total_available_count_ << ")";
-    return has_more && !is_fetching_;
-}
-
-void ClientCounterpartyModel::fetchMore(const QModelIndex& parent) {
-    if (parent.isValid() || is_fetching_)
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
-    refresh(false);
 }
 
 void ClientCounterpartyModel::set_page_size(std::uint32_t size) {

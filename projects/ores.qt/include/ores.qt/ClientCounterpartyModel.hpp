@@ -22,7 +22,6 @@
 
 #include <vector>
 #include <cstdint>
-#include <unordered_set>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
@@ -59,6 +58,7 @@ public:
     enum Column {
         ShortCode,
         FullName,
+        TransliteratedName,
         PartyType,
         Status,
         BusinessCenterCode,
@@ -96,9 +96,6 @@ public:
      * @param limit Number of records to fetch
      */
     void load_page(std::uint32_t offset, std::uint32_t limit);
-
-    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
-    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
 
     /**
      * @brief Get counterparty at the specified row.

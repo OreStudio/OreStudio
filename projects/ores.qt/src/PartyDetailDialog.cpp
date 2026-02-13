@@ -73,6 +73,8 @@ void PartyDetailDialog::setupConnections() {
             &PartyDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PartyDetailDialog::onFieldChanged);
+    connect(ui_->transliteratedNameEdit, &QLineEdit::textChanged, this,
+            &PartyDetailDialog::onFieldChanged);
     connect(ui_->partyCategoryCombo, &QComboBox::currentTextChanged, this,
             &PartyDetailDialog::onFieldChanged);
     connect(ui_->partyTypeCombo, &QComboBox::currentTextChanged, this,
@@ -154,6 +156,7 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
+    ui_->transliteratedNameEdit->setReadOnly(readOnly);
     ui_->partyCategoryCombo->setEnabled(!readOnly);
     ui_->partyTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
@@ -165,6 +168,8 @@ void PartyDetailDialog::setReadOnly(bool readOnly) {
 void PartyDetailDialog::updateUiFromParty() {
     ui_->codeEdit->setText(QString::fromStdString(party_.short_code));
     ui_->nameEdit->setText(QString::fromStdString(party_.full_name));
+    ui_->transliteratedNameEdit->setText(
+        QString::fromStdString(party_.transliterated_name.value_or("")));
     ui_->partyCategoryCombo->setCurrentText(QString::fromStdString(party_.party_category));
     ui_->partyTypeCombo->setCurrentText(QString::fromStdString(party_.party_type));
     ui_->statusCombo->setCurrentText(QString::fromStdString(party_.status));
@@ -181,6 +186,8 @@ void PartyDetailDialog::updatePartyFromUi() {
         party_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     party_.full_name = ui_->nameEdit->text().trimmed().toStdString();
+    const auto tlit = ui_->transliteratedNameEdit->text().trimmed().toStdString();
+    party_.transliterated_name = tlit.empty() ? std::nullopt : std::optional<std::string>(tlit);
     party_.party_category = ui_->partyCategoryCombo->currentText().trimmed().toStdString();
     party_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
     party_.status = ui_->statusCombo->currentText().trimmed().toStdString();

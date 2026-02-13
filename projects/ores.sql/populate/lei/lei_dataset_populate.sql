@@ -71,6 +71,106 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'lei_entities'
 );
 
+-- GLEIF LEI Parties (Small)
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_parties.small',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'LEI',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI Parties (Small)',
+    '',
+    'GLEIF',
+    'Parties derived from GLEIF LEI entity data',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_parties'
+);
+
+-- GLEIF LEI Parties (Large)
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_parties.large',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'LEI',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI Parties (Large)',
+    '',
+    'GLEIF',
+    'Parties derived from GLEIF LEI entity data',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_parties'
+);
+
+-- GLEIF LEI BIC Mappings
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_bic',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'BIC',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI BIC Mappings',
+    '',
+    'GLEIF',
+    'GLEIF golden copy data',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_bic'
+);
+
+-- GLEIF LEI Counterparties (Small)
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_counterparties.small',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'LEI',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI Counterparties (Small)',
+    '',
+    'GLEIF',
+    'Counterparties derived from GLEIF LEI entity data',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_counterparties'
+);
+
+-- GLEIF LEI Counterparties (Large)
+select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'gleif.lei_counterparties.large',
+    'GLEIF Standards',
+    'Parties',
+    'Reference Data',
+    'LEI',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GLEIF Golden Copy Extraction',
+    'GLEIF LEI Counterparties (Large)',
+    '',
+    'GLEIF',
+    'Counterparties derived from GLEIF LEI entity data',
+    '2026-01-23'::date,
+    'Open Data',
+    'lei_counterparties'
+);
+
 -- GLEIF LEI Relationships (Small)
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'gleif.lei_relationships.small',
@@ -109,65 +209,5 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     '2026-01-23'::date,
     'Open Data',
     'lei_relationships'
-);
-
--- GLEIF LEI BIC Mappings
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_bic',
-    'GLEIF Standards',
-    'Parties',
-    'Reference Data',
-    'BIC',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GLEIF Golden Copy Extraction',
-    'GLEIF LEI BIC Mappings',
-    '',
-    'GLEIF',
-    'GLEIF golden copy data',
-    '2026-01-23'::date,
-    'Open Data',
-    'lei_bic'
-);
-
--- GLEIF LEI Parties (Small)
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.small',
-    'GLEIF Standards',
-    'Parties',
-    'Reference Data',
-    'LEI',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GLEIF Golden Copy Extraction',
-    'GLEIF LEI Parties (Small)',
-    '',
-    'GLEIF',
-    'GLEIF LEI entities published as parties',
-    '2026-01-23'::date,
-    'Open Data',
-    'lei_parties'
-);
-
--- GLEIF LEI Counterparties (Small)
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.small',
-    'GLEIF Standards',
-    'Parties',
-    'Reference Data',
-    'LEI',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GLEIF Golden Copy Extraction',
-    'GLEIF LEI Counterparties (Small)',
-    '',
-    'GLEIF',
-    'GLEIF LEI entities published as counterparties',
-    '2026-01-23'::date,
-    'Open Data',
-    'lei_counterparties'
 );
 

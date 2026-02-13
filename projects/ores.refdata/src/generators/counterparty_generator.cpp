@@ -40,6 +40,7 @@ domain::counterparty generate_synthetic_counterparty() {
     r.full_name = faker::company::companyName() + " " + std::to_string(idx);
     r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);
     r.party_type = std::string("Bank");
+    r.transliterated_name = std::nullopt;
     r.parent_counterparty_id = std::nullopt;
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");

@@ -252,9 +252,9 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
     const int new_count = static_cast<int>(result.counterparties.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         counterparties_ = std::move(result.counterparties);
-        endInsertRows();
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(counterparties_);
         if (has_recent && !pulseManager_->is_pulsing()) {

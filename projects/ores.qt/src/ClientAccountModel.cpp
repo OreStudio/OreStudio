@@ -301,9 +301,9 @@ void ClientAccountModel::onAccountsLoaded() {
             return a.account.username < b.account.username;
         });
 
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         accounts_ = std::move(new_items);
-        endInsertRows();
+        endResetModel();
 
         // Update the set of recent accounts for recency coloring
         std::vector<iam::domain::account> accounts_for_tracker;

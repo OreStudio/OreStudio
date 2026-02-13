@@ -284,9 +284,9 @@ void ClientBusinessCentreModel::onBusinessCentresLoaded() {
     const int new_count = static_cast<int>(result.business_centres.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         business_centres_ = std::move(result.business_centres);
-        endInsertRows();
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(business_centres_);
         if (has_recent && !pulseManager_->is_pulsing()) {

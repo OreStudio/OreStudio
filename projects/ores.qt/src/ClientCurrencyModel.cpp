@@ -279,9 +279,9 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     const int new_count = static_cast<int>(result.currencies.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         currencies_ = std::move(result.currencies);
-        endInsertRows();
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(currencies_);
         if (has_recent && !pulseManager_->is_pulsing()) {

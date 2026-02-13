@@ -268,9 +268,9 @@ void ClientCountryModel::onCountriesLoaded() {
     const int new_count = static_cast<int>(result.countries.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         countries_ = std::move(result.countries);
-        endInsertRows();
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(countries_);
         if (has_recent && !pulseManager_->is_pulsing()) {

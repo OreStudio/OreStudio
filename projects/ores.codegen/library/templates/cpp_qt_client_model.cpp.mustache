@@ -215,9 +215,9 @@ void Client{{domain_entity.entity_pascal}}Model::on{{domain_entity.entity_pascal
     const int new_count = static_cast<int>(result.{{domain_entity.qt.collection_name}}.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         {{domain_entity.qt.collection_name}}_ = std::move(result.{{domain_entity.qt.collection_name}});
-        endInsertRows();
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update({{domain_entity.qt.collection_name}}_);
         if (has_recent && !pulseManager_->is_pulsing()) {

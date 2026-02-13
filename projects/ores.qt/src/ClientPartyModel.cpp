@@ -265,9 +265,9 @@ void ClientPartyModel::onPartysLoaded() {
     const int new_count = static_cast<int>(result.parties.size());
 
     if (new_count > 0) {
-        beginInsertRows(QModelIndex(), 0, new_count - 1);
+        beginResetModel();
         parties_ = std::move(result.parties);
-        endInsertRows();
+        endResetModel();
 
         const bool has_recent = recencyTracker_.update(parties_);
         if (has_recent && !pulseManager_->is_pulsing()) {

@@ -22,9 +22,12 @@
 
 #include <vector>
 #include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -56,12 +59,13 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
+        Flag,
+        BusinessCenterCode,
         ShortCode,
         FullName,
         TransliteratedName,
         PartyType,
         Status,
-        BusinessCenterCode,
         Version,
         RecordedBy,
         RecordedAt,
@@ -69,7 +73,8 @@ public:
     };
 
     explicit ClientCounterpartyModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+                                     ImageCache* imageCache,
+                                     QObject* parent = nullptr);
     ~ClientCounterpartyModel() override = default;
 
     // QAbstractTableModel interface
@@ -137,8 +142,10 @@ private:
     };
 
     void fetch_counterparties(std::uint32_t offset, std::uint32_t limit);
+    void fetch_business_centres();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::vector<refdata::domain::counterparty> counterparties_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
@@ -148,6 +155,8 @@ private:
     using CounterpartyKeyExtractor = std::string(*)(const refdata::domain::counterparty&);
     RecencyTracker<refdata::domain::counterparty, CounterpartyKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
+
+    std::unordered_map<std::string, std::string> bc_code_to_image_id_;
 };
 
 }

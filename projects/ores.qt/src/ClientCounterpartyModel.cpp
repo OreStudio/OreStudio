@@ -20,7 +20,9 @@
 #include "ores.qt/ClientCounterpartyModel.hpp"
 
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -37,9 +39,10 @@ namespace {
 }
 
 ClientCounterpartyModel::ClientCounterpartyModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(counterparty_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -51,6 +54,18 @@ ClientCounterpartyModel::ClientCounterpartyModel(
             this, &ClientCounterpartyModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientCounterpartyModel::onPulsingComplete);
+
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imageLoaded,
+                this, [this](const QString&) {
+            if (!counterparties_.empty()) {
+                emit dataChanged(index(0, Flag),
+                    index(rowCount() - 1, Flag), {Qt::DecorationRole});
+            }
+        });
+    }
+
+    fetch_business_centres();
 }
 
 int ClientCounterpartyModel::rowCount(const QModelIndex& parent) const {
@@ -76,8 +91,21 @@ QVariant ClientCounterpartyModel::data(
 
     const auto& counterparty = counterparties_[row];
 
+    if (role == Qt::DecorationRole && index.column() == Flag) {
+        if (imageCache_) {
+            auto it = bc_code_to_image_id_.find(counterparty.business_center_code);
+            if (it != bc_code_to_image_id_.end() && !it->second.empty()) {
+                return imageCache_->getIcon(it->second);
+            }
+            return imageCache_->getNoFlagIcon();
+        }
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case Flag:
+            return {};
         case ShortCode:
             return QString::fromStdString(counterparty.short_code);
         case FullName:
@@ -114,6 +142,8 @@ QVariant ClientCounterpartyModel::headerData(
         return {};
 
     switch (section) {
+    case Flag:
+        return tr("Flag");
     case ShortCode:
         return tr("Code");
     case FullName:
@@ -307,6 +337,59 @@ void ClientCounterpartyModel::onPulseStateChanged(bool /*isOn*/) {
 void ClientCounterpartyModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
+}
+
+void ClientCounterpartyModel::fetch_business_centres() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<ClientCounterpartyModel> self = this;
+    struct BcResult {
+        bool success;
+        std::vector<std::pair<std::string, std::string>> code_to_image;
+    };
+
+    auto* watcher = new QFutureWatcher<BcResult>(this);
+    connect(watcher, &QFutureWatcher<BcResult>::finished,
+            this, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self || !result.success)
+            return;
+
+        self->bc_code_to_image_id_.clear();
+        for (auto& [code, image_id] : result.code_to_image) {
+            self->bc_code_to_image_id_[std::move(code)] = std::move(image_id);
+        }
+
+        if (!self->counterparties_.empty()) {
+            emit self->dataChanged(self->index(0, Flag),
+                self->index(self->rowCount() - 1, Flag),
+                {Qt::DecorationRole});
+        }
+    });
+
+    QFuture<BcResult> future = QtConcurrent::run(
+        [cm = clientManager_]() -> BcResult {
+            refdata::messaging::get_business_centres_request request;
+            request.offset = 0;
+            request.limit = 1000;
+
+            auto result = cm->process_authenticated_request(std::move(request));
+            if (!result)
+                return {false, {}};
+
+            std::vector<std::pair<std::string, std::string>> mapping;
+            for (const auto& bc : result->business_centres) {
+                std::string image_id_str;
+                if (bc.image_id)
+                    image_id_str = boost::uuids::to_string(*bc.image_id);
+                mapping.emplace_back(bc.code, std::move(image_id_str));
+            }
+            return {true, std::move(mapping)};
+        });
+
+    watcher->setFuture(future);
 }
 
 }

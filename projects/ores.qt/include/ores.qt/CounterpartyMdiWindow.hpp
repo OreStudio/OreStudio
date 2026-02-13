@@ -26,6 +26,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ClientCounterpartyModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/counterparty.hpp"
@@ -54,6 +55,7 @@ private:
 public:
     explicit CounterpartyMdiWindow(
         ClientManager* clientManager,
+        ImageCache* imageCache,
         const QString& username,
         QWidget* parent = nullptr);
     ~CounterpartyMdiWindow() override = default;
@@ -102,6 +104,7 @@ private:
     void restoreSettings();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString username_;
 
     QToolBar* toolbar_;

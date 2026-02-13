@@ -61,3 +61,10 @@
 
 \echo '--- GLEIF LEI Relationship Artefacts (Large) ---'
 \ir lei_relationships_large_artefact_populate.sql
+
+-- =============================================================================
+-- GLEIF LEI BIC Artefacts
+-- =============================================================================
+
+\echo '--- GLEIF LEI BIC Artefacts ---'
+\ir lei_bic_artefact_populate.sql

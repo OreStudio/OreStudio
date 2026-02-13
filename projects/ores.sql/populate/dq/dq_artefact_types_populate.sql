@@ -109,6 +109,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_iam_system_tenant_id_fn(), 'lei_parties', 0, 'LEI Parties', 'GLEIF LEI entities published as parties (subtree)',
      'dq_lei_entities_artefact_tbl', 'refdata_parties_tbl', 'ores_dq_lei_parties_publish_fn', 28,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'lei_bic', 0, 'LEI BIC', 'GLEIF LEI to BIC identifier mappings',
+     'dq_lei_bic_artefact_tbl', null, null, 29,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

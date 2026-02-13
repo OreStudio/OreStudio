@@ -64,11 +64,13 @@ returns table (
 declare
     v_inserted_counterparties bigint := 0;
     v_inserted_identifiers bigint := 0;
+    v_inserted_bic_identifiers bigint := 0;
     v_dataset_name text;
     v_dataset_code text;
     v_dataset_size text;
     v_entity_dataset_id uuid;
     v_rel_dataset_id uuid;
+    v_bic_dataset_id uuid;
 begin
     -- Validate dataset exists and get code for size derivation
     select name, code into v_dataset_name, v_dataset_code
@@ -95,6 +97,11 @@ begin
     select id into v_rel_dataset_id
     from ores_dq_datasets_tbl
     where code = 'gleif.lei_relationships.' || v_dataset_size
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_bic_dataset_id
+    from ores_dq_datasets_tbl
+    where code = 'gleif.lei_bic'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_entity_dataset_id is null or v_rel_dataset_id is null then
@@ -229,12 +236,35 @@ begin
 
     get diagnostics v_inserted_identifiers = row_count;
 
+    -- Insert counterparty identifiers (BIC scheme)
+    if v_bic_dataset_id is not null then
+        insert into ores_refdata_counterparty_identifiers_tbl (
+            tenant_id,
+            id, version, counterparty_id, id_scheme, id_value,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select
+            p_target_tenant_id,
+            gen_random_uuid(), 0, m.counterparty_uuid, 'BIC', b.bic,
+            current_user, current_user, 'system.external_data_import',
+            'Imported from GLEIF LEI-BIC dataset'
+        from lei_counterparty_uuid_map m
+        join ores_dq_lei_bic_artefact_tbl b
+            on b.lei = m.lei
+            and b.dataset_id = v_bic_dataset_id;
+
+        get diagnostics v_inserted_bic_identifiers = row_count;
+    end if;
+
     -- Return summary
     return query
     select 'inserted'::text, v_inserted_counterparties
     where v_inserted_counterparties > 0
     union all
     select 'inserted_identifiers'::text, v_inserted_identifiers
-    where v_inserted_identifiers > 0;
+    where v_inserted_identifiers > 0
+    union all
+    select 'inserted_bic_identifiers'::text, v_inserted_bic_identifiers
+    where v_inserted_bic_identifiers > 0;
 end;
 $$ language plpgsql security definer;

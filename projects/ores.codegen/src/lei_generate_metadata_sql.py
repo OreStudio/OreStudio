@@ -88,6 +88,11 @@ RR_TIMESTAMP_COLS = {
     'registration_last_update_date',
 }
 
+LEI_BIC_COLUMN_MAP = {
+    'LEI': 'lei',
+    'BIC': 'bic',
+}
+
 
 def get_repo_root() -> Path:
     """Get the repository root directory."""
@@ -153,6 +158,14 @@ def find_csv_files(lei_dir: Path) -> dict:
         elif 'rr' in name.lower() and 'subset-large' in name:
             files['rr_large'] = csv_file
     return files
+
+
+def find_lei_bic_csv(lei_dir: Path) -> Path | None:
+    """Find the latest LEI-BIC mapping CSV file."""
+    files = sorted(lei_dir.glob('lei-bic-*.csv'))
+    if files:
+        return files[-1]
+    return None
 
 
 def sql_value(val: str, is_timestamp: bool) -> str:
@@ -522,6 +535,13 @@ def generate_master_sql(output_file: Path):
 
 \\echo '--- GLEIF LEI Relationship Artefacts (Large) ---'
 \\ir lei_relationships_large_artefact_populate.sql
+
+-- =============================================================================
+-- GLEIF LEI BIC Artefacts
+-- =============================================================================
+
+\\echo '--- GLEIF LEI BIC Artefacts ---'
+\\ir lei_bic_artefact_populate.sql
 """)
 
 
@@ -638,6 +658,23 @@ def main():
         timestamp_cols=RR_TIMESTAMP_COLS,
         output_file=output_dir / 'lei_relationships_large_artefact_populate.sql',
     )
+
+    # Generate LEI-BIC artefact populate file
+    lei_bic_csv = find_lei_bic_csv(manifest_dir)
+    if lei_bic_csv:
+        print(f"  lei_bic: {lei_bic_csv.name}")
+        generate_artefact_populate_sql(
+            csv_file=lei_bic_csv,
+            dataset_name='GLEIF LEI BIC Mappings',
+            dataset_code='gleif.lei_bic',
+            table_name='dq_lei_bic_artefact_tbl',
+            column_map=LEI_BIC_COLUMN_MAP,
+            timestamp_cols=set(),
+            output_file=output_dir / 'lei_bic_artefact_populate.sql',
+        )
+    else:
+        print("  Warning: No LEI-BIC CSV file found, skipping BIC artefact generation",
+              file=sys.stderr)
 
     # Generate master include
     generate_master_sql(output_dir / 'lei_populate.sql')

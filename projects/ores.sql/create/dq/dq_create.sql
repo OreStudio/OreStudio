@@ -94,6 +94,7 @@
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql
 \ir ./dq_lei_relationships_artefact_create.sql
+\ir ./dq_lei_bic_artefact_create.sql
 
 -- DQ functions
 \ir ./dq_functions_create.sql

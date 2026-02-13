@@ -60,8 +60,8 @@ struct TextUtils {
             contains_non_latin(qname)) {
             auto tl = QString::fromStdString(*transliterated_name);
             if (tl.size() > max_transliterated_length)
-                tl = tl.left(max_transliterated_length) + u"\u2026";
-            return qname + u" (" + tl + u")";
+                tl = tl.left(max_transliterated_length) + QChar(0x2026);
+            return qname + QStringLiteral(" (") + tl + QStringLiteral(")");
         }
         return qname;
     }

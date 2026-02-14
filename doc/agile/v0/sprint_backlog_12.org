@@ -3042,6 +3042,43 @@ per-party.
 
 
 
+*** Add generation context with KVP for audit trail fields             :code:
+
+Generators for test data currently hardcode =faker::internet::username()= for
+=modified_by=. After the trigger-based validation of =modified_by= against the
+accounts table (PR #447), this causes test failures whenever the accounts table
+is non-empty: the faker username is not the DB session user and does not exist in
+the accounts table.
+
+The earlier story "Improve generators with FK-aware test data" proposed a
+generation context with a KVP where generators can leave data for other
+generators to pick up. This story extends that idea to audit trail fields.
+
+Proposed approach:
+
+- Create a =generation_context= struct (or extend the existing one in
+  =ores.synthetic=) that holds a =std::unordered_map<std::string, std::string>=
+  for well-known keys.
+- Define well-known key constants: =modified_by=, =tenant_id=, =parent_party_id=
+  etc.
+- All generators accept an optional =const generation_context&= parameter.
+- Test helpers (=database_helper=, =scoped_database_helper=) provide a
+  pre-populated context via =make_generation_context()= that sets =modified_by=
+  to =db_user()=, =tenant_id= to the test tenant, etc.
+- Update codegen templates (=cpp_domain_type_generator.cpp.mustache=) to
+  generate context-aware signatures.
+- Re-enable strict username validation in
+  =ores_iam_validate_account_username_fn= (currently relaxed to allow any
+  non-empty value).
+
+Acceptance criteria:
+
+- All generators accept a generation context for =modified_by=.
+- Test helpers provide a pre-populated context.
+- Trigger validation function strictly validates =modified_by= against accounts
+  table.
+- All tests pass with strict validation enabled.
+
 *** Update currency details to use tabs                                :code:
 
 We need a main tab with the currency related properties, then a "system" tab

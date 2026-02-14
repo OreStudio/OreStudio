@@ -89,22 +89,24 @@ boost::uuids::uuid setup_admin_session(
     std::shared_ptr<ores::comms::service::auth_session_service>& sessions,
     std::shared_ptr<service::authorization_service>& auth_service,
     const std::string& endpoint,
-    const ores::utility::uuid::tenant_id& tenant_id) {
+    const ores::utility::uuid::tenant_id& tenant_id,
+    const std::string& db_user) {
     // Create a test admin account ID
     auto account_id = boost::uuids::random_generator()();
 
-    // Store session info for this endpoint
+    // Store session info for this endpoint — use db_user as the session
+    // username so that modified_by passes SQL trigger validation.
     ores::comms::service::session_info info{
         .account_id = account_id,
         .tenant_id = tenant_id,
-        .username = "test_admin"
+        .username = db_user
     };
     sessions->store_session(endpoint, info);
 
     // Assign admin role to the account
     auto admin_role = auth_service->find_role_by_name(domain::roles::super_admin);
     if (admin_role) {
-        auth_service->assign_role(account_id, admin_role->id, "test_admin");
+        auth_service->assign_role(account_id, admin_role->id, db_user);
     }
 
     return account_id;
@@ -131,7 +133,7 @@ TEST_CASE("handle_single_save_account_request", tags) {
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id());
+    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id(), h.db_user());
 
     const auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -170,7 +172,7 @@ TEST_CASE("handle_many_save_account_requests", tags) {
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id());
+    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id(), h.db_user());
 
     auto accounts = generate_synthetic_accounts(5, ctx);
 
@@ -210,7 +212,7 @@ TEST_CASE("handle_get_accounts_request_returns_accounts", tags) {
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id());
+    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id(), h.db_user());
 
     get_accounts_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
@@ -248,7 +250,7 @@ TEST_CASE("handle_get_accounts_request_with_accounts", tags) {
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id());
+    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id(), h.db_user());
 
     // Get initial count before adding new accounts
     service::account_service account_svc(h.context());
@@ -307,7 +309,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id());
+    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id(), h.db_user());
 
     const auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
@@ -364,7 +366,7 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
-    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id());
+    setup_admin_session(sessions, auth_service, test_endpoint, h.tenant_id(), h.db_user());
 
     delete_account_request drq;
     drq.account_id = boost::uuids::random_generator()();

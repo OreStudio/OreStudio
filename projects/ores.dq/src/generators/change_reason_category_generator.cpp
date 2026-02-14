@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 domain::change_reason_category generate_synthetic_change_reason_category(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::change_reason_category r;
     r.version = 1;

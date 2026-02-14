@@ -37,7 +37,7 @@ domain::party_id_scheme generate_synthetic_party_id_scheme(
     static std::atomic<int> counter{0};
     const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::party_id_scheme r;
     r.version = 1;

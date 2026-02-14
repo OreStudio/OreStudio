@@ -31,7 +31,7 @@ domain::contact_type generate_synthetic_contact_type(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::contact_type r;
     r.version = 1;

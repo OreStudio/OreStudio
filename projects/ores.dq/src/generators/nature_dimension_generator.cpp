@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 domain::nature_dimension generate_synthetic_nature_dimension(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::nature_dimension r;
     r.version = 1;

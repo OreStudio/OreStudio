@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 domain::treatment_dimension generate_synthetic_treatment_dimension(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::treatment_dimension r;
     r.version = 1;

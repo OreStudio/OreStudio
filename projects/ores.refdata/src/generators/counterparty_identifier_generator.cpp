@@ -32,9 +32,9 @@ domain::counterparty_identifier generate_synthetic_counterparty_identifier(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tenant_id = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
 
     domain::counterparty_identifier r;
     r.version = 1;

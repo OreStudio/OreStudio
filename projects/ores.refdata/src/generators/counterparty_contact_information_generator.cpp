@@ -35,9 +35,9 @@ domain::counterparty_contact_information generate_synthetic_counterparty_contact
     static std::atomic<int> counter{0};
     const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tenant_id = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
 
     domain::counterparty_contact_information r;
     r.version = 1;

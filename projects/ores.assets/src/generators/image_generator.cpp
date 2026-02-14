@@ -33,7 +33,7 @@ using ores::utility::generation::generation_keys;
 domain::image generate_synthetic_image(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::image r;
     r.image_id = ctx.generate_uuid();

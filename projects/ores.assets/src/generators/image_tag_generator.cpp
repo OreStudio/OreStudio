@@ -28,7 +28,7 @@ using ores::utility::generation::generation_keys;
 domain::image_tag generate_synthetic_image_tag(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::image_tag r;
     r.image_id = ctx.generate_uuid();
@@ -44,7 +44,7 @@ domain::image_tag generate_synthetic_image_tag(
     const boost::uuids::uuid& image_id,
     const boost::uuids::uuid& tag_id) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::image_tag r;
     r.image_id = image_id;

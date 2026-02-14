@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 dq::domain::dataset generate_synthetic_dataset(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     dq::domain::dataset r;
     r.version = 1;

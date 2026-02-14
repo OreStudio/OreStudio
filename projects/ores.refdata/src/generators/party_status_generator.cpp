@@ -31,7 +31,7 @@ domain::party_status generate_synthetic_party_status(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::party_status r;
     r.version = 1;

@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_type(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     domain::coding_scheme_authority_type r;
     r.version = 1;

@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 iam::domain::account generate_synthetic_account(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     iam::domain::account r;
     r.version = 1;

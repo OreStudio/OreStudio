@@ -33,9 +33,9 @@ using ores::utility::generation::generation_keys;
 domain::currency generate_synthetic_currency(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tid = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
 
     domain::currency r;
 
@@ -68,9 +68,9 @@ domain::currency generate_synthetic_currency(
 std::vector<domain::currency> generate_synthetic_unicode_currencies(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tid = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
     const auto tenant_id = parsed_tid.has_value() ? parsed_tid.value()
         : utility::uuid::tenant_id::system();
@@ -248,9 +248,9 @@ std::vector<domain::currency>
 generate_fictional_currencies(std::size_t n,
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tid = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
     const auto tenant_id = parsed_tid.has_value() ? parsed_tid.value()
         : utility::uuid::tenant_id::system();

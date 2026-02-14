@@ -29,9 +29,9 @@ using ores::utility::generation::generation_keys;
 domain::account_party generate_synthetic_account_party(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tenant_id = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
 
     domain::account_party r;
     r.version = 1;

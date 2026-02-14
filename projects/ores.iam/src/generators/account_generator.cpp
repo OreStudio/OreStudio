@@ -33,11 +33,11 @@ domain::account generate_synthetic_account(
     domain::account r;
     r.version = 1;
     const auto tid = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
     r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
         : utility::uuid::tenant_id::system();
-    r.modified_by = ctx.env().get_or(std::string(generation_keys::modified_by),
+    r.modified_by = ctx.env().get_or(generation_keys::modified_by,
         "system");
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";

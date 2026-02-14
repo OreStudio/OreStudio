@@ -32,9 +32,9 @@ using ores::utility::generation::generation_keys;
 domain::server_environment generate_synthetic_server_environment(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
     const auto tenant_id = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), "system");
+        generation_keys::tenant_id, "system");
 
     domain::server_environment r;
     r.id = ctx.generate_uuid();

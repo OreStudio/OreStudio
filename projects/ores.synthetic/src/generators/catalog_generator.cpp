@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 dq::domain::catalog generate_synthetic_catalog(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
 
     dq::domain::catalog r;
     r.version = 1;

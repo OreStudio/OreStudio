@@ -97,7 +97,7 @@ void ChangeReasonItemDelegate::paint(QPainter* painter,
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case ClientChangeReasonModel::RecordedBy:
+        case ClientChangeReasonModel::ModifiedBy:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
         case ClientChangeReasonModel::RecordedAt:

@@ -37,7 +37,7 @@ tenant_type_mapper::map(const tenant_type_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -57,7 +57,7 @@ tenant_type_mapper::map(const domain::tenant_type& v) {
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

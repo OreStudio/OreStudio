@@ -120,13 +120,13 @@ process_add_country(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating add country request for: "
                                << alpha2_code;
 
-    // Get recorded_by from logged-in user
+    // Get modified_by from logged-in user
     const auto& session_info = session.session_info();
     if (!session_info) {
         out << "✗ You must be logged in to add a country." << std::endl;
         return;
     }
-    const auto& recorded_by = session_info->username;
+    const auto& modified_by = session_info->username;
 
     using refdata::messaging::save_country_request;
     using refdata::messaging::save_country_response;
@@ -142,7 +142,7 @@ process_add_country(std::ostream& out, client_session& session,
                 .name = std::move(name),
                 .official_name = std::move(official_name),
                 .image_id = std::nullopt,
-                .recorded_by = recorded_by,
+                .modified_by = modified_by,
                 .change_reason_code = std::move(change_reason_code),
                 .change_commentary = std::move(change_commentary),
                 .recorded_at = std::chrono::system_clock::now()

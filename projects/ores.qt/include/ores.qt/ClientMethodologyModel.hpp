@@ -52,7 +52,7 @@ public:
         Description,
         LogicReference,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

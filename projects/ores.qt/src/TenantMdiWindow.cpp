@@ -158,7 +158,7 @@ void TenantMdiWindow::setupTable() {
         cs::text_left,   // Hostname
         cs::text_left,   // Status
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -172,7 +172,7 @@ void TenantMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientTenantModel::Hostname, 180);
     tableView_->setColumnWidth(ClientTenantModel::Status, 100);
     tableView_->setColumnWidth(ClientTenantModel::Version, 80);
-    tableView_->setColumnWidth(ClientTenantModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientTenantModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientTenantModel::RecordedAt, 150);
 
     // Setup column visibility with context menu

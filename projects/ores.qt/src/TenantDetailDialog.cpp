@@ -162,7 +162,7 @@ void TenantDetailDialog::updateUiFromTenant() {
     ui_->statusCombo->setCurrentText(QString::fromStdString(tenant_.status));
 
     ui_->versionEdit->setText(QString::number(tenant_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(tenant_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(tenant_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(tenant_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(tenant_.change_commentary));
 }
@@ -175,7 +175,7 @@ void TenantDetailDialog::updateTenantFromUi() {
     tenant_.type = ui_->typeCombo->currentText().trimmed().toStdString();
     tenant_.hostname = ui_->hostnameEdit->text().trimmed().toStdString();
     tenant_.status = ui_->statusCombo->currentText().trimmed().toStdString();
-    tenant_.recorded_by = username_;
+    tenant_.modified_by = username_;
     tenant_.performed_by = username_;
 }
 

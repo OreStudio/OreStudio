@@ -28,11 +28,11 @@ std::string convert_to_table(const std::vector<catalog>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Name" << "Description" << "Owner"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
         table << c.name << c.description << c.owner.value_or("")
-              << c.recorded_by << c.version << fort::endr;
+              << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

@@ -144,7 +144,7 @@ void ChangeReasonCategoryMdiWindow::setupTable() {
         cs::text_left,   // Code
         cs::text_left,   // Description
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -155,7 +155,7 @@ void ChangeReasonCategoryMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Code, 250);
     tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Description, 300);
     tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Version, 80);
-    tableView_->setColumnWidth(ClientChangeReasonCategoryModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientChangeReasonCategoryModel::ModifiedBy, 120);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

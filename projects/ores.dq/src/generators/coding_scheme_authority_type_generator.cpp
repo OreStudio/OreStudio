@@ -30,7 +30,7 @@ domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_
     r.code = std::string(faker::word::noun());
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

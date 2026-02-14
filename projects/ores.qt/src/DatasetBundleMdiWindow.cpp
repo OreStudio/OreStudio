@@ -146,7 +146,7 @@ void DatasetBundleMdiWindow::setupTable() {
         cs::text_left,   // Name
         cs::text_left,   // Description
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -158,7 +158,7 @@ void DatasetBundleMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientDatasetBundleModel::Name, 200);
     tableView_->setColumnWidth(ClientDatasetBundleModel::Description, 300);
     tableView_->setColumnWidth(ClientDatasetBundleModel::Version, 80);
-    tableView_->setColumnWidth(ClientDatasetBundleModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientDatasetBundleModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientDatasetBundleModel::RecordedAt, 150);
 
     // Setup column visibility with context menu

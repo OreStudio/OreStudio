@@ -120,7 +120,7 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->countryAlpha2Edit->setText(QString::fromStdString(business_centre_.country_alpha2_code));
 
     ui_->versionEdit->setText(QString::number(business_centre_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(business_centre_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(business_centre_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(business_centre_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(business_centre_.change_commentary));
 }
@@ -133,7 +133,7 @@ void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
     business_centre_.description = ui_->descriptionEdit->text().trimmed().toStdString();
     business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
     business_centre_.country_alpha2_code = ui_->countryAlpha2Edit->text().trimmed().toStdString();
-    business_centre_.recorded_by = username_;
+    business_centre_.modified_by = username_;
     business_centre_.performed_by = username_;
 }
 

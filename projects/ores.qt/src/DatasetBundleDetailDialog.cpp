@@ -112,7 +112,7 @@ void DatasetBundleDetailDialog::updateUiFromBundle() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(bundle_.description));
 
     ui_->versionEdit->setText(QString::number(bundle_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(bundle_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(bundle_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(bundle_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(bundle_.change_commentary));
 }
@@ -123,7 +123,7 @@ void DatasetBundleDetailDialog::updateBundleFromUi() {
     }
     bundle_.name = ui_->nameEdit->text().trimmed().toStdString();
     bundle_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    bundle_.recorded_by = username_;
+    bundle_.modified_by = username_;
 }
 
 void DatasetBundleDetailDialog::onCodeChanged(const QString& /* text */) {

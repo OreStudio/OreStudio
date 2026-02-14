@@ -155,7 +155,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         acc.password_hash = ctx.alphanumeric(64);
         acc.password_salt = ctx.alphanumeric(32);
         acc.totp_secret = ctx.alphanumeric(32);
-        acc.recorded_by = "system_admin";
+        acc.modified_by = "system_admin";
         acc.change_reason_code = "INITIAL_SETUP";
         acc.change_commentary = "Initial account creation";
         acc.recorded_at = ctx.past_timepoint();
@@ -175,7 +175,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         if (ctx.random_bool(0.7)) {
             cat.owner = "Data Management Team";
         }
-        cat.recorded_by = pick_username();
+        cat.modified_by = pick_username();
         cat.change_commentary = "Initial catalog setup";
         cat.recorded_at = ctx.past_timepoint();
         result.catalogs.push_back(cat);
@@ -187,7 +187,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         dom.version = 1;
         dom.name = domain_data[i].first;
         dom.description = domain_data[i].second;
-        dom.recorded_by = pick_username();
+        dom.modified_by = pick_username();
         dom.change_commentary = "Initial domain setup";
         dom.recorded_at = ctx.past_timepoint();
         result.data_domains.push_back(dom);
@@ -203,7 +203,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
             sa.name = subject_area_data[sa_idx].first;
             sa.domain_name = dom.name;
             sa.description = subject_area_data[sa_idx].second;
-            sa.recorded_by = pick_username();
+            sa.modified_by = pick_username();
             sa.change_commentary = "Initial subject area setup";
             sa.recorded_at = ctx.past_timepoint();
             result.subject_areas.push_back(sa);
@@ -217,7 +217,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         od.code = origin_data[i].first;
         od.name = origin_data[i].first;
         od.description = origin_data[i].second;
-        od.recorded_by = pick_username();
+        od.modified_by = pick_username();
         od.change_commentary = "Initial dimension setup";
         od.recorded_at = ctx.past_timepoint();
         result.origin_dimensions.push_back(od);
@@ -230,7 +230,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         nd.code = nature_data[i].first;
         nd.name = nature_data[i].first;
         nd.description = nature_data[i].second;
-        nd.recorded_by = pick_username();
+        nd.modified_by = pick_username();
         nd.change_commentary = "Initial dimension setup";
         nd.recorded_at = ctx.past_timepoint();
         result.nature_dimensions.push_back(nd);
@@ -243,7 +243,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         td.code = treatment_data[i].first;
         td.name = treatment_data[i].first;
         td.description = treatment_data[i].second;
-        td.recorded_by = pick_username();
+        td.modified_by = pick_username();
         td.change_commentary = "Initial dimension setup";
         td.recorded_at = ctx.past_timepoint();
         result.treatment_dimensions.push_back(td);
@@ -306,7 +306,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
             ds.license_info = "Internal Use Only";
         }
 
-        ds.recorded_by = pick_username();
+        ds.modified_by = pick_username();
         ds.change_commentary = "Initial dataset registration";
         ds.recorded_at = ctx.past_timepoint();
 

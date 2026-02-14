@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<tenant>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Type" << "Hostname" << "Status" << "Recorded By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Type" << "Hostname" << "Status" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& t : v) {
-        table << t.code << t.name << t.type << t.hostname << t.status << t.recorded_by << t.version << fort::endr;
+        table << t.code << t.name << t.type << t.hostname << t.status << t.modified_by << t.version << fort::endr;
     }
     return table.to_string();
 }

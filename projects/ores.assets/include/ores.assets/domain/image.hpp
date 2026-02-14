@@ -67,7 +67,7 @@ struct image final {
     /**
      * @brief Username of the person who recorded this version in the system.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Code identifying the reason for the change.

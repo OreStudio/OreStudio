@@ -173,7 +173,7 @@ void CounterpartyDetailDialog::updateUiFromCounterparty() {
     ui_->businessCenterCombo->setCurrentText(QString::fromStdString(counterparty_.business_center_code));
 
     ui_->versionEdit->setText(QString::number(counterparty_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(counterparty_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(counterparty_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(counterparty_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(counterparty_.change_commentary));
 }
@@ -188,7 +188,7 @@ void CounterpartyDetailDialog::updateCounterpartyFromUi() {
     counterparty_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
     counterparty_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     counterparty_.business_center_code = ui_->businessCenterCombo->currentText().trimmed().toStdString();
-    counterparty_.recorded_by = username_;
+    counterparty_.modified_by = username_;
     counterparty_.performed_by = username_;
 }
 

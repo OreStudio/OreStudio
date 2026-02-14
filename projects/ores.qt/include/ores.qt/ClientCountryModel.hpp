@@ -64,7 +64,7 @@ public:
         NumericCode,    // ISO 3166-1 numeric code
         OfficialName,   // Official name
         Version,        // Version number
-        RecordedBy,     // Username who recorded
+        ModifiedBy,     // Username who recorded
         RecordedAt,     // Timestamp when recorded
         ColumnCount     // Must be last
     };

@@ -78,7 +78,7 @@ struct party_id_scheme final {
     /**
      * @brief Username of the person who last modified this party ID scheme.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this action.

@@ -29,7 +29,7 @@ std::string convert_to_table(const std::vector<change_reason>& v) {
 
     table << fort::header << "Code" << "Category" << "Description"
           << "Amend" << "Delete" << "Req. Comment" << "Order"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& r : v) {
         table << r.code << r.category_code << r.description
@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<change_reason>& v) {
               << (r.applies_to_delete ? "Y" : "N")
               << (r.requires_commentary ? "Y" : "N")
               << r.display_order
-              << r.recorded_by << r.version << fort::endr;
+              << r.modified_by << r.version << fort::endr;
     }
     return table.to_string();
 }

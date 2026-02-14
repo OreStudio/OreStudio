@@ -62,7 +62,7 @@ void OriginDimensionHistoryDialog::setupUi() {
     // Setup version list table
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Recorded By", "Commentary"});
+        {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -199,9 +199,9 @@ void OriginDimensionHistoryDialog::updateVersionList() {
             relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* recordedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.recorded_by));
-        ui_->versionListWidget->setItem(row, 2, recordedByItem);
+        auto* modifiedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.modified_by));
+        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
         auto* commentaryItem = new QTableWidgetItem(
             QString::fromStdString(version.change_commentary));
@@ -292,7 +292,7 @@ void OriginDimensionHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(
         QString::fromStdString(version.change_commentary));

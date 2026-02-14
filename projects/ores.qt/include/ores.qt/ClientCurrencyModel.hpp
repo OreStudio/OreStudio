@@ -72,7 +72,7 @@ public:
         RoundingPrecision,
         Format,
         CurrencyType,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount  // Must be last - represents total number of columns
     };

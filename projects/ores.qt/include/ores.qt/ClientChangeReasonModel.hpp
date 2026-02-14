@@ -62,7 +62,7 @@ public:
         RequiresCommentary,
         DisplayOrder,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

@@ -45,7 +45,7 @@ TEST_CASE("generate_synthetic_account_creates_valid_account", generators_tags) {
     CHECK(!account.password_hash.empty());
     CHECK(!account.password_salt.empty());
     CHECK(!account.totp_secret.empty());
-    CHECK(!account.recorded_by.empty());
+    CHECK(!account.modified_by.empty());
     CHECK(account.change_reason_code == "SYNTHETIC");
 
     BOOST_LOG_SEV(lg, info) << "Generated account with username: "
@@ -74,7 +74,7 @@ TEST_CASE("generate_synthetic_catalog_creates_valid_catalog", generators_tags) {
     CHECK(catalog.version == 1);
     CHECK(!catalog.name.empty());
     CHECK(!catalog.description.empty());
-    CHECK(!catalog.recorded_by.empty());
+    CHECK(!catalog.modified_by.empty());
     CHECK(catalog.change_commentary == "Synthetic test data");
 
     BOOST_LOG_SEV(lg, info) << "Generated catalog: " << catalog.name;
@@ -111,7 +111,7 @@ TEST_CASE("generate_synthetic_dataset_creates_valid_dataset", generators_tags) {
     CHECK(!dataset.business_context.empty());
     CHECK(dataset.lineage_depth >= 0);
     CHECK(dataset.lineage_depth <= 5);
-    CHECK(!dataset.recorded_by.empty());
+    CHECK(!dataset.modified_by.empty());
 
     BOOST_LOG_SEV(lg, info) << "Generated dataset: " << dataset.name;
 }

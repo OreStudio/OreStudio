@@ -53,7 +53,7 @@ public:
         Domain,
         Description,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

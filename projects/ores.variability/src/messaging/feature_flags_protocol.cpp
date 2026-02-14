@@ -63,7 +63,6 @@ std::vector<std::byte> get_feature_flags_response::serialize() const {
         writer::write_bool(buffer, ff.enabled);
         writer::write_string(buffer, ff.description);
         writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
-        writer::write_string(buffer, ff.recorded_by);
         writer::write_string(buffer, ff.change_reason_code);
         writer::write_string(buffer, ff.change_commentary);
         writer::write_string(buffer,
@@ -103,9 +102,6 @@ get_feature_flags_response::deserialize(std::span<const std::byte> data) {
         if (!version_result) return std::unexpected(version_result.error());
         ff.version = static_cast<int>(*version_result);
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        ff.recorded_by = *recorded_by_result;
 
         auto change_reason_code_result = reader::read_string(data);
         if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
@@ -141,7 +137,6 @@ std::vector<std::byte> save_feature_flag_request::serialize() const {
     writer::write_string(buffer, flag.name);
     writer::write_bool(buffer, flag.enabled);
     writer::write_string(buffer, flag.description);
-    writer::write_string(buffer, flag.recorded_by);
     writer::write_string(buffer, flag.change_reason_code);
     writer::write_string(buffer, flag.change_commentary);
 
@@ -164,9 +159,6 @@ save_feature_flag_request::deserialize(std::span<const std::byte> data) {
     if (!description_result) return std::unexpected(description_result.error());
     request.flag.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    request.flag.recorded_by = *recorded_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
@@ -300,7 +292,6 @@ std::vector<std::byte> get_feature_flag_history_response::serialize() const {
         writer::write_bool(buffer, ff.enabled);
         writer::write_string(buffer, ff.description);
         writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
-        writer::write_string(buffer, ff.recorded_by);
         writer::write_string(buffer, ff.change_reason_code);
         writer::write_string(buffer, ff.change_commentary);
         writer::write_string(buffer,
@@ -346,9 +337,6 @@ get_feature_flag_history_response::deserialize(std::span<const std::byte> data) 
         if (!version_result) return std::unexpected(version_result.error());
         ff.version = static_cast<int>(*version_result);
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        ff.recorded_by = *recorded_by_result;
 
         auto change_reason_code_result = reader::read_string(data);
         if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

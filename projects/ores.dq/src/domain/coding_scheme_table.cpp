@@ -29,12 +29,12 @@ std::string convert_to_table(const std::vector<coding_scheme>& v) {
 
     table << fort::header << "Code" << "Name" << "Authority Type"
           << "Subject Area" << "Domain" << "Description"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
         table << c.code << c.name << c.authority_type
               << c.subject_area_name << c.domain_name << c.description
-              << c.recorded_by << c.version << fort::endr;
+              << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

@@ -28,11 +28,11 @@ std::string convert_to_table(const std::vector<nature_dimension>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Code" << "Name" << "Description"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& d : v) {
         table << d.code << d.name << d.description
-              << d.recorded_by << d.version << fort::endr;
+              << d.modified_by << d.version << fort::endr;
     }
     return table.to_string();
 }

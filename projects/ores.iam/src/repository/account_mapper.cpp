@@ -34,7 +34,7 @@ domain::account account_mapper::map(const account_entity& v) {
 
     domain::account r;
     r.version = v.version;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.performed_by = v.performed_by;
@@ -65,7 +65,7 @@ account_entity account_mapper::map(const domain::account& v) {
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.performed_by = v.performed_by;

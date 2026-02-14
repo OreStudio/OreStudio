@@ -72,7 +72,7 @@ public:
     /**
      * @brief Process an add country request.
      *
-     * Creates a new country with the provided details. The recorded_by field
+     * Creates a new country with the provided details. The modified_by field
      * is automatically set from the logged-in user's session.
      *
      * @param out Output stream for results

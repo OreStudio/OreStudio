@@ -37,7 +37,7 @@ treatment_dimension_mapper::map(const treatment_dimension_entity& v) {
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -55,7 +55,7 @@ treatment_dimension_mapper::map(const domain::treatment_dimension& v) {
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

@@ -79,7 +79,7 @@ QVariant ClientMethodologyModel::data(const QModelIndex& index, int role) const 
                 ? QString::fromStdString(*methodology.logic_reference)
                 : QString();
         case Version: return methodology.version;
-        case RecordedBy: return QString::fromStdString(methodology.recorded_by);
+        case ModifiedBy: return QString::fromStdString(methodology.modified_by);
         case RecordedAt: return relative_time_helper::format(methodology.recorded_at);
         default: return {};
         }
@@ -102,7 +102,7 @@ QVariant ClientMethodologyModel::headerData(int section,
     case Description: return tr("Description");
     case LogicReference: return tr("Logic Reference");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

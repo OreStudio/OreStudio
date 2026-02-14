@@ -86,8 +86,8 @@ QVariant ClientCatalogModel::data(const QModelIndex& index, int role) const {
             : QString();
     case Version:
         return catalog.version;
-    case RecordedBy:
-        return QString::fromStdString(catalog.recorded_by);
+    case ModifiedBy:
+        return QString::fromStdString(catalog.modified_by);
     case RecordedAt:
         return relative_time_helper::format(catalog.recorded_at);
     default:
@@ -106,7 +106,7 @@ QVariant ClientCatalogModel::headerData(int section,
     case Description: return tr("Description");
     case Owner: return tr("Owner");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

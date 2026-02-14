@@ -146,7 +146,7 @@ void ContactTypeMdiWindow::setupTable() {
         cs::text_left,   // Description
         cs::mono_center, // DisplayOrder
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -159,7 +159,7 @@ void ContactTypeMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientContactTypeModel::Description, 300);
     tableView_->setColumnWidth(ClientContactTypeModel::DisplayOrder, 80);
     tableView_->setColumnWidth(ClientContactTypeModel::Version, 80);
-    tableView_->setColumnWidth(ClientContactTypeModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientContactTypeModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientContactTypeModel::RecordedAt, 150);
 
     // Setup column visibility with context menu

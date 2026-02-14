@@ -115,13 +115,13 @@ process_add_tenant(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating add tenant request for code: "
                                << code;
 
-    // Get recorded_by from logged-in user
+    // Get modified_by from logged-in user
     const auto& session_info = session.session_info();
     if (!session_info) {
         out << "✗ You must be logged in to add a tenant." << std::endl;
         return;
     }
-    const auto& recorded_by = session_info->username;
+    const auto& modified_by = session_info->username;
 
     // Generate a new UUID for the tenant
     boost::uuids::random_generator gen;
@@ -142,7 +142,7 @@ process_add_tenant(std::ostream& out, client_session& session,
                 .description = std::move(description),
                 .hostname = std::move(hostname),
                 .status = "active",
-                .recorded_by = recorded_by,
+                .modified_by = modified_by,
                 .change_reason_code = std::string{reason::codes::new_record},
                 .change_commentary = "Created via shell",
                 .recorded_at = std::chrono::system_clock::now()
@@ -223,7 +223,7 @@ process_tenant_history(std::ostream& out, client_session& session,
         out << "    Hostname: " << entry.hostname << std::endl;
         out << "    Status: " << entry.status << std::endl;
         out << "    Recorded: " << format_time(entry.recorded_at)
-            << " by " << entry.recorded_by << std::endl;
+            << " by " << entry.modified_by << std::endl;
         if (!entry.change_reason_code.empty()) {
             out << "    Reason: " << entry.change_reason_code;
             if (!entry.change_commentary.empty()) {

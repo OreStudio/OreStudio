@@ -112,7 +112,7 @@ void PartyIdSchemeDetailDialog::updateUiFromScheme() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(scheme_.description));
 
     ui_->versionEdit->setText(QString::number(scheme_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(scheme_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(scheme_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(scheme_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(scheme_.change_commentary));
 }
@@ -123,7 +123,7 @@ void PartyIdSchemeDetailDialog::updateSchemeFromUi() {
     }
     scheme_.name = ui_->nameEdit->text().trimmed().toStdString();
     scheme_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    scheme_.recorded_by = username_;
+    scheme_.modified_by = username_;
     scheme_.performed_by = username_;
 }
 

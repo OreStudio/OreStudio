@@ -86,7 +86,7 @@ QVariant ClientDatasetModel::data(const QModelIndex& index, int role) const {
         case SourceSystem: return QString::fromStdString(dataset.source_system_id);
         case AsOfDate: return relative_time_helper::format(dataset.as_of_date);
         case Version: return dataset.version;
-        case RecordedBy: return QString::fromStdString(dataset.recorded_by);
+        case ModifiedBy: return QString::fromStdString(dataset.modified_by);
         case RecordedAt: return relative_time_helper::format(dataset.recorded_at);
         case Tags: return QString();
         default: return {};
@@ -130,7 +130,7 @@ QVariant ClientDatasetModel::headerData(int section,
     case SourceSystem: return tr("Source");
     case AsOfDate: return tr("As Of Date");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     case Tags: return tr("Dimensions");
     default: return {};

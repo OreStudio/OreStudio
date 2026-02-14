@@ -45,7 +45,7 @@ counterparty_mapper::map(const counterparty_entity& v) {
         r.parent_counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_counterparty_id);
     r.business_center_code = v.business_center_code;
     r.status = v.status;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -71,7 +71,7 @@ counterparty_mapper::map(const domain::counterparty& v) {
         r.parent_counterparty_id = boost::uuids::to_string(*v.parent_counterparty_id);
     r.business_center_code = v.business_center_code;
     r.status = v.status;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

@@ -125,13 +125,13 @@ public:
      * @param name The role name
      * @param description Human-readable description
      * @param permission_codes List of permission codes to assign
-     * @param recorded_by Username of the person creating the role
+     * @param modified_by Username of the person creating the role
      * @return The created role
      */
     domain::role create_role(const std::string& name,
         const std::string& description,
         const std::vector<std::string>& permission_codes,
-        const std::string& recorded_by);
+        const std::string& modified_by);
 
     /**
      * @brief Gets the permission codes assigned to a role.

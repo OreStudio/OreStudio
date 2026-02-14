@@ -60,7 +60,7 @@ public:
         Description,
         DisplayOrder,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

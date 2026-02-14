@@ -35,7 +35,7 @@ struct add_country_options final {
     std::string name;
     std::optional<std::string> numeric_code;
     std::optional<std::string> official_name;
-    std::string recorded_by;
+    std::string modified_by;
     std::optional<std::string> change_reason_code;
     std::optional<std::string> change_commentary;
 };

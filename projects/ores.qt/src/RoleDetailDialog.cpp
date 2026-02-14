@@ -51,7 +51,7 @@ void RoleDetailDialog::setRole(const iam::domain::role& role) {
 
     // Populate metadata
     ui_->versionEdit->setText(QString::number(role.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(role.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(role.modified_by));
     ui_->modifiedAtEdit->setText(relative_time_helper::format(role.recorded_at));
 
     // Populate permissions list

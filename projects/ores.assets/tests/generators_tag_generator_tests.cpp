@@ -45,7 +45,7 @@ TEST_CASE("generate_single_tag", tags) {
     CHECK(!tag.tag_id.empty());
     CHECK(!tag.name.empty());
     CHECK(!tag.description.empty());
-    CHECK(!tag.recorded_by.empty());
+    CHECK(!tag.modified_by.empty());
     CHECK(!tag.recorded_at.empty());
     CHECK(tag.tenant_id == test_tenant_id);
 }

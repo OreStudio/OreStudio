@@ -106,9 +106,8 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
 
-    if NEW.modified_by is null or NEW.modified_by = '' then
-        NEW.modified_by = current_user;
-    end if;
+    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
+    new.performed_by = current_user;
 
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

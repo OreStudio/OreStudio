@@ -52,7 +52,7 @@ domain::counterparty_contact_information generate_synthetic_counterparty_contact
     r.phone = std::string("+1 212 555 0100");
     r.email = std::string("info@example.com");
     r.web_page = std::string("https://example.com");
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

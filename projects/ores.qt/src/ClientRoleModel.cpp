@@ -71,7 +71,7 @@ QVariant ClientRoleModel::data(const QModelIndex& index, int role) const {
     case Column::Description: return QString::fromStdString(r.description);
     case Column::PermissionCount: return static_cast<int>(r.permission_codes.size());
     case Column::Version: return r.version;
-    case Column::RecordedBy: return QString::fromStdString(r.recorded_by);
+    case Column::ModifiedBy: return QString::fromStdString(r.modified_by);
     case Column::RecordedAt: return relative_time_helper::format(r.recorded_at);
     default: return {};
     }
@@ -88,7 +88,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Description: return tr("Description");
         case Column::PermissionCount: return tr("Permissions");
         case Column::Version: return tr("Version");
-        case Column::RecordedBy: return tr("Recorded By");
+        case Column::ModifiedBy: return tr("Modified By");
         case Column::RecordedAt: return tr("Recorded At");
         default: return {};
         }

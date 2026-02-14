@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<party_contact_information>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Party" << "Type" << "City" << "Country" << "Phone" << "Email" << "Recorded By" << "Version" << fort::endr;
+    table << fort::header << "Party" << "Type" << "City" << "Country" << "Phone" << "Email" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& pci : v) {
-        table << pci.party_id << pci.contact_type << pci.city << pci.country_code << pci.phone << pci.email << pci.recorded_by << pci.version << fort::endr;
+        table << pci.party_id << pci.contact_type << pci.city << pci.country_code << pci.phone << pci.email << pci.modified_by << pci.version << fort::endr;
     }
     return table.to_string();
 }

@@ -45,7 +45,7 @@ TEST_CASE("create_coding_scheme_with_valid_fields", tags) {
     sut.domain_name = "Reference Data";
     sut.description = "ISO 4217 currency codes";
     sut.uri = "https://www.iso.org/iso-4217-currency-codes.html";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Coding scheme: " << sut;
 
@@ -55,7 +55,7 @@ TEST_CASE("create_coding_scheme_with_valid_fields", tags) {
     CHECK(sut.subject_area_name == "Currencies");
     CHECK(sut.domain_name == "Reference Data");
     CHECK(sut.uri == "https://www.iso.org/iso-4217-currency-codes.html");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -69,7 +69,7 @@ TEST_CASE("coding_scheme_convert_single_to_table", tags) {
     cs.subject_area_name = "Countries";
     cs.domain_name = "Reference Data";
     cs.description = "ISO 3166 country codes";
-    cs.recorded_by = "system";
+    cs.modified_by = "system";
 
     std::vector<coding_scheme> schemes = {cs};
     auto table = convert_to_table(schemes);

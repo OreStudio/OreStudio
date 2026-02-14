@@ -38,7 +38,7 @@ account_party_mapper::map(const account_party_entity& v) {
     r.tenant_id = v.tenant_id;
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -57,7 +57,7 @@ account_party_mapper::map(const domain::account_party& v) {
     r.tenant_id = v.tenant_id;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

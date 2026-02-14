@@ -113,7 +113,7 @@ void MethodologyDetailDialog::onSaveClicked() {
     methodology.name = name.toStdString();
     methodology.description = description.toStdString();
     methodology.change_commentary = commentary.toStdString();
-    methodology.recorded_by = username_;
+    methodology.modified_by = username_;
     methodology.version = isCreateMode_ ? 0 : methodology_.version;
 
     if (!logicRef.isEmpty()) {

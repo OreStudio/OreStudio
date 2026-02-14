@@ -43,7 +43,7 @@ struct account_version final {
     /**
      * @brief Username of the person who recorded this version in the system.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Timestamp when this version was recorded in the system.

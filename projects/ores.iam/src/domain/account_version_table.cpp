@@ -28,11 +28,11 @@ std::string convert_to_table(const std::vector<account_version>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Version" << "Username" << "Email" << "Change Reason"
-          << "Recorded By" << "Recorded At" << "Change Summary" << fort::endr;
+          << "Modified By" << "Recorded At" << "Change Summary" << fort::endr;
 
     for (const auto& av : v) {
         table << av.version_number << av.data.username << av.data.email
-              << av.data.change_reason_code << av.recorded_by << av.recorded_at
+              << av.data.change_reason_code << av.modified_by << av.recorded_at
               << av.change_summary << fort::endr;
     }
     return table.to_string();

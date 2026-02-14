@@ -112,7 +112,7 @@ void TenantTypeDetailDialog::updateUiFromType() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(tenant_type_.description));
 
     ui_->versionEdit->setText(QString::number(tenant_type_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(tenant_type_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(tenant_type_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(tenant_type_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(tenant_type_.change_commentary));
 }
@@ -123,7 +123,7 @@ void TenantTypeDetailDialog::updateTypeFromUi() {
     }
     tenant_type_.name = ui_->nameEdit->text().trimmed().toStdString();
     tenant_type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    tenant_type_.recorded_by = username_;
+    tenant_type_.modified_by = username_;
     tenant_type_.performed_by = username_;
 }
 

@@ -69,7 +69,7 @@ struct origin_dimension final {
     /**
      * @brief Username of the person who last modified this origin dimension.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Free-text commentary explaining the change.

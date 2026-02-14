@@ -504,7 +504,7 @@ void DatasetDetailDialog::onSaveClicked() {
     dataset.source_system_id = ui_->sourceSystemEdit->text().trimmed().toStdString();
     dataset.business_context = ui_->businessContextEdit->toPlainText().trimmed().toStdString();
     dataset.lineage_depth = ui_->lineageDepthSpin->value();
-    dataset.recorded_by = username_;
+    dataset.modified_by = username_;
     dataset.version = isCreateMode_ ? 0 : dataset_.version;
 
     QString catalogName = ui_->catalogCombo->currentText();

@@ -45,7 +45,7 @@ TEST_CASE("create_service_account_with_no_password", tags) {
 
     account sut;
     sut.version = 1;
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
     sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "service";
@@ -67,7 +67,7 @@ TEST_CASE("create_algorithm_account", tags) {
 
     account sut;
     sut.version = 1;
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
     sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "algorithm";
@@ -87,7 +87,7 @@ TEST_CASE("create_llm_account", tags) {
 
     account sut;
     sut.version = 1;
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
     sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "llm";
@@ -107,7 +107,7 @@ TEST_CASE("user_account_requires_password", tags) {
 
     account sut;
     sut.version = 1;
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.id = boost::uuids::random_generator()();
     sut.tenant_id = tenant_id::from_uuid(
         boost::uuids::random_generator()()).value();
@@ -142,7 +142,7 @@ TEST_CASE("account_type_domain_struct", tags) {
     sut.name = "Service";
     sut.description = "Service account for non-human processes";
     sut.display_order = 10;
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     sut.change_reason_code = "system.initial_load";
     sut.change_commentary = "Initial population";
 

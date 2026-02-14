@@ -53,8 +53,6 @@ void write_party(std::vector<std::byte>& buffer,
     }
     writer::write_string(buffer, p.business_center_code);
     writer::write_string(buffer, p.status);
-    writer::write_string(buffer, p.recorded_by);
-    writer::write_string(buffer, p.performed_by);
     writer::write_string(buffer, p.change_reason_code);
     writer::write_string(buffer, p.change_commentary);
     writer::write_string(buffer,
@@ -109,13 +107,7 @@ read_party(std::span<const std::byte>& data) {
     if (!status_result) return std::unexpected(status_result.error());
     p.status = *status_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    p.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    p.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

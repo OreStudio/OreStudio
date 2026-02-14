@@ -66,7 +66,7 @@ void CatalogMdiWindow::setupUi() {
         cs::text_left,   // Description
         cs::text_left,   // Owner
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->horizontalHeader()->setStretchLastSection(true);

@@ -95,7 +95,7 @@ public:
         Status,     // Login status: Never, LongAgo, Recent, Online
         Locked,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount  // Must be last - represents total number of columns
     };

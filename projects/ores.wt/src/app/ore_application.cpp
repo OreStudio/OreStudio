@@ -76,7 +76,7 @@ refdata::domain::currency to_domain(const currency_data& d,
     c.rounding_precision = d.rounding_precision;
     c.format = d.format;
     c.currency_type = d.currency_type;
-    c.recorded_by = username;
+    c.modified_by = username;
     return c;
 }
 
@@ -109,7 +109,7 @@ refdata::domain::country to_country_domain(const country_data& d,
     c.numeric_code = d.numeric_code;
     c.name = d.name;
     c.official_name = d.official_name;
-    c.recorded_by = username;
+    c.modified_by = username;
     return c;
 }
 

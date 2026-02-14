@@ -83,7 +83,7 @@ TEST_CASE("generate_fictional_countries_has_expected_first_country", tags) {
     REQUIRE(countries.size() == 1);
     CHECK(countries[0].alpha2_code == "AL");
     CHECK(countries[0].name == "Aerilon");
-    CHECK(!countries[0].recorded_by.empty());
+    CHECK(!countries[0].modified_by.empty());
     CHECK(countries[0].recorded_at != std::chrono::system_clock::time_point{});
 }
 

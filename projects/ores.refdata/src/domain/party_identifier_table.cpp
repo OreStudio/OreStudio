@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<party_identifier>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Party" << "Scheme" << "Value" << "Description" << "Recorded By" << "Version" << fort::endr;
+    table << fort::header << "Party" << "Scheme" << "Value" << "Description" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& pi : v) {
-        table << pi.party_id << pi.id_scheme << pi.id_value << pi.description << pi.recorded_by << pi.version << fort::endr;
+        table << pi.party_id << pi.id_scheme << pi.id_value << pi.description << pi.modified_by << pi.version << fort::endr;
     }
     return table.to_string();
 }

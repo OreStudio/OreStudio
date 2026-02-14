@@ -59,7 +59,7 @@ domain::dataset generate_synthetic_dataset() {
     r.ingestion_timestamp = utility::faker::datetime::past_timepoint();
     r.as_of_date = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
     r.artefact_type = std::string("none");
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

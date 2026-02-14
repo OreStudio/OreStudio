@@ -28,11 +28,11 @@ std::string convert_to_table(const std::vector<coding_scheme_authority_type>& v)
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Code" << "Name" << "Description"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& a : v) {
         table << a.code << a.name << a.description
-              << a.recorded_by << a.version << fort::endr;
+              << a.modified_by << a.version << fort::endr;
     }
     return table.to_string();
 }

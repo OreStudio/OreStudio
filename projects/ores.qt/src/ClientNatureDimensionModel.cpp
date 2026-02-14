@@ -88,8 +88,8 @@ QVariant ClientNatureDimensionModel::data(
             return QString::fromStdString(dimension.description);
         case Version:
             return dimension.version;
-        case RecordedBy:
-            return QString::fromStdString(dimension.recorded_by);
+        case ModifiedBy:
+            return QString::fromStdString(dimension.modified_by);
         case RecordedAt:
             return relative_time_helper::format(dimension.recorded_at);
         default:
@@ -118,8 +118,8 @@ QVariant ClientNatureDimensionModel::headerData(
         return tr("Description");
     case Version:
         return tr("Version");
-    case RecordedBy:
-        return tr("Recorded By");
+    case ModifiedBy:
+        return tr("Modified By");
     case RecordedAt:
         return tr("Recorded At");
     default:

@@ -64,7 +64,7 @@ public:
      *
      * Creates a coherent catalog where all entities reference each other
      * properly. Datasets reference existing catalogs, domains, dimensions,
-     * and methodologies. All recorded_by fields reference existing accounts.
+     * and methodologies. All modified_by fields reference existing accounts.
      *
      * @param options Configuration for the generation process.
      * @return A complete synthetic catalog with proper relationships.

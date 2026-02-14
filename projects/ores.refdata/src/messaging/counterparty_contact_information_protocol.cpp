@@ -54,8 +54,6 @@ void write_counterparty_contact_information(std::vector<std::byte>& buffer,
     writer::write_string(buffer, cci.phone);
     writer::write_string(buffer, cci.email);
     writer::write_string(buffer, cci.web_page);
-    writer::write_string(buffer, cci.recorded_by);
-    writer::write_string(buffer, cci.performed_by);
     writer::write_string(buffer, cci.change_reason_code);
     writer::write_string(buffer, cci.change_commentary);
     writer::write_string(buffer,
@@ -118,13 +116,7 @@ read_counterparty_contact_information(std::span<const std::byte>& data) {
     if (!web_page_result) return std::unexpected(web_page_result.error());
     cci.web_page = *web_page_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    cci.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    cci.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

@@ -27,11 +27,11 @@ std::string convert_to_table(const std::vector<change_reason_category>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Description" << "Recorded By"
+    table << fort::header << "Code" << "Description" << "Modified By"
           << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << c.code << c.description << c.recorded_by
+        table << c.code << c.description << c.modified_by
               << c.version << fort::endr;
     }
     return table.to_string();

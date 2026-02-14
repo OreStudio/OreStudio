@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<dataset_dependency>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Dataset Code" << "Depends On" << "Role"
-          << "Recorded By" << fort::endr;
+          << "Modified By" << fort::endr;
 
     for (const auto& d : v) {
-        table << d.dataset_code << d.dependency_code << d.role << d.recorded_by
+        table << d.dataset_code << d.dependency_code << d.role << d.modified_by
               << fort::endr;
     }
     return table.to_string();

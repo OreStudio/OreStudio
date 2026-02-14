@@ -32,7 +32,7 @@ namespace ores::cli::config {
 struct add_change_reason_category_options final {
     std::string code;
     std::string description;
-    std::string recorded_by;
+    std::string modified_by;
     std::optional<std::string> change_commentary;
 };
 

@@ -41,14 +41,14 @@ TEST_CASE("create_treatment_dimension_with_valid_fields", tags) {
     sut.version = 1;
     sut.code = "live";
     sut.description = "Production data for operational use";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Treatment dimension: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "live");
     CHECK(sut.description == "Production data for operational use");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("treatment_dimension_convert_single_to_table", tags) {
     td.version = 1;
     td.code = "test";
     td.description = "Test data for validation purposes";
-    td.recorded_by = "system";
+    td.modified_by = "system";
 
     std::vector<treatment_dimension> dimensions = {td};
     auto table = convert_to_table(dimensions);

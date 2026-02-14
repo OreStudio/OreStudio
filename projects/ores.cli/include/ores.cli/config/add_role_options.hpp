@@ -33,7 +33,7 @@ namespace ores::cli::config {
 struct add_role_options final {
     std::string name;
     std::string description;
-    std::string recorded_by;
+    std::string modified_by;
     std::optional<std::string> change_reason_code;
     std::optional<std::string> change_commentary;
     std::vector<std::string> permission_codes;

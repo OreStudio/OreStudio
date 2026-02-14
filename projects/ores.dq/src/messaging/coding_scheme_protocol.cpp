@@ -53,7 +53,6 @@ void write_coding_scheme(std::vector<std::byte>& buffer, const domain::coding_sc
     }
 
     writer::write_string(buffer, c.description);
-    writer::write_string(buffer, c.recorded_by);
     writer::write_string(buffer, c.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(c.recorded_at));
@@ -99,9 +98,6 @@ read_coding_scheme(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     c.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    c.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -128,7 +124,6 @@ void write_coding_scheme_authority_type(std::vector<std::byte>& buffer,
     writer::write_string(buffer, a.code);
     writer::write_string(buffer, a.name);
     writer::write_string(buffer, a.description);
-    writer::write_string(buffer, a.recorded_by);
     writer::write_string(buffer, a.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(a.recorded_at));
@@ -154,9 +149,6 @@ read_coding_scheme_authority_type(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     a.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    a.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());

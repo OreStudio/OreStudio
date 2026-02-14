@@ -54,8 +54,6 @@ void write_party_contact_information(std::vector<std::byte>& buffer,
     writer::write_string(buffer, pci.phone);
     writer::write_string(buffer, pci.email);
     writer::write_string(buffer, pci.web_page);
-    writer::write_string(buffer, pci.recorded_by);
-    writer::write_string(buffer, pci.performed_by);
     writer::write_string(buffer, pci.change_reason_code);
     writer::write_string(buffer, pci.change_commentary);
     writer::write_string(buffer,
@@ -118,13 +116,7 @@ read_party_contact_information(std::span<const std::byte>& data) {
     if (!web_page_result) return std::unexpected(web_page_result.error());
     pci.web_page = *web_page_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    pci.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    pci.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

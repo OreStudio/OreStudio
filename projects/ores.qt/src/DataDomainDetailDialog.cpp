@@ -98,7 +98,7 @@ void DataDomainDetailDialog::onSaveClicked() {
     domain.name = name.toStdString();
     domain.description = description.toStdString();
     domain.change_commentary = commentary.toStdString();
-    domain.recorded_by = username_;
+    domain.modified_by = username_;
     domain.version = isCreateMode_ ? 0 : domain_.version;
 
     QPointer<DataDomainDetailDialog> self = this;

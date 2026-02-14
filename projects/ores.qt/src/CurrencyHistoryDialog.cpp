@@ -192,14 +192,14 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
         BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
                                    << "version_number=" << version.version_number
                                    << ", data.version=" << version.data.version
-                                   << ", recorded_by=" << version.recorded_by;
+                                   << ", modified_by=" << version.modified_by;
 
         auto* versionItem =
             new QTableWidgetItem(QString::number(version.version_number));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(version.modified_by));
         auto* changeReasonItem =
             new QTableWidgetItem(QString::fromStdString(version.data.change_reason_code));
         auto* commentaryItem =
@@ -209,7 +209,7 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
         ui_->versionListWidget->setItem(i, 3, changeReasonItem);
         ui_->versionListWidget->setItem(i, 4, commentaryItem);
     }
@@ -340,7 +340,7 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->fractionSymbolValue->setText(QString::fromStdString(data.fraction_symbol));
     ui_->fractionsPerUnitValue->setText(QString::number(data.fractions_per_unit));
     ui_->versionNumberValue->setText(QString::number(version.version_number));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 

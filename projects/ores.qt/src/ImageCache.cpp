@@ -912,7 +912,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             } else {
                 currency.image_id = boost::lexical_cast<boost::uuids::uuid>(req_image_id);
             }
-            currency.recorded_by = req_assigned_by;
+            currency.modified_by = req_assigned_by;
 
             // Step 3: Save the updated currency
             refdata::messaging::save_currency_request save_request;
@@ -1027,7 +1027,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             } else {
                 country.image_id = boost::lexical_cast<boost::uuids::uuid>(req_image_id);
             }
-            country.recorded_by = req_assigned_by;
+            country.modified_by = req_assigned_by;
 
             // Step 3: Save the updated country
             refdata::messaging::save_country_request save_request;

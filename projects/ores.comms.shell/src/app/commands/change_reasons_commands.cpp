@@ -93,7 +93,7 @@ process_add_change_reason(std::ostream& out, client_session& session,
         out << "✗ You must be logged in to add a change reason." << std::endl;
         return;
     }
-    const auto& recorded_by = session.session_info()->username;
+    const auto& modified_by = session.session_info()->username;
 
     using dq::messaging::save_change_reason_request;
     using dq::messaging::save_change_reason_response;
@@ -110,7 +110,7 @@ process_add_change_reason(std::ostream& out, client_session& session,
                 .applies_to_delete = true,
                 .requires_commentary = false,
                 .display_order = 0,
-                .recorded_by = recorded_by,
+                .modified_by = modified_by,
                 .change_commentary = std::move(change_commentary),
                 .recorded_at = std::chrono::system_clock::now()
             }

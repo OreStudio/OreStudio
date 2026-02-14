@@ -117,7 +117,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
             return item.loginInfo->locked ? tr("Locked") : tr("-");
         return tr("-");
     case Column::Version: return account.version;
-    case Column::RecordedBy: return QString::fromStdString(account.recorded_by);
+    case Column::ModifiedBy: return QString::fromStdString(account.modified_by);
     case Column::RecordedAt: return relative_time_helper::format(account.recorded_at);
     default: return {};
     }
@@ -136,7 +136,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Status: return tr("Status");
         case Column::Locked: return tr("Locked");
         case Column::Version: return tr("Version");
-        case Column::RecordedBy: return tr("Recorded By");
+        case Column::ModifiedBy: return tr("Modified By");
         case Column::RecordedAt: return tr("Recorded At");
         default: return {};
         }

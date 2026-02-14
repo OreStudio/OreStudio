@@ -78,7 +78,7 @@ QVariant ClientCodingSchemeModel::data(const QModelIndex& index, int role) const
         case Domain: return QString::fromStdString(scheme.domain_name);
         case Description: return QString::fromStdString(scheme.description);
         case Version: return scheme.version;
-        case RecordedBy: return QString::fromStdString(scheme.recorded_by);
+        case ModifiedBy: return QString::fromStdString(scheme.modified_by);
         case RecordedAt: return relative_time_helper::format(scheme.recorded_at);
         default: return {};
         }
@@ -104,7 +104,7 @@ QVariant ClientCodingSchemeModel::headerData(int section,
     case Domain: return tr("Domain");
     case Description: return tr("Description");
     case Version: return tr("Version");
-    case RecordedBy: return tr("Recorded By");
+    case ModifiedBy: return tr("Modified By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }

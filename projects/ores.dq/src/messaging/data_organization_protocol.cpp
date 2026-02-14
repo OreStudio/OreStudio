@@ -47,7 +47,6 @@ void write_catalog(std::vector<std::byte>& buffer, const domain::catalog& c) {
     if (c.owner.has_value()) {
         writer::write_string(buffer, *c.owner);
     }
-    writer::write_string(buffer, c.recorded_by);
     writer::write_string(buffer, c.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(c.recorded_at));
@@ -77,9 +76,6 @@ read_catalog(std::span<const std::byte>& data) {
         c.owner = *owner_result;
     }
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    c.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -105,7 +101,6 @@ void write_data_domain(std::vector<std::byte>& buffer, const domain::data_domain
     writer::write_uint32(buffer, static_cast<std::uint32_t>(d.version));
     writer::write_string(buffer, d.name);
     writer::write_string(buffer, d.description);
-    writer::write_string(buffer, d.recorded_by);
     writer::write_string(buffer, d.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(d.recorded_at));
@@ -127,9 +122,6 @@ read_data_domain(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     d.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    d.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -156,7 +148,6 @@ void write_subject_area(std::vector<std::byte>& buffer, const domain::subject_ar
     writer::write_string(buffer, s.name);
     writer::write_string(buffer, s.domain_name);
     writer::write_string(buffer, s.description);
-    writer::write_string(buffer, s.recorded_by);
     writer::write_string(buffer, s.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(s.recorded_at));
@@ -182,9 +173,6 @@ read_subject_area(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     s.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    s.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());

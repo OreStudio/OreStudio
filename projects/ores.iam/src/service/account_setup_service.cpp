@@ -33,16 +33,16 @@ account_setup_service::account_setup_service(account_service& account_svc,
 
 domain::account account_setup_service::create_account(const std::string& username,
     const std::string& email, const std::string& password,
-    const std::string& recorded_by,
+    const std::string& modified_by,
     const std::string& change_commentary) {
 
-    return create_account_with_role(username, email, password, recorded_by,
+    return create_account_with_role(username, email, password, modified_by,
         domain::roles::viewer, change_commentary);
 }
 
 domain::account account_setup_service::create_account_with_role(
     const std::string& username, const std::string& email,
-    const std::string& password, const std::string& recorded_by,
+    const std::string& password, const std::string& modified_by,
     const std::string& role_name,
     const std::string& change_commentary) {
 
@@ -60,13 +60,13 @@ domain::account account_setup_service::create_account_with_role(
 
     // Step 2: Create the account (and login_info)
     domain::account account = account_svc_.create_account(
-        username, email, password, recorded_by, change_commentary);
+        username, email, password, modified_by, change_commentary);
 
     BOOST_LOG_SEV(lg(), debug) << "Account created with ID: "
                                << boost::uuids::to_string(account.id);
 
     // Step 3: Assign the role to the account
-    auth_svc_->assign_role(account.id, role->id, recorded_by);
+    auth_svc_->assign_role(account.id, role->id, modified_by);
 
     BOOST_LOG_SEV(lg(), info) << "Assigned role '" << role_name
                               << "' to account '" << username << "'";

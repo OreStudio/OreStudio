@@ -269,7 +269,7 @@ handle_save_account_request(std::span<const std::byte> payload,
 
             domain::account account =
                 temp_setup_svc.create_account(username, request.email,
-                request.password, request.recorded_by, request.change_commentary);
+                request.password, auth_result->username, request.change_commentary);
 
             BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
                                       << " for username: " << account.username
@@ -304,7 +304,7 @@ handle_save_account_request(std::span<const std::byte> payload,
             service::account_service svc(ctx);
 
             bool success = svc.update_account(request.account_id,
-                request.email, request.recorded_by,
+                request.email, auth_result->username,
                 request.change_reason_code, request.change_commentary);
 
             if (success) {
@@ -883,7 +883,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             username,
             request.email,
             request.password,
-            "bootstrap",
+            "",
             domain::roles::super_admin,
             "Initial SuperAdmin account created during system bootstrap"
         );
@@ -1086,7 +1086,7 @@ handle_get_account_history_request(std::span<const std::byte> payload,
             domain::account_version version;
             version.data = account;
             version.version_number = account.version;  // Use database version field
-            version.recorded_by = account.recorded_by;
+            version.modified_by = account.modified_by;
             version.recorded_at = account.recorded_at;
             version.change_summary = "Version " + std::to_string(version.version_number);
 
@@ -2123,7 +2123,7 @@ handle_save_tenant_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     auto tenant = request.tenant;
-    // recorded_by comes from the request; if empty, the database trigger sets it
+    // modified_by comes from the request; if empty, the database trigger sets it
 
     // Create per-request context with session's tenant
     auto ctx = make_request_context(*auth_result);
@@ -2325,7 +2325,8 @@ handle_save_tenant_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving tenant type: " << request.type.type;
 
-    request.type.recorded_by = auth_result->username;
+    request.type.modified_by = auth_result->username;
+    request.type.performed_by.clear();
 
     save_tenant_type_response response;
     try {
@@ -2504,7 +2505,8 @@ handle_save_tenant_status_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving tenant status: "
                               << request.status.status;
 
-    request.status.recorded_by = auth_result->username;
+    request.status.modified_by = auth_result->username;
+    request.status.performed_by.clear();
 
     save_tenant_status_response response;
     try {
@@ -2704,7 +2706,7 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
                 request.admin_username,
                 request.admin_email,
                 request.admin_password,
-                "onboarding",
+                auth_result->username,
                 domain::roles::tenant_admin,
                 "TenantAdmin account created during tenant onboarding");
 

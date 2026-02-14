@@ -50,7 +50,7 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // (1 byte). Supported compression algorithms: none, zlib, gzip, bzip2.
 // Uncompressed payloads remain fully supported (compression_type::none).
 //
-// Version 10.0 replaces valid_from/valid_to fields with recorded_by/recorded_at
+// Version 10.0 replaces valid_from/valid_to fields with modified_by/recorded_at
 // in domain types (currency, account, feature_flags). This is a breaking change
 // affecting all entity serialization in the protocol.
 //
@@ -261,7 +261,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 32.0 adds transliterated_name optional field to party and
 // counterparty wire format.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 32;
+//
+// Version 33.0 removes modified_by and performed_by from all entity wire
+// formats. These audit fields are now set server-side: modified_by from the
+// authenticated session username, performed_by by the DB trigger.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 33;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

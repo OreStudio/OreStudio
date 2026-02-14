@@ -44,7 +44,7 @@ TEST_CASE("generate_single_currency", tags) {
     CHECK(!currency.iso_code.empty());
     CHECK(!currency.name.empty());
     CHECK(!currency.symbol.empty());
-    CHECK(!currency.recorded_by.empty());
+    CHECK(!currency.modified_by.empty());
     CHECK(currency.recorded_at != std::chrono::system_clock::time_point{});
 }
 
@@ -153,7 +153,7 @@ TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
     REQUIRE(currencies.size() == 1);
     CHECK(currencies[0].iso_code == "XAE");
     CHECK(currencies[0].name == "Aerilonian Dollar");
-    CHECK(!currencies[0].recorded_by.empty());
+    CHECK(!currencies[0].modified_by.empty());
     CHECK(currencies[0].recorded_at != std::chrono::system_clock::time_point{});
 }
 

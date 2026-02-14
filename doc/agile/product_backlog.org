@@ -2334,7 +2334,8 @@ All servers work the same way - standardized interface Architecture:
 
 Links:
 
-- [[https://github.com/hkr04/cpp-mcp][GH: cpp-mcp]]
+- [[https://github.com/hkr04/cpp-mcp][GH: cpp-mcp]]. We need to add a vcpkg port first. See [[https://github.com/hkr04/cpp-mcp/issues/37#issuecomment-3895040671][#37: Ading cpp-mcp to
+  vcpkg]].
 - [[https://github.com/Qihoo360/TinyMCP][GH: TinyMCP]]
 
 *** Log file location for Qt application is non-standard on Linux      :code:

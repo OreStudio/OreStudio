@@ -55,7 +55,7 @@ account_service::account_service(database::context ctx)
 domain::account
 account_service::create_account(const std::string& username,
     const std::string& email, const std::string& password,
-    const std::string& recorded_by,
+    const std::string& modified_by,
     const std::string& change_commentary) {
 
     throw_if_empty("Username", username);
@@ -75,7 +75,7 @@ account_service::create_account(const std::string& username,
     domain::account new_account {
         .version = 0, // will be set by repository
         .id = id,
-        .recorded_by = recorded_by,
+        .modified_by = modified_by,
         .change_reason_code = std::string{reason::codes::new_record},
         .change_commentary = change_commentary,
         .account_type = "user",
@@ -109,7 +109,7 @@ account_service::create_account(const std::string& username,
 domain::account
 account_service::create_service_account(const std::string& username,
     const std::string& email, const std::string& account_type,
-    const std::string& recorded_by,
+    const std::string& modified_by,
     const std::string& change_commentary) {
 
     throw_if_empty("Username", username);
@@ -138,7 +138,7 @@ account_service::create_service_account(const std::string& username,
     domain::account new_account {
         .version = 0, // will be set by repository
         .id = id,
-        .recorded_by = recorded_by,
+        .modified_by = modified_by,
         .change_reason_code = std::string{reason::codes::new_record},
         .change_commentary = change_commentary,
         .account_type = account_type,
@@ -392,7 +392,7 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
 }
 
 bool account_service::update_account(const boost::uuids::uuid& account_id,
-    const std::string& email, const std::string& recorded_by,
+    const std::string& email, const std::string& modified_by,
     const std::string& change_reason_code,
     const std::string& change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Updating account: "
@@ -409,7 +409,7 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     // Get existing account and create new version with updated fields
     auto account = accounts[0];
     account.email = email;
-    account.recorded_by = recorded_by;
+    account.modified_by = modified_by;
     account.change_reason_code = change_reason_code;
     account.change_commentary = change_commentary;
     // Note: version is NOT incremented here - the database trigger handles it

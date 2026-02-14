@@ -49,7 +49,6 @@ void write_tenant(std::vector<std::byte>& buffer,
     writer::write_string(buffer, t.description);
     writer::write_string(buffer, t.hostname);
     writer::write_string(buffer, t.status);
-    writer::write_string(buffer, t.recorded_by);
     writer::write_string(buffer, t.change_reason_code);
     writer::write_string(buffer, t.change_commentary);
     writer::write_string(buffer,
@@ -92,9 +91,6 @@ read_tenant(std::span<const std::byte>& data) {
     if (!status_result) return std::unexpected(status_result.error());
     t.status = *status_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    t.recorded_by = *recorded_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

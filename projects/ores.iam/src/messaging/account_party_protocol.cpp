@@ -44,8 +44,6 @@ void write_account_party(std::vector<std::byte>& buffer,
     writer::write_uint32(buffer, static_cast<std::uint32_t>(ap.version));
     writer::write_uuid(buffer, ap.account_id);
     writer::write_uuid(buffer, ap.party_id);
-    writer::write_string(buffer, ap.recorded_by);
-    writer::write_string(buffer, ap.performed_by);
     writer::write_string(buffer, ap.change_reason_code);
     writer::write_string(buffer, ap.change_commentary);
     writer::write_string(buffer,
@@ -68,13 +66,7 @@ read_account_party(std::span<const std::byte>& data) {
     if (!party_id_result) return std::unexpected(party_id_result.error());
     ap.party_id = *party_id_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    ap.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    ap.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

@@ -190,8 +190,8 @@ void ChangeReasonCategoryHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(QString::number(version.version));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* recordedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(version.modified_by));
         auto* commentaryItem =
             new QTableWidgetItem(QString::fromStdString(version.change_commentary));
 
@@ -199,7 +199,7 @@ void ChangeReasonCategoryHistoryDialog::onHistoryLoaded() {
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
-        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
         ui_->versionListWidget->setItem(i, 3, commentaryItem);
     }
 
@@ -281,7 +281,7 @@ void ChangeReasonCategoryHistoryDialog::displayFullDetailsTab(int version_index)
     ui_->codeValue->setText(QString::fromStdString(category.code));
     ui_->descriptionValue->setText(QString::fromStdString(category.description));
     ui_->versionNumberValue->setText(QString::number(category.version));
-    ui_->recordedByValue->setText(QString::fromStdString(category.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(category.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(category.recorded_at));
     ui_->changeCommentaryValue->setText(QString::fromStdString(category.change_commentary));
 }

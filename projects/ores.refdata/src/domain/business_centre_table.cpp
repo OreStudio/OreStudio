@@ -29,7 +29,7 @@ fort::char_table make_business_centre_table() {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
     table << fort::header << "Code" << "Version" << "Source" << "Description"
-          << "Coding Scheme" << "Country" << "Change Reason" << "Recorded By"
+          << "Coding Scheme" << "Country" << "Change Reason" << "Modified By"
           << "Recorded At" << fort::endr;
     return table;
 }
@@ -37,7 +37,7 @@ fort::char_table make_business_centre_table() {
 void add_business_centre_row(fort::char_table& table, const business_centre& c) {
     table << c.code << c.version << c.source << c.description
           << c.coding_scheme_code << c.country_alpha2_code
-          << c.change_reason_code << c.recorded_by
+          << c.change_reason_code << c.modified_by
           << c.recorded_at << fort::endr;
 }
 

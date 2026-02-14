@@ -90,7 +90,6 @@ void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d) {
         writer::write_string(buffer, *d.artefact_type);
     }
 
-    writer::write_string(buffer, d.recorded_by);
     writer::write_string(buffer, d.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(d.recorded_at));
@@ -216,9 +215,6 @@ read_dataset(std::span<const std::byte>& data) {
         d.artefact_type = *artefact_type_result;
     }
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    d.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -257,7 +253,6 @@ void write_methodology(std::vector<std::byte>& buffer, const domain::methodology
         writer::write_string(buffer, *m.implementation_details);
     }
 
-    writer::write_string(buffer, m.recorded_by);
     writer::write_string(buffer, m.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(m.recorded_at));
@@ -299,9 +294,6 @@ read_methodology(std::span<const std::byte>& data) {
         m.implementation_details = *implementation_details_result;
     }
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    m.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());

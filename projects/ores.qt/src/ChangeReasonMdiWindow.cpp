@@ -154,7 +154,7 @@ void ChangeReasonMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientChangeReasonModel::RequiresCommentary, 120);
     tableView_->setColumnWidth(ClientChangeReasonModel::DisplayOrder, 80);
     tableView_->setColumnWidth(ClientChangeReasonModel::Version, 80);
-    tableView_->setColumnWidth(ClientChangeReasonModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientChangeReasonModel::ModifiedBy, 120);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

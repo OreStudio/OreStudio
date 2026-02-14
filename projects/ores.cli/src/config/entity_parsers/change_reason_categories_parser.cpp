@@ -67,7 +67,7 @@ options_description make_add_change_reason_category_options_description() {
     r.add_options()
         ("code", value<std::string>(), "Category code (required)")
         ("description", value<std::string>(), "Description (required)")
-        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("modified-by", value<std::string>(), "Username of modifier (required)")
         ("change-commentary", value<std::string>(), "Change commentary");
 
     return r;
@@ -89,11 +89,11 @@ read_add_change_reason_category_options(const variables_map& vm) {
     }
     r.description = vm["description"].as<std::string>();
 
-    if (vm.count("recorded-by") == 0) {
+    if (vm.count("modified-by") == 0) {
         BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --recorded-by for add change-reason-category command."));
+            parser_exception("Must supply --modified-by for add change-reason-category command."));
     }
-    r.recorded_by = vm["recorded-by"].as<std::string>();
+    r.modified_by = vm["modified-by"].as<std::string>();
 
     if (vm.count("change-commentary") != 0)
         r.change_commentary = vm["change-commentary"].as<std::string>();

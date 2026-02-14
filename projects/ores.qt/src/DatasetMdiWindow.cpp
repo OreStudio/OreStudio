@@ -76,7 +76,7 @@ void DatasetMdiWindow::setupUi() {
         cs::text_left,   // SourceSystem
         cs::mono_left,   // AsOfDate
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left,   // RecordedAt
         cs::text_left    // Tags
     }, tableView_));

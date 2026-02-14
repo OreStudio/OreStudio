@@ -35,7 +35,7 @@ domain::account_party generate_synthetic_account_party() {
     r.tenant_id = "system";
     r.account_id = uuid_gen();
     r.party_id = uuid_gen();
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

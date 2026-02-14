@@ -36,7 +36,7 @@ change_reason_category_mapper::map(const change_reason_category_entity& v) {
     r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.description = v.description;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -53,7 +53,7 @@ change_reason_category_mapper::map(const domain::change_reason_category& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

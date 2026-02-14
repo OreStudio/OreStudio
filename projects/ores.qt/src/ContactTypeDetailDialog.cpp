@@ -112,7 +112,7 @@ void ContactTypeDetailDialog::updateUiFromType() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
 
     ui_->versionEdit->setText(QString::number(type_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(type_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(type_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(type_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(type_.change_commentary));
 }
@@ -123,7 +123,7 @@ void ContactTypeDetailDialog::updateTypeFromUi() {
     }
     type_.name = ui_->nameEdit->text().trimmed().toStdString();
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    type_.recorded_by = username_;
+    type_.modified_by = username_;
     type_.performed_by = username_;
 }
 

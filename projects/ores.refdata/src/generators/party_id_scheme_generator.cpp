@@ -41,7 +41,7 @@ domain::party_id_scheme generate_synthetic_party_id_scheme() {
     r.description = std::string(faker::lorem::sentence());
     r.coding_scheme_code = coding_schemes[idx % coding_schemes.size()];
     r.display_order = faker::number::integer(1, 100);
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

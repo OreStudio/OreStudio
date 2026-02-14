@@ -62,7 +62,6 @@ std::vector<std::byte> save_account_request::serialize() const {
     writer::write_string(buffer, password);
     writer::write_string(buffer, totp_secret);
     writer::write_string(buffer, email);
-    writer::write_string(buffer, recorded_by);
     writer::write_string(buffer, change_reason_code);
     writer::write_string(buffer, change_commentary);
     return buffer;
@@ -92,9 +91,6 @@ save_account_request::deserialize(std::span<const std::byte> data) {
     if (!email_result) return std::unexpected(email_result.error());
     request.email = *email_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    request.recorded_by = *recorded_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
@@ -186,7 +182,6 @@ std::vector<std::byte> get_accounts_response::serialize() const {
     // Write each account
     for (const auto& account : accounts) {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(account.version));
-        writer::write_string(buffer, account.recorded_by);
         write_timepoint(buffer, account.recorded_at);
         writer::write_uuid(buffer, account.id);
         writer::write_string(buffer, account.username);
@@ -229,9 +224,6 @@ get_accounts_response::deserialize(std::span<const std::byte> data) {
         if (!version_result) return std::unexpected(version_result.error());
         account.version = static_cast<int>(*version_result);
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        account.recorded_by = *recorded_by_result;
 
         auto recorded_at_result = read_timepoint(data);
         if (!recorded_at_result) return std::unexpected(recorded_at_result.error());

@@ -70,7 +70,7 @@ struct coding_scheme_authority_type final {
     /**
      * @brief Username of the person who last modified this authority type.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Free-text commentary explaining the change.

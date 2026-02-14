@@ -82,7 +82,7 @@ struct counterparty_identifier final {
     /**
      * @brief Username of the person who last modified this counterparty identifier.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this action.

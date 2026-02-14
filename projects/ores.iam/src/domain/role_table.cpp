@@ -43,7 +43,7 @@ std::string convert_to_table(const std::vector<role>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "ID (UUID)" << "Name" << "Description"
-          << "Permissions" << "Recorded By" << "Version" << fort::endr;
+          << "Permissions" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& r : v) {
         std::string permissions_str;
@@ -61,7 +61,7 @@ std::string convert_to_table(const std::vector<role>& v) {
 
         table << boost::uuids::to_string(r.id) << r.name
               << r.description << permissions_str
-              << r.recorded_by << r.version << fort::endr;
+              << r.modified_by << r.version << fort::endr;
     }
     return table.to_string();
 }

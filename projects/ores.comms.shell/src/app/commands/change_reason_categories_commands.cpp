@@ -89,7 +89,7 @@ process_add_category(std::ostream& out, client_session& session,
         out << "✗ You must be logged in to add a category." << std::endl;
         return;
     }
-    const auto& recorded_by = session.session_info()->username;
+    const auto& modified_by = session.session_info()->username;
 
     using dq::messaging::save_change_reason_category_request;
     using dq::messaging::save_change_reason_category_response;
@@ -102,7 +102,7 @@ process_add_category(std::ostream& out, client_session& session,
                 .version = 0,
                 .code = std::move(code),
                 .description = std::move(description),
-                .recorded_by = recorded_by,
+                .modified_by = modified_by,
                 .change_commentary = std::move(change_commentary),
                 .recorded_at = std::chrono::system_clock::now()
             }

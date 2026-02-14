@@ -42,7 +42,7 @@ TEST_CASE("create_catalog_with_valid_fields", tags) {
     sut.name = "ISO Standards";
     sut.description = "Datasets conforming to ISO standards";
     sut.owner = "Standards Team";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Catalog: " << sut;
 
@@ -50,7 +50,7 @@ TEST_CASE("create_catalog_with_valid_fields", tags) {
     CHECK(sut.name == "ISO Standards");
     CHECK(sut.description == "Datasets conforming to ISO standards");
     CHECK(sut.owner == "Standards Team");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -61,7 +61,7 @@ TEST_CASE("catalog_convert_single_to_table", tags) {
     cat.version = 1;
     cat.name = "FpML Standards";
     cat.description = "FpML-based financial products";
-    cat.recorded_by = "system";
+    cat.modified_by = "system";
 
     std::vector<catalog> catalogs = {cat};
     auto table = convert_to_table(catalogs);

@@ -64,7 +64,7 @@ account_party make_account_party(database_helper& h,
     ap.tenant_id = h.tenant_id().to_string();
     ap.account_id = account_id;
     ap.party_id = party_id;
-    ap.recorded_by = std::string(faker::internet::username());
+    ap.modified_by = std::string(faker::internet::username());
     ap.change_reason_code = "system.test";
     ap.change_commentary = "Synthetic test data";
     ap.performed_by = std::string(faker::internet::username());

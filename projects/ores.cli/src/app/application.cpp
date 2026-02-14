@@ -749,7 +749,8 @@ add_currency(const config::add_currency_options& cfg) const {
     currency.rounding_precision = cfg.rounding_precision.value_or(2);
     currency.format = cfg.format.value_or("");
     currency.currency_type = cfg.currency_type.value_or("");
-    currency.recorded_by = cfg.modified_by;
+    currency.modified_by = cfg.modified_by;
+    currency.performed_by = cfg.modified_by;
     // Note: recorded_at is set by the database triggers via valid_from
 
     // Write to database
@@ -802,7 +803,8 @@ add_account(const config::add_account_options& cfg) const {
     iam::domain::account account;
     account.version = 0;
     account.id = account_id;
-    account.recorded_by = cfg.modified_by;
+    account.modified_by = cfg.modified_by;
+    account.performed_by = cfg.modified_by;
     account.username = cfg.username;
     account.password_hash = password_hash;
     account.password_salt = "";  // Not used - hash contains salt
@@ -850,7 +852,8 @@ add_feature_flag(const config::add_feature_flag_options& cfg) const {
     flag.name = cfg.flag_name;
     flag.description = cfg.description.value_or("");
     flag.enabled = cfg.enabled.value_or(false);
-    flag.recorded_by = cfg.modified_by;
+    flag.modified_by = cfg.modified_by;
+    flag.performed_by = cfg.modified_by;
 
     // Write to database
     variability::repository::feature_flags_repository repo;
@@ -899,7 +902,8 @@ add_role(const config::add_role_options& cfg) const {
     record.id = boost::uuids::random_generator()();
     record.name = cfg.name;
     record.description = cfg.description;
-    record.recorded_by = cfg.recorded_by;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
     record.recorded_at = std::chrono::system_clock::now();
     record.permission_codes = cfg.permission_codes;
 
@@ -940,7 +944,8 @@ add_country(const config::add_country_options& cfg) const {
     record.alpha2_code = cfg.alpha2_code;
     record.alpha3_code = cfg.alpha3_code;
     record.name = cfg.name;
-    record.recorded_by = cfg.recorded_by;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
     record.recorded_at = std::chrono::system_clock::now();
 
     if (cfg.numeric_code)
@@ -967,7 +972,8 @@ add_change_reason(const config::add_change_reason_options& cfg) const {
     record.code = cfg.code;
     record.description = cfg.description;
     record.category_code = cfg.category_code;
-    record.recorded_by = cfg.recorded_by;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
     record.recorded_at = std::chrono::system_clock::now();
 
     if (cfg.applies_to_amend)
@@ -995,7 +1001,8 @@ add_change_reason_category(const config::add_change_reason_category_options& cfg
     dq::domain::change_reason_category record;
     record.code = cfg.code;
     record.description = cfg.description;
-    record.recorded_by = cfg.recorded_by;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
     record.recorded_at = std::chrono::system_clock::now();
 
     if (cfg.change_commentary)

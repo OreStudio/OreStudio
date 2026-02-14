@@ -41,14 +41,14 @@ TEST_CASE("create_data_domain_with_valid_fields", tags) {
     sut.version = 1;
     sut.name = "Reference Data";
     sut.description = "Static reference data like currencies and countries";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Data domain: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.name == "Reference Data");
     CHECK(sut.description == "Static reference data like currencies and countries");
-    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.modified_by == "admin");
     CHECK(sut.change_commentary == "Initial creation");
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("data_domain_convert_single_to_table", tags) {
     dd.version = 1;
     dd.name = "Market Data";
     dd.description = "Real-time and historical market prices";
-    dd.recorded_by = "system";
+    dd.modified_by = "system";
 
     std::vector<data_domain> domains = {dd};
     auto table = convert_to_table(domains);

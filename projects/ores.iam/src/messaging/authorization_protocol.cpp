@@ -62,7 +62,6 @@ void serialize_role(std::vector<std::byte>& buffer, const domain::role& role) {
     writer::write_uuid(buffer, role.id);
     writer::write_string(buffer, role.name);
     writer::write_string(buffer, role.description);
-    writer::write_string(buffer, role.recorded_by);
     writer::write_string(buffer, role.change_reason_code);
     writer::write_string(buffer, role.change_commentary);
     write_timepoint(buffer, role.recorded_at);
@@ -93,9 +92,6 @@ deserialize_role(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     role.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    role.recorded_by = *recorded_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

@@ -1200,7 +1200,7 @@ void DataLibrarianWindow::applyDefaultColumnVisibility() {
     header->setSectionHidden(ClientDatasetModel::Origin, true);
     header->setSectionHidden(ClientDatasetModel::Nature, true);
     header->setSectionHidden(ClientDatasetModel::Treatment, true);
-    header->setSectionHidden(ClientDatasetModel::RecordedBy, true);
+    header->setSectionHidden(ClientDatasetModel::ModifiedBy, true);
     header->setSectionHidden(ClientDatasetModel::RecordedAt, true);
 
     // Reorder columns: Name, Version, SourceSystem, AsOfDate, Tags, Catalog

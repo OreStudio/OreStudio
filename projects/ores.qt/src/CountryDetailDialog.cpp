@@ -237,7 +237,7 @@ void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     ui_->nameEdit->setText(QString::fromStdString(country.name));
     ui_->officialNameEdit->setText(QString::fromStdString(country.official_name));
     ui_->versionEdit->setText(QString::number(country.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(country.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(country.modified_by));
     ui_->recordedAtEdit->setText(QString::fromStdString(
         platform::time::datetime::format_time_point(country.recorded_at)));
     ui_->changeReasonEdit->setText(QString::fromStdString(country.change_reason_code));
@@ -257,7 +257,7 @@ refdata::domain::country CountryDetailDialog::getCountry() const {
     country.numeric_code = ui_->numericCodeEdit->text().toStdString();
     country.name = ui_->nameEdit->text().toStdString();
     country.official_name = ui_->officialNameEdit->text().toStdString();
-    country.recorded_by = username_.empty() ? "qt_user" : username_;
+    country.modified_by = username_.empty() ? "qt_user" : username_;
 
     if (!pendingImageId_.isEmpty()) {
         boost::uuids::string_generator gen;
@@ -274,7 +274,7 @@ void CountryDetailDialog::clearDialog() {
     ui_->nameEdit->clear();
     ui_->officialNameEdit->clear();
     ui_->versionEdit->clear();
-    ui_->recordedByEdit->clear();
+    ui_->modifiedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->changeReasonEdit->clear();
     ui_->commentaryEdit->clear();

@@ -180,7 +180,7 @@ void SubjectAreaDetailDialog::onSaveClicked() {
     subject_area.domain_name = domain_name.toStdString();
     subject_area.description = description.toStdString();
     subject_area.change_commentary = commentary.toStdString();
-    subject_area.recorded_by = username_;
+    subject_area.modified_by = username_;
     subject_area.version = isCreateMode_ ? 0 : subject_area_.version;
 
     QPointer<SubjectAreaDetailDialog> self = this;

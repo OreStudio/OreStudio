@@ -37,7 +37,7 @@ catalog_mapper::map(const catalog_entity& v) {
     r.name = v.name.value();
     r.description = v.description;
     r.owner = v.owner;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -55,7 +55,7 @@ catalog_mapper::map(const domain::catalog& v) {
     r.version = v.version;
     r.description = v.description;
     r.owner = v.owner;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

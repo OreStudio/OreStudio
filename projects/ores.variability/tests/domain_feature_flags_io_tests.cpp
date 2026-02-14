@@ -44,7 +44,7 @@ TEST_CASE("feature_flags_json_output_contains_all_fields", tags) {
     sut.name = "test_feature";
     sut.enabled = true;
     sut.description = "A test feature flag";
-    sut.recorded_by = "admin";
+    sut.modified_by = "admin";
     sut.recorded_at = std::chrono::system_clock::now();
 
     std::ostringstream os;
@@ -68,7 +68,7 @@ TEST_CASE("feature_flags_json_output_with_disabled_flag", tags) {
     sut.name = "disabled_feature";
     sut.enabled = false;
     sut.description = "A disabled feature";
-    sut.recorded_by = "system";
+    sut.modified_by = "system";
     sut.recorded_at = std::chrono::system_clock::now();
 
     std::ostringstream os;
@@ -92,7 +92,7 @@ TEST_CASE("feature_flags_json_output_with_faker", tags) {
             std::string(faker::word::verb());
         sut.enabled = faker::datatype::boolean();
         sut.description = std::string(faker::lorem::sentence());
-        sut.recorded_by = std::string(faker::internet::username());
+        sut.modified_by = std::string(faker::internet::username());
         sut.recorded_at = std::chrono::system_clock::now();
 
         std::ostringstream os;
@@ -104,7 +104,7 @@ TEST_CASE("feature_flags_json_output_with_faker", tags) {
 
         CHECK(!json_output.empty());
         CHECK(json_output.find(sut.name) != std::string::npos);
-        CHECK(json_output.find(sut.recorded_by) != std::string::npos);
+        CHECK(json_output.find(sut.modified_by) != std::string::npos);
     }
 }
 
@@ -118,7 +118,7 @@ TEST_CASE("feature_flags_vector_table_io_output", tags) {
         ff.name = "feature_" + std::to_string(i);
         ff.enabled = (i % 2 == 0);
         ff.description = "Description " + std::to_string(i);
-        ff.recorded_by = "user" + std::to_string(i);
+        ff.modified_by = "user" + std::to_string(i);
         ff.recorded_at = std::chrono::system_clock::now();
         flags.push_back(ff);
     }
@@ -160,7 +160,7 @@ TEST_CASE("feature_flags_table_io_with_faker_data", tags) {
         ff.name = std::string(faker::word::noun()) + "_flag";
         ff.enabled = faker::datatype::boolean();
         ff.description = std::string(faker::lorem::sentence());
-        ff.recorded_by = std::string(faker::internet::username());
+        ff.modified_by = std::string(faker::internet::username());
         ff.recorded_at = std::chrono::system_clock::now();
         flags.push_back(ff);
     }
@@ -186,7 +186,7 @@ TEST_CASE("feature_flags_json_special_characters", tags) {
     sut.name = "special_flag";
     sut.enabled = true;
     sut.description = "Description with \"quotes\" and 'apostrophes'";
-    sut.recorded_by = "user@domain.com";
+    sut.modified_by = "user@domain.com";
     sut.recorded_at = std::chrono::system_clock::now();
 
     std::ostringstream os;
@@ -209,7 +209,7 @@ TEST_CASE("feature_flags_convert_to_table_direct", tags) {
     ff.name = "direct_test_flag";
     ff.enabled = true;
     ff.description = "Testing convert_to_table directly";
-    ff.recorded_by = "tester";
+    ff.modified_by = "tester";
     ff.recorded_at = std::chrono::system_clock::now();
     flags.push_back(ff);
 

@@ -39,7 +39,7 @@ party_id_scheme_mapper::map(const party_id_scheme_entity& v) {
     r.description = v.description;
     r.coding_scheme_code = v.coding_scheme_code;
     r.display_order = v.display_order;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -61,7 +61,7 @@ party_id_scheme_mapper::map(const domain::party_id_scheme& v) {
     r.description = v.description;
     r.coding_scheme_code = v.coding_scheme_code;
     r.display_order = v.display_order;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

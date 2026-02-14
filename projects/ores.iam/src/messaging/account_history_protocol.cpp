@@ -55,7 +55,6 @@ void serialize_account_version(std::vector<std::byte>& buffer,
                                const domain::account_version& version) {
     // Write account data
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.data.version));
-    writer::write_string(buffer, version.data.recorded_by);
     write_timepoint(buffer, version.data.recorded_at);
     writer::write_uuid(buffer, version.data.id);
     writer::write_string(buffer, version.data.username);
@@ -68,7 +67,6 @@ void serialize_account_version(std::vector<std::byte>& buffer,
 
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
-    writer::write_string(buffer, version.recorded_by);
     write_timepoint(buffer, version.recorded_at);
     writer::write_string(buffer, version.change_summary);
 }
@@ -82,9 +80,6 @@ deserialize_account_version(std::span<const std::byte>& data) {
     if (!acc_version) return std::unexpected(acc_version.error());
     version.data.version = static_cast<int>(*acc_version);
 
-    auto recorded_by = reader::read_string(data);
-    if (!recorded_by) return std::unexpected(recorded_by.error());
-    version.data.recorded_by = *recorded_by;
 
     auto recorded_at = read_timepoint(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
@@ -127,9 +122,6 @@ deserialize_account_version(std::span<const std::byte>& data) {
     if (!version_number) return std::unexpected(version_number.error());
     version.version_number = static_cast<int>(*version_number);
 
-    auto version_recorded_by = reader::read_string(data);
-    if (!version_recorded_by) return std::unexpected(version_recorded_by.error());
-    version.recorded_by = *version_recorded_by;
 
     auto version_recorded_at = read_timepoint(data);
     if (!version_recorded_at) return std::unexpected(version_recorded_at.error());

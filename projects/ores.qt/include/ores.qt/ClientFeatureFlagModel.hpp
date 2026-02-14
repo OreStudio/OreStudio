@@ -58,7 +58,7 @@ public:
         Name,
         Enabled,
         Version,
-        RecordedBy,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };

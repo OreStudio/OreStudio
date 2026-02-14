@@ -125,7 +125,7 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case Column::RecordedBy:
+        case Column::ModifiedBy:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
         case Column::RecordedAt:

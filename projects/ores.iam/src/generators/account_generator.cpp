@@ -32,7 +32,7 @@ domain::account generate_synthetic_account(const utility::uuid::tenant_id& tenan
     domain::account r;
     r.version = 1;
     r.tenant_id = tenant_id;
-    r.recorded_by = faker::internet::username();
+    r.modified_by = faker::internet::username();
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
 

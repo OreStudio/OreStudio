@@ -28,11 +28,11 @@ std::string convert_to_table(const std::vector<feature_flags>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Name" << "Version" << "Description" << "Enabled"
-          << "Change Reason" << "Recorded By" << "Recorded At" << fort::endr;
+          << "Change Reason" << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& ff : v) {
         table << ff.name << ff.version << ff.description << ff.enabled
-              << ff.change_reason_code << ff.recorded_by << ff.recorded_at
+              << ff.change_reason_code << ff.modified_by << ff.recorded_at
               << fort::endr;
     }
     return table.to_string();

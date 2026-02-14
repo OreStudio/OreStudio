@@ -68,7 +68,6 @@ get_change_reason_categories_response::serialize() const {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(c.version));
         writer::write_string(buffer, c.code);
         writer::write_string(buffer, c.description);
-        writer::write_string(buffer, c.recorded_by);
         writer::write_string(buffer, c.change_commentary);
         writer::write_string(buffer,
             ores::platform::time::datetime::format_time_point(c.recorded_at));
@@ -105,9 +104,6 @@ get_change_reason_categories_response::deserialize(
         if (!description_result) return std::unexpected(description_result.error());
         c.description = *description_result;
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        c.recorded_by = *recorded_by_result;
 
         auto change_commentary_result = reader::read_string(data);
         if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -172,7 +168,6 @@ std::vector<std::byte> get_change_reasons_response::serialize() const {
         writer::write_bool(buffer, r.applies_to_delete);
         writer::write_bool(buffer, r.requires_commentary);
         writer::write_uint32(buffer, static_cast<std::uint32_t>(r.display_order));
-        writer::write_string(buffer, r.recorded_by);
         writer::write_string(buffer, r.change_commentary);
         writer::write_string(buffer,
             ores::platform::time::datetime::format_time_point(r.recorded_at));
@@ -228,9 +223,6 @@ get_change_reasons_response::deserialize(std::span<const std::byte> data) {
         if (!display_order_result) return std::unexpected(display_order_result.error());
         r.display_order = static_cast<int>(*display_order_result);
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        r.recorded_by = *recorded_by_result;
 
         auto change_commentary_result = reader::read_string(data);
         if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -304,7 +296,6 @@ get_change_reasons_by_category_response::serialize() const {
         writer::write_bool(buffer, r.applies_to_delete);
         writer::write_bool(buffer, r.requires_commentary);
         writer::write_uint32(buffer, static_cast<std::uint32_t>(r.display_order));
-        writer::write_string(buffer, r.recorded_by);
         writer::write_string(buffer, r.change_commentary);
         writer::write_string(buffer,
             ores::platform::time::datetime::format_time_point(r.recorded_at));
@@ -361,9 +352,6 @@ get_change_reasons_by_category_response::deserialize(
         if (!display_order_result) return std::unexpected(display_order_result.error());
         r.display_order = static_cast<int>(*display_order_result);
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        r.recorded_by = *recorded_by_result;
 
         auto change_commentary_result = reader::read_string(data);
         if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -407,7 +395,6 @@ void write_change_reason(std::vector<std::byte>& buffer,
     writer::write_bool(buffer, r.applies_to_delete);
     writer::write_bool(buffer, r.requires_commentary);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(r.display_order));
-    writer::write_string(buffer, r.recorded_by);
     writer::write_string(buffer, r.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(r.recorded_at));
@@ -450,9 +437,6 @@ read_change_reason(std::span<const std::byte>& data) {
     if (!display_order_result) return std::unexpected(display_order_result.error());
     r.display_order = static_cast<int>(*display_order_result);
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    r.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
@@ -476,7 +460,6 @@ void write_change_reason_category(std::vector<std::byte>& buffer,
     writer::write_uint32(buffer, static_cast<std::uint32_t>(c.version));
     writer::write_string(buffer, c.code);
     writer::write_string(buffer, c.description);
-    writer::write_string(buffer, c.recorded_by);
     writer::write_string(buffer, c.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(c.recorded_at));
@@ -499,9 +482,6 @@ read_change_reason_category(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     c.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    c.recorded_by = *recorded_by_result;
 
     auto change_commentary_result = reader::read_string(data);
     if (!change_commentary_result) return std::unexpected(change_commentary_result.error());

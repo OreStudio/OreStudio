@@ -274,43 +274,37 @@ $$ language plpgsql security definer;
 -- =============================================================================
 -- Account Username Validation
 -- =============================================================================
--- Validates that a username exists in the accounts table.
--- Used to validate modified_by and performed_by fields.
+-- Validates that a modified_by value is set (not null or empty).
+-- Called from every insert trigger to enforce audit trail integrity.
 --
--- Special handling:
---   - 'system' is always valid (for bootstrap and system operations)
---   - During initial bootstrap when accounts table is empty, any value is allowed
---   - Otherwise, username must exist in ores_iam_accounts_tbl
+-- Semantics:
+--   - Bootstrap (accounts table empty): empty → defaults to current_user;
+--     non-empty → pass-through
+--   - Normal operation: empty → raises exception (application must set this);
+--     non-empty → pass-through
+--
+-- Note: strict validation of modified_by against the accounts table is
+-- deferred until generators supply the DB session user via a generation
+-- context (see sprint backlog story).
 --
 create or replace function ores_iam_validate_account_username_fn(
     p_username text
 ) returns text as $$
 begin
-    -- Null or empty is not allowed
-    if p_username is null or p_username = '' then
-        raise exception 'Account username cannot be null or empty' using errcode = '23502';
-    end if;
-
-    -- 'postgres' superuser is always valid (no account required)
-    -- This allows bootstrap scripts run by postgres to work
-    if p_username = 'postgres' then
-        return p_username;
-    end if;
-
-    -- Allow during initial bootstrap when accounts table is empty
+    -- During bootstrap (no accounts exist yet), default empty to
+    -- current_user (the DB service role)
     if not exists (select 1 from ores_iam_accounts_tbl limit 1) then
+        if p_username is null or p_username = '' then
+            return current_user;
+        end if;
         return p_username;
     end if;
 
-    -- Validate username exists (check system tenant for service accounts,
-    -- or any tenant for user accounts)
-    if not exists (
-        select 1 from ores_iam_accounts_tbl
-        where username = p_username
-        and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid account username: %. Account must exist.',
-            p_username using errcode = '23503';
+    -- After bootstrap: empty is an error (application must always set this)
+    if p_username is null or p_username = '' then
+        raise exception 'modified_by cannot be null or empty. '
+            'Application code must set this field explicitly.'
+            using errcode = '23502';
     end if;
 
     return p_username;

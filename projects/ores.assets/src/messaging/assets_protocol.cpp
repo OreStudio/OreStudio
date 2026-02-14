@@ -110,7 +110,6 @@ std::vector<std::byte> get_images_response::serialize() const {
         writer::write_string(buffer, img.key);
         writer::write_string(buffer, img.description);
         writer::write_string32(buffer, img.svg_data);  // Use 32-bit length for large SVGs
-        writer::write_string(buffer, img.recorded_by);
         writer::write_string(buffer, img.change_reason_code);
         writer::write_string(buffer, img.change_commentary);
         writer::write_string(buffer, timepoint_to_string(img.recorded_at));
@@ -153,9 +152,6 @@ get_images_response::deserialize(std::span<const std::byte> data) {
         if (!svg_data_result) return std::unexpected(svg_data_result.error());
         img.svg_data = *svg_data_result;
 
-        auto recorded_by_result = reader::read_string(data);
-        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-        img.recorded_by = *recorded_by_result;
 
         auto change_reason_code_result = reader::read_string(data);
         if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

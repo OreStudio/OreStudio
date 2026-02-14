@@ -157,7 +157,7 @@ void BusinessCentreMdiWindow::setupTable() {
         cs::mono_left,        // CodingScheme
         cs::mono_bold_center, // CountryAlpha2
         cs::mono_center,      // Version
-        cs::text_left,        // RecordedBy
+        cs::text_left,        // ModifiedBy
         cs::mono_left         // RecordedAt
     }, tableView_));
 

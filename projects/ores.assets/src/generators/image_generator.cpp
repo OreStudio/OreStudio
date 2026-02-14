@@ -41,7 +41,7 @@ domain::image generate_synthetic_image() {
     r.svg_data = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">"
                  "<rect fill=\"#" + faker::number::hexadecimal(6) + "\" width=\"100\" height=\"100\"/>"
                  "</svg>";
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();

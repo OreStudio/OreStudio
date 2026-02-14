@@ -41,7 +41,7 @@ domain::methodology generate_synthetic_methodology() {
     if (faker::datatype::boolean()) {
         r.implementation_details = std::string(faker::lorem::paragraph());
     }
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

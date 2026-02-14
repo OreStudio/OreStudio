@@ -28,11 +28,11 @@ std::string convert_to_table(const std::vector<dataset_bundle_member>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Bundle" << "Dataset" << "Order"
-          << "Recorded By" << "Version" << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& m : v) {
         table << m.bundle_code << m.dataset_code << m.display_order
-              << m.recorded_by << m.version << fort::endr;
+              << m.modified_by << m.version << fort::endr;
     }
     return table.to_string();
 }

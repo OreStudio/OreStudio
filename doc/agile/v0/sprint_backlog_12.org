@@ -1187,41 +1187,20 @@ Highlights:
   Instructions (SSI), enhancing the knowledge base for financial reference data.
 #+end_quote
 
-*** STARTED Add a setup new tenant wizard                              :code:
+*** COMPLETED Add LEI to BIC dataset                                   :code:
     :LOGBOOK:
-    CLOCK: [2026-02-12 Thu 07:20]--[2026-02-12 Thu 07:35] =>  0:15
-    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
+    CLOCK: [2026-02-13 Fri 01:53]--[2026-02-13 Fri 02:20] =>  0:27
     :END:
 
-Just like we did a new system provisioner, we need a new tenant provisioner that
-takes into account:
+In order to simulate settlements it seems we also need the BIC. We have added
+the CSV to external, but we need to create dataset, population scripts and the
+associated publisher.
 
-- GLEIF based party setup
-- GLEIF based counterparty setup
+Links:
 
-We should make it clear it's evaluation.
+- [[https://www.gleif.org/en/lei-data/lei-mapping/download-bic-to-lei-relationship-files][Download BIC-to-LEI Relationship Files]]
 
-*** STARTED Implement party-level RLS isolation                        :code:
-
-Add a second layer of Row-Level Security that isolates party-scoped data
-(counterparties, books, portfolios, trades) within a tenant. At login, compute
-the user's visible party set via a recursive CTE on the party hierarchy and
-store it as a PostgreSQL session variable (=app.visible_party_ids=). RLS
-policies on party-scoped tables filter using =party_id = ANY(...)=.
-
-See =projects/ores.refdata/modeling/multi_party.org= and
-=doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= for the full
-architecture.
-
-**** Acceptance Criteria
-
-- =app.visible_party_ids= session variable set at login.
-- Party-scoped tables have RLS policies filtering by visible party set.
-- System party users see all parties in the tenant.
-- Leaf party users see only their own data.
-- Mid-level party users see their subtree.
-
-*** STARTED Add proper party short-codes                               :code:
+*** COMPLETED Add proper party short-codes                             :code:
     :LOGBOOK:
     CLOCK: [2026-02-12 Thu 23:11]--[2026-02-13 Fri 01:29] =>  2:18
     :END:
@@ -1323,7 +1302,12 @@ The Collision Workflow:
 - GLDMN -> GLDMS
 #+end_quote
 
-*** STARTED Polish party and counterparty list UI                      :code:
+*** COMPLETED Polish party and counterparty list UI                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-13 Fri 10:20]--[2026-02-13 Fri 11:03] =>  0:43
+    CLOCK: [2026-02-13 Fri 07:30]--[2026-02-13 Fri 07:50] =>  2:57
+    CLOCK: [2026-02-13 Fri 01:30]--[2026-02-13 Fri 01:52] =>  0:22
+    :END:
 
 Several UI polish items for the party and counterparty list windows.
 
@@ -1353,17 +1337,7 @@ Highlights:
   errors.
 #+end_quote
 
-*** Add LEI to BIC dataset                                             :code:
-
-In order to simulate settlements it seems we also need the BIC. We have added
-the CSV to external, but we need to create dataset, population scripts and the
-associated publisher.
-
-Links:
-
-- [[https://www.gleif.org/en/lei-data/lei-mapping/download-bic-to-lei-relationship-files][Download BIC-to-LEI Relationship Files]]
-
-*** Separate party identifiers (LEI, BIC) into dedicated table         :code:
+*** COMPLETED Separate party identifiers into dedicated table          :code:
 
 LEI is currently used as the party/counterparty code, which prevents internal
 entities that don't have an LEI. Identifiers like LEI, BIC, and other schemes
@@ -1376,7 +1350,70 @@ need to live in a separate junction table (=party_identifiers=).
 
 Related story: "Add proper party short-codes".
 
-*** Fix audit trail metadata for recorded_by and modified_by           :code:
+*** COMPLETED Improvements to counterparty and party UI                :code:
+
+#+begin_quote
+This pull request significantly polishes the user experience for entity list
+windows and strengthens the underlying data model for party and counterparty
+identifiers. It addresses issues with duplicate identifier entries by
+introducing cardinality constraints in the database and improves UI consistency
+and usability through standardized column resizing, intelligent name display for
+multi-script data, and robust, centralized window settings persistence.
+
+Highlights:
+
+- Enhanced Identifier Handling: Modified database schemas and triggers to
+  support multi-valued identifiers for parties and counterparties, introducing
+  max_cardinality for identifier schemes to prevent duplicate key violations,
+  particularly for BIC mappings.
+- Improved UI for Entity Lists: Refined the display of entity lists by renaming
+  "Business Center" to "Centre", merging transliterated names into the main
+  "Name" column with non-Latin text detection, and standardizing column sizing
+  to ResizeToContents.
+- Centralized Settings Management: Consolidated window settings persistence
+  logic into the EntityListMdiWindow base class, ensuring consistent saving and
+  restoration of window sizes and header states across all MDI sub-windows,
+  including versioning for header layouts.
+- New Text Utility: Introduced a TextUtils utility class to facilitate detection
+  of non-Latin characters and intelligent formatting of names with
+  transliterations.
+#+end_quote
+
+*** STARTED Add a setup new tenant wizard                              :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 07:20]--[2026-02-12 Thu 07:35] =>  0:15
+    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
+    :END:
+
+Just like we did a new system provisioner, we need a new tenant provisioner that
+takes into account:
+
+- GLEIF based party setup
+- GLEIF based counterparty setup
+
+We should make it clear it's evaluation.
+
+*** STARTED Implement party-level RLS isolation                        :code:
+
+Add a second layer of Row-Level Security that isolates party-scoped data
+(counterparties, books, portfolios, trades) within a tenant. At login, compute
+the user's visible party set via a recursive CTE on the party hierarchy and
+store it as a PostgreSQL session variable (=app.visible_party_ids=). RLS
+policies on party-scoped tables filter using =party_id = ANY(...)=.
+
+See =projects/ores.refdata/modeling/multi_party.org= and
+=doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= for the full
+architecture.
+
+**** Acceptance Criteria
+
+- =app.visible_party_ids= session variable set at login.
+- Party-scoped tables have RLS policies filtering by visible party set.
+- System party users see all parties in the tenant.
+- Leaf party users see only their own data.
+- Mid-level party users see their subtree.
+
+*** STARTED Fix audit trail metadata for recorded_by and modified_by   :code:
 
 Audit trail fields are inconsistent across entities. The user who performed the
 action is often not correctly recorded, and the UI does not clearly surface this
@@ -1392,6 +1429,23 @@ information.
 
 Related stories: "Add entity messages should not set modified by", "Investigate
 how performed by is being set", "Add system account".
+
+*** STARTED Investigate how performed by is being set                  :code:
+
+It should just be the database account.
+
+*** STARTED Add "system" account                                       :code:
+
+Modified by must always map to an existing account. We need to create an account
+that cannot login and which is used for all of the initial population.
+
+Publication should be done using the new admin account, not the system account.
+
+*** STARTED Add entity messages should not set modified by             :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
 
 *** Enforce root party uniqueness constraints                          :code:
 
@@ -1838,13 +1892,6 @@ selection, compute the visible party set and bind to the session.
 - Party context immutable for session lifetime.
 
 
-*** Add entity messages should not set modified by                     :code:
-
-At present you can supply any modified by you want in the protocol messages. It
-makes more sense to say the message must have the modified by as the user logged
-in from the session.
-
-
 *** Add country support                                                :code:
 
 We will probably need country support at some point. We should link the country
@@ -2102,10 +2149,6 @@ Description
 Look for correct terminology (actor type?).
 
 
-*** Investigate how performed by is being set                          :code:
-
-It should just be the database account.
-
 *** Add sub-menus to shell                                             :code:
 
 There are a lot of entries in the shell main menu, we need to group them. These
@@ -2120,13 +2163,6 @@ Notes:
 *** System provisioner needs an icon                                   :code:
 
 Dialog is using default ORE icon.
-
-*** Add "system" account                                               :code:
-
-Modified by must always map to an existing account. We need to create an account
-that cannot login and which is used for all of the initial population.
-
-Publication should be done using the new admin account, not the system account.
 
 *** Add a organisation type scheme entity                              :code:
 
@@ -3005,6 +3041,43 @@ per-party.
 - Default: all currencies/countries visible to all parties (opt-in restriction).
 
 
+
+*** Add generation context with KVP for audit trail fields             :code:
+
+Generators for test data currently hardcode =faker::internet::username()= for
+=modified_by=. After the trigger-based validation of =modified_by= against the
+accounts table (PR #447), this causes test failures whenever the accounts table
+is non-empty: the faker username is not the DB session user and does not exist in
+the accounts table.
+
+The earlier story "Improve generators with FK-aware test data" proposed a
+generation context with a KVP where generators can leave data for other
+generators to pick up. This story extends that idea to audit trail fields.
+
+Proposed approach:
+
+- Create a =generation_context= struct (or extend the existing one in
+  =ores.synthetic=) that holds a =std::unordered_map<std::string, std::string>=
+  for well-known keys.
+- Define well-known key constants: =modified_by=, =tenant_id=, =parent_party_id=
+  etc.
+- All generators accept an optional =const generation_context&= parameter.
+- Test helpers (=database_helper=, =scoped_database_helper=) provide a
+  pre-populated context via =make_generation_context()= that sets =modified_by=
+  to =db_user()=, =tenant_id= to the test tenant, etc.
+- Update codegen templates (=cpp_domain_type_generator.cpp.mustache=) to
+  generate context-aware signatures.
+- Re-enable strict username validation in
+  =ores_iam_validate_account_username_fn= (currently relaxed to allow any
+  non-empty value).
+
+Acceptance criteria:
+
+- All generators accept a generation context for =modified_by=.
+- Test helpers provide a pre-populated context.
+- Trigger validation function strictly validates =modified_by= against accounts
+  table.
+- All tests pass with strict validation enabled.
 
 *** Update currency details to use tabs                                :code:
 

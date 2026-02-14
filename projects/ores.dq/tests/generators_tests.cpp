@@ -54,7 +54,7 @@ TEST_CASE("catalog_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -78,7 +78,7 @@ TEST_CASE("change_reason_category_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -105,7 +105,7 @@ TEST_CASE("change_reason_generator_produces_valid_instance", tags) {
     CHECK(!sut.category_code.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -131,7 +131,7 @@ TEST_CASE("coding_scheme_authority_type_generator_produces_valid_instance", tags
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -159,7 +159,7 @@ TEST_CASE("coding_scheme_generator_produces_valid_instance", tags) {
     CHECK(!sut.subject_area_name.empty());
     CHECK(!sut.domain_name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -184,7 +184,7 @@ TEST_CASE("data_domain_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -218,7 +218,7 @@ TEST_CASE("dataset_generator_produces_valid_instance", tags) {
     CHECK(!sut.business_context.empty());
     CHECK(sut.lineage_depth >= 0);
     CHECK(sut.lineage_depth <= 5);
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -244,7 +244,7 @@ TEST_CASE("methodology_generator_produces_valid_instance", tags) {
     CHECK(!sut.id.is_nil());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -270,7 +270,7 @@ TEST_CASE("origin_dimension_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -295,7 +295,7 @@ TEST_CASE("nature_dimension_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -320,7 +320,7 @@ TEST_CASE("subject_area_generator_produces_valid_instance", tags) {
     CHECK(!sut.name.empty());
     CHECK(!sut.domain_name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -354,7 +354,7 @@ TEST_CASE("treatment_dimension_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.recorded_by.empty());
+    CHECK(!sut.modified_by.empty());
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 

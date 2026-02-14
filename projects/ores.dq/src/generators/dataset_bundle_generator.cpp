@@ -39,7 +39,7 @@ domain::dataset_bundle generate_synthetic_dataset_bundle() {
     r.code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle " + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();

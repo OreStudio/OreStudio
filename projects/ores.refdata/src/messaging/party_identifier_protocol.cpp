@@ -47,8 +47,6 @@ void write_party_identifier(std::vector<std::byte>& buffer,
     writer::write_string(buffer, pi.id_scheme);
     writer::write_string(buffer, pi.id_value);
     writer::write_string(buffer, pi.description);
-    writer::write_string(buffer, pi.recorded_by);
-    writer::write_string(buffer, pi.performed_by);
     writer::write_string(buffer, pi.change_reason_code);
     writer::write_string(buffer, pi.change_commentary);
     writer::write_string(buffer,
@@ -83,13 +81,7 @@ read_party_identifier(std::span<const std::byte>& data) {
     if (!description_result) return std::unexpected(description_result.error());
     pi.description = *description_result;
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    pi.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    pi.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

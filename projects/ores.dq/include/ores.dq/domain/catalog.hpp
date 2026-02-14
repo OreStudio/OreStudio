@@ -68,7 +68,7 @@ struct catalog final {
     /**
      * @brief Username of the person who last modified this catalog.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Free-text commentary explaining the change.

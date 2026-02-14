@@ -67,7 +67,7 @@ options_description make_add_role_options_description() {
     r.add_options()
         ("name", value<std::string>(), "Role name (required)")
         ("description", value<std::string>(), "Role description")
-        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("modified-by", value<std::string>(), "Username of modifier (required)")
         ("change-reason-code", value<std::string>(), "Change reason code")
         ("change-commentary", value<std::string>(), "Change commentary")
         ("permission-code", value<std::vector<std::string>>()->multitoken(),
@@ -85,11 +85,11 @@ add_role_options read_add_role_options(const variables_map& vm) {
     }
     r.name = vm["name"].as<std::string>();
 
-    if (vm.count("recorded-by") == 0) {
+    if (vm.count("modified-by") == 0) {
         BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --recorded-by for add role command."));
+            parser_exception("Must supply --modified-by for add role command."));
     }
-    r.recorded_by = vm["recorded-by"].as<std::string>();
+    r.modified_by = vm["modified-by"].as<std::string>();
 
     if (vm.count("description") != 0)
         r.description = vm["description"].as<std::string>();

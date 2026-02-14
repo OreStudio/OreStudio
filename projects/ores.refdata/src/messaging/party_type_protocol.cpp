@@ -46,8 +46,6 @@ void write_party_type(std::vector<std::byte>& buffer,
     writer::write_string(buffer, pt.name);
     writer::write_string(buffer, pt.description);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(pt.display_order));
-    writer::write_string(buffer, pt.recorded_by);
-    writer::write_string(buffer, pt.performed_by);
     writer::write_string(buffer, pt.change_reason_code);
     writer::write_string(buffer, pt.change_commentary);
     writer::write_string(buffer,
@@ -78,13 +76,7 @@ read_party_type(std::span<const std::byte>& data) {
     if (!display_order_result) return std::unexpected(display_order_result.error());
     pt.display_order = static_cast<int>(*display_order_result);
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    pt.recorded_by = *recorded_by_result;
 
-    auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
-    pt.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

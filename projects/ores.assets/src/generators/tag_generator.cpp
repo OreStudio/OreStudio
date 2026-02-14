@@ -40,7 +40,7 @@ domain::tag generate_synthetic_tag(const std::string& tenant_id) {
     const auto uuid = boost::uuids::to_string(gen());
     r.name = "test_" + std::string(faker::word::noun()) + "_" + uuid.substr(0, 8);
     r.description = std::string(faker::lorem::sentence());
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_string();

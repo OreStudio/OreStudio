@@ -76,10 +76,6 @@ struct list_roles_response final {
      *   - N bytes: name (UTF-8)
      *   - 2 bytes: description length
      *   - N bytes: description (UTF-8)
-     *   - 2 bytes: recorded_by length
-     *   - N bytes: recorded_by (UTF-8)
-     *   - 2 bytes: recorded_at length
-     *   - N bytes: recorded_at (UTF-8)
      *   - 4 bytes: permission_codes count
      *   - For each permission code:
      *     - 2 bytes: code length

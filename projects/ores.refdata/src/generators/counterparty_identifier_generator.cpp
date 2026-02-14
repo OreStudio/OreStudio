@@ -46,7 +46,7 @@ domain::counterparty_identifier generate_synthetic_counterparty_identifier() {
     r.id_scheme = std::string(id_schemes[counter % id_schemes.size()]);
     r.id_value = std::string(faker::string::alphanumeric(20)) + "_" + std::to_string(++counter);
     r.description = std::string("Test identifier");
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

@@ -146,7 +146,7 @@ void TenantTypeMdiWindow::setupTable() {
         cs::text_left,   // Description
         cs::mono_center, // DisplayOrder
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -159,7 +159,7 @@ void TenantTypeMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientTenantTypeModel::Description, 300);
     tableView_->setColumnWidth(ClientTenantTypeModel::DisplayOrder, 80);
     tableView_->setColumnWidth(ClientTenantTypeModel::Version, 80);
-    tableView_->setColumnWidth(ClientTenantTypeModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientTenantTypeModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientTenantTypeModel::RecordedAt, 150);
 
     // Setup column visibility with context menu

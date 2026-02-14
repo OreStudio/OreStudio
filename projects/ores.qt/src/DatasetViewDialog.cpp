@@ -253,7 +253,7 @@ void DatasetViewDialog::updateOverviewTab() {
 
     // Audit section
     addSectionHeader(overviewTree_, tr("Audit"));
-    addProperty(overviewTree_, tr("Recorded By"), QString::fromStdString(dataset_.recorded_by));
+    addProperty(overviewTree_, tr("Modified By"), QString::fromStdString(dataset_.modified_by));
     addProperty(overviewTree_, tr("Recorded At"),
         relative_time_helper::format(dataset_.recorded_at));
     addProperty(overviewTree_, tr("Commentary"),
@@ -322,8 +322,8 @@ void DatasetViewDialog::updateMethodologyTab() {
 
     // Audit info
     addSectionHeader(methodologyTree_, tr("Audit"));
-    addProperty(methodologyTree_, tr("Recorded By"),
-        QString::fromStdString(methodology->recorded_by));
+    addProperty(methodologyTree_, tr("Modified By"),
+        QString::fromStdString(methodology->modified_by));
     addProperty(methodologyTree_, tr("Recorded At"),
         relative_time_helper::format(methodology->recorded_at));
     addProperty(methodologyTree_, tr("Commentary"),

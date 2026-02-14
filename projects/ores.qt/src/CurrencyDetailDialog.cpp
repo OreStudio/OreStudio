@@ -298,7 +298,7 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
     ui_->versionEdit->setText(QString::number(currency.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(currency.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(currency.modified_by));
     ui_->recordedAtEdit->setText(QString::fromStdString(
         platform::time::datetime::format_time_point(currency.recorded_at)));
     ui_->changeReasonEdit->setText(QString::fromStdString(currency.change_reason_code));
@@ -323,7 +323,7 @@ refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
     currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
-    currency.recorded_by = username_.empty() ? "qt_user" : username_;
+    currency.modified_by = username_.empty() ? "qt_user" : username_;
 
     if (!pendingImageId_.isEmpty()) {
         boost::uuids::string_generator gen;
@@ -345,7 +345,7 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->formatEdit->clear();
     ui_->currencyTypeEdit->clear();
     ui_->versionEdit->clear();
-    ui_->recordedByEdit->clear();
+    ui_->modifiedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->changeReasonEdit->clear();
     ui_->commentaryEdit->clear();

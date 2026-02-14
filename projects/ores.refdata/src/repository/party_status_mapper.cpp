@@ -38,7 +38,7 @@ party_status_mapper::map(const party_status_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -59,7 +59,7 @@ party_status_mapper::map(const domain::party_status& v) {
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

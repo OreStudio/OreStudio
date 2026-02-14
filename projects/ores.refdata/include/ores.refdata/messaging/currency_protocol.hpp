@@ -96,8 +96,6 @@ struct get_currencies_response final {
      *   - N bytes: format (UTF-8)
      *   - 2 bytes: currency_type length
      *   - N bytes: currency_type (UTF-8)
-     *   - 2 bytes: recorded_by length
-     *   - N bytes: recorded_by (UTF-8)
      *   - 2 bytes: recorded_at length
      *   - N bytes: recorded_at (UTF-8)
      */

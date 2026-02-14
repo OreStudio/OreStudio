@@ -47,7 +47,6 @@ struct save_account_request final {
     std::string password;      // Plain text for new accounts, optional for updates
     std::string totp_secret;
     std::string email;
-    std::string recorded_by;
     std::string change_reason_code;
     std::string change_commentary;
 
@@ -64,8 +63,6 @@ struct save_account_request final {
      * - N bytes: totp_secret (UTF-8)
      * - 2 bytes: email length
      * - N bytes: email (UTF-8)
-     * - 2 bytes: recorded_by length
-     * - N bytes: recorded_by (UTF-8)
      * - 2 bytes: change_reason_code length
      * - N bytes: change_reason_code (UTF-8)
      * - 2 bytes: change_commentary length
@@ -155,8 +152,6 @@ struct get_accounts_response final {
      * - 4 bytes: count (number of accounts in this response)
      * - For each account:
      *   - 4 bytes: version
-     *   - 2 bytes: recorded_by length
-     *   - N bytes: recorded_by (UTF-8)
      *   - 8 bytes: recorded_at (nanoseconds since epoch)
      *   - 2 bytes: change_reason_code length
      *   - N bytes: change_reason_code (UTF-8)

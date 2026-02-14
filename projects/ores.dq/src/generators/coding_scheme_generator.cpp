@@ -46,7 +46,7 @@ domain::coding_scheme generate_synthetic_coding_scheme() {
         r.uri = "https://example.org/schemes/" + r.code;
     }
     r.description = std::string(faker::lorem::sentence());
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;

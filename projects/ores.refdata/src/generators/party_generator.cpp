@@ -45,7 +45,7 @@ domain::party generate_synthetic_party() {
     r.parent_party_id = std::nullopt;
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
-    r.recorded_by = std::string(faker::internet::username());
+    r.modified_by = std::string(faker::internet::username());
     r.performed_by = std::string(faker::internet::username());
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

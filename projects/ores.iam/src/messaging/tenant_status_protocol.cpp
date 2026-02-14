@@ -46,7 +46,6 @@ void write_tenant_status(std::vector<std::byte>& buffer,
     writer::write_string(buffer, ts.name);
     writer::write_string(buffer, ts.description);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(ts.display_order));
-    writer::write_string(buffer, ts.recorded_by);
     writer::write_string(buffer, ts.change_reason_code);
     writer::write_string(buffer, ts.change_commentary);
     writer::write_string(buffer,
@@ -77,9 +76,6 @@ read_tenant_status(std::span<const std::byte>& data) {
     if (!display_order_result) return std::unexpected(display_order_result.error());
     ts.display_order = static_cast<int>(*display_order_result);
 
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    ts.recorded_by = *recorded_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

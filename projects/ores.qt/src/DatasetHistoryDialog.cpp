@@ -58,7 +58,7 @@ DatasetHistoryDialog::~DatasetHistoryDialog() {
 void DatasetHistoryDialog::setupUi() {
     ui_->titleLabel->setText(QString("Dataset History"));
     ui_->versionListWidget->setColumnCount(4);
-    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Recorded By", "Commentary"});
+    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -156,7 +156,7 @@ void DatasetHistoryDialog::updateVersionList() {
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
         ui_->versionListWidget->setItem(row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
-        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.recorded_by)));
+        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
         ui_->versionListWidget->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
     }
 
@@ -224,7 +224,7 @@ void DatasetHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->sourceSystemValue->setText(QString::fromStdString(version.source_system_id));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }

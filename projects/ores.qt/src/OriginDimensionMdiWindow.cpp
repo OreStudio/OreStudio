@@ -145,7 +145,7 @@ void OriginDimensionMdiWindow::setupTable() {
         cs::text_left,   // Name
         cs::text_left,   // Description
         cs::mono_center, // Version
-        cs::text_left,   // RecordedBy
+        cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
@@ -157,7 +157,7 @@ void OriginDimensionMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientOriginDimensionModel::Name, 200);
     tableView_->setColumnWidth(ClientOriginDimensionModel::Description, 250);
     tableView_->setColumnWidth(ClientOriginDimensionModel::Version, 80);
-    tableView_->setColumnWidth(ClientOriginDimensionModel::RecordedBy, 120);
+    tableView_->setColumnWidth(ClientOriginDimensionModel::ModifiedBy, 120);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

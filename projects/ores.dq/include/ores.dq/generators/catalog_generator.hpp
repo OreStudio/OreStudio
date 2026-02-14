@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/catalog.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic catalog.
  */
-domain::catalog generate_synthetic_catalog();
+domain::catalog generate_synthetic_catalog(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic catalogs.
  */
 std::vector<domain::catalog>
-generate_synthetic_catalogs(std::size_t n);
+generate_synthetic_catalogs(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

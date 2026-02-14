@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/generators/tag_generator.hpp"
 
@@ -56,14 +57,16 @@ private:
 using namespace ores::connections::generators;
 using namespace ores::connections::repository;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_tag", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Tag: " << tag;
 
     CHECK_NOTHROW(repo.write(tag));
@@ -74,8 +77,9 @@ TEST_CASE("write_multiple_tags", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tags = generate_unique_synthetic_tags(3);
+    auto tags = generate_unique_synthetic_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Tags: " << tags;
 
     CHECK_NOTHROW(repo.write(tags));
@@ -86,8 +90,9 @@ TEST_CASE("read_all_tags", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto written = generate_unique_synthetic_tags(3);
+    auto written = generate_unique_synthetic_tags(3, ctx);
     repo.write(written);
 
     auto read = repo.read_all();
@@ -101,8 +106,9 @@ TEST_CASE("read_tag_by_id", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     repo.write(tag);
 
     auto read = repo.read_by_id(tag.id);
@@ -118,8 +124,9 @@ TEST_CASE("read_tag_by_id_not_found", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     auto read = repo.read_by_id(tag.id);
 
     CHECK_FALSE(read.has_value());
@@ -130,8 +137,9 @@ TEST_CASE("read_tag_by_name", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     tag.name = "UniqueTestTag";
     repo.write(tag);
 
@@ -159,8 +167,9 @@ TEST_CASE("remove_tag", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     repo.write(tag);
 
     CHECK(repo.read_by_id(tag.id).has_value());
@@ -175,8 +184,9 @@ TEST_CASE("update_tag", "[repository]") {
 
     scoped_sqlite_context h;
     tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     repo.write(tag);
 
     tag.name = "UpdatedTagName";

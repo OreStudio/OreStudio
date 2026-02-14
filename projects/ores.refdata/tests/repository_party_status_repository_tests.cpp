@@ -23,6 +23,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_status.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_status_json_io.hpp" // IWYU pragma: keep.
@@ -45,8 +46,8 @@ TEST_CASE("write_single_party_status", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto ps = generate_synthetic_party_status();
-    ps.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto ps = generate_synthetic_party_status(ctx);
     ps.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;
 
@@ -58,9 +59,9 @@ TEST_CASE("write_multiple_party_statuses", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto party_statuses = generate_synthetic_party_statuses(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_statuses = generate_synthetic_party_statuses(3, ctx);
     for (auto& ps : party_statuses) {
-        ps.tenant_id = h.tenant_id();
         ps.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Party statuses: " << party_statuses;
@@ -73,9 +74,9 @@ TEST_CASE("read_latest_party_statuses", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_party_statuses = generate_synthetic_party_statuses(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_party_statuses = generate_synthetic_party_statuses(3, ctx);
     for (auto& ps : written_party_statuses) {
-        ps.tenant_id = h.tenant_id();
         ps.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Written party statuses: "
@@ -95,8 +96,8 @@ TEST_CASE("read_latest_party_status_by_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto ps = generate_synthetic_party_status();
-    ps.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto ps = generate_synthetic_party_status(ctx);
     ps.change_reason_code = "system.test";
     const auto original_name = ps.name;
     BOOST_LOG_SEV(lg, debug) << "Party status: " << ps;

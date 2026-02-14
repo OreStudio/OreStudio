@@ -66,6 +66,11 @@ public:
             test_database_manager::get_test_tenant_id_env()).value();
     }
 
+    /**
+     * @brief Gets the database user for the current connection.
+     */
+    std::string db_user() { return helper_.db_user(); }
+
 private:
     database_helper helper_;
 };

@@ -33,6 +33,7 @@
 #include "ores.iam/repository/role_repository.hpp"
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
@@ -71,12 +72,13 @@ TEST_CASE("write_single_account_role", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     role_repository role_repo(h.context());
     account_role_repository repo(h.context());
 
-    auto acc = generate_synthetic_account(h.tenant_id());
+    auto acc = generate_synthetic_account(ctx);
     auto r = make_role(h);
     acc_repo.write(acc);
     role_repo.write(r);
@@ -98,12 +100,13 @@ TEST_CASE("read_latest_account_roles", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     role_repository role_repo(h.context());
     account_role_repository repo(h.context());
 
-    auto acc = generate_synthetic_account(h.tenant_id());
+    auto acc = generate_synthetic_account(ctx);
     auto r = make_role(h);
     acc_repo.write(acc);
     role_repo.write(r);
@@ -128,12 +131,13 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     role_repository role_repo(h.context());
     account_role_repository repo(h.context());
 
-    auto acc = generate_synthetic_account(h.tenant_id());
+    auto acc = generate_synthetic_account(ctx);
     auto r1 = make_role(h);
     auto r2 = make_role(h);
     acc_repo.write(acc);

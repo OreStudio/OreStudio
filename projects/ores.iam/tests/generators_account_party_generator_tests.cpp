@@ -21,6 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -31,10 +32,12 @@ const std::string tags("[generators]");
 
 using namespace ores::iam::generators;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("account_party_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_account_party();
+    generation_context ctx;
+    auto sut = generate_synthetic_account_party(ctx);
 
     BOOST_LOG_SEV(lg, info) << "Generated account_party";
 
@@ -50,8 +53,9 @@ TEST_CASE("account_party_generator_produces_valid_instance", tags) {
 
 TEST_CASE("account_party_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_account_parties(count);
+    auto items = generate_synthetic_account_parties(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {

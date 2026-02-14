@@ -22,24 +22,25 @@
 #include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::dataset generate_synthetic_dataset() {
-    static uuid_v7_generator uuid_gen;
+domain::dataset generate_synthetic_dataset(
+    utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 2> origins = {"Primary", "Derived"};
     static constexpr std::array<const char*, 3> natures = {"Actual", "Synthetic", "Mock"};
     static constexpr std::array<const char*, 3> treatments = {"Raw", "Masked", "Anonymized"};
     static std::atomic<int> counter{0};
     const auto idx = counter++;
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
 
     domain::dataset r;
     r.version = 1;
-    r.id = uuid_gen();
+    r.id = ctx.generate_uuid();
     r.code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
         + "_" + std::to_string(idx + 1);
     r.catalog_name = std::nullopt;
@@ -56,21 +57,22 @@ domain::dataset generate_synthetic_dataset() {
     r.source_system_id = std::string(faker::word::noun()) + "_system";
     r.business_context = std::string(faker::lorem::sentence());
     r.lineage_depth = 0;
-    r.ingestion_timestamp = utility::faker::datetime::past_timepoint();
+    r.ingestion_timestamp = ctx.past_timepoint();
     r.as_of_date = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
     r.artefact_type = std::string("none");
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::dataset>
-generate_synthetic_datasets(std::size_t n) {
+generate_synthetic_datasets(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::dataset> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_dataset());
+        r.push_back(generate_synthetic_dataset(ctx));
     return r;
 }
 

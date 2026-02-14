@@ -20,57 +20,59 @@
 #include "ores.synthetic/generators/dataset_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::synthetic::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-dq::domain::dataset generate_synthetic_dataset() {
-    static uuid_v7_generator uuid_gen;
+dq::domain::dataset generate_synthetic_dataset(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
 
     dq::domain::dataset r;
     r.version = 1;
-    r.id = uuid_gen();
-    if (faker::datatype::boolean()) {
+    r.id = ctx.generate_uuid();
+    if (ctx.random_bool()) {
         r.catalog_name = std::string(faker::word::noun());
     }
     r.subject_area_name = std::string(faker::word::noun());
     r.domain_name = std::string(faker::word::noun());
-    if (faker::datatype::boolean()) {
+    if (ctx.random_bool()) {
         r.coding_scheme_code = std::string(faker::word::noun()) + "_" +
             std::string(faker::word::noun());
     }
     r.origin_code = std::string(faker::word::noun());
     r.nature_code = std::string(faker::word::noun());
     r.treatment_code = std::string(faker::word::noun());
-    if (faker::datatype::boolean()) {
-        r.methodology_id = uuid_gen();
+    if (ctx.random_bool()) {
+        r.methodology_id = ctx.generate_uuid();
     }
     r.name = std::string(faker::word::adjective()) + " " +
         std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.source_system_id = std::string(faker::word::noun()) + "_system";
     r.business_context = std::string(faker::lorem::sentence());
-    r.lineage_depth = faker::number::integer(0, 5);
-    r.ingestion_timestamp = utility::faker::datetime::past_timepoint();
+    r.lineage_depth = ctx.random_int(0, 5);
+    r.ingestion_timestamp = ctx.past_timepoint();
     r.as_of_date = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
-    if (faker::datatype::boolean()) {
+    if (ctx.random_bool()) {
         r.license_info = "MIT License";
     }
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<dq::domain::dataset>
-generate_synthetic_datasets(std::size_t n) {
+generate_synthetic_datasets(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<dq::domain::dataset> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_dataset());
+        r.push_back(generate_synthetic_dataset(ctx));
     return r;
 }
 

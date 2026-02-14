@@ -33,6 +33,7 @@
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.refdata/generators/party_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -77,6 +78,7 @@ TEST_CASE("write_single_account_party", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
@@ -84,7 +86,7 @@ TEST_CASE("write_single_account_party", tags) {
     const auto party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
 
-    auto acc = generate_synthetic_account(h.tenant_id());
+    auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
 
     auto ap = make_account_party(h, acc.id, party_id);
@@ -97,6 +99,7 @@ TEST_CASE("write_multiple_account_parties", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
@@ -106,11 +109,10 @@ TEST_CASE("write_multiple_account_parties", tags) {
 
     std::vector<account_party> aps;
     for (int i = 0; i < 3; ++i) {
-        auto acc = generate_synthetic_account(h.tenant_id());
+        auto acc = generate_synthetic_account(ctx);
         acc_repo.write(acc);
 
-        auto party = ores::refdata::generators::generate_synthetic_party();
-        party.tenant_id = h.tenant_id().to_string();
+        auto party = ores::refdata::generators::generate_synthetic_party(ctx);
         party.change_reason_code = "system.test";
         party.parent_party_id = system_party_id;
         party_repo.write(party);
@@ -126,6 +128,7 @@ TEST_CASE("read_latest_account_parties", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
@@ -135,11 +138,10 @@ TEST_CASE("read_latest_account_parties", tags) {
 
     std::vector<account_party> written;
     for (int i = 0; i < 3; ++i) {
-        auto acc = generate_synthetic_account(h.tenant_id());
+        auto acc = generate_synthetic_account(ctx);
         acc_repo.write(acc);
 
-        auto party = ores::refdata::generators::generate_synthetic_party();
-        party.tenant_id = h.tenant_id().to_string();
+        auto party = ores::refdata::generators::generate_synthetic_party(ctx);
         party.change_reason_code = "system.test";
         party.parent_party_id = system_party_id;
         party_repo.write(party);
@@ -161,6 +163,7 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
@@ -168,7 +171,7 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     const auto party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
 
-    auto acc = generate_synthetic_account(h.tenant_id());
+    auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
 
     auto ap = make_account_party(h, acc.id, party_id);

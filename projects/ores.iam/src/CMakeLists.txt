@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         ores.comms.lib
     PRIVATE
+        ores.utility.lib
         faker-cxx::faker-cxx
         libfort::fort)
 

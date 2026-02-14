@@ -19,36 +19,40 @@
  */
 #include "ores.iam/generators/account_party_generator.hpp"
 
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::iam::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::account_party generate_synthetic_account_party() {
-    static uuid_v7_generator uuid_gen;
+domain::account_party generate_synthetic_account_party(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+    const auto tenant_id = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), "system");
 
     domain::account_party r;
     r.version = 1;
-    r.tenant_id = "system";
-    r.account_id = uuid_gen();
-    r.party_id = uuid_gen();
-    r.modified_by = std::string(faker::internet::username());
-    r.performed_by = std::string(faker::internet::username());
+    r.tenant_id = tenant_id;
+    r.account_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::account_party>
-generate_synthetic_account_parties(std::size_t n) {
+generate_synthetic_account_parties(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::account_party> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_account_party());
+        r.push_back(generate_synthetic_account_party(ctx));
     return r;
 }
 

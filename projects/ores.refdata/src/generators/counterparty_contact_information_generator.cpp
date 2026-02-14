@@ -21,27 +21,29 @@
 
 #include <array>
 #include <atomic>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::counterparty_contact_information generate_synthetic_counterparty_contact_information() {
-    static uuid_v7_generator uuid_gen;
+domain::counterparty_contact_information generate_synthetic_counterparty_contact_information(
+    utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 4> contact_types = {
         "Legal", "Operations", "Settlement", "Billing"
     };
     static std::atomic<int> counter{0};
     const auto idx = counter++;
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+    const auto tenant_id = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), "system");
 
     domain::counterparty_contact_information r;
     r.version = 1;
-    r.tenant_id = "system";
-    r.id = uuid_gen();
-    r.counterparty_id = uuid_gen();
+    r.tenant_id = tenant_id;
+    r.id = ctx.generate_uuid();
+    r.counterparty_id = ctx.generate_uuid();
     r.contact_type = std::string(contact_types[idx % contact_types.size()]);
     r.street_line_1 = std::string("456 Test Avenue");
     r.street_line_2 = std::string("Floor 10");
@@ -52,20 +54,21 @@ domain::counterparty_contact_information generate_synthetic_counterparty_contact
     r.phone = std::string("+1 212 555 0100");
     r.email = std::string("info@example.com");
     r.web_page = std::string("https://example.com");
-    r.modified_by = std::string(faker::internet::username());
-    r.performed_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::counterparty_contact_information>
-generate_synthetic_counterparty_contact_informations(std::size_t n) {
+generate_synthetic_counterparty_contact_informations(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::counterparty_contact_information> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_counterparty_contact_information());
+        r.push_back(generate_synthetic_counterparty_contact_information(ctx));
     return r;
 }
 

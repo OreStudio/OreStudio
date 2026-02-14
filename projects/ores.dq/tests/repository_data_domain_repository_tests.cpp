@@ -29,6 +29,7 @@
 #include "ores.dq/domain/data_domain_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/data_domain_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::data_domain_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_data_domain", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     data_domain_repository repo(h.context());
-    auto data_domain = generate_synthetic_data_domain();
+    auto data_domain = generate_synthetic_data_domain(ctx);
     data_domain.tenant_id = h.tenant_id().to_string();
     data_domain.name = data_domain.name + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_data_domains", tags) {
     database_helper h;
 
     data_domain_repository repo(h.context());
-    auto data_domains = generate_synthetic_data_domains(3);
+    generation_context ctx;
+    auto data_domains = generate_synthetic_data_domains(3, ctx);
     for (auto& d : data_domains) {
         d.tenant_id = h.tenant_id().to_string();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_data_domains", tags) {
     database_helper h;
 
     data_domain_repository repo(h.context());
-    auto written_data_domains = generate_synthetic_data_domains(3);
+    generation_context ctx;
+    auto written_data_domains = generate_synthetic_data_domains(3, ctx);
     for (auto& d : written_data_domains) {
         d.tenant_id = h.tenant_id().to_string();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_data_domain_by_name", tags) {
     database_helper h;
 
     data_domain_repository repo(h.context());
-    auto data_domains = generate_synthetic_data_domains(3);
+    generation_context ctx;
+    auto data_domains = generate_synthetic_data_domains(3, ctx);
     for (auto& d : data_domains) {
         d.tenant_id = h.tenant_id().to_string();
         d.name = d.name + "_" + std::string(faker::string::alphanumeric(8));

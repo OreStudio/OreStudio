@@ -21,37 +21,39 @@
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::dataset_bundle generate_synthetic_dataset_bundle() {
-    static uuid_v7_generator uuid_gen;
+domain::dataset_bundle generate_synthetic_dataset_bundle(
+    utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
 
     domain::dataset_bundle r;
     r.version = 1;
-    r.id = uuid_gen();
+    r.id = ctx.generate_uuid();
     r.code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle " + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::dataset_bundle>
-generate_synthetic_dataset_bundles(std::size_t n) {
+generate_synthetic_dataset_bundles(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::dataset_bundle> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_dataset_bundle());
+        r.push_back(generate_synthetic_dataset_bundle(ctx));
     return r;
 }
 

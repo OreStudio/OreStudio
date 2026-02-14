@@ -22,45 +22,22 @@
 
 #include <vector>
 #include "ores.iam/domain/account.hpp"
-#include "ores.synthetic/domain/generation_context.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::synthetic::generators {
 
 /**
- * @brief Generates a synthetic IAM account using random data.
- *
- * Creates a complete account with randomly generated username, email,
- * password hash, salt, and TOTP secret suitable for testing purposes.
- * Uses the faker library for random generation.
- */
-iam::domain::account generate_synthetic_account();
-
-/**
  * @brief Generates a synthetic IAM account with controlled randomness.
- *
- * @param ctx Generation context for controlled random values.
- * @return A synthetic account.
  */
-iam::domain::account generate_synthetic_account(domain::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic IAM accounts.
- *
- * @param n Number of accounts to generate.
- * @return Vector of synthetic accounts.
- */
-std::vector<iam::domain::account>
-generate_synthetic_accounts(std::size_t n);
+iam::domain::account generate_synthetic_account(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic IAM accounts with controlled randomness.
- *
- * @param n Number of accounts to generate.
- * @param ctx Generation context for controlled random values.
- * @return Vector of synthetic accounts.
  */
 std::vector<iam::domain::account>
-generate_synthetic_accounts(std::size_t n, domain::generation_context& ctx);
+generate_synthetic_accounts(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

@@ -25,6 +25,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/currency.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/currency_json_io.hpp" // IWYU pragma: keep.
@@ -47,7 +48,8 @@ TEST_CASE("write_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto currency = generate_synthetic_currency(h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currency = generate_synthetic_currency(ctx);
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
@@ -58,7 +60,8 @@ TEST_CASE("write_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto currencies = generate_unique_synthetic_currencies(3, h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currencies = generate_unique_synthetic_currencies(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
@@ -69,7 +72,8 @@ TEST_CASE("read_latest_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_currencies = generate_unique_synthetic_currencies(3, h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_currencies = generate_unique_synthetic_currencies(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
@@ -91,7 +95,8 @@ TEST_CASE("read_latest_currency_by_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto currency = generate_synthetic_currency(h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currency = generate_synthetic_currency(ctx);
     const auto original_name = currency.name;
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
@@ -113,7 +118,8 @@ TEST_CASE("read_all_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_currencies = generate_unique_synthetic_currencies(3, h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_currencies = generate_unique_synthetic_currencies(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
@@ -130,10 +136,11 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     currency_repository repo;
 
     // Write multiple versions of the same currency
-    auto ccy1 = generate_synthetic_currency(h.tenant_id());
+    auto ccy1 = generate_synthetic_currency(ctx);
     const auto test_iso_code = ccy1.iso_code;
     const auto test_name = ccy1.name;
 
@@ -191,7 +198,8 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto currencies = generate_synthetic_unicode_currencies(h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto currencies = generate_synthetic_unicode_currencies(ctx);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
@@ -223,7 +231,8 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    const auto currencies = generate_synthetic_unicode_currencies(h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    const auto currencies = generate_synthetic_unicode_currencies(ctx);
     // Find the currency with no fractions (Yen-like)
     const auto it = std::ranges::find_if(currencies, [](const auto& c) {
         return c.fractions_per_unit == 0;

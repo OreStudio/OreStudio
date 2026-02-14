@@ -29,6 +29,7 @@
 #include "ores.dq/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/change_reason_category_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::change_reason_category_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_change_reason_category", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     change_reason_category_repository repo(h.context());
-    auto category = generate_synthetic_change_reason_category();
+    auto category = generate_synthetic_change_reason_category(ctx);
     category.tenant_id = h.tenant_id().to_string();
     category.code = category.code + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_change_reason_categories", tags) {
     database_helper h;
 
     change_reason_category_repository repo(h.context());
-    auto categories = generate_synthetic_change_reason_categories(3);
+    generation_context ctx;
+    auto categories = generate_synthetic_change_reason_categories(3, ctx);
     for (auto& c : categories) {
         c.tenant_id = h.tenant_id().to_string();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_change_reason_categories", tags) {
     database_helper h;
 
     change_reason_category_repository repo(h.context());
-    auto written_categories = generate_synthetic_change_reason_categories(3);
+    generation_context ctx;
+    auto written_categories = generate_synthetic_change_reason_categories(3, ctx);
     for (auto& c : written_categories) {
         c.tenant_id = h.tenant_id().to_string();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_change_reason_category_by_code", tags) {
     database_helper h;
 
     change_reason_category_repository repo(h.context());
-    auto categories = generate_synthetic_change_reason_categories(3);
+    generation_context ctx;
+    auto categories = generate_synthetic_change_reason_categories(3, ctx);
     for (auto& c : categories) {
         c.tenant_id = h.tenant_id().to_string();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));

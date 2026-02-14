@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.refdata/domain/party_type.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic party_type.
  */
-domain::party_type generate_synthetic_party_type();
+domain::party_type generate_synthetic_party_type(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_types.
  */
 std::vector<domain::party_type>
-generate_synthetic_party_types(std::size_t n);
+generate_synthetic_party_types(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

@@ -26,6 +26,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/tag.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/tag_json_io.hpp" // IWYU pragma: keep.
@@ -48,7 +49,8 @@ TEST_CASE("write_single_tag", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto t = generate_synthetic_tag(h.tenant_id().to_string());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto t = generate_synthetic_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
 
     tag_repository repo;
@@ -59,7 +61,8 @@ TEST_CASE("write_multiple_tags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto tag_list = generate_unique_synthetic_tags(3, h.tenant_id().to_string());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto tag_list = generate_unique_synthetic_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Tags: " << tag_list;
 
     tag_repository repo;
@@ -70,7 +73,8 @@ TEST_CASE("read_latest_tags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_tags = generate_unique_synthetic_tags(3, h.tenant_id().to_string());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_tags = generate_unique_synthetic_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written tags: " << written_tags;
 
     tag_repository repo;
@@ -92,7 +96,8 @@ TEST_CASE("read_latest_tag_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto t = generate_synthetic_tag(h.tenant_id().to_string());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto t = generate_synthetic_tag(ctx);
     const auto original_description = t.description;
     BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
 
@@ -114,7 +119,8 @@ TEST_CASE("read_latest_tag_by_name", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto t = generate_synthetic_tag(h.tenant_id().to_string());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto t = generate_synthetic_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Tag: " << t;
 
     tag_repository repo;
@@ -131,7 +137,8 @@ TEST_CASE("read_all_tags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_tags = generate_unique_synthetic_tags(3, h.tenant_id().to_string());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_tags = generate_unique_synthetic_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written tags: " << written_tags;
 
     tag_repository repo;

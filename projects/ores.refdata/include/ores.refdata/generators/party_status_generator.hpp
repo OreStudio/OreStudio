@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.refdata/domain/party_status.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic party_status.
  */
-domain::party_status generate_synthetic_party_status();
+domain::party_status generate_synthetic_party_status(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_statuses.
  */
 std::vector<domain::party_status>
-generate_synthetic_party_statuses(std::size_t n);
+generate_synthetic_party_statuses(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

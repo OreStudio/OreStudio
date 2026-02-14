@@ -27,6 +27,7 @@
 #include "ores.dq/domain/dataset_bundle_table.hpp"
 #include "ores.dq/domain/dataset_bundle_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/dataset_bundle_generator.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -34,6 +35,7 @@ const std::string_view test_suite("ores.dq.tests");
 const std::string tags("[domain]");
 
 using ores::utility::faker::datetime;
+using ores::utility::generation::generation_context;
 
 }
 
@@ -94,7 +96,8 @@ TEST_CASE("dataset_bundle_convert_single_to_table", tags) {
 TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
 
-    auto sut = ores::dq::generators::generate_synthetic_dataset_bundle();
+    generation_context ctx;
+    auto sut = ores::dq::generators::generate_synthetic_dataset_bundle(ctx);
 
     BOOST_LOG_SEV(lg, info) << "Generated bundle: " << sut;
 
@@ -109,8 +112,9 @@ TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
 TEST_CASE("dataset_bundle_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
 
+    generation_context ctx;
     const std::size_t count = 5;
-    auto bundles = ores::dq::generators::generate_synthetic_dataset_bundles(count);
+    auto bundles = ores::dq::generators::generate_synthetic_dataset_bundles(count, ctx);
 
     BOOST_LOG_SEV(lg, info) << "Generated " << bundles.size() << " bundles";
     BOOST_LOG_SEV(lg, info) << bundles;

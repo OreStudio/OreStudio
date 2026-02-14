@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.refdata/domain/counterparty.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic counterparty.
  */
-domain::counterparty generate_synthetic_counterparty();
+domain::counterparty generate_synthetic_counterparty(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic counterparties.
  */
 std::vector<domain::counterparty>
-generate_synthetic_counterparties(std::size_t n);
+generate_synthetic_counterparties(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

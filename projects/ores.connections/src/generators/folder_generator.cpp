@@ -20,35 +20,42 @@
 #include "ores.connections/generators/folder_generator.hpp"
 
 #include <faker-cxx/word.h>
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::connections::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::folder generate_synthetic_folder() {
-    static uuid_v7_generator gen;
+domain::folder generate_synthetic_folder(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+    const auto tenant_id = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), "system");
 
     domain::folder r;
-    r.id = gen();
+    r.id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun());
     r.parent_id = std::nullopt;
 
     return r;
 }
 
-domain::folder generate_synthetic_folder(const boost::uuids::uuid& parent_id) {
-    auto r = generate_synthetic_folder();
+domain::folder generate_synthetic_folder(
+    utility::generation::generation_context& ctx,
+    const boost::uuids::uuid& parent_id) {
+    auto r = generate_synthetic_folder(ctx);
     r.parent_id = parent_id;
     return r;
 }
 
-std::vector<domain::folder> generate_synthetic_folders(std::size_t n) {
+std::vector<domain::folder> generate_synthetic_folders(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::folder> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i) {
-        r.push_back(generate_synthetic_folder());
-    }
+    while (r.size() < n)
+        r.push_back(generate_synthetic_folder(ctx));
+
     return r;
 }
 

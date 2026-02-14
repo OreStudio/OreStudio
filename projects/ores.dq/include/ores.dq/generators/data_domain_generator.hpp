@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/data_domain.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic data_domain.
  */
-domain::data_domain generate_synthetic_data_domain();
+domain::data_domain generate_synthetic_data_domain(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic data_domains.
  */
 std::vector<domain::data_domain>
-generate_synthetic_data_domains(std::size_t n);
+generate_synthetic_data_domains(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

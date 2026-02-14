@@ -29,6 +29,7 @@
 #include "ores.dq/domain/dataset_bundle_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/dataset_bundle_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::dataset_bundle_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_dataset_bundle", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     dataset_bundle_repository repo(h.context());
-    auto bundle = generate_synthetic_dataset_bundle();
+    auto bundle = generate_synthetic_dataset_bundle(ctx);
     bundle.tenant_id = h.tenant_id().to_string();
     bundle.change_reason_code = "system.test";
     bundle.code = bundle.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -64,7 +67,8 @@ TEST_CASE("write_multiple_dataset_bundles", tags) {
     database_helper h;
 
     dataset_bundle_repository repo(h.context());
-    auto bundles = generate_synthetic_dataset_bundles(3);
+    generation_context ctx;
+    auto bundles = generate_synthetic_dataset_bundles(3, ctx);
     for (auto& b : bundles) {
         b.tenant_id = h.tenant_id().to_string();
         b.change_reason_code = "system.test";
@@ -81,7 +85,8 @@ TEST_CASE("read_latest_dataset_bundles", tags) {
     database_helper h;
 
     dataset_bundle_repository repo(h.context());
-    auto written_bundles = generate_synthetic_dataset_bundles(3);
+    generation_context ctx;
+    auto written_bundles = generate_synthetic_dataset_bundles(3, ctx);
     for (auto& b : written_bundles) {
         b.tenant_id = h.tenant_id().to_string();
         b.change_reason_code = "system.test";
@@ -104,7 +109,8 @@ TEST_CASE("read_latest_dataset_bundle_by_id", tags) {
     database_helper h;
 
     dataset_bundle_repository repo(h.context());
-    auto bundles = generate_synthetic_dataset_bundles(3);
+    generation_context ctx;
+    auto bundles = generate_synthetic_dataset_bundles(3, ctx);
     for (auto& b : bundles) {
         b.tenant_id = h.tenant_id().to_string();
         b.change_reason_code = "system.test";

@@ -24,6 +24,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_json_io.hpp" // IWYU pragma: keep.
@@ -46,11 +47,11 @@ TEST_CASE("write_single_party", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository repo(h.context());
     const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
-    auto p = generate_synthetic_party();
-    p.tenant_id = h.tenant_id().to_string();
+    auto p = generate_synthetic_party(ctx);
     p.change_reason_code = "system.test";
     p.parent_party_id = parent_id;
     BOOST_LOG_SEV(lg, debug) << "Party: " << p;
@@ -62,12 +63,12 @@ TEST_CASE("write_multiple_parties", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository repo(h.context());
     const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
-    auto parties = generate_synthetic_parties(3);
+    auto parties = generate_synthetic_parties(3, ctx);
     for (auto& p : parties) {
-        p.tenant_id = h.tenant_id().to_string();
         p.change_reason_code = "system.test";
         p.parent_party_id = parent_id;
     }
@@ -80,12 +81,12 @@ TEST_CASE("read_latest_parties", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository repo(h.context());
     const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
-    auto written_parties = generate_synthetic_parties(3);
+    auto written_parties = generate_synthetic_parties(3, ctx);
     for (auto& p : written_parties) {
-        p.tenant_id = h.tenant_id().to_string();
         p.change_reason_code = "system.test";
         p.parent_party_id = parent_id;
     }
@@ -103,11 +104,11 @@ TEST_CASE("read_latest_party_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository repo(h.context());
     const auto parent_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
 
-    auto p = generate_synthetic_party();
-    p.tenant_id = h.tenant_id().to_string();
+    auto p = generate_synthetic_party(ctx);
     p.change_reason_code = "system.test";
     p.parent_party_id = parent_id;
     const auto original_full_name = p.full_name;

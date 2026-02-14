@@ -21,45 +21,51 @@
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/string_generator.hpp>
+#include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/faker/totp.hpp"
-#include "ores.utility/faker/datetime.hpp"
 
 namespace ores::iam::generators {
 
-domain::account generate_synthetic_account(const utility::uuid::tenant_id& tenant_id) {
+using ores::utility::generation::generation_keys;
+
+domain::account generate_synthetic_account(
+    utility::generation::generation_context& ctx) {
     domain::account r;
     r.version = 1;
-    r.tenant_id = tenant_id;
-    r.modified_by = faker::internet::username();
+    const auto tid = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), "system");
+    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
+        : utility::uuid::tenant_id::system();
+    r.modified_by = ctx.env().get_or(std::string(generation_keys::modified_by),
+        "system");
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
 
-    boost::uuids::string_generator gen;
-    r.id = gen(faker::string::uuidV4());
+    r.id = ctx.generate_uuid();
 
     auto first = std::string(faker::person::firstName());
     auto last  = std::string(faker::person::lastName());
     r.username = faker::internet::username(first, last);
     r.email = faker::internet::email(first, last);
 
-    r.password_hash = faker::crypto::sha256();
-    r.password_salt = faker::crypto::sha256();
+    r.password_hash = ctx.alphanumeric(64);
+    r.password_salt = ctx.alphanumeric(32);
 
     using utility::faker::totp;
     r.totp_secret = totp::totp_secret();
 
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, const utility::uuid::tenant_id& tenant_id) {
+generate_synthetic_accounts(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::account> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_account(tenant_id));
+        r.push_back(generate_synthetic_account(ctx));
     return r;
 }
 

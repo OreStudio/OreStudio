@@ -23,6 +23,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -33,10 +34,12 @@ const std::string generators_tags("[generators]");
 
 using namespace ores::synthetic::generators;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("generate_synthetic_account_creates_valid_account", generators_tags) {
     auto lg(make_logger(test_suite));
-    auto account = generate_synthetic_account();
+    generation_context ctx;
+    auto account = generate_synthetic_account(ctx);
 
     CHECK(account.version == 1);
     CHECK(!account.id.is_nil());
@@ -54,8 +57,9 @@ TEST_CASE("generate_synthetic_account_creates_valid_account", generators_tags) {
 
 TEST_CASE("generate_synthetic_accounts_creates_multiple", generators_tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto accounts = generate_synthetic_accounts(count);
+    auto accounts = generate_synthetic_accounts(count, ctx);
 
     CHECK(accounts.size() == count);
 
@@ -69,7 +73,8 @@ TEST_CASE("generate_synthetic_accounts_creates_multiple", generators_tags) {
 
 TEST_CASE("generate_synthetic_catalog_creates_valid_catalog", generators_tags) {
     auto lg(make_logger(test_suite));
-    auto catalog = generate_synthetic_catalog();
+    generation_context ctx;
+    auto catalog = generate_synthetic_catalog(ctx);
 
     CHECK(catalog.version == 1);
     CHECK(!catalog.name.empty());
@@ -82,8 +87,9 @@ TEST_CASE("generate_synthetic_catalog_creates_valid_catalog", generators_tags) {
 
 TEST_CASE("generate_synthetic_catalogs_creates_multiple", generators_tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto catalogs = generate_synthetic_catalogs(count);
+    auto catalogs = generate_synthetic_catalogs(count, ctx);
 
     CHECK(catalogs.size() == count);
 
@@ -96,7 +102,8 @@ TEST_CASE("generate_synthetic_catalogs_creates_multiple", generators_tags) {
 
 TEST_CASE("generate_synthetic_dataset_creates_valid_dataset", generators_tags) {
     auto lg(make_logger(test_suite));
-    auto dataset = generate_synthetic_dataset();
+    generation_context ctx;
+    auto dataset = generate_synthetic_dataset(ctx);
 
     CHECK(dataset.version == 1);
     CHECK(!dataset.id.is_nil());
@@ -118,8 +125,9 @@ TEST_CASE("generate_synthetic_dataset_creates_valid_dataset", generators_tags) {
 
 TEST_CASE("generate_synthetic_datasets_creates_multiple", generators_tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto datasets = generate_synthetic_datasets(count);
+    auto datasets = generate_synthetic_datasets(count, ctx);
 
     CHECK(datasets.size() == count);
 

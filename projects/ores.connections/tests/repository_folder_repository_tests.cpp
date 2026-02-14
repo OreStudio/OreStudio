@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/folder_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/generators/folder_generator.hpp"
 
@@ -56,14 +57,16 @@ private:
 using namespace ores::connections::generators;
 using namespace ores::connections::repository;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_folder", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     BOOST_LOG_SEV(lg, debug) << "Folder: " << folder;
 
     CHECK_NOTHROW(repo.write(folder));
@@ -74,8 +77,9 @@ TEST_CASE("write_multiple_folders", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto folders = generate_synthetic_folders(3);
+    auto folders = generate_synthetic_folders(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Folders: " << folders;
 
     CHECK_NOTHROW(repo.write(folders));
@@ -86,8 +90,9 @@ TEST_CASE("read_all_folders", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto written = generate_synthetic_folders(3);
+    auto written = generate_synthetic_folders(3, ctx);
     repo.write(written);
 
     auto read = repo.read_all();
@@ -101,8 +106,9 @@ TEST_CASE("read_folder_by_id", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     repo.write(folder);
 
     auto read = repo.read_by_id(folder.id);
@@ -118,8 +124,9 @@ TEST_CASE("read_folder_by_id_not_found", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     auto read = repo.read_by_id(folder.id);
 
     CHECK_FALSE(read.has_value());
@@ -130,11 +137,12 @@ TEST_CASE("read_root_folders", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
     // Create 2 root folders and 1 child folder
-    auto root1 = generate_synthetic_folder();
-    auto root2 = generate_synthetic_folder();
-    auto child = generate_synthetic_folder();
+    auto root1 = generate_synthetic_folder(ctx);
+    auto root2 = generate_synthetic_folder(ctx);
+    auto child = generate_synthetic_folder(ctx);
     child.parent_id = root1.id;
 
     repo.write({root1, root2, child});
@@ -150,11 +158,12 @@ TEST_CASE("read_child_folders", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto parent = generate_synthetic_folder();
-    auto child1 = generate_synthetic_folder();
+    auto parent = generate_synthetic_folder(ctx);
+    auto child1 = generate_synthetic_folder(ctx);
     child1.parent_id = parent.id;
-    auto child2 = generate_synthetic_folder();
+    auto child2 = generate_synthetic_folder(ctx);
     child2.parent_id = parent.id;
 
     repo.write({parent, child1, child2});
@@ -170,8 +179,9 @@ TEST_CASE("remove_folder", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     repo.write(folder);
 
     CHECK(repo.read_by_id(folder.id).has_value());
@@ -186,8 +196,9 @@ TEST_CASE("update_folder", tags) {
 
     scoped_sqlite_context h;
     folder_repository repo(h.context());
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     repo.write(folder);
 
     folder.name = "Updated Name";

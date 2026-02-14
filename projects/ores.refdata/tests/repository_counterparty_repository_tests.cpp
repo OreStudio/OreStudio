@@ -24,6 +24,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/counterparty.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/counterparty_json_io.hpp" // IWYU pragma: keep.
@@ -46,8 +47,8 @@ TEST_CASE("write_single_counterparty", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto cp = generate_synthetic_counterparty();
-    cp.tenant_id = h.tenant_id().to_string();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
@@ -59,9 +60,9 @@ TEST_CASE("write_multiple_counterparties", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto counterparties = generate_synthetic_counterparties(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto counterparties = generate_synthetic_counterparties(3, ctx);
     for (auto& cp : counterparties) {
-        cp.tenant_id = h.tenant_id().to_string();
         cp.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Counterparties: " << counterparties;
@@ -74,9 +75,9 @@ TEST_CASE("read_latest_counterparties", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_counterparties = generate_synthetic_counterparties(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_counterparties = generate_synthetic_counterparties(3, ctx);
     for (auto& cp : written_counterparties) {
-        cp.tenant_id = h.tenant_id().to_string();
         cp.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Written counterparties: "
@@ -96,8 +97,8 @@ TEST_CASE("read_latest_counterparty_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto cp = generate_synthetic_counterparty();
-    cp.tenant_id = h.tenant_id().to_string();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     const auto original_full_name = cp.full_name;
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;

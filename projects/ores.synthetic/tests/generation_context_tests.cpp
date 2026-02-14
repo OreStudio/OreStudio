@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic/domain/generation_context.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 #include <set>
 #include <catch2/catch_test_macros.hpp>
@@ -27,7 +27,7 @@ namespace {
 
 const std::string tags("[generation_context]");
 
-using namespace ores::synthetic::domain;
+using namespace ores::utility::generation;
 
 }
 

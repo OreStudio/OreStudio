@@ -22,23 +22,27 @@
 
 #include <vector>
 #include "ores.assets/domain/image.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::assets::generators {
 
 /**
  * @brief Generates a synthetic image.
  */
-domain::image generate_synthetic_image();
+domain::image generate_synthetic_image(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic images. May contain duplicates.
  */
-std::vector<domain::image> generate_synthetic_images(std::size_t n);
+std::vector<domain::image> generate_synthetic_images(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic images with unique keys.
  */
-std::vector<domain::image> generate_unique_synthetic_images(std::size_t n);
+std::vector<domain::image> generate_unique_synthetic_images(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

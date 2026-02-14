@@ -24,6 +24,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/counterparty_identifier.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
@@ -49,14 +50,13 @@ TEST_CASE("write_single_counterparty_identifier", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto cp = generate_synthetic_counterparty();
-    cp.tenant_id = h.tenant_id().to_string();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     counterparty_repository cp_repo(h.context());
     cp_repo.write(cp);
 
-    auto ci = generate_synthetic_counterparty_identifier();
-    ci.tenant_id = h.tenant_id().to_string();
+    auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";
     ci.counterparty_id = cp.id;
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
@@ -69,16 +69,15 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto cp = generate_synthetic_counterparty();
-    cp.tenant_id = h.tenant_id().to_string();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     counterparty_repository cp_repo(h.context());
     cp_repo.write(cp);
 
     auto counterparty_identifiers =
-        generate_synthetic_counterparty_identifiers(3);
+        generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : counterparty_identifiers) {
-        ci.tenant_id = h.tenant_id().to_string();
         ci.change_reason_code = "system.test";
         ci.counterparty_id = cp.id;
     }
@@ -93,16 +92,15 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto cp = generate_synthetic_counterparty();
-    cp.tenant_id = h.tenant_id().to_string();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     counterparty_repository cp_repo(h.context());
     cp_repo.write(cp);
 
     auto written_counterparty_identifiers =
-        generate_synthetic_counterparty_identifiers(3);
+        generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : written_counterparty_identifiers) {
-        ci.tenant_id = h.tenant_id().to_string();
         ci.change_reason_code = "system.test";
         ci.counterparty_id = cp.id;
     }
@@ -124,14 +122,13 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto cp = generate_synthetic_counterparty();
-    cp.tenant_id = h.tenant_id().to_string();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     counterparty_repository cp_repo(h.context());
     cp_repo.write(cp);
 
-    auto ci = generate_synthetic_counterparty_identifier();
-    ci.tenant_id = h.tenant_id().to_string();
+    auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";
     ci.counterparty_id = cp.id;
     const auto original_id_value = ci.id_value;

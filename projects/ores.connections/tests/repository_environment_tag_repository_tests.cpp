@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/environment_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/generators/environment_tag_generator.hpp"
 #include "ores.connections/generators/server_environment_generator.hpp"
@@ -60,6 +61,7 @@ private:
 using namespace ores::connections::generators;
 using namespace ores::connections::repository;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_environment_tag", "[repository]") {
     auto lg(make_logger(test_suite));
@@ -68,14 +70,15 @@ TEST_CASE("write_single_environment_tag", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
     // Create environment and tag first
-    auto env = generate_synthetic_server_environment();
-    auto tag = generate_synthetic_tag();
+    auto env = generate_synthetic_server_environment(ctx);
+    auto tag = generate_synthetic_tag(ctx);
     env_repo.write(env);
     tag_repo.write(tag);
 
-    auto env_tag = generate_synthetic_environment_tag(env.id, tag.id);
+    auto env_tag = generate_synthetic_environment_tag(ctx, env.id, tag.id);
     BOOST_LOG_SEV(lg, debug) << "Environment tag: " << env_tag;
 
     CHECK_NOTHROW(repo.write(env_tag));
@@ -88,15 +91,16 @@ TEST_CASE("write_multiple_environment_tags", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
-    auto tags = generate_unique_synthetic_tags(3);
+    auto env = generate_synthetic_server_environment(ctx);
+    auto tags = generate_unique_synthetic_tags(3, ctx);
     env_repo.write(env);
     tag_repo.write(tags);
 
     std::vector<ores::connections::domain::environment_tag> env_tags;
     for (const auto& tag : tags) {
-        env_tags.push_back(generate_synthetic_environment_tag(env.id, tag.id));
+        env_tags.push_back(generate_synthetic_environment_tag(ctx, env.id, tag.id));
     }
 
     BOOST_LOG_SEV(lg, debug) << "Environment tags: " << env_tags;
@@ -111,15 +115,16 @@ TEST_CASE("read_environment_tags_by_environment", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
-    auto tags = generate_unique_synthetic_tags(3);
+    auto env = generate_synthetic_server_environment(ctx);
+    auto tags = generate_unique_synthetic_tags(3, ctx);
     env_repo.write(env);
     tag_repo.write(tags);
 
     std::vector<ores::connections::domain::environment_tag> written;
     for (const auto& tag : tags) {
-        written.push_back(generate_synthetic_environment_tag(env.id, tag.id));
+        written.push_back(generate_synthetic_environment_tag(ctx, env.id, tag.id));
     }
     repo.write(written);
 
@@ -136,10 +141,11 @@ TEST_CASE("read_tags_by_environment", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto env1 = generate_synthetic_server_environment();
-    auto env2 = generate_synthetic_server_environment();
-    auto tags = generate_unique_synthetic_tags(3);
+    auto env1 = generate_synthetic_server_environment(ctx);
+    auto env2 = generate_synthetic_server_environment(ctx);
+    auto tags = generate_unique_synthetic_tags(3, ctx);
     auto tag1 = tags[0];
     auto tag2 = tags[1];
     auto tag3 = tags[2];
@@ -148,10 +154,10 @@ TEST_CASE("read_tags_by_environment", "[repository]") {
     tag_repo.write(tags);
 
     // env1 has tag1 and tag2
-    repo.write(generate_synthetic_environment_tag(env1.id, tag1.id));
-    repo.write(generate_synthetic_environment_tag(env1.id, tag2.id));
+    repo.write(generate_synthetic_environment_tag(ctx, env1.id, tag1.id));
+    repo.write(generate_synthetic_environment_tag(ctx, env1.id, tag2.id));
     // env2 has tag3
-    repo.write(generate_synthetic_environment_tag(env2.id, tag3.id));
+    repo.write(generate_synthetic_environment_tag(ctx, env2.id, tag3.id));
 
     auto env1_tags = repo.read_by_environment(env1.id);
     auto env2_tags = repo.read_by_environment(env2.id);
@@ -170,11 +176,12 @@ TEST_CASE("read_environments_by_tag", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto env1 = generate_synthetic_server_environment();
-    auto env2 = generate_synthetic_server_environment();
-    auto env3 = generate_synthetic_server_environment();
-    auto tags = generate_unique_synthetic_tags(2);
+    auto env1 = generate_synthetic_server_environment(ctx);
+    auto env2 = generate_synthetic_server_environment(ctx);
+    auto env3 = generate_synthetic_server_environment(ctx);
+    auto tags = generate_unique_synthetic_tags(2, ctx);
     auto tag1 = tags[0];
     auto tag2 = tags[1];
 
@@ -182,10 +189,10 @@ TEST_CASE("read_environments_by_tag", "[repository]") {
     tag_repo.write(tags);
 
     // tag1 has env1 and env2
-    repo.write(generate_synthetic_environment_tag(env1.id, tag1.id));
-    repo.write(generate_synthetic_environment_tag(env2.id, tag1.id));
+    repo.write(generate_synthetic_environment_tag(ctx, env1.id, tag1.id));
+    repo.write(generate_synthetic_environment_tag(ctx, env2.id, tag1.id));
     // tag2 has env3
-    repo.write(generate_synthetic_environment_tag(env3.id, tag2.id));
+    repo.write(generate_synthetic_environment_tag(ctx, env3.id, tag2.id));
 
     auto tag1_envs = repo.read_by_tag(tag1.id);
     auto tag2_envs = repo.read_by_tag(tag2.id);
@@ -204,13 +211,14 @@ TEST_CASE("remove_environment_tag", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
-    auto tag = generate_synthetic_tag();
+    auto env = generate_synthetic_server_environment(ctx);
+    auto tag = generate_synthetic_tag(ctx);
     env_repo.write(env);
     tag_repo.write(tag);
 
-    auto env_tag = generate_synthetic_environment_tag(env.id, tag.id);
+    auto env_tag = generate_synthetic_environment_tag(ctx, env.id, tag.id);
     repo.write(env_tag);
 
     CHECK(repo.read_by_environment(env.id).size() == 1);
@@ -227,14 +235,15 @@ TEST_CASE("remove_all_tags_from_environment", "[repository]") {
     server_environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
-    auto tags = generate_unique_synthetic_tags(3);
+    auto env = generate_synthetic_server_environment(ctx);
+    auto tags = generate_unique_synthetic_tags(3, ctx);
     env_repo.write(env);
     tag_repo.write(tags);
 
     for (const auto& tag : tags) {
-        repo.write(generate_synthetic_environment_tag(env.id, tag.id));
+        repo.write(generate_synthetic_environment_tag(ctx, env.id, tag.id));
     }
 
     CHECK(repo.read_by_environment(env.id).size() == 3);

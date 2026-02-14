@@ -29,6 +29,7 @@
 #include "ores.dq/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/catalog_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::catalog_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_catalog", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     catalog_repository repo(h.context());
-    auto catalog = generate_synthetic_catalog();
+    auto catalog = generate_synthetic_catalog(ctx);
     catalog.tenant_id = h.tenant_id().to_string();
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -62,8 +65,9 @@ TEST_CASE("write_multiple_catalogs", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     catalog_repository repo(h.context());
-    auto catalogs = generate_synthetic_catalogs(3);
+    auto catalogs = generate_synthetic_catalogs(3, ctx);
     for (auto& c : catalogs) {
         c.tenant_id = h.tenant_id().to_string();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -78,8 +82,9 @@ TEST_CASE("read_latest_catalogs", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     catalog_repository repo(h.context());
-    auto written_catalogs = generate_synthetic_catalogs(3);
+    auto written_catalogs = generate_synthetic_catalogs(3, ctx);
     for (auto& c : written_catalogs) {
         c.tenant_id = h.tenant_id().to_string();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -100,8 +105,9 @@ TEST_CASE("read_latest_catalog_by_name", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     catalog_repository repo(h.context());
-    auto catalogs = generate_synthetic_catalogs(3);
+    auto catalogs = generate_synthetic_catalogs(3, ctx);
     for (auto& c : catalogs) {
         c.tenant_id = h.tenant_id().to_string();
         c.name = c.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -128,7 +134,8 @@ TEST_CASE("read_all_catalog_versions", tags) {
 
     catalog_repository repo(h.context());
 
-    auto cat1 = generate_synthetic_catalog();
+    generation_context ctx;
+    auto cat1 = generate_synthetic_catalog(ctx);
     cat1.tenant_id = h.tenant_id().to_string();
     cat1.name = cat1.name + "_" + std::string(faker::string::alphanumeric(8));
     const auto test_name = cat1.name;
@@ -171,7 +178,8 @@ TEST_CASE("write_and_read_catalog_roundtrip", tags) {
 
     catalog_repository repo(h.context());
 
-    auto catalog = generate_synthetic_catalog();
+    generation_context ctx;
+    auto catalog = generate_synthetic_catalog(ctx);
     catalog.tenant_id = h.tenant_id().to_string();
     catalog.name = catalog.name + "_" + std::string(faker::string::alphanumeric(8));
     BOOST_LOG_SEV(lg, debug) << "Catalog: " << catalog;

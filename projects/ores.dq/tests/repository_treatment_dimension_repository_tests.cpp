@@ -29,6 +29,7 @@
 #include "ores.dq/domain/treatment_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/treatment_dimension_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::treatment_dimension_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_treatment_dimension", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     treatment_dimension_repository repo(h.context());
-    auto treatment_dimension = generate_synthetic_treatment_dimension();
+    auto treatment_dimension = generate_synthetic_treatment_dimension(ctx);
     treatment_dimension.tenant_id = h.tenant_id().to_string();
     treatment_dimension.code = treatment_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_treatment_dimensions", tags) {
     database_helper h;
 
     treatment_dimension_repository repo(h.context());
-    auto treatment_dimensions = generate_synthetic_treatment_dimensions(3);
+    generation_context ctx;
+    auto treatment_dimensions = generate_synthetic_treatment_dimensions(3, ctx);
     for (auto& t : treatment_dimensions) {
         t.tenant_id = h.tenant_id().to_string();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_treatment_dimensions", tags) {
     database_helper h;
 
     treatment_dimension_repository repo(h.context());
-    auto written_treatment_dimensions = generate_synthetic_treatment_dimensions(3);
+    generation_context ctx;
+    auto written_treatment_dimensions = generate_synthetic_treatment_dimensions(3, ctx);
     for (auto& t : written_treatment_dimensions) {
         t.tenant_id = h.tenant_id().to_string();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_treatment_dimension_by_code", tags) {
     database_helper h;
 
     treatment_dimension_repository repo(h.context());
-    auto treatment_dimensions = generate_synthetic_treatment_dimensions(3);
+    generation_context ctx;
+    auto treatment_dimensions = generate_synthetic_treatment_dimensions(3, ctx);
     for (auto& t : treatment_dimensions) {
         t.tenant_id = h.tenant_id().to_string();
         t.code = t.code + "_" + std::string(faker::string::alphanumeric(8));

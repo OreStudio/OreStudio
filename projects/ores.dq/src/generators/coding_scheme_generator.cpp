@@ -22,16 +22,21 @@
 #include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
-domain::coding_scheme generate_synthetic_coding_scheme() {
+using ores::utility::generation::generation_keys;
+
+domain::coding_scheme generate_synthetic_coding_scheme(
+    utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 3> authority_types = {
         "official", "industry", "internal"
     };
     static std::atomic<int> counter{0};
     const auto idx = counter++;
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
 
     domain::coding_scheme r;
     r.version = 1;
@@ -46,18 +51,19 @@ domain::coding_scheme generate_synthetic_coding_scheme() {
         r.uri = "https://example.org/schemes/" + r.code;
     }
     r.description = std::string(faker::lorem::sentence());
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::coding_scheme>
-generate_synthetic_coding_schemes(std::size_t n) {
+generate_synthetic_coding_schemes(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::coding_scheme> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_coding_scheme());
+        r.push_back(generate_synthetic_coding_scheme(ctx));
     return r;
 }
 

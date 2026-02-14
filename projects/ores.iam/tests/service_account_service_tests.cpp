@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
 
@@ -49,9 +50,10 @@ TEST_CASE("create_account_with_valid_data", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    const auto e = generate_synthetic_account(h.tenant_id());
+    const auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
@@ -71,12 +73,13 @@ TEST_CASE("create_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
     for (int i = 0; i < 5; ++i) {
         BOOST_LOG_SEV(lg, info) << "Creating account: " << i;
 
-        const auto e = generate_synthetic_account(h.tenant_id());
+        const auto e = generate_synthetic_account(ctx);
         BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
         const std::string password = faker::internet::password();
@@ -95,9 +98,10 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account(h.tenant_id());
+    auto e = generate_synthetic_account(ctx);
     e.username = "";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -110,9 +114,10 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account(h.tenant_id());
+    auto e = generate_synthetic_account(ctx);
     e.email = "";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -125,9 +130,10 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    const auto e = generate_synthetic_account(h.tenant_id());
+    const auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string empty_password;
@@ -151,6 +157,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
     // Count existing accounts from previous test runs
@@ -158,7 +165,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
     BOOST_LOG_SEV(lg, info) << "Initial accounts: " << initial_count;
 
     const int new_accounts = 3;
-    const auto expected_list = generate_synthetic_accounts(new_accounts, h.tenant_id());
+    const auto expected_list = generate_synthetic_accounts(new_accounts, ctx);
 
     for (const auto& e : expected_list) {
         const std::string password = faker::internet::password();
@@ -176,9 +183,10 @@ TEST_CASE("login_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account(h.tenant_id());
+    auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
@@ -196,9 +204,10 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    auto e = generate_synthetic_account(h.tenant_id());
+    auto e = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
@@ -248,11 +257,12 @@ TEST_CASE("login_with_empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
 
-    auto account = generate_synthetic_account(h.tenant_id());
+    auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
@@ -269,9 +279,10 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    auto account = generate_synthetic_account(h.tenant_id());
+    auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
@@ -304,9 +315,10 @@ TEST_CASE("lock_account_successful", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    const auto account = generate_synthetic_account(h.tenant_id());
+    const auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
     const std::string password = faker::internet::password();
 
@@ -341,9 +353,10 @@ TEST_CASE("unlock_account_successful", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    const auto account = generate_synthetic_account(h.tenant_id());
+    const auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
     const std::string password = faker::internet::password();
 
@@ -406,9 +419,10 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     service::account_service sut(h.context());
 
-    auto account = generate_synthetic_account(h.tenant_id());
+    auto account = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();

@@ -55,6 +55,7 @@
 #include "ores.ore/xml/exporter.hpp"
 #include "ores.ore/xml/importer.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -1016,9 +1017,9 @@ void CurrencyMdiWindow::generateSynthetic() {
     BOOST_LOG_SEV(lg(), info) << "Generating " << count << " synthetic currencies";
 
     try {
+        utility::generation::generation_context ctx;
         auto currencies = refdata::generators::generate_fictional_currencies(
-            static_cast<std::size_t>(count),
-            utility::uuid::tenant_id::system());
+            static_cast<std::size_t>(count), ctx);
 
         if (currencies.empty()) {
             BOOST_LOG_SEV(lg(), warn) << "No currencies generated";

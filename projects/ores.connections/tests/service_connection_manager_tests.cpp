@@ -24,6 +24,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/folder_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/domain/server_environment_json_io.hpp" // IWYU pragma: keep.
@@ -63,14 +64,16 @@ private:
 using namespace ores::connections::generators;
 using namespace ores::connections::service;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("create_and_get_folder", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     BOOST_LOG_SEV(lg, debug) << "Creating folder: " << folder;
 
     mgr.create_folder(folder);
@@ -86,10 +89,11 @@ TEST_CASE("get_root_folders", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto root1 = generate_synthetic_folder();
-    auto root2 = generate_synthetic_folder();
-    auto child = generate_synthetic_folder();
+    auto root1 = generate_synthetic_folder(ctx);
+    auto root2 = generate_synthetic_folder(ctx);
+    auto child = generate_synthetic_folder(ctx);
     child.parent_id = root1.id;
 
     mgr.create_folder(root1);
@@ -107,8 +111,9 @@ TEST_CASE("create_and_get_tag", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Creating tag: " << tag;
 
     mgr.create_tag(tag);
@@ -124,8 +129,9 @@ TEST_CASE("get_tag_by_name", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     tag.name = "ProductionTag";
     mgr.create_tag(tag);
 
@@ -139,8 +145,9 @@ TEST_CASE("create_environment_with_encrypted_password", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     const std::string password = "my_secret_password";
 
     BOOST_LOG_SEV(lg, debug) << "Creating environment: " << env;
@@ -162,8 +169,9 @@ TEST_CASE("get_decrypted_password", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     const std::string password = "my_secret_password_123";
 
     mgr.create_environment(env, password);
@@ -179,8 +187,9 @@ TEST_CASE("update_environment_without_changing_password", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     const std::string password = "original_password";
 
     mgr.create_environment(env, password);
@@ -201,8 +210,9 @@ TEST_CASE("update_environment_with_new_password", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     const std::string old_password = "old_password";
     const std::string new_password = "new_password";
 
@@ -217,9 +227,10 @@ TEST_CASE("add_and_remove_tag_from_environment", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
-    auto tag = generate_synthetic_tag();
+    auto env = generate_synthetic_server_environment(ctx);
+    auto tag = generate_synthetic_tag(ctx);
 
     mgr.create_tag(tag);
     mgr.create_environment(env, "password");
@@ -243,10 +254,11 @@ TEST_CASE("get_environments_with_tag", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env1 = generate_synthetic_server_environment();
-    auto env2 = generate_synthetic_server_environment();
-    auto tag = generate_synthetic_tag();
+    auto env1 = generate_synthetic_server_environment(ctx);
+    auto env2 = generate_synthetic_server_environment(ctx);
+    auto tag = generate_synthetic_tag(ctx);
 
     mgr.create_tag(tag);
     mgr.create_environment(env1, "password1");
@@ -266,12 +278,13 @@ TEST_CASE("verify_master_password", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
     // Empty database should verify
     CHECK(mgr.verify_master_password());
 
     // Create an environment with a password
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     mgr.create_environment(env, "test_password");
 
     // Should still verify with correct password
@@ -291,8 +304,9 @@ TEST_CASE("change_master_password", "[service]") {
     {
         // Create manager with old password
         connection_manager mgr(db_path, old_password);
+        generation_context ctx;
 
-        auto env = generate_synthetic_server_environment();
+        auto env = generate_synthetic_server_environment(ctx);
         mgr.create_environment(env, env_password);
 
         // Change to new password
@@ -321,15 +335,16 @@ TEST_CASE("environments_in_folder", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     mgr.create_folder(folder);
 
-    auto env1 = generate_synthetic_server_environment();
+    auto env1 = generate_synthetic_server_environment(ctx);
     env1.folder_id = folder.id;
-    auto env2 = generate_synthetic_server_environment();
+    auto env2 = generate_synthetic_server_environment(ctx);
     env2.folder_id = folder.id;
-    auto root_env = generate_synthetic_server_environment();
+    auto root_env = generate_synthetic_server_environment(ctx);
 
     mgr.create_environment(env1, "pass1");
     mgr.create_environment(env2, "pass2");
@@ -350,8 +365,9 @@ TEST_CASE("delete_folder", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     mgr.create_folder(folder);
 
     CHECK(mgr.get_folder(folder.id).has_value());
@@ -366,8 +382,9 @@ TEST_CASE("delete_tag", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto tag = generate_synthetic_tag();
+    auto tag = generate_synthetic_tag(ctx);
     mgr.create_tag(tag);
 
     CHECK(mgr.get_tag(tag.id).has_value());
@@ -382,8 +399,9 @@ TEST_CASE("delete_environment", "[service]") {
 
     scoped_connection_manager h;
     auto& mgr = h.manager();
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     mgr.create_environment(env, "password");
 
     CHECK(mgr.get_environment(env.id).has_value());

@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/dataset_bundle.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic dataset_bundle.
  */
-domain::dataset_bundle generate_synthetic_dataset_bundle();
+domain::dataset_bundle generate_synthetic_dataset_bundle(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic dataset_bundles.
  */
 std::vector<domain::dataset_bundle>
-generate_synthetic_dataset_bundles(std::size_t n);
+generate_synthetic_dataset_bundles(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

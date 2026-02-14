@@ -21,6 +21,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.refdata/domain/country.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/generators/country_generator.hpp"
@@ -34,11 +35,13 @@ const std::string tags("[generators]");
 
 using namespace ores::refdata::generators;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
-    auto countries = generate_fictional_countries();
+    auto countries = generate_fictional_countries(0, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated fictional countries: " << countries;
 
     CHECK(countries.size() == 50);
@@ -46,8 +49,9 @@ TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
 
 TEST_CASE("generate_fictional_countries_returns_requested_count", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
-    auto countries = generate_fictional_countries(5);
+    auto countries = generate_fictional_countries(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional countries: " << countries;
 
     CHECK(countries.size() == 5);
@@ -55,8 +59,9 @@ TEST_CASE("generate_fictional_countries_returns_requested_count", tags) {
 
 TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
-    auto countries = generate_fictional_countries(100);
+    auto countries = generate_fictional_countries(100, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated fictional countries with large count: " << countries;
 
     CHECK(countries.size() == 50);
@@ -64,8 +69,9 @@ TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available
 
 TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
-    auto countries = generate_fictional_countries();
+    auto countries = generate_fictional_countries(0, ctx);
 
     std::set<std::string> codes;
     for (const auto& c : countries)
@@ -76,8 +82,9 @@ TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", tags) {
 
 TEST_CASE("generate_fictional_countries_has_expected_first_country", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
-    auto countries = generate_fictional_countries(1);
+    auto countries = generate_fictional_countries(1, ctx);
     BOOST_LOG_SEV(lg, debug) << "First fictional country: " << countries;
 
     REQUIRE(countries.size() == 1);
@@ -89,8 +96,9 @@ TEST_CASE("generate_fictional_countries_has_expected_first_country", tags) {
 
 TEST_CASE("generate_fictional_countries_contains_known_countries", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
-    auto countries = generate_fictional_countries();
+    auto countries = generate_fictional_countries(0, ctx);
 
     std::set<std::string> codes;
     for (const auto& c : countries)

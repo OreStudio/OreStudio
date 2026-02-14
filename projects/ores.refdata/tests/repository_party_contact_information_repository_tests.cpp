@@ -24,6 +24,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_contact_information.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
@@ -49,9 +50,9 @@ TEST_CASE("write_single_party_contact_information", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository party_repo(h.context());
-    auto party = generate_synthetic_party();
-    party.tenant_id = h.tenant_id().to_string();
+    auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
@@ -59,8 +60,7 @@ TEST_CASE("write_single_party_contact_information", tags) {
     }
     party_repo.write(party);
 
-    auto pci = generate_synthetic_party_contact_information();
-    pci.tenant_id = h.tenant_id().to_string();
+    auto pci = generate_synthetic_party_contact_information(ctx);
     pci.change_reason_code = "system.test";
     pci.party_id = party.id;
     BOOST_LOG_SEV(lg, debug) << "Party contact information: " << pci;
@@ -73,9 +73,9 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository party_repo(h.context());
-    auto party = generate_synthetic_party();
-    party.tenant_id = h.tenant_id().to_string();
+    auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
@@ -84,9 +84,8 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     party_repo.write(party);
 
     auto party_contact_informations =
-        generate_synthetic_party_contact_informations(3);
+        generate_synthetic_party_contact_informations(3, ctx);
     for (auto& pci : party_contact_informations) {
-        pci.tenant_id = h.tenant_id().to_string();
         pci.change_reason_code = "system.test";
         pci.party_id = party.id;
     }
@@ -101,9 +100,9 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository party_repo(h.context());
-    auto party = generate_synthetic_party();
-    party.tenant_id = h.tenant_id().to_string();
+    auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
@@ -112,9 +111,8 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     party_repo.write(party);
 
     auto written_party_contact_informations =
-        generate_synthetic_party_contact_informations(3);
+        generate_synthetic_party_contact_informations(3, ctx);
     for (auto& pci : written_party_contact_informations) {
-        pci.tenant_id = h.tenant_id().to_string();
         pci.change_reason_code = "system.test";
         pci.party_id = party.id;
     }
@@ -136,9 +134,9 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     party_repository party_repo(h.context());
-    auto party = generate_synthetic_party();
-    party.tenant_id = h.tenant_id().to_string();
+    auto party = generate_synthetic_party(ctx);
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
@@ -146,8 +144,7 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
     }
     party_repo.write(party);
 
-    auto pci = generate_synthetic_party_contact_information();
-    pci.tenant_id = h.tenant_id().to_string();
+    auto pci = generate_synthetic_party_contact_information(ctx);
     pci.change_reason_code = "system.test";
     pci.party_id = party.id;
     const auto original_city = pci.city;

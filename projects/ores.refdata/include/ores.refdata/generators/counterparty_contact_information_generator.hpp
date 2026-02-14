@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.refdata/domain/counterparty_contact_information.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic counterparty_contact_information.
  */
-domain::counterparty_contact_information generate_synthetic_counterparty_contact_information();
+domain::counterparty_contact_information generate_synthetic_counterparty_contact_information(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic counterparty_contact_informations.
  */
 std::vector<domain::counterparty_contact_information>
-generate_synthetic_counterparty_contact_informations(std::size_t n);
+generate_synthetic_counterparty_contact_informations(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

@@ -20,27 +20,34 @@
 #include "ores.dq/generators/data_domain_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
-domain::data_domain generate_synthetic_data_domain() {
+using ores::utility::generation::generation_keys;
+
+domain::data_domain generate_synthetic_data_domain(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+
     domain::data_domain r;
     r.version = 1;
     r.name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::data_domain>
-generate_synthetic_data_domains(std::size_t n) {
+generate_synthetic_data_domains(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::data_domain> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_data_domain());
+        r.push_back(generate_synthetic_data_domain(ctx));
     return r;
 }
 

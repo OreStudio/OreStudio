@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.iam/domain/account_party.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::iam::generators {
 
 /**
  * @brief Generates a synthetic account_party.
  */
-domain::account_party generate_synthetic_account_party();
+domain::account_party generate_synthetic_account_party(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic account_parties.
  */
 std::vector<domain::account_party>
-generate_synthetic_account_parties(std::size_t n);
+generate_synthetic_account_parties(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

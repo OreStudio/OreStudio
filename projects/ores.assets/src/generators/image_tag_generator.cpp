@@ -19,43 +19,48 @@
  */
 #include "ores.assets/generators/image_tag_generator.hpp"
 
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <faker-cxx/internet.h>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::assets::generators {
 
-domain::image_tag generate_synthetic_image_tag() {
-    domain::image_tag r;
+using ores::utility::generation::generation_keys;
 
-    static boost::uuids::random_generator gen;
-    r.image_id = gen();
-    r.tag_id = gen();
-    r.assigned_by = std::string(faker::internet::username());
-    r.assigned_at = utility::faker::datetime::past_timepoint();
+domain::image_tag generate_synthetic_image_tag(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+
+    domain::image_tag r;
+    r.image_id = ctx.generate_uuid();
+    r.tag_id = ctx.generate_uuid();
+    r.assigned_by = modified_by;
+    r.assigned_at = ctx.past_timepoint();
 
     return r;
 }
 
-domain::image_tag generate_synthetic_image_tag(const boost::uuids::uuid& image_id,
-                                                const boost::uuids::uuid& tag_id) {
-    domain::image_tag r;
+domain::image_tag generate_synthetic_image_tag(
+    utility::generation::generation_context& ctx,
+    const boost::uuids::uuid& image_id,
+    const boost::uuids::uuid& tag_id) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
 
+    domain::image_tag r;
     r.image_id = image_id;
     r.tag_id = tag_id;
-    r.assigned_by = std::string(faker::internet::username());
-    r.assigned_at = utility::faker::datetime::past_timepoint();
+    r.assigned_by = modified_by;
+    r.assigned_at = ctx.past_timepoint();
 
     return r;
 }
 
-std::vector<domain::image_tag> generate_synthetic_image_tags(std::size_t n) {
+std::vector<domain::image_tag> generate_synthetic_image_tags(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::image_tag> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_image_tag());
+        r.push_back(generate_synthetic_image_tag(ctx));
 
     return r;
 }

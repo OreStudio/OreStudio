@@ -101,14 +101,15 @@ boost::uuids::uuid setup_admin_session(
     // Store session info for this endpoint
     ores::comms::service::session_info info{
         .account_id = account_id,
-        .tenant_id = tenant_id
+        .tenant_id = tenant_id,
+        .username = "test_admin"
     };
     sessions->store_session(endpoint, info);
 
     // Assign admin role to the account
     auto admin_role = auth_service->find_role_by_name(domain::roles::super_admin);
     if (admin_role) {
-        auth_service->assign_role(account_id, admin_role->id, "test");
+        auth_service->assign_role(account_id, admin_role->id, "test_admin");
     }
 
     return account_id;

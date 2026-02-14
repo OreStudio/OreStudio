@@ -39,7 +39,7 @@ const std::string tags("[repository]");
 
 using ores::iam::domain::tenant;
 
-tenant make_tenant() {
+tenant make_tenant(ores::testing::database_helper& h) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
 
@@ -53,10 +53,10 @@ tenant make_tenant() {
     t.hostname = std::string(faker::string::alphanumeric(8))
         + "_" + std::to_string(idx) + ".example.com";
     t.status = "active";
-    t.modified_by = std::string(faker::internet::username());
+    t.modified_by = h.db_user();
     t.change_reason_code = "system.test";
     t.change_commentary = "Synthetic test data";
-    t.performed_by = std::string(faker::internet::username());
+    t.performed_by = h.db_user();
     return t;
 }
 
@@ -75,7 +75,7 @@ TEST_CASE("write_single_tenant", tags) {
         ores::utility::uuid::tenant_id::system());
 
     tenant_repository repo(sys_ctx);
-    auto t = make_tenant();
+    auto t = make_tenant(h);
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
     CHECK_NOTHROW(repo.write(t));
@@ -91,7 +91,7 @@ TEST_CASE("write_multiple_tenants", tags) {
     tenant_repository repo(sys_ctx);
     std::vector<tenant> tenants;
     for (int i = 0; i < 3; ++i)
-        tenants.push_back(make_tenant());
+        tenants.push_back(make_tenant(h));
 
     BOOST_LOG_SEV(lg, debug) << "Tenants: " << tenants;
     CHECK_NOTHROW(repo.write(tenants));
@@ -107,7 +107,7 @@ TEST_CASE("read_latest_tenants", tags) {
     tenant_repository repo(sys_ctx);
     std::vector<tenant> written;
     for (int i = 0; i < 3; ++i)
-        written.push_back(make_tenant());
+        written.push_back(make_tenant(h));
 
     BOOST_LOG_SEV(lg, debug) << "Written tenants: " << written;
     repo.write(written);
@@ -127,7 +127,7 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
         ores::utility::uuid::tenant_id::system());
 
     tenant_repository repo(sys_ctx);
-    auto t = make_tenant();
+    auto t = make_tenant(h);
     const auto target_id = t.id;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
@@ -152,7 +152,7 @@ TEST_CASE("read_latest_tenant_by_code", tags) {
         ores::utility::uuid::tenant_id::system());
 
     tenant_repository repo(sys_ctx);
-    auto t = make_tenant();
+    auto t = make_tenant(h);
     const auto target_code = t.code;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;

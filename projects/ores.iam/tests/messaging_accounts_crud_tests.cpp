@@ -60,10 +60,11 @@ save_account_request to_save_account_request(const domain::account& a) {
 }
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::database::context& ctx, const std::string& tenant_id) {
+make_system_flags(ores::database::context& ctx, const std::string& tenant_id,
+    const std::string& db_user) {
     auto flags = std::make_shared<ores::variability::service::system_flags_service>(
         ctx, tenant_id);
-    flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
+    flags->set_bootstrap_mode(false, db_user, "system.new_record", "Test setup");
     return flags;
 }
 
@@ -123,7 +124,7 @@ TEST_CASE("handle_single_save_account_request", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -162,7 +163,7 @@ TEST_CASE("handle_many_save_account_requests", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -202,7 +203,7 @@ TEST_CASE("handle_get_accounts_request_returns_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -240,7 +241,7 @@ TEST_CASE("handle_get_accounts_request_with_accounts", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -299,7 +300,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -356,7 +357,7 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -394,7 +395,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);

@@ -59,10 +59,11 @@ save_account_request to_save_account_request(const domain::account& a) {
 }
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::database::context& ctx, const std::string& tenant_id) {
+make_system_flags(ores::database::context& ctx, const std::string& tenant_id,
+    const std::string& db_user) {
     auto flags = std::make_shared<ores::variability::service::system_flags_service>(
         ctx, tenant_id);
-    flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
+    flags->set_bootstrap_mode(false, db_user, "system.new_record", "Test setup");
     return flags;
 }
 
@@ -73,10 +74,11 @@ make_auth_service(ores::database::context& ctx) {
 }
 
 void assign_admin_role(std::shared_ptr<service::authorization_service> auth,
-                       boost::uuids::uuid account_id) {
+                       boost::uuids::uuid account_id,
+                       const std::string& db_user) {
     auto admin_role = auth->find_role_by_name(domain::roles::super_admin);
     REQUIRE(admin_role.has_value());
-    auth->assign_role(account_id, admin_role->id, "test");
+    auth->assign_role(account_id, admin_role->id, db_user);
 }
 
 /**
@@ -130,7 +132,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -186,7 +188,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -239,7 +241,7 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -276,7 +278,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -304,7 +306,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     });
 
     // Assign admin role to the newly created account
-    assign_admin_role(auth_service, admin_id);
+    assign_admin_role(auth_service, admin_id, h.db_user());
 
     // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
@@ -391,7 +393,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -475,7 +477,7 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(true);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
@@ -508,7 +510,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
 
     scoped_database_helper h(true);
     auto ctx = ores::testing::make_generation_context(h);
-    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string());
+    auto system_flags = make_system_flags(h.context(), h.tenant_id().to_string(), h.db_user());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);

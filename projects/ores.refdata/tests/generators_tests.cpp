@@ -30,6 +30,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -40,12 +41,14 @@ const std::string tags("[generators]");
 
 using namespace ores::refdata::generators;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 // --- party ---
 
 TEST_CASE("party_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_party();
+    generation_context ctx;
+    auto sut = generate_synthetic_party(ctx);
 
     BOOST_LOG_SEV(lg, info) << "Generated party: " << sut.full_name;
 
@@ -64,8 +67,9 @@ TEST_CASE("party_generator_produces_valid_instance", tags) {
 
 TEST_CASE("party_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_parties(count);
+    auto items = generate_synthetic_parties(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -78,7 +82,8 @@ TEST_CASE("party_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_counterparty();
+    generation_context ctx;
+    auto sut = generate_synthetic_counterparty(ctx);
 
     CHECK(sut.version == 1);
     CHECK(sut.tenant_id == "system");
@@ -95,8 +100,9 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
 
 TEST_CASE("counterparty_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_counterparties(count);
+    auto items = generate_synthetic_counterparties(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -109,7 +115,8 @@ TEST_CASE("counterparty_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_contact_type();
+    generation_context ctx;
+    auto sut = generate_synthetic_contact_type(ctx);
 
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
@@ -124,8 +131,9 @@ TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
 
 TEST_CASE("contact_type_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_contact_types(count);
+    auto items = generate_synthetic_contact_types(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -137,7 +145,8 @@ TEST_CASE("contact_type_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("party_type_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_party_type();
+    generation_context ctx;
+    auto sut = generate_synthetic_party_type(ctx);
 
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
@@ -152,8 +161,9 @@ TEST_CASE("party_type_generator_produces_valid_instance", tags) {
 
 TEST_CASE("party_type_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_party_types(count);
+    auto items = generate_synthetic_party_types(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -165,7 +175,8 @@ TEST_CASE("party_type_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("party_status_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_party_status();
+    generation_context ctx;
+    auto sut = generate_synthetic_party_status(ctx);
 
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
@@ -180,8 +191,9 @@ TEST_CASE("party_status_generator_produces_valid_instance", tags) {
 
 TEST_CASE("party_status_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_party_statuses(count);
+    auto items = generate_synthetic_party_statuses(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -193,7 +205,8 @@ TEST_CASE("party_status_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_party_id_scheme();
+    generation_context ctx;
+    auto sut = generate_synthetic_party_id_scheme(ctx);
 
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
@@ -209,8 +222,9 @@ TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
 
 TEST_CASE("party_id_scheme_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_party_id_schemes(count);
+    auto items = generate_synthetic_party_id_schemes(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -222,7 +236,8 @@ TEST_CASE("party_id_scheme_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_party_identifier();
+    generation_context ctx;
+    auto sut = generate_synthetic_party_identifier(ctx);
 
     CHECK(sut.version == 1);
     CHECK(sut.tenant_id == "system");
@@ -238,8 +253,9 @@ TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
 
 TEST_CASE("party_identifier_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_party_identifiers(count);
+    auto items = generate_synthetic_party_identifiers(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -252,7 +268,8 @@ TEST_CASE("party_identifier_generator_produces_multiple_instances", tags) {
 
 TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_counterparty_identifier();
+    generation_context ctx;
+    auto sut = generate_synthetic_counterparty_identifier(ctx);
 
     CHECK(sut.version == 1);
     CHECK(sut.tenant_id == "system");
@@ -268,8 +285,9 @@ TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
 
 TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_counterparty_identifiers(count);
+    auto items = generate_synthetic_counterparty_identifiers(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -282,7 +300,8 @@ TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags)
 
 TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_party_contact_information();
+    generation_context ctx;
+    auto sut = generate_synthetic_party_contact_information(ctx);
 
     CHECK(sut.version == 1);
     CHECK(sut.tenant_id == "system");
@@ -301,8 +320,9 @@ TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
 
 TEST_CASE("party_contact_information_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_party_contact_informations(count);
+    auto items = generate_synthetic_party_contact_informations(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
@@ -315,7 +335,8 @@ TEST_CASE("party_contact_information_generator_produces_multiple_instances", tag
 
 TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));
-    auto sut = generate_synthetic_counterparty_contact_information();
+    generation_context ctx;
+    auto sut = generate_synthetic_counterparty_contact_information(ctx);
 
     CHECK(sut.version == 1);
     CHECK(sut.tenant_id == "system");
@@ -334,8 +355,9 @@ TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", 
 
 TEST_CASE("counterparty_contact_information_generator_produces_multiple_instances", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_counterparty_contact_informations(count);
+    auto items = generate_synthetic_counterparty_contact_informations(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {

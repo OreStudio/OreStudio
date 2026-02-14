@@ -21,6 +21,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.assets/domain/image.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets/generators/image_generator.hpp"
@@ -34,11 +35,13 @@ const std::string tags("[generators]");
 
 using namespace ores::assets::generators;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("generate_single_image", tags) {
     auto lg(make_logger(test_suite));
 
-    auto image = generate_synthetic_image();
+    generation_context ctx;
+    auto image = generate_synthetic_image(ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated image: " << image;
 
     CHECK(!image.image_id.is_nil());
@@ -52,7 +55,8 @@ TEST_CASE("generate_single_image", tags) {
 TEST_CASE("generate_multiple_images", tags) {
     auto lg(make_logger(test_suite));
 
-    auto images = generate_synthetic_images(3);
+    generation_context ctx;
+    auto images = generate_synthetic_images(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated images: " << images;
 
     CHECK(images.size() == 3);
@@ -61,7 +65,8 @@ TEST_CASE("generate_multiple_images", tags) {
 TEST_CASE("generate_unique_images", tags) {
     auto lg(make_logger(test_suite));
 
-    auto images = generate_unique_synthetic_images(3);
+    generation_context ctx;
+    auto images = generate_unique_synthetic_images(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated unique images: " << images;
 
     CHECK(images.size() == 3);

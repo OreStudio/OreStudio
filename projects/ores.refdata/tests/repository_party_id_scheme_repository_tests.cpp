@@ -23,6 +23,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_id_scheme.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_id_scheme_json_io.hpp" // IWYU pragma: keep.
@@ -45,8 +46,8 @@ TEST_CASE("write_single_party_id_scheme", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto pis = generate_synthetic_party_id_scheme();
-    pis.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto pis = generate_synthetic_party_id_scheme(ctx);
     pis.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;
 
@@ -58,9 +59,9 @@ TEST_CASE("write_multiple_party_id_schemes", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto party_id_schemes = generate_synthetic_party_id_schemes(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_id_schemes = generate_synthetic_party_id_schemes(3, ctx);
     for (auto& pis : party_id_schemes) {
-        pis.tenant_id = h.tenant_id();
         pis.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Party ID schemes: " << party_id_schemes;
@@ -73,9 +74,9 @@ TEST_CASE("read_latest_party_id_schemes", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_party_id_schemes = generate_synthetic_party_id_schemes(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_party_id_schemes = generate_synthetic_party_id_schemes(3, ctx);
     for (auto& pis : written_party_id_schemes) {
-        pis.tenant_id = h.tenant_id();
         pis.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Written party ID schemes: "
@@ -95,8 +96,8 @@ TEST_CASE("read_latest_party_id_scheme_by_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto pis = generate_synthetic_party_id_scheme();
-    pis.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto pis = generate_synthetic_party_id_scheme(ctx);
     pis.change_reason_code = "system.test";
     const auto original_name = pis.name;
     BOOST_LOG_SEV(lg, debug) << "Party ID scheme: " << pis;

@@ -23,6 +23,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/contact_type.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/contact_type_json_io.hpp" // IWYU pragma: keep.
@@ -45,8 +46,8 @@ TEST_CASE("write_single_contact_type", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto ct = generate_synthetic_contact_type();
-    ct.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto ct = generate_synthetic_contact_type(ctx);
     ct.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Contact type: " << ct;
 
@@ -58,9 +59,9 @@ TEST_CASE("write_multiple_contact_types", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto contact_types = generate_synthetic_contact_types(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto contact_types = generate_synthetic_contact_types(3, ctx);
     for (auto& ct : contact_types) {
-        ct.tenant_id = h.tenant_id();
         ct.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Contact types: " << contact_types;
@@ -73,9 +74,9 @@ TEST_CASE("read_latest_contact_types", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_contact_types = generate_synthetic_contact_types(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_contact_types = generate_synthetic_contact_types(3, ctx);
     for (auto& ct : written_contact_types) {
-        ct.tenant_id = h.tenant_id();
         ct.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Written contact types: "
@@ -94,8 +95,8 @@ TEST_CASE("read_latest_contact_type_by_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto ct = generate_synthetic_contact_type();
-    ct.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto ct = generate_synthetic_contact_type(ctx);
     ct.change_reason_code = "system.test";
     const auto original_name = ct.name;
     BOOST_LOG_SEV(lg, debug) << "Contact type: " << ct;

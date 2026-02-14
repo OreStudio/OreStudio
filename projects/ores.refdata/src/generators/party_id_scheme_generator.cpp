@@ -22,17 +22,22 @@
 #include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
-domain::party_id_scheme generate_synthetic_party_id_scheme() {
+using ores::utility::generation::generation_keys;
+
+domain::party_id_scheme generate_synthetic_party_id_scheme(
+    utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 10> coding_schemes = {
         "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
         "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"
     };
     static std::atomic<int> counter{0};
     const auto idx = counter++;
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
 
     domain::party_id_scheme r;
     r.version = 1;
@@ -40,21 +45,22 @@ domain::party_id_scheme generate_synthetic_party_id_scheme() {
     r.name = std::string(faker::word::adjective()) + " Scheme";
     r.description = std::string(faker::lorem::sentence());
     r.coding_scheme_code = coding_schemes[idx % coding_schemes.size()];
-    r.display_order = faker::number::integer(1, 100);
-    r.modified_by = std::string(faker::internet::username());
-    r.performed_by = std::string(faker::internet::username());
+    r.display_order = ctx.random_int(1, 100);
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::party_id_scheme>
-generate_synthetic_party_id_schemes(std::size_t n) {
+generate_synthetic_party_id_schemes(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::party_id_scheme> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_party_id_scheme());
+        r.push_back(generate_synthetic_party_id_scheme(ctx));
     return r;
 }
 

@@ -19,15 +19,18 @@
  */
 #include "ores.refdata/generators/business_centre_generator.hpp"
 
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <faker-cxx/internet.h>
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
+using ores::utility::generation::generation_keys;
+
 std::vector<domain::business_centre>
-generate_fictional_business_centres(std::size_t n) {
-    const auto now = std::chrono::system_clock::now();
-    const auto user = std::string(faker::internet::username());
+generate_fictional_business_centres(std::size_t n,
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto now = ctx.past_timepoint();
 
     std::vector<domain::business_centre> all;
     all.reserve(20);
@@ -35,102 +38,102 @@ generate_fictional_business_centres(std::size_t n) {
     all.push_back({
         .code = "XYLO", .source = "FpML", .description = "Xylonia Financial Centre",
         .coding_scheme_code = "FpML", .country_alpha2_code = "AL",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "MNZB", .source = "FpML", .description = "Monzabia Trading Hub",
         .coding_scheme_code = "FpML", .country_alpha2_code = "AR",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "BLTH", .source = "FpML", .description = "Balthoria Exchange Centre",
         .coding_scheme_code = "FpML", .country_alpha2_code = "BA",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "CLDR", .source = "FpML", .description = "Calandria Capital Markets",
         .coding_scheme_code = "FpML", .country_alpha2_code = "CA",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "DLVD", .source = "FpML", .description = "Delvadia Financial District",
         .coding_scheme_code = "FpML", .country_alpha2_code = "DE",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "ERIA", .source = "FpML", .description = "Eriador Central Market",
         .coding_scheme_code = "FpML", .country_alpha2_code = "ER",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "FLOR", .source = "FpML", .description = "Feloria Securities Exchange",
         .coding_scheme_code = "FpML", .country_alpha2_code = "FE",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "GLDR", .source = "FpML", .description = "Galdoria Financial Centre",
         .coding_scheme_code = "FpML", .country_alpha2_code = "GA",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "HDRN", .source = "FpML", .description = "Hydronia Commerce Centre",
         .coding_scheme_code = "FpML", .country_alpha2_code = "HY",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "ITHC", .source = "FpML", .description = "Ithaca Trading Floor",
         .coding_scheme_code = "FpML", .country_alpha2_code = "IT",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "JRVK", .source = "FpML", .description = "Jorvik Exchange Centre",
         .coding_scheme_code = "FpML", .country_alpha2_code = "JO",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "KELR", .source = "FpML", .description = "Kaelor Capital Markets",
         .coding_scheme_code = "FpML", .country_alpha2_code = "KA",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "LMNA", .source = "FpML", .description = "Luminia Financial Hub",
         .coding_scheme_code = "FpML", .country_alpha2_code = "LU",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "MLDR", .source = "FpML", .description = "Maldoria Securities Market",
         .coding_scheme_code = "FpML", .country_alpha2_code = "MA",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "NKTN", .source = "FpML", .description = "Nektonia Exchange",
         .coding_scheme_code = "FpML", .country_alpha2_code = "NE",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "ORNC", .source = "FpML", .description = "Orinoco Trading Centre",
         .coding_scheme_code = "FpML", .country_alpha2_code = "OR",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "PYRH", .source = "FpML", .description = "Pyrrhia Financial Market",
         .coding_scheme_code = "FpML", .country_alpha2_code = "PY",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "RNDL", .source = "FpML", .description = "Rendellia Capital Exchange",
         .coding_scheme_code = "FpML", .country_alpha2_code = "RE",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "SRND", .source = "FpML", .description = "Serendia Commerce Hub",
         .coding_scheme_code = "FpML", .country_alpha2_code = "SE",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
     all.push_back({
         .code = "VLRA", .source = "FpML", .description = "Valoria Central Exchange",
         .coding_scheme_code = "FpML", .country_alpha2_code = "VA",
-        .modified_by = user, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
+        .modified_by = modified_by, .change_reason_code = "system.test", .change_commentary = "Synthetic test data", .recorded_at = now
     });
 
     if (n == 0 || n >= all.size())

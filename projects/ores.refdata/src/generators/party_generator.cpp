@@ -21,22 +21,25 @@
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::party generate_synthetic_party() {
-    static uuid_v7_generator uuid_gen;
+domain::party generate_synthetic_party(
+    utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
 
     domain::party r;
     r.version = 1;
-    r.tenant_id = "system";
-    r.id = uuid_gen();
+    r.tenant_id = tenant_id;
+    r.id = ctx.generate_uuid();
     r.full_name = faker::company::companyName() + " " + std::to_string(idx);
     r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);
     r.party_category = "Operational";
@@ -45,20 +48,21 @@ domain::party generate_synthetic_party() {
     r.parent_party_id = std::nullopt;
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
-    r.modified_by = std::string(faker::internet::username());
-    r.performed_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::party>
-generate_synthetic_parties(std::size_t n) {
+generate_synthetic_parties(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::party> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_party());
+        r.push_back(generate_synthetic_party(ctx));
     return r;
 }
 

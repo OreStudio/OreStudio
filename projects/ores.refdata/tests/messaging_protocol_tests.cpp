@@ -26,6 +26,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.refdata/generators/currency_generator.hpp"
@@ -53,6 +54,7 @@ using namespace ores::logging;
 using namespace ores::refdata::messaging;
 using ores::refdata::domain::currency;
 using namespace ores::refdata::generators;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("get_currencies_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
@@ -86,10 +88,11 @@ TEST_CASE("get_currencies_response_empty", tags) {
 TEST_CASE("get_currencies_response_with_single_currency", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_currencies_response resp;
 
-    auto ccy = *generate_synthetic_currencies(1, ores::utility::uuid::tenant_id::system()).begin();
+    auto ccy = *generate_synthetic_currencies(1, ctx).begin();
     resp.currencies.push_back(ccy);
     BOOST_LOG_SEV(lg, debug) << "Response with 1 currency: " << resp;
 
@@ -100,10 +103,11 @@ TEST_CASE("get_currencies_response_with_single_currency", tags) {
 TEST_CASE("get_currencies_response_serialize_deserialize", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_currencies_response original;
 
-    auto currencies = generate_synthetic_currencies(5, ores::utility::uuid::tenant_id::system());
+    auto currencies = generate_synthetic_currencies(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     original.currencies = currencies;
 
@@ -142,9 +146,10 @@ TEST_CASE("get_currencies_response_serialize_deserialize", tags) {
 TEST_CASE("get_currencies_response_large_dataset", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_currencies_response original;
-    auto currencies = generate_unique_synthetic_currencies(50, ores::utility::uuid::tenant_id::system());
+    auto currencies = generate_unique_synthetic_currencies(50, ctx);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     original.currencies = currencies;
 
@@ -168,9 +173,10 @@ TEST_CASE("get_currencies_response_large_dataset", tags) {
 TEST_CASE("get_currencies_response_with_special_characters", tags) {
     using namespace ores::logging;
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_currencies_response resp;
-    resp.currencies = generate_synthetic_unicode_currencies(ores::utility::uuid::tenant_id::system());
+    resp.currencies = generate_synthetic_unicode_currencies(ctx);
     BOOST_LOG_SEV(lg, debug) << "Response with special character symbols";
 
     const auto serialized = resp.serialize();
@@ -293,8 +299,9 @@ TEST_CASE("get_currency_history_response_serialize_deserialize", tags) {
 TEST_CASE("save_currency_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
+    generation_context ctx;
     save_currency_request original;
-    original.currency = generate_synthetic_currency(ores::utility::uuid::tenant_id::system());
+    original.currency = generate_synthetic_currency(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -442,7 +449,8 @@ TEST_CASE("get_countries_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_countries_response original;
-    original.countries = generate_fictional_countries(3);
+    generation_context ctx;
+    original.countries = generate_fictional_countries(3, ctx);
     original.total_available_count = 10;
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.countries.size() << " countries";
@@ -469,7 +477,8 @@ TEST_CASE("save_country_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_country_request original;
-    original.country = generate_fictional_countries(1)[0];
+    generation_context ctx;
+    original.country = generate_fictional_countries(1, ctx)[0];
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -588,7 +597,8 @@ TEST_CASE("get_country_history_response_serialize_deserialize", tags) {
     get_country_history_response original;
     original.success = true;
     original.message = "ok";
-    original.history = generate_fictional_countries(2);
+    generation_context ctx;
+    original.history = generate_fictional_countries(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.history.size() << " history entries";
 
@@ -631,7 +641,8 @@ TEST_CASE("get_party_types_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_party_types_response original;
-    original.types = generate_synthetic_party_types(3);
+    generation_context ctx;
+    original.types = generate_synthetic_party_types(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.types.size() << " types";
 
@@ -656,7 +667,8 @@ TEST_CASE("save_party_type_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_party_type_request original;
-    original.type = generate_synthetic_party_type();
+    generation_context ctx;
+    original.type = generate_synthetic_party_type(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -775,7 +787,8 @@ TEST_CASE("get_party_type_history_response_serialize_deserialize", tags) {
     get_party_type_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_party_types(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_party_types(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -818,7 +831,8 @@ TEST_CASE("get_party_statuses_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_party_statuses_response original;
-    original.statuses = generate_synthetic_party_statuses(3);
+    generation_context ctx;
+    original.statuses = generate_synthetic_party_statuses(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.statuses.size() << " statuses";
 
@@ -843,7 +857,8 @@ TEST_CASE("save_party_status_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_party_status_request original;
-    original.status = generate_synthetic_party_status();
+    generation_context ctx;
+    original.status = generate_synthetic_party_status(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -962,7 +977,8 @@ TEST_CASE("get_party_status_history_response_serialize_deserialize", tags) {
     get_party_status_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_party_statuses(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_party_statuses(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -1005,7 +1021,8 @@ TEST_CASE("get_party_id_schemes_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_party_id_schemes_response original;
-    original.schemes = generate_synthetic_party_id_schemes(3);
+    generation_context ctx;
+    original.schemes = generate_synthetic_party_id_schemes(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.schemes.size() << " schemes";
 
@@ -1030,7 +1047,8 @@ TEST_CASE("save_party_id_scheme_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_party_id_scheme_request original;
-    original.scheme = generate_synthetic_party_id_scheme();
+    generation_context ctx;
+    original.scheme = generate_synthetic_party_id_scheme(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1149,7 +1167,8 @@ TEST_CASE("get_party_id_scheme_history_response_serialize_deserialize", tags) {
     get_party_id_scheme_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_party_id_schemes(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_party_id_schemes(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -1192,7 +1211,8 @@ TEST_CASE("get_contact_types_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_contact_types_response original;
-    original.types = generate_synthetic_contact_types(3);
+    generation_context ctx;
+    original.types = generate_synthetic_contact_types(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.types.size() << " types";
 
@@ -1217,7 +1237,8 @@ TEST_CASE("save_contact_type_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_contact_type_request original;
-    original.type = generate_synthetic_contact_type();
+    generation_context ctx;
+    original.type = generate_synthetic_contact_type(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1336,7 +1357,8 @@ TEST_CASE("get_contact_type_history_response_serialize_deserialize", tags) {
     get_contact_type_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_contact_types(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_contact_types(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -1379,7 +1401,8 @@ TEST_CASE("get_parties_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_parties_response original;
-    original.parties = generate_synthetic_parties(3);
+    generation_context ctx;
+    original.parties = generate_synthetic_parties(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.parties.size() << " parties";
 
@@ -1404,7 +1427,8 @@ TEST_CASE("save_party_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_party_request original;
-    original.party = generate_synthetic_party();
+    generation_context ctx;
+    original.party = generate_synthetic_party(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1526,7 +1550,8 @@ TEST_CASE("get_party_history_response_serialize_deserialize", tags) {
     get_party_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_parties(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_parties(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -1573,7 +1598,8 @@ TEST_CASE("get_counterparties_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_counterparties_response original;
-    original.counterparties = generate_synthetic_counterparties(3);
+    generation_context ctx;
+    original.counterparties = generate_synthetic_counterparties(3, ctx);
     original.total_available_count = 42;
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.counterparties.size() << " counterparties";
@@ -1600,7 +1626,8 @@ TEST_CASE("save_counterparty_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_counterparty_request original;
-    original.counterparty = generate_synthetic_counterparty();
+    generation_context ctx;
+    original.counterparty = generate_synthetic_counterparty(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1722,7 +1749,8 @@ TEST_CASE("get_counterparty_history_response_serialize_deserialize", tags) {
     get_counterparty_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_counterparties(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_counterparties(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -1765,7 +1793,8 @@ TEST_CASE("get_party_identifiers_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_party_identifiers_response original;
-    original.party_identifiers = generate_synthetic_party_identifiers(3);
+    generation_context ctx;
+    original.party_identifiers = generate_synthetic_party_identifiers(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.party_identifiers.size()
                              << " party_identifiers";
@@ -1791,7 +1820,8 @@ TEST_CASE("save_party_identifier_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     save_party_identifier_request original;
-    original.party_identifier = generate_synthetic_party_identifier();
+    generation_context ctx;
+    original.party_identifier = generate_synthetic_party_identifier(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1912,7 +1942,8 @@ TEST_CASE("get_party_identifier_history_response_serialize_deserialize", tags) {
     get_party_identifier_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_party_identifiers(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_party_identifiers(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -1953,10 +1984,11 @@ TEST_CASE("get_party_contact_informations_request_serialize_deserialize", tags) 
 
 TEST_CASE("get_party_contact_informations_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_party_contact_informations_response original;
     original.party_contact_informations =
-        generate_synthetic_party_contact_informations(3);
+        generate_synthetic_party_contact_informations(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.party_contact_informations.size()
                              << " party_contact_informations";
@@ -1983,10 +2015,11 @@ TEST_CASE("get_party_contact_informations_response_serialize_deserialize", tags)
 
 TEST_CASE("save_party_contact_information_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     save_party_contact_information_request original;
     original.party_contact_information =
-        generate_synthetic_party_contact_information();
+        generate_synthetic_party_contact_information(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -2113,7 +2146,8 @@ TEST_CASE("get_party_contact_information_history_response_serialize_deserialize"
     get_party_contact_information_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_party_contact_informations(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_party_contact_informations(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -2156,10 +2190,11 @@ TEST_CASE("get_counterparty_identifiers_request_serialize_deserialize", tags) {
 
 TEST_CASE("get_counterparty_identifiers_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_counterparty_identifiers_response original;
     original.counterparty_identifiers =
-        generate_synthetic_counterparty_identifiers(3);
+        generate_synthetic_counterparty_identifiers(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.counterparty_identifiers.size()
                              << " counterparty_identifiers";
@@ -2186,10 +2221,11 @@ TEST_CASE("get_counterparty_identifiers_response_serialize_deserialize", tags) {
 
 TEST_CASE("save_counterparty_identifier_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     save_counterparty_identifier_request original;
     original.counterparty_identifier =
-        generate_synthetic_counterparty_identifier();
+        generate_synthetic_counterparty_identifier(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -2316,7 +2352,8 @@ TEST_CASE("get_counterparty_identifier_history_response_serialize_deserialize", 
     get_counterparty_identifier_history_response original;
     original.success = true;
     original.message = "ok";
-    original.versions = generate_synthetic_counterparty_identifiers(2);
+    generation_context ctx;
+    original.versions = generate_synthetic_counterparty_identifiers(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 
@@ -2359,10 +2396,11 @@ TEST_CASE("get_counterparty_contact_informations_request_serialize_deserialize",
 
 TEST_CASE("get_counterparty_contact_informations_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_counterparty_contact_informations_response original;
     original.counterparty_contact_informations =
-        generate_synthetic_counterparty_contact_informations(3);
+        generate_synthetic_counterparty_contact_informations(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.counterparty_contact_informations.size()
                              << " counterparty_contact_informations";
@@ -2390,10 +2428,11 @@ TEST_CASE("get_counterparty_contact_informations_response_serialize_deserialize"
 
 TEST_CASE("save_counterparty_contact_information_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     save_counterparty_contact_information_request original;
     original.counterparty_contact_information =
-        generate_synthetic_counterparty_contact_information();
+        generate_synthetic_counterparty_contact_information(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -2516,12 +2555,13 @@ TEST_CASE("get_counterparty_contact_information_history_request_serialize_deseri
 
 TEST_CASE("get_counterparty_contact_information_history_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
+    generation_context ctx;
 
     get_counterparty_contact_information_history_response original;
     original.success = true;
     original.message = "ok";
     original.versions =
-        generate_synthetic_counterparty_contact_informations(2);
+        generate_synthetic_counterparty_contact_informations(2, ctx);
     BOOST_LOG_SEV(lg, debug) << "Original response with "
                              << original.versions.size() << " versions";
 

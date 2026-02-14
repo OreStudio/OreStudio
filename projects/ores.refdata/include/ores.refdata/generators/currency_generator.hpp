@@ -21,12 +21,8 @@
 #define ORES_REFDATA_DOMAIN_CURRENCY_GENERATORHPP
 
 #include <vector>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.refdata/domain/currency.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
@@ -34,13 +30,13 @@ namespace ores::refdata::generators {
  * @brief Generates a synthetic currency.
  */
 domain::currency generate_synthetic_currency(
-    const utility::uuid::tenant_id& tenant_id);
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic currency from the unicode set.
  */
 std::vector<domain::currency> generate_synthetic_unicode_currencies(
-    const utility::uuid::tenant_id& tenant_id);
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic currencies. May contain duplicates.
@@ -49,7 +45,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies(
  */
 std::vector<domain::currency>
 generate_synthetic_currencies(std::size_t n,
-    const utility::uuid::tenant_id& tenant_id);
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic currencies. Does not contain duplicates.
@@ -58,7 +54,7 @@ generate_synthetic_currencies(std::size_t n,
  */
 std::vector<domain::currency>
 generate_unique_synthetic_currencies(std::size_t n,
-    const utility::uuid::tenant_id& tenant_id);
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a set of fictional currencies.
@@ -72,7 +68,7 @@ generate_unique_synthetic_currencies(std::size_t n,
  */
 std::vector<domain::currency>
 generate_fictional_currencies(std::size_t n,
-    const utility::uuid::tenant_id& tenant_id);
+    utility::generation::generation_context& ctx);
 
 }
 

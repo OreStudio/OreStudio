@@ -21,25 +21,30 @@
 #define ORES_CONNECTIONS_GENERATORS_SERVER_ENVIRONMENT_GENERATOR_HPP
 
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/server_environment.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic server environment (no folder).
  */
-domain::server_environment generate_synthetic_server_environment();
+domain::server_environment generate_synthetic_server_environment(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic server environment with a specific folder.
  */
 domain::server_environment generate_synthetic_server_environment(
+    utility::generation::generation_context& ctx,
     const boost::uuids::uuid& folder_id);
 
 /**
  * @brief Generates N synthetic server environments.
  */
-std::vector<domain::server_environment> generate_synthetic_server_environments(std::size_t n);
+std::vector<domain::server_environment> generate_synthetic_server_environments(
+    std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

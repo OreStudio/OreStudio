@@ -29,6 +29,7 @@
 #include "ores.dq/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/coding_scheme_authority_type_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::coding_scheme_authority_type_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_coding_scheme_authority_type", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     coding_scheme_authority_type_repository repo(h.context());
-    auto authority_type = generate_synthetic_coding_scheme_authority_type();
+    auto authority_type = generate_synthetic_coding_scheme_authority_type(ctx);
     authority_type.tenant_id = h.tenant_id().to_string();
     authority_type.code = authority_type.code + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
     database_helper h;
 
     coding_scheme_authority_type_repository repo(h.context());
-    auto authority_types = generate_synthetic_coding_scheme_authority_types(3);
+    generation_context ctx;
+    auto authority_types = generate_synthetic_coding_scheme_authority_types(3, ctx);
     for (auto& a : authority_types) {
         a.tenant_id = h.tenant_id().to_string();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
     database_helper h;
 
     coding_scheme_authority_type_repository repo(h.context());
-    auto written_authority_types = generate_synthetic_coding_scheme_authority_types(3);
+    generation_context ctx;
+    auto written_authority_types = generate_synthetic_coding_scheme_authority_types(3, ctx);
     for (auto& a : written_authority_types) {
         a.tenant_id = h.tenant_id().to_string();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_coding_scheme_authority_type_by_code", tags) {
     database_helper h;
 
     coding_scheme_authority_type_repository repo(h.context());
-    auto authority_types = generate_synthetic_coding_scheme_authority_types(3);
+    generation_context ctx;
+    auto authority_types = generate_synthetic_coding_scheme_authority_types(3, ctx);
     for (auto& a : authority_types) {
         a.tenant_id = h.tenant_id().to_string();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));

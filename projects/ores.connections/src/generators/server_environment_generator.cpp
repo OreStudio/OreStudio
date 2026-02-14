@@ -23,18 +23,21 @@
 #include <faker-cxx/internet.h>
 #include <faker-cxx/lorem.h>
 #include <faker-cxx/number.h>
-#include <faker-cxx/string.h>
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::connections::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::server_environment generate_synthetic_server_environment() {
-    static uuid_v7_generator gen;
+domain::server_environment generate_synthetic_server_environment(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
 
     domain::server_environment r;
-    r.id = gen();
+    r.id = ctx.generate_uuid();
     r.folder_id = std::nullopt;
     r.name = std::string(faker::word::noun()) + " Server";
     r.host = std::string(faker::internet::domainName());
@@ -47,18 +50,20 @@ domain::server_environment generate_synthetic_server_environment() {
 }
 
 domain::server_environment generate_synthetic_server_environment(
+    utility::generation::generation_context& ctx,
     const boost::uuids::uuid& folder_id) {
-    auto r = generate_synthetic_server_environment();
+    auto r = generate_synthetic_server_environment(ctx);
     r.folder_id = folder_id;
     return r;
 }
 
-std::vector<domain::server_environment> generate_synthetic_server_environments(std::size_t n) {
+std::vector<domain::server_environment> generate_synthetic_server_environments(
+    std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::server_environment> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i) {
-        r.push_back(generate_synthetic_server_environment());
-    }
+    while (r.size() < n)
+        r.push_back(generate_synthetic_server_environment(ctx));
+
     return r;
 }
 

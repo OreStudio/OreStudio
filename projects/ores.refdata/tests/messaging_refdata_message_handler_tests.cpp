@@ -31,6 +31,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.refdata/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/repository/currency_repository.hpp"
@@ -116,7 +117,8 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto ccy = generate_synthetic_currency(h.tenant_id());
+    auto ctx = ores::testing::make_generation_context(h);
+    auto ccy = generate_synthetic_currency(ctx);
     refdata::repository::currency_repository repo;
     repo.write(h.context(), {ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
@@ -159,10 +161,11 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     // Create multiple test currencies
     refdata::repository::currency_repository repo;
 
-    auto currencies = generate_unique_synthetic_currencies(5, h.tenant_id());
+    auto currencies = generate_unique_synthetic_currencies(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     repo.write(h.context(), currencies);
 
@@ -208,11 +211,12 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
     refdata::repository::currency_repository repo;
 
     // Create random currencies
     const int new_currencies = 10;
-    auto currencies = generate_unique_synthetic_currencies(new_currencies, h.tenant_id());
+    auto currencies = generate_unique_synthetic_currencies(new_currencies, ctx);
 
     repo.write(h.context(), currencies);
 
@@ -331,8 +335,9 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
-    auto currencies = generate_synthetic_unicode_currencies(h.tenant_id());
+    auto currencies = generate_synthetic_unicode_currencies(ctx);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     refdata::repository::currency_repository repo;

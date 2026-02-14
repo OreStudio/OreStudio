@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/methodology.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic methodology.
  */
-domain::methodology generate_synthetic_methodology();
+domain::methodology generate_synthetic_methodology(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic methodologies.
  */
 std::vector<domain::methodology>
-generate_synthetic_methodologies(std::size_t n);
+generate_synthetic_methodologies(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

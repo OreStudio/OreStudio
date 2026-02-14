@@ -36,6 +36,7 @@
 #include <QTimer>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/generation/generation_context.hpp"
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -1002,8 +1003,9 @@ void CurrencyDetailDialog::onGenerateClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
 
     try {
+        utility::generation::generation_context ctx;
         auto currencies = refdata::generators::generate_fictional_currencies(
-            0, utility::uuid::tenant_id::system());
+            0, ctx);
         static std::random_device rd;
         static std::mt19937 gen(rd());
         std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);

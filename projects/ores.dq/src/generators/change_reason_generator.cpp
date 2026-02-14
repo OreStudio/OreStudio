@@ -19,17 +19,17 @@
  */
 #include "ores.dq/generators/change_reason_generator.hpp"
 
-#include <random>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
-domain::change_reason generate_synthetic_change_reason() {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::uniform_int_distribution<> order_dist(1, 100);
-    static std::bernoulli_distribution bool_dist(0.5);
+using ores::utility::generation::generation_keys;
+
+domain::change_reason generate_synthetic_change_reason(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
 
     domain::change_reason r;
     r.version = 1;
@@ -38,22 +38,23 @@ domain::change_reason generate_synthetic_change_reason() {
     r.code = category + "." + reason;
     r.description = std::string(faker::lorem::sentence());
     r.category_code = category;
-    r.applies_to_amend = bool_dist(gen);
-    r.applies_to_delete = bool_dist(gen);
-    r.requires_commentary = bool_dist(gen);
-    r.display_order = order_dist(gen);
-    r.modified_by = std::string(faker::internet::username());
+    r.applies_to_amend = ctx.random_bool();
+    r.applies_to_delete = ctx.random_bool();
+    r.requires_commentary = ctx.random_bool();
+    r.display_order = ctx.random_int(1, 100);
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::change_reason>
-generate_synthetic_change_reasons(std::size_t n) {
+generate_synthetic_change_reasons(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::change_reason> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_change_reason());
+        r.push_back(generate_synthetic_change_reason(ctx));
     return r;
 }
 

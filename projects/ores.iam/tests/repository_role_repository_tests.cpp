@@ -45,10 +45,10 @@ role make_role(ores::testing::database_helper& h) {
     r.name = std::string(faker::word::noun()) + "_"
         + std::string(faker::string::alphanumeric(6));
     r.description = std::string(faker::lorem::sentence());
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = h.db_user();
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
-    r.performed_by = std::string(faker::internet::username());
+    r.performed_by = h.db_user();
     return r;
 }
 

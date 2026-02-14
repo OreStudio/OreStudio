@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/treatment_dimension.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic treatment_dimension.
  */
-domain::treatment_dimension generate_synthetic_treatment_dimension();
+domain::treatment_dimension generate_synthetic_treatment_dimension(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic treatment_dimensions.
  */
 std::vector<domain::treatment_dimension>
-generate_synthetic_treatment_dimensions(std::size_t n);
+generate_synthetic_treatment_dimensions(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

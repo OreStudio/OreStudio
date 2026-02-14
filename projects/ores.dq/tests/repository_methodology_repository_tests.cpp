@@ -29,6 +29,7 @@
 #include "ores.dq/domain/methodology_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/methodology_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::methodology_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_methodology", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     methodology_repository repo(h.context());
-    auto methodology = generate_synthetic_methodology();
+    auto methodology = generate_synthetic_methodology(ctx);
     methodology.tenant_id = h.tenant_id().to_string();
     methodology.name = methodology.name + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_methodologies", tags) {
     database_helper h;
 
     methodology_repository repo(h.context());
-    auto methodologies = generate_synthetic_methodologies(3);
+    generation_context ctx;
+    auto methodologies = generate_synthetic_methodologies(3, ctx);
     for (auto& m : methodologies) {
         m.tenant_id = h.tenant_id().to_string();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_methodologies", tags) {
     database_helper h;
 
     methodology_repository repo(h.context());
-    auto written_methodologies = generate_synthetic_methodologies(3);
+    generation_context ctx;
+    auto written_methodologies = generate_synthetic_methodologies(3, ctx);
     for (auto& m : written_methodologies) {
         m.tenant_id = h.tenant_id().to_string();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_methodology_by_id", tags) {
     database_helper h;
 
     methodology_repository repo(h.context());
-    auto methodologies = generate_synthetic_methodologies(3);
+    generation_context ctx;
+    auto methodologies = generate_synthetic_methodologies(3, ctx);
     for (auto& m : methodologies) {
         m.tenant_id = h.tenant_id().to_string();
         m.name = m.name + "_" + std::string(faker::string::alphanumeric(8));

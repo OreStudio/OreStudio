@@ -22,13 +22,15 @@
 
 #include <vector>
 #include "ores.dq/domain/change_reason.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic change_reason.
  */
-domain::change_reason generate_synthetic_change_reason();
+domain::change_reason generate_synthetic_change_reason(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic change_reasons.
@@ -36,7 +38,8 @@ domain::change_reason generate_synthetic_change_reason();
  * @note c++ 23 generators are not supported on all compilers.
  */
 std::vector<domain::change_reason>
-generate_synthetic_change_reasons(std::size_t n);
+generate_synthetic_change_reasons(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

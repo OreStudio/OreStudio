@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         pugixml::pugixml
         ores.variability.lib
         ores.platform.lib
+        ores.utility.lib
         faker-cxx::faker-cxx
         libfort::fort
     PUBLIC

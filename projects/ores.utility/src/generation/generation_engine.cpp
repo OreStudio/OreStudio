@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,27 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic/domain/generation_context.hpp"
+#include "ores.utility/generation/generation_engine.hpp"
 
-namespace ores::synthetic::domain {
+namespace ores::utility::generation {
 
-generation_context::generation_context(std::uint64_t seed)
+generation_engine::generation_engine(std::uint64_t seed)
     : seed_(seed), engine_(seed) {}
 
-generation_context::generation_context()
+generation_engine::generation_engine()
     : seed_(std::random_device{}()), engine_(seed_) {}
 
-int generation_context::random_int(int min, int max) {
+int generation_engine::random_int(int min, int max) {
     std::uniform_int_distribution<int> dist(min, max);
     return dist(engine_);
 }
 
-bool generation_context::random_bool(double probability) {
+bool generation_engine::random_bool(double probability) {
     std::bernoulli_distribution dist(probability);
     return dist(engine_);
 }
 
-boost::uuids::uuid generation_context::generate_uuid() {
+boost::uuids::uuid generation_engine::generate_uuid() {
     boost::uuids::uuid uuid;
     auto now = std::chrono::system_clock::now();
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -71,13 +71,14 @@ boost::uuids::uuid generation_context::generate_uuid() {
     return uuid;
 }
 
-std::chrono::system_clock::time_point generation_context::past_timepoint(int years_back) {
+std::chrono::system_clock::time_point
+generation_engine::past_timepoint(int years_back) {
     auto now = std::chrono::system_clock::now();
     auto days_back = random_int(1, years_back * 365);
     return now - std::chrono::hours(days_back * 24);
 }
 
-std::string generation_context::alphanumeric(std::size_t length) {
+std::string generation_engine::alphanumeric(std::size_t length) {
     static const char chars[] =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     std::string result;

@@ -21,22 +21,25 @@
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::counterparty generate_synthetic_counterparty() {
-    static uuid_v7_generator uuid_gen;
+domain::counterparty generate_synthetic_counterparty(
+    utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
 
     domain::counterparty r;
     r.version = 1;
-    r.tenant_id = "system";
-    r.id = uuid_gen();
+    r.tenant_id = tenant_id;
+    r.id = ctx.generate_uuid();
     r.full_name = faker::company::companyName() + " " + std::to_string(idx);
     r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);
     r.party_type = std::string("Bank");
@@ -44,20 +47,21 @@ domain::counterparty generate_synthetic_counterparty() {
     r.parent_counterparty_id = std::nullopt;
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
-    r.modified_by = std::string(faker::internet::username());
-    r.performed_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::counterparty>
-generate_synthetic_counterparties(std::size_t n) {
+generate_synthetic_counterparties(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::counterparty> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_counterparty());
+        r.push_back(generate_synthetic_counterparty(ctx));
     return r;
 }
 

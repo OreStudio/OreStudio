@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.assets/domain/image_tag.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets/generators/image_tag_generator.hpp"
@@ -35,11 +36,13 @@ const std::string tags("[generators]");
 
 using namespace ores::assets::generators;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("generate_single_image_tag", tags) {
     auto lg(make_logger(test_suite));
 
-    auto image_tag = generate_synthetic_image_tag();
+    generation_context ctx;
+    auto image_tag = generate_synthetic_image_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated image_tag: " << image_tag;
 
     CHECK(!image_tag.image_id.is_nil());
@@ -55,7 +58,8 @@ TEST_CASE("generate_image_tag_with_params", tags) {
     const auto test_image_id = gen("00000000-0000-0000-0000-000000000001");
     const auto test_tag_id = gen("00000000-0000-0000-0000-000000000002");
 
-    auto image_tag = generate_synthetic_image_tag(test_image_id, test_tag_id);
+    generation_context ctx;
+    auto image_tag = generate_synthetic_image_tag(ctx, test_image_id, test_tag_id);
     BOOST_LOG_SEV(lg, debug) << "Generated image_tag with params: " << image_tag;
 
     CHECK(image_tag.image_id == test_image_id);
@@ -67,9 +71,9 @@ TEST_CASE("generate_image_tag_with_params", tags) {
 TEST_CASE("generate_multiple_image_tags", tags) {
     auto lg(make_logger(test_suite));
 
-    auto image_tags = generate_synthetic_image_tags(3);
+    generation_context ctx;
+    auto image_tags = generate_synthetic_image_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated image_tags: " << image_tags;
 
     CHECK(image_tags.size() == 3);
 }
-

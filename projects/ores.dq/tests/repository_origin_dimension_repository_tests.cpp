@@ -29,6 +29,7 @@
 #include "ores.dq/domain/origin_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/origin_dimension_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::origin_dimension_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_origin_dimension", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     origin_dimension_repository repo(h.context());
-    auto origin_dimension = generate_synthetic_origin_dimension();
+    auto origin_dimension = generate_synthetic_origin_dimension(ctx);
     origin_dimension.tenant_id = h.tenant_id().to_string();
     origin_dimension.code = origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_origin_dimensions", tags) {
     database_helper h;
 
     origin_dimension_repository repo(h.context());
-    auto origin_dimensions = generate_synthetic_origin_dimensions(3);
+    generation_context ctx;
+    auto origin_dimensions = generate_synthetic_origin_dimensions(3, ctx);
     for (auto& o : origin_dimensions) {
         o.tenant_id = h.tenant_id().to_string();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_origin_dimensions", tags) {
     database_helper h;
 
     origin_dimension_repository repo(h.context());
-    auto written_origin_dimensions = generate_synthetic_origin_dimensions(3);
+    generation_context ctx;
+    auto written_origin_dimensions = generate_synthetic_origin_dimensions(3, ctx);
     for (auto& o : written_origin_dimensions) {
         o.tenant_id = h.tenant_id().to_string();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_origin_dimension_by_code", tags) {
     database_helper h;
 
     origin_dimension_repository repo(h.context());
-    auto origin_dimensions = generate_synthetic_origin_dimensions(3);
+    generation_context ctx;
+    auto origin_dimensions = generate_synthetic_origin_dimensions(3, ctx);
     for (auto& o : origin_dimensions) {
         o.tenant_id = h.tenant_id().to_string();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));

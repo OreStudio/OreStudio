@@ -32,6 +32,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -1443,8 +1444,9 @@ TEST_CASE("get_account_parties_by_account_response_serialize_deserialize", tags)
 TEST_CASE("save_account_party_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
+    ores::utility::generation::generation_context ctx;
     save_account_party_request e;
-    e.account_party = ores::iam::generators::generate_synthetic_account_party();
+    e.account_party = ores::iam::generators::generate_synthetic_account_party(ctx);
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();

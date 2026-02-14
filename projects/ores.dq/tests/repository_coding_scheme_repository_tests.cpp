@@ -28,6 +28,7 @@
 #include "ores.dq/domain/coding_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/coding_scheme_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -41,6 +42,7 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::coding_scheme_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_coding_scheme", tags) {
 
@@ -48,8 +50,9 @@ TEST_CASE("write_single_coding_scheme", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     coding_scheme_repository repo(h.context());
-    auto coding_scheme = generate_synthetic_coding_scheme();
+    auto coding_scheme = generate_synthetic_coding_scheme(ctx);
     coding_scheme.tenant_id = h.tenant_id().to_string();
 
     BOOST_LOG_SEV(lg, debug) << "Coding scheme: " << coding_scheme;
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_coding_schemes", tags) {
     database_helper h;
 
     coding_scheme_repository repo(h.context());
-    auto coding_schemes = generate_synthetic_coding_schemes(3);
+    generation_context ctx;
+    auto coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : coding_schemes)
         c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Coding schemes: " << coding_schemes;
@@ -78,7 +82,8 @@ TEST_CASE("read_latest_coding_schemes", tags) {
     database_helper h;
 
     coding_scheme_repository repo(h.context());
-    auto written_coding_schemes = generate_synthetic_coding_schemes(3);
+    generation_context ctx;
+    auto written_coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : written_coding_schemes)
         c.tenant_id = h.tenant_id().to_string();
     BOOST_LOG_SEV(lg, debug) << "Written coding schemes: " << written_coding_schemes;
@@ -99,7 +104,8 @@ TEST_CASE("read_latest_coding_scheme_by_code", tags) {
     database_helper h;
 
     coding_scheme_repository repo(h.context());
-    auto coding_schemes = generate_synthetic_coding_schemes(3);
+    generation_context ctx;
+    auto coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : coding_schemes)
         c.tenant_id = h.tenant_id().to_string();
 

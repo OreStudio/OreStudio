@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/server_environment_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/generators/server_environment_generator.hpp"
 #include "ores.connections/generators/folder_generator.hpp"
@@ -58,14 +59,16 @@ private:
 using namespace ores::connections::generators;
 using namespace ores::connections::repository;
 using namespace ores::logging;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_server_environment", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     BOOST_LOG_SEV(lg, debug) << "Server environment: " << env;
 
     CHECK_NOTHROW(repo.write(env));
@@ -76,8 +79,9 @@ TEST_CASE("write_multiple_server_environments", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto envs = generate_synthetic_server_environments(3);
+    auto envs = generate_synthetic_server_environments(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Server environments: " << envs;
 
     CHECK_NOTHROW(repo.write(envs));
@@ -88,8 +92,9 @@ TEST_CASE("read_all_server_environments", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto written = generate_synthetic_server_environments(3);
+    auto written = generate_synthetic_server_environments(3, ctx);
     repo.write(written);
 
     auto read = repo.read_all();
@@ -103,8 +108,9 @@ TEST_CASE("read_server_environment_by_id", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     repo.write(env);
 
     auto read = repo.read_by_id(env.id);
@@ -121,8 +127,9 @@ TEST_CASE("read_server_environment_by_id_not_found", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     auto read = repo.read_by_id(env.id);
 
     CHECK_FALSE(read.has_value());
@@ -134,15 +141,16 @@ TEST_CASE("read_root_server_environments", "[repository]") {
     scoped_sqlite_context h;
     folder_repository folder_repo(h.context());
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
     // Create a folder
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     folder_repo.write(folder);
 
     // Create 2 root environments and 1 in folder
-    auto root1 = generate_synthetic_server_environment();
-    auto root2 = generate_synthetic_server_environment();
-    auto in_folder = generate_synthetic_server_environment();
+    auto root1 = generate_synthetic_server_environment(ctx);
+    auto root2 = generate_synthetic_server_environment(ctx);
+    auto in_folder = generate_synthetic_server_environment(ctx);
     in_folder.folder_id = folder.id;
 
     repo.write({root1, root2, in_folder});
@@ -159,13 +167,14 @@ TEST_CASE("read_server_environments_in_folder", "[repository]") {
     scoped_sqlite_context h;
     folder_repository folder_repo(h.context());
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto folder = generate_synthetic_folder();
+    auto folder = generate_synthetic_folder(ctx);
     folder_repo.write(folder);
 
-    auto env1 = generate_synthetic_server_environment();
+    auto env1 = generate_synthetic_server_environment(ctx);
     env1.folder_id = folder.id;
-    auto env2 = generate_synthetic_server_environment();
+    auto env2 = generate_synthetic_server_environment(ctx);
     env2.folder_id = folder.id;
 
     repo.write({env1, env2});
@@ -181,8 +190,9 @@ TEST_CASE("remove_server_environment", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     repo.write(env);
 
     CHECK(repo.read_by_id(env.id).has_value());
@@ -197,8 +207,9 @@ TEST_CASE("update_server_environment", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     repo.write(env);
 
     env.name = "Updated Name";
@@ -218,8 +229,9 @@ TEST_CASE("server_environment_with_encrypted_password", "[repository]") {
 
     scoped_sqlite_context h;
     server_environment_repository repo(h.context());
+    generation_context ctx;
 
-    auto env = generate_synthetic_server_environment();
+    auto env = generate_synthetic_server_environment(ctx);
     env.encrypted_password = "base64encodedencryptedpassword==";
     repo.write(env);
 

@@ -28,6 +28,7 @@
 #include "ores.dq/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/dataset_bundle_member_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -41,6 +42,7 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::dataset_bundle_member_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_dataset_bundle_member", tags) {
 
@@ -48,8 +50,9 @@ TEST_CASE("write_single_dataset_bundle_member", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     dataset_bundle_member_repository repo(h.context());
-    auto member = generate_synthetic_dataset_bundle_member();
+    auto member = generate_synthetic_dataset_bundle_member(ctx);
     member.tenant_id = h.tenant_id().to_string();
     member.change_reason_code = "system.test";
 
@@ -64,7 +67,8 @@ TEST_CASE("write_multiple_dataset_bundle_members", tags) {
     database_helper h;
 
     dataset_bundle_member_repository repo(h.context());
-    auto members = generate_synthetic_dataset_bundle_members(3);
+    generation_context ctx;
+    auto members = generate_synthetic_dataset_bundle_members(3, ctx);
     for (auto& m : members) {
         m.tenant_id = h.tenant_id().to_string();
         m.change_reason_code = "system.test";
@@ -81,7 +85,8 @@ TEST_CASE("read_latest_dataset_bundle_members", tags) {
     database_helper h;
 
     dataset_bundle_member_repository repo(h.context());
-    auto written_members = generate_synthetic_dataset_bundle_members(3);
+    generation_context ctx;
+    auto written_members = generate_synthetic_dataset_bundle_members(3, ctx);
     for (auto& m : written_members) {
         m.tenant_id = h.tenant_id().to_string();
         m.change_reason_code = "system.test";
@@ -103,8 +108,9 @@ TEST_CASE("read_latest_dataset_bundle_members_by_bundle", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     dataset_bundle_member_repository repo(h.context());
-    auto member = generate_synthetic_dataset_bundle_member();
+    auto member = generate_synthetic_dataset_bundle_member(ctx);
     member.tenant_id = h.tenant_id().to_string();
     member.change_reason_code = "system.test";
 

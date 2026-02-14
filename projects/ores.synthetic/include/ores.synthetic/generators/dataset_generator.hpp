@@ -22,25 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/dataset.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::synthetic::generators {
 
 /**
  * @brief Generates a synthetic DQ dataset.
- *
- * Creates a complete dataset with randomly generated metadata including
- * name, description, source system, business context, and lineage info.
  */
-dq::domain::dataset generate_synthetic_dataset();
+dq::domain::dataset generate_synthetic_dataset(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic DQ datasets.
- *
- * @param n Number of datasets to generate.
- * @return Vector of synthetic datasets.
  */
 std::vector<dq::domain::dataset>
-generate_synthetic_datasets(std::size_t n);
+generate_synthetic_datasets(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

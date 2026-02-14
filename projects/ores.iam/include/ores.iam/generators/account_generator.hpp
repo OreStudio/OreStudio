@@ -22,26 +22,22 @@
 
 #include <vector>
 #include "ores.iam/domain/account.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::iam::generators {
 
 /**
  * @brief Generates a synthetic account.
- *
- * @param tenant_id The tenant to associate with the account.
  */
-domain::account generate_synthetic_account(const utility::uuid::tenant_id& tenant_id);
+domain::account generate_synthetic_account(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic accounts.
- *
- * @param n Number of accounts to generate.
- * @param tenant_id The tenant to associate with the accounts.
- * @note c++ 23 generators are not supported on all compilers.
  */
 std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n, const utility::uuid::tenant_id& tenant_id);
+generate_synthetic_accounts(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

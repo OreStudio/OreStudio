@@ -31,6 +31,7 @@
 #include "ores.dq/generators/data_domain_generator.hpp"
 #include "ores.dq/repository/data_domain_repository.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -44,20 +45,22 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::subject_area_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_subject_area", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
-    auto dd = generate_synthetic_data_domain();
+    generation_context ctx;
+    auto dd = generate_synthetic_data_domain(ctx);
     dd.tenant_id = h.tenant_id().to_string();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::data_domain_repository dd_repo(h.context());
     dd_repo.write(dd);
 
     subject_area_repository repo(h.context());
-    auto subject_area = generate_synthetic_subject_area();
+    auto subject_area = generate_synthetic_subject_area(ctx);
     subject_area.tenant_id = h.tenant_id().to_string();
     subject_area.name = subject_area.name + "_" + std::string(faker::string::alphanumeric(8));
     subject_area.domain_name = dd.name;
@@ -71,14 +74,15 @@ TEST_CASE("write_multiple_subject_areas", tags) {
 
     database_helper h;
 
-    auto dd = generate_synthetic_data_domain();
+    generation_context ctx;
+    auto dd = generate_synthetic_data_domain(ctx);
     dd.tenant_id = h.tenant_id().to_string();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::data_domain_repository dd_repo(h.context());
     dd_repo.write(dd);
 
     subject_area_repository repo(h.context());
-    auto subject_areas = generate_synthetic_subject_areas(3);
+    auto subject_areas = generate_synthetic_subject_areas(3, ctx);
     for (auto& s : subject_areas) {
         s.tenant_id = h.tenant_id().to_string();
         s.name = s.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -94,14 +98,15 @@ TEST_CASE("read_latest_subject_areas", tags) {
 
     database_helper h;
 
-    auto dd = generate_synthetic_data_domain();
+    generation_context ctx;
+    auto dd = generate_synthetic_data_domain(ctx);
     dd.tenant_id = h.tenant_id().to_string();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::data_domain_repository dd_repo(h.context());
     dd_repo.write(dd);
 
     subject_area_repository repo(h.context());
-    auto written_subject_areas = generate_synthetic_subject_areas(3);
+    auto written_subject_areas = generate_synthetic_subject_areas(3, ctx);
     for (auto& s : written_subject_areas) {
         s.tenant_id = h.tenant_id().to_string();
         s.name = s.name + "_" + std::string(faker::string::alphanumeric(8));
@@ -123,14 +128,15 @@ TEST_CASE("read_latest_subject_areas_by_domain", tags) {
 
     database_helper h;
 
-    auto dd = generate_synthetic_data_domain();
+    generation_context ctx;
+    auto dd = generate_synthetic_data_domain(ctx);
     dd.tenant_id = h.tenant_id().to_string();
     dd.name = dd.name + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::data_domain_repository dd_repo(h.context());
     dd_repo.write(dd);
 
     subject_area_repository repo(h.context());
-    auto subject_area = generate_synthetic_subject_area(dd.name);
+    auto subject_area = generate_synthetic_subject_area(dd.name, ctx);
     subject_area.tenant_id = h.tenant_id().to_string();
     subject_area.name = subject_area.name + "_" + std::string(faker::string::alphanumeric(8));
     BOOST_LOG_SEV(lg, debug) << "Write subject area: " << subject_area;

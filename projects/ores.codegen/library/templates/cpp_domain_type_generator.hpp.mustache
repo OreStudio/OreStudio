@@ -5,19 +5,22 @@
 
 #include <vector>
 #include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::{{component}}::generators {
 
 /**
  * @brief Generates a synthetic {{entity_singular}}.
  */
-domain::{{entity_singular}} generate_synthetic_{{entity_singular}}();
+domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic {{entity_plural}}.
  */
 std::vector<domain::{{entity_singular}}>
-generate_synthetic_{{entity_plural}}(std::size_t n);
+generate_synthetic_{{entity_plural}}(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 
@@ -29,19 +32,22 @@ generate_synthetic_{{entity_plural}}(std::size_t n);
 
 #include <vector>
 #include "ores.{{component}}/domain/{{name_singular}}.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::{{component}}::generators {
 
 /**
  * @brief Generates a synthetic {{name_singular}}.
  */
-domain::{{name_singular}} generate_synthetic_{{name_singular}}();
+domain::{{name_singular}} generate_synthetic_{{name_singular}}(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic {{name}}.
  */
 std::vector<domain::{{name_singular}}>
-generate_synthetic_{{name}}(std::size_t n);
+generate_synthetic_{{name}}(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

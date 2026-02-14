@@ -20,28 +20,35 @@
 #include "ores.dq/generators/origin_dimension_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
-domain::origin_dimension generate_synthetic_origin_dimension() {
+using ores::utility::generation::generation_keys;
+
+domain::origin_dimension generate_synthetic_origin_dimension(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+
     domain::origin_dimension r;
     r.version = 1;
     r.code = std::string(faker::word::noun());
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::origin_dimension>
-generate_synthetic_origin_dimensions(std::size_t n) {
+generate_synthetic_origin_dimensions(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::origin_dimension> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_origin_dimension());
+        r.push_back(generate_synthetic_origin_dimension(ctx));
     return r;
 }
 

@@ -28,6 +28,7 @@
 #include "ores.dq/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/dataset_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -41,6 +42,7 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::dataset_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_dataset", tags) {
 
@@ -48,8 +50,9 @@ TEST_CASE("write_single_dataset", tags) {
 
     database_helper h;
 
+    generation_context ctx;
     dataset_repository repo(h.context());
-    auto dataset = generate_synthetic_dataset();
+    auto dataset = generate_synthetic_dataset(ctx);
     dataset.tenant_id = h.tenant_id();
 
     BOOST_LOG_SEV(lg, debug) << "Dataset: " << dataset;
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_datasets", tags) {
     database_helper h;
 
     dataset_repository repo(h.context());
-    auto datasets = generate_synthetic_datasets(3);
+    generation_context ctx;
+    auto datasets = generate_synthetic_datasets(3, ctx);
     for (auto& d : datasets)
         d.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Datasets: " << datasets;
@@ -78,7 +82,8 @@ TEST_CASE("read_latest_datasets", tags) {
     database_helper h;
 
     dataset_repository repo(h.context());
-    auto written_datasets = generate_synthetic_datasets(3);
+    generation_context ctx;
+    auto written_datasets = generate_synthetic_datasets(3, ctx);
     for (auto& d : written_datasets)
         d.tenant_id = h.tenant_id();
     BOOST_LOG_SEV(lg, debug) << "Written datasets: " << written_datasets;
@@ -99,7 +104,8 @@ TEST_CASE("read_latest_dataset_by_id", tags) {
     database_helper h;
 
     dataset_repository repo(h.context());
-    auto datasets = generate_synthetic_datasets(3);
+    generation_context ctx;
+    auto datasets = generate_synthetic_datasets(3, ctx);
     for (auto& d : datasets)
         d.tenant_id = h.tenant_id();
 

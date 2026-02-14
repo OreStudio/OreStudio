@@ -1,0 +1,500 @@
+:PROPERTIES:
+:ID: 9392f2f3-6ecf-4bd7-82d8-9b88175abfba
+:END:
+#+title: Generation Context Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Redesign the synthetic data generation infrastructure to support consistent data
+generation across arbitrary entity graphs. The current =generation_context= is a
+randomness container (seed, RNG, UUID generation, =pick()= semantics). This
+design decomposes it into three distinct concerns and adds a scoped key-value
+environment for passing contextual data through generation graphs.
+
+** Goals
+
+- Enable generators to produce data that satisfies database constraints (FK
+  references, audit trail validation) without ad-hoc parameter passing.
+- Support arbitrary entity graph depth with natural scoping: parent bindings flow
+  down to children, child bindings don't leak to siblings.
+- Start simple (=modified_by=, =tenant_id=) and extend naturally to full graph
+  generation without breaking changes.
+- Decouple from test infrastructure so the same generation API is usable from
+  tests, CLI tooling, and the Qt UI.
+
+** Non-Goals
+
+- Automatic graph discovery or dependency resolution. The caller (service or test)
+  still controls generation order.
+- Schema-level validation within the generation layer. Generators produce
+  structurally valid data; database triggers handle constraint enforcement.
+
+* Architecture
+
+The current =generation_context= class is decomposed into three types:
+
+#+begin_example
+generation_context
+├── generation_engine      (randomness: seed, RNG, UUID, timestamps)
+└── generation_environment (scoped KVP with parent-chain lookup)
+#+end_example
+
+All three types live in =ores.synthetic= under the =ores::synthetic::domain=
+namespace.
+
+** Design Pattern: Lexically-Scoped Environments
+
+The =generation_environment= implements the lexically-scoped environment pattern
+from programming language theory. An environment is a mapping from identifiers to
+values where lookup walks up a chain of enclosing scopes. This is the same
+pattern used in Lisp interpreters, Go's =context.WithValue()=, and OpenTelemetry
+span context propagation.
+
+When generating a party and its child identifiers, the party's ID is bound in a
+child environment scope. Identifier generators see both the party ID and all
+parent bindings (=modified_by=, =tenant_id=). When the party scope ends, the
+party ID binding is no longer visible to unrelated generators.
+
+* Domain Model
+
+** =generation_environment=
+
+Scoped key-value store with parent-chain lookup.
+
+#+begin_src cpp
+/// @brief Scoped key-value store for generation parameters.
+///
+/// Models a lexically-scoped environment where lookups walk up a
+/// chain of parent environments. Used to pass contextual data
+/// (e.g. tenant_id, modified_by, parent entity IDs) through a
+/// generation graph without coupling generators to each other.
+///
+/// Child environments inherit all parent bindings and can shadow
+/// them with local overrides. This enables natural scoping: when
+/// generating a party and its child identifiers, the party_id
+/// binding is visible to identifier generators but not to unrelated
+/// generators.
+///
+/// Environments are immutable after construction. To add bindings,
+/// create a child environment with the new entries.
+class generation_environment final {
+public:
+    using entries = std::unordered_map<std::string, std::string>;
+
+    /// @brief Construct a root environment with initial bindings.
+    /// @param initial Key-value pairs for this scope.
+    explicit generation_environment(entries initial = {});
+
+    /// @brief Construct a child environment that inherits from parent.
+    /// @param parent The parent environment. Must outlive this child
+    ///   (enforced by shared_ptr).
+    /// @param overrides Key-value pairs for this scope. Shadow any
+    ///   parent bindings with the same key.
+    generation_environment(
+        std::shared_ptr<const generation_environment> parent,
+        entries overrides);
+
+    /// @brief Look up a value by key.
+    ///
+    /// Searches this scope first, then walks up the parent chain.
+    /// @return The value if found in any scope, or std::nullopt.
+    std::optional<std::string> get(const std::string& key) const;
+
+    /// @brief Look up a value with a default.
+    /// @return The value if found, or default_value.
+    std::string get_or(const std::string& key,
+                       const std::string& default_value) const;
+
+    /// @brief Check whether a key exists in any scope.
+    bool has(const std::string& key) const;
+
+    /// @brief Access the parent environment, if any.
+    std::shared_ptr<const generation_environment> parent() const;
+
+private:
+    std::shared_ptr<const generation_environment> parent_;
+    entries entries_;
+};
+#+end_src
+
+*** Design Decisions
+
+- *Parent is =shared_ptr<const>=*: =const= ensures immutability from the child's
+  perspective. =shared_ptr= ensures the parent stays alive as long as any child
+  references it, even if the original scope has ended.
+- *Values are =std::string=*: Simple, serialisable, sufficient for UUIDs and
+  usernames. No need for =std::any= or variant.
+- *No =set()= method*: Environments are immutable after construction. To add
+  bindings, create a child scope. This prevents accidental mutation of shared
+  state.
+
+** =generation_engine=
+
+Provides all randomness and reproducible value generation. Extracted from the
+current =generation_context= internals.
+
+#+begin_src cpp
+/// @brief Provides randomness and reproducible value generation.
+///
+/// Encapsulates all sources of randomness used during synthetic data
+/// generation: seeded RNG, UUID generation, timestamp generation,
+/// and random selection from collections. A single engine instance
+/// is shared across an entire generation run to ensure
+/// reproducibility from a given seed.
+class generation_engine final {
+public:
+    /// @brief Construct with explicit seed for reproducibility.
+    explicit generation_engine(std::uint64_t seed);
+
+    /// @brief Construct with random seed.
+    generation_engine();
+
+    /// @brief The seed used for this engine.
+    std::uint64_t seed() const;
+
+    /// @brief Generate a random integer in [min, max].
+    int random_int(int min, int max);
+
+    /// @brief Generate a random boolean with given probability.
+    bool random_bool(double probability = 0.5);
+
+    /// @brief Pick a random element from a vector.
+    template<typename T>
+    const T& pick(const std::vector<T>& items);
+
+    /// @brief Pick a random element from an array.
+    template<typename T, std::size_t N>
+    const T& pick(const std::array<T, N>& items);
+
+    /// @brief Generate a v7 UUID using the shared RNG.
+    boost::uuids::uuid generate_uuid();
+
+    /// @brief Generate a timestamp in the past.
+    std::chrono::system_clock::time_point
+    past_timepoint(int years_back = 3);
+
+    /// @brief Generate a random alphanumeric string.
+    std::string alphanumeric(std::size_t length);
+
+private:
+    std::uint64_t seed_;
+    std::mt19937_64 engine_;
+};
+#+end_src
+
+*** Design Decisions
+
+- *Straight extraction*: Same API and implementation as the current
+  =generation_context=. No new functionality, just a clearer name and
+  single responsibility.
+- *Shared across contexts*: All =generation_context= instances in a run share the
+  same engine via =shared_ptr=, preserving the RNG sequence.
+
+** =generation_context=
+
+Top-level container that generators receive. Composes the engine and environment.
+
+#+begin_src cpp
+/// @brief Top-level container for synthetic data generation.
+///
+/// Combines a shared generation engine (randomness) with a scoped
+/// generation environment (contextual data). Generators receive
+/// this type and use it for both random value generation and
+/// looking up contextual bindings like modified_by or parent
+/// entity IDs.
+///
+/// Child contexts share the same engine (preserving RNG sequence)
+/// but introduce a new environment scope with additional bindings.
+/// This enables natural scoping when generating entity graphs:
+///
+/// @code
+/// auto ctx = make_generation_context(h);
+/// auto party = generate_synthetic_party(ctx);
+/// auto child_ctx = ctx.child({{"party_id", to_string(party.id)}});
+/// auto id = generate_synthetic_party_identifier(child_ctx);
+/// @endcode
+class generation_context final {
+public:
+    using entries = generation_environment::entries;
+
+    /// @brief Create a root context with seed and initial bindings.
+    explicit generation_context(std::uint64_t seed,
+                                entries initial = {});
+
+    /// @brief Create a root context with random seed.
+    explicit generation_context(entries initial = {});
+
+    /// @brief Create a child context with additional bindings.
+    ///
+    /// Shares the same engine (preserving RNG sequence). Creates a
+    /// new environment scope that inherits from this context's
+    /// environment.
+    generation_context child(entries overrides) const;
+
+    /// @brief Access the generation engine (randomness).
+    generation_engine& engine();
+    const generation_engine& engine() const;
+
+    /// @brief Access the generation environment (scoped data).
+    const generation_environment& env() const;
+
+    // Convenience delegations to engine.
+    int random_int(int min, int max);
+    bool random_bool(double probability = 0.5);
+    boost::uuids::uuid generate_uuid();
+    std::chrono::system_clock::time_point
+    past_timepoint(int years_back = 3);
+    std::string alphanumeric(std::size_t length);
+
+    template<typename T>
+    const T& pick(const std::vector<T>& items);
+
+    template<typename T, std::size_t N>
+    const T& pick(const std::array<T, N>& items);
+
+private:
+    /// @brief Private constructor for child contexts.
+    generation_context(
+        std::shared_ptr<generation_engine> engine,
+        std::shared_ptr<const generation_environment> env);
+
+    std::shared_ptr<generation_engine> engine_;
+    std::shared_ptr<const generation_environment> env_;
+};
+#+end_src
+
+*** Design Decisions
+
+- *Convenience delegations*: Methods like =ctx.generate_uuid()= delegate to
+  =ctx.engine().generate_uuid()=. This preserves the existing call-site pattern
+  and avoids noisy migrations.
+- *=child()= returns by value*: Cheap — just two =shared_ptr= copies.
+- *Engine is =shared_ptr= (mutable, shared)*: All contexts in a run share the
+  same RNG sequence. Environment is =shared_ptr<const>= — immutable from the
+  child's perspective.
+
+** =generation_keys=
+
+Well-known key constants for environment lookups.
+
+#+begin_src cpp
+/// @brief Well-known keys for the generation environment.
+///
+/// Constants for commonly-used environment bindings. Generators
+/// should use these rather than string literals to avoid typos
+/// and enable tooling support (find-references, rename, etc.).
+namespace generation_keys {
+
+/// The username to use for modified_by audit trail fields.
+/// Typically set to the database session user in test contexts,
+/// or the logged-in user in application contexts.
+inline constexpr std::string_view modified_by = "modified_by";
+
+/// The tenant ID for the current generation scope.
+inline constexpr std::string_view tenant_id = "tenant_id";
+
+/// Parent entity IDs, set when generating child entities.
+inline constexpr std::string_view party_id = "party_id";
+inline constexpr std::string_view counterparty_id = "counterparty_id";
+inline constexpr std::string_view account_id = "account_id";
+inline constexpr std::string_view catalog_id = "catalog_id";
+
+}
+#+end_src
+
+* Data Flow
+
+** Test Context
+
+#+begin_example
+scoped_database_helper h(true)
+         |
+         v
+make_generation_context(h)
+  → queries SELECT current_user → "ores_app"
+  → reads h.tenant_id()        → "abc-123"
+  → creates generation_context with:
+      engine: seed=random
+      env:    { modified_by: "ores_app", tenant_id: "abc-123" }
+         |
+         v
+generate_synthetic_party(ctx)
+  → ctx.env().get(generation_keys::modified_by) → "ores_app"
+  → ctx.env().get(generation_keys::tenant_id)   → "abc-123"
+  → ctx.generate_uuid()                         → party.id
+  → returns party
+         |
+         v
+ctx.child({{"party_id", to_string(party.id)}})
+  → creates child context with:
+      engine: same shared engine
+      env:    { party_id: "def-456" } → parent: { modified_by, tenant_id }
+         |
+         v
+generate_synthetic_party_identifier(child_ctx)
+  → child_ctx.env().get(generation_keys::party_id)    → "def-456"
+  → child_ctx.env().get(generation_keys::modified_by)  → "ores_app" (from parent)
+#+end_example
+
+** Application Context (Qt UI)
+
+#+begin_example
+session.username()  → "marco"
+tenant_id()         → "abc-123"
+         |
+         v
+generation_context ctx({
+    {generation_keys::modified_by, session.username()},
+    {generation_keys::tenant_id, tenant_id.to_string()}
+});
+         |
+         v
+(same generation flow as above)
+#+end_example
+
+* Test Helper Integration
+
+** =database_helper::db_user()=
+
+New method to query the database session user from the test connection.
+
+#+begin_src cpp
+// database_helper.hpp
+/// @brief Returns the database session user for the test connection.
+///
+/// Queries SELECT current_user from the database. Used to populate
+/// the generation environment's modified_by key, ensuring generated
+/// data passes trigger-based audit trail validation.
+std::string db_user() const;
+
+// scoped_database_helper.hpp
+std::string db_user() const { return helper_.db_user(); }
+
+// database_helper.cpp
+std::string database_helper::db_user() const {
+    return execute_raw_string_query(ctx_, "SELECT current_user");
+}
+#+end_src
+
+** =make_generation_context()= Factory
+
+Convenience factory for test contexts. Lives in =ores.testing=.
+
+#+begin_src cpp
+/// @brief Create a generation context pre-populated from test helpers.
+generation_context make_generation_context(
+    const scoped_database_helper& h);
+
+generation_context make_generation_context(
+    const scoped_database_helper& h, std::uint64_t seed);
+#+end_src
+
+* Migration Strategy
+
+No backwards compatibility is maintained. All generators migrate to the new
+single-signature pattern.
+
+** Generator Signatures
+
+All generator overloads collapse to a single signature:
+
+#+begin_src cpp
+// Before: multiple overloads
+account generate_synthetic_account();
+account generate_synthetic_account(const tenant_id& tid);
+account generate_synthetic_account(generation_context& ctx);
+
+// After: single signature
+account generate_synthetic_account(generation_context& ctx);
+
+// Batch variant
+std::vector<account> generate_synthetic_accounts(
+    std::size_t n, generation_context& ctx);
+#+end_src
+
+Generators look up =modified_by= and =tenant_id= from the environment:
+
+#+begin_src cpp
+account generate_synthetic_account(generation_context& ctx) {
+    const auto tid = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), "");
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+
+    return account{
+        .id = ctx.generate_uuid(),
+        .modified_by = modified_by,
+        .tenant_id = tid,
+        .username = faker::internet::username(),
+        // ...
+    };
+}
+#+end_src
+
+** =catalog_generator_service= Simplification
+
+The orchestration service replaces ad-hoc lambda wiring with child contexts:
+
+#+begin_src cpp
+auto ctx = generation_context(options.seed.value_or(...), {
+    {std::string(generation_keys::modified_by), "system"}
+});
+
+// Phase 1: base entities
+for (auto i = 0u; i < options.account_count; ++i)
+    result.accounts.push_back(generate_synthetic_account(ctx));
+
+// Phase 2: entities with children
+for (auto i = 0u; i < options.party_count; ++i) {
+    auto party = generate_synthetic_party(ctx);
+    result.parties.push_back(party);
+
+    auto party_ctx = ctx.child({
+        {std::string(generation_keys::party_id),
+         to_string(party.id)}
+    });
+    for (auto j = 0u; j < ids_per_party; ++j)
+        result.identifiers.push_back(
+            generate_synthetic_party_identifier(party_ctx));
+}
+#+end_src
+
+** Codegen Templates
+
+Update =cpp_domain_type_generator.cpp.mustache= so newly generated generators
+use the =ctx.env().get()= pattern for =modified_by= and =tenant_id= rather than
+explicit parameters.
+
+** Scope of Migration
+
+Affected components:
+
+| Component        | Changes                                                   |
+|------------------+-----------------------------------------------------------|
+| =ores.synthetic= | New types; refactor =generation_context=, engine, service |
+| =ores.iam=       | Update generators and all test files                      |
+| =ores.refdata=   | Update generators and all test files                      |
+| =ores.dq=        | Update generators and all test files                      |
+| =ores.testing=   | Add =db_user()= and =make_generation_context()=          |
+| codegen          | Update generator templates                                |
+
+* Related Stories
+
+| Story                                                      | Location         | Relationship                           |
+|------------------------------------------------------------+------------------+----------------------------------------|
+| Add generation context with KVP for audit trail fields     | Sprint backlog 12 | Subsumed by this design                |
+| Improve generators with FK-aware test data (COMPLETED)     | Sprint backlog 12 | KVP idea originated here               |
+| Remove bootstrap guards from validation functions          | Product backlog  | Enabled by strict modified_by validation |
+| Faker with seeds                                           | Product backlog  | Seed lives in generation_engine         |
+| Expand repository test coverage (roles/permissions generators) | Sprint backlog 12 | New generators use this pattern        |
+
+* Open Questions
+
+- Should =generation_keys= be extensible at runtime (e.g., for domain-specific
+  keys defined in codegen models), or is the compile-time constant set
+  sufficient?
+- Should =generation_environment= provide a =to_string()= or =dump()= method for
+  diagnostics (listing all bindings across all scopes)?

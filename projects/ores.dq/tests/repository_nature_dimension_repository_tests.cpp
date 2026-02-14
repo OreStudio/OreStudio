@@ -29,6 +29,7 @@
 #include "ores.dq/domain/nature_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/generators/nature_dimension_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -42,14 +43,16 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::nature_dimension_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_nature_dimension", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
+    generation_context ctx;
     nature_dimension_repository repo(h.context());
-    auto nature_dimension = generate_synthetic_nature_dimension();
+    auto nature_dimension = generate_synthetic_nature_dimension(ctx);
     nature_dimension.tenant_id = h.tenant_id().to_string();
     nature_dimension.code = nature_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
@@ -63,7 +66,8 @@ TEST_CASE("write_multiple_nature_dimensions", tags) {
     database_helper h;
 
     nature_dimension_repository repo(h.context());
-    auto nature_dimensions = generate_synthetic_nature_dimensions(3);
+    generation_context ctx;
+    auto nature_dimensions = generate_synthetic_nature_dimensions(3, ctx);
     for (auto& n : nature_dimensions) {
         n.tenant_id = h.tenant_id().to_string();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -79,7 +83,8 @@ TEST_CASE("read_latest_nature_dimensions", tags) {
     database_helper h;
 
     nature_dimension_repository repo(h.context());
-    auto written_nature_dimensions = generate_synthetic_nature_dimensions(3);
+    generation_context ctx;
+    auto written_nature_dimensions = generate_synthetic_nature_dimensions(3, ctx);
     for (auto& n : written_nature_dimensions) {
         n.tenant_id = h.tenant_id().to_string();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -101,7 +106,8 @@ TEST_CASE("read_latest_nature_dimension_by_code", tags) {
     database_helper h;
 
     nature_dimension_repository repo(h.context());
-    auto nature_dimensions = generate_synthetic_nature_dimensions(3);
+    generation_context ctx;
+    auto nature_dimensions = generate_synthetic_nature_dimensions(3, ctx);
     for (auto& n : nature_dimensions) {
         n.tenant_id = h.tenant_id().to_string();
         n.code = n.code + "_" + std::string(faker::string::alphanumeric(8));

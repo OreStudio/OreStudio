@@ -31,6 +31,7 @@
 #include "ores.dq/generators/change_reason_category_generator.hpp"
 #include "ores.dq/repository/change_reason_category_repository.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
 
@@ -44,20 +45,22 @@ using namespace ores::dq::generators;
 
 using ores::testing::database_helper;
 using ores::dq::repository::change_reason_repository;
+using ores::utility::generation::generation_context;
 
 TEST_CASE("write_single_change_reason", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
 
-    auto cat = generate_synthetic_change_reason_category();
+    generation_context ctx;
+    auto cat = generate_synthetic_change_reason_category(ctx);
     cat.tenant_id = h.tenant_id().to_string();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::change_reason_category_repository cat_repo(h.context());
     cat_repo.write(cat);
 
     change_reason_repository repo(h.context());
-    auto change_reason = generate_synthetic_change_reason();
+    auto change_reason = generate_synthetic_change_reason(ctx);
     change_reason.tenant_id = h.tenant_id().to_string();
     change_reason.code = change_reason.code + "_" + std::string(faker::string::alphanumeric(8));
     change_reason.category_code = cat.code;
@@ -71,14 +74,15 @@ TEST_CASE("write_multiple_change_reasons", tags) {
 
     database_helper h;
 
-    auto cat = generate_synthetic_change_reason_category();
+    generation_context ctx;
+    auto cat = generate_synthetic_change_reason_category(ctx);
     cat.tenant_id = h.tenant_id().to_string();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::change_reason_category_repository cat_repo(h.context());
     cat_repo.write(cat);
 
     change_reason_repository repo(h.context());
-    auto change_reasons = generate_synthetic_change_reasons(3);
+    auto change_reasons = generate_synthetic_change_reasons(3, ctx);
     for (auto& c : change_reasons) {
         c.tenant_id = h.tenant_id().to_string();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -94,14 +98,15 @@ TEST_CASE("read_latest_change_reasons", tags) {
 
     database_helper h;
 
-    auto cat = generate_synthetic_change_reason_category();
+    generation_context ctx;
+    auto cat = generate_synthetic_change_reason_category(ctx);
     cat.tenant_id = h.tenant_id().to_string();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::change_reason_category_repository cat_repo(h.context());
     cat_repo.write(cat);
 
     change_reason_repository repo(h.context());
-    auto written_change_reasons = generate_synthetic_change_reasons(3);
+    auto written_change_reasons = generate_synthetic_change_reasons(3, ctx);
     for (auto& c : written_change_reasons) {
         c.tenant_id = h.tenant_id().to_string();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -123,14 +128,15 @@ TEST_CASE("read_latest_change_reason_by_code", tags) {
 
     database_helper h;
 
-    auto cat = generate_synthetic_change_reason_category();
+    generation_context ctx;
+    auto cat = generate_synthetic_change_reason_category(ctx);
     cat.tenant_id = h.tenant_id().to_string();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
     ores::dq::repository::change_reason_category_repository cat_repo(h.context());
     cat_repo.write(cat);
 
     change_reason_repository repo(h.context());
-    auto change_reasons = generate_synthetic_change_reasons(3);
+    auto change_reasons = generate_synthetic_change_reasons(3, ctx);
     for (auto& c : change_reasons) {
         c.tenant_id = h.tenant_id().to_string();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));

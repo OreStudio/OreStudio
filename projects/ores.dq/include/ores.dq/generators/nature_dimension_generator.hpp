@@ -22,19 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/nature_dimension.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic nature_dimension.
  */
-domain::nature_dimension generate_synthetic_nature_dimension();
+domain::nature_dimension generate_synthetic_nature_dimension(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic nature_dimensions.
  */
 std::vector<domain::nature_dimension>
-generate_synthetic_nature_dimensions(std::size_t n);
+generate_synthetic_nature_dimensions(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

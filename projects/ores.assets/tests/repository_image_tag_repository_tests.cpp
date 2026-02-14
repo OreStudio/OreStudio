@@ -26,6 +26,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_tag.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
@@ -48,7 +49,8 @@ TEST_CASE("write_single_image_tag", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto it = generate_synthetic_image_tag();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto it = generate_synthetic_image_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
     image_tag_repository repo;
@@ -59,7 +61,8 @@ TEST_CASE("write_multiple_image_tags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto image_tags = generate_synthetic_image_tags(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto image_tags = generate_synthetic_image_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Image-tags: " << image_tags;
 
     image_tag_repository repo;
@@ -70,7 +73,8 @@ TEST_CASE("read_latest_image_tags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_image_tags = generate_synthetic_image_tags(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_image_tags = generate_synthetic_image_tags(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written image-tags: " << written_image_tags;
 
     image_tag_repository repo;
@@ -94,7 +98,8 @@ TEST_CASE("read_latest_image_tags_by_image", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto it = generate_synthetic_image_tag();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto it = generate_synthetic_image_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
     image_tag_repository repo;
@@ -113,7 +118,8 @@ TEST_CASE("read_latest_image_tags_by_tag", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto it = generate_synthetic_image_tag();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto it = generate_synthetic_image_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
     image_tag_repository repo;
@@ -147,7 +153,8 @@ TEST_CASE("update_image_tag", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto it = generate_synthetic_image_tag();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto it = generate_synthetic_image_tag(ctx);
     BOOST_LOG_SEV(lg, debug) << "Original image-tag: " << it;
 
     image_tag_repository repo;

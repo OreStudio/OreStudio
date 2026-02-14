@@ -29,6 +29,7 @@
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
@@ -50,9 +51,10 @@ TEST_CASE("write_single_account", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
-    auto account = generate_synthetic_account(h.tenant_id());
+    auto account = generate_synthetic_account(ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Account: " << account;
     CHECK_NOTHROW(repo.write(account));
@@ -62,9 +64,10 @@ TEST_CASE("write_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
-    auto accounts = generate_synthetic_accounts(5, h.tenant_id());
+    auto accounts = generate_synthetic_accounts(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
     CHECK_NOTHROW(repo.write(accounts));
@@ -74,9 +77,10 @@ TEST_CASE("read_latest_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
-    auto written_accounts = generate_synthetic_accounts(3, h.tenant_id());
+    auto written_accounts = generate_synthetic_accounts(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
     repo.write(written_accounts);
@@ -92,9 +96,10 @@ TEST_CASE("read_latest_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
-    auto accounts = generate_synthetic_accounts(5, h.tenant_id());
+    auto accounts = generate_synthetic_accounts(5, ctx);
 
     const auto target = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
@@ -115,9 +120,10 @@ TEST_CASE("read_all_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
-    auto written_accounts = generate_synthetic_accounts(5, h.tenant_id());
+    auto written_accounts = generate_synthetic_accounts(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
     repo.write(written_accounts);
@@ -133,11 +139,12 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
 
     // Write multiple versions of the same account
-    auto acc1 = generate_synthetic_account(h.tenant_id());
+    auto acc1 = generate_synthetic_account(ctx);
     const auto test_id = acc1.id;
     BOOST_LOG_SEV(lg, debug) << "Account 1: " << acc1;
 
@@ -170,9 +177,10 @@ TEST_CASE("read_latest_by_username", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
-    auto accounts = generate_synthetic_accounts(5, h.tenant_id());
+    auto accounts = generate_synthetic_accounts(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
     repo.write(accounts);
@@ -226,11 +234,12 @@ TEST_CASE("write_and_read_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     account_repository repo(h.context());
 
     // Note: Admin privileges are now managed via RBAC role assignments
-    auto acc = generate_synthetic_account(h.tenant_id());
+    auto acc = generate_synthetic_account(ctx);
     BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
 
     const auto acc_id = acc.id;

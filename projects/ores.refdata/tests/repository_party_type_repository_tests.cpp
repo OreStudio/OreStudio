@@ -23,6 +23,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_type.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/party_type_json_io.hpp" // IWYU pragma: keep.
@@ -45,8 +46,8 @@ TEST_CASE("write_single_party_type", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto pt = generate_synthetic_party_type();
-    pt.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto pt = generate_synthetic_party_type(ctx);
     pt.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Party type: " << pt;
 
@@ -58,9 +59,9 @@ TEST_CASE("write_multiple_party_types", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto party_types = generate_synthetic_party_types(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_types = generate_synthetic_party_types(3, ctx);
     for (auto& pt : party_types) {
-        pt.tenant_id = h.tenant_id();
         pt.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Party types: " << party_types;
@@ -73,9 +74,9 @@ TEST_CASE("read_latest_party_types", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_party_types = generate_synthetic_party_types(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_party_types = generate_synthetic_party_types(3, ctx);
     for (auto& pt : written_party_types) {
-        pt.tenant_id = h.tenant_id();
         pt.change_reason_code = "system.test";
     }
     BOOST_LOG_SEV(lg, debug) << "Written party types: " << written_party_types;
@@ -93,8 +94,8 @@ TEST_CASE("read_latest_party_type_by_code", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto pt = generate_synthetic_party_type();
-    pt.tenant_id = h.tenant_id();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto pt = generate_synthetic_party_type(ctx);
     pt.change_reason_code = "system.test";
     const auto original_name = pt.name;
     BOOST_LOG_SEV(lg, debug) << "Party type: " << pt;

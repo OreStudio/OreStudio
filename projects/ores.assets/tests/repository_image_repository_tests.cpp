@@ -26,6 +26,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_json_io.hpp" // IWYU pragma: keep.
@@ -48,7 +49,8 @@ TEST_CASE("write_single_image", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto img = generate_synthetic_image();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto img = generate_synthetic_image(ctx);
     BOOST_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
@@ -59,7 +61,8 @@ TEST_CASE("write_multiple_images", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto images = generate_unique_synthetic_images(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto images = generate_unique_synthetic_images(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Images: " << images;
 
     image_repository repo;
@@ -70,7 +73,8 @@ TEST_CASE("read_latest_images", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_images = generate_unique_synthetic_images(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_images = generate_unique_synthetic_images(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written images: " << written_images;
 
     image_repository repo;
@@ -92,7 +96,8 @@ TEST_CASE("read_latest_image_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto img = generate_synthetic_image();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto img = generate_synthetic_image(ctx);
     const auto original_description = img.description;
     BOOST_LOG_SEV(lg, debug) << "Image: " << img;
 
@@ -114,7 +119,8 @@ TEST_CASE("read_latest_image_by_key", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto img = generate_synthetic_image();
+    auto ctx = ores::testing::make_generation_context(h);
+    auto img = generate_synthetic_image(ctx);
     BOOST_LOG_SEV(lg, debug) << "Image: " << img;
 
     image_repository repo;
@@ -131,7 +137,8 @@ TEST_CASE("read_all_images", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto written_images = generate_unique_synthetic_images(3);
+    auto ctx = ores::testing::make_generation_context(h);
+    auto written_images = generate_unique_synthetic_images(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written images: " << written_images;
 
     image_repository repo;

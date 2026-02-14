@@ -18,12 +18,14 @@
  *
  */
 #include "ores.synthetic/service/catalog_generator_service.hpp"
-#include "ores.synthetic/domain/generation_context.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 #include <array>
 #include <sstream>
 
 namespace ores::synthetic::service {
+
+using ores::utility::generation::generation_context;
 
 namespace {
 
@@ -139,7 +141,7 @@ const std::array<std::string, 10> source_systems = {{
 
 domain::synthetic_catalog
 catalog_generator_service::generate(const domain::generation_options& options) {
-    domain::generation_context ctx(
+    generation_context ctx(
         options.seed.value_or(std::random_device{}()));
 
     domain::synthetic_catalog result;

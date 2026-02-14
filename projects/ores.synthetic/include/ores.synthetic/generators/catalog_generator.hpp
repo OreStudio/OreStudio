@@ -22,25 +22,22 @@
 
 #include <vector>
 #include "ores.dq/domain/catalog.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::synthetic::generators {
 
 /**
  * @brief Generates a synthetic DQ catalog.
- *
- * Creates a catalog with randomly generated name, description, and
- * optional owner suitable for testing DQ functionality.
  */
-dq::domain::catalog generate_synthetic_catalog();
+dq::domain::catalog generate_synthetic_catalog(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic DQ catalogs.
- *
- * @param n Number of catalogs to generate.
- * @return Vector of synthetic catalogs.
  */
 std::vector<dq::domain::catalog>
-generate_synthetic_catalogs(std::size_t n);
+generate_synthetic_catalogs(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

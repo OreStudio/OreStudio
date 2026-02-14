@@ -20,30 +20,37 @@
 #include "ores.synthetic/generators/catalog_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::synthetic::generators {
 
-dq::domain::catalog generate_synthetic_catalog() {
+using ores::utility::generation::generation_keys;
+
+dq::domain::catalog generate_synthetic_catalog(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+
     dq::domain::catalog r;
     r.version = 1;
     r.name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    if (faker::datatype::boolean()) {
+    if (ctx.random_bool()) {
         r.owner = faker::company::companyName();
     }
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
-    r.recorded_at = utility::faker::datetime::past_timepoint();
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<dq::domain::catalog>
-generate_synthetic_catalogs(std::size_t n) {
+generate_synthetic_catalogs(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<dq::domain::catalog> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_catalog());
+        r.push_back(generate_synthetic_catalog(ctx));
     return r;
 }
 

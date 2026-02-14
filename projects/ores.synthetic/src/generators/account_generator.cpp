@@ -20,18 +20,21 @@
 #include "ores.synthetic/generators/account_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::synthetic::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-iam::domain::account generate_synthetic_account(domain::generation_context& ctx) {
+iam::domain::account generate_synthetic_account(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+
     iam::domain::account r;
     r.version = 1;
     r.id = ctx.generate_uuid();
-    r.modified_by = std::string(faker::internet::username());
+    r.modified_by = modified_by;
     r.change_reason_code = "SYNTHETIC";
     r.change_commentary = "Synthetic test data";
     r.username = std::string(faker::internet::username());
@@ -43,39 +46,13 @@ iam::domain::account generate_synthetic_account(domain::generation_context& ctx)
     return r;
 }
 
-iam::domain::account generate_synthetic_account() {
-    static uuid_v7_generator uuid_gen;
-
-    iam::domain::account r;
-    r.version = 1;
-    r.id = uuid_gen();
-    r.modified_by = std::string(faker::internet::username());
-    r.change_reason_code = "SYNTHETIC";
-    r.change_commentary = "Synthetic test data";
-    r.username = std::string(faker::internet::username());
-    r.password_hash = std::string(faker::string::alphanumeric(64));
-    r.password_salt = std::string(faker::string::alphanumeric(32));
-    r.totp_secret = std::string(faker::string::alphanumeric(32));
-    r.email = std::string(faker::internet::email());
-    r.recorded_at = utility::faker::datetime::past_timepoint();
-    return r;
-}
-
 std::vector<iam::domain::account>
-generate_synthetic_accounts(std::size_t n, domain::generation_context& ctx) {
+generate_synthetic_accounts(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<iam::domain::account> r;
     r.reserve(n);
     while (r.size() < n)
         r.push_back(generate_synthetic_account(ctx));
-    return r;
-}
-
-std::vector<iam::domain::account>
-generate_synthetic_accounts(std::size_t n) {
-    std::vector<iam::domain::account> r;
-    r.reserve(n);
-    while (r.size() < n)
-        r.push_back(generate_synthetic_account());
     return r;
 }
 

@@ -19,23 +19,28 @@
  */
 #include "ores.connections/generators/environment_tag_generator.hpp"
 
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::connections::generators {
 
-using ores::utility::uuid::uuid_v7_generator;
+using ores::utility::generation::generation_keys;
 
-domain::environment_tag generate_synthetic_environment_tag() {
-    static uuid_v7_generator gen;
+domain::environment_tag generate_synthetic_environment_tag(
+    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
 
     domain::environment_tag r;
-    r.environment_id = gen();
-    r.tag_id = gen();
+    r.environment_id = ctx.generate_uuid();
+    r.tag_id = ctx.generate_uuid();
 
     return r;
 }
 
 domain::environment_tag generate_synthetic_environment_tag(
+    utility::generation::generation_context& ctx,
     const boost::uuids::uuid& environment_id,
     const boost::uuids::uuid& tag_id) {
     domain::environment_tag r;
@@ -44,12 +49,13 @@ domain::environment_tag generate_synthetic_environment_tag(
     return r;
 }
 
-std::vector<domain::environment_tag> generate_synthetic_environment_tags(std::size_t n) {
+std::vector<domain::environment_tag> generate_synthetic_environment_tags(
+    std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::environment_tag> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i) {
-        r.push_back(generate_synthetic_environment_tag());
-    }
+    while (r.size() < n)
+        r.push_back(generate_synthetic_environment_tag(ctx));
+
     return r;
 }
 

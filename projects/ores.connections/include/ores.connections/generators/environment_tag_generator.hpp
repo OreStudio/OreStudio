@@ -21,26 +21,31 @@
 #define ORES_CONNECTIONS_GENERATORS_ENVIRONMENT_TAG_GENERATOR_HPP
 
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/environment_tag.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic environment-tag association.
  */
-domain::environment_tag generate_synthetic_environment_tag();
+domain::environment_tag generate_synthetic_environment_tag(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic environment-tag association with specific IDs.
  */
 domain::environment_tag generate_synthetic_environment_tag(
+    utility::generation::generation_context& ctx,
     const boost::uuids::uuid& environment_id,
     const boost::uuids::uuid& tag_id);
 
 /**
  * @brief Generates N synthetic environment-tag associations.
  */
-std::vector<domain::environment_tag> generate_synthetic_environment_tags(std::size_t n);
+std::vector<domain::environment_tag> generate_synthetic_environment_tags(
+    std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_DOMAIN_GENERATION_CONTEXT_HPP
-#define ORES_SYNTHETIC_DOMAIN_GENERATION_CONTEXT_HPP
+#ifndef ORES_UTILITY_GENERATION_GENERATION_ENGINE_HPP
+#define ORES_UTILITY_GENERATION_GENERATION_ENGINE_HPP
 
 #include <array>
 #include <chrono>
@@ -26,38 +26,37 @@
 #include <random>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include <boost/uuid/uuid.hpp>
 
-namespace ores::synthetic::domain {
+namespace ores::utility::generation {
 
 /**
- * @brief Context for controlling synthetic data generation.
+ * @brief Random generation engine with seed-controlled repeatability.
  *
- * This class provides controlled random generation with a configurable seed
- * to ensure repeatable results. All random values should be generated through
- * this context to maintain consistency.
+ * Provides UUID v7 generation, random integers, booleans, element picking,
+ * timestamps, and alphanumeric strings. All random values are derived from
+ * a single mt19937_64 engine seeded at construction.
  */
-class generation_context final {
+class generation_engine final {
 public:
     /**
-     * @brief Constructs a generation context with a specific seed.
-     *
-     * @param seed The seed for the random number generator.
+     * @brief Constructs an engine with a specific seed.
      */
-    explicit generation_context(std::uint64_t seed);
+    explicit generation_engine(std::uint64_t seed);
 
     /**
-     * @brief Constructs a generation context with a random seed.
+     * @brief Constructs an engine with a random seed.
      */
-    generation_context();
+    generation_engine();
 
     /**
-     * @brief Returns the seed used for this context.
+     * @brief Returns the seed used for this engine.
      */
     std::uint64_t seed() const { return seed_; }
 
     /**
-     * @brief Generates a random integer in the specified range.
+     * @brief Generates a random integer in [min, max].
      */
     int random_int(int min, int max);
 
@@ -89,7 +88,7 @@ public:
     }
 
     /**
-     * @brief Generates a UUID v7 based on the context's random state.
+     * @brief Generates a UUID v7 based on the engine's random state.
      */
     boost::uuids::uuid generate_uuid();
 

@@ -22,6 +22,7 @@
 #include <vector>
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::testing {
 
@@ -117,6 +118,13 @@ void database_helper::seed_rbac() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully seeded RBAC data";
+}
+
+std::string database_helper::db_user() {
+    using ores::database::repository::execute_raw_string_query;
+    auto result = execute_raw_string_query(context_,
+        "SELECT current_user", lg(), "db_user");
+    return result.empty() ? std::string("system") : result.front();
 }
 
 }

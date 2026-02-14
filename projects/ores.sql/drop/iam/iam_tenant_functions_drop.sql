@@ -28,3 +28,4 @@ drop function if exists ores_iam_tenant_by_hostname_fn cascade;
 drop function if exists ores_iam_validate_tenant_fn cascade;
 drop function if exists ores_iam_current_tenant_id_fn cascade;
 drop function if exists ores_iam_system_tenant_id_fn cascade;
+drop function if exists ores_iam_validate_account_username_fn cascade;

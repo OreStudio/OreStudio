@@ -35,6 +35,7 @@
  * - Market Data: Asset classes, measures, and benchmark rates
  * - Regulatory: Regulatory bodies, regimes, and jurisdictions
  * - General: Cross-cutting reference data
+ * - Organisation: Business units, portfolios, books, and organisational hierarchy
  */
 
 -- =============================================================================
@@ -101,6 +102,12 @@ select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
     'Regulatory',
     'Regulatory reference data including supervisory bodies, reporting regimes, and jurisdictions.'
+);
+
+select ores_dq_subject_areas_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'Reference Data',
+    'Organisation',
+    'Organisational hierarchy reference data including business units, portfolios, and books.'
 );
 
 -- =============================================================================

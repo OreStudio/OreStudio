@@ -16,48 +16,51 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-13 Fri 01:29], for Friday, February 13, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *1:29* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 1:29   |      |      | 100.0 |
-|      | Active                       |        | 1:29 |      | 100.0 |
-| code | Add proper party short-codes |        |      | 1:29 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-15 Sun 00:33], for Sunday, February 15, 2026.
+|      | <75>                                |        |      |      |       |
+| Tags | Headline                            | Time   |      |      |     % |
+|------+-------------------------------------+--------+------+------+-------|
+|      | *Total time*                        | *0:33* |      |      | 100.0 |
+|------+-------------------------------------+--------+------+------+-------|
+|      | Stories                             | 0:33   |      |      | 100.0 |
+|      | Active                              |        | 0:33 |      | 100.0 |
+| code | Implement party-level RLS isolation |        |      | 0:33 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-13 Fri 01:30]
+#+CAPTION: Clock summary at [2026-02-15 Sun 00:33]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *45:27* |       |      | 100.0 |
+|       | *Total time*                                       | *49:52* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 45:27   |       |      | 100.0 |
-|       | Active                                             |         | 45:27 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 2:30 |   5.5 |
-| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   1.9 |
-| code  | Add roles to account via codes                     |         |       | 0:34 |   1.2 |
-| code  | Implement party related entities at database level |         |       | 4:23 |   9.6 |
+|       | Stories                                            | 49:52   |       |      | 100.0 |
+|       | Active                                             |         | 49:52 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 2:30 |   5.0 |
+| code  | Add bound parameters to sqlgen                     |         |       | 0:51 |   1.7 |
+| code  | Add roles to account via codes                     |         |       | 0:34 |   1.1 |
+| code  | Implement party related entities at database level |         |       | 4:23 |   8.8 |
 | code  | Add party related support at the domain level      |         |       | 0:23 |   0.8 |
-| code  | Add party related support to Qt                    |         |       | 6:41 |  14.7 |
-| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  14.7 |
-| code  | Brainstorm on multi-party support                  |         |       | 4:00 |   8.8 |
+| code  | Add party related support to Qt                    |         |       | 6:41 |  13.4 |
+| code  | Add GLEIF data to datasets                         |         |       | 6:41 |  13.4 |
+| code  | Brainstorm on multi-party support                  |         |       | 4:00 |   8.0 |
 | code  | Improve code coverage                              |         |       | 0:14 |   0.5 |
-| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   3.8 |
-| code  | Enable all skipped tests                           |         |       | 0:29 |   1.1 |
-| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.3 |
-| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   1.8 |
-| code  | Add system party support                           |         |       | 3:58 |   8.7 |
-| code  | Add customer party support                         |         |       | 1:33 |   3.4 |
-| code  | Fix OSX build                                      |         |       | 0:19 |   0.7 |
-| code  | Add pagination to counterparty                     |         |       | 0:58 |   2.1 |
-| code  | Add support for business centres                   |         |       | 3:47 |   8.3 |
-| code  | Add a setup new tenant wizard                      |         |       | 1:27 |   3.2 |
-| code  | Add proper party short-codes                       |         |       | 2:18 |   5.1 |
-| code  | Add workspace as a container                       |         |       | 1:13 |   2.7 |
+| code  | Improve generators with FK-aware test data         |         |       | 1:44 |   3.5 |
+| code  | Enable all skipped tests                           |         |       | 0:29 |   1.0 |
+| code  | Add central bank related LEIs                      |         |       | 0:35 |   1.2 |
+| code  | Expand unit test coverage for ORE codegened types  |         |       | 0:49 |   1.6 |
+| code  | Add system party support                           |         |       | 3:58 |   8.0 |
+| code  | Add customer party support                         |         |       | 1:33 |   3.1 |
+| code  | Fix OSX build                                      |         |       | 0:19 |   0.6 |
+| code  | Add pagination to counterparty                     |         |       | 0:58 |   1.9 |
+| code  | Add support for business centres                   |         |       | 3:47 |   7.6 |
+| code  | Add LEI to BIC dataset                             |         |       | 0:27 |   0.9 |
+| code  | Add proper party short-codes                       |         |       | 2:18 |   4.6 |
+| code  | Polish party and counterparty list UI              |         |       | 1:25 |   2.8 |
+| code  | Implement party-level RLS isolation                |         |       | 2:33 |   5.1 |
+| code  | Add a setup new tenant wizard                      |         |       | 1:27 |   2.9 |
+| code  | Add workspace as a container                       |         |       | 1:13 |   2.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1379,21 +1382,10 @@ Highlights:
   transliterations.
 #+end_quote
 
-*** STARTED Add a setup new tenant wizard                              :code:
+*** COMPLETED Implement party-level RLS isolation                      :code:
     :LOGBOOK:
-    CLOCK: [2026-02-12 Thu 07:20]--[2026-02-12 Thu 07:35] =>  0:15
-    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
+    CLOCK: [2026-02-14 Sat 22:00]--[2026-02-15 Sun 00:33] =>  2:33
     :END:
-
-Just like we did a new system provisioner, we need a new tenant provisioner that
-takes into account:
-
-- GLEIF based party setup
-- GLEIF based counterparty setup
-
-We should make it clear it's evaluation.
-
-*** STARTED Implement party-level RLS isolation                        :code:
 
 Add a second layer of Row-Level Security that isolates party-scoped data within
 a tenant. At login, compute the user's visible party set via a recursive CTE on
@@ -1405,6 +1397,38 @@ party-scoped junction table with an RLS policy to prove the pattern end-to-end.
 See =projects/ores.refdata/modeling/multi_party.org= and
 =doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= for the full
 architecture.
+
+#+begin_quote
+This pull request significantly enhances data isolation capabilities by
+introducing party-level Row-Level Security (RLS). This new layer of security
+works in conjunction with existing tenant isolation to provide granular control
+over data visibility based on party hierarchies. The changes span across the
+database, C++ application layers, and code generation, ensuring that data access
+is appropriately scoped for different user types, from system administrators to
+individual operational parties.
+
+Highlights:
+
+- Party-Level Row-Level Security (RLS): Implemented a new layer of RLS to
+  isolate party-scoped data, ensuring operational parties only see data assigned
+  to them, while system parties retain full subtree visibility.
+- New Junction Table: party_counterparties: Introduced the party_counterparties
+  junction table as the first party-scoped table with dual RLS policies
+  (tenant + party) to demonstrate the new isolation pattern.
+- Database Context Extension: Extended the C++ database layer
+  (tenant_aware_pool, context) to propagate party_id and visible_party_ids,
+  setting corresponding PostgreSQL session variables upon connection
+  acquisition.
+- Session and Comms Layer Integration: Propagated party context through the
+  session/comms layer (session_data, session_info, tenant_aware_handler) to
+  ensure all downstream handlers receive party-scoped database contexts.
+- Login Flow Party Resolution: Enhanced the login flow to resolve party
+  assignments via account_parties and compute the visible party set using a
+  recursive CTE SQL function.
+- Codegen Template Improvements: Fixed C++ junction codegen templates for
+  tenant_id, UUID handling, schema, field naming, and removed inapplicable
+  service/protocol mappings for junction tables.
+#+end_quote
 
 **** Sub-task 1: SQL — visible party set computation
 
@@ -1625,12 +1649,26 @@ Highlights
   tenant_id from the generation_context environment.
 #+end_quote
 
-*** Enforce root party uniqueness constraints                          :code:
+*** COMPLETED Enforce root party uniqueness constraints                :code:
 
 Each tenant must have exactly two root parties: one system party (auto-created
 during provisioning) and one operational root party (the "house"). Validate this
 constraint at the service layer and prevent additional root parties from being
 created.
+
+*** STARTED Add a setup new tenant wizard                              :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-12 Thu 07:20]--[2026-02-12 Thu 07:35] =>  0:15
+    CLOCK: [2026-02-09 Mon 16:48]--[2026-02-09 Mon 18:00] =>  1:12
+    :END:
+
+Just like we did a new system provisioner, we need a new tenant provisioner that
+takes into account:
+
+- GLEIF based party setup
+- GLEIF based counterparty setup
+
+We should make it clear it's evaluation.
 
 *** Gate party and counterparty wizard steps by tenant type            :code:
 

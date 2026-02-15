@@ -195,6 +195,21 @@ begin
     raise notice 'Created system party for tenant: %', p_code;
 
     -- =========================================================================
+    -- Seed bootstrap mode flag for the new tenant
+    -- =========================================================================
+    -- New tenants start in bootstrap mode so the tenant provisioning wizard
+    -- appears on first login. The wizard clears this flag on completion.
+
+    perform ores_variability_feature_flags_upsert_fn(
+        v_new_tenant_id,
+        'system.bootstrap_mode',
+        true,
+        'Indicates whether the tenant is in bootstrap mode (waiting for initial setup).'
+    );
+
+    raise notice 'Seeded bootstrap mode flag for tenant: %', p_code;
+
+    -- =========================================================================
     -- Provisioning complete
     -- =========================================================================
     -- NOTE: Reference data (currencies, countries, etc.) is NOT copied here.

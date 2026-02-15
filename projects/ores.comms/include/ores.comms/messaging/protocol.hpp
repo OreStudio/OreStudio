@@ -265,7 +265,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 33.0 removes modified_by and performed_by from all entity wire
 // formats. These audit fields are now set server-side: modified_by from the
 // authenticated session username, performed_by by the DB trigger.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 33;
+//
+// Version 34.0 adds tenant_bootstrap_mode field to login_response. This flag
+// indicates that the authenticated tenant is in bootstrap mode and needs
+// initial setup via the tenant provisioning wizard. Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 34;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

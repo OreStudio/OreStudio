@@ -52,6 +52,7 @@ struct LoginResult {
     QString error_message;
     bool password_reset_required = false;
     bool bootstrap_mode = false;  ///< True if system is in bootstrap mode (no admin exists)
+    bool tenant_bootstrap_mode = false;  ///< True if tenant is in bootstrap mode (needs initial setup)
 };
 
 /**

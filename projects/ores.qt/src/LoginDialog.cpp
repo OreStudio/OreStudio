@@ -421,6 +421,13 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 MessageBoxHelper::warning(this, "Password Change Required",
                     "You must change your password to continue. Please login again to retry.");
             }
+        } else if (result.tenant_bootstrap_mode) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Tenant is in bootstrap mode - provisioning wizard required";
+            statusLabel_->setText("Login successful!");
+            emit loginSucceeded(usernameEdit_->text().trimmed());
+            emit tenantBootstrapDetected();
+            emit closeRequested();
         } else {
             statusLabel_->setText("Login successful!");
             emit loginSucceeded(usernameEdit_->text().trimmed());

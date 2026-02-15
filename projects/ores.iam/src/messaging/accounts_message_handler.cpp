@@ -566,6 +566,18 @@ handle_login_request(std::span<const std::byte> payload,
         const auto tenant_name =
             database::service::tenant_context::lookup_name(login_ctx, tenant_id);
 
+        // Check if tenant is in bootstrap mode
+        bool tenant_bootstrap = false;
+        try {
+            variability::service::system_flags_service tenant_flags(
+                login_ctx, tenant_id.to_string());
+            tenant_flags.refresh();
+            tenant_bootstrap = tenant_flags.is_bootstrap_mode_enabled();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to check tenant bootstrap: " << e.what();
+        }
+
         login_response response{
             .success = true,
             .error_message = "",
@@ -574,7 +586,8 @@ handle_login_request(std::span<const std::byte> payload,
             .tenant_name = tenant_name,
             .username = account.username,
             .email = account.email,
-            .password_reset_required = password_reset_required
+            .password_reset_required = password_reset_required,
+            .tenant_bootstrap_mode = tenant_bootstrap
         };
         co_return response.serialize();
 
@@ -591,7 +604,8 @@ handle_login_request(std::span<const std::byte> payload,
             .tenant_name = "",
             .username = username,
             .email = "",
-            .password_reset_required = false
+            .password_reset_required = false,
+            .tenant_bootstrap_mode = false
         };
         co_return response.serialize();
     }

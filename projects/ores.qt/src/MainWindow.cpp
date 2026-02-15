@@ -43,6 +43,7 @@
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.qt/TenantOnboardingWizard.hpp"
+#include "ores.qt/TenantProvisioningWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
@@ -2121,6 +2122,23 @@ void MainWindow::showTenantOnboardingWizard() {
     wizard->show();
 }
 
+void MainWindow::showTenantProvisioningWizard() {
+    BOOST_LOG_SEV(lg(), info) << "Showing Tenant Provisioning Wizard (tenant bootstrap mode)";
+
+    auto* wizard = new TenantProvisioningWizard(clientManager_, this);
+    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(wizard, &TenantProvisioningWizard::provisioningCompleted,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Tenant provisioning wizard completed";
+        ui_->statusbar->showMessage(
+            tr("Tenant setup completed successfully."));
+    });
+
+    wizard->show();
+}
+
 void MainWindow::showLoginDialog() {
     showLoginDialog(LoginDialogOptions{});
 }
@@ -2183,6 +2201,12 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
             this, [this, loginWidget]() {
         showSystemProvisionerWizard(
             loginWidget->getUsername(), loginWidget->getPassword());
+    });
+
+    // Connect tenant bootstrap mode signal - show tenant provisioning wizard
+    connect(loginWidget, &LoginDialog::tenantBootstrapDetected,
+            this, [this]() {
+        showTenantProvisioningWizard();
     });
 
     // Connect sign up request if enabled

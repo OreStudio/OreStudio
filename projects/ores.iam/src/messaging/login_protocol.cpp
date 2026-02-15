@@ -71,6 +71,7 @@ std::vector<std::byte> login_response::serialize() const {
     writer::write_string(buffer, username);
     writer::write_string(buffer, email);
     writer::write_bool(buffer, password_reset_required);
+    writer::write_bool(buffer, tenant_bootstrap_mode);
     return buffer;
 }
 
@@ -110,6 +111,11 @@ login_response::deserialize(std::span<const std::byte> data) {
     if (!password_reset_required_result)
         return std::unexpected(password_reset_required_result.error());
     response.password_reset_required = *password_reset_required_result;
+
+    auto tenant_bootstrap_mode_result = reader::read_bool(data);
+    if (!tenant_bootstrap_mode_result)
+        return std::unexpected(tenant_bootstrap_mode_result.error());
+    response.tenant_bootstrap_mode = *tenant_bootstrap_mode_result;
 
     return response;
 }

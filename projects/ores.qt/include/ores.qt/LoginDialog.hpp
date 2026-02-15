@@ -140,6 +140,14 @@ signals:
      */
     void bootstrapModeDetected();
 
+    /**
+     * @brief Emitted when the tenant is in bootstrap mode.
+     *
+     * This signal indicates that the authenticated tenant needs initial setup
+     * and the TenantProvisioningWizard should be shown after login.
+     */
+    void tenantBootstrapDetected();
+
 private slots:
     void onLoginClicked();
     void onSignUpClicked();

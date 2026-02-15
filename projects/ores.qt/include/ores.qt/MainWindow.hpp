@@ -295,6 +295,15 @@ private:
     void showTenantOnboardingWizard();
 
     /**
+     * @brief Shows the tenant provisioning wizard for first-time tenant setup.
+     *
+     * Displays a guided wizard that helps set up a newly provisioned tenant
+     * with reference data bundles and optional party configuration. Clears
+     * the tenant bootstrap flag on completion.
+     */
+    void showTenantProvisioningWizard();
+
+    /**
      * @brief Options for configuring the login dialog.
      */
     struct LoginDialogOptions {

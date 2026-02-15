@@ -359,6 +359,7 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         }
 
         const bool password_reset_required = response->password_reset_required;
+        const bool tenant_bootstrap = response->tenant_bootstrap_mode;
 
         // Store credentials for re-authentication after reconnection
         stored_username_ = username;
@@ -446,7 +447,9 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
             });
         }
         emit loggedIn();
-        return {.success = true, .error_message = QString(), .password_reset_required = password_reset_required};
+        return {.success = true, .error_message = QString(),
+            .password_reset_required = password_reset_required,
+            .tenant_bootstrap_mode = tenant_bootstrap};
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Login failed: " << e.what();

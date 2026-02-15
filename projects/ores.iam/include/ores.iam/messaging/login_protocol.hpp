@@ -95,6 +95,7 @@ struct login_response final {
     std::string username;
     std::string email;
     bool password_reset_required = false;
+    bool tenant_bootstrap_mode = false;  ///< True if tenant is in bootstrap mode (needs initial setup)
 
     /**
      * @brief Serialize response to bytes.
@@ -112,6 +113,7 @@ struct login_response final {
      * - 2 bytes: email length
      * - N bytes: email (UTF-8)
      * - 1 byte: password_reset_required (boolean)
+     * - 1 byte: tenant_bootstrap_mode (boolean)
      */
     std::vector<std::byte> serialize() const;
 

@@ -297,6 +297,7 @@ TEST_CASE("login_response_serialize_deserialize", tags) {
     CHECK(a.error_message == e.error_message);
     CHECK(a.account_id == e.account_id);
     CHECK(a.username == e.username);
+    CHECK(a.tenant_bootstrap_mode == false);
 }
 
 TEST_CASE("unlock_account_request_with_valid_uuid", tags) {
@@ -671,6 +672,49 @@ TEST_CASE("login_response_serialize_deserialize_with_password_reset", tags) {
     CHECK(a.account_id == e.account_id);
     CHECK(a.username == e.username);
     CHECK(a.password_reset_required == e.password_reset_required);
+    CHECK(a.tenant_bootstrap_mode == e.tenant_bootstrap_mode);
+}
+
+TEST_CASE("login_response_with_tenant_bootstrap_mode", tags) {
+    auto lg(make_logger(test_suite));
+
+    login_response rp;
+    rp.success = true;
+    rp.error_message = "";
+    rp.account_id = boost::uuids::random_generator()();
+    rp.username = std::string(faker::internet::username());
+    rp.tenant_bootstrap_mode = true;
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.success == true);
+    CHECK(rp.tenant_bootstrap_mode == true);
+}
+
+TEST_CASE("login_response_serialize_deserialize_with_tenant_bootstrap", tags) {
+    auto lg(make_logger(test_suite));
+
+    login_response e;
+    e.success = true;
+    e.error_message = "";
+    e.account_id = boost::uuids::random_generator()();
+    e.username = std::string(faker::internet::username());
+    e.password_reset_required = false;
+    e.tenant_bootstrap_mode = true;
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = login_response::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.success == e.success);
+    CHECK(a.error_message == e.error_message);
+    CHECK(a.account_id == e.account_id);
+    CHECK(a.username == e.username);
+    CHECK(a.password_reset_required == e.password_reset_required);
+    CHECK(a.tenant_bootstrap_mode == e.tenant_bootstrap_mode);
 }
 
 TEST_CASE("reset_password_request_with_valid_uuids", tags) {

@@ -288,8 +288,9 @@ private:
     /**
      * @brief Shows the tenant onboarding wizard.
      *
-     * Displays the TenantOnboardingWizard for creating and provisioning
-     * a new tenant, optionally seeded with GLEIF LEI data.
+     * Displays the EvaluationTenantOnboardingWizard for creating and
+     * provisioning a new evaluation tenant, optionally seeded with GLEIF
+     * LEI data.
      */
     void showTenantOnboardingWizard();
 

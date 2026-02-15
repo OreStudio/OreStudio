@@ -135,8 +135,8 @@ void WelcomePage::setupUI() {
     auto* infoLayout = new QVBoxLayout(infoBox);
     auto* infoLabel = new QLabel(
         tr("This wizard only appears during initial system setup. Once "
-           "complete, you can onboard tenants from "
-           "System > Identity > Onboard Tenant."),
+           "complete, you can provision evaluation tenants from the "
+           "Tenants list window."),
         this);
     infoLabel->setWordWrap(true);
     infoLayout->addWidget(infoLabel);
@@ -448,8 +448,8 @@ void CompletePage::setupUI() {
     auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
     auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
     auto* nextStepsLabel = new QLabel(
-        tr("You can now onboard tenants from "
-           "<b>System > Identity > Onboard Tenant</b>.\n\n"
+        tr("Open <b>System > Identity > Tenants</b> and click <b>Onboard</b> "
+           "to provision evaluation tenants.\n\n"
            "Use the <b>Data Librarian</b> to publish reference data bundles "
            "to tenants."),
         this);

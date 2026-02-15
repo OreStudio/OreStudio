@@ -42,7 +42,7 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/SystemProvisionerWizard.hpp"
-#include "ores.qt/TenantOnboardingWizard.hpp"
+#include "ores.qt/EvaluationTenantOnboardingWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
@@ -419,11 +419,6 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionTenants, &QAction::triggered, this, [this]() {
         if (tenantController_)
             tenantController_->showListWindow();
-    });
-
-    // Connect Onboard Tenant action
-    connect(ui_->ActionOnboardTenant, &QAction::triggered, this, [this]() {
-        showTenantOnboardingWizard();
     });
 
     // Connect Feature Flags action to controller (admin only)
@@ -839,7 +834,6 @@ void MainWindow::updateMenuState() {
     ui_->ActionAccounts->setEnabled(isLoggedIn);
     ui_->ActionRoles->setEnabled(isLoggedIn);
     ui_->ActionTenants->setEnabled(isLoggedIn);
-    ui_->ActionOnboardTenant->setEnabled(isLoggedIn);
     ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
     ui_->ActionOriginDimensions->setEnabled(isLoggedIn);
     ui_->ActionNatureDimensions->setEnabled(isLoggedIn);
@@ -2104,13 +2098,13 @@ void MainWindow::showSystemProvisionerWizard(
 }
 
 void MainWindow::showTenantOnboardingWizard() {
-    BOOST_LOG_SEV(lg(), info) << "Showing Tenant Onboarding Wizard";
+    BOOST_LOG_SEV(lg(), info) << "Showing Evaluation Tenant Onboarding Wizard";
 
-    auto* wizard = new TenantOnboardingWizard(clientManager_, this);
+    auto* wizard = new EvaluationTenantOnboardingWizard(clientManager_, this);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
-    connect(wizard, &TenantOnboardingWizard::onboardingCompleted,
+    connect(wizard, &EvaluationTenantOnboardingWizard::onboardingCompleted,
             this, [this](const QString& tenantName) {
         BOOST_LOG_SEV(lg(), info) << "Tenant onboarding completed: "
                                   << tenantName.toStdString();

@@ -106,7 +106,7 @@ void TenantMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             Icon::Building, IconUtils::DefaultIconColor),
         tr("Onboard"));
-    onboardAction_->setToolTip(tr("Onboard a new tenant with wizard"));
+    onboardAction_->setToolTip(tr("Provision a new evaluation tenant"));
     connect(onboardAction_, &QAction::triggered, this, [this]() {
         emit onboardRequested();
     });
@@ -166,7 +166,7 @@ void TenantMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
-    tableView_->setColumnWidth(ClientTenantModel::Code, 120);
+    tableView_->setColumnWidth(ClientTenantModel::Code, 80);
     tableView_->setColumnWidth(ClientTenantModel::Name, 200);
     tableView_->setColumnWidth(ClientTenantModel::Type, 100);
     tableView_->setColumnWidth(ClientTenantModel::Hostname, 180);

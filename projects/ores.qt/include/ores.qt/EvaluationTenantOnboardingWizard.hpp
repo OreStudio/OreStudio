@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_TENANT_ONBOARDING_WIZARD_HPP
-#define ORES_QT_TENANT_ONBOARDING_WIZARD_HPP
+#ifndef ORES_QT_EVALUATION_TENANT_ONBOARDING_WIZARD_HPP
+#define ORES_QT_EVALUATION_TENANT_ONBOARDING_WIZARD_HPP
 
 #include <QWizard>
 #include <QWizardPage>
@@ -37,7 +37,7 @@ namespace ores::qt {
 class LeiEntityPicker;
 
 /**
- * @brief Wizard for onboarding a new tenant.
+ * @brief Wizard for onboarding a new evaluation tenant.
  *
  * Four-page wizard that guides super admins through:
  * 1. ModeAndLei - choose Blank or GLEIF mode; in GLEIF mode, select root LEI
@@ -47,15 +47,14 @@ class LeiEntityPicker;
  * 3. AdminAccount - create the initial admin account for the new tenant
  * 4. Apply - provision the tenant and create admin account
  *
- * This wizard is accessible from System > Identity > Onboard Tenant and
- * from the TenantMdiWindow toolbar.
+ * This wizard is accessible from the TenantMdiWindow toolbar.
  */
-class TenantOnboardingWizard final : public QWizard {
+class EvaluationTenantOnboardingWizard final : public QWizard {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.tenant_onboarding_wizard";
+        "ores.qt.evaluation_tenant_onboarding_wizard";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -71,11 +70,11 @@ public:
         Page_Apply
     };
 
-    explicit TenantOnboardingWizard(
+    explicit EvaluationTenantOnboardingWizard(
         ClientManager* clientManager,
         QWidget* parent = nullptr);
 
-    ~TenantOnboardingWizard() override = default;
+    ~EvaluationTenantOnboardingWizard() override = default;
 
     ClientManager* clientManager() const { return clientManager_; }
 
@@ -148,7 +147,7 @@ class ModeAndLeiPage final : public QWizardPage {
     Q_OBJECT
 
 public:
-    explicit ModeAndLeiPage(TenantOnboardingWizard* wizard);
+    explicit ModeAndLeiPage(EvaluationTenantOnboardingWizard* wizard);
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
@@ -159,7 +158,7 @@ private slots:
 private:
     void setupUI();
 
-    TenantOnboardingWizard* wizard_;
+    EvaluationTenantOnboardingWizard* wizard_;
     QRadioButton* blankRadio_;
     QRadioButton* gleifRadio_;
     LeiEntityPicker* leiPicker_;
@@ -177,7 +176,7 @@ class TenantDetailsPage final : public QWizardPage {
     Q_OBJECT
 
 public:
-    explicit TenantDetailsPage(TenantOnboardingWizard* wizard);
+    explicit TenantDetailsPage(EvaluationTenantOnboardingWizard* wizard);
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
@@ -189,7 +188,7 @@ private:
     void setupUI();
     void updateHostname();
 
-    TenantOnboardingWizard* wizard_;
+    EvaluationTenantOnboardingWizard* wizard_;
     QLineEdit* codeEdit_;
     QLineEdit* nameEdit_;
     QComboBox* typeCombo_;
@@ -206,23 +205,25 @@ class OnboardingAdminAccountPage final : public QWizardPage {
     Q_OBJECT
 
 public:
-    explicit OnboardingAdminAccountPage(TenantOnboardingWizard* wizard);
+    explicit OnboardingAdminAccountPage(EvaluationTenantOnboardingWizard* wizard);
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
 
 private slots:
     void onShowPasswordToggled(bool checked);
+    void onPasswordChanged();
 
 private:
     void setupUI();
 
-    TenantOnboardingWizard* wizard_;
+    EvaluationTenantOnboardingWizard* wizard_;
     QLineEdit* usernameEdit_;
     QLineEdit* emailEdit_;
     QLineEdit* passwordEdit_;
     QLineEdit* confirmPasswordEdit_;
     QCheckBox* showPasswordCheck_;
+    QLabel* matchIndicator_;
     QLabel* validationLabel_;
 };
 
@@ -245,7 +246,7 @@ private:
     }
 
 public:
-    explicit ApplyOnboardingPage(TenantOnboardingWizard* wizard);
+    explicit ApplyOnboardingPage(EvaluationTenantOnboardingWizard* wizard);
     void initializePage() override;
     bool isComplete() const override;
 
@@ -253,7 +254,7 @@ private:
     void startOnboarding();
     void appendLog(const QString& message);
 
-    TenantOnboardingWizard* wizard_;
+    EvaluationTenantOnboardingWizard* wizard_;
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
     QTextEdit* logOutput_;

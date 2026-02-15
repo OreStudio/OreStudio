@@ -305,7 +305,7 @@ TEST_CASE("service_list_reasons_by_category", tags) {
     BOOST_LOG_SEV(lg, debug) << "Reasons for category " << cat.code
                              << ": " << reasons;
 
-    CHECK(reasons.size() >= 2);
+    CHECK(reasons.size() == 2);
     for (const auto& r : reasons) {
         CHECK(r.category_code == cat.code);
     }

@@ -154,9 +154,11 @@ TEST_CASE("test_fail_all_fails_all_pending_requests", tags) {
 
         auto r2 = co_await ch2->get();
         CHECK(!r2.has_value());
+        CHECK(r2.error() == error_code::network_error);
 
         auto r3 = co_await ch3->get();
         CHECK(!r3.has_value());
+        CHECK(r3.error() == error_code::network_error);
     });
 }
 

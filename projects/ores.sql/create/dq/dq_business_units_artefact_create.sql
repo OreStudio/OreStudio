@@ -22,7 +22,6 @@ create table if not exists "ores_dq_business_units_artefact_tbl" (
     "tenant_id" uuid not null,
     "id" uuid not null,
     "version" integer not null,
-    "party_id" uuid not null,
     "unit_name" text not null,
     "parent_business_unit_id" uuid null,
     "unit_code" text null,

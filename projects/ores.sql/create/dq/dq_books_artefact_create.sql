@@ -22,7 +22,6 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "tenant_id" uuid not null,
     "id" uuid not null,
     "version" integer not null,
-    "legal_entity_id" uuid not null,
     "name" text not null,
     "parent_portfolio_id" uuid not null,
     "ledger_ccy" text not null,

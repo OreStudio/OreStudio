@@ -64,6 +64,8 @@ session_converter::to_session_data(const domain::session& s) {
     d->id = s.id;
     d->account_id = s.account_id;
     d->tenant_id = s.tenant_id;
+    d->party_id = s.party_id;
+    d->visible_party_ids = s.visible_party_ids;
     d->start_time = s.start_time;
     d->end_time = s.end_time;
     d->client_ip = s.client_ip;
@@ -84,6 +86,8 @@ session_converter::from_session_data(const comms::service::session_data& d) {
     s.id = d.id;
     s.account_id = d.account_id;
     s.tenant_id = d.tenant_id;
+    s.party_id = d.party_id;
+    s.visible_party_ids = d.visible_party_ids;
     s.start_time = d.start_time;
     s.end_time = d.end_time;
     s.client_ip = d.client_ip;

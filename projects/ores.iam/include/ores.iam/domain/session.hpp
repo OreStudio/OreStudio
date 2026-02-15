@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include <vector>
 #include <cstdint>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
@@ -91,6 +92,16 @@ struct session final {
      * @brief Foreign key referencing the associated account.
      */
     boost::uuids::uuid account_id;
+
+    /**
+     * @brief Party ID for party-level isolation.
+     */
+    boost::uuids::uuid party_id = {};
+
+    /**
+     * @brief Visible party IDs for party-level RLS.
+     */
+    std::vector<boost::uuids::uuid> visible_party_ids;
 
     /**
      * @brief Timestamp when the session started (login time).

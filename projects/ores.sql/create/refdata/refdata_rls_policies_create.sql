@@ -324,3 +324,34 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Party Counterparties (dual RLS: tenant + party isolation)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_counterparties_tbl enable row level security;
+
+-- Tenant isolation (standard pattern)
+create policy ores_refdata_party_counterparties_tenant_isolation_policy
+on ores_refdata_party_counterparties_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE — ANDed with the permissive tenant policy).
+-- When no party context is set (visible_party_ids is NULL), the policy
+-- passes through, preserving backward compatibility. When party context IS
+-- set, only rows matching the visible party set are accessible.
+create policy ores_refdata_party_counterparties_party_isolation_policy
+on ores_refdata_party_counterparties_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);

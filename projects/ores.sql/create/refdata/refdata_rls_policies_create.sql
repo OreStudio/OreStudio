@@ -326,6 +326,45 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Business Units
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_business_units_tbl enable row level security;
+
+create policy ores_refdata_business_units_tenant_isolation_policy on ores_refdata_business_units_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Portfolios
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_portfolios_tbl enable row level security;
+
+create policy ores_refdata_portfolios_tenant_isolation_policy on ores_refdata_portfolios_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Books
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_books_tbl enable row level security;
+
+create policy ores_refdata_books_tenant_isolation_policy on ores_refdata_books_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Party Counterparties (dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_counterparties_tbl enable row level security;

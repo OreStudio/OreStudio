@@ -1,0 +1,125 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "book",
+    "entity_plural": "books",
+    "entity_title": "Book",
+    "brief": "Operational ledger leaf that holds trades.",
+    "description": "Operational ledger leaves. The only entity that holds trades.\nServes as the basis for accounting, ownership, and regulatory\ncapital treatment. Must belong to exactly one portfolio.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this book.",
+      "detail": "Surrogate key for the book record."
+    },
+
+    "natural_keys": [
+      {
+        "column": "legal_entity_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "Legal entity (party) that owns this book.",
+        "detail": "Must be an LEI-mapped legal entity.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Book name, unique within legal entity.",
+        "detail": "e.g., 'FXO_EUR_VOL_01'.",
+        "generator_expr": "std::string(\"BOOK_\") + std::to_string(faker::number::integer(1, 999))"
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "parent_portfolio_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Links to exactly one portfolio.",
+        "detail": "Mandatory: Every book must belong to a portfolio.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "name": "ledger_ccy",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Functional/accounting currency.",
+        "detail": "ISO 4217 currency code.",
+        "generator_expr": "std::string(\"USD\")"
+      },
+      {
+        "name": "gl_account_ref",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Reference to external General Ledger.",
+        "detail": "e.g., 'GL-10150-FXO'. Nullable if not integrated.",
+        "generator_expr": "std::string(\"GL-10150-TEST\")"
+      },
+      {
+        "name": "cost_center",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Internal finance code for P&L attribution.",
+        "detail": "Links to cost center in finance system.",
+        "generator_expr": "std::string(\"CC-001\")"
+      },
+      {
+        "name": "book_status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Lifecycle status of the book.",
+        "detail": "References book_statuses lookup (Active, Closed, Frozen).",
+        "generator_expr": "std::string(\"Active\")"
+      },
+      {
+        "name": "is_trading_book",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Basel III/IV classification.",
+        "detail": "1 = Trading Book, 0 = Banking Book.",
+        "generator_expr": "1"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_books_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "book",
+      "entity_plural_short": "books",
+      "entity_singular_words": "book",
+      "entity_plural_words": "books"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "bk",
+      "table_display": [
+        {"column": "name", "header": "Name"},
+        {"column": "legal_entity_id", "header": "Legal Entity"},
+        {"column": "ledger_ccy", "header": "Currency"},
+        {"column": "book_status", "header": "Status"},
+        {"column": "is_trading_book", "header": "Trading Book"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "business_unit",
+    "entity_plural": "business_units",
+    "entity_title": "Business Unit",
+    "brief": "Internal organizational unit within a party.",
+    "description": "Represents internal organizational units (e.g., desks, departments, branches).\nSupports hierarchical structure via self-referencing parent_business_unit_id.\nEach unit belongs to a top-level legal entity (party).",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this business unit.",
+      "detail": "Surrogate key for the business unit record."
+    },
+
+    "natural_keys": [
+      {
+        "column": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "Top-level legal entity this unit belongs to.",
+        "detail": "References the parent party record.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "column": "unit_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the business unit.",
+        "detail": "e.g., 'FX Options Desk', 'London Branch'.",
+        "generator_expr": "std::string(faker::company::name()) + \" Desk\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "parent_business_unit_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "Self-referencing parent unit for hierarchy.",
+        "detail": "NULL indicates a top-level unit.",
+        "generator_expr": "boost::uuids::uuid()"
+      },
+      {
+        "name": "unit_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional internal code or alias.",
+        "detail": "Short identifier for the business unit.",
+        "generator_expr": "std::string(\"DESK01\")"
+      },
+      {
+        "name": "business_centre_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Business centre for the unit.",
+        "detail": "References the business centres scheme. May be null for global units.",
+        "generator_expr": "std::string(\"GBLO\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_business_units_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "business_unit",
+      "entity_plural_short": "business_units",
+      "entity_singular_words": "business unit",
+      "entity_plural_words": "business units"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "bu",
+      "table_display": [
+        {"column": "party_id", "header": "Party"},
+        {"column": "unit_name", "header": "Unit Name"},
+        {"column": "unit_code", "header": "Code"},
+        {"column": "business_centre_code", "header": "Business Centre"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

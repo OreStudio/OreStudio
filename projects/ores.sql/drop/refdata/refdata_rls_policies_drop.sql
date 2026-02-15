@@ -23,6 +23,15 @@
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
 
+-- Books
+drop policy if exists ores_refdata_books_tenant_isolation_policy on "ores_refdata_books_tbl";
+
+-- Portfolios
+drop policy if exists ores_refdata_portfolios_tenant_isolation_policy on "ores_refdata_portfolios_tbl";
+
+-- Business Units
+drop policy if exists ores_refdata_business_units_tenant_isolation_policy on "ores_refdata_business_units_tbl";
+
 -- Party Counterparties (dual RLS: tenant + party)
 drop policy if exists ores_refdata_party_counterparties_party_isolation_policy on "ores_refdata_party_counterparties_tbl";
 drop policy if exists ores_refdata_party_counterparties_tenant_isolation_policy on "ores_refdata_party_counterparties_tbl";

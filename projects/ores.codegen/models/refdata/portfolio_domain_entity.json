@@ -1,0 +1,107 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "entity_singular": "portfolio",
+    "entity_plural": "portfolios",
+    "entity_title": "Portfolio",
+    "brief": "Logical aggregation node for risk and reporting.",
+    "description": "Represents organizational, risk, or reporting groupings.\nNever holds trades directly. Supports hierarchical structure\nvia self-referencing parent_portfolio_id.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this portfolio.",
+      "detail": "Surrogate key for the portfolio record."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the portfolio.",
+        "detail": "e.g., 'Global Rates', 'APAC Credit'.",
+        "generator_expr": "std::string(faker::company::name()) + \" Portfolio\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "parent_portfolio_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "Self-referencing FK. NULL indicates a root node.",
+        "detail": "Links to the parent portfolio in the hierarchy.",
+        "generator_expr": "boost::uuids::uuid()"
+      },
+      {
+        "name": "owner_unit_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "Business unit responsible for management.",
+        "detail": "References the business_units table.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
+        "name": "purpose_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Portfolio purpose classification.",
+        "detail": "References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal).",
+        "generator_expr": "std::string(\"Risk\")"
+      },
+      {
+        "name": "aggregation_ccy",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Currency for P&L/risk aggregation at this node.",
+        "detail": "ISO 4217 currency code.",
+        "generator_expr": "std::string(\"USD\")"
+      },
+      {
+        "name": "is_virtual",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "If 1, node is purely for on-demand reporting.",
+        "detail": "Not persisted in trade attribution when virtual.",
+        "generator_expr": "0"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_portfolios_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "portfolio",
+      "entity_plural_short": "portfolios",
+      "entity_singular_words": "portfolio",
+      "entity_plural_words": "portfolios"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pf",
+      "table_display": [
+        {"column": "name", "header": "Name"},
+        {"column": "purpose_type", "header": "Purpose"},
+        {"column": "aggregation_ccy", "header": "Currency"},
+        {"column": "is_virtual", "header": "Virtual"},
+        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

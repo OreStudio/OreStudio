@@ -20,46 +20,26 @@
 #include "ores.iam/repository/session_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/asio/ip/address.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/session.hpp"
 #include "ores.iam/domain/session_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam/generators/session_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-using ores::iam::domain::session;
-using ores::iam::domain::session_protocol;
-
-session make_session(ores::testing::database_helper& h) {
-    session s;
-    s.tenant_id = h.tenant_id();
-    s.id = boost::uuids::random_generator()();
-    s.account_id = boost::uuids::random_generator()();
-    s.start_time = std::chrono::system_clock::now();
-    s.client_ip = boost::asio::ip::make_address("127.0.0.1");
-    s.client_identifier = std::string(faker::string::alphanumeric(10));
-    s.client_version_major = 1;
-    s.client_version_minor = 0;
-    s.bytes_sent = 0;
-    s.bytes_received = 0;
-    s.country_code = "GB";
-    s.protocol = session_protocol::binary;
-    s.username = std::string(faker::internet::username());
-    return s;
-}
-
 }
 
 using namespace ores::logging;
+using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
 using ores::iam::repository::session_repository;
@@ -68,9 +48,10 @@ TEST_CASE("create_single_session", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     session_repository repo(h.context());
-    auto s = make_session(h);
+    auto s = generate_synthetic_session(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Session: " << s;
     CHECK_NOTHROW(repo.create(s));
@@ -80,9 +61,10 @@ TEST_CASE("read_session_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     session_repository repo(h.context());
-    auto s = make_session(h);
+    auto s = generate_synthetic_session(gen_ctx);
     const auto target_id = s.id;
 
     BOOST_LOG_SEV(lg, debug) << "Session: " << s;

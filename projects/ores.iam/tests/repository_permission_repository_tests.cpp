@@ -20,7 +20,6 @@
 #include "ores.iam/repository/permission_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -28,29 +27,19 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/permission_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam/generators/permission_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-using ores::iam::domain::permission;
-
-permission make_permission(ores::testing::database_helper& h) {
-    permission p;
-    p.tenant_id = h.tenant_id();
-    p.id = boost::uuids::random_generator()();
-    p.code = std::string(faker::string::alphanumeric(6)) + "::"
-        + std::string(faker::string::alphanumeric(6)) + ":"
-        + std::string(faker::string::alphanumeric(6));
-    p.description = std::string(faker::lorem::sentence());
-    return p;
-}
-
 }
 
 using namespace ores::logging;
+using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
 using ores::iam::repository::permission_repository;
@@ -59,9 +48,10 @@ TEST_CASE("write_single_permission", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     permission_repository repo(h.context());
-    auto p = make_permission(h);
+    auto p = generate_synthetic_permission(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
     CHECK_NOTHROW(repo.write(p));
@@ -71,9 +61,10 @@ TEST_CASE("read_latest_permissions", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     permission_repository repo(h.context());
-    auto p = make_permission(h);
+    auto p = generate_synthetic_permission(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Permission: " << p;
     repo.write(p);
@@ -88,9 +79,10 @@ TEST_CASE("read_latest_permission_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     permission_repository repo(h.context());
-    auto p = make_permission(h);
+    auto p = generate_synthetic_permission(gen_ctx);
     const auto target_id = p.id;
 
     BOOST_LOG_SEV(lg, debug) << "Permission: " << p;

@@ -17,42 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam/generators/account_party_generator.hpp"
+#include "ores.iam/generators/permission_generator.hpp"
 
-#include <boost/uuid/uuid_io.hpp>
+#include <atomic>
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::account_party generate_synthetic_account_party(
+domain::permission generate_synthetic_permission(
     utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
+    const auto tid = ctx.env().get_or(
         generation_keys::tenant_id, "system");
+    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
 
-    domain::account_party r;
-    r.version = 1;
-    r.tenant_id = tenant_id;
-    r.account_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    domain::permission r;
+    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
+        : utility::uuid::tenant_id::system();
+    r.id = ctx.generate_uuid();
+    r.code = "test::" + ctx.alphanumeric(6) + "_" + std::to_string(idx)
+        + ":read";
+    r.description = "Synthetic test permission";
     return r;
 }
 
-std::vector<domain::account_party>
-generate_synthetic_account_parties(std::size_t n,
+std::vector<domain::permission>
+generate_synthetic_permissions(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::account_party> r;
+    std::vector<domain::permission> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)
-        r.push_back(generate_synthetic_account_party(ctx));
+        r.push_back(generate_synthetic_permission(ctx));
     return r;
 }
 

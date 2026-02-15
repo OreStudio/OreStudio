@@ -20,7 +20,6 @@
 #include "ores.iam/repository/role_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -28,33 +27,19 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/domain/role_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam/generators/role_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-using ores::iam::domain::role;
-
-role make_role(ores::testing::database_helper& h) {
-    role r;
-    r.version = 1;
-    r.tenant_id = h.tenant_id();
-    r.id = boost::uuids::random_generator()();
-    r.name = std::string(faker::word::noun()) + "_"
-        + std::string(faker::string::alphanumeric(6));
-    r.description = std::string(faker::lorem::sentence());
-    r.modified_by = h.db_user();
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.performed_by = h.db_user();
-    return r;
-}
-
 }
 
 using namespace ores::logging;
+using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
 using ores::iam::repository::role_repository;
@@ -63,9 +48,10 @@ TEST_CASE("write_single_role", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     role_repository repo(h.context());
-    auto r = make_role(h);
+    auto r = generate_synthetic_role(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Role: " << r;
     CHECK_NOTHROW(repo.write(r));
@@ -75,9 +61,10 @@ TEST_CASE("read_latest_roles", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     role_repository repo(h.context());
-    auto r = make_role(h);
+    auto r = generate_synthetic_role(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Role: " << r;
     repo.write(r);
@@ -92,9 +79,10 @@ TEST_CASE("read_latest_role_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     role_repository repo(h.context());
-    auto r = make_role(h);
+    auto r = generate_synthetic_role(gen_ctx);
     const auto target_id = r.id;
 
     BOOST_LOG_SEV(lg, debug) << "Role: " << r;

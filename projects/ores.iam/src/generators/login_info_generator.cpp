@@ -17,42 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam/generators/account_party_generator.hpp"
+#include "ores.iam/generators/login_info_generator.hpp"
 
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/asio/ip/address.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::account_party generate_synthetic_account_party(
+domain::login_info generate_synthetic_login_info(
     utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
+    const auto tid = ctx.env().get_or(
         generation_keys::tenant_id, "system");
+    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
 
-    domain::account_party r;
-    r.version = 1;
-    r.tenant_id = tenant_id;
+    domain::login_info r;
+    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
+        : utility::uuid::tenant_id::system();
+    r.last_login = ctx.past_timepoint();
     r.account_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.failed_logins = 0;
+    r.locked = false;
+    r.online = false;
+    r.password_reset_required = false;
+    r.last_ip = boost::asio::ip::make_address("127.0.0.1");
+    r.last_attempt_ip = boost::asio::ip::make_address("127.0.0.1");
     return r;
 }
 
-std::vector<domain::account_party>
-generate_synthetic_account_parties(std::size_t n,
+std::vector<domain::login_info>
+generate_synthetic_login_infos(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::account_party> r;
+    std::vector<domain::login_info> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)
-        r.push_back(generate_synthetic_account_party(ctx));
+        r.push_back(generate_synthetic_login_info(ctx));
     return r;
 }
 

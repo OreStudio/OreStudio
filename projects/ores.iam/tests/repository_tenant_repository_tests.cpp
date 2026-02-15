@@ -19,9 +19,7 @@
  */
 #include "ores.iam/repository/tenant_repository.hpp"
 
-#include <atomic>
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -30,39 +28,19 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/tenant.hpp"
 #include "ores.iam/domain/tenant_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam/generators/tenant_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-using ores::iam::domain::tenant;
-
-tenant make_tenant(ores::testing::database_helper& h) {
-    static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-
-    tenant t;
-    t.version = 1;
-    t.id = boost::uuids::random_generator()();
-    t.code = std::string(faker::string::alphanumeric(10)) + "_" + std::to_string(idx);
-    t.name = std::string(faker::word::noun()) + " " + std::to_string(idx);
-    t.type = "automation";
-    t.description = std::string(faker::lorem::sentence());
-    t.hostname = std::string(faker::string::alphanumeric(8))
-        + "_" + std::to_string(idx) + ".example.com";
-    t.status = "active";
-    t.modified_by = h.db_user();
-    t.change_reason_code = "system.test";
-    t.change_commentary = "Synthetic test data";
-    t.performed_by = h.db_user();
-    return t;
-}
-
 }
 
 using namespace ores::logging;
+using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
 using ores::iam::repository::tenant_repository;
@@ -73,9 +51,10 @@ TEST_CASE("write_single_tenant", tags) {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
         ores::utility::uuid::tenant_id::system());
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
-    auto t = make_tenant(h);
+    auto t = generate_synthetic_tenant(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
     CHECK_NOTHROW(repo.write(t));
@@ -87,11 +66,10 @@ TEST_CASE("write_multiple_tenants", tags) {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
         ores::utility::uuid::tenant_id::system());
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
-    std::vector<tenant> tenants;
-    for (int i = 0; i < 3; ++i)
-        tenants.push_back(make_tenant(h));
+    auto tenants = generate_synthetic_tenants(3, gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Tenants: " << tenants;
     CHECK_NOTHROW(repo.write(tenants));
@@ -103,11 +81,10 @@ TEST_CASE("read_latest_tenants", tags) {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
         ores::utility::uuid::tenant_id::system());
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
-    std::vector<tenant> written;
-    for (int i = 0; i < 3; ++i)
-        written.push_back(make_tenant(h));
+    auto written = generate_synthetic_tenants(3, gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Written tenants: " << written;
     repo.write(written);
@@ -125,9 +102,10 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
         ores::utility::uuid::tenant_id::system());
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
-    auto t = make_tenant(h);
+    auto t = generate_synthetic_tenant(gen_ctx);
     const auto target_id = t.id;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
@@ -150,9 +128,10 @@ TEST_CASE("read_latest_tenant_by_code", tags) {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
         ores::utility::uuid::tenant_id::system());
+    auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
-    auto t = make_tenant(h);
+    auto t = generate_synthetic_tenant(gen_ctx);
     const auto target_code = t.code;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;

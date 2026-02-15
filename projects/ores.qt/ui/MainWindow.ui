@@ -522,7 +522,7 @@
     <string>&amp;Onboard Tenant...</string>
    </property>
    <property name="toolTip">
-    <string>Create and provision a new tenant</string>
+    <string>Provision a new tenant</string>
    </property>
   </action>
  </widget>

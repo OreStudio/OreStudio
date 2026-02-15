@@ -185,7 +185,8 @@ begin
         party_type, business_center_code, parent_party_id, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        gen_random_uuid(), v_new_tenant_id, p_name, p_code, 'System',
+        gen_random_uuid(), v_new_tenant_id,
+        p_name || ' (System Party)', p_code || '_system', 'System',
         'Internal', 'WRLD', null, 'Active',
         current_user, current_user, 'system.new_record',
         'System party created during tenant provisioning'

@@ -121,7 +121,6 @@ private slots:
     void onShowPasswordToggled(bool checked);
     void onSignUpResult(const SignupResult& result);
     void onLoginResult(const LoginResult& result);
-    void updatePasswordMatchIndicator();
 
 private:
     void setupUI();

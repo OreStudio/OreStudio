@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/MyAccountDialog.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -180,10 +181,8 @@ void MyAccountDialog::setupUI() {
     close_button_->setDefault(true);
 
     // Connect password fields for match indicator
-    connect(new_password_edit_, &QLineEdit::textChanged, this,
-        &MyAccountDialog::updatePasswordMatchIndicator);
-    connect(confirm_password_edit_, &QLineEdit::textChanged, this,
-        &MyAccountDialog::updatePasswordMatchIndicator);
+    PasswordMatchIndicator::connectFields(
+        new_password_edit_, confirm_password_edit_);
 }
 
 void MyAccountDialog::loadAccountInfo() {
@@ -567,28 +566,6 @@ void MyAccountDialog::onViewSessionsClicked() {
     sessionDialog->setAttribute(Qt::WA_DeleteOnClose);
     sessionDialog->setModal(false);
     sessionDialog->show();
-}
-
-void MyAccountDialog::updatePasswordMatchIndicator() {
-    const QString password = new_password_edit_->text();
-    const QString confirmPassword = confirm_password_edit_->text();
-
-    // Only show indicator when confirm field has content
-    if (confirmPassword.isEmpty()) {
-        // Reset to default style
-        confirm_password_edit_->setStyleSheet("");
-        return;
-    }
-
-    if (password == confirmPassword) {
-        // Green border for matching passwords
-        confirm_password_edit_->setStyleSheet(
-            "QLineEdit { border: 2px solid #4CAF50; }");
-    } else {
-        // Orange/red border for non-matching passwords
-        confirm_password_edit_->setStyleSheet(
-            "QLineEdit { border: 2px solid #FF9800; }");
-    }
 }
 
 }

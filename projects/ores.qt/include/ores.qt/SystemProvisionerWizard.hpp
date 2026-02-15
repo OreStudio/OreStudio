@@ -150,11 +150,9 @@ public:
 
 private slots:
     void onShowPasswordToggled(bool checked);
-    void onPasswordChanged();
 
 private:
     void setupUI();
-    void updatePasswordMatchIndicator();
 
     SystemProvisionerWizard* wizard_;
     QLineEdit* usernameEdit_;
@@ -162,7 +160,6 @@ private:
     QLineEdit* passwordEdit_;
     QLineEdit* confirmPasswordEdit_;
     QCheckBox* showPasswordCheckbox_;
-    QLabel* passwordMatchLabel_;
     QLabel* validationLabel_;
     bool accountCreated_ = false;
 };

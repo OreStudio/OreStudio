@@ -421,7 +421,7 @@ MainWindow::MainWindow(QWidget* parent) :
             tenantController_->showListWindow();
     });
 
-    // Connect Onboard Tenant action
+    // Connect Onboard Evaluation Tenant action
     connect(ui_->ActionOnboardTenant, &QAction::triggered, this, [this]() {
         showTenantOnboardingWizard();
     });

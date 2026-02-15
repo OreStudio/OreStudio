@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -46,7 +47,7 @@ TenantOnboardingWizard::TenantOnboardingWizard(
     : QWizard(parent),
       clientManager_(clientManager) {
 
-    setWindowTitle(tr("Onboard Tenant"));
+    setWindowTitle(tr("Tenant Provisioning"));
     setMinimumSize(800, 650);
     resize(900, 700);
 
@@ -73,10 +74,9 @@ void TenantOnboardingWizard::setupPages() {
 ModeAndLeiPage::ModeAndLeiPage(TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Onboarding Mode"));
-    setSubTitle(tr("Choose whether to create a blank tenant or pre-fill "
-                   "details from a GLEIF LEI entity. In GLEIF mode, select "
-                   "the entity to use for the tenant name and code."));
+    setTitle(tr("Provisioning Mode"));
+    setSubTitle(tr("Choose whether to create a blank tenant or "
+                   "pre-fill details from a GLEIF LEI entity."));
     setupUI();
 }
 
@@ -105,6 +105,30 @@ void ModeAndLeiPage::setupUI() {
 
     connect(blankRadio_, &QRadioButton::toggled, this,
             &ModeAndLeiPage::onModeChanged);
+
+    // Informational blurb about evaluation tenants
+    auto* infoLabel = new QLabel(
+        tr("<b>Note:</b> This wizard provisions a new tenant "
+           "\u2014 an isolated environment with its own users, roles, "
+           "and reference data. Choose <i>Evaluation</i> for demos, QA, "
+           "and testing, or <i>Production</i> for live workloads."
+           "<br><br>"
+           "If you prefer a simpler single-tenant setup, you can use the "
+           "system tenant directly without creating separate tenants. This "
+           "avoids the overhead of multi-tenancy but limits isolation between "
+           "environments."),
+        this);
+    infoLabel->setWordWrap(true);
+    infoLabel->setTextFormat(Qt::RichText);
+    infoLabel->setStyleSheet(
+        "QLabel {"
+        "  background-color: #2a2d32;"
+        "  border: 1px solid #444950;"
+        "  border-radius: 4px;"
+        "  padding: 10px;"
+        "  color: #b0b8c4;"
+        "}");
+    layout->addWidget(infoLabel, 0);
 
     // LEI entity picker (disabled until GLEIF mode)
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
@@ -201,8 +225,8 @@ void TenantDetailsPage::setupUI() {
     formLayout->addRow(tr("Name:"), nameEdit_);
 
     typeCombo_ = new QComboBox(this);
-    typeCombo_->addItem(tr("Production"), "production");
     typeCombo_->addItem(tr("Evaluation"), "evaluation");
+    typeCombo_->addItem(tr("Production"), "production");
     formLayout->addRow(tr("Type:"), typeCombo_);
 
     hostnameEdit_ = new QLineEdit(this);
@@ -262,13 +286,17 @@ void TenantDetailsPage::initializePage() {
         }
         codeEdit_->setText(code);
 
-        // Hostname is auto-generated from code via onCodeChanged
+        // GLEIF mode: force evaluation type
+        typeCombo_->setCurrentIndex(
+            typeCombo_->findData(QStringLiteral("evaluation")));
+        typeCombo_->setEnabled(false);
     } else {
         // Blank mode: clear fields for fresh entry
         codeEdit_->clear();
         nameEdit_->clear();
         hostnameEdit_->clear();
         descriptionEdit_->clear();
+        typeCombo_->setEnabled(true);
     }
 }
 
@@ -333,7 +361,8 @@ int TenantDetailsPage::nextId() const {
 // OnboardingAdminAccountPage
 // ============================================================================
 
-OnboardingAdminAccountPage::OnboardingAdminAccountPage(TenantOnboardingWizard* wizard)
+OnboardingAdminAccountPage::OnboardingAdminAccountPage(
+    TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Admin Account"));
@@ -374,6 +403,8 @@ void OnboardingAdminAccountPage::setupUI() {
     connect(showPasswordCheck_, &QCheckBox::toggled,
             this, &OnboardingAdminAccountPage::onShowPasswordToggled);
 
+    PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
+
     layout->addLayout(formLayout);
 
     // Validation label
@@ -391,7 +422,7 @@ void OnboardingAdminAccountPage::setupUI() {
 }
 
 void OnboardingAdminAccountPage::initializePage() {
-    usernameEdit_->setText(QStringLiteral("admin"));
+    usernameEdit_->setText(QStringLiteral("tenant_admin"));
 
     const QString code = wizard_->tenantCode();
     emailEdit_->setText(QStringLiteral("admin@") + code);
@@ -457,7 +488,8 @@ int OnboardingAdminAccountPage::nextId() const {
 // ApplyOnboardingPage
 // ============================================================================
 
-ApplyOnboardingPage::ApplyOnboardingPage(TenantOnboardingWizard* wizard)
+ApplyOnboardingPage::ApplyOnboardingPage(
+    TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Provisioning Tenant"));

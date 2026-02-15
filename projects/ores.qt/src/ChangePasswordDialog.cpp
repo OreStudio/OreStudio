@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ChangePasswordDialog.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -114,10 +115,8 @@ void ChangePasswordDialog::setupUI() {
     new_password_edit_->setFocus();
 
     // Connect password fields for match indicator
-    connect(new_password_edit_, &QLineEdit::textChanged, this,
-        &ChangePasswordDialog::updatePasswordMatchIndicator);
-    connect(confirm_password_edit_, &QLineEdit::textChanged, this,
-        &ChangePasswordDialog::updatePasswordMatchIndicator);
+    PasswordMatchIndicator::connectFields(
+        new_password_edit_, confirm_password_edit_);
 }
 
 void ChangePasswordDialog::enableForm(bool enabled) {
@@ -275,28 +274,6 @@ void ChangePasswordDialog::onChangeResult(bool success, const QString& error_mes
 
         MessageBoxHelper::critical(this, "Password Change Failed",
             QString("Failed to change password: %1").arg(error_message));
-    }
-}
-
-void ChangePasswordDialog::updatePasswordMatchIndicator() {
-    const QString password = new_password_edit_->text();
-    const QString confirmPassword = confirm_password_edit_->text();
-
-    // Only show indicator when confirm field has content
-    if (confirmPassword.isEmpty()) {
-        // Reset to default style
-        confirm_password_edit_->setStyleSheet("");
-        return;
-    }
-
-    if (password == confirmPassword) {
-        // Green border for matching passwords
-        confirm_password_edit_->setStyleSheet(
-            "QLineEdit { border: 2px solid #4CAF50; }");
-    } else {
-        // Orange/red border for non-matching passwords
-        confirm_password_edit_->setStyleSheet(
-            "QLineEdit { border: 2px solid #FF9800; }");
     }
 }
 

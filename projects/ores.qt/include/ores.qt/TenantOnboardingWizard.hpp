@@ -47,8 +47,8 @@ class LeiEntityPicker;
  * 3. AdminAccount - create the initial admin account for the new tenant
  * 4. Apply - provision the tenant and create admin account
  *
- * This wizard is accessible from System > Identity > Onboard Tenant and
- * from the TenantMdiWindow toolbar.
+ * Accessible from System > Identity > Onboard Tenant and the TenantMdiWindow
+ * toolbar.
  */
 class TenantOnboardingWizard final : public QWizard {
     Q_OBJECT

@@ -58,7 +58,7 @@ generate_synthetic_sessions(std::size_t n,
     utility::generation::generation_context& ctx) {
     std::vector<domain::session> r;
     r.reserve(n);
-    while (r.size() < n)
+    for (std::size_t i = 0; i < n; ++i)
         r.push_back(generate_synthetic_session(ctx));
     return r;
 }

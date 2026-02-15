@@ -56,7 +56,7 @@ generate_synthetic_tenants(std::size_t n,
     utility::generation::generation_context& ctx) {
     std::vector<domain::tenant> r;
     r.reserve(n);
-    while (r.size() < n)
+    for (std::size_t i = 0; i < n; ++i)
         r.push_back(generate_synthetic_tenant(ctx));
     return r;
 }

@@ -50,7 +50,7 @@ generate_synthetic_account_roles(std::size_t n,
     utility::generation::generation_context& ctx) {
     std::vector<domain::account_role> r;
     r.reserve(n);
-    while (r.size() < n)
+    for (std::size_t i = 0; i < n; ++i)
         r.push_back(generate_synthetic_account_role(ctx));
     return r;
 }

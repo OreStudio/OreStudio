@@ -20,18 +20,18 @@
 
     "natural_keys": [
       {
-        "column": "legal_entity_id",
+        "column": "party_id",
         "type": "uuid",
         "cpp_type": "boost::uuids::uuid",
-        "description": "Legal entity (party) that owns this book.",
-        "detail": "Must be an LEI-mapped legal entity.",
+        "description": "Party that owns this book.",
+        "detail": "References the parties table.",
         "generator_expr": "uuid_gen()"
       },
       {
         "column": "name",
         "type": "text",
         "cpp_type": "std::string",
-        "description": "Book name, unique within legal entity.",
+        "description": "Book name, unique within party.",
         "detail": "e.g., 'FXO_EUR_VOL_01'.",
         "generator_expr": "std::string(\"BOOK_\") + std::to_string(faker::number::integer(1, 999))"
       }
@@ -113,7 +113,7 @@
       "iterator_var": "bk",
       "table_display": [
         {"column": "name", "header": "Name"},
-        {"column": "legal_entity_id", "header": "Legal Entity"},
+        {"column": "party_id", "header": "Party"},
         {"column": "ledger_ccy", "header": "Currency"},
         {"column": "book_status", "header": "Status"},
         {"column": "is_trading_book", "header": "Trading Book"},

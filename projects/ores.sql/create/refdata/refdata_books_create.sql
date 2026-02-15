@@ -33,7 +33,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "legal_entity_id" uuid not null,
+    "party_id" uuid not null,
     "name" text not null,
     "parent_portfolio_id" uuid not null,
     "ledger_ccy" text not null,
@@ -57,9 +57,9 @@ create table if not exists "ores_refdata_books_tbl" (
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
--- Composite natural key: unique book name per legal entity within tenant
-create unique index if not exists ores_refdata_books_legal_entity_name_uniq_idx
-on "ores_refdata_books_tbl" (tenant_id, legal_entity_id, name)
+-- Composite natural key: unique book name per party within tenant
+create unique index if not exists ores_refdata_books_party_name_uniq_idx
+on "ores_refdata_books_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -94,14 +94,14 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate legal_entity_id (mandatory soft FK to parties)
+    -- Validate party_id (mandatory soft FK to parties)
     if not exists (
         select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.legal_entity_id
+        where tenant_id = NEW.tenant_id and id = NEW.party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid legal_entity_id: %. No active party found with this id.',
-            NEW.legal_entity_id
+        raise exception 'Invalid party_id: %. No active party found with this id.',
+            NEW.party_id
             using errcode = '23503';
     end if;
 

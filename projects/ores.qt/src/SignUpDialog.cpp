@@ -19,6 +19,7 @@
  */
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/DialogStyles.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.utility/version/version.hpp"
 #include <QHBoxLayout>
@@ -257,10 +258,8 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     layout->addWidget(confirmPasswordEdit_);
 
     // Connect password fields for match indicator
-    connect(passwordEdit_, &QLineEdit::textChanged,
-            this, &SignUpDialog::updatePasswordMatchIndicator);
-    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
-            this, &SignUpDialog::updatePasswordMatchIndicator);
+    PasswordMatchIndicator::connectFields(
+        passwordEdit_, confirmPasswordEdit_, dialog_styles::input_field);
 
     // Show password checkbox
     layout->addSpacing(8);
@@ -479,23 +478,6 @@ void SignUpDialog::onShowPasswordToggled(bool checked) {
     const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
     passwordEdit_->setEchoMode(mode);
     confirmPasswordEdit_->setEchoMode(mode);
-}
-
-void SignUpDialog::updatePasswordMatchIndicator() {
-    const QString password = passwordEdit_->text();
-    const QString confirmPassword = confirmPasswordEdit_->text();
-
-    // Only show indicator when confirm field has content
-    if (confirmPassword.isEmpty()) {
-        confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field);
-        return;
-    }
-
-    if (password == confirmPassword) {
-        confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field_match);
-    } else {
-        confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field_mismatch);
-    }
 }
 
 }

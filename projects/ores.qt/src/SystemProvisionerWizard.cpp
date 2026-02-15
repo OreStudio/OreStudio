@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SystemProvisionerWizard.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -194,13 +195,6 @@ void AdminAccountPage::setupUI() {
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
     confirmPasswordEdit_->setMaxLength(128);
     confirmLayout->addWidget(confirmPasswordEdit_);
-
-    // Password match indicator
-    passwordMatchLabel_ = new QLabel(this);
-    passwordMatchLabel_->setFixedWidth(24);
-    passwordMatchLabel_->setAlignment(Qt::AlignCenter);
-    confirmLayout->addWidget(passwordMatchLabel_);
-
     formLayout->addRow(tr("Confirm Password:"), confirmLayout);
 
     // Show password checkbox
@@ -221,10 +215,7 @@ void AdminAccountPage::setupUI() {
     // Connect signals
     connect(showPasswordCheckbox_, &QCheckBox::toggled,
             this, &AdminAccountPage::onShowPasswordToggled);
-    connect(passwordEdit_, &QLineEdit::textChanged,
-            this, &AdminAccountPage::onPasswordChanged);
-    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
-            this, &AdminAccountPage::onPasswordChanged);
+    PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
     // Info box
     auto* infoBox = new QGroupBox(tr("Important"), this);
@@ -260,7 +251,6 @@ void AdminAccountPage::initializePage() {
     if (!password.isEmpty() && passwordEdit_->text().isEmpty()) {
         passwordEdit_->setText(password);
         confirmPasswordEdit_->setText(password);
-        updatePasswordMatchIndicator();
     }
 }
 
@@ -386,28 +376,6 @@ void AdminAccountPage::onShowPasswordToggled(bool checked) {
     confirmPasswordEdit_->setEchoMode(mode);
 }
 
-void AdminAccountPage::onPasswordChanged() {
-    updatePasswordMatchIndicator();
-}
-
-void AdminAccountPage::updatePasswordMatchIndicator() {
-    const QString password = passwordEdit_->text();
-    const QString confirm = confirmPasswordEdit_->text();
-
-    if (confirm.isEmpty()) {
-        // No input yet, show nothing
-        passwordMatchLabel_->clear();
-        passwordMatchLabel_->setStyleSheet("");
-    } else if (password == confirm) {
-        // Passwords match - green checkmark
-        passwordMatchLabel_->setText(QString::fromUtf8("\u2713")); // checkmark
-        passwordMatchLabel_->setStyleSheet("QLabel { color: #228B22; font-weight: bold; font-size: 14pt; }");
-    } else {
-        // Passwords don't match - red X
-        passwordMatchLabel_->setText(QString::fromUtf8("\u2717")); // cross
-        passwordMatchLabel_->setStyleSheet("QLabel { color: #cc0000; font-weight: bold; font-size: 14pt; }");
-    }
-}
 
 // ============================================================================
 // CompletePage

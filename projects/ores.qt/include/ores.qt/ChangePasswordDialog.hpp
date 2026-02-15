@@ -58,7 +58,6 @@ public:
 private slots:
     void onChangeClicked();
     void onChangeResult(bool success, const QString& error_message);
-    void updatePasswordMatchIndicator();
 
 signals:
     void changeCompleted(bool success, const QString& error_message);

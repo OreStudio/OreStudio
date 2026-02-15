@@ -66,7 +66,6 @@ public:
 
 private slots:
     void onOkClicked();
-    void updatePasswordMatchIndicator();
     void updateOkButtonState();
 
 private:
@@ -79,7 +78,6 @@ private:
     QLineEdit* currentPasswordEdit_;
     QLineEdit* newPasswordEdit_;
     QLineEdit* confirmPasswordEdit_;
-    QLabel* matchIndicatorLabel_;
     QDialogButtonBox* buttonBox_;
 };
 

@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/EvaluationTenantOnboardingWizard.hpp"
+#include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -37,16 +38,16 @@ namespace ores::qt {
 using namespace ores::logging;
 
 // ============================================================================
-// EvaluationTenantOnboardingWizard (Main Wizard)
+// TenantOnboardingWizard (Main Wizard)
 // ============================================================================
 
-EvaluationTenantOnboardingWizard::EvaluationTenantOnboardingWizard(
+TenantOnboardingWizard::TenantOnboardingWizard(
     ClientManager* clientManager,
     QWidget* parent)
     : QWizard(parent),
       clientManager_(clientManager) {
 
-    setWindowTitle(tr("Evaluation Tenant Provisioning"));
+    setWindowTitle(tr("Tenant Provisioning"));
     setMinimumSize(800, 650);
     resize(900, 700);
 
@@ -57,7 +58,7 @@ EvaluationTenantOnboardingWizard::EvaluationTenantOnboardingWizard(
     setupPages();
 }
 
-void EvaluationTenantOnboardingWizard::setupPages() {
+void TenantOnboardingWizard::setupPages() {
     setPage(Page_ModeAndLei, new ModeAndLeiPage(this));
     setPage(Page_TenantDetails, new TenantDetailsPage(this));
     setPage(Page_AdminAccount, new OnboardingAdminAccountPage(this));
@@ -70,11 +71,11 @@ void EvaluationTenantOnboardingWizard::setupPages() {
 // ModeAndLeiPage
 // ============================================================================
 
-ModeAndLeiPage::ModeAndLeiPage(EvaluationTenantOnboardingWizard* wizard)
+ModeAndLeiPage::ModeAndLeiPage(TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Provisioning Mode"));
-    setSubTitle(tr("Choose whether to create a blank evaluation tenant or "
+    setSubTitle(tr("Choose whether to create a blank tenant or "
                    "pre-fill details from a GLEIF LEI entity."));
     setupUI();
 }
@@ -107,25 +108,25 @@ void ModeAndLeiPage::setupUI() {
 
     // Informational blurb about evaluation tenants
     auto* infoLabel = new QLabel(
-        tr("<b>Note:</b> This wizard provisions evaluation tenants "
-           "\xe2\x80\x94 isolated environments for demos, QA, and testing "
-           "with relaxed operational controls."
+        tr("<b>Note:</b> This wizard provisions a new tenant "
+           "\u2014 an isolated environment with its own users, roles, "
+           "and reference data. Choose <i>Evaluation</i> for demos, QA, "
+           "and testing, or <i>Production</i> for live workloads."
            "<br><br>"
            "If you prefer a simpler single-tenant setup, you can use the "
            "system tenant directly without creating separate tenants. This "
            "avoids the overhead of multi-tenancy but limits isolation between "
-           "environments. Multi-tenant setups are recommended for "
-           "organisations that need separate evaluation, production, and "
-           "automation environments."),
+           "environments."),
         this);
     infoLabel->setWordWrap(true);
     infoLabel->setTextFormat(Qt::RichText);
     infoLabel->setStyleSheet(
         "QLabel {"
-        "  background-color: #f0f4f8;"
-        "  border: 1px solid #d0d7de;"
+        "  background-color: #2a2d32;"
+        "  border: 1px solid #444950;"
         "  border-radius: 4px;"
         "  padding: 10px;"
+        "  color: #b0b8c4;"
         "}");
     layout->addWidget(infoLabel, 0);
 
@@ -191,14 +192,14 @@ bool ModeAndLeiPage::validatePage() {
 }
 
 int ModeAndLeiPage::nextId() const {
-    return EvaluationTenantOnboardingWizard::Page_TenantDetails;
+    return TenantOnboardingWizard::Page_TenantDetails;
 }
 
 // ============================================================================
 // TenantDetailsPage
 // ============================================================================
 
-TenantDetailsPage::TenantDetailsPage(EvaluationTenantOnboardingWizard* wizard)
+TenantDetailsPage::TenantDetailsPage(TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Tenant Details"));
@@ -285,13 +286,17 @@ void TenantDetailsPage::initializePage() {
         }
         codeEdit_->setText(code);
 
-        // Hostname is auto-generated from code via onCodeChanged
+        // GLEIF mode: force evaluation type
+        typeCombo_->setCurrentIndex(
+            typeCombo_->findData(QStringLiteral("evaluation")));
+        typeCombo_->setEnabled(false);
     } else {
         // Blank mode: clear fields for fresh entry
         codeEdit_->clear();
         nameEdit_->clear();
         hostnameEdit_->clear();
         descriptionEdit_->clear();
+        typeCombo_->setEnabled(true);
     }
 }
 
@@ -349,7 +354,7 @@ bool TenantDetailsPage::validatePage() {
 }
 
 int TenantDetailsPage::nextId() const {
-    return EvaluationTenantOnboardingWizard::Page_AdminAccount;
+    return TenantOnboardingWizard::Page_AdminAccount;
 }
 
 // ============================================================================
@@ -357,7 +362,7 @@ int TenantDetailsPage::nextId() const {
 // ============================================================================
 
 OnboardingAdminAccountPage::OnboardingAdminAccountPage(
-    EvaluationTenantOnboardingWizard* wizard)
+    TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Admin Account"));
@@ -387,19 +392,10 @@ void OnboardingAdminAccountPage::setupUI() {
     passwordEdit_->setPlaceholderText(tr("Minimum 8 characters"));
     formLayout->addRow(tr("Password:"), passwordEdit_);
 
-    auto* confirmLayout = new QHBoxLayout();
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
     confirmPasswordEdit_->setPlaceholderText(tr("Re-enter password"));
-    confirmLayout->addWidget(confirmPasswordEdit_);
-
-    matchIndicator_ = new QLabel(this);
-    matchIndicator_->setFixedWidth(24);
-    matchIndicator_->setAlignment(Qt::AlignCenter);
-    matchIndicator_->hide();
-    confirmLayout->addWidget(matchIndicator_);
-
-    formLayout->addRow(tr("Confirm:"), confirmLayout);
+    formLayout->addRow(tr("Confirm:"), confirmPasswordEdit_);
 
     showPasswordCheck_ = new QCheckBox(tr("Show password"), this);
     formLayout->addRow(QString(), showPasswordCheck_);
@@ -407,10 +403,7 @@ void OnboardingAdminAccountPage::setupUI() {
     connect(showPasswordCheck_, &QCheckBox::toggled,
             this, &OnboardingAdminAccountPage::onShowPasswordToggled);
 
-    connect(passwordEdit_, &QLineEdit::textChanged,
-            this, &OnboardingAdminAccountPage::onPasswordChanged);
-    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
-            this, &OnboardingAdminAccountPage::onPasswordChanged);
+    PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
     layout->addLayout(formLayout);
 
@@ -439,27 +432,6 @@ void OnboardingAdminAccountPage::onShowPasswordToggled(bool checked) {
     const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
     passwordEdit_->setEchoMode(mode);
     confirmPasswordEdit_->setEchoMode(mode);
-}
-
-void OnboardingAdminAccountPage::onPasswordChanged() {
-    const QString password = passwordEdit_->text();
-    const QString confirm = confirmPasswordEdit_->text();
-
-    if (password.isEmpty() && confirm.isEmpty()) {
-        matchIndicator_->hide();
-        return;
-    }
-
-    matchIndicator_->show();
-    if (password == confirm) {
-        matchIndicator_->setText(QStringLiteral("\u2713"));
-        matchIndicator_->setStyleSheet(
-            "QLabel { color: #22863a; font-weight: bold; font-size: 16px; }");
-    } else {
-        matchIndicator_->setText(QStringLiteral("\u2717"));
-        matchIndicator_->setStyleSheet(
-            "QLabel { color: #cc0000; font-weight: bold; font-size: 16px; }");
-    }
 }
 
 bool OnboardingAdminAccountPage::validatePage() {
@@ -509,7 +481,7 @@ bool OnboardingAdminAccountPage::validatePage() {
 }
 
 int OnboardingAdminAccountPage::nextId() const {
-    return EvaluationTenantOnboardingWizard::Page_Apply;
+    return TenantOnboardingWizard::Page_Apply;
 }
 
 // ============================================================================
@@ -517,7 +489,7 @@ int OnboardingAdminAccountPage::nextId() const {
 // ============================================================================
 
 ApplyOnboardingPage::ApplyOnboardingPage(
-    EvaluationTenantOnboardingWizard* wizard)
+    TenantOnboardingWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Provisioning Tenant"));

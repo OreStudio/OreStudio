@@ -122,7 +122,7 @@
      <addaction name="ActionRoles"/>
      <addaction name="ActionTenants"/>
      <addaction name="separator"/>
-     <addaction name="ActionOnboardEvaluationTenant"/>
+     <addaction name="ActionOnboardTenant"/>
     </widget>
     <widget class="QMenu" name="menuTelemetry">
      <property name="title">
@@ -517,12 +517,12 @@
     <string>Manage business centre reference data</string>
    </property>
   </action>
-  <action name="ActionOnboardEvaluationTenant">
+  <action name="ActionOnboardTenant">
    <property name="text">
-    <string>&amp;Onboard Evaluation Tenant...</string>
+    <string>&amp;Onboard Tenant...</string>
    </property>
    <property name="toolTip">
-    <string>Provision a new evaluation tenant</string>
+    <string>Provision a new tenant</string>
    </property>
   </action>
  </widget>

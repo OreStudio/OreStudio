@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/MasterPasswordDialog.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QMessageBox>
@@ -53,9 +54,6 @@ void MasterPasswordDialog::setupUI() {
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
 
-    matchIndicatorLabel_ = new QLabel(this);
-    matchIndicatorLabel_->setStyleSheet("color: red;");
-
     switch (mode_) {
     case Mode::Unlock:
         setWindowTitle(tr("Unlock Connections"));
@@ -63,7 +61,6 @@ void MasterPasswordDialog::setupUI() {
         formLayout->addRow(tr("Password:"), currentPasswordEdit_);
         newPasswordEdit_->hide();
         confirmPasswordEdit_->hide();
-        matchIndicatorLabel_->hide();
         break;
 
     case Mode::Create:
@@ -78,7 +75,6 @@ void MasterPasswordDialog::setupUI() {
         currentPasswordEdit_->hide();
         formLayout->addRow(tr("New Password:"), newPasswordEdit_);
         formLayout->addRow(tr("Confirm Password:"), confirmPasswordEdit_);
-        formLayout->addRow(QString(), matchIndicatorLabel_);
         break;
 
     case Mode::Change:
@@ -89,7 +85,6 @@ void MasterPasswordDialog::setupUI() {
         formLayout->addRow(tr("Current Password:"), currentPasswordEdit_);
         formLayout->addRow(tr("New Password:"), newPasswordEdit_);
         formLayout->addRow(tr("Confirm New Password:"), confirmPasswordEdit_);
-        formLayout->addRow(QString(), matchIndicatorLabel_);
         break;
     }
 
@@ -104,12 +99,9 @@ void MasterPasswordDialog::setupUI() {
     // Connections
     connect(currentPasswordEdit_, &QLineEdit::textChanged,
             this, &MasterPasswordDialog::updateOkButtonState);
-    connect(newPasswordEdit_, &QLineEdit::textChanged,
-            this, &MasterPasswordDialog::updatePasswordMatchIndicator);
+    PasswordMatchIndicator::connectFields(newPasswordEdit_, confirmPasswordEdit_);
     connect(newPasswordEdit_, &QLineEdit::textChanged,
             this, &MasterPasswordDialog::updateOkButtonState);
-    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
-            this, &MasterPasswordDialog::updatePasswordMatchIndicator);
     connect(confirmPasswordEdit_, &QLineEdit::textChanged,
             this, &MasterPasswordDialog::updateOkButtonState);
     connect(buttonBox_, &QDialogButtonBox::accepted,
@@ -134,26 +126,6 @@ QString MasterPasswordDialog::getNewPassword() const {
 void MasterPasswordDialog::onOkClicked() {
     if (validateInput()) {
         accept();
-    }
-}
-
-void MasterPasswordDialog::updatePasswordMatchIndicator() {
-    if (mode_ == Mode::Unlock) {
-        matchIndicatorLabel_->clear();
-        return;
-    }
-
-    QString newPass = newPasswordEdit_->text();
-    QString confirmPass = confirmPasswordEdit_->text();
-
-    if (confirmPass.isEmpty()) {
-        matchIndicatorLabel_->clear();
-    } else if (newPass == confirmPass) {
-        matchIndicatorLabel_->setStyleSheet("color: green;");
-        matchIndicatorLabel_->setText(tr("Passwords match"));
-    } else {
-        matchIndicatorLabel_->setStyleSheet("color: red;");
-        matchIndicatorLabel_->setText(tr("Passwords do not match"));
     }
 }
 

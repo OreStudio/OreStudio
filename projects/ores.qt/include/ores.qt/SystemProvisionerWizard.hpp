@@ -344,6 +344,7 @@ private:
 
     SystemProvisionerWizard* wizard_;
     QLabel* summaryLabel_;
+    QLabel* nextStepsLabel_ = nullptr;
 };
 
 }

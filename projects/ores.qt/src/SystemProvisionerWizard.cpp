@@ -948,16 +948,15 @@ void ProvisionerCompletePage::setupUI() {
     // Next steps
     auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
     auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
-    auto* nextStepsLabel = new QLabel(
+    nextStepsLabel_ = new QLabel(
         tr("Log in as <b>%1@%2</b> to start the tenant provisioning wizard, "
            "which will help you set up reference data and party hierarchies.\n\n"
            "Use the <b>Data Librarian</b> to publish reference data bundles "
            "to tenants.").arg("tenant_admin", "hostname"),
         this);
-    nextStepsLabel->setObjectName("nextStepsLabel");
-    nextStepsLabel->setWordWrap(true);
-    nextStepsLabel->setTextFormat(Qt::RichText);
-    nextStepsLayout->addWidget(nextStepsLabel);
+    nextStepsLabel_->setWordWrap(true);
+    nextStepsLabel_->setTextFormat(Qt::RichText);
+    nextStepsLayout->addWidget(nextStepsLabel_);
     layout->addWidget(nextStepsBox);
 }
 
@@ -978,17 +977,16 @@ void ProvisionerCompletePage::initializePage() {
              tenantAdminUsername, tenantHostname));
 
     // Update next steps with actual values
-    auto* nextStepsLabel = findChild<QLabel*>("nextStepsLabel");
-    if (nextStepsLabel) {
+    if (nextStepsLabel_) {
         if (wizard_->isMultiTenantMode()) {
-            nextStepsLabel->setText(
+            nextStepsLabel_->setText(
                 tr("Log in as <b>%1@%2</b> to start the tenant provisioning "
                    "wizard, which will help you set up reference data.\n\n"
                    "To create additional tenants, use <b>System > Identity > "
                    "Tenants</b> and click <b>Onboard</b>.")
                 .arg(tenantAdminUsername, tenantHostname));
         } else {
-            nextStepsLabel->setText(
+            nextStepsLabel_->setText(
                 tr("Log in as <b>%1@%2</b> to start the tenant provisioning "
                    "wizard, which will help you set up reference data and "
                    "party hierarchies.")

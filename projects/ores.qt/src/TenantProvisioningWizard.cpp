@@ -28,12 +28,14 @@
 #include <QHeaderView>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+namespace reason = ores::database::domain::change_reason_constants;
 
 // ============================================================================
 // TenantProvisioningWizard
@@ -81,7 +83,7 @@ void TenantProvisioningWizard::clearBootstrapFlag() {
     req.flag.enabled = false;
     req.flag.description = "Bootstrap mode disabled after tenant setup";
     req.flag.modified_by = clientManager_->currentUsername();
-    req.flag.change_reason_code = "system.new_record";
+    req.flag.change_reason_code = std::string(reason::codes::new_record);
     req.flag.change_commentary = "Tenant setup wizard completed";
 
     auto result = clientManager_->process_authenticated_request(std::move(req));

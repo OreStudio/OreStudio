@@ -121,6 +121,7 @@ and C++ code.
 | Regular index     | =_idx=          | =ores_iam_accounts_username_idx=            |
 | Unique index      | =_uniq_idx=     | =ores_iam_accounts_username_uniq_idx=       |
 | GiST index        | =_gist_idx=     | =ores_iam_accounts_validity_gist_idx=       |
+| RLS policy        | =_policy=       | =ores_iam_accounts_tenant_isolation_policy=  |
 
 ** Entity name conventions
 
@@ -154,10 +155,16 @@ collections of entities.
 | Delete rule        | =ores_{component}_{entities}_delete_rule=               |
 | Column index       | =ores_{component}_{entities}_{column(s)}_idx=           |
 | Unique index       | =ores_{component}_{entities}_{column(s)}_uniq_idx=      |
+| Tenant RLS policy  | =ores_{component}_{entities}_tenant_isolation_policy=    |
+| Party RLS policy   | =ores_{component}_{entities}_party_isolation_policy=     |
+| Read RLS policy    | =ores_{component}_{entities}_read_policy=               |
+| Modification RLS   | =ores_{component}_{entities}_modification_policy=       |
 | Schema file        | =ores_{component}_{entity}_create.sql=                  |
 | Notify file        | =ores_{component}_{entity}_notify_trigger.sql=          |
 | Drop file          | =ores_{component}_{entity}_drop.sql=                    |
 | Notify drop file   | =ores_{component}_{entity}_notify_trigger_drop.sql=     |
+| RLS create file    | ={component}_rls_policies_create.sql=                   |
+| RLS drop file      | ={component}_rls_policies_drop.sql=                     |
 | Populate file      | =ores_{component}_{entity}_populate.sql=                |
 
 The key principle is that *function names preserve the table name* for grep-ability.
@@ -361,13 +368,19 @@ projects/ores.sql/
 │   ├── {component}/                 # Component subdirectories
 │   │   ├── create_{component}.sql   # Component master script
 │   │   ├── {component}_{entity}_create.sql
-│   │   └── {component}_{entity}_notify_trigger_create.sql
+│   │   ├── {component}_{entity}_notify_trigger_create.sql
+│   │   └── {component}_rls_policies_create.sql
+│   ├── rls/                         # RLS policy orchestration
+│   │   └── rls_create.sql           # Master RLS create script
 │   └── create.sql                   # Master-of-masters
 ├── drop/                            # Drop scripts for cleanup
 │   ├── {component}/                 # Component subdirectories
 │   │   ├── drop_{component}.sql     # Component master script
 │   │   ├── {component}_{entity}_drop.sql
-│   │   └── {component}_{entity}_notify_trigger_drop.sql
+│   │   ├── {component}_{entity}_notify_trigger_drop.sql
+│   │   └── {component}_rls_policies_drop.sql
+│   ├── rls/                         # RLS policy drop orchestration
+│   │   └── rls_drop.sql             # Master RLS drop script
 │   └── drop.sql                     # Master-of-masters
 ├── populate/                        # Reference data population
 │   ├── {component}/                 # Component subdirectories
@@ -636,6 +649,113 @@ drop trigger if exists ores_{component}_{entity}_notify_trg on "ores_{component}
 drop function if exists ores_{component}_{entity}_notify_fn();
 #+end_src
 
+** Step 3b: Add RLS policy
+
+Every table with a =tenant_id= column must have a Row-Level Security (RLS)
+policy for tenant isolation. Policies are grouped per component in a single
+file.
+
+*** Policy types
+
+| Type                | Use Case                              | Mode         |
+|---------------------+---------------------------------------+--------------|
+| Tenant isolation    | Standard tenant filtering             | PERMISSIVE   |
+| Party isolation     | Party-scoped data within a tenant     | RESTRICTIVE  |
+| Read (shared data)  | System tenant data readable by all    | PERMISSIVE   |
+| Modification        | Write restricted to own tenant        | PERMISSIVE   |
+
+*** Policy naming
+
+Policy names follow the pattern =ores_{component}_{entities}_{type}_policy=:
+
+| Type              | Suffix                           | Example                                                |
+|-------------------+----------------------------------+--------------------------------------------------------|
+| Tenant isolation  | =_tenant_isolation_policy=       | =ores_refdata_currencies_tenant_isolation_policy=       |
+| Party isolation   | =_party_isolation_policy=        | =ores_refdata_party_counterparties_party_isolation_policy= |
+| Read (shared)     | =_read_policy=                   | =ores_dq_catalogs_read_policy=                         |
+| Modification      | =_modification_policy=           | =ores_dq_catalogs_modification_policy=                 |
+
+*Important*: Do NOT include =_tbl= in policy names. The policy name should match
+the entity name, not the table name. For example, use
+=ores_iam_accounts_tenant_isolation_policy= not
+=ores_iam_accounts_tbl_tenant_isolation_policy=.
+
+*** Standard tenant isolation policy
+
+#+begin_src sql
+alter table ores_{component}_{entities}_tbl enable row level security;
+
+create policy ores_{component}_{entities}_tenant_isolation_policy
+on ores_{component}_{entities}_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+#+end_src
+
+*** Party isolation policy (RESTRICTIVE)
+
+For tables that need party-level filtering within a tenant, add a RESTRICTIVE
+policy. RESTRICTIVE policies are ANDed with PERMISSIVE policies (multiple
+PERMISSIVE policies are ORed). The =IS NULL= fallback ensures backward
+compatibility when no party context is set.
+
+#+begin_src sql
+create policy ores_{component}_{entities}_party_isolation_policy
+on ores_{component}_{entities}_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+#+end_src
+
+*Warning*: Do NOT use two PERMISSIVE policies for tenant + party isolation.
+PostgreSQL ORs PERMISSIVE policies, so the tenant policy would always pass and
+the party policy would be ignored.
+
+*** Shared data pattern (DQ, Geo)
+
+For tables where system tenant data should be readable by all tenants:
+
+#+begin_src sql
+create policy ores_{component}_{entities}_read_policy
+on ores_{component}_{entities}_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_iam_system_tenant_id_fn()
+);
+
+create policy ores_{component}_{entities}_modification_policy
+on ores_{component}_{entities}_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+#+end_src
+
+*** File organization
+
+- *Create*: Add policies to =projects/ores.sql/create/{component}/{component}_rls_policies_create.sql=
+- *Drop*: Add corresponding drops to =projects/ores.sql/drop/{component}/{component}_rls_policies_drop.sql=
+- Wire create into =create/rls/rls_create.sql=; wire drop into =drop/rls/rls_drop.sql=
+
+Drop order is: RLS policies first, then tables. Create order is the reverse:
+tables first, then RLS policies.
+
+*** Drop script pattern
+
+#+begin_src sql
+-- Drop policies before dropping tables
+drop policy if exists ores_{component}_{entities}_tenant_isolation_policy on "ores_{component}_{entities}_tbl";
+drop policy if exists ores_{component}_{entities}_party_isolation_policy on "ores_{component}_{entities}_tbl";
+#+end_src
+
 ** Step 4: Create population script (if needed)
 
 For reference data, create =projects/ores.sql/populate/ores_{component}_{entity}_populate.sql=:
@@ -774,6 +894,10 @@ The validator checks for:
 - Functions created without corresponding drop statements
 - Tables created without corresponding drop statements
 - Other schema consistency issues
+
+*Note*: The validator does not yet check for RLS policy create/drop parity.
+Policy drops must be verified manually or by reviewing the
+={component}_rls_policies_drop.sql= files.
 
 *Important*: Fix all issues reported by the validator before committing. This
 validation also runs in CI and will fail the build if there are warnings.

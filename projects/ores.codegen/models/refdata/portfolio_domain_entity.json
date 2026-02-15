@@ -102,6 +102,46 @@
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
       ]
+    },
+
+    "qt": {
+      "domain_include": "ores.refdata/domain/portfolio.hpp",
+      "domain_class": "refdata::domain::portfolio",
+      "protocol_include": "ores.refdata/messaging/portfolio_protocol.hpp",
+      "collection_name": "portfolios",
+      "item_var": "portfolio",
+      "key_field": "name",
+      "has_uuid_primary_key": true,
+      "get_request_class": "refdata::messaging::get_portfolios_request",
+      "get_response_class": "refdata::messaging::get_portfolios_response",
+      "get_message_type": "get_portfolios_request",
+      "save_request_class": "refdata::messaging::save_portfolio_request",
+      "save_response_class": "refdata::messaging::save_portfolio_response",
+      "save_message_type": "save_portfolio_request",
+      "save_request_item_field": "portfolio",
+      "delete_request_class": "refdata::messaging::delete_portfolio_request",
+      "delete_response_class": "refdata::messaging::delete_portfolio_response",
+      "delete_message_type": "delete_portfolio_request",
+      "history_request_class": "refdata::messaging::get_portfolio_history_request",
+      "history_response_class": "refdata::messaging::get_portfolio_history_response",
+      "history_message_type": "get_portfolio_history_request",
+      "detail_fields": [
+        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit", "is_key": true, "is_required": true, "placeholder": "Enter portfolio name"},
+        {"field": "purpose_type", "label": "Purpose Type", "widget": "purposeTypeEdit", "type": "line_edit", "placeholder": "Enter purpose type"},
+        {"field": "aggregation_ccy", "label": "Aggregation Currency", "widget": "aggregationCcyEdit", "type": "line_edit", "placeholder": "Enter aggregation currency"}
+      ],
+      "columns": [
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 250},
+        {"enum_name": "PurposeType", "field": "purpose_type", "header": "Purpose", "is_string": true, "width": 120},
+        {"enum_name": "AggregationCcy", "field": "aggregation_ccy", "header": "Agg. Currency", "is_string": true, "width": 120},
+        {"enum_name": "IsVirtual", "field": "is_virtual", "header": "Virtual", "is_int": true, "width": 70},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+      "settings_group": "PortfolioListWindow",
+      "window_title": "Portfolios",
+      "icon": "Folder"
     }
   }
 }

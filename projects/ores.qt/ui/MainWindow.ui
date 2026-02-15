@@ -63,11 +63,20 @@
       <addaction name="ActionPartyIdSchemes"/>
       <addaction name="ActionContactTypes"/>
      </widget>
+     <widget class="QMenu" name="menuOrganisation">
+      <property name="title">
+       <string>&amp;Organisation</string>
+      </property>
+      <addaction name="ActionBusinessUnits"/>
+      <addaction name="ActionPortfolios"/>
+      <addaction name="ActionBooks"/>
+     </widget>
      <addaction name="CurrenciesAction"/>
      <addaction name="CountriesAction"/>
      <addaction name="ActionBusinessCentres"/>
      <addaction name="separator"/>
      <addaction name="menuParties"/>
+     <addaction name="menuOrganisation"/>
     </widget>
     <widget class="QMenu" name="menuAssets">
      <property name="title">
@@ -523,6 +532,30 @@
    </property>
    <property name="toolTip">
     <string>Provision a new tenant</string>
+   </property>
+  </action>
+  <action name="ActionBusinessUnits">
+   <property name="text">
+    <string>&amp;Business Units</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage business units</string>
+   </property>
+  </action>
+  <action name="ActionPortfolios">
+   <property name="text">
+    <string>&amp;Portfolios</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage portfolios</string>
+   </property>
+  </action>
+  <action name="ActionBooks">
+   <property name="text">
+    <string>Boo&amp;ks</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage books</string>
    </property>
   </action>
  </widget>

@@ -120,6 +120,49 @@
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
       ]
+    },
+
+    "qt": {
+      "domain_include": "ores.refdata/domain/book.hpp",
+      "domain_class": "refdata::domain::book",
+      "protocol_include": "ores.refdata/messaging/book_protocol.hpp",
+      "collection_name": "books",
+      "item_var": "book",
+      "key_field": "name",
+      "has_uuid_primary_key": true,
+      "get_request_class": "refdata::messaging::get_books_request",
+      "get_response_class": "refdata::messaging::get_books_response",
+      "get_message_type": "get_books_request",
+      "save_request_class": "refdata::messaging::save_book_request",
+      "save_response_class": "refdata::messaging::save_book_response",
+      "save_message_type": "save_book_request",
+      "save_request_item_field": "book",
+      "delete_request_class": "refdata::messaging::delete_book_request",
+      "delete_response_class": "refdata::messaging::delete_book_response",
+      "delete_message_type": "delete_book_request",
+      "history_request_class": "refdata::messaging::get_book_history_request",
+      "history_response_class": "refdata::messaging::get_book_history_response",
+      "history_message_type": "get_book_history_request",
+      "detail_fields": [
+        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit", "is_key": true, "is_required": true, "placeholder": "Enter book name"},
+        {"field": "ledger_ccy", "label": "Ledger Currency", "widget": "ledgerCcyEdit", "type": "line_edit", "placeholder": "Enter ledger currency"},
+        {"field": "gl_account_ref", "label": "GL Account Ref", "widget": "glAccountRefEdit", "type": "line_edit", "placeholder": "Enter GL account reference"},
+        {"field": "cost_center", "label": "Cost Center", "widget": "costCenterEdit", "type": "line_edit", "placeholder": "Enter cost center"},
+        {"field": "book_status", "label": "Status", "widget": "bookStatusEdit", "type": "line_edit", "placeholder": "Enter status"}
+      ],
+      "columns": [
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "LedgerCcy", "field": "ledger_ccy", "header": "Ledger Ccy", "is_string": true, "width": 100},
+        {"enum_name": "BookStatus", "field": "book_status", "header": "Status", "is_string": true, "width": 100},
+        {"enum_name": "CostCenter", "field": "cost_center", "header": "Cost Center", "is_string": true, "width": 120},
+        {"enum_name": "IsTradingBook", "field": "is_trading_book", "header": "Trading", "is_int": true, "width": 70},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+      "settings_group": "BookListWindow",
+      "window_title": "Books",
+      "icon": "Book"
     }
   }
 }

@@ -37,9 +37,14 @@ namespace ores::refdata::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all books.
+ * @brief Request to retrieve books with pagination support.
  */
 struct get_books_request final {
+    /// Number of records to skip (0-based)
+    std::uint32_t offset = 0;
+    /// Maximum number of records to return
+    std::uint32_t limit = 100;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_books_request,
                          ores::utility::serialization::error_code>
@@ -49,10 +54,12 @@ struct get_books_request final {
 std::ostream& operator<<(std::ostream& s, const get_books_request& v);
 
 /**
- * @brief Response containing all books.
+ * @brief Response containing books with pagination metadata.
  */
 struct get_books_response final {
     std::vector<domain::book> books;
+    /// Total number of books available (not just in this page)
+    std::uint32_t total_available_count = 0;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_books_response,

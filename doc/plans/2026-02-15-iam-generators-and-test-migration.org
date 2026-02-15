@@ -1,0 +1,312 @@
+:PROPERTIES:
+:ID: a7f3e1c2-8d4a-4b91-9e6f-2c1d8f5a3b70
+:END:
+#+title: IAM Generators and Test Migration
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+The IAM component has 8 domain types that lack proper generators. Their
+repository tests use hand-rolled =make_*= helpers defined in anonymous
+namespaces, bypassing the =generation_context= infrastructure that was
+specifically designed (see =2026-02-14-generation-context-design.org=) to solve
+this problem. This plan creates the missing generators and migrates existing
+tests.
+
+** Problem
+
+Hand-rolled helpers in IAM test files:
+
+| Helper               | Test File                                       | Generator Exists? |
+|----------------------+-------------------------------------------------+-------------------|
+| =make_tenant()=      | =repository_tenant_repository_tests.cpp=        | No                |
+| =make_tenant_status()= | =repository_tenant_status_repository_tests.cpp= | No             |
+| =make_tenant_type()= | =repository_tenant_type_repository_tests.cpp=   | No                |
+| =make_session()=     | =repository_session_repository_tests.cpp=       | No                |
+| =make_login_info()=  | =repository_login_info_repository_tests.cpp=    | No                |
+| =make_permission()=  | =repository_permission_repository_tests.cpp=    | No                |
+| =make_role()=        | =repository_role_repository_tests.cpp=          | No                |
+| =make_account_role()= | =repository_account_role_repository_tests.cpp= | No                |
+| =make_permission()=  | =repository_role_permission_repository_tests.cpp= | No (duplicate)  |
+| =make_role()=        | =repository_role_permission_repository_tests.cpp= | No (duplicate)  |
+| =make_account_party()= | =repository_account_party_repository_tests.cpp= | Yes (unused)   |
+
+These helpers have several issues:
+
+1. *Not reproducible* - use =boost::uuids::random_generator()()= instead of
+   =ctx.generate_uuid()=, so test runs are not reproducible via seed.
+2. *Duplicate context wiring* - each helper manually calls =h.db_user()= and
+   =h.tenant_id()= for audit fields, duplicating what =generation_context= and
+   =make_generation_context()= already provide.
+3. *Not reusable* - defined in anonymous namespaces, so each test file that needs
+   the same type must duplicate the helper.
+4. *Inconsistent with rest of codebase* - ores.dq, ores.refdata, ores.assets,
+   and ores.connections all use generators with =generation_context=.
+
+** Goals
+
+- Create generators for all 8 missing IAM domain types.
+- Migrate all IAM repository test files to use generators +
+  =make_generation_context()=.
+- Follow the established generator pattern from =generation_context= design doc.
+- Remove all hand-rolled =make_*= helpers.
+
+** Non-Goals
+
+- Migrating generators in other components (ores.dq, ores.refdata are already
+  done).
+- Changing domain type definitions.
+- Adding new test cases (test coverage was addressed in the preceding PR).
+
+* Phase 1: Create Missing Generators
+
+Create 8 generator pairs (header + source) under
+=projects/ores.iam/include/ores.iam/generators/= and
+=projects/ores.iam/src/generators/=.
+
+Each generator follows the established pattern:
+
+#+begin_src cpp
+domain::TYPE generate_synthetic_TYPE(generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+    // ... use ctx.generate_uuid(), ctx.random_int(), faker::*, etc.
+    return r;
+}
+
+std::vector<domain::TYPE> generate_synthetic_TYPEs(
+    std::size_t n, generation_context& ctx);
+#+end_src
+
+** 1.1 tenant_generator
+
+Domain fields: =version=, =id= (uuid), =code=, =name=, =type=, =description=,
+=hostname=, =status=, =modified_by=, =change_reason_code=,
+=change_commentary=, =performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=, =tenant_id= (for =performed_by=).
+
+Uniqueness: static atomic counter appended to =code= and =hostname=.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/tenant_generator.hpp=
+- =projects/ores.iam/src/generators/tenant_generator.cpp=
+
+** 1.2 tenant_status_generator
+
+Domain fields: =version=, =status= (key), =name=, =description=,
+=display_order=, =modified_by=, =change_reason_code=, =change_commentary=,
+=performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=.
+
+Uniqueness: static atomic counter appended to =status= code.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/tenant_status_generator.hpp=
+- =projects/ores.iam/src/generators/tenant_status_generator.cpp=
+
+** 1.3 tenant_type_generator
+
+Domain fields: =version=, =type= (key), =name=, =description=,
+=display_order=, =modified_by=, =change_reason_code=, =change_commentary=,
+=performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=.
+
+Uniqueness: static atomic counter appended to =type= code.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/tenant_type_generator.hpp=
+- =projects/ores.iam/src/generators/tenant_type_generator.cpp=
+
+** 1.4 role_generator
+
+Domain fields: =version=, =id= (uuid), =code=, =name=, =description=,
+=display_order=, =modified_by=, =change_reason_code=, =change_commentary=,
+=performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=, =tenant_id=.
+
+Uniqueness: static atomic counter appended to =code=.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/role_generator.hpp=
+- =projects/ores.iam/src/generators/role_generator.cpp=
+
+** 1.5 permission_generator
+
+Domain fields: =version=, =id= (uuid), =code=, =name=, =description=,
+=display_order=, =modified_by=, =change_reason_code=, =change_commentary=,
+=performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=, =tenant_id=.
+
+Uniqueness: static atomic counter appended to =code=.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/permission_generator.hpp=
+- =projects/ores.iam/src/generators/permission_generator.cpp=
+
+** 1.6 session_generator
+
+Domain fields: =version=, =tenant_id=, =id= (uuid), =account_id= (uuid),
+=ip_address=, =user_agent=, =started_at=, =ended_at=, =modified_by=,
+=change_reason_code=, =change_commentary=, =performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=, =tenant_id=, =account_id=.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/session_generator.hpp=
+- =projects/ores.iam/src/generators/session_generator.cpp=
+
+** 1.7 login_info_generator
+
+Domain fields: =version=, =tenant_id=, =account_id= (uuid), =ip_address=,
+=user_agent=, =login_at=, =success=, =failure_reason=, =modified_by=,
+=change_commentary=, =performed_by=, =recorded_at=.
+
+Context keys used: =modified_by=, =tenant_id=, =account_id=.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/login_info_generator.hpp=
+- =projects/ores.iam/src/generators/login_info_generator.cpp=
+
+** 1.8 account_role_generator
+
+Domain fields: =version=, =tenant_id=, =account_id= (uuid), =role_id= (uuid),
+=modified_by=, =change_reason_code=, =change_commentary=, =performed_by=,
+=recorded_at=.
+
+Context keys used: =modified_by=, =tenant_id=, =account_id=.
+
+Files:
+- =projects/ores.iam/include/ores.iam/generators/account_role_generator.hpp=
+- =projects/ores.iam/src/generators/account_role_generator.cpp=
+
+* Phase 2: Add Generator Tests
+
+Add test cases for each new generator to the existing
+=projects/ores.iam/tests/generators_tests.cpp= (or create one if it does not
+exist). Follow the pattern from =projects/ores.dq/tests/generators_tests.cpp=:
+
+#+begin_src cpp
+TEST_CASE("generate_synthetic_tenant_status_produces_valid_instance", tags) {
+    generation_context ctx;
+    auto sut = generate_synthetic_tenant_status(ctx);
+    CHECK(!sut.status.empty());
+    CHECK(!sut.name.empty());
+    CHECK(sut.version == 1);
+    CHECK(sut.change_commentary == "Synthetic test data");
+}
+
+TEST_CASE("generate_synthetic_tenant_statuses_produces_n_instances", tags) {
+    generation_context ctx;
+    auto items = generate_synthetic_tenant_statuses(5, ctx);
+    CHECK(items.size() == 5);
+}
+#+end_src
+
+* Phase 3: Migrate Repository Tests
+
+Migrate each repository test file to replace the hand-rolled =make_*= helper
+with the new generator and =make_generation_context()=.
+
+** Before (current pattern)
+
+#+begin_src cpp
+#include <faker-cxx/faker.h>
+
+namespace {
+tenant_status make_tenant_status(ores::testing::database_helper& h) {
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
+    tenant_status ts;
+    ts.version = 1;
+    ts.status = std::string(faker::string::alphanumeric(8)) + "_" + std::to_string(idx);
+    ts.modified_by = h.db_user();
+    ts.performed_by = h.db_user();
+    // ...
+    return ts;
+}
+}
+
+TEST_CASE("write_single_tenant_status", tags) {
+    database_helper h;
+    auto sys_ctx = h.context().with_tenant(tenant_id::system());
+    auto ts = make_tenant_status(h);
+    // ...
+}
+#+end_src
+
+** After (migrated pattern)
+
+#+begin_src cpp
+#include "ores.iam/generators/tenant_status_generator.hpp"
+#include "ores.testing/make_generation_context.hpp"
+
+// No anonymous namespace helper needed.
+
+TEST_CASE("write_single_tenant_status", tags) {
+    database_helper h;
+    auto sys_ctx = h.context().with_tenant(tenant_id::system());
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    auto ts = generate_synthetic_tenant_status(gen_ctx);
+    // ...
+}
+#+end_src
+
+** Files to migrate
+
+| Test File                                          | Remove Helper       | Use Generator                        |
+|----------------------------------------------------+---------------------+--------------------------------------|
+| =repository_tenant_repository_tests.cpp=           | =make_tenant()=     | =generate_synthetic_tenant()=        |
+| =repository_tenant_status_repository_tests.cpp=    | =make_tenant_status()= | =generate_synthetic_tenant_status()= |
+| =repository_tenant_type_repository_tests.cpp=      | =make_tenant_type()= | =generate_synthetic_tenant_type()=   |
+| =repository_session_repository_tests.cpp=          | =make_session()=    | =generate_synthetic_session()=       |
+| =repository_login_info_repository_tests.cpp=       | =make_login_info()= | =generate_synthetic_login_info()=    |
+| =repository_permission_repository_tests.cpp=       | =make_permission()= | =generate_synthetic_permission()=    |
+| =repository_role_repository_tests.cpp=             | =make_role()=       | =generate_synthetic_role()=          |
+| =repository_account_role_repository_tests.cpp=     | =make_account_role()= | =generate_synthetic_account_role()= |
+| =repository_role_permission_repository_tests.cpp=  | =make_role()=, =make_permission()= | Use both generators   |
+| =repository_account_party_repository_tests.cpp=    | =make_account_party()= | =generate_synthetic_account_party()= (already exists) |
+
+* Phase 4: Verify
+
+1. Build: =cmake --build --preset linux-clang-debug=
+2. Run IAM tests: =build/output/linux-clang-debug/publish/bin/ores.iam.tests=
+3. Run all tests: =cmake --build --preset linux-clang-debug --target rat=
+
+* Scope Summary
+
+| Phase | Description             | New Files | Modified Files |
+|-------+-------------------------+-----------+----------------|
+|     1 | Create 8 generators     |        16 |              0 |
+|     2 | Generator tests         |         1 |              0 |
+|     3 | Migrate repository tests |         0 |             10 |
+|     4 | Build and verify        |         0 |              0 |
+| Total |                         |        17 |             10 |
+
+* Dependencies
+
+- Requires =generation_context= infrastructure (already merged in
+  =feature/generation_context= PR #448).
+- Requires =make_generation_context()= in =ores.testing= (already exists).
+- Requires =generation_keys::modified_by= and =generation_keys::tenant_id=
+  (already exist).
+
+* Open Questions
+
+- Should we also check whether domain types need a =tenant_id= field? The
+  =tenant_status= and =tenant_type= domain structs do NOT have a =tenant_id=
+  field (they are system-level reference data), while =session=, =login_info=,
+  and =account_role= do. Generators for the latter group will read =tenant_id=
+  from context.
+- Some test files (e.g. =repository_role_permission_repository_tests.cpp=)
+  define two =make_*= helpers for different types. These will need two different
+  generator includes.
+- The =account_party_repository_tests.cpp= already has a generator available
+  (=account_party_generator=) but doesn't use it. This file needs the same
+  migration but the generator already exists.

@@ -20,7 +20,6 @@
 #include "ores.iam/repository/account_role_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -32,6 +31,8 @@
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/repository/role_repository.hpp"
 #include "ores.iam/generators/account_generator.hpp"
+#include "ores.iam/generators/role_generator.hpp"
+#include "ores.iam/generators/account_role_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 
@@ -39,24 +40,6 @@ namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
-
-using ores::iam::domain::role;
-using ores::iam::domain::account_role;
-
-role make_role(ores::testing::database_helper& h) {
-    role r;
-    r.version = 1;
-    r.tenant_id = h.tenant_id();
-    r.id = boost::uuids::random_generator()();
-    r.name = std::string(faker::word::noun()) + "_"
-        + std::string(faker::string::alphanumeric(6));
-    r.description = std::string(faker::lorem::sentence());
-    r.modified_by = h.db_user();
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.performed_by = h.db_user();
-    return r;
-}
 
 }
 
@@ -79,17 +62,13 @@ TEST_CASE("write_single_account_role", tags) {
     account_role_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
-    auto r = make_role(h);
+    auto r = generate_synthetic_role(ctx);
     acc_repo.write(acc);
     role_repo.write(r);
 
-    account_role ar;
-    ar.tenant_id = h.tenant_id();
+    auto ar = generate_synthetic_account_role(ctx);
     ar.account_id = acc.id;
     ar.role_id = r.id;
-    ar.assigned_by = h.db_user();
-    ar.change_reason_code = "system.test";
-    ar.change_commentary = "Synthetic test data";
 
     BOOST_LOG_SEV(lg, debug) << "Account role - account_id: " << ar.account_id
                              << " role_id: " << ar.role_id;
@@ -107,17 +86,13 @@ TEST_CASE("read_latest_account_roles", tags) {
     account_role_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
-    auto r = make_role(h);
+    auto r = generate_synthetic_role(ctx);
     acc_repo.write(acc);
     role_repo.write(r);
 
-    account_role ar;
-    ar.tenant_id = h.tenant_id();
+    auto ar = generate_synthetic_account_role(ctx);
     ar.account_id = acc.id;
     ar.role_id = r.id;
-    ar.assigned_by = h.db_user();
-    ar.change_reason_code = "system.test";
-    ar.change_commentary = "Synthetic test data";
     repo.write(ar);
 
     auto read_ars = repo.read_latest();
@@ -138,27 +113,19 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     account_role_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
-    auto r1 = make_role(h);
-    auto r2 = make_role(h);
+    auto r1 = generate_synthetic_role(ctx);
+    auto r2 = generate_synthetic_role(ctx);
     acc_repo.write(acc);
     role_repo.write(r1);
     role_repo.write(r2);
 
-    account_role ar1;
-    ar1.tenant_id = h.tenant_id();
+    auto ar1 = generate_synthetic_account_role(ctx);
     ar1.account_id = acc.id;
     ar1.role_id = r1.id;
-    ar1.assigned_by = h.db_user();
-    ar1.change_reason_code = "system.test";
-    ar1.change_commentary = "Synthetic test data";
 
-    account_role ar2;
-    ar2.tenant_id = h.tenant_id();
+    auto ar2 = generate_synthetic_account_role(ctx);
     ar2.account_id = acc.id;
     ar2.role_id = r2.id;
-    ar2.assigned_by = h.db_user();
-    ar2.change_reason_code = "system.test";
-    ar2.change_commentary = "Synthetic test data";
 
     repo.write(ar1);
     repo.write(ar2);

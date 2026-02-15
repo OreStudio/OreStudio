@@ -20,7 +20,6 @@
 #include "ores.iam/repository/role_permission_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -31,46 +30,22 @@
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/repository/role_repository.hpp"
 #include "ores.iam/repository/permission_repository.hpp"
+#include "ores.iam/generators/role_generator.hpp"
+#include "ores.iam/generators/permission_generator.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-using ores::iam::domain::role;
-using ores::iam::domain::permission;
 using ores::iam::domain::role_permission;
-
-role make_role(ores::testing::database_helper& h) {
-    role r;
-    r.version = 1;
-    r.tenant_id = h.tenant_id();
-    r.id = boost::uuids::random_generator()();
-    r.name = std::string(faker::word::noun()) + "_"
-        + std::string(faker::string::alphanumeric(6));
-    r.description = std::string(faker::lorem::sentence());
-    r.modified_by = h.db_user();
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.performed_by = h.db_user();
-    return r;
-}
-
-permission make_permission(ores::testing::database_helper& h) {
-    permission p;
-    p.tenant_id = h.tenant_id();
-    p.id = boost::uuids::random_generator()();
-    p.code = std::string(faker::string::alphanumeric(6)) + "::"
-        + std::string(faker::string::alphanumeric(6)) + ":"
-        + std::string(faker::string::alphanumeric(6));
-    p.description = std::string(faker::lorem::sentence());
-    return p;
-}
 
 }
 
 using namespace ores::logging;
+using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
 using ores::iam::repository::role_permission_repository;
@@ -81,13 +56,14 @@ TEST_CASE("write_single_role_permission", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     role_repository role_repo(h.context());
     permission_repository perm_repo(h.context());
     role_permission_repository repo(h.context());
 
-    auto r = make_role(h);
-    auto p = make_permission(h);
+    auto r = generate_synthetic_role(ctx);
+    auto p = generate_synthetic_permission(ctx);
     role_repo.write(r);
     perm_repo.write(p);
 
@@ -105,13 +81,14 @@ TEST_CASE("read_latest_role_permissions", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     role_repository role_repo(h.context());
     permission_repository perm_repo(h.context());
     role_permission_repository repo(h.context());
 
-    auto r = make_role(h);
-    auto p = make_permission(h);
+    auto r = generate_synthetic_role(ctx);
+    auto p = generate_synthetic_permission(ctx);
     role_repo.write(r);
     perm_repo.write(p);
 
@@ -132,14 +109,15 @@ TEST_CASE("read_latest_role_permissions_by_role", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     role_repository role_repo(h.context());
     permission_repository perm_repo(h.context());
     role_permission_repository repo(h.context());
 
-    auto r = make_role(h);
-    auto p1 = make_permission(h);
-    auto p2 = make_permission(h);
+    auto r = generate_synthetic_role(ctx);
+    auto p1 = generate_synthetic_permission(ctx);
+    auto p2 = generate_synthetic_permission(ctx);
     role_repo.write(r);
     perm_repo.write(p1);
     perm_repo.write(p2);

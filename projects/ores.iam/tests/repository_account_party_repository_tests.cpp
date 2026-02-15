@@ -20,7 +20,6 @@
 #include "ores.iam/repository/account_party_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -30,6 +29,7 @@
 #include "ores.iam/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/generators/account_generator.hpp"
+#include "ores.iam/generators/account_party_generator.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.refdata/generators/party_generator.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -58,20 +58,6 @@ boost::uuids::uuid find_system_party_id(
     throw std::runtime_error("No system party for tenant: " + tid);
 }
 
-account_party make_account_party(database_helper& h,
-    const boost::uuids::uuid& account_id,
-    const boost::uuids::uuid& party_id) {
-    account_party ap;
-    ap.tenant_id = h.tenant_id().to_string();
-    ap.account_id = account_id;
-    ap.party_id = party_id;
-    ap.modified_by = h.db_user();
-    ap.change_reason_code = "system.test";
-    ap.change_commentary = "Synthetic test data";
-    ap.performed_by = h.db_user();
-    return ap;
-}
-
 }
 
 TEST_CASE("write_single_account_party", tags) {
@@ -89,7 +75,9 @@ TEST_CASE("write_single_account_party", tags) {
     auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
 
-    auto ap = make_account_party(h, acc.id, party_id);
+    auto ap = generate_synthetic_account_party(ctx);
+    ap.account_id = acc.id;
+    ap.party_id = party_id;
 
     BOOST_LOG_SEV(lg, debug) << "Account party: " << ap;
     CHECK_NOTHROW(repo.write(ap));
@@ -117,7 +105,10 @@ TEST_CASE("write_multiple_account_parties", tags) {
         party.parent_party_id = system_party_id;
         party_repo.write(party);
 
-        aps.push_back(make_account_party(h, acc.id, party.id));
+        auto ap = generate_synthetic_account_party(ctx);
+        ap.account_id = acc.id;
+        ap.party_id = party.id;
+        aps.push_back(ap);
     }
 
     BOOST_LOG_SEV(lg, debug) << "Account parties: " << aps;
@@ -146,7 +137,10 @@ TEST_CASE("read_latest_account_parties", tags) {
         party.parent_party_id = system_party_id;
         party_repo.write(party);
 
-        written.push_back(make_account_party(h, acc.id, party.id));
+        auto ap = generate_synthetic_account_party(ctx);
+        ap.account_id = acc.id;
+        ap.party_id = party.id;
+        written.push_back(ap);
     }
 
     BOOST_LOG_SEV(lg, debug) << "Written account parties: " << written;
@@ -174,7 +168,9 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
 
-    auto ap = make_account_party(h, acc.id, party_id);
+    auto ap = generate_synthetic_account_party(ctx);
+    ap.account_id = acc.id;
+    ap.party_id = party_id;
     BOOST_LOG_SEV(lg, debug) << "Written account party: " << ap;
     repo.write(ap);
 

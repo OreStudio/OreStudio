@@ -219,6 +219,28 @@ returns table (
     select * from ores_iam_set_tenant_fn(p_code_pattern);
 $$ language sql;
 
+-- Get current party ID from session variable
+create or replace function ores_iam_current_party_id_fn()
+returns uuid as $$
+begin
+    return current_setting('app.current_party_id', true)::uuid;
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+
+-- Get visible party IDs from session variable as uuid array
+create or replace function ores_iam_visible_party_ids_fn()
+returns uuid[] as $$
+begin
+    return current_setting('app.visible_party_ids', true)::uuid[];
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+
 -- Generic trigger function to set tenant_id from session variable on insert.
 -- Used by tables that don't have their own complex insert triggers.
 create or replace function ores_iam_set_tenant_id_on_insert_fn()

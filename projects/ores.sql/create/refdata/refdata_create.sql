@@ -78,6 +78,9 @@
 \ir ./refdata_counterparties_create.sql
 \ir ./refdata_counterparties_notify_trigger_create.sql
 
+-- Party-counterparty visibility junction
+\ir ./refdata_party_counterparty_create.sql
+
 -- Party and counterparty identifiers
 \ir ./refdata_party_identifiers_create.sql
 \ir ./refdata_party_identifiers_notify_trigger_create.sql

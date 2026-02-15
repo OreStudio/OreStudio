@@ -80,6 +80,10 @@ std::vector<{{entity_singular}}_entity>
 {{#junction}}
 #include "ores.{{component}}/repository/{{name_singular}}_mapper.hpp"
 
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+{{/has_uuid_left_or_right}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -94,12 +98,25 @@ domain::{{name_singular}}
 
     domain::{{name_singular}} r;
     r.version = v.version;
+{{#has_tenant_id}}
+    r.tenant_id = v.tenant_id;
+{{/has_tenant_id}}
+{{#left.is_uuid}}
+    r.{{left.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{left.column}}.value());
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     r.{{left.column}} = v.{{left.column}}.value();
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    r.{{right.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     r.{{right.column}} = v.{{right.column}};
+{{/right.is_uuid}}
 {{#columns}}
     r.{{name}} = v.{{name}};
 {{/columns}}
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -114,13 +131,26 @@ domain::{{name_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     {{name_singular}}_entity r;
+{{#left.is_uuid}}
+    r.{{left.column}} = boost::uuids::to_string(v.{{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     r.{{left.column}} = v.{{left.column}};
+{{/left.is_uuid}}
+{{#has_tenant_id}}
+    r.tenant_id = v.tenant_id;
+{{/has_tenant_id}}
+{{#right.is_uuid}}
+    r.{{right.column}} = boost::uuids::to_string(v.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     r.{{right.column}} = v.{{right.column}};
+{{/right.is_uuid}}
     r.version = v.version;
 {{#columns}}
     r.{{name}} = v.{{name}};
 {{/columns}}
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

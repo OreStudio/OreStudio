@@ -85,6 +85,10 @@ protected:
      */
     [[nodiscard]] database::context
     make_request_context(const service::session_info& session) const {
+        if (!session.visible_party_ids.empty()) {
+            return ctx_.with_party(session.tenant_id, session.party_id,
+                                   session.visible_party_ids);
+        }
         return ctx_.with_tenant(session.tenant_id);
     }
 

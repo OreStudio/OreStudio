@@ -20,7 +20,7 @@
       "index_comment": "Index for looking up parties for an account",
       "description": "ID of the IAM account.",
       "detail": "References ores_iam_accounts_tbl.id (soft FK).",
-      "generator_expr": "uuid_gen()"
+      "generator_expr": "ctx.generate_uuid()"
     },
 
     "right": {
@@ -32,7 +32,7 @@
       "index_comment": "Index for finding accounts associated with a party",
       "description": "ID of the party this account is associated with.",
       "detail": "References ores_refdata_parties_tbl.id (soft FK).",
-      "generator_expr": "uuid_gen()"
+      "generator_expr": "ctx.generate_uuid()"
     },
 
     "columns": [],
@@ -46,7 +46,7 @@
       "name_short": "account_parties",
       "name_singular_words": "account party",
       "name_words": "account parties",
-      "order_column": "account_id"
+      "order_column": "party_id"
     },
 
     "cpp": {
@@ -58,7 +58,7 @@
       "table_display": [
         {"column": "account_id", "header": "Account"},
         {"column": "party_id", "header": "Party"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     }

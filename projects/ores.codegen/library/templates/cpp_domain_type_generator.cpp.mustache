@@ -46,7 +46,9 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 {{#junction}}
 #include "ores.{{component}}/generators/{{name_singular}}_generator.hpp"
 
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_left_or_right}}
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::{{component}}::generators {
@@ -56,16 +58,23 @@ using ores::utility::generation::generation_keys;
 domain::{{name_singular}} generate_synthetic_{{name_singular}}(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+        generation_keys::modified_by, "system");
+{{#has_tenant_id}}
+    const auto tenant_id = ctx.env().get_or(
+        generation_keys::tenant_id, "system");
+{{/has_tenant_id}}
 
     domain::{{name_singular}} r;
     r.version = 1;
+{{#has_tenant_id}}
+    r.tenant_id = tenant_id;
+{{/has_tenant_id}}
     r.{{left.column}} = {{{left.generator_expr}}};
     r.{{right.column}} = {{{right.generator_expr}}};
 {{#columns}}
     r.{{name}} = {{{generator_expr}}};
 {{/columns}}
-    r.recorded_by = modified_by;
+    r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

@@ -1,0 +1,58 @@
+{
+  "junction": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "name": "party_counterparties",
+    "name_singular": "party_counterparty",
+    "name_title": "Party Counterparty",
+    "name_singular_words": "party counterparty assignment",
+    "brief": "Links a party to a counterparty it can see.",
+    "description": "Junction table controlling which counterparties are visible to which parties.\nCounterparty identity is shared at tenant level; this junction controls\nparty-level visibility.",
+    "left": {
+      "column": "party_id",
+      "column_short": "party",
+      "column_title": "Party",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "index_comment": "Index for looking up counterparties visible to a party",
+      "description": "ID of the party.",
+      "detail": "References ores_refdata_parties_tbl.id (soft FK).",
+      "generator_expr": "ctx.generate_uuid()"
+    },
+    "right": {
+      "column": "counterparty_id",
+      "column_short": "counterparty",
+      "column_title": "Counterparty",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "index_comment": "Index for finding parties that can see a counterparty",
+      "description": "ID of the counterparty visible to this party.",
+      "detail": "References ores_refdata_counterparties_tbl.id (soft FK).",
+      "generator_expr": "ctx.generate_uuid()"
+    },
+    "columns": [],
+    "sql": { "tablename": "ores_refdata_party_counterparties_tbl" },
+    "repository": {
+      "name_singular_short": "party_counterparty",
+      "name_short": "party_counterparties",
+      "name_singular_words": "party counterparty",
+      "name_words": "party counterparties",
+      "order_column": "counterparty_id"
+    },
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pc",
+      "table_display": [
+        {"column": "party_id", "header": "Party"},
+        {"column": "counterparty_id", "header": "Counterparty"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

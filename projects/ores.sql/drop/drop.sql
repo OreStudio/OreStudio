@@ -19,7 +19,12 @@
  */
 
 -- =============================================================================
--- 1. Operational Tables (have FKs to data governance tables, must be dropped first)
+-- 1. Row-Level Security Policies (must be dropped before tables)
+-- =============================================================================
+\ir ./rls/rls_drop.sql
+
+-- =============================================================================
+-- 2. Operational Tables (have FKs to data governance tables, must be dropped first)
 -- =============================================================================
 \ir ./geo/geo_drop.sql
 \ir ./assets/assets_drop.sql
@@ -29,12 +34,12 @@
 \ir ./refdata/refdata_drop.sql
 
 -- =============================================================================
--- 2. Data Governance Tables (dropped after operational tables)
+-- 3. Data Governance Tables (dropped after operational tables)
 -- =============================================================================
 \ir ./dq/dq_drop.sql
 
 -- =============================================================================
--- 3. Utility Functions (dropped last)
+-- 4. Utility Functions (dropped last)
 -- =============================================================================
 \ir ./seed/seed_drop.sql
 \ir ./utility/utility_drop.sql

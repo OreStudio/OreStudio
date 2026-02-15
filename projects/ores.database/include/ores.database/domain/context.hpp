@@ -20,7 +20,10 @@
 #ifndef ORES_DATABASE_CONTEXT_HPP
 #define ORES_DATABASE_CONTEXT_HPP
 
+#include <vector>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -30,14 +33,18 @@ namespace ores::database {
  * @brief Context for the operations on a postgres database.
  *
  * The context wraps a tenant-aware connection pool that automatically sets
- * the tenant context (via PostgreSQL session variable) whenever a connection
- * is acquired. This ensures RLS policies work correctly with connection pooling.
+ * the tenant context (and optionally party context) via PostgreSQL session
+ * variables whenever a connection is acquired. This ensures RLS policies
+ * work correctly with connection pooling.
  */
 class context {
 public:
     using connection_type = sqlgen::postgres::Connection;
     using connection_pool_type = tenant_aware_pool<connection_type>;
 
+    /**
+     * @brief Constructs a tenant-only context.
+     */
     explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
                      sqlgen::postgres::Credentials credentials,
                      utility::uuid::tenant_id tenant_id)
@@ -45,10 +52,19 @@ public:
       credentials_(std::move(credentials)) {}
 
     /**
+     * @brief Constructs a tenant-and-party-aware context.
+     */
+    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
+                     sqlgen::postgres::Credentials credentials,
+                     utility::uuid::tenant_id tenant_id,
+                     boost::uuids::uuid party_id,
+                     std::vector<boost::uuids::uuid> visible_party_ids)
+    : connection_pool_(std::move(connection_pool), std::move(tenant_id),
+                       party_id, std::move(visible_party_ids)),
+      credentials_(std::move(credentials)) {}
+
+    /**
      * @brief Gets the tenant-aware connection pool.
-     *
-     * Sessions acquired from this pool will automatically have the
-     * tenant context set via SET_CONFIG before use.
      */
     connection_pool_type& connection_pool() { return connection_pool_; }
 
@@ -65,19 +81,44 @@ public:
     }
 
     /**
+     * @brief Gets the party ID for this context, if set.
+     */
+    std::optional<boost::uuids::uuid> party_id() const {
+        return connection_pool_.party_id();
+    }
+
+    /**
+     * @brief Gets the visible party IDs for this context.
+     */
+    const std::vector<boost::uuids::uuid>& visible_party_ids() const {
+        return connection_pool_.visible_party_ids();
+    }
+
+    /**
      * @brief Gets the underlying raw connection pool.
-     *
-     * Useful for creating new contexts with different tenant IDs.
      */
     const sqlgen::ConnectionPool<connection_type>& underlying_pool() const {
         return connection_pool_.underlying_pool();
     }
 
     /**
-     * @brief Creates a new context with a different tenant ID.
+     * @brief Creates a new context with a different tenant ID (no party).
      */
     [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id) const {
-        return context(connection_pool_.underlying_pool(), credentials_, std::move(tenant_id));
+        return context(connection_pool_.underlying_pool(), credentials_,
+                       std::move(tenant_id));
+    }
+
+    /**
+     * @brief Creates a new context with tenant and party isolation.
+     */
+    [[nodiscard]] context with_party(
+        utility::uuid::tenant_id tenant_id,
+        boost::uuids::uuid party_id,
+        std::vector<boost::uuids::uuid> visible_party_ids) const {
+        return context(connection_pool_.underlying_pool(), credentials_,
+                       std::move(tenant_id), party_id,
+                       std::move(visible_party_ids));
     }
 
 private:

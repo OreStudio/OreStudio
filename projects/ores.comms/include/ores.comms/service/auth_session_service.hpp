@@ -23,6 +23,7 @@
 #include <map>
 #include <mutex>
 #include <memory>
+#include <vector>
 #include <optional>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
@@ -43,6 +44,8 @@ namespace ores::comms::service {
 struct session_info {
     boost::uuids::uuid account_id;
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid party_id = {};
+    std::vector<boost::uuids::uuid> visible_party_ids;
     std::string username;
 };
 

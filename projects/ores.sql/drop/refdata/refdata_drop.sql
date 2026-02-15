@@ -30,6 +30,9 @@
 \ir ./refdata_party_identifiers_notify_trigger_drop.sql
 \ir ./refdata_party_identifiers_drop.sql
 
+-- Party-counterparty junction (drop before parties and counterparties)
+\ir ./refdata_party_counterparties_drop.sql
+
 -- Party and counterparty tables
 \ir ./refdata_counterparties_notify_trigger_drop.sql
 \ir ./refdata_counterparties_drop.sql

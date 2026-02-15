@@ -72,3 +72,29 @@ begin
       and p.valid_to = ores_utility_infinity_timestamp_fn();
 end;
 $$ language plpgsql security definer;
+
+-- Compute the visible party set for a given party within a tenant.
+-- Returns an array of UUIDs containing the given party and all its descendants
+-- in the party hierarchy. Used to populate app.visible_party_ids session
+-- variable for party-level RLS.
+create or replace function ores_refdata_visible_party_ids_fn(
+    p_tenant_id uuid,
+    p_party_id uuid
+) returns uuid[] as $$
+begin
+    return (
+        WITH RECURSIVE party_tree AS (
+            SELECT id FROM ores_refdata_parties_tbl
+            WHERE id = p_party_id
+              AND tenant_id = p_tenant_id
+              AND valid_to = ores_utility_infinity_timestamp_fn()
+            UNION ALL
+            SELECT p.id FROM ores_refdata_parties_tbl p
+            JOIN party_tree pt ON p.parent_party_id = pt.id
+            WHERE p.tenant_id = p_tenant_id
+              AND p.valid_to = ores_utility_infinity_timestamp_fn()
+        )
+        SELECT array_agg(id) FROM party_tree
+    );
+end;
+$$ language plpgsql stable security definer;

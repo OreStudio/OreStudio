@@ -108,6 +108,14 @@
 \echo '--- GLEIF LEI ---'
 \ir ../lei/lei_populate.sql
 
+-- =============================================================================
+-- Test Data (manufactured data for business units, portfolios, books)
+-- =============================================================================
+
+\echo ''
+\echo '--- Test Data ---'
+\ir ../testdata/testdata_populate.sql
+
 \echo ''
 \echo '=== Data Catalogues Layer Population Complete ==='
 
@@ -182,4 +190,13 @@ from ores_dq_reporting_regimes_artefact_tbl
 union all
 select 'Artefact: Supervisory Bodies', count(*)
 from ores_dq_supervisory_bodies_artefact_tbl
+union all
+select 'Artefact: Business Units', count(*)
+from ores_dq_business_units_artefact_tbl
+union all
+select 'Artefact: Portfolios', count(*)
+from ores_dq_portfolios_artefact_tbl
+union all
+select 'Artefact: Books', count(*)
+from ores_dq_books_artefact_tbl
 order by entity;

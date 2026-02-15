@@ -18,6 +18,14 @@
  *
  */
 
+-- Books, portfolios, and business units (drop first, depend on parties and lookup tables)
+\ir ./refdata_books_notify_trigger_drop.sql
+\ir ./refdata_books_drop.sql
+\ir ./refdata_portfolios_notify_trigger_drop.sql
+\ir ./refdata_portfolios_drop.sql
+\ir ./refdata_business_units_notify_trigger_drop.sql
+\ir ./refdata_business_units_drop.sql
+
 -- Party and counterparty contact information (drop first, depends on parties/counterparties)
 \ir ./refdata_counterparty_contact_informations_notify_trigger_drop.sql
 \ir ./refdata_counterparty_contact_informations_drop.sql
@@ -42,6 +50,10 @@
 -- Party reference data tables
 \ir ./refdata_contact_types_notify_trigger_drop.sql
 \ir ./refdata_contact_types_drop.sql
+\ir ./refdata_book_statuses_notify_trigger_drop.sql
+\ir ./refdata_book_statuses_drop.sql
+\ir ./refdata_purpose_types_notify_trigger_drop.sql
+\ir ./refdata_purpose_types_drop.sql
 \ir ./refdata_party_id_schemes_notify_trigger_drop.sql
 \ir ./refdata_party_id_schemes_drop.sql
 \ir ./refdata_party_statuses_notify_trigger_drop.sql

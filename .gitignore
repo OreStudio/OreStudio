@@ -54,6 +54,7 @@ projects/ores.utility/include/ores.utility/version/version.hpp
 
 # python codegen
 projects/ores.codegen/output/
+projects/ores.codegen/venv/
 __pycache__
 
 # LEI source files (large, download via extract_subset.py --download)

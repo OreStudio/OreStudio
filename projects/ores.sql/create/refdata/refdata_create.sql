@@ -70,6 +70,10 @@
 \ir ./refdata_party_id_schemes_notify_trigger_create.sql
 \ir ./refdata_contact_types_create.sql
 \ir ./refdata_contact_types_notify_trigger_create.sql
+\ir ./refdata_purpose_types_create.sql
+\ir ./refdata_purpose_types_notify_trigger_create.sql
+\ir ./refdata_book_statuses_create.sql
+\ir ./refdata_book_statuses_notify_trigger_create.sql
 
 -- Party and counterparty tables
 \ir ./refdata_parties_create.sql
@@ -92,3 +96,11 @@
 \ir ./refdata_party_contact_informations_notify_trigger_create.sql
 \ir ./refdata_counterparty_contact_informations_create.sql
 \ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql
+
+-- Business units, portfolios, and books
+\ir ./refdata_business_units_create.sql
+\ir ./refdata_business_units_notify_trigger_create.sql
+\ir ./refdata_portfolios_create.sql
+\ir ./refdata_portfolios_notify_trigger_create.sql
+\ir ./refdata_books_create.sql
+\ir ./refdata_books_notify_trigger_create.sql

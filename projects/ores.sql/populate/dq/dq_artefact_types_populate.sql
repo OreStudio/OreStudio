@@ -112,6 +112,15 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_iam_system_tenant_id_fn(), 'lei_bic', 0, 'LEI BIC', 'GLEIF LEI to BIC identifier mappings',
      'dq_lei_bic_artefact_tbl', null, null, 29,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'business_units', 0, 'Business Units', 'Organisational business units',
+     'dq_business_units_artefact_tbl', 'refdata_business_units_tbl', null, 30,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'portfolios', 0, 'Portfolios', 'Portfolio hierarchy nodes',
+     'dq_portfolios_artefact_tbl', 'refdata_portfolios_tbl', null, 31,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'books', 0, 'Books', 'Trading and banking books',
+     'dq_books_artefact_tbl', 'refdata_books_tbl', null, 32,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

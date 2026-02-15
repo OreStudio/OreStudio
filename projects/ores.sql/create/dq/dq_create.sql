@@ -91,6 +91,11 @@
 \ir ./dq_reporting_regimes_artefact_create.sql
 \ir ./dq_supervisory_bodies_artefact_create.sql
 
+-- Test data artefact tables
+\ir ./dq_business_units_artefact_create.sql
+\ir ./dq_portfolios_artefact_create.sql
+\ir ./dq_books_artefact_create.sql
+
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql
 \ir ./dq_lei_relationships_artefact_create.sql

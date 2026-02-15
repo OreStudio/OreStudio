@@ -47,7 +47,7 @@ TEST_CASE("account_party_generator_produces_valid_instance", tags) {
     CHECK(!sut.party_id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 

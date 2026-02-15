@@ -44,7 +44,7 @@ domain::tenant generate_synthetic_tenant(
         + ctx.alphanumeric(6) + ".example.com";
     r.status = "active";
     r.modified_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.performed_by = modified_by;
     r.recorded_at = ctx.past_timepoint();

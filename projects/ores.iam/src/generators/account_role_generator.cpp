@@ -39,7 +39,7 @@ domain::account_role generate_synthetic_account_role(
     r.account_id = ctx.generate_uuid();
     r.role_id = ctx.generate_uuid();
     r.assigned_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.assigned_at = ctx.past_timepoint();
     return r;

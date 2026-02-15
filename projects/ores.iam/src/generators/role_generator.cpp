@@ -44,7 +44,7 @@ domain::role generate_synthetic_role(
     r.name = "Role_" + ctx.alphanumeric(6) + "_" + std::to_string(idx);
     r.description = "Synthetic test role";
     r.modified_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.performed_by = modified_by;
     r.recorded_at = ctx.past_timepoint();

@@ -40,7 +40,7 @@ domain::account_party generate_synthetic_account_party(
     r.party_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
@@ -51,7 +51,7 @@ generate_synthetic_account_parties(std::size_t n,
     utility::generation::generation_context& ctx) {
     std::vector<domain::account_party> r;
     r.reserve(n);
-    while (r.size() < n)
+    for (std::size_t i = 0; i < n; ++i)
         r.push_back(generate_synthetic_account_party(ctx));
     return r;
 }

@@ -59,7 +59,7 @@ TEST_CASE("tenant_generator_produces_valid_instance", tags) {
     CHECK(sut.type == "automation");
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -90,7 +90,7 @@ TEST_CASE("tenant_status_generator_produces_valid_instance", tags) {
     CHECK(sut.display_order >= 1);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -120,7 +120,7 @@ TEST_CASE("tenant_type_generator_produces_valid_instance", tags) {
     CHECK(sut.display_order >= 1);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("role_generator_produces_valid_instance", tags) {
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
@@ -256,7 +256,7 @@ TEST_CASE("account_role_generator_produces_valid_instance", tags) {
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
     CHECK(!sut.assigned_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 

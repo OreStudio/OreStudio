@@ -40,7 +40,7 @@ domain::tenant_type generate_synthetic_tenant_type(
     r.description = "Synthetic test type";
     r.display_order = idx;
     r.modified_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.performed_by = modified_by;
     r.recorded_at = ctx.past_timepoint();

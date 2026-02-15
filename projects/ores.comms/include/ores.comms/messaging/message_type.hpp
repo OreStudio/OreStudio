@@ -168,6 +168,33 @@ enum class message_type : std::uint16_t {
     delete_business_centre_response = 0x1066,
     get_business_centre_history_request = 0x1067,
     get_business_centre_history_response = 0x1068,
+    // Refdata subsystem - Business units
+    get_business_units_request = 0x1069,
+    get_business_units_response = 0x106A,
+    save_business_unit_request = 0x106B,
+    save_business_unit_response = 0x106C,
+    delete_business_unit_request = 0x106D,
+    delete_business_unit_response = 0x106E,
+    get_business_unit_history_request = 0x106F,
+    get_business_unit_history_response = 0x1070,
+    // Refdata subsystem - Portfolios
+    get_portfolios_request = 0x1071,
+    get_portfolios_response = 0x1072,
+    save_portfolio_request = 0x1073,
+    save_portfolio_response = 0x1074,
+    delete_portfolio_request = 0x1075,
+    delete_portfolio_response = 0x1076,
+    get_portfolio_history_request = 0x1077,
+    get_portfolio_history_response = 0x1078,
+    // Refdata subsystem - Books
+    get_books_request = 0x1079,
+    get_books_response = 0x107A,
+    save_book_request = 0x107B,
+    save_book_response = 0x107C,
+    delete_book_request = 0x107D,
+    delete_book_response = 0x107E,
+    get_book_history_request = 0x107F,
+    get_book_history_response = 0x1080,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -568,6 +595,30 @@ enum class message_type : std::uint16_t {
     case message_type::delete_business_centre_response: return "delete_business_centre_response";
     case message_type::get_business_centre_history_request: return "get_business_centre_history_request";
     case message_type::get_business_centre_history_response: return "get_business_centre_history_response";
+    case message_type::get_business_units_request: return "get_business_units_request";
+    case message_type::get_business_units_response: return "get_business_units_response";
+    case message_type::save_business_unit_request: return "save_business_unit_request";
+    case message_type::save_business_unit_response: return "save_business_unit_response";
+    case message_type::delete_business_unit_request: return "delete_business_unit_request";
+    case message_type::delete_business_unit_response: return "delete_business_unit_response";
+    case message_type::get_business_unit_history_request: return "get_business_unit_history_request";
+    case message_type::get_business_unit_history_response: return "get_business_unit_history_response";
+    case message_type::get_portfolios_request: return "get_portfolios_request";
+    case message_type::get_portfolios_response: return "get_portfolios_response";
+    case message_type::save_portfolio_request: return "save_portfolio_request";
+    case message_type::save_portfolio_response: return "save_portfolio_response";
+    case message_type::delete_portfolio_request: return "delete_portfolio_request";
+    case message_type::delete_portfolio_response: return "delete_portfolio_response";
+    case message_type::get_portfolio_history_request: return "get_portfolio_history_request";
+    case message_type::get_portfolio_history_response: return "get_portfolio_history_response";
+    case message_type::get_books_request: return "get_books_request";
+    case message_type::get_books_response: return "get_books_response";
+    case message_type::save_book_request: return "save_book_request";
+    case message_type::save_book_response: return "save_book_response";
+    case message_type::delete_book_request: return "delete_book_request";
+    case message_type::delete_book_response: return "delete_book_response";
+    case message_type::get_book_history_request: return "get_book_history_request";
+    case message_type::get_book_history_response: return "get_book_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

@@ -13,7 +13,7 @@ namespace ores::{{component}}::repository {
  * @brief Represents a {{entity_title_lower}} in the database.
  */
 struct {{entity_singular}}_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
     sqlgen::PrimaryKey<std::string> {{primary_key.column}};
@@ -54,10 +54,13 @@ namespace ores::{{component}}::repository {
  * Junction table with composite primary key ({{left.column}}, {{right.column}}, valid_from).
  */
 struct {{name_singular}}_entity {
-    constexpr static const char* schema = "ores";
+    constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
     sqlgen::PrimaryKey<std::string> {{left.column}};
+{{#has_tenant_id}}
+    std::string tenant_id;
+{{/has_tenant_id}}
     std::string {{right.column}};
     int version = 0;
 {{#columns}}

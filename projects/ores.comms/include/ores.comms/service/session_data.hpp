@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include <vector>
 #include <cstdint>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
@@ -80,6 +81,22 @@ struct session_data final {
      * all operations performed during this session.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Party ID for party-level isolation.
+     *
+     * Resolved at login time from the account's party assignments.
+     * Nil UUID if the account has no party assignment.
+     */
+    boost::uuids::uuid party_id = {};
+
+    /**
+     * @brief Visible party IDs for party-level RLS.
+     *
+     * Computed at login time from the party hierarchy. Contains the
+     * party_id and all its descendant parties. Empty if no party context.
+     */
+    std::vector<boost::uuids::uuid> visible_party_ids;
 
     /**
      * @brief Timestamp when the session started (login time).

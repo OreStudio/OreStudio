@@ -34,6 +34,8 @@ auth_session_service::get_session(const std::string& remote_address) const {
         return session_info{
             .account_id = it->second->account_id,
             .tenant_id = it->second->tenant_id,
+            .party_id = it->second->party_id,
+            .visible_party_ids = it->second->visible_party_ids,
             .username = it->second->username
         };
     }

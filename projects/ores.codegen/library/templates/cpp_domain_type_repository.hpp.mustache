@@ -59,6 +59,9 @@ private:
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_left_or_right}}
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component}}/domain/{{name_singular}}.hpp"
@@ -91,12 +94,44 @@ public:
 
     std::vector<domain::{{name_singular}}> read_latest();
     std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+    read_latest_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     read_latest_by_{{left.column_short}}(const std::string& {{left.column}});
+{{/left.is_uuid}}
     std::vector<domain::{{name_singular}}>
+{{#right.is_uuid}}
+    read_latest_by_{{right.column_short}}(const boost::uuids::uuid& {{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     read_latest_by_{{right.column_short}}(const std::string& {{right.column}});
+{{/right.is_uuid}}
 
-    void remove(const std::string& {{left.column}}, const std::string& {{right.column}});
+{{#left.is_uuid}}
+{{#right.is_uuid}}
+    void remove(const boost::uuids::uuid& {{left.column}},
+                const boost::uuids::uuid& {{right.column}});
+    void remove_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    void remove(const boost::uuids::uuid& {{left.column}},
+                const std::string& {{right.column}});
+    void remove_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
+{{/right.is_uuid}}
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+{{#right.is_uuid}}
+    void remove(const std::string& {{left.column}},
+                const boost::uuids::uuid& {{right.column}});
     void remove_by_{{left.column_short}}(const std::string& {{left.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    void remove(const std::string& {{left.column}},
+                const std::string& {{right.column}});
+    void remove_by_{{left.column_short}}(const std::string& {{left.column}});
+{{/right.is_uuid}}
+{{/left.is_uuid}}
 
 private:
     context ctx_;

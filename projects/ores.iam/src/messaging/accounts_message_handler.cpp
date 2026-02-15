@@ -35,6 +35,7 @@
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
+#include "ores.iam/repository/account_party_repository.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
 #include "ores.iam/service/tenant_type_service.hpp"
@@ -483,6 +484,40 @@ handle_login_request(std::span<const std::byte> payload,
         sess->username = account.username;
         sess->start_time = std::chrono::system_clock::now();
         sess->client_ip = ip_address;
+
+        // Resolve party context from account_parties
+        try {
+            repository::account_party_repository ap_repo(login_ctx);
+            auto parties = ap_repo.read_latest_by_account(account.id);
+            if (!parties.empty()) {
+                sess->party_id = parties.front().party_id;
+
+                // Compute visible party set via SQL function
+                auto vis = database::repository::execute_parameterized_string_query(
+                    login_ctx,
+                    "SELECT unnest(ores_refdata_visible_party_ids_fn("
+                    "$1::uuid, $2::uuid))::text",
+                    {tenant_id.to_string(),
+                     boost::uuids::to_string(sess->party_id)},
+                    lg(), "Computing visible party set");
+                for (const auto& s : vis) {
+                    sess->visible_party_ids.push_back(
+                        boost::lexical_cast<boost::uuids::uuid>(s));
+                }
+
+                BOOST_LOG_SEV(lg(), info) << "Party context resolved: party_id="
+                                          << sess->party_id
+                                          << ", visible_parties="
+                                          << sess->visible_party_ids.size();
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "No party assignment for account: "
+                                           << account.id;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to resolve party context: "
+                                      << e.what();
+            // Continue without party context - tenant-only isolation
+        }
 
         // Retrieve client info stored during handshake
         auto client_info = sessions_->get_client_info(remote_address);

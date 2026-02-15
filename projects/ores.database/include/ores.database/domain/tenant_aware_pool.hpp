@@ -20,23 +20,28 @@
 #ifndef ORES_DATABASE_TENANT_AWARE_POOL_HPP
 #define ORES_DATABASE_TENANT_AWARE_POOL_HPP
 
+#include <optional>
 #include <string>
+#include <vector>
 #include <sqlgen/ConnectionPool.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database {
 
 /**
- * @brief A connection pool wrapper that sets tenant context on acquire.
+ * @brief A connection pool wrapper that sets tenant and party context on acquire.
  *
  * PostgreSQL session variables are per-connection. When using a connection
  * pool, different operations may get different connections, causing RLS
  * policies that check the session variable to fail.
  *
  * This wrapper ensures that whenever a connection is acquired from the pool,
- * the tenant context is set via SET_CONFIG before returning the session.
- * This allows RLS policies to work correctly with connection pooling.
+ * the tenant context (and optionally party context) is set via SET_CONFIG
+ * before returning the session. This allows RLS policies to work correctly
+ * with connection pooling.
  */
 template <class Connection>
 class tenant_aware_pool {
@@ -52,22 +57,25 @@ private:
 
 public:
     /**
-     * @brief Constructs a tenant-aware pool wrapper.
-     *
-     * @param pool The underlying connection pool
-     * @param tenant_id The tenant ID to set on each acquired connection
+     * @brief Constructs a tenant-aware pool wrapper (tenant-only).
      */
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
                       utility::uuid::tenant_id tenant_id)
         : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)) {}
 
     /**
-     * @brief Acquires a session and sets the tenant context.
-     *
-     * This method acquires a connection from the underlying pool and
-     * executes SET_CONFIG to set the tenant context before returning.
-     *
-     * @return A session with tenant context set, or an error on failure
+     * @brief Constructs a tenant-and-party-aware pool wrapper.
+     */
+    tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
+                      utility::uuid::tenant_id tenant_id,
+                      boost::uuids::uuid party_id,
+                      std::vector<boost::uuids::uuid> visible_party_ids)
+        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
+          party_id_(party_id),
+          visible_party_ids_(std::move(visible_party_ids)) {}
+
+    /**
+     * @brief Acquires a session and sets the tenant (and party) context.
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
@@ -90,6 +98,47 @@ public:
 
         BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_str;
 
+        // Set party context if available
+        if (party_id_.has_value()) {
+            const auto party_id_str = boost::uuids::to_string(*party_id_);
+            const std::string party_sql =
+                "SELECT set_config('app.current_party_id', '" +
+                party_id_str + "', false)";
+
+            auto party_result = (*session_result)->execute(party_sql);
+            if (!party_result) {
+                return sqlgen::error("Failed to set party context: " +
+                    std::string(party_result.error().what()));
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Set party context to: "
+                                       << party_id_str;
+        }
+
+        // Set visible party IDs if available
+        if (!visible_party_ids_.empty()) {
+            std::string ids_str = "{";
+            for (std::size_t i = 0; i < visible_party_ids_.size(); ++i) {
+                if (i > 0) ids_str += ",";
+                ids_str += boost::uuids::to_string(visible_party_ids_[i]);
+            }
+            ids_str += "}";
+
+            const std::string vis_sql =
+                "SELECT set_config('app.visible_party_ids', '" +
+                ids_str + "', false)";
+
+            auto vis_result = (*session_result)->execute(vis_sql);
+            if (!vis_result) {
+                return sqlgen::error("Failed to set visible party IDs: " +
+                    std::string(vis_result.error().what()));
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Set visible party IDs ("
+                                       << visible_party_ids_.size()
+                                       << " parties)";
+        }
+
         return session_result;
     }
 
@@ -99,10 +148,19 @@ public:
     const utility::uuid::tenant_id& tenant_id() const { return tenant_id_; }
 
     /**
+     * @brief Gets the current party ID, if set.
+     */
+    std::optional<boost::uuids::uuid> party_id() const { return party_id_; }
+
+    /**
+     * @brief Gets the visible party IDs.
+     */
+    const std::vector<boost::uuids::uuid>& visible_party_ids() const {
+        return visible_party_ids_;
+    }
+
+    /**
      * @brief Gets the underlying connection pool.
-     *
-     * Allows creating new tenant_aware_pool instances that share the same
-     * underlying connections but have different tenant IDs.
      */
     const sqlgen::ConnectionPool<Connection>& underlying_pool() const {
         return pool_;
@@ -121,6 +179,8 @@ public:
 private:
     sqlgen::ConnectionPool<Connection> pool_;
     utility::uuid::tenant_id tenant_id_;
+    std::optional<boost::uuids::uuid> party_id_;
+    std::vector<boost::uuids::uuid> visible_party_ids_;
 };
 
 }

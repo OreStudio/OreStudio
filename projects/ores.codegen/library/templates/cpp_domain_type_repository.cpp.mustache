@@ -112,6 +112,9 @@ void {{entity_singular}}_repository::remove(const boost::uuids::uuid& id) {
 #include "ores.{{component}}/repository/{{name_singular}}_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_left_or_right}}
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.{{component}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
@@ -162,13 +165,26 @@ std::vector<domain::{{name_singular}}>
 }
 
 std::vector<domain::{{name_singular}}>
-{{name_singular}}_repository::read_latest_by_{{left.column_short}}(const std::string& {{left.column}}) {
+{{name_singular}}_repository::read_latest_by_{{left.column_short}}(
+{{#left.is_uuid}}
+    const boost::uuids::uuid& {{left.column}}) {
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    const std::string& {{left.column}}) {
+{{/left.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
                                << {{left.column}};
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#left.is_uuid}}
+    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.is_uuid}}
         order_by("{{order_column}}"_c);
 
     return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
@@ -178,13 +194,26 @@ std::vector<domain::{{name_singular}}>
 }
 
 std::vector<domain::{{name_singular}}>
-{{name_singular}}_repository::read_latest_by_{{right.column_short}}(const std::string& {{right.column}}) {
+{{name_singular}}_repository::read_latest_by_{{right.column_short}}(
+{{#right.is_uuid}}
+    const boost::uuids::uuid& {{right.column}}) {
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    const std::string& {{right.column}}) {
+{{/right.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
                                << {{right.column}};
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#right.is_uuid}}
+    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
+    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
+{{^right.is_uuid}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.is_uuid}}
         order_by("{{left.column}}"_c);
 
     return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
@@ -194,23 +223,72 @@ std::vector<domain::{{name_singular}}>
 }
 
 void {{name_singular}}_repository::remove(
-    const std::string& {{left.column}}, const std::string& {{right.column}}) {
+{{#left.is_uuid}}
+    const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    const boost::uuids::uuid& {{right.column}}) {
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    const std::string& {{right.column}}) {
+{{/right.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}} from database: "
                                << {{left.column}} << "/" << {{right.column}};
 
+{{#left.is_uuid}}
+    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
+{{/right.is_uuid}}
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
-        where("{{left.column}}"_c == {{left.column}} && "{{right.column}}"_c == {{right.column}});
+{{#left.is_uuid}}
+{{#right.is_uuid}}
+        where("{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}}_str);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        where("{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}});
+{{/right.is_uuid}}
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+{{#right.is_uuid}}
+        where("{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}}_str);
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        where("{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}});
+{{/right.is_uuid}}
+{{/left.is_uuid}}
 
     execute_delete_query(ctx_, query, lg(),
         "removing {{name_singular_words}} from database");
 }
 
-void {{name_singular}}_repository::remove_by_{{left.column_short}}(const std::string& {{left.column}}) {
+void {{name_singular}}_repository::remove_by_{{left.column_short}}(
+{{#left.is_uuid}}
+    const boost::uuids::uuid& {{left.column}}) {
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    const std::string& {{left.column}}) {
+{{/left.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Removing all {{name_words}} from database: "
                                << {{left.column}};
 
+{{#left.is_uuid}}
+    const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
+    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+        where("{{left.column}}"_c == {{left.column}}_str);
+{{/left.is_uuid}}
+{{^left.is_uuid}}
     const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
         where("{{left.column}}"_c == {{left.column}});
+{{/left.is_uuid}}
 
     execute_delete_query(ctx_, query, lg(),
         "removing all {{name_words}} from database");

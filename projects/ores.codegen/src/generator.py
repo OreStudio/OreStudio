@@ -588,6 +588,10 @@ def get_cpp_junction_template_mappings():
     """
     Define the mapping for C++ junction table templates.
 
+    Junction tables generate domain, JSON I/O, table I/O, entity, mapper,
+    repository, and generator files. They do not generate service or protocol
+    files (those are only for domain entities).
+
     Returns:
         list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
     """
@@ -614,12 +618,6 @@ def get_cpp_junction_template_mappings():
         # Repository CRUD facet
         ("cpp_domain_type_repository.hpp.mustache", "include/{component}/repository", "_repository.hpp"),
         ("cpp_domain_type_repository.cpp.mustache", "src/repository", "_repository.cpp"),
-        # Service facet
-        ("cpp_service.hpp.mustache", "include/{component}/service", "_service.hpp"),
-        ("cpp_service.cpp.mustache", "src/service", "_service.cpp"),
-        # Protocol facet
-        ("cpp_protocol.hpp.mustache", "include/{component}/messaging", "_protocol.hpp"),
-        ("cpp_protocol.cpp.mustache", "src/messaging", "_protocol.cpp"),
     ]
 
 

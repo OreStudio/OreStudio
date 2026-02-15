@@ -1395,25 +1395,130 @@ We should make it clear it's evaluation.
 
 *** STARTED Implement party-level RLS isolation                        :code:
 
-Add a second layer of Row-Level Security that isolates party-scoped data
-(counterparties, books, portfolios, trades) within a tenant. At login, compute
-the user's visible party set via a recursive CTE on the party hierarchy and
-store it as a PostgreSQL session variable (=app.visible_party_ids=). RLS
-policies on party-scoped tables filter using =party_id = ANY(...)=.
+Add a second layer of Row-Level Security that isolates party-scoped data within
+a tenant. At login, compute the user's visible party set via a recursive CTE on
+the party hierarchy and store it as PostgreSQL session variables
+(=app.current_party_id=, =app.visible_party_ids=). Extend the C++ database
+layer to propagate party context. Introduce =party_counterparties= as the first
+party-scoped junction table with an RLS policy to prove the pattern end-to-end.
 
 See =projects/ores.refdata/modeling/multi_party.org= and
 =doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org= for the full
 architecture.
 
-**** Acceptance Criteria
+**** Sub-task 1: SQL — visible party set computation
 
-- =app.visible_party_ids= session variable set at login.
-- Party-scoped tables have RLS policies filtering by visible party set.
-- System party users see all parties in the tenant.
-- Leaf party users see only their own data.
-- Mid-level party users see their subtree.
+Create a PostgreSQL function =ores_refdata_visible_party_ids_fn(p_tenant_id
+uuid, p_party_id uuid)= that returns =uuid[]= using the recursive CTE from the
+design document. The function traverses the party hierarchy starting from the
+given party, collecting the party itself and all descendants. For the system
+party, this returns all parties in the tenant.
 
-*** STARTED Fix audit trail metadata for recorded_by and modified_by   :code:
+Also create a helper function =ores_iam_current_party_id_fn()= (analogous to
+=ores_iam_current_tenant_id_fn()=) that reads =app.current_party_id= from the
+session, and =ores_iam_visible_party_ids_fn()= that reads and casts
+=app.visible_party_ids= to =uuid[]=.
+
+***** Acceptance Criteria
+
+- Function returns correct subtree for leaf, mid-level, root, and system parties.
+- Function handles empty tenant (no parties) gracefully.
+- Helper functions read session variables correctly.
+
+**** Sub-task 2: C++ — extend =tenant_aware_pool= with party context
+
+Add optional =party_id= and =visible_party_ids= fields to =tenant_aware_pool=.
+When set, =acquire()= also executes =SET app.current_party_id= and =SET
+app.visible_party_ids= after the existing tenant variable. When not set
+(party-unaware context), only tenant variables are set as before.
+
+***** Acceptance Criteria
+
+- Existing tenant-only code paths unchanged.
+- Party session variables set on connection when party context provided.
+- Party context is optional (backward compatible).
+
+**** Sub-task 3: C++ — extend =context= with =with_party()=
+
+Add =context::with_party(tenant_id, party_id, visible_party_ids)= method that
+creates a new context sharing the underlying connection pool but with party
+awareness. The returned context's pool sets all three session variables on
+acquire.
+
+***** Acceptance Criteria
+
+- =with_party()= returns a context that sets tenant + party session variables.
+- =with_tenant()= continues to work without party context.
+- =tenant_id()= accessor still works on party-aware contexts.
+
+**** Sub-task 4: C++ — extend =session_data= with party fields
+
+Add =party_id= (=boost::uuids::uuid=) and =visible_party_ids=
+(=std::vector<boost::uuids::uuid>=) to the =session_data= struct in
+=ores.comms=. Update =session_converter= to populate these fields.
+
+***** Acceptance Criteria
+
+- =session_data= carries party context.
+- Default-constructed session has nil party_id and empty visible set.
+
+**** Sub-task 5: Login flow — party resolution
+
+After authentication in the login handler, query =account_parties= to find the
+user's parties. For single-party users, auto-select. For multi-party users,
+select the first party (party picker protocol is a future story). Compute the
+visible party set by calling the SQL function from sub-task 1. Populate
+=session_data= with party context.
+
+On =make_request_context()= (or equivalent), use =ctx.with_party()= to create a
+party-aware database context from the session's party fields.
+
+***** Acceptance Criteria
+
+- Login resolves party from =account_parties= junction.
+- Visible party set computed via recursive CTE at login time.
+- Session carries party_id and visible_party_ids.
+- Request contexts created from sessions are party-aware.
+
+**** Sub-task 6: =party_counterparties= junction table
+
+Create =ores_refdata_party_counterparties_tbl= as the first party-scoped table.
+This is a bitemporal junction table mapping counterparties to the parties that
+can see them. Columns: =tenant_id=, =party_id=, =counterparty_id=, plus the
+standard audit trail (=version=, =modified_by=, =performed_by=,
+=change_reason_code=, =change_commentary=, =valid_from=, =valid_to=).
+
+Add tenant RLS policy (as per existing pattern) plus a party RLS policy:
+=party_id = ANY(ores_iam_visible_party_ids_fn())=.
+
+Create domain type, repository, and generator following codegen patterns.
+
+***** Acceptance Criteria
+
+- Junction table created with proper bitemporal constraints.
+- Soft FK validation on both =party_id= and =counterparty_id=.
+- Dual RLS policies (tenant + party) applied.
+- Domain type, mapper, repository, and generator in =ores.refdata=.
+
+**** Sub-task 7: Integration tests
+
+Write tests that exercise party-level isolation end-to-end:
+
+- Create a tenant with system party + two operational parties (A, B).
+- Assign counterparties: some to party A only, some to party B only, some to both.
+- Log in as party A user: verify only party A's counterparty assignments visible.
+- Log in as system party user: verify all assignments visible.
+- Create a nested hierarchy (parent → child): log in as parent, verify subtree
+  visible; log in as child, verify only child visible.
+
+***** Acceptance Criteria
+
+- System party sees all party_counterparties in the tenant.
+- Leaf party sees only its own assignments.
+- Mid-level party sees its subtree's assignments.
+- Cross-party data is invisible (no data leakage between sibling parties).
+
+*** COMPLETED Fix audit trail metadata for recorded_by and modified_by :code:
 
 Audit trail fields are inconsistent across entities. The user who performed the
 action is often not correctly recorded, and the UI does not clearly surface this
@@ -1430,22 +1535,95 @@ information.
 Related stories: "Add entity messages should not set modified by", "Investigate
 how performed by is being set", "Add system account".
 
-*** STARTED Investigate how performed by is being set                  :code:
+*** COMPLETED Investigate how performed by is being set                :code:
 
 It should just be the database account.
 
-*** STARTED Add "system" account                                       :code:
+*** COMPLETED Add "system" account                                     :code:
 
 Modified by must always map to an existing account. We need to create an account
 that cannot login and which is used for all of the initial population.
 
 Publication should be done using the new admin account, not the system account.
 
-*** STARTED Add entity messages should not set modified by             :code:
+*** COMPLETED Add entity messages should not set modified by           :code:
 
 At present you can supply any modified by you want in the protocol messages. It
 makes more sense to say the message must have the modified by as the user logged
 in from the session.
+
+*** COMPLETED Add generation context with KVP for audit trail fields   :code:
+
+Generators for test data currently hardcode =faker::internet::username()= for
+=modified_by=. After the trigger-based validation of =modified_by= against the
+accounts table (PR #447), this causes test failures whenever the accounts table
+is non-empty: the faker username is not the DB session user and does not exist in
+the accounts table.
+
+The earlier story "Improve generators with FK-aware test data" proposed a
+generation context with a KVP where generators can leave data for other
+generators to pick up. This story extends that idea to audit trail fields.
+
+Proposed approach:
+
+- Create a =generation_context= struct (or extend the existing one in
+  =ores.synthetic=) that holds a =std::unordered_map<std::string, std::string>=
+  for well-known keys.
+- Define well-known key constants: =modified_by=, =tenant_id=, =parent_party_id=
+  etc.
+- All generators accept an optional =const generation_context&= parameter.
+- Test helpers (=database_helper=, =scoped_database_helper=) provide a
+  pre-populated context via =make_generation_context()= that sets =modified_by=
+  to =db_user()=, =tenant_id= to the test tenant, etc.
+- Update codegen templates (=cpp_domain_type_generator.cpp.mustache=) to
+  generate context-aware signatures.
+- Re-enable strict username validation in
+  =ores_iam_validate_account_username_fn= (currently relaxed to allow any
+  non-empty value).
+
+Acceptance criteria:
+
+- All generators accept a generation context for =modified_by=.
+- Test helpers provide a pre-populated context.
+- Trigger validation function strictly validates =modified_by= against accounts
+  table.
+- All tests pass with strict validation enabled.
+
+#+begin_quote
+This pull request significantly overhauls the synthetic data generation
+infrastructure to provide a more robust and flexible system. By introducing a
+decomposed generation_context with separate concerns for randomness and
+contextual data, it enables generators to produce data that consistently
+satisfies complex database constraints, such as audit trail validation and
+foreign key references. This change streamlines the generation process, making
+it more adaptable for various use cases, including testing, CLI tools, and UI
+interactions.
+
+Highlights
+
+- Synthetic Data Generation Refactor: The core generation_context has been
+  decomposed into three distinct, composable types: generation_engine (handling
+  randomness and UUIDs), generation_environment (providing a scoped key-value
+  store with parent-chain lookup), and a new generation_context that composes
+  both. This enhances modularity and control over synthetic data generation.
+- Widespread Generator Migration: Approximately 36 generators across 6
+  components (iam, refdata, dq, assets, connections, synthetic) have been
+  migrated to accept the new generation_context& parameter. This allows
+  generators to dynamically look up contextual data like modified_by and
+  tenant_id from the environment, replacing hardcoded values or ad-hoc
+  parameters.
+- Test Helper Integration: A new make_generation_context() factory has been
+  added to ores.testing. This factory populates the modified_by field from
+  db_user() and tenant_id from the test helper, ensuring generated entities pass
+  trigger-based audit trail validation in test environments.
+- Strict Audit Trail Validation Re-enabled: The strict modified_by validation in
+  the iam_tenant_functions_create.sql script has been re-enabled. This was
+  previously relaxed but can now be enforced due to the improved
+  generation_context providing proper modified_by values.
+- Codegen Template Updates: Codegen templates have been updated to reflect the
+  new generator signatures and the pattern of looking up modified_by and
+  tenant_id from the generation_context environment.
+#+end_quote
 
 *** Enforce root party uniqueness constraints                          :code:
 
@@ -3041,43 +3219,6 @@ per-party.
 - Default: all currencies/countries visible to all parties (opt-in restriction).
 
 
-
-*** Add generation context with KVP for audit trail fields             :code:
-
-Generators for test data currently hardcode =faker::internet::username()= for
-=modified_by=. After the trigger-based validation of =modified_by= against the
-accounts table (PR #447), this causes test failures whenever the accounts table
-is non-empty: the faker username is not the DB session user and does not exist in
-the accounts table.
-
-The earlier story "Improve generators with FK-aware test data" proposed a
-generation context with a KVP where generators can leave data for other
-generators to pick up. This story extends that idea to audit trail fields.
-
-Proposed approach:
-
-- Create a =generation_context= struct (or extend the existing one in
-  =ores.synthetic=) that holds a =std::unordered_map<std::string, std::string>=
-  for well-known keys.
-- Define well-known key constants: =modified_by=, =tenant_id=, =parent_party_id=
-  etc.
-- All generators accept an optional =const generation_context&= parameter.
-- Test helpers (=database_helper=, =scoped_database_helper=) provide a
-  pre-populated context via =make_generation_context()= that sets =modified_by=
-  to =db_user()=, =tenant_id= to the test tenant, etc.
-- Update codegen templates (=cpp_domain_type_generator.cpp.mustache=) to
-  generate context-aware signatures.
-- Re-enable strict username validation in
-  =ores_iam_validate_account_username_fn= (currently relaxed to allow any
-  non-empty value).
-
-Acceptance criteria:
-
-- All generators accept a generation context for =modified_by=.
-- Test helpers provide a pre-populated context.
-- Trigger validation function strictly validates =modified_by= against accounts
-  table.
-- All tests pass with strict validation enabled.
 
 *** Update currency details to use tabs                                :code:
 

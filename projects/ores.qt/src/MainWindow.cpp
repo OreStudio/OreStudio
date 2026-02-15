@@ -421,6 +421,11 @@ MainWindow::MainWindow(QWidget* parent) :
             tenantController_->showListWindow();
     });
 
+    // Connect Onboard Evaluation Tenant action
+    connect(ui_->ActionOnboardEvaluationTenant, &QAction::triggered, this, [this]() {
+        showTenantOnboardingWizard();
+    });
+
     // Connect Feature Flags action to controller (admin only)
     connect(ui_->ActionFeatureFlags, &QAction::triggered, this, [this]() {
         if (featureFlagController_)
@@ -834,6 +839,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionAccounts->setEnabled(isLoggedIn);
     ui_->ActionRoles->setEnabled(isLoggedIn);
     ui_->ActionTenants->setEnabled(isLoggedIn);
+    ui_->ActionOnboardEvaluationTenant->setEnabled(isLoggedIn);
     ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
     ui_->ActionOriginDimensions->setEnabled(isLoggedIn);
     ui_->ActionNatureDimensions->setEnabled(isLoggedIn);

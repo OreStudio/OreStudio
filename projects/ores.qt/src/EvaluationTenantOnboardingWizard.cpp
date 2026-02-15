@@ -429,7 +429,7 @@ void OnboardingAdminAccountPage::setupUI() {
 }
 
 void OnboardingAdminAccountPage::initializePage() {
-    usernameEdit_->setText(QStringLiteral("admin"));
+    usernameEdit_->setText(QStringLiteral("tenant_admin"));
 
     const QString code = wizard_->tenantCode();
     emailEdit_->setText(QStringLiteral("admin@") + code);
@@ -452,11 +452,11 @@ void OnboardingAdminAccountPage::onPasswordChanged() {
 
     matchIndicator_->show();
     if (password == confirm) {
-        matchIndicator_->setText(QStringLiteral("\xe2\x9c\x93"));
+        matchIndicator_->setText(QStringLiteral("\u2713"));
         matchIndicator_->setStyleSheet(
             "QLabel { color: #22863a; font-weight: bold; font-size: 16px; }");
     } else {
-        matchIndicator_->setText(QStringLiteral("\xe2\x9c\x97"));
+        matchIndicator_->setText(QStringLiteral("\u2717"));
         matchIndicator_->setStyleSheet(
             "QLabel { color: #cc0000; font-weight: bold; font-size: 16px; }");
     }

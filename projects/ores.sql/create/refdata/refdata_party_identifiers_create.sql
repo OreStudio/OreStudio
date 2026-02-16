@@ -97,7 +97,7 @@ begin
     -- Validate max_cardinality for this scheme
     select max_cardinality into v_max_cardinality
     from ores_refdata_party_id_schemes_tbl
-    where tenant_id = ores_iam_system_tenant_id_fn()
+    where tenant_id = NEW.tenant_id
       and code = NEW.id_scheme
       and valid_to = ores_utility_infinity_timestamp_fn();
 

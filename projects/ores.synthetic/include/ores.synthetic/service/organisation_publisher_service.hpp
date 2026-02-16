@@ -56,18 +56,6 @@ public:
         const domain::generated_organisation& org);
 
 private:
-    /**
-     * @brief Seeds the minimum currencies required by the generated
-     * organisation into the system tenant's production table.
-     *
-     * The portfolio and book insert triggers validate currencies against
-     * ores_refdata_currencies_tbl for the system tenant. If the system
-     * tenant has not had currencies published via the DQ pipeline, the
-     * generated organisation cannot be inserted. This method ensures the
-     * required currencies (GBP, USD, EUR, JPY) exist.
-     */
-    void seed_currencies();
-
     database::context ctx_;
 };
 

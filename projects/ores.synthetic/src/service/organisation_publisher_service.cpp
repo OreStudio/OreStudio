@@ -20,8 +20,6 @@
 #include "ores.synthetic/service/organisation_publisher_service.hpp"
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/service/tenant_context.hpp"
 
 #include "ores.refdata/repository/party_mapper.hpp"
 #include "ores.refdata/repository/party_contact_information_mapper.hpp"
@@ -43,68 +41,6 @@ organisation_publisher_service::organisation_publisher_service(
     database::context ctx)
     : ctx_(std::move(ctx)) {}
 
-void organisation_publisher_service::seed_currencies() {
-    using database::service::tenant_context;
-    auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-
-    struct currency_info {
-        const char* iso_code;
-        const char* name;
-        const char* numeric_code;
-        const char* symbol;
-        const char* fraction_symbol;
-        int fractions_per_unit;
-        int rounding_precision;
-        const char* format;
-    };
-
-    static constexpr std::array currencies = {
-        currency_info{.iso_code = "GBP", .name = "Pound Sterling",
-            .numeric_code = "826", .symbol = "£",
-            .fraction_symbol = "p", .fractions_per_unit = 100,
-            .rounding_precision = 2, .format = "£#,##0.00"},
-        currency_info{.iso_code = "USD", .name = "US Dollar",
-            .numeric_code = "840", .symbol = "$",
-            .fraction_symbol = "¢", .fractions_per_unit = 100,
-            .rounding_precision = 2, .format = "$#,##0.00"},
-        currency_info{.iso_code = "EUR", .name = "Euro",
-            .numeric_code = "978", .symbol = "€",
-            .fraction_symbol = "c", .fractions_per_unit = 100,
-            .rounding_precision = 2, .format = "€#,##0.00"},
-        currency_info{.iso_code = "JPY", .name = "Yen",
-            .numeric_code = "392", .symbol = "¥",
-            .fraction_symbol = "", .fractions_per_unit = 1,
-            .rounding_precision = 0, .format = "¥#,##0"},
-    };
-
-    BOOST_LOG_SEV(lg(), info) << "Seeding required currencies into "
-                              << "system tenant";
-
-    for (const auto& c : currencies) {
-        const auto sql = std::string(
-            "INSERT INTO ores_refdata_currencies_tbl "
-            "(iso_code, tenant_id, version, name, numeric_code, symbol, "
-            "fraction_symbol, fractions_per_unit, rounding_type, "
-            "rounding_precision, format, currency_type, "
-            "modified_by, performed_by, change_reason_code, "
-            "change_commentary) "
-            "VALUES ('") + c.iso_code + "', '"
-            + tenant_context::system_tenant_id + "'::uuid, 0, '"
-            + c.name + "', '" + c.numeric_code + "', '"
-            + c.symbol + "', '" + c.fraction_symbol + "', "
-            + std::to_string(c.fractions_per_unit) + ", 'Closest', "
-            + std::to_string(c.rounding_precision) + ", '"
-            + c.format + "', 'fiat.major', "
-            "current_user, current_user, "
-            "'system.external_data_import', "
-            "'Seeded by synthetic organisation generator') "
-            "ON CONFLICT DO NOTHING";
-        database::repository::execute_raw_command(
-            sys_ctx, sql, lg(),
-            std::string("Seeding currency ") + c.iso_code);
-    }
-}
-
 messaging::generate_organisation_response
 organisation_publisher_service::publish(
     const domain::generated_organisation& org) {
@@ -114,11 +50,6 @@ organisation_publisher_service::publish(
     try {
         BOOST_LOG_SEV(lg(), info) << "Publishing generated organisation "
                                   << "(seed: " << org.seed << ")";
-
-        // Ensure the system tenant has the currencies referenced by
-        // portfolios and books. Without these, the portfolio insert
-        // trigger will reject the aggregation_ccy values.
-        seed_currencies();
 
         // Map all domain objects to entities before starting the transaction.
         auto parties = party_mapper::map(org.parties);

@@ -131,7 +131,7 @@ do instead
 -- Validation function for purpose_type
 -- Validates that a code exists in the purpose_types table.
 -- Returns the validated value, or default if null/empty.
--- Uses system tenant data (shared reference data).
+-- Uses tenant-scoped reference data.
 -- =============================================================================
 create or replace function ores_refdata_validate_purpose_type_fn(
     p_tenant_id uuid,
@@ -145,21 +145,21 @@ begin
     end if;
 
     -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_purpose_types_tbl limit 1) then
+    if not exists (select 1 from ores_refdata_purpose_types_tbl where tenant_id = p_tenant_id limit 1) then
         return p_value;
     end if;
 
     -- Validate against reference data
     if not exists (
         select 1 from ores_refdata_purpose_types_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = p_tenant_id
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid purpose_type: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_purpose_types_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = p_tenant_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

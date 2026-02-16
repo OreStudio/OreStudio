@@ -26,7 +26,9 @@
 #include <array>
 #include <iomanip>
 #include <sstream>
+#include <unordered_set>
 
+#include "ores.utility/string/short_code_generator.hpp"
 #include "data/financial_names.hpp"
 
 namespace ores::synthetic::service {
@@ -104,22 +106,7 @@ std::string apply_pattern(std::string_view pattern,
     return result;
 }
 
-std::string make_short_code(const std::string& full_name) {
-    std::string code;
-    bool after_space = true;
-    for (char c : full_name) {
-        if (c == ' ') {
-            after_space = true;
-        } else if (after_space && std::isalpha(static_cast<unsigned char>(c))) {
-            code += static_cast<char>(
-                std::toupper(static_cast<unsigned char>(c)));
-            after_space = false;
-        }
-    }
-    if (code.size() < 3)
-        code += "X";
-    return code;
-}
+using utility::string::generate_unique_short_code;
 
 std::string make_slug(const std::string& name) {
     std::string slug;
@@ -206,7 +193,8 @@ audit_fields get_audit(generation_context& ctx) {
 void generate_parties(
     const domain::organisation_generation_options& options,
     generation_context& ctx,
-    domain::generated_organisation& result) {
+    domain::generated_organisation& result,
+    std::unordered_set<std::string>& used_codes) {
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto& centres = financial_centres_for(options.country);
@@ -228,7 +216,7 @@ void generate_parties(
         p.status = "Active";
         p.modified_by = modified_by;
         p.performed_by = modified_by;
-        p.change_reason_code = "system.new";
+        p.change_reason_code = "system.new_record";
         p.change_commentary = "Generated organisation data";
         p.recorded_at = ctx.past_timepoint();
 
@@ -237,7 +225,7 @@ void generate_parties(
         if (node.depth == 0) {
             const auto& suffix = ctx.pick(suffixes);
             p.full_name = root_surname + " " + std::string(suffix);
-            p.short_code = make_short_code(p.full_name);
+            p.short_code = generate_unique_short_code(p.full_name, used_codes);
             p.business_center_code =
                 std::string(centres[0].business_centre_code);
             p.parent_party_id = std::nullopt;
@@ -246,13 +234,13 @@ void generate_parties(
                 (node.index - 1) % data::region_names.size();
             p.full_name = root_surname + " "
                 + std::string(data::region_names[region_idx]);
-            p.short_code = make_short_code(p.full_name);
+            p.short_code = generate_unique_short_code(p.full_name, used_codes);
             p.business_center_code = std::string(centre.business_centre_code);
             p.parent_party_id = result.parties[*node.parent_index].id;
         } else {
             p.full_name = root_surname + " "
                 + std::string(centre.city) + " Branch";
-            p.short_code = make_short_code(p.full_name);
+            p.short_code = generate_unique_short_code(p.full_name, used_codes);
             p.business_center_code = std::string(centre.business_centre_code);
             p.parent_party_id = result.parties[*node.parent_index].id;
         }
@@ -268,7 +256,8 @@ void generate_parties(
 void generate_counterparties(
     const domain::organisation_generation_options& options,
     generation_context& ctx,
-    domain::generated_organisation& result) {
+    domain::generated_organisation& result,
+    std::unordered_set<std::string>& used_codes) {
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto& centres = financial_centres_for(options.country);
@@ -288,7 +277,7 @@ void generate_counterparties(
         c.status = "Active";
         c.modified_by = modified_by;
         c.performed_by = modified_by;
-        c.change_reason_code = "system.new";
+        c.change_reason_code = "system.new_record";
         c.change_commentary = "Generated organisation data";
         c.recorded_at = ctx.past_timepoint();
 
@@ -299,7 +288,7 @@ void generate_counterparties(
             const auto city = std::string(centre.city);
             const auto& pattern = ctx.pick(patterns);
             c.full_name = apply_pattern(pattern, surname, city);
-            c.short_code = make_short_code(c.full_name);
+            c.short_code = generate_unique_short_code(c.full_name, used_codes);
             c.business_center_code =
                 std::string(centre.business_centre_code);
             c.parent_counterparty_id = std::nullopt;
@@ -309,7 +298,7 @@ void generate_counterparties(
             auto prefix = (space_pos != std::string::npos)
                 ? parent.full_name.substr(0, space_pos) : parent.full_name;
             c.full_name = prefix + " " + std::string(centre.city);
-            c.short_code = make_short_code(c.full_name);
+            c.short_code = generate_unique_short_code(c.full_name, used_codes);
             c.business_center_code =
                 std::string(centre.business_centre_code);
             c.parent_counterparty_id = parent.id;
@@ -365,7 +354,7 @@ void generate_party_contacts(
                 + std::string(domain_suffix);
             pci.modified_by = modified_by;
             pci.performed_by = modified_by;
-            pci.change_reason_code = "system.new";
+            pci.change_reason_code = "system.new_record";
             pci.change_commentary = "Generated organisation data";
             pci.recorded_at = ctx.past_timepoint();
 
@@ -414,7 +403,7 @@ void generate_counterparty_contacts(
                 + std::string(domain_suffix);
             cci.modified_by = modified_by;
             cci.performed_by = modified_by;
-            cci.change_reason_code = "system.new";
+            cci.change_reason_code = "system.new_record";
             cci.change_commentary = "Generated organisation data";
             cci.recorded_at = ctx.past_timepoint();
 
@@ -450,7 +439,7 @@ void generate_party_identifiers(
             pid.description = "Legal Entity Identifier";
             pid.modified_by = modified_by;
             pid.performed_by = modified_by;
-            pid.change_reason_code = "system.new";
+            pid.change_reason_code = "system.new_record";
             pid.change_commentary = "Generated organisation data";
             pid.recorded_at = ctx.past_timepoint();
             result.party_identifiers.push_back(std::move(pid));
@@ -467,7 +456,7 @@ void generate_party_identifiers(
             pid.description = "Business Identifier Code";
             pid.modified_by = modified_by;
             pid.performed_by = modified_by;
-            pid.change_reason_code = "system.new";
+            pid.change_reason_code = "system.new_record";
             pid.change_commentary = "Generated organisation data";
             pid.recorded_at = ctx.past_timepoint();
             result.party_identifiers.push_back(std::move(pid));
@@ -498,7 +487,7 @@ void generate_counterparty_identifiers(
             cid.description = "Legal Entity Identifier";
             cid.modified_by = modified_by;
             cid.performed_by = modified_by;
-            cid.change_reason_code = "system.new";
+            cid.change_reason_code = "system.new_record";
             cid.change_commentary = "Generated organisation data";
             cid.recorded_at = ctx.past_timepoint();
             result.counterparty_identifiers.push_back(std::move(cid));
@@ -515,7 +504,7 @@ void generate_counterparty_identifiers(
             cid.description = "Business Identifier Code";
             cid.modified_by = modified_by;
             cid.performed_by = modified_by;
-            cid.change_reason_code = "system.new";
+            cid.change_reason_code = "system.new_record";
             cid.change_commentary = "Generated organisation data";
             cid.recorded_at = ctx.past_timepoint();
             result.counterparty_identifiers.push_back(std::move(cid));
@@ -545,7 +534,7 @@ void generate_party_counterparty_links(
         pc.counterparty_id = cpty.id;
         pc.modified_by = modified_by;
         pc.performed_by = modified_by;
-        pc.change_reason_code = "system.new";
+        pc.change_reason_code = "system.new_record";
         pc.change_commentary = "Generated organisation data";
         pc.recorded_at = ctx.past_timepoint();
         result.party_counterparties.push_back(std::move(pc));
@@ -581,7 +570,7 @@ void generate_business_units(
         bu.party_id = root_party_id;
         bu.modified_by = modified_by;
         bu.performed_by = modified_by;
-        bu.change_reason_code = "system.new";
+        bu.change_reason_code = "system.new_record";
         bu.change_commentary = "Generated organisation data";
         bu.recorded_at = ctx.past_timepoint();
 
@@ -595,10 +584,16 @@ void generate_business_units(
         } else if (node.depth == 1) {
             const auto region_idx =
                 (node.index - 1) % data::region_names.size();
+            const auto region_round =
+                (node.index - 1) / data::region_names.size();
             bu.unit_name = std::string(data::region_names[region_idx])
-                + " Trading";
+                + " Trading"
+                + (region_round > 0
+                    ? " " + std::to_string(region_round + 1) : "");
             bu.unit_code = std::string(
-                data::region_names[region_idx]).substr(0, 4) + "_TRD";
+                data::region_names[region_idx]).substr(0, 4) + "_TRD"
+                + (region_round > 0
+                    ? std::to_string(region_round + 1) : "");
             std::transform(bu.unit_code.begin(), bu.unit_code.end(),
                 bu.unit_code.begin(), [](unsigned char c) {
                     return std::toupper(c);
@@ -612,10 +607,12 @@ void generate_business_units(
             auto region = (space_pos != std::string::npos)
                 ? parent.unit_name.substr(0, space_pos) : parent.unit_name;
             bu.unit_name = std::string(data::asset_classes[asset_idx])
-                + " Trading " + region;
+                + " Trading " + region
+                + " " + std::to_string(unit_seq + 1);
             bu.unit_code = std::string(
                 data::asset_classes[asset_idx]).substr(0, 4) + "_"
-                + region.substr(0, 4);
+                + region.substr(0, 4)
+                + std::to_string(unit_seq + 1);
             std::transform(bu.unit_code.begin(), bu.unit_code.end(),
                 bu.unit_code.begin(), [](unsigned char c) {
                     return std::toupper(c);
@@ -639,6 +636,16 @@ void generate_portfolios(
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto root_ccy = options.country == "US" ? "USD" : "GBP";
+
+    // Extract the root party's first word to make portfolio names unique
+    // across different generation runs within the same tenant.
+    std::string org_prefix;
+    if (!result.parties.empty()) {
+        const auto& root_name = result.parties[0].full_name;
+        auto sp = root_name.find(' ');
+        org_prefix = (sp != std::string::npos)
+            ? root_name.substr(0, sp) : root_name;
+    }
 
     const auto region_count = options.portfolio_leaf_count >= 8 ? 3u
         : options.portfolio_leaf_count >= 4 ? 2u : 1u;
@@ -665,7 +672,7 @@ void generate_portfolios(
         p.is_virtual = is_virtual;
         p.modified_by = modified_by;
         p.performed_by = modified_by;
-        p.change_reason_code = "system.new";
+        p.change_reason_code = "system.new_record";
         p.change_commentary = "Generated organisation data";
         p.recorded_at = ctx.past_timepoint();
         return p;
@@ -681,7 +688,7 @@ void generate_portfolios(
             : std::optional(result.business_units[0].id);
     };
 
-    auto root = make_portfolio("Global Portfolio", std::nullopt,
+    auto root = make_portfolio(org_prefix + " Global Portfolio", std::nullopt,
         find_unit_id("Global"), "Risk", root_ccy, 1);
     const auto root_id = root.id;
     result.portfolios.push_back(std::move(root));
@@ -698,7 +705,7 @@ void generate_portfolios(
         const auto& region_ccy = data::region_currencies[ri];
 
         auto regional = make_portfolio(
-            std::string(region) + " Portfolio",
+            org_prefix + " " + std::string(region) + " Portfolio",
             root_id, find_unit_id(std::string(region)),
             "Risk", std::string(region_ccy), 1);
         const auto regional_id = regional.id;
@@ -717,7 +724,8 @@ void generate_portfolios(
             const auto& lc = *leaf_currencies[ri];
 
             auto ac_portfolio = make_portfolio(
-                std::string(asset_class) + " " + std::string(region),
+                org_prefix + " " + std::string(asset_class)
+                    + " " + std::string(region),
                 regional_id, find_unit_id(std::string(asset_class)),
                 "Risk", std::string(lc[ai]), 1);
             const auto ac_id = ac_portfolio.id;
@@ -725,7 +733,8 @@ void generate_portfolios(
 
             for (std::size_t li = 0; li < leaves_per_ac[ai]; ++li) {
                 auto leaf = make_portfolio(
-                    std::string(lc[ai]) + " " + std::string(asset_class)
+                    org_prefix + " " + std::string(lc[ai])
+                        + " " + std::string(asset_class)
                         + (li > 0 ? " " + std::to_string(li + 1) : ""),
                     ac_id, find_unit_id(std::string(asset_class)),
                     "Risk", std::string(lc[ai]), 0);
@@ -767,7 +776,7 @@ void generate_books(
             bk.is_trading_book = 1;
             bk.modified_by = modified_by;
             bk.performed_by = modified_by;
-            bk.change_reason_code = "system.new";
+            bk.change_reason_code = "system.new_record";
             bk.change_commentary = "Generated organisation data";
             bk.recorded_at = ctx.past_timepoint();
 
@@ -823,11 +832,14 @@ organisation_generator_service::generate(
     domain::generated_organisation result;
     result.seed = ctx.seed();
 
-    generate_parties(options, ctx, result);
+    // Track used short codes to prevent collisions across both entity types.
+    std::unordered_set<std::string> used_codes;
+
+    generate_parties(options, ctx, result, used_codes);
     generate_party_contacts(options, ctx, result);
     generate_party_identifiers(options, ctx, result);
 
-    generate_counterparties(options, ctx, result);
+    generate_counterparties(options, ctx, result, used_codes);
     generate_counterparty_contacts(options, ctx, result);
     generate_counterparty_identifiers(options, ctx, result);
 

@@ -20,6 +20,7 @@
 #include "ores.synthetic/service/organisation_generator_service.hpp"
 
 #include <set>
+#include <unordered_set>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -390,4 +391,50 @@ TEST_CASE("generate_us_produces_distinct_names_from_gb", tags) {
         CHECK(gb_result.party_contacts[0].web_page !=
             us_result.party_contacts[0].web_page);
     }
+}
+
+TEST_CASE("generate_party_short_codes_are_unique", tags) {
+    organisation_generator_service svc;
+    organisation_generation_options opts;
+    opts.seed = 42;
+    opts.party_count = 10;
+
+    auto result = svc.generate(opts);
+
+    std::unordered_set<std::string> codes;
+    for (const auto& p : result.parties) {
+        CHECK(!p.short_code.empty());
+        CHECK(codes.insert(p.short_code).second);
+    }
+}
+
+TEST_CASE("generate_counterparty_short_codes_are_unique", tags) {
+    organisation_generator_service svc;
+    organisation_generation_options opts;
+    opts.seed = 42;
+    opts.counterparty_count = 20;
+
+    auto result = svc.generate(opts);
+
+    std::unordered_set<std::string> codes;
+    for (const auto& c : result.counterparties) {
+        CHECK(!c.short_code.empty());
+        CHECK(codes.insert(c.short_code).second);
+    }
+}
+
+TEST_CASE("generate_all_short_codes_across_entities_are_unique", tags) {
+    organisation_generator_service svc;
+    organisation_generation_options opts;
+    opts.seed = 42;
+    opts.party_count = 10;
+    opts.counterparty_count = 20;
+
+    auto result = svc.generate(opts);
+
+    std::unordered_set<std::string> codes;
+    for (const auto& p : result.parties)
+        CHECK(codes.insert(p.short_code).second);
+    for (const auto& c : result.counterparties)
+        CHECK(codes.insert(c.short_code).second);
 }

@@ -131,6 +131,17 @@ select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'crypto', 'fpml.supervisory_body', 121);
 
 -- =============================================================================
+-- Organisation Bundle Members
+-- =============================================================================
+
+\echo ''
+\echo '--- Organisation Bundle Members ---'
+
+select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.business_units', 10);
+select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.portfolios', 20);
+select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.books', 30);
+
+-- =============================================================================
 -- Summary
 -- =============================================================================
 

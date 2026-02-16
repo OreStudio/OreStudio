@@ -50,6 +50,12 @@ select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Base System plus cryptocurrency reference data. Extends the production dataset with cryptocurrency symbols and icons.'
 );
 
+select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'organisation',
+    'Organisation',
+    'Sample organisational hierarchy data for development and testing. Includes business units, portfolios, and trading books.'
+);
+
 -- =============================================================================
 -- Summary
 -- =============================================================================

@@ -69,6 +69,7 @@ public:
         Page_BundleInstall,
         Page_PartySetup,
         Page_CounterpartySetup,
+        Page_OrganisationSetup,
         Page_Summary
     };
 
@@ -92,6 +93,9 @@ public:
     QString rootLeiName() const { return rootLeiName_; }
     void setRootLeiName(const QString& name) { rootLeiName_ = name; }
 
+    bool organisationPublished() const { return organisationPublished_; }
+    void setOrganisationPublished(bool v) { organisationPublished_ = v; }
+
     /**
      * @brief Clears the system.bootstrap_mode flag for the current tenant.
      */
@@ -108,6 +112,7 @@ private:
     QString selectedBundleName_;
     QString rootLei_;
     QString rootLeiName_;
+    bool organisationPublished_ = false;
 };
 
 // Forward declarations
@@ -116,6 +121,7 @@ class BundleSelectionPage;
 class BundleInstallPage;
 class PartySetupPage;
 class CounterpartySetupPage;
+class OrganisationSetupPage;
 class ApplyAndSummaryPage;
 
 /**
@@ -219,6 +225,42 @@ public:
 private:
     void setupUI();
     TenantProvisioningWizard* wizard_;
+};
+
+/**
+ * @brief Page for async publication of the organisation dataset bundle.
+ *
+ * Publishes business units, portfolios, and books for the target tenant.
+ * Requires a root party to exist (set up in PartySetupPage).
+ */
+class OrganisationSetupPage final : public QWizardPage {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.organisation_setup_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit OrganisationSetupPage(TenantProvisioningWizard* wizard);
+    void initializePage() override;
+    bool isComplete() const override;
+
+private:
+    void startPublish();
+    void appendLog(const QString& message);
+
+    TenantProvisioningWizard* wizard_;
+    QLabel* statusLabel_;
+    QProgressBar* progressBar_;
+    QTextEdit* logOutput_;
+    bool publishComplete_ = false;
+    bool publishSuccess_ = false;
 };
 
 /**

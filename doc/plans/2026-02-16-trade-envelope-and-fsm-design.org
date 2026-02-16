@@ -1,0 +1,898 @@
+:PROPERTIES:
+:ID: ab7a9f1b-e861-49d6-8274-0140160db4ea
+:END:
+#+title: Unified Trade Envelope & Lifecycle Schema Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Add database support for trade envelopes that capture both FpML Trade Header and
+ORE Envelope properties, together with a generic finite state machine (FSM)
+framework for lifecycle management.
+
+** Goals
+
+- Provide a PostgreSQL schema for trade identity, temporal versioning, and
+  lifecycle event tracking (Amendments, Novations, Partial Terminations).
+- Normalise trade identifiers (UTI/USI) and party roles out of product data for
+  SQL-level querying.
+- Expose a "Risk-Ready" SQL view that flattens the latest active version of each
+  trade into the ORE =<Envelope>= structure (TradeID, TradeType, Counterparty,
+  NettingSetId).
+- Build a generic, reusable FSM framework in PostgreSQL that the trade lifecycle
+  consumes as its first client.
+
+** Success Criteria
+
+- Trade IDs and Roles are normalised into dedicated tables, queryable without
+  JSON parsing.
+- Temporal queries can retrieve "state of the portfolio" at any historical
+  timestamp.
+- The =lifecycle_event= and =execution_timestamp= columns support FpML legal
+  reporting requirements.
+- =trade_type= and =netting_set_id= are immediately available for ORE XML
+  export.
+- FSM framework is generic and reusable for future consumers (authorisation, row
+  signing).
+
+** Scope
+
+*** In scope
+
+- FSM infrastructure tables (=ores_fsm_=).
+- Trade envelope table (=ores_trade_trades_tbl=).
+- Trade identifier junction table (=ores_trade_identifiers_tbl=).
+- Trade party role junction table (=ores_trade_party_roles_tbl=).
+- Reference data tables for lifecycle events, trade types, and party role types.
+- ORE envelope view (=ores_trade_ore_envelope_vw=).
+- Population data for FSM trade lifecycle machine and trade reference data.
+- Sample data for an Interest Rate Swap with a subsequent Novation event.
+- pgTAP tests for all tables, triggers, and views.
+- RLS policies for tenant isolation on all tables.
+
+*** Out of scope
+
+- Product-specific tables (swap legs, notionals, rates). These will be handled
+  by dedicated product type tables in a future PR.
+- FSM guard function implementations for trade lifecycle (schema and column
+  present, guard functions deferred to the lifecycle state machine story).
+- C++ domain types, services, and protocol messages (separate stories).
+
+* Architecture
+
+** Component Placement
+
+Two new components are introduced at the SQL level:
+
+| Component    | Prefix         | Purpose                                      |
+|--------------+----------------+----------------------------------------------|
+| =ores.fsm=   | =ores_fsm_=   | Generic finite state machine infrastructure  |
+| =ores.trade= | =ores_trade_=  | Trade envelope, identifiers, roles, lifecycle |
+
+The FSM component has no dependencies on the trade component. The trade component
+depends on:
+
+- =ores.fsm= (for state and transition definitions).
+- =ores.refdata= (for books, portfolios, counterparties, business centres).
+- =ores.iam= (for tenant validation).
+- =ores.dq= (for change reason validation).
+
+** File Organization
+
+Following the [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]] conventions, the new files are organized as:
+
+#+begin_example
+projects/ores.sql/
+├── create/
+│   ├── fsm/
+│   │   ├── fsm_create.sql                          # FSM component master
+│   │   ├── fsm_machines_create.sql
+│   │   ├── fsm_machines_notify_trigger_create.sql
+│   │   ├── fsm_states_create.sql
+│   │   ├── fsm_states_notify_trigger_create.sql
+│   │   ├── fsm_transitions_create.sql
+│   │   ├── fsm_transitions_notify_trigger_create.sql
+│   │   └── fsm_rls_policies_create.sql
+│   ├── trade/
+│   │   ├── trade_create.sql                         # Trade component master
+│   │   ├── trade_trade_types_create.sql
+│   │   ├── trade_trade_types_notify_trigger_create.sql
+│   │   ├── trade_lifecycle_events_create.sql
+│   │   ├── trade_lifecycle_events_notify_trigger_create.sql
+│   │   ├── trade_party_role_types_create.sql
+│   │   ├── trade_party_role_types_notify_trigger_create.sql
+│   │   ├── trade_trade_id_types_create.sql
+│   │   ├── trade_trade_id_types_notify_trigger_create.sql
+│   │   ├── trade_trades_create.sql
+│   │   ├── trade_trades_notify_trigger_create.sql
+│   │   ├── trade_identifiers_create.sql
+│   │   ├── trade_identifiers_notify_trigger_create.sql
+│   │   ├── trade_party_roles_create.sql
+│   │   ├── trade_party_roles_notify_trigger_create.sql
+│   │   └── trade_rls_policies_create.sql
+│   └── rls/
+│       └── rls_create.sql                            # Updated with FSM + Trade
+├── drop/
+│   ├── fsm/
+│   │   ├── drop_fsm.sql
+│   │   ├── fsm_machines_drop.sql
+│   │   ├── fsm_machines_notify_trigger_drop.sql
+│   │   ├── fsm_states_drop.sql
+│   │   ├── fsm_states_notify_trigger_drop.sql
+│   │   ├── fsm_transitions_drop.sql
+│   │   ├── fsm_transitions_notify_trigger_drop.sql
+│   │   └── fsm_rls_policies_drop.sql
+│   ├── trade/
+│   │   ├── drop_trade.sql
+│   │   ├── ... (mirrors create structure)
+│   │   └── trade_rls_policies_drop.sql
+│   └── rls/
+│       └── rls_drop.sql                              # Updated with FSM + Trade
+└── populate/
+    ├── fsm/
+    │   ├── populate_fsm.sql
+    │   └── fsm_trade_lifecycle_populate.sql
+    └── trade/
+        ├── populate_trade.sql
+        ├── trade_trade_types_populate.sql
+        ├── trade_lifecycle_events_populate.sql
+        ├── trade_party_role_types_populate.sql
+        ├── trade_trade_id_types_populate.sql
+        └── trade_sample_data_populate.sql
+#+end_example
+
+** Design Decisions
+
+- *Single-table temporal versioning*: Trades use the existing ORE Studio
+  temporal pattern (=valid_from= / =valid_to= with GIST exclusion, upsert-by-insert
+  triggers, soft delete rules). Each lifecycle event creates a new temporal row
+  for the same =id=. This is consistent with how parties, books, and portfolios
+  work. The two-table split (=trade= + =trade_version=) from the original story
+  is replaced by this convention-aligned approach.
+- *Counterparty-only for trade roles*: The =trade_party_roles= table references
+  =ores_refdata_counterparties_tbl= only. The internal party ("the house") is
+  already known from =book_id -> books.party_id=. If internal parties need
+  explicit roles in the future, a =party_id= column can be added.
+- *Soft FK for trade identifier issuers*: The =issuing_party_id= on trade
+  identifiers is validated against both =ores_refdata_parties_tbl= and
+  =ores_refdata_counterparties_tbl= via a soft FK validation function. UUIDs are
+  globally unique, so a single column suffices.
+- *Generic FSM with guard functions*: FSM transitions support an optional
+  =guard_function= column naming a PostgreSQL function that must return =true=
+  for the transition to proceed. Guard function implementations are deferred to
+  consuming components.
+- *Product data excluded*: No =product_data= JSONB column. Product details will
+  be handled by dedicated product-type tables (e.g., =ores_trade_swap_legs_tbl=)
+  in a future PR.
+- *Successor trade for full novations*: A nullable =successor_trade_id= self-
+  referencing FK on the trade table supports full novation chains where the
+  original trade is terminated and a new trade ID is generated.
+
+* Domain Model
+
+** FSM Tables
+
+*** ores_fsm_machines_tbl
+
+Defines named state machines. Each machine represents a distinct lifecycle
+domain (e.g., trade lifecycle, row signing, authorisation).
+
+| Column           | Type | Constraints                |
+|------------------+------+----------------------------|
+| =id=             | uuid | PK, not null               |
+| =tenant_id=      | uuid | not null                   |
+| =version=        | integer | not null                |
+| =name=           | text | not null, natural key      |
+| =description=    | text | nullable                   |
+| =modified_by=    | text | not null                   |
+| =performed_by=   | text | not null                   |
+| =change_reason_code= | text | not null              |
+| =change_commentary=  | text | not null              |
+| =valid_from=     | timestamptz | not null             |
+| =valid_to=       | timestamptz | not null             |
+
+Primary key: =(tenant_id, id, valid_from, valid_to)=. GIST exclusion on
+=(tenant_id, id, tstzrange)=. Unique natural key index on =(tenant_id, name)=
+where =valid_to = infinity=.
+
+Entity name in code: =ores_fsm_machines=. Notification channel: =ores_machines=.
+
+*** ores_fsm_states_tbl
+
+Defines valid states within a machine.
+
+| Column           | Type    | Constraints                                     |
+|------------------+---------+-------------------------------------------------|
+| =id=             | uuid    | PK, not null                                    |
+| =tenant_id=      | uuid    | not null                                        |
+| =version=        | integer | not null                                        |
+| =machine_id=     | uuid    | not null, soft FK -> =ores_fsm_machines_tbl=    |
+| =name=           | text    | not null                                        |
+| =is_initial=     | integer | not null, default 0 (boolean as int)            |
+| =is_terminal=    | integer | not null, default 0 (boolean as int)            |
+| =modified_by=    | text    | not null                                        |
+| =performed_by=   | text    | not null                                        |
+| =change_reason_code= | text | not null                                      |
+| =change_commentary=  | text | not null                                      |
+| =valid_from=     | timestamptz | not null                                    |
+| =valid_to=       | timestamptz | not null                                    |
+
+Primary key: =(tenant_id, id, valid_from, valid_to)=. GIST exclusion on
+=(tenant_id, id, tstzrange)=. Custom unique index on =(tenant_id, machine_id,
+name)= where =valid_to = infinity=. Soft FK validation of =machine_id= in insert
+trigger.
+
+Entity name in code: =ores_fsm_states=. Notification channel: =ores_states=.
+
+*** ores_fsm_transitions_tbl
+
+Defines valid state-to-state transitions within a machine. Optionally references
+a guard function for business rule enforcement.
+
+| Column           | Type | Constraints                                        |
+|------------------+------+----------------------------------------------------|
+| =id=             | uuid | PK, not null                                       |
+| =tenant_id=      | uuid | not null                                           |
+| =version=        | integer | not null                                        |
+| =machine_id=     | uuid | not null, soft FK -> =ores_fsm_machines_tbl=       |
+| =from_state_id=  | uuid | not null, soft FK -> =ores_fsm_states_tbl=         |
+| =to_state_id=    | uuid | not null, soft FK -> =ores_fsm_states_tbl=         |
+| =name=           | text | not null (e.g., 'Amend', 'Novate')                 |
+| =guard_function= | text | nullable, PostgreSQL function name                  |
+| =modified_by=    | text | not null                                           |
+| =performed_by=   | text | not null                                           |
+| =change_reason_code= | text | not null                                       |
+| =change_commentary=  | text | not null                                       |
+| =valid_from=     | timestamptz | not null                                     |
+| =valid_to=       | timestamptz | not null                                     |
+
+Primary key: =(tenant_id, id, valid_from, valid_to)=. GIST exclusion on
+=(tenant_id, id, tstzrange)=. Custom unique index on =(tenant_id, machine_id,
+from_state_id, to_state_id)= where =valid_to = infinity=. Prevents duplicate
+transitions. Soft FK validation of =machine_id=, =from_state_id= and
+=to_state_id= in insert trigger. States must belong to the same machine.
+
+Entity name in code: =ores_fsm_transitions=. Notification channel:
+=ores_transitions=.
+
+** Trade Reference Data Tables
+
+*** ores_trade_trade_types_tbl
+
+ORE instrument type codes. Text PK. Populated via dataset.
+
+| Code                | Description                    |
+|---------------------+--------------------------------|
+| Swap                | Interest Rate Swap             |
+| FxForward           | FX Forward                     |
+| CapFloor            | Cap or Floor                   |
+| Swaption            | Swaption                       |
+| FxOption            | FX Option                      |
+| CreditDefaultSwap   | Credit Default Swap           |
+| Bond                | Fixed Income Bond              |
+| EquityOption        | Equity Option                  |
+
+Generates =ores_trade_validate_trade_type_fn()=. Notification channel:
+=ores_trade_types=.
+
+*** ores_trade_lifecycle_events_tbl
+
+Valid lifecycle event types. Links to FSM states. Text PK. Populated via dataset.
+
+| Code                | Description                        |
+|---------------------+------------------------------------|
+| New                 | Initial trade booking              |
+| Amendment           | Change to trade economics/terms    |
+| Novation            | Change of counterparty             |
+| PartialTermination  | Reduction of notional              |
+| FullTermination     | Full termination of the trade      |
+
+Additional column: =fsm_state_id= (uuid, nullable, soft FK ->
+=ores_fsm_states_tbl=).
+
+Generates =ores_trade_validate_lifecycle_event_fn()=. Notification channel:
+=ores_lifecycle_events=.
+
+*** ores_trade_party_role_types_tbl
+
+FpML-aligned party role codes. Text PK. Populated via dataset.
+
+| Code                | Description                        |
+|---------------------+------------------------------------|
+| Counterparty        | The other side of the trade        |
+| CalculationAgent    | Determines fixings and payments    |
+| ExecutingBroker     | Broker executing the trade         |
+| NovationTransferee  | New counterparty in a novation     |
+
+Generates =ores_trade_validate_party_role_type_fn()=. Notification channel:
+=ores_party_role_types=.
+
+*** ores_trade_trade_id_types_tbl
+
+Identifier type codes for trade identifiers. Text PK. Populated via dataset.
+
+| Code     | Description                          |
+|----------+--------------------------------------|
+| UTI      | Unique Transaction Identifier        |
+| USI      | Unique Swap Identifier               |
+| Internal | Internal system identifier           |
+
+Generates =ores_trade_validate_trade_id_type_fn()=. Notification channel:
+=ores_trade_id_types=.
+
+** Trade Entity Tables
+
+*** ores_trade_trades_tbl
+
+The temporal trade envelope. Each lifecycle event creates a new temporal row for
+the same =id=. The internal party is derived from =book_id -> books.party_id=.
+
+| Column                | Type        | Constraints                             |
+|-----------------------+-------------+-----------------------------------------|
+| =id=                  | uuid        | PK, not null                            |
+| =tenant_id=           | uuid        | not null                                |
+| =version=             | integer     | not null                                |
+| =external_id=         | text        | nullable (source system ID)             |
+| =book_id=             | uuid        | not null, soft FK -> books              |
+| =portfolio_id=        | uuid        | not null, soft FK -> portfolios         |
+| =successor_trade_id=  | uuid        | nullable, self-referencing soft FK      |
+| =trade_type=          | text        | not null, soft FK -> trade types        |
+| =netting_set_id=      | text        | not null                                |
+| =lifecycle_event=     | text        | not null, soft FK -> lifecycle events   |
+| =trade_date=          | date        | not null                                |
+| =execution_timestamp= | timestamptz | not null                                |
+| =effective_date=      | date        | not null                                |
+| =termination_date=    | date        | not null                                |
+| =modified_by=         | text        | not null                                |
+| =performed_by=        | text        | not null                                |
+| =change_reason_code=  | text        | not null                                |
+| =change_commentary=   | text        | not null                                |
+| =valid_from=          | timestamptz | not null                                |
+| =valid_to=            | timestamptz | not null                                |
+
+Primary key: =(tenant_id, id, valid_from, valid_to)=. GIST exclusion on
+=(tenant_id, id, tstzrange)=.
+
+Custom indexes:
+
+- =ores_trade_trades_version_uniq_idx=: =(tenant_id, id, version)= current only.
+- =ores_trade_trades_id_uniq_idx=: =(tenant_id, id)= current only.
+- =ores_trade_trades_tenant_idx=: =(tenant_id)= current only.
+- =ores_trade_trades_book_idx=: =(tenant_id, book_id)= current only.
+- =ores_trade_trades_portfolio_idx=: =(tenant_id, portfolio_id)= current only.
+- =ores_trade_trades_netting_set_idx=: =(tenant_id, netting_set_id)= current only.
+- =ores_trade_trades_trade_type_idx=: =(tenant_id, trade_type)= current only.
+
+Insert trigger validations:
+- =tenant_id= via =ores_iam_validate_tenant_fn()=.
+- =book_id= existence in =ores_refdata_books_tbl= (inline soft FK).
+- =portfolio_id= existence in =ores_refdata_portfolios_tbl= (inline soft FK).
+- =successor_trade_id= if not null, existence in =ores_trade_trades_tbl= (self-ref).
+- =trade_type= via =ores_trade_validate_trade_type_fn()=.
+- =lifecycle_event= via =ores_trade_validate_lifecycle_event_fn()=.
+- =change_reason_code= via =ores_dq_validate_change_reason_fn()=.
+- =modified_by= via =ores_iam_validate_account_username_fn()=.
+
+Entity name in code: =ores_trade_trades=. Notification channel: =ores_trades=.
+
+*** ores_trade_identifiers_tbl
+
+Junction table for trade external identifiers (UTI, USI, Internal).
+
+| Column              | Type | Constraints                                     |
+|---------------------+------+-------------------------------------------------|
+| =id=                | uuid | PK, not null                                    |
+| =tenant_id=         | uuid | not null                                        |
+| =version=           | integer | not null                                     |
+| =trade_id=          | uuid | not null, soft FK -> =ores_trade_trades_tbl=    |
+| =issuing_party_id=  | uuid | nullable, soft FK -> parties or counterparties  |
+| =id_value=          | text | not null                                        |
+| =id_type=           | text | not null, soft FK -> trade id types             |
+| =id_scheme=         | text | nullable (FpML URI)                             |
+| =modified_by=       | text | not null                                        |
+| =performed_by=      | text | not null                                        |
+| =change_reason_code= | text | not null                                       |
+| =change_commentary=  | text | not null                                       |
+| =valid_from=        | timestamptz | not null                                  |
+| =valid_to=          | timestamptz | not null                                  |
+
+Primary key: =(tenant_id, id, valid_from, valid_to)=. GIST exclusion on
+=(tenant_id, id, tstzrange)=.
+
+Custom indexes:
+
+- =ores_trade_identifiers_version_uniq_idx=: =(tenant_id, id, version)= current only.
+- =ores_trade_identifiers_id_uniq_idx=: =(tenant_id, id)= current only.
+- =ores_trade_identifiers_tenant_idx=: =(tenant_id)= current only.
+- =ores_trade_identifiers_trade_idx=: =(tenant_id, trade_id)= current only.
+- =ores_trade_identifiers_type_value_idx=: =(tenant_id, id_type, id_value)= current only.
+
+Insert trigger validations:
+- =trade_id= existence in =ores_trade_trades_tbl= (inline soft FK).
+- =issuing_party_id= if not null, existence in either =ores_refdata_parties_tbl=
+  or =ores_refdata_counterparties_tbl=.
+- =id_type= via =ores_trade_validate_trade_id_type_fn()=.
+
+Entity name in code: =ores_trade_identifiers=. Notification channel:
+=ores_trade_identifiers=.
+
+*** ores_trade_party_roles_tbl
+
+Junction table assigning counterparties to roles on a trade.
+
+| Column             | Type | Constraints                                        |
+|--------------------+------+----------------------------------------------------|
+| =id=               | uuid | PK, not null                                       |
+| =tenant_id=        | uuid | not null                                           |
+| =version=          | integer | not null                                        |
+| =trade_id=         | uuid | not null, soft FK -> =ores_trade_trades_tbl=       |
+| =counterparty_id=  | uuid | not null, soft FK -> =ores_refdata_counterparties_tbl= |
+| =role=             | text | not null, soft FK -> party role types               |
+| =modified_by=      | text | not null                                           |
+| =performed_by=     | text | not null                                           |
+| =change_reason_code= | text | not null                                         |
+| =change_commentary=  | text | not null                                         |
+| =valid_from=       | timestamptz | not null                                     |
+| =valid_to=         | timestamptz | not null                                     |
+
+Primary key: =(tenant_id, id, valid_from, valid_to)=. GIST exclusion on
+=(tenant_id, id, tstzrange)=.
+
+Custom indexes:
+
+- =ores_trade_party_roles_version_uniq_idx=: =(tenant_id, id, version)= current only.
+- =ores_trade_party_roles_id_uniq_idx=: =(tenant_id, id)= current only.
+- =ores_trade_party_roles_tenant_idx=: =(tenant_id)= current only.
+- =ores_trade_party_roles_trade_idx=: =(tenant_id, trade_id)= current only.
+- =ores_trade_party_roles_counterparty_idx=: =(tenant_id, counterparty_id)= current only.
+
+Insert trigger validations:
+- =trade_id= existence in =ores_trade_trades_tbl= (inline soft FK).
+- =counterparty_id= existence in =ores_refdata_counterparties_tbl= (inline soft FK).
+- =role= via =ores_trade_validate_party_role_type_fn()=.
+
+Entity name in code: =ores_trade_party_roles=. Notification channel:
+=ores_trade_party_roles=.
+
+* Data Flow
+
+** Trade Booking Flow
+
+1. A trade is booked via the service layer. The service inserts a row into
+   =ores_trade_trades_tbl= with =lifecycle_event = 'New'=.
+2. Trade identifiers (UTI, USI, internal IDs) are inserted into
+   =ores_trade_identifiers_tbl=.
+3. Counterparty roles are inserted into =ores_trade_party_roles_tbl= (at minimum
+   a 'Counterparty' role).
+4. PostgreSQL LISTEN/NOTIFY triggers inform connected clients of the new trade.
+
+** Lifecycle Event Flow (Novation Example)
+
+1. The service inserts a new temporal row for the same trade =id= with
+   =lifecycle_event = 'Novation'= and updated fields.
+2. The upsert-by-insert trigger sets =valid_to= on the previous row and
+   =valid_from= on the new row.
+3. A new party role row is inserted for the =NovationTransferee= role, and the
+   previous 'Counterparty' role row is updated (soft-deleted and replaced).
+4. The FSM framework (once guard functions are implemented) validates that the
+   transition from the previous lifecycle event to 'Novation' is allowed.
+
+** ORE Export Flow
+
+1. The =ores_trade_ore_envelope_vw= view is queried to get the latest active
+   state of all trades.
+2. The view resolves counterparty names, portfolio names, and flattens the data
+   into the ORE Envelope structure.
+3. The ORE export service reads the view and generates XML. =trade_type= and
+   =netting_set_id= are directly available without JSON parsing.
+
+* Views
+
+** ores_trade_ore_envelope_vw
+
+Flattens the latest active version of each trade into the ORE =<Envelope>=
+structure.
+
+#+begin_src sql
+create or replace view ores_trade_ore_envelope_vw as
+select
+    t.id                as trade_id,
+    t.trade_type,
+    t.netting_set_id,
+    cp.full_name        as counterparty,
+    t.portfolio_id,
+    p.name              as portfolio_name,
+    t.book_id,
+    t.trade_date,
+    t.effective_date,
+    t.termination_date,
+    t.lifecycle_event,
+    t.execution_timestamp,
+    t.external_id,
+    t.tenant_id
+from ores_trade_trades_tbl t
+join ores_trade_party_roles_tbl tpr
+    on t.tenant_id = tpr.tenant_id
+    and t.id = tpr.trade_id
+    and tpr.role = 'Counterparty'
+    and tpr.valid_to = ores_utility_infinity_timestamp_fn()
+join ores_refdata_counterparties_tbl cp
+    on tpr.tenant_id = cp.tenant_id
+    and tpr.counterparty_id = cp.id
+    and cp.valid_to = ores_utility_infinity_timestamp_fn()
+left join ores_refdata_portfolios_tbl p
+    on t.tenant_id = p.tenant_id
+    and t.portfolio_id = p.id
+    and p.valid_to = ores_utility_infinity_timestamp_fn()
+where t.valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+For historical queries ("state of the portfolio at time X"), replace the
+=valid_to = ores_utility_infinity_timestamp_fn()= conditions with
+=valid_from <= X AND (valid_to = ores_utility_infinity_timestamp_fn() OR valid_to > X)=.
+
+* RLS Policies
+
+** FSM Component
+
+All three FSM tables use standard tenant isolation (PERMISSIVE):
+
+#+begin_src sql
+alter table ores_fsm_machines_tbl enable row level security;
+create policy ores_fsm_machines_tenant_isolation_policy
+on ores_fsm_machines_tbl for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- Same pattern for ores_fsm_states_tbl, ores_fsm_transitions_tbl
+#+end_src
+
+** Trade Component
+
+All trade tables use standard tenant isolation (PERMISSIVE):
+
+#+begin_src sql
+alter table ores_trade_trades_tbl enable row level security;
+create policy ores_trade_trades_tenant_isolation_policy
+on ores_trade_trades_tbl for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- Same pattern for all ores_trade_*_tbl tables
+#+end_src
+
+Note: Party isolation policies are not required at this stage. The internal party
+is derived from =book_id= and books already have their own party isolation
+policy. Trade-level party isolation can be added later if needed.
+
+* Testing Strategy
+
+** pgTAP Tests
+
+Tests will be placed in =projects/ores.sql/test/= following existing patterns:
+
+*** FSM tests (=fsm_test.sql=)
+
+- Insert a machine, verify version and temporal columns.
+- Insert states for a machine, verify soft FK validation.
+- Insert transitions, verify from/to states must belong to the same machine.
+- Verify duplicate transition rejection (unique index).
+- Verify =is_initial= and =is_terminal= state flags.
+
+*** Trade tests (=trade_trades_test.sql=)
+
+- Insert a trade, verify version, temporal columns, and soft FK validations.
+- Verify =book_id= validation rejects invalid UUIDs.
+- Verify =portfolio_id= validation rejects invalid UUIDs.
+- Verify =trade_type= validation rejects invalid codes.
+- Verify =lifecycle_event= validation rejects invalid codes.
+- Test temporal versioning: insert a trade, insert an amendment (same =id=),
+  verify previous row has =valid_to= set and new row is current.
+
+*** Trade identifier tests (=trade_identifiers_test.sql=)
+
+- Insert an identifier, verify =trade_id= soft FK validation.
+- Verify =id_type= validation rejects invalid codes.
+- Verify =issuing_party_id= validation against both parties and counterparties.
+
+*** Trade party role tests (=trade_party_roles_test.sql=)
+
+- Insert a role, verify =trade_id= and =counterparty_id= soft FK validations.
+- Verify =role= validation rejects invalid codes.
+
+*** ORE envelope view tests (=trade_ore_envelope_view_test.sql=)
+
+- Insert a trade with counterparty role, verify view returns expected structure.
+- Insert a novation (second temporal row), verify view shows updated state.
+
+** Sample Data
+
+*** Initial IRS Trade
+
+Insert an Interest Rate Swap as a 'New' lifecycle event:
+
+- Trade type: =Swap=.
+- Netting set: =NS001=.
+- Counterparty role: Counterparty A (UUID generated).
+- Trade identifiers: UTI and Internal ID.
+- Book and portfolio: reference existing test data.
+
+*** Novation Event
+
+Insert a second temporal row for the same trade:
+
+- Lifecycle event: =Novation=.
+- Previous 'Counterparty' role soft-deleted.
+- New 'Counterparty' role assigned to Counterparty B.
+- 'NovationTransferee' role assigned to Counterparty B.
+- Trade =id= remains the same.
+
+* FSM Population Data
+
+** Trade Lifecycle Machine
+
+Machine: =trade_lifecycle=. Description: "Manages the lifecycle of financial
+trades from booking through termination."
+
+*** States
+
+| Name                | is_initial | is_terminal |
+|---------------------+------------+-------------|
+| New                 |          1 |           0 |
+| Amendment           |          0 |           0 |
+| Novation            |          0 |           0 |
+| PartialTermination  |          0 |           0 |
+| FullTermination     |          0 |           1 |
+
+*** Transitions
+
+| From                | To                  | Name                 | Guard Function |
+|---------------------+---------------------+----------------------+----------------|
+| New                 | Amendment           | Amend                | null           |
+| New                 | Novation            | Novate               | null           |
+| New                 | PartialTermination  | PartiallyTerminate   | null           |
+| New                 | FullTermination     | FullyTerminate       | null           |
+| Amendment           | Amendment           | Amend                | null           |
+| Amendment           | Novation            | Novate               | null           |
+| Amendment           | PartialTermination  | PartiallyTerminate   | null           |
+| Amendment           | FullTermination     | FullyTerminate       | null           |
+| Novation            | Amendment           | Amend                | null           |
+| Novation            | Novation            | Novate               | null           |
+| Novation            | PartialTermination  | PartiallyTerminate   | null           |
+| Novation            | FullTermination     | FullyTerminate       | null           |
+| PartialTermination  | Amendment           | Amend                | null           |
+| PartialTermination  | PartialTermination  | PartiallyTerminate   | null           |
+| PartialTermination  | FullTermination     | FullyTerminate       | null           |
+
+Guard functions are set to null for now. The lifecycle state machine story will
+add concrete guard function implementations.
+
+* Stories
+
+Stories are listed in dependency order. Each story produces a PR.
+
+** Story 0: Add FSM infrastructure tables
+
+Create the generic FSM framework tables in =ores_fsm_=.
+
+*** Tables
+
+- =ores_fsm_machines_tbl= (domain entity, UUID PK).
+- =ores_fsm_states_tbl= (domain entity, UUID PK).
+- =ores_fsm_transitions_tbl= (domain entity, UUID PK).
+
+*** SQL Files
+
+Create:
+- =create/fsm/fsm_create.sql= (component master)
+- =create/fsm/fsm_machines_create.sql=
+- =create/fsm/fsm_machines_notify_trigger_create.sql=
+- =create/fsm/fsm_states_create.sql=
+- =create/fsm/fsm_states_notify_trigger_create.sql=
+- =create/fsm/fsm_transitions_create.sql=
+- =create/fsm/fsm_transitions_notify_trigger_create.sql=
+- =create/fsm/fsm_rls_policies_create.sql=
+
+Drop:
+- =drop/fsm/drop_fsm.sql= (component master)
+- =drop/fsm/fsm_machines_drop.sql=
+- =drop/fsm/fsm_machines_notify_trigger_drop.sql=
+- =drop/fsm/fsm_states_drop.sql=
+- =drop/fsm/fsm_states_notify_trigger_drop.sql=
+- =drop/fsm/fsm_transitions_drop.sql=
+- =drop/fsm/fsm_transitions_notify_trigger_drop.sql=
+- =drop/fsm/fsm_rls_policies_drop.sql=
+
+*** Orchestration Updates
+
+- =create/create.sql=: Add =\ir ./fsm/fsm_create.sql= between DQ and refdata.
+- =drop/drop.sql=: Add =\ir ./fsm/drop_fsm.sql= in reverse order.
+- =create/rls/rls_create.sql=: Include =fsm_rls_policies_create.sql=.
+- =drop/rls/rls_drop.sql=: Include =fsm_rls_policies_drop.sql=.
+
+*** Acceptance Criteria
+
+- All three tables created with full temporal support, GIST exclusion, triggers,
+  notification, soft delete.
+- Machine, state, and transition soft FK validation working.
+- Unique constraint prevents duplicate state names per machine.
+- Unique constraint prevents duplicate transitions per machine.
+- State =machine_id= validated in insert trigger.
+- Transition =from_state_id= and =to_state_id= validated to belong to same machine.
+- RLS policies for tenant isolation on all tables.
+- pgTAP tests for validation and constraints.
+- Schema validation passes (=validate_schemas.sh=).
+
+** Story 1: Add trade reference data tables
+
+Create reference data tables for trade types, lifecycle events, party role types,
+and trade identifier types.
+
+*** Tables
+
+- =ores_trade_trade_types_tbl= (text PK, =table_create= template).
+- =ores_trade_lifecycle_events_tbl= (text PK, =table_create= template, with =fsm_state_id=).
+- =ores_trade_party_role_types_tbl= (text PK, =table_create= template).
+- =ores_trade_trade_id_types_tbl= (text PK, =table_create= template).
+
+*** SQL Files
+
+Create files for each table plus notify triggers, component master, and RLS
+policies. Population scripts for initial values.
+
+*** Acceptance Criteria
+
+- All four tables created with temporal support, validation functions generated.
+- Population scripts seed initial values.
+- RLS policies for tenant isolation.
+- pgTAP tests for validation functions.
+- Schema validation passes.
+
+** Story 2: Populate FSM with trade lifecycle machine
+
+Create the trade lifecycle state machine instance and populate states and
+transitions.
+
+*** Population Data
+
+As specified in the "FSM Population Data" section above.
+
+*** SQL Files
+
+- =populate/fsm/populate_fsm.sql= (component master)
+- =populate/fsm/fsm_trade_lifecycle_populate.sql=
+
+*** Acceptance Criteria
+
+- Trade lifecycle machine populated with all 5 states and 15 transitions.
+- Lifecycle events reference table linked to FSM states via =fsm_state_id=.
+- pgTAP tests verify state/transition population.
+
+** Story 3: Add trade envelope table
+
+Create the main trade envelope table.
+
+*** Table
+
+- =ores_trade_trades_tbl= (domain entity, UUID PK).
+
+*** SQL Files
+
+- =create/trade/trade_trades_create.sql=
+- =create/trade/trade_trades_notify_trigger_create.sql=
+- Drop equivalents.
+
+*** Acceptance Criteria
+
+- Table created with full temporal support, triggers, notification, soft delete.
+- Book, portfolio, trade type, lifecycle event, and successor trade validations
+  working.
+- Custom indexes on book_id, portfolio_id, netting_set_id, and trade_type.
+- RLS policy for tenant isolation.
+- pgTAP tests for all validation and temporal behaviour.
+- Schema validation passes.
+
+** Story 4: Add trade identifier and party role tables
+
+Create the two junction tables for trade identifiers and party roles.
+
+*** Tables
+
+- =ores_trade_identifiers_tbl= (domain entity, UUID PK).
+- =ores_trade_party_roles_tbl= (domain entity, UUID PK).
+
+*** SQL Files
+
+Create and drop files for both tables plus notify triggers.
+
+*** Acceptance Criteria
+
+- Both tables created with full temporal support, triggers, notification.
+- Trade, counterparty, role type, and identifier type validations working.
+- Issuing party soft FK validates against both parties and counterparties tables.
+- RLS policies for tenant isolation.
+- pgTAP tests for all validation.
+- Schema validation passes.
+
+** Story 5: Add ORE envelope view and sample data
+
+Create the ORE envelope view and insert sample data demonstrating a trade booking
+followed by a novation event.
+
+*** SQL Files
+
+- =create/trade/trade_ore_envelope_view_create.sql=
+- =drop/trade/trade_ore_envelope_view_drop.sql=
+- =populate/trade/trade_sample_data_populate.sql=
+
+*** Acceptance Criteria
+
+- View returns correct flattened ORE envelope structure.
+- Sample data demonstrates temporal versioning across a lifecycle event.
+- Historical queries return correct state at past timestamps.
+- pgTAP tests for view correctness.
+
+* Dependency Graph
+
+#+begin_example
+Story 0 (FSM infrastructure)
+    |
+    v
+Story 1 (trade reference data) ----+
+    |                               |
+    v                               v
+Story 2 (FSM population)     Story 3 (trade envelope table)
+                                    |
+                                    v
+                              Story 4 (identifiers + party roles)
+                                    |
+                                    v
+                              Story 5 (ORE view + sample data)
+#+end_example
+
+Stories 2 and 3 can be developed in parallel once Story 1 is complete.
+
+* Existing Dependencies
+
+The following existing database objects are referenced:
+
+| Object                                              | Status |
+|-----------------------------------------------------+--------|
+| =ores_iam_validate_tenant_fn()=                     | Exists |
+| =ores_iam_validate_account_username_fn()=           | Exists |
+| =ores_iam_current_tenant_id_fn()=                   | Exists |
+| =ores_dq_validate_change_reason_fn()=               | Exists |
+| =ores_utility_infinity_timestamp_fn()=              | Exists |
+| =ores_refdata_books_tbl=                            | Exists |
+| =ores_refdata_portfolios_tbl=                       | Exists |
+| =ores_refdata_parties_tbl=                          | Exists |
+| =ores_refdata_counterparties_tbl=                   | Exists |
+
+* Multi-Tenancy Categorization
+
+** FSM tables
+
+FSM machine, state, and transition data should be populated via dataset
+(Data Librarian), similar to other reference data. New tenants get their FSM
+definitions through the "Publish Datasets" flow.
+
+** Trade reference data tables
+
+Trade types, lifecycle events, party role types, and trade ID types are all
+dataset tables, populated via Data Librarian.
+
+** Trade entity tables
+
+Trade trades, identifiers, and party roles are tenant-specific tables that start
+empty for new tenants and are populated by user actions (trade booking).
+
+* Open Questions
+
+- Should the FSM guard function signature be standardised now (e.g.,
+  =(tenant_id uuid, entity_id uuid, old_state text, new_state text) RETURNS
+  boolean=), or left to consuming components to define?
+- Should =FullTermination= events set =valid_to= on the trade itself, or simply
+  be a terminal lifecycle state with the trade remaining as a current temporal
+  row?

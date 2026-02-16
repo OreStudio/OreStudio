@@ -534,24 +534,23 @@ void OrganisationSetupPage::startPublish() {
         progressBar_->setRange(0, 1);
         progressBar_->setValue(1);
 
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Organisation publication: no server response";
+        if (!result || !result->success) {
+            publishSuccess_ = false;
             statusLabel_->setText(tr("Publication failed!"));
-            appendLog(tr("ERROR: Failed to communicate with server."));
             progressBar_->setStyleSheet(
                 "QProgressBar::chunk { background-color: #cc0000; }");
-            publishSuccess_ = false;
-        } else if (!result->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Organisation publication failed: "
-                << result->error_message;
-            statusLabel_->setText(tr("Publication failed!"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result->error_message)));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-            publishSuccess_ = false;
+
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Organisation publication: no server response";
+                appendLog(tr("ERROR: Failed to communicate with server."));
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Organisation publication failed: "
+                    << result->error_message;
+                appendLog(tr("ERROR: %1").arg(
+                    QString::fromStdString(result->error_message)));
+            }
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Organisation publication succeeded: "

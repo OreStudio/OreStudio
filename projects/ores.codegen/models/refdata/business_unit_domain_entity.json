@@ -92,6 +92,45 @@
         {"column": "recorded_by", "header": "Recorded By"},
         {"column": "version", "header": "Version"}
       ]
+    },
+
+    "qt": {
+      "domain_include": "ores.refdata/domain/business_unit.hpp",
+      "domain_class": "refdata::domain::business_unit",
+      "protocol_include": "ores.refdata/messaging/business_unit_protocol.hpp",
+      "collection_name": "business_units",
+      "item_var": "business_unit",
+      "key_field": "unit_code",
+      "has_uuid_primary_key": true,
+      "get_request_class": "refdata::messaging::get_business_units_request",
+      "get_response_class": "refdata::messaging::get_business_units_response",
+      "get_message_type": "get_business_units_request",
+      "save_request_class": "refdata::messaging::save_business_unit_request",
+      "save_response_class": "refdata::messaging::save_business_unit_response",
+      "save_message_type": "save_business_unit_request",
+      "save_request_item_field": "business_unit",
+      "delete_request_class": "refdata::messaging::delete_business_unit_request",
+      "delete_response_class": "refdata::messaging::delete_business_unit_response",
+      "delete_message_type": "delete_business_unit_request",
+      "history_request_class": "refdata::messaging::get_business_unit_history_request",
+      "history_response_class": "refdata::messaging::get_business_unit_history_response",
+      "history_message_type": "get_business_unit_history_request",
+      "detail_fields": [
+        {"field": "unit_code", "label": "Unit Code", "widget": "codeEdit", "type": "line_edit", "is_key": true, "is_required": false, "placeholder": "Enter unit code"},
+        {"field": "unit_name", "label": "Unit Name", "widget": "nameEdit", "type": "line_edit", "is_required": true, "placeholder": "Enter unit name"},
+        {"field": "business_centre_code", "label": "Business Centre", "widget": "businessCentreEdit", "type": "line_edit", "placeholder": "Enter business centre code"}
+      ],
+      "columns": [
+        {"enum_name": "UnitCode", "field": "unit_code", "header": "Code", "is_string": true, "width": 120},
+        {"enum_name": "UnitName", "field": "unit_name", "header": "Name", "is_string": true, "width": 250},
+        {"enum_name": "BusinessCentreCode", "field": "business_centre_code", "header": "Business Centre", "is_string": true, "width": 130},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+      "settings_group": "BusinessUnitListWindow",
+      "window_title": "Business Units",
+      "icon": "Building"
     }
   }
 }

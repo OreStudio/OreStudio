@@ -141,15 +141,30 @@ read_portfolio(std::span<const std::byte>& data) {
 // ============================================================================
 
 std::vector<std::byte> get_portfolios_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, offset);
+    writer::write_uint32(buffer, limit);
+    return buffer;
 }
 
 std::expected<get_portfolios_request, error_code>
 get_portfolios_request::deserialize(std::span<const std::byte> data) {
-    if (!data.empty()) {
-        return std::unexpected(error_code::payload_too_large);
+    get_portfolios_request request;
+
+    // Backward compatibility: empty payload from old clients uses defaults
+    if (data.empty()) {
+        return request;
     }
-    return get_portfolios_request{};
+
+    auto offset_result = reader::read_uint32(data);
+    if (!offset_result) return std::unexpected(offset_result.error());
+    request.offset = *offset_result;
+
+    auto limit_result = reader::read_uint32(data);
+    if (!limit_result) return std::unexpected(limit_result.error());
+    request.limit = *limit_result;
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const get_portfolios_request& v) {
@@ -159,6 +174,11 @@ std::ostream& operator<<(std::ostream& s, const get_portfolios_request& v) {
 
 std::vector<std::byte> get_portfolios_response::serialize() const {
     std::vector<std::byte> buffer;
+
+    // Write total available count
+    writer::write_uint32(buffer, total_available_count);
+
+    // Write portfolio count in this response
     writer::write_uint32(buffer, static_cast<std::uint32_t>(portfolios.size()));
     for (const auto& pf : portfolios) {
         write_portfolio(buffer, pf);
@@ -170,6 +190,12 @@ std::expected<get_portfolios_response, error_code>
 get_portfolios_response::deserialize(std::span<const std::byte> data) {
     get_portfolios_response response;
 
+    // Read total available count
+    auto total_result = reader::read_uint32(data);
+    if (!total_result) return std::unexpected(total_result.error());
+    response.total_available_count = *total_result;
+
+    // Read portfolio count in this response
     auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;

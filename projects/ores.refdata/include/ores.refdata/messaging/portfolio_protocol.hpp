@@ -37,9 +37,14 @@ namespace ores::refdata::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all portfolios.
+ * @brief Request to retrieve portfolios with pagination support.
  */
 struct get_portfolios_request final {
+    /// Number of records to skip (0-based)
+    std::uint32_t offset = 0;
+    /// Maximum number of records to return
+    std::uint32_t limit = 100;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_portfolios_request,
                          ores::utility::serialization::error_code>
@@ -49,10 +54,12 @@ struct get_portfolios_request final {
 std::ostream& operator<<(std::ostream& s, const get_portfolios_request& v);
 
 /**
- * @brief Response containing all portfolios.
+ * @brief Response containing portfolios with pagination metadata.
  */
 struct get_portfolios_response final {
     std::vector<domain::portfolio> portfolios;
+    /// Total number of portfolios available (not just in this page)
+    std::uint32_t total_available_count = 0;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_portfolios_response,

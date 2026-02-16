@@ -73,6 +73,9 @@
 #include "ores.qt/PartyController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/BusinessCentreController.hpp"
+#include "ores.qt/BusinessUnitController.hpp"
+#include "ores.qt/PortfolioController.hpp"
+#include "ores.qt/BookController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -160,6 +163,9 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionParties->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));
     ui_->ActionCounterparties->setIcon(IconUtils::createRecoloredIcon(Icon::Handshake, IconUtils::DefaultIconColor));
     ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::Building, IconUtils::DefaultIconColor));
+    ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::Building, IconUtils::DefaultIconColor));
+    ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -547,6 +553,24 @@ MainWindow::MainWindow(QWidget* parent) :
             businessCentreController_->showListWindow();
     });
 
+    // Connect Business Units action to controller
+    connect(ui_->ActionBusinessUnits, &QAction::triggered, this, [this]() {
+        if (businessUnitController_)
+            businessUnitController_->showListWindow();
+    });
+
+    // Connect Portfolios action to controller
+    connect(ui_->ActionPortfolios, &QAction::triggered, this, [this]() {
+        if (portfolioController_)
+            portfolioController_->showListWindow();
+    });
+
+    // Connect Books action to controller
+    connect(ui_->ActionBooks, &QAction::triggered, this, [this]() {
+        if (bookController_)
+            bookController_->showListWindow();
+    });
+
     // Connect Data Librarian action
     connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
         if (dataLibrarianWindow_) {
@@ -860,6 +884,9 @@ void MainWindow::updateMenuState() {
     ui_->ActionParties->setEnabled(isLoggedIn);
     ui_->ActionCounterparties->setEnabled(isLoggedIn);
     ui_->ActionBusinessCentres->setEnabled(isLoggedIn);
+    ui_->ActionBusinessUnits->setEnabled(isLoggedIn);
+    ui_->ActionPortfolios->setEnabled(isLoggedIn);
+    ui_->ActionBooks->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1358,6 +1385,57 @@ void MainWindow::createControllers() {
     connect(businessCentreController_.get(), &BusinessCentreController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(businessCentreController_.get(), &BusinessCentreController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create business unit controller
+    businessUnitController_ = std::make_unique<BusinessUnitController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(businessUnitController_.get(), &BusinessUnitController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessUnitController_.get(), &BusinessUnitController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessUnitController_.get(), &BusinessUnitController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(businessUnitController_.get(), &BusinessUnitController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create portfolio controller
+    portfolioController_ = std::make_unique<PortfolioController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(portfolioController_.get(), &PortfolioController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(portfolioController_.get(), &PortfolioController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(portfolioController_.get(), &PortfolioController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(portfolioController_.get(), &PortfolioController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create book controller
+    bookController_ = std::make_unique<BookController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(bookController_.get(), &BookController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(bookController_.get(), &BookController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(bookController_.get(), &BookController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(bookController_.get(), &BookController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";

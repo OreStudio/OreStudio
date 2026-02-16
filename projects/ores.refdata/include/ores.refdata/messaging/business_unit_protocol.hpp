@@ -37,9 +37,14 @@ namespace ores::refdata::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all business units.
+ * @brief Request to retrieve business units with pagination support.
  */
 struct get_business_units_request final {
+    /// Number of records to skip (0-based)
+    std::uint32_t offset = 0;
+    /// Maximum number of records to return
+    std::uint32_t limit = 100;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_business_units_request,
                          ores::utility::serialization::error_code>
@@ -49,10 +54,12 @@ struct get_business_units_request final {
 std::ostream& operator<<(std::ostream& s, const get_business_units_request& v);
 
 /**
- * @brief Response containing all business units.
+ * @brief Response containing business units with pagination metadata.
  */
 struct get_business_units_response final {
     std::vector<domain::business_unit> business_units;
+    /// Total number of business units available (not just in this page)
+    std::uint32_t total_available_count = 0;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_business_units_response,

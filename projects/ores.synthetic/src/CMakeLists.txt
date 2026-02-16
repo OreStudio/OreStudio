@@ -31,13 +31,17 @@ set_target_properties(${lib_target_name} PROPERTIES
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
-target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+target_include_directories(${lib_target_name}
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/projects/${name}/include
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.dq.lib
         ores.iam.lib
+        ores.refdata.lib
     PRIVATE
         ores.utility.lib
         faker-cxx::faker-cxx

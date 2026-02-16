@@ -25,7 +25,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
-#include <QHeaderView>
+#include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.database/domain/change_reason_constants.hpp"
@@ -48,7 +48,7 @@ TenantProvisioningWizard::TenantProvisioningWizard(
     : QWizard(parent),
       clientManager_(clientManager) {
 
-    setWindowTitle(tr("Tenant Setup"));
+    setWindowTitle(tr("New Tenant Provisioner"));
     setMinimumSize(900, 700);
     resize(900, 700);
 
@@ -139,9 +139,9 @@ void ProvisioningWelcomePage::setupUI() {
     stepsLabel->setTextFormat(Qt::RichText);
     stepsLabel->setText(
         tr("<ol>"
-           "<li><b>Select Reference Data Bundle</b> - Choose a pre-configured "
+           "<li><b>Select Catalogue</b> - Choose a pre-configured "
            "set of reference data (currencies, countries, etc.).</li>"
-           "<li><b>Install Bundle</b> - Publish the selected data to your "
+           "<li><b>Publish Catalogue</b> - Publish the selected data to your "
            "tenant.</li>"
            "<li><b>Choose Data Source</b> - Select between GLEIF registry "
            "or generated synthetic data for parties, counterparties, and "
@@ -172,10 +172,10 @@ void ProvisioningWelcomePage::setupUI() {
 BundleSelectionPage::BundleSelectionPage(TenantProvisioningWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Select Reference Data Bundle"));
-    setSubTitle(tr("Choose a bundle of reference data to publish to your tenant. "
-                   "Each bundle contains a pre-configured set of currencies, "
-                   "countries, and other reference data."));
+    setTitle(tr("Select Catalogue"));
+    setSubTitle(tr("Choose a catalogue of reference data to publish to your "
+                   "tenant. Each catalogue contains a pre-configured set of "
+                   "currencies, countries, and other reference data."));
 
     setupUI();
 }
@@ -186,62 +186,95 @@ void BundleSelectionPage::setupUI() {
     bundleModel_ = new ClientDatasetBundleModel(
         wizard_->clientManager(), this);
 
-    bundleTable_ = new QTableView(this);
-    bundleTable_->setModel(bundleModel_);
-    bundleTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    bundleTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    bundleTable_->setAlternatingRowColors(true);
-    bundleTable_->verticalHeader()->hide();
-    bundleTable_->horizontalHeader()->setStretchLastSection(true);
-    bundleTable_->setMinimumHeight(200);
-    layout->addWidget(bundleTable_);
+    auto* comboLabel = new QLabel(tr("Catalogue:"), this);
+    layout->addWidget(comboLabel);
+
+    bundleCombo_ = new QComboBox(this);
+    bundleCombo_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    layout->addWidget(bundleCombo_);
+
+    layout->addSpacing(12);
+
+    descriptionLabel_ = new QLabel(this);
+    descriptionLabel_->setWordWrap(true);
+    descriptionLabel_->setTextFormat(Qt::PlainText);
+    descriptionLabel_->setFrameShape(QFrame::StyledPanel);
+    descriptionLabel_->setContentsMargins(8, 8, 8, 8);
+    descriptionLabel_->setMinimumHeight(60);
+    layout->addWidget(descriptionLabel_);
+
+    layout->addStretch();
 
     statusLabel_ = new QLabel(this);
     statusLabel_->setWordWrap(true);
     layout->addWidget(statusLabel_);
 
-    layout->addStretch();
+    connect(bundleCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &BundleSelectionPage::onBundleChanged);
 
-    // Track selection changes
-    connect(bundleTable_->selectionModel(),
-            &QItemSelectionModel::selectionChanged,
+    // Populate combo when data arrives
+    connect(bundleModel_, &ClientDatasetBundleModel::dataLoaded,
             this, [this]() {
-        const auto selected = bundleTable_->selectionModel()->selectedRows();
-        bundleSelected_ = !selected.isEmpty();
-        if (bundleSelected_) {
-            const int row = selected.first().row();
-            const auto* bundle = bundleModel_->getBundle(row);
+        bundleCombo_->clear();
+        const int count = bundleModel_->rowCount();
+        for (int i = 0; i < count; ++i) {
+            const auto* bundle = bundleModel_->getBundle(i);
             if (bundle) {
-                statusLabel_->setText(
-                    tr("Selected: <b>%1</b> (%2)")
-                    .arg(QString::fromStdString(bundle->name),
-                         QString::fromStdString(bundle->code)));
-                statusLabel_->setTextFormat(Qt::RichText);
+                bundleCombo_->addItem(
+                    QString::fromStdString(bundle->name), i);
             }
+        }
+        if (count > 0) {
+            bundleCombo_->setCurrentIndex(0);
+            statusLabel_->clear();
         } else {
-            statusLabel_->setText("");
+            statusLabel_->setText(tr("No catalogues available."));
         }
         emit completeChanged();
     });
+
+    connect(bundleModel_, &ClientDatasetBundleModel::loadError,
+            this, [this](const QString& msg) {
+        statusLabel_->setText(tr("Failed to load catalogues: %1").arg(msg));
+    });
+}
+
+void BundleSelectionPage::onBundleChanged(int index) {
+    if (index < 0) {
+        descriptionLabel_->clear();
+        return;
+    }
+
+    const int row = bundleCombo_->itemData(index).toInt();
+    const auto* bundle = bundleModel_->getBundle(row);
+    if (bundle) {
+        descriptionLabel_->setText(
+            QString::fromStdString(bundle->description));
+    } else {
+        descriptionLabel_->clear();
+    }
+    emit completeChanged();
 }
 
 void BundleSelectionPage::initializePage() {
+    bundleCombo_->clear();
+    descriptionLabel_->clear();
     bundleModel_->refresh();
-    statusLabel_->setText(tr("Loading available bundles..."));
+    statusLabel_->setText(tr("Loading available catalogues..."));
 }
 
 bool BundleSelectionPage::isComplete() const {
-    return bundleSelected_;
+    return bundleCombo_->currentIndex() >= 0;
 }
 
 bool BundleSelectionPage::validatePage() {
-    const auto selected = bundleTable_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        statusLabel_->setText(tr("Please select a bundle to continue."));
+    const int index = bundleCombo_->currentIndex();
+    if (index < 0) {
+        statusLabel_->setText(tr("Please select a catalogue to continue."));
         return false;
     }
 
-    const int row = selected.first().row();
+    const int row = bundleCombo_->itemData(index).toInt();
     const auto* bundle = bundleModel_->getBundle(row);
     if (!bundle) {
         statusLabel_->setText(tr("Invalid selection."));
@@ -260,7 +293,7 @@ bool BundleSelectionPage::validatePage() {
 BundleInstallPage::BundleInstallPage(TenantProvisioningWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Installing Reference Data"));
+    setTitle(tr("Publishing Catalogue"));
     setFinalPage(false);
 
     auto* layout = new QVBoxLayout(this);
@@ -287,7 +320,7 @@ void BundleInstallPage::initializePage() {
     publishComplete_ = false;
     publishSuccess_ = false;
     logOutput_->clear();
-    statusLabel_->setText(tr("Publishing bundle '%1'...").arg(
+    statusLabel_->setText(tr("Publishing catalogue '%1'...").arg(
         wizard_->selectedBundleName()));
     progressBar_->setRange(0, 0);
     progressBar_->setStyleSheet("");
@@ -372,7 +405,7 @@ void BundleInstallPage::startPublish() {
 
     watcher->setFuture(future);
 
-    appendLog(tr("Publishing bundle '%1' (mode: upsert, atomic: true)...")
+    appendLog(tr("Publishing catalogue '%1' (mode: upsert, atomic: true)...")
         .arg(wizard_->selectedBundleName()));
 }
 

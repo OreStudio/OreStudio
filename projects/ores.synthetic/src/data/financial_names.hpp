@@ -141,11 +141,12 @@ inline constexpr std::array<std::string_view, 8> us_counterparty_patterns = {{
 /**
  * @brief Counterparty party types used in financial services.
  */
-inline constexpr std::array<std::string_view, 4> counterparty_types = {{
+inline constexpr std::array<std::string_view, 5> counterparty_types = {{
     "Bank",
-    "Securities Firm",
-    "Insurance Co",
-    "Fund Manager"
+    "Corporate",
+    "HedgeFund",
+    "Exchange",
+    "CorporateGroup"
 }};
 
 /**

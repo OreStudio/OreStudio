@@ -29,7 +29,6 @@
 #include <QSpinBox>
 #include <QCheckBox>
 #include <QTextEdit>
-#include <QTableView>
 #include <QPushButton>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -193,12 +192,13 @@ public:
 
 private:
     void setupUI();
+    void onBundleChanged(int index);
 
     TenantProvisioningWizard* wizard_;
     ClientDatasetBundleModel* bundleModel_;
-    QTableView* bundleTable_;
+    QComboBox* bundleCombo_;
+    QLabel* descriptionLabel_;
     QLabel* statusLabel_;
-    bool bundleSelected_ = false;
 };
 
 /**

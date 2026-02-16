@@ -50,7 +50,7 @@ SystemProvisionerWizard::SystemProvisionerWizard(
     : QWizard(parent),
       clientManager_(clientManager) {
 
-    setWindowTitle(tr("System Bootstrap"));
+    setWindowTitle(tr("New System Provisioner"));
     setMinimumSize(900, 700);
     resize(900, 700);
 
@@ -572,7 +572,7 @@ void ProvisionerTenantDetailsPage::initializePage() {
 
 void ProvisionerTenantDetailsPage::onCodeChanged(const QString& text) {
     if (!hostnameManuallyEdited_ && !text.isEmpty()) {
-        hostnameEdit_->setText(text + ".localhost");
+        hostnameEdit_->setText(text);
     }
 }
 
@@ -704,7 +704,7 @@ void ProvisionerTenantAdminPage::initializePage() {
     }
     if (emailEdit_->text().isEmpty()) {
         const auto code = wizard_->tenantCode();
-        emailEdit_->setText(QString("admin@%1").arg(
+        emailEdit_->setText(QString("admin@%1.com").arg(
             code.isEmpty() ? "tenant" : code));
     }
 }
@@ -800,6 +800,8 @@ bool ProvisionerApplyPage::isComplete() const {
 }
 
 void ProvisionerApplyPage::initializePage() {
+    wizard()->setButtonText(QWizard::NextButton, tr("Continue"));
+
     provisioningComplete_ = false;
     provisioningSuccess_ = false;
     logOutput_->clear();
@@ -929,7 +931,7 @@ void ProvisionerCompletePage::setupUI() {
 
     // Success header
     auto* headerLabel = new QLabel(
-        tr("System bootstrap complete"), this);
+        tr("System provisioning complete"), this);
     headerLabel->setStyleSheet("font-size: 16pt; font-weight: bold;");
     headerLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(headerLabel);

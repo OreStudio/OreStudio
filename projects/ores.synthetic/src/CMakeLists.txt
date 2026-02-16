@@ -39,6 +39,7 @@ target_include_directories(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.comms.lib
         ores.dq.lib
         ores.iam.lib
         ores.refdata.lib

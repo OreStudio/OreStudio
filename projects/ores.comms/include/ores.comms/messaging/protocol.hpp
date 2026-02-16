@@ -287,6 +287,8 @@ constexpr std::uint16_t TELEMETRY_SUBSYSTEM_MIN = 0x5000;
 constexpr std::uint16_t TELEMETRY_SUBSYSTEM_MAX = 0x5FFF;
 constexpr std::uint16_t DQ_SUBSYSTEM_MIN = 0x6000;
 constexpr std::uint16_t DQ_SUBSYSTEM_MAX = 0x6FFF;
+constexpr std::uint16_t SYNTHETIC_SUBSYSTEM_MIN = 0x7000;
+constexpr std::uint16_t SYNTHETIC_SUBSYSTEM_MAX = 0x7FFF;
 
 }
 

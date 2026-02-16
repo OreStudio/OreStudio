@@ -465,6 +465,9 @@ enum class message_type : std::uint16_t {
     // DQ subsystem - LEI entity summary
     get_lei_entities_summary_request = 0x60C0,
     get_lei_entities_summary_response = 0x60C1,
+    // Synthetic subsystem - Organisation generation
+    generate_organisation_request = 0x7000,
+    generate_organisation_response = 0x7001,
     // Sentinel value
     last_value
 };
@@ -859,6 +862,8 @@ enum class message_type : std::uint16_t {
     case message_type::publish_bundle_response: return "publish_bundle_response";
     case message_type::get_lei_entities_summary_request: return "get_lei_entities_summary_request";
     case message_type::get_lei_entities_summary_response: return "get_lei_entities_summary_response";
+    case message_type::generate_organisation_request: return "generate_organisation_request";
+    case message_type::generate_organisation_response: return "generate_organisation_response";
     default: return {};
     }
 }

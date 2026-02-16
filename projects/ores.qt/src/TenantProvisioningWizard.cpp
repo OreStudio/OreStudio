@@ -30,6 +30,7 @@
 #include <QFutureWatcher>
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
+#include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::qt {
@@ -68,6 +69,7 @@ void TenantProvisioningWizard::setupPages() {
     setPage(Page_Welcome, new ProvisioningWelcomePage(this));
     setPage(Page_BundleSelection, new BundleSelectionPage(this));
     setPage(Page_BundleInstall, new BundleInstallPage(this));
+    setPage(Page_DataSourceSelection, new DataSourceSelectionPage(this));
     setPage(Page_PartySetup, new PartySetupPage(this));
     setPage(Page_CounterpartySetup, new CounterpartySetupPage(this));
     setPage(Page_OrganisationSetup, new OrganisationSetupPage(this));
@@ -141,12 +143,11 @@ void ProvisioningWelcomePage::setupUI() {
            "set of reference data (currencies, countries, etc.).</li>"
            "<li><b>Install Bundle</b> - Publish the selected data to your "
            "tenant.</li>"
-           "<li><b>Party Setup</b> - Optionally configure your root party "
-           "from the LEI registry (optional).</li>"
-           "<li><b>Counterparty Import</b> - Information about importing "
-           "counterparties (future feature).</li>"
-           "<li><b>Organisation Setup</b> - Publish sample business units, "
-           "portfolios, and trading books.</li>"
+           "<li><b>Choose Data Source</b> - Select between GLEIF registry "
+           "or generated synthetic data for parties, counterparties, and "
+           "organisational structure.</li>"
+           "<li><b>Organisation Setup</b> - Populate your organisation with "
+           "the selected data source.</li>"
            "</ol>"));
     layout->addWidget(stepsLabel);
 
@@ -376,6 +377,140 @@ void BundleInstallPage::startPublish() {
 }
 
 // ============================================================================
+// DataSourceSelectionPage
+// ============================================================================
+
+DataSourceSelectionPage::DataSourceSelectionPage(
+    TenantProvisioningWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Choose Data Source"));
+    setSubTitle(tr("Select how to populate parties, counterparties, and "
+                   "organisational structure for your tenant."));
+
+    setupUI();
+}
+
+void DataSourceSelectionPage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(12);
+
+    gleifRadio_ = new QRadioButton(
+        tr("GLEIF Registry - Search the LEI registry for your organisation"),
+        this);
+    gleifRadio_->setChecked(true);
+    layout->addWidget(gleifRadio_);
+
+    syntheticRadio_ = new QRadioButton(
+        tr("Generate Synthetic Data - Create realistic generated data"),
+        this);
+    layout->addWidget(syntheticRadio_);
+
+    layout->addSpacing(8);
+
+    // Synthetic options group (shown only when synthetic is selected)
+    syntheticOptions_ = new QWidget(this);
+    auto* optLayout = new QGridLayout(syntheticOptions_);
+    optLayout->setContentsMargins(20, 0, 0, 0);
+
+    int row = 0;
+
+    optLayout->addWidget(new QLabel(tr("Country:"), this), row, 0);
+    countryCombo_ = new QComboBox(this);
+    countryCombo_->addItem(tr("United Kingdom (GB)"), "GB");
+    countryCombo_->addItem(tr("United States (US)"), "US");
+    optLayout->addWidget(countryCombo_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Party count:"), this), row, 0);
+    partyCountSpin_ = new QSpinBox(this);
+    partyCountSpin_->setRange(1, 100);
+    partyCountSpin_->setValue(5);
+    optLayout->addWidget(partyCountSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Counterparty count:"), this), row, 0);
+    counterpartyCountSpin_ = new QSpinBox(this);
+    counterpartyCountSpin_->setRange(1, 200);
+    counterpartyCountSpin_->setValue(10);
+    optLayout->addWidget(counterpartyCountSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Portfolio leaf count:"), this), row, 0);
+    portfolioLeafCountSpin_ = new QSpinBox(this);
+    portfolioLeafCountSpin_->setRange(1, 100);
+    portfolioLeafCountSpin_->setValue(8);
+    optLayout->addWidget(portfolioLeafCountSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Books per portfolio:"), this), row, 0);
+    booksPerPortfolioSpin_ = new QSpinBox(this);
+    booksPerPortfolioSpin_->setRange(1, 20);
+    booksPerPortfolioSpin_->setValue(2);
+    optLayout->addWidget(booksPerPortfolioSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Business unit count:"), this), row, 0);
+    businessUnitCountSpin_ = new QSpinBox(this);
+    businessUnitCountSpin_->setRange(1, 100);
+    businessUnitCountSpin_->setValue(10);
+    optLayout->addWidget(businessUnitCountSpin_, row, 1);
+    row++;
+
+    generateAddressesCheck_ = new QCheckBox(tr("Generate addresses"), this);
+    generateAddressesCheck_->setChecked(true);
+    optLayout->addWidget(generateAddressesCheck_, row, 0, 1, 2);
+    row++;
+
+    generateIdentifiersCheck_ = new QCheckBox(tr("Generate identifiers (LEI, BIC)"), this);
+    generateIdentifiersCheck_->setChecked(true);
+    optLayout->addWidget(generateIdentifiersCheck_, row, 0, 1, 2);
+
+    syntheticOptions_->setVisible(false);
+    layout->addWidget(syntheticOptions_);
+
+    layout->addStretch();
+
+    connect(gleifRadio_, &QRadioButton::toggled,
+            this, &DataSourceSelectionPage::onModeChanged);
+    connect(syntheticRadio_, &QRadioButton::toggled,
+            this, &DataSourceSelectionPage::onModeChanged);
+}
+
+void DataSourceSelectionPage::onModeChanged() {
+    syntheticOptions_->setVisible(syntheticRadio_->isChecked());
+}
+
+bool DataSourceSelectionPage::validatePage() {
+    if (syntheticRadio_->isChecked()) {
+        wizard_->setDataSourceMode(
+            TenantProvisioningWizard::DataSourceMode::synthetic);
+        wizard_->setSyntheticCountry(
+            countryCombo_->currentData().toString());
+        wizard_->setSyntheticPartyCount(partyCountSpin_->value());
+        wizard_->setSyntheticCounterpartyCount(counterpartyCountSpin_->value());
+        wizard_->setSyntheticPortfolioLeafCount(portfolioLeafCountSpin_->value());
+        wizard_->setSyntheticBooksPerPortfolio(booksPerPortfolioSpin_->value());
+        wizard_->setSyntheticBusinessUnitCount(businessUnitCountSpin_->value());
+        wizard_->setSyntheticGenerateAddresses(generateAddressesCheck_->isChecked());
+        wizard_->setSyntheticGenerateIdentifiers(generateIdentifiersCheck_->isChecked());
+    } else {
+        wizard_->setDataSourceMode(
+            TenantProvisioningWizard::DataSourceMode::gleif);
+    }
+    return true;
+}
+
+int DataSourceSelectionPage::nextId() const {
+    if (syntheticRadio_->isChecked()) {
+        // Skip LEI/counterparty pages, go straight to organisation setup
+        return TenantProvisioningWizard::Page_OrganisationSetup;
+    }
+    // GLEIF flow: go to party setup
+    return TenantProvisioningWizard::Page_PartySetup;
+}
+
+// ============================================================================
 // PartySetupPage
 // ============================================================================
 
@@ -503,9 +638,21 @@ void OrganisationSetupPage::initializePage() {
     publishComplete_ = false;
     publishSuccess_ = false;
     logOutput_->clear();
-    statusLabel_->setText(tr("Publishing organisation data..."));
     progressBar_->setRange(0, 0);
     progressBar_->setStyleSheet("");
+
+    const bool isSynthetic = wizard_->dataSourceMode() ==
+        TenantProvisioningWizard::DataSourceMode::synthetic;
+
+    if (isSynthetic) {
+        setSubTitle(tr("Generating synthetic parties, counterparties, "
+                       "business units, portfolios, and trading books."));
+        statusLabel_->setText(tr("Generating synthetic organisation data..."));
+    } else {
+        setSubTitle(tr("Publishing sample business units, portfolios, and "
+                       "trading books for your organisation."));
+        statusLabel_->setText(tr("Publishing organisation data..."));
+    }
 
     startPublish();
 }
@@ -518,6 +665,20 @@ void OrganisationSetupPage::appendLog(const QString& message) {
 }
 
 void OrganisationSetupPage::startPublish() {
+    const std::string publishedBy = wizard_->clientManager()->currentUsername();
+    ClientManager* clientManager = wizard_->clientManager();
+
+    const bool isSynthetic = wizard_->dataSourceMode() ==
+        TenantProvisioningWizard::DataSourceMode::synthetic;
+
+    if (isSynthetic) {
+        startSyntheticGeneration();
+    } else {
+        startBundlePublish();
+    }
+}
+
+void OrganisationSetupPage::startBundlePublish() {
     const std::string publishedBy = wizard_->clientManager()->currentUsername();
     ClientManager* clientManager = wizard_->clientManager();
 
@@ -594,6 +755,111 @@ void OrganisationSetupPage::startPublish() {
                   "books)..."));
 }
 
+void OrganisationSetupPage::startSyntheticGeneration() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation data";
+
+    using ResponseType = synthetic::messaging::generate_organisation_response;
+
+    // Capture options from wizard state
+    const std::string country = wizard_->syntheticCountry().toStdString();
+    const auto partyCount = static_cast<std::uint32_t>(wizard_->syntheticPartyCount());
+    const auto counterpartyCount = static_cast<std::uint32_t>(wizard_->syntheticCounterpartyCount());
+    const auto portfolioLeafCount = static_cast<std::uint32_t>(wizard_->syntheticPortfolioLeafCount());
+    const auto booksPerPortfolio = static_cast<std::uint32_t>(wizard_->syntheticBooksPerPortfolio());
+    const auto businessUnitCount = static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitCount());
+    const bool generateAddresses = wizard_->syntheticGenerateAddresses();
+    const bool generateIdentifiers = wizard_->syntheticGenerateIdentifiers();
+    const std::string publishedBy = clientManager->currentUsername();
+
+    auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
+    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        if (!result || !result->success) {
+            publishSuccess_ = false;
+            statusLabel_->setText(tr("Generation failed!"));
+            progressBar_->setStyleSheet(
+                "QProgressBar::chunk { background-color: #cc0000; }");
+
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Synthetic generation: no server response";
+                appendLog(tr("ERROR: Failed to communicate with server."));
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Synthetic generation failed: "
+                    << result->error_message;
+                appendLog(tr("ERROR: %1").arg(
+                    QString::fromStdString(result->error_message)));
+            }
+        } else {
+            BOOST_LOG_SEV(lg(), info)
+                << "Synthetic generation succeeded: "
+                << result->parties_count << " parties, "
+                << result->counterparties_count << " counterparties";
+            statusLabel_->setText(
+                tr("Synthetic organisation generated successfully!"));
+            appendLog(tr("Generated %1 parties, %2 counterparties, "
+                         "%3 portfolios, %4 books, %5 business units, "
+                         "%6 contacts, %7 identifiers.")
+                .arg(result->parties_count)
+                .arg(result->counterparties_count)
+                .arg(result->portfolios_count)
+                .arg(result->books_count)
+                .arg(result->business_units_count)
+                .arg(result->contacts_count)
+                .arg(result->identifiers_count));
+            publishSuccess_ = true;
+            wizard_->setOrganisationPublished(true);
+        }
+
+        publishComplete_ = true;
+        emit completeChanged();
+    });
+
+    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
+        [clientManager, country, partyCount, counterpartyCount,
+         portfolioLeafCount, booksPerPortfolio, businessUnitCount,
+         generateAddresses, generateIdentifiers,
+         publishedBy]() -> std::optional<ResponseType> {
+
+            synthetic::messaging::generate_organisation_request request;
+            request.country = country;
+            request.party_count = partyCount;
+            request.counterparty_count = counterpartyCount;
+            request.portfolio_leaf_count = portfolioLeafCount;
+            request.books_per_leaf_portfolio = booksPerPortfolio;
+            request.business_unit_count = businessUnitCount;
+            request.generate_addresses = generateAddresses;
+            request.generate_identifiers = generateIdentifiers;
+            request.published_by = publishedBy;
+
+            auto result = clientManager->process_authenticated_request(
+                std::move(request));
+
+            if (!result) {
+                return std::nullopt;
+            }
+            return *result;
+        }
+    );
+
+    watcher->setFuture(future);
+
+    appendLog(tr("Generating synthetic organisation (country: %1, "
+                  "parties: %2, counterparties: %3)...")
+        .arg(wizard_->syntheticCountry())
+        .arg(wizard_->syntheticPartyCount())
+        .arg(wizard_->syntheticCounterpartyCount()));
+}
+
 // ============================================================================
 // ApplyAndSummaryPage
 // ============================================================================
@@ -661,8 +927,15 @@ void ApplyAndSummaryPage::initializePage() {
     }
 
     if (wizard_->organisationPublished()) {
-        summary += tr("<p><b>Organisation data:</b> Business units, portfolios, "
-                      "and trading books published.</p>");
+        if (wizard_->dataSourceMode() ==
+            TenantProvisioningWizard::DataSourceMode::synthetic) {
+            summary += tr("<p><b>Organisation data:</b> Synthetic parties, "
+                          "counterparties, business units, portfolios, and "
+                          "trading books generated.</p>");
+        } else {
+            summary += tr("<p><b>Organisation data:</b> Business units, portfolios, "
+                          "and trading books published.</p>");
+        }
     }
 
     summary += tr("<p>The bootstrap mode flag has been cleared. This wizard "

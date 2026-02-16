@@ -70,6 +70,7 @@ void TenantProvisioningWizard::setupPages() {
     setPage(Page_BundleInstall, new BundleInstallPage(this));
     setPage(Page_PartySetup, new PartySetupPage(this));
     setPage(Page_CounterpartySetup, new CounterpartySetupPage(this));
+    setPage(Page_OrganisationSetup, new OrganisationSetupPage(this));
     setPage(Page_Summary, new ApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
@@ -144,6 +145,8 @@ void ProvisioningWelcomePage::setupUI() {
            "from the LEI registry (optional).</li>"
            "<li><b>Counterparty Import</b> - Information about importing "
            "counterparties (future feature).</li>"
+           "<li><b>Organisation Setup</b> - Publish sample business units, "
+           "portfolios, and trading books.</li>"
            "</ol>"));
     layout->addWidget(stepsLabel);
 
@@ -464,6 +467,135 @@ void CounterpartySetupPage::setupUI() {
 }
 
 // ============================================================================
+// OrganisationSetupPage
+// ============================================================================
+
+OrganisationSetupPage::OrganisationSetupPage(
+    TenantProvisioningWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Organisation Setup"));
+    setSubTitle(tr("Publishing sample business units, portfolios, and trading "
+                   "books for your organisation."));
+    setFinalPage(false);
+
+    auto* layout = new QVBoxLayout(this);
+
+    statusLabel_ = new QLabel(tr("Starting..."), this);
+    statusLabel_->setStyleSheet("font-weight: bold;");
+    layout->addWidget(statusLabel_);
+
+    progressBar_ = new QProgressBar(this);
+    progressBar_->setRange(0, 0); // indeterminate
+    layout->addWidget(progressBar_);
+
+    logOutput_ = new QTextEdit(this);
+    logOutput_->setReadOnly(true);
+    logOutput_->setFont(FontUtils::monospace());
+    layout->addWidget(logOutput_);
+}
+
+bool OrganisationSetupPage::isComplete() const {
+    return publishComplete_;
+}
+
+void OrganisationSetupPage::initializePage() {
+    publishComplete_ = false;
+    publishSuccess_ = false;
+    logOutput_->clear();
+    statusLabel_->setText(tr("Publishing organisation data..."));
+    progressBar_->setRange(0, 0);
+    progressBar_->setStyleSheet("");
+
+    startPublish();
+}
+
+void OrganisationSetupPage::appendLog(const QString& message) {
+    logOutput_->append(message);
+    auto cursor = logOutput_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logOutput_->setTextCursor(cursor);
+}
+
+void OrganisationSetupPage::startPublish() {
+    const std::string publishedBy = wizard_->clientManager()->currentUsername();
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Publishing organisation bundle";
+
+    using ResponseType = dq::messaging::publish_bundle_response;
+
+    auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
+    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Organisation publication: no server response";
+            statusLabel_->setText(tr("Publication failed!"));
+            appendLog(tr("ERROR: Failed to communicate with server."));
+            progressBar_->setStyleSheet(
+                "QProgressBar::chunk { background-color: #cc0000; }");
+            publishSuccess_ = false;
+        } else if (!result->success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Organisation publication failed: "
+                << result->error_message;
+            statusLabel_->setText(tr("Publication failed!"));
+            appendLog(tr("ERROR: %1").arg(
+                QString::fromStdString(result->error_message)));
+            progressBar_->setStyleSheet(
+                "QProgressBar::chunk { background-color: #cc0000; }");
+            publishSuccess_ = false;
+        } else {
+            BOOST_LOG_SEV(lg(), info)
+                << "Organisation publication succeeded: "
+                << result->datasets_succeeded << " datasets";
+            statusLabel_->setText(
+                tr("Organisation data published successfully!"));
+            appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
+                .arg(result->datasets_succeeded)
+                .arg(result->total_records_inserted)
+                .arg(result->total_records_updated));
+            publishSuccess_ = true;
+            wizard_->setOrganisationPublished(true);
+        }
+
+        publishComplete_ = true;
+        emit completeChanged();
+    });
+
+    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
+        [clientManager, publishedBy]() -> std::optional<ResponseType> {
+
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code = "organisation";
+            request.mode = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic = true;
+
+            auto result = clientManager->process_authenticated_request(
+                std::move(request));
+
+            if (!result) {
+                return std::nullopt;
+            }
+            return *result;
+        }
+    );
+
+    watcher->setFuture(future);
+
+    appendLog(tr("Publishing organisation bundle (business units, portfolios, "
+                  "books)..."));
+}
+
+// ============================================================================
 // ApplyAndSummaryPage
 // ============================================================================
 
@@ -527,6 +659,11 @@ void ApplyAndSummaryPage::initializePage() {
     if (!wizard_->rootLei().isEmpty()) {
         summary += tr("<p><b>Root party (LEI):</b> %1 (%2)</p>")
             .arg(wizard_->rootLeiName(), wizard_->rootLei());
+    }
+
+    if (wizard_->organisationPublished()) {
+        summary += tr("<p><b>Organisation data:</b> Business units, portfolios, "
+                      "and trading books published.</p>");
     }
 
     summary += tr("<p>The bootstrap mode flag has been cleared. This wizard "

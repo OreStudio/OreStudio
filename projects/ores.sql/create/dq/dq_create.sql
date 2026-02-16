@@ -128,4 +128,7 @@
 \ir ./dq_bundle_publication_create.sql
 \ir ./dq_lei_counterparties_publish_create.sql
 \ir ./dq_lei_parties_publish_create.sql
+\ir ./dq_business_units_publish_create.sql
+\ir ./dq_portfolios_publish_create.sql
+\ir ./dq_books_publish_create.sql
 

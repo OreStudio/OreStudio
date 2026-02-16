@@ -104,7 +104,7 @@ void TenantMdiWindow::setupToolbar() {
 
     onboardAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            Icon::Building, IconUtils::DefaultIconColor),
+            Icon::BuildingSkyscraper, IconUtils::DefaultIconColor),
         tr("Onboard"));
     onboardAction_->setToolTip(tr("Provision a new evaluation tenant"));
     connect(onboardAction_, &QAction::triggered, this, [this]() {

@@ -77,7 +77,7 @@ void BusinessCentreController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Business Centres");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::BuildingBank, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -162,7 +162,7 @@ void BusinessCentreController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Business Centre");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::BuildingBank, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -211,7 +211,7 @@ void BusinessCentreController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Business Centre: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::BuildingBank, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

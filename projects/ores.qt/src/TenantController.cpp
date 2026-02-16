@@ -84,7 +84,7 @@ void TenantController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Tenants");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::BuildingSkyscraper, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -169,7 +169,7 @@ void TenantController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Tenant");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::BuildingSkyscraper, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -218,7 +218,7 @@ void TenantController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Tenant: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::BuildingSkyscraper, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

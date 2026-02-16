@@ -47,7 +47,11 @@ static IconDef getIconDef(Icon icon) {
         case Icon::ArrowRotateCounterclockwise: return {"ic_fluent_arrow_rotate_counterclockwise_20", "undo-left-round.svg"};
         case Icon::ArrowSync: return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
         case Icon::Book: return {"ic_fluent_book_20", "notes-minimalistic.svg"};
+        case Icon::BookOpen: return {"ic_fluent_book_open_20", "book-2.svg"};
+        case Icon::Briefcase: return {"ic_fluent_briefcase_20", "case-round.svg"};
         case Icon::Building: return {"ic_fluent_building_20", "buildings.svg"};
+        case Icon::BuildingBank: return {"ic_fluent_building_bank_20", "buildings-3.svg"};
+        case Icon::BuildingSkyscraper: return {"ic_fluent_building_skyscraper_20", "buildings.svg"};
         case Icon::Checkmark: return {"ic_fluent_checkmark_20", "check-circle.svg"};
         case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
         case Icon::Code: return {"ic_fluent_code_20", "code-file.svg"};
@@ -84,6 +88,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Open: return {"ic_fluent_open_20", "folder-open.svg"};
         case Icon::Organization: return {"ic_fluent_organization_20", "buildings-2.svg"};
         case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};
+        case Icon::PeopleTeam: return {"ic_fluent_people_team_20", "structure.svg"};
         case Icon::Person: return {"ic_fluent_person_20", "user-circle.svg"};
         case Icon::PersonAccounts: return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
         case Icon::PersonAdd: return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};

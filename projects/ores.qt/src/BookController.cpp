@@ -75,7 +75,7 @@ void BookController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Books");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Book, IconUtils::DefaultIconColor));
+        Icon::BookOpen, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void BookController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Book");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Book, IconUtils::DefaultIconColor));
+        Icon::BookOpen, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void BookController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Book: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Book, IconUtils::DefaultIconColor));
+        Icon::BookOpen, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

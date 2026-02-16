@@ -482,6 +482,97 @@ Source code, script, technical document.
 
 *Usage*: Code files, scripts, configuration files.
 
+** Organisation & Entities
+
+Icons representing organisational structure and business entities.
+
+*** Organization
+Internal parties, legal entities within the firm.
+
+- Fluent Regular: ic_fluent_organization_20_regular.svg
+- Fluent Filled: ic_fluent_organization_20_filled.svg
+- Solar Linear: buildings-2.svg
+- Solar Bold: buildings-2.svg
+
+*Usage*: Party management (internal legal entities). Shows an org-chart/hierarchy
+symbol representing corporate structure.
+
+*** Handshake
+External counterparties, trading relationships.
+
+- Fluent Regular: ic_fluent_handshake_20_regular.svg
+- Fluent Filled: ic_fluent_handshake_20_filled.svg
+- Solar Linear: hand-shake.svg
+- Solar Bold: hand-shake.svg
+
+*Usage*: Counterparty management. Represents external business relationships.
+
+*** People Team
+Business units, organisational divisions.
+
+- Fluent Regular: ic_fluent_people_team_20_regular.svg
+- Fluent Filled: ic_fluent_people_team_20_filled.svg
+- Solar Linear: structure.svg
+- Solar Bold: structure.svg
+
+*Usage*: Business unit management. Shows a team/group of people, distinct from the
+building icons used for centres and tenants.
+
+*** Building Bank
+Financial centres, business centres (London, New York, Tokyo).
+
+- Fluent Regular: ic_fluent_building_bank_20_regular.svg
+- Fluent Filled: ic_fluent_building_bank_20_filled.svg
+- Solar Linear: buildings-3.svg
+- Solar Bold: buildings-3.svg
+
+*Usage*: Business centre reference data. A bank/institutional building representing
+financial centres where business operations occur.
+
+*** Building Skyscraper
+Tenants, enterprise organisations.
+
+- Fluent Regular: ic_fluent_building_skyscraper_20_regular.svg
+- Fluent Filled: ic_fluent_building_skyscraper_20_filled.svg
+- Solar Linear: buildings.svg
+- Solar Bold: buildings.svg
+
+*Usage*: Tenant management (admin). A tall building/skyscraper representing an
+enterprise-level organisation.
+
+*** Building
+Generic building, general infrastructure.
+
+- Fluent Regular: ic_fluent_building_20_regular.svg
+- Fluent Filled: ic_fluent_building_20_filled.svg
+- Solar Linear: buildings.svg
+- Solar Bold: buildings.svg
+
+*Usage*: Reserved for generic building contexts. Avoid using for specific entity
+types; prefer the specialised variants above.
+
+*** Briefcase
+Portfolios, investment collections.
+
+- Fluent Regular: ic_fluent_briefcase_20_regular.svg
+- Fluent Filled: ic_fluent_briefcase_20_filled.svg
+- Solar Linear: case-round.svg
+- Solar Bold: case-round.svg
+
+*Usage*: Portfolio management. A briefcase representing a collection of investments
+or financial instruments.
+
+*** Book Open
+Books, trading books, accounting books.
+
+- Fluent Regular: ic_fluent_book_open_20_regular.svg
+- Fluent Filled: ic_fluent_book_open_20_filled.svg
+- Solar Linear: book-2.svg
+- Solar Bold: book-2.svg
+
+*Usage*: Book management. An open book representing trading/accounting books. Distinct
+from the closed Book icon used for methodologies and reference materials.
+
 ** Data & Finance
 
 Icons for numerical data and financial concepts.
@@ -599,6 +690,14 @@ Text validation, spell check, language processing.
 | Code/Scheme          | code_20                          | Default | Active |
 | Database/Dataset     | database_20                      | Default | Active |
 | Book/Methodology     | book_20                          | Default | Active |
+| Book Open/Books      | book_open_20                     | Default | Active |
+| Briefcase/Portfolio  | briefcase_20                     | Default | Active |
+| Building (generic)   | building_20                      | Default | Active |
+| Building Bank/Centre | building_bank_20                 | Default | Active |
+| Building Skyscraper  | building_skyscraper_20           | Default | Active |
+| Organization/Party   | organization_20                  | Default | Active |
+| Handshake/Cpty       | handshake_20                     | Default | Active |
+| People Team/BU       | people_team_20                   | Default | Active |
 | Currency             | currency_dollar_euro_20          | Default | Active |
 | Time                 | clock_16                         | Default | Active |
 | History              | history_20                       | Default | Active |

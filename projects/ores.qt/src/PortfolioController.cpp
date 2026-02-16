@@ -75,7 +75,7 @@ void PortfolioController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Portfolios");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Folder, IconUtils::DefaultIconColor));
+        Icon::Briefcase, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void PortfolioController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Portfolio");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Folder, IconUtils::DefaultIconColor));
+        Icon::Briefcase, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void PortfolioController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Portfolio: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Folder, IconUtils::DefaultIconColor));
+        Icon::Briefcase, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

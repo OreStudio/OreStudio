@@ -33,6 +33,9 @@
 #include "ores.refdata/service/contact_type_service.hpp"
 #include "ores.refdata/service/party_service.hpp"
 #include "ores.refdata/service/counterparty_service.hpp"
+#include "ores.refdata/service/business_unit_service.hpp"
+#include "ores.refdata/service/portfolio_service.hpp"
+#include "ores.refdata/service/book_service.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -140,6 +143,33 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_delete_counterparty_request(payload, remote_address);
     case comms::messaging::message_type::get_counterparty_history_request:
         co_return co_await handle_get_counterparty_history_request(payload, remote_address);
+    // Business unit handlers
+    case comms::messaging::message_type::get_business_units_request:
+        co_return co_await handle_get_business_units_request(payload, remote_address);
+    case comms::messaging::message_type::save_business_unit_request:
+        co_return co_await handle_save_business_unit_request(payload, remote_address);
+    case comms::messaging::message_type::delete_business_unit_request:
+        co_return co_await handle_delete_business_unit_request(payload, remote_address);
+    case comms::messaging::message_type::get_business_unit_history_request:
+        co_return co_await handle_get_business_unit_history_request(payload, remote_address);
+    // Portfolio handlers
+    case comms::messaging::message_type::get_portfolios_request:
+        co_return co_await handle_get_portfolios_request(payload, remote_address);
+    case comms::messaging::message_type::save_portfolio_request:
+        co_return co_await handle_save_portfolio_request(payload, remote_address);
+    case comms::messaging::message_type::delete_portfolio_request:
+        co_return co_await handle_delete_portfolio_request(payload, remote_address);
+    case comms::messaging::message_type::get_portfolio_history_request:
+        co_return co_await handle_get_portfolio_history_request(payload, remote_address);
+    // Book handlers
+    case comms::messaging::message_type::get_books_request:
+        co_return co_await handle_get_books_request(payload, remote_address);
+    case comms::messaging::message_type::save_book_request:
+        co_return co_await handle_save_book_request(payload, remote_address);
+    case comms::messaging::message_type::delete_book_request:
+        co_return co_await handle_delete_book_request(payload, remote_address);
+    case comms::messaging::message_type::get_book_history_request:
+        co_return co_await handle_get_book_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown refdata message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -1863,6 +1893,545 @@ handle_get_counterparty_history_request(std::span<const std::byte> payload,
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error retrieving history for counterparty "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// Business unit handlers
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_business_units_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_business_units_request.";
+
+    auto auth = require_authentication(remote_address, "Get business units");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_unit_service svc(ctx);
+
+    auto request_result = get_business_units_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_business_units_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto business_units = svc.list_business_units();
+
+    const auto count = static_cast<std::uint32_t>(business_units.size());
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << count << " business units";
+
+    get_business_units_response response{
+        .business_units = std::move(business_units),
+        .total_available_count = count
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_business_unit_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_business_unit_request.";
+
+    auto auth = require_authentication(remote_address, "Save business unit");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_unit_service svc(ctx);
+
+    auto request_result = save_business_unit_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_business_unit_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving business unit: " << request.business_unit.id;
+
+    request.business_unit.modified_by = auth->username;
+    request.business_unit.performed_by.clear();
+
+    save_business_unit_response response;
+    try {
+        svc.save_business_unit(request.business_unit);
+        response.success = true;
+        response.message = "Business unit saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved business unit: "
+                                  << request.business_unit.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save business unit: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving business unit "
+                                   << request.business_unit.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_business_unit_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_business_unit_request.";
+
+    auto auth = require_authentication(remote_address, "Delete business unit");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_unit_service svc(ctx);
+
+    auto request_result = delete_business_unit_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_business_unit_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " business unit(s)";
+
+    delete_business_unit_response response;
+    for (const auto& id : request.ids) {
+        delete_business_unit_result result;
+        result.id = id;
+
+        try {
+            svc.remove_business_unit(id);
+            result.success = true;
+            result.message = "Business unit deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted business unit: " << id;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete business unit: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting business unit "
+                                       << id << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_business_unit_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_business_unit_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get business unit history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::business_unit_service svc(ctx);
+
+    auto request_result = get_business_unit_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_business_unit_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for business unit: " << request.id;
+
+    get_business_unit_history_response response;
+    try {
+        auto history = svc.get_business_unit_history(request.id);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Business unit not found: " +
+                boost::uuids::to_string(request.id);
+            BOOST_LOG_SEV(lg(), warn) << "No history found for business unit: " << request.id;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for business unit: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for business unit "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// Portfolio handlers
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_portfolios_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_portfolios_request.";
+
+    auto auth = require_authentication(remote_address, "Get portfolios");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::portfolio_service svc(ctx);
+
+    auto request_result = get_portfolios_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_portfolios_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto portfolios = svc.list_portfolios();
+
+    const auto count = static_cast<std::uint32_t>(portfolios.size());
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << count << " portfolios";
+
+    get_portfolios_response response{
+        .portfolios = std::move(portfolios),
+        .total_available_count = count
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_portfolio_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_portfolio_request.";
+
+    auto auth = require_authentication(remote_address, "Save portfolio");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::portfolio_service svc(ctx);
+
+    auto request_result = save_portfolio_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_portfolio_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving portfolio: " << request.portfolio.id;
+
+    request.portfolio.modified_by = auth->username;
+    request.portfolio.performed_by.clear();
+
+    save_portfolio_response response;
+    try {
+        svc.save_portfolio(request.portfolio);
+        response.success = true;
+        response.message = "Portfolio saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved portfolio: "
+                                  << request.portfolio.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save portfolio: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving portfolio "
+                                   << request.portfolio.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_portfolio_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_portfolio_request.";
+
+    auto auth = require_authentication(remote_address, "Delete portfolio");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::portfolio_service svc(ctx);
+
+    auto request_result = delete_portfolio_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_portfolio_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " portfolio(s)";
+
+    delete_portfolio_response response;
+    for (const auto& id : request.ids) {
+        delete_portfolio_result result;
+        result.id = id;
+
+        try {
+            svc.remove_portfolio(id);
+            result.success = true;
+            result.message = "Portfolio deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted portfolio: " << id;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete portfolio: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting portfolio "
+                                       << id << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_portfolio_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_portfolio_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get portfolio history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::portfolio_service svc(ctx);
+
+    auto request_result = get_portfolio_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_portfolio_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for portfolio: " << request.id;
+
+    get_portfolio_history_response response;
+    try {
+        auto history = svc.get_portfolio_history(request.id);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Portfolio not found: " +
+                boost::uuids::to_string(request.id);
+            BOOST_LOG_SEV(lg(), warn) << "No history found for portfolio: " << request.id;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for portfolio: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for portfolio "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// Book handlers
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_books_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_books_request.";
+
+    auto auth = require_authentication(remote_address, "Get books");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::book_service svc(ctx);
+
+    auto request_result = get_books_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_books_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto books = svc.list_books();
+
+    const auto count = static_cast<std::uint32_t>(books.size());
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << count << " books";
+
+    get_books_response response{
+        .books = std::move(books),
+        .total_available_count = count
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_book_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_book_request.";
+
+    auto auth = require_authentication(remote_address, "Save book");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::book_service svc(ctx);
+
+    auto request_result = save_book_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_book_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving book: " << request.book.id;
+
+    request.book.modified_by = auth->username;
+    request.book.performed_by.clear();
+
+    save_book_response response;
+    try {
+        svc.save_book(request.book);
+        response.success = true;
+        response.message = "Book saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved book: "
+                                  << request.book.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save book: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving book "
+                                   << request.book.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_book_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_book_request.";
+
+    auto auth = require_authentication(remote_address, "Delete book");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::book_service svc(ctx);
+
+    auto request_result = delete_book_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_book_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size() << " book(s)";
+
+    delete_book_response response;
+    for (const auto& id : request.ids) {
+        delete_book_result result;
+        result.id = id;
+
+        try {
+            svc.remove_book(id);
+            result.success = true;
+            result.message = "Book deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted book: " << id;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete book: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting book "
+                                       << id << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_book_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_book_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get book history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::book_service svc(ctx);
+
+    auto request_result = get_book_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_book_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for book: " << request.id;
+
+    get_book_history_response response;
+    try {
+        auto history = svc.get_book_history(request.id);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Book not found: " +
+                boost::uuids::to_string(request.id);
+            BOOST_LOG_SEV(lg(), warn) << "No history found for book: " << request.id;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for book: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for book "
                                    << request.id << ": " << e.what();
     }
 

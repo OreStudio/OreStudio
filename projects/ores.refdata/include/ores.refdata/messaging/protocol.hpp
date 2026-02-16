@@ -30,5 +30,8 @@
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include "ores.refdata/messaging/business_unit_protocol.hpp"
+#include "ores.refdata/messaging/portfolio_protocol.hpp"
+#include "ores.refdata/messaging/book_protocol.hpp"
 
 #endif

@@ -68,7 +68,6 @@ signals:
     void errorOccurred(const QString& error_message);
     void showPortfolioDetails(const refdata::domain::portfolio& portfolio);
     void addNewRequested();
-    void portfolioDeleted(const QString& code);
     void showPortfolioHistory(const refdata::domain::portfolio& portfolio);
 
 public slots:

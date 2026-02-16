@@ -68,7 +68,6 @@ signals:
     void errorOccurred(const QString& error_message);
     void showBookDetails(const refdata::domain::book& book);
     void addNewRequested();
-    void bookDeleted(const QString& code);
     void showBookHistory(const refdata::domain::book& book);
 
 public slots:

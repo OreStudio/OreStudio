@@ -396,7 +396,6 @@ void BookMdiWindow::deleteSelected() {
             if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Book deleted: " << code;
                 success_count++;
-                emit self->bookDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Book deletion failed: "
                                            << code << " - " << message;

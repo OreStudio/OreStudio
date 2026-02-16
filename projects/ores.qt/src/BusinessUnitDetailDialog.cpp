@@ -143,10 +143,9 @@ void BusinessUnitDetailDialog::updateSaveButtonState() {
 }
 
 bool BusinessUnitDetailDialog::validateInput() {
-    const QString unit_code_val = ui_->codeEdit->text().trimmed();
     const QString unit_name_val = ui_->nameEdit->text().trimmed();
 
-    return !unit_code_val.isEmpty() && !unit_name_val.isEmpty();
+    return !unit_name_val.isEmpty();
 }
 
 void BusinessUnitDetailDialog::onSaveClicked() {

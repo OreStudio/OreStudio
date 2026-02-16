@@ -116,7 +116,7 @@
       "history_response_class": "refdata::messaging::get_business_unit_history_response",
       "history_message_type": "get_business_unit_history_request",
       "detail_fields": [
-        {"field": "unit_code", "label": "Unit Code", "widget": "codeEdit", "type": "line_edit", "is_key": true, "is_required": true, "placeholder": "Enter unit code"},
+        {"field": "unit_code", "label": "Unit Code", "widget": "codeEdit", "type": "line_edit", "is_key": true, "is_required": false, "placeholder": "Enter unit code"},
         {"field": "unit_name", "label": "Unit Name", "widget": "nameEdit", "type": "line_edit", "is_required": true, "placeholder": "Enter unit name"},
         {"field": "business_centre_code", "label": "Business Centre", "widget": "businessCentreEdit", "type": "line_edit", "placeholder": "Enter business centre code"}
       ],

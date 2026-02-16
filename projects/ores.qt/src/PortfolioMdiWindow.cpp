@@ -395,7 +395,6 @@ void PortfolioMdiWindow::deleteSelected() {
             if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Portfolio deleted: " << code;
                 success_count++;
-                emit self->portfolioDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Portfolio deletion failed: "
                                            << code << " - " << message;

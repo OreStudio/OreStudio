@@ -394,7 +394,6 @@ void BusinessUnitMdiWindow::deleteSelected() {
             if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Business Unit deleted: " << code;
                 success_count++;
-                emit self->business_unitDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Business Unit deletion failed: "
                                            << code << " - " << message;

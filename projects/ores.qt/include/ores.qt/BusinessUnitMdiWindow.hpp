@@ -68,7 +68,6 @@ signals:
     void errorOccurred(const QString& error_message);
     void showUnitDetails(const refdata::domain::business_unit& business_unit);
     void addNewRequested();
-    void business_unitDeleted(const QString& code);
     void showUnitHistory(const refdata::domain::business_unit& business_unit);
 
 public slots:

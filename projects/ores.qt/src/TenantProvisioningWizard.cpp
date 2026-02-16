@@ -762,16 +762,22 @@ void OrganisationSetupPage::startSyntheticGeneration() {
 
     using ResponseType = synthetic::messaging::generate_organisation_response;
 
-    // Capture options from wizard state
-    const std::string country = wizard_->syntheticCountry().toStdString();
-    const auto partyCount = static_cast<std::uint32_t>(wizard_->syntheticPartyCount());
-    const auto counterpartyCount = static_cast<std::uint32_t>(wizard_->syntheticCounterpartyCount());
-    const auto portfolioLeafCount = static_cast<std::uint32_t>(wizard_->syntheticPortfolioLeafCount());
-    const auto booksPerPortfolio = static_cast<std::uint32_t>(wizard_->syntheticBooksPerPortfolio());
-    const auto businessUnitCount = static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitCount());
-    const bool generateAddresses = wizard_->syntheticGenerateAddresses();
-    const bool generateIdentifiers = wizard_->syntheticGenerateIdentifiers();
-    const std::string publishedBy = clientManager->currentUsername();
+    // Build request struct upfront to avoid a long capture list.
+    synthetic::messaging::generate_organisation_request request;
+    request.country = wizard_->syntheticCountry().toStdString();
+    request.party_count =
+        static_cast<std::uint32_t>(wizard_->syntheticPartyCount());
+    request.counterparty_count =
+        static_cast<std::uint32_t>(wizard_->syntheticCounterpartyCount());
+    request.portfolio_leaf_count =
+        static_cast<std::uint32_t>(wizard_->syntheticPortfolioLeafCount());
+    request.books_per_leaf_portfolio =
+        static_cast<std::uint32_t>(wizard_->syntheticBooksPerPortfolio());
+    request.business_unit_count =
+        static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitCount());
+    request.generate_addresses = wizard_->syntheticGenerateAddresses();
+    request.generate_identifiers = wizard_->syntheticGenerateIdentifiers();
+    request.published_by = clientManager->currentUsername();
 
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
     connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
@@ -825,21 +831,8 @@ void OrganisationSetupPage::startSyntheticGeneration() {
     });
 
     QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, country, partyCount, counterpartyCount,
-         portfolioLeafCount, booksPerPortfolio, businessUnitCount,
-         generateAddresses, generateIdentifiers,
-         publishedBy]() -> std::optional<ResponseType> {
-
-            synthetic::messaging::generate_organisation_request request;
-            request.country = country;
-            request.party_count = partyCount;
-            request.counterparty_count = counterpartyCount;
-            request.portfolio_leaf_count = portfolioLeafCount;
-            request.books_per_leaf_portfolio = booksPerPortfolio;
-            request.business_unit_count = businessUnitCount;
-            request.generate_addresses = generateAddresses;
-            request.generate_identifiers = generateIdentifiers;
-            request.published_by = publishedBy;
+        [clientManager, request = std::move(request)]() mutable
+            -> std::optional<ResponseType> {
 
             auto result = clientManager->process_authenticated_request(
                 std::move(request));

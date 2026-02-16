@@ -18,21 +18,24 @@
  *
  */
 #include "ores.synthetic/service/organisation_publisher_service.hpp"
+#include <sqlgen/postgres.hpp>
+#include "ores.database/repository/helpers.hpp"
 
-#include "ores.refdata/repository/party_repository.hpp"
-#include "ores.refdata/repository/party_contact_information_repository.hpp"
-#include "ores.refdata/repository/party_identifier_repository.hpp"
-#include "ores.refdata/repository/counterparty_repository.hpp"
-#include "ores.refdata/repository/counterparty_contact_information_repository.hpp"
-#include "ores.refdata/repository/counterparty_identifier_repository.hpp"
-#include "ores.refdata/repository/party_counterparty_repository.hpp"
-#include "ores.refdata/repository/business_unit_repository.hpp"
-#include "ores.refdata/repository/portfolio_repository.hpp"
-#include "ores.refdata/repository/book_repository.hpp"
+#include "ores.refdata/repository/party_mapper.hpp"
+#include "ores.refdata/repository/party_contact_information_mapper.hpp"
+#include "ores.refdata/repository/party_identifier_mapper.hpp"
+#include "ores.refdata/repository/counterparty_mapper.hpp"
+#include "ores.refdata/repository/counterparty_contact_information_mapper.hpp"
+#include "ores.refdata/repository/counterparty_identifier_mapper.hpp"
+#include "ores.refdata/repository/party_counterparty_mapper.hpp"
+#include "ores.refdata/repository/business_unit_mapper.hpp"
+#include "ores.refdata/repository/portfolio_mapper.hpp"
+#include "ores.refdata/repository/book_mapper.hpp"
 
 namespace ores::synthetic::service {
 
 using namespace ores::logging;
+using namespace refdata::repository;
 
 organisation_publisher_service::organisation_publisher_service(
     database::context ctx)
@@ -48,66 +51,48 @@ organisation_publisher_service::publish(
         BOOST_LOG_SEV(lg(), info) << "Publishing generated organisation "
                                   << "(seed: " << org.seed << ")";
 
-        // Write in FK order to satisfy foreign key constraints.
-        refdata::repository::party_repository party_repo(ctx_);
-        party_repo.write(org.parties);
-        BOOST_LOG_SEV(lg(), info) << "Wrote " << org.parties.size()
-                                  << " parties";
+        // Map all domain objects to entities before starting the transaction.
+        auto parties = party_mapper::map(org.parties);
+        auto party_contacts =
+            party_contact_information_mapper::map(org.party_contacts);
+        auto party_ids = party_identifier_mapper::map(org.party_identifiers);
+        auto counterparties = counterparty_mapper::map(org.counterparties);
+        auto cp_contacts =
+            counterparty_contact_information_mapper::map(org.counterparty_contacts);
+        auto cp_ids =
+            counterparty_identifier_mapper::map(org.counterparty_identifiers);
+        auto party_cps =
+            party_counterparty_mapper::map(org.party_counterparties);
+        auto bus_units = business_unit_mapper::map(org.business_units);
+        auto portfolios = portfolio_mapper::map(org.portfolios);
+        auto books = book_mapper::map(org.books);
 
-        if (!org.party_contacts.empty()) {
-            refdata::repository::party_contact_information_repository pci_repo(ctx_);
-            pci_repo.write(org.party_contacts);
-            BOOST_LOG_SEV(lg(), info) << "Wrote " << org.party_contacts.size()
-                                      << " party contacts";
-        }
+        BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a "
+                                  << "single transaction";
 
-        if (!org.party_identifiers.empty()) {
-            refdata::repository::party_identifier_repository pi_repo(ctx_);
-            pi_repo.write(org.party_identifiers);
-            BOOST_LOG_SEV(lg(), info) << "Wrote " << org.party_identifiers.size()
-                                      << " party identifiers";
-        }
+        // Insert all entities atomically in FK order within a single
+        // transaction. If any insert fails, the entire transaction rolls back.
+        using namespace sqlgen;
+        const auto r = session(ctx_.connection_pool())
+            .and_then(begin_transaction)
+            .and_then(insert(parties))
+            .and_then(insert(party_contacts))
+            .and_then(insert(party_ids))
+            .and_then(insert(counterparties))
+            .and_then(insert(cp_contacts))
+            .and_then(insert(cp_ids))
+            .and_then(insert(party_cps))
+            .and_then(insert(bus_units))
+            .and_then(insert(portfolios))
+            .and_then(insert(books))
+            .and_then(commit);
+        database::repository::ensure_success(r, lg());
 
-        refdata::repository::counterparty_repository cp_repo(ctx_);
-        cp_repo.write(org.counterparties);
-        BOOST_LOG_SEV(lg(), info) << "Wrote " << org.counterparties.size()
-                                  << " counterparties";
-
-        if (!org.counterparty_contacts.empty()) {
-            refdata::repository::counterparty_contact_information_repository cci_repo(ctx_);
-            cci_repo.write(org.counterparty_contacts);
-            BOOST_LOG_SEV(lg(), info) << "Wrote " << org.counterparty_contacts.size()
-                                      << " counterparty contacts";
-        }
-
-        if (!org.counterparty_identifiers.empty()) {
-            refdata::repository::counterparty_identifier_repository ci_repo(ctx_);
-            ci_repo.write(org.counterparty_identifiers);
-            BOOST_LOG_SEV(lg(), info) << "Wrote " << org.counterparty_identifiers.size()
-                                      << " counterparty identifiers";
-        }
-
-        if (!org.party_counterparties.empty()) {
-            refdata::repository::party_counterparty_repository pc_repo(ctx_);
-            pc_repo.write(org.party_counterparties);
-            BOOST_LOG_SEV(lg(), info) << "Wrote " << org.party_counterparties.size()
-                                      << " party-counterparty links";
-        }
-
-        refdata::repository::business_unit_repository bu_repo(ctx_);
-        bu_repo.write(org.business_units);
-        BOOST_LOG_SEV(lg(), info) << "Wrote " << org.business_units.size()
-                                  << " business units";
-
-        refdata::repository::portfolio_repository portfolio_repo(ctx_);
-        portfolio_repo.write(org.portfolios);
-        BOOST_LOG_SEV(lg(), info) << "Wrote " << org.portfolios.size()
-                                  << " portfolios";
-
-        refdata::repository::book_repository book_repo(ctx_);
-        book_repo.write(org.books);
-        BOOST_LOG_SEV(lg(), info) << "Wrote " << org.books.size()
-                                  << " books";
+        BOOST_LOG_SEV(lg(), info) << "Wrote " << parties.size() << " parties, "
+            << counterparties.size() << " counterparties, "
+            << bus_units.size() << " business units, "
+            << portfolios.size() << " portfolios, "
+            << books.size() << " books";
 
         response.success = true;
         response.parties_count =

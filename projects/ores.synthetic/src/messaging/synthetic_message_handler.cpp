@@ -85,46 +85,23 @@ namespace {
  */
 void stamp_audit_fields(domain::generated_organisation& org,
     const std::string& tenant_id, const std::string& modified_by) {
-    for (auto& p : org.parties) {
-        p.tenant_id = tenant_id;
-        p.modified_by = modified_by;
-    }
-    for (auto& c : org.party_contacts) {
-        c.tenant_id = tenant_id;
-        c.modified_by = modified_by;
-    }
-    for (auto& i : org.party_identifiers) {
-        i.tenant_id = tenant_id;
-        i.modified_by = modified_by;
-    }
-    for (auto& c : org.counterparties) {
-        c.tenant_id = tenant_id;
-        c.modified_by = modified_by;
-    }
-    for (auto& c : org.counterparty_contacts) {
-        c.tenant_id = tenant_id;
-        c.modified_by = modified_by;
-    }
-    for (auto& i : org.counterparty_identifiers) {
-        i.tenant_id = tenant_id;
-        i.modified_by = modified_by;
-    }
-    for (auto& pc : org.party_counterparties) {
-        pc.tenant_id = tenant_id;
-        pc.modified_by = modified_by;
-    }
-    for (auto& bu : org.business_units) {
-        bu.tenant_id = tenant_id;
-        bu.modified_by = modified_by;
-    }
-    for (auto& p : org.portfolios) {
-        p.tenant_id = tenant_id;
-        p.modified_by = modified_by;
-    }
-    for (auto& b : org.books) {
-        b.tenant_id = tenant_id;
-        b.modified_by = modified_by;
-    }
+    const auto stamp = [&](auto& entities) {
+        for (auto& e : entities) {
+            e.tenant_id = tenant_id;
+            e.modified_by = modified_by;
+        }
+    };
+
+    stamp(org.parties);
+    stamp(org.party_contacts);
+    stamp(org.party_identifiers);
+    stamp(org.counterparties);
+    stamp(org.counterparty_contacts);
+    stamp(org.counterparty_identifiers);
+    stamp(org.party_counterparties);
+    stamp(org.business_units);
+    stamp(org.portfolios);
+    stamp(org.books);
 }
 
 }

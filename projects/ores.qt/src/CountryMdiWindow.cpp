@@ -137,9 +137,8 @@ CountryMdiWindow(ClientManager* clientManager,
 
     using cs = column_style;
     countryTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::icon_centered,    // Flag
         cs::text_left,        // Name
-        cs::mono_bold_center, // Alpha2Code
+        cs::mono_bold_left,   // Alpha2Code (flag icon inline via DecorationRole)
         cs::mono_bold_center, // Alpha3Code
         cs::mono_center,      // NumericCode
         cs::text_left,        // OfficialName

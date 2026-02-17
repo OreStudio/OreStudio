@@ -60,7 +60,6 @@ public:
      * and easier to refactor when columns are added, removed, or reordered.
      */
     enum Column {
-        Flag,          // Currency flag icon
         CurrencyName,
         IsoCode,
         Version,

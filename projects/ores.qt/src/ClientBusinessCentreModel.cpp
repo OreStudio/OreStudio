@@ -58,16 +58,16 @@ ClientBusinessCentreModel::ClientBusinessCentreModel(
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!business_centres_.empty()) {
-                emit dataChanged(index(0, Column::Flag),
-                    index(rowCount() - 1, Column::Flag),
+                emit dataChanged(index(0, Column::Code),
+                    index(rowCount() - 1, Column::Code),
                     {Qt::DecorationRole});
             }
         });
 
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!business_centres_.empty()) {
-                emit dataChanged(index(0, Column::Flag),
-                    index(rowCount() - 1, Column::Flag),
+                emit dataChanged(index(0, Column::Code),
+                    index(rowCount() - 1, Column::Code),
                     {Qt::DecorationRole});
             }
         });
@@ -97,7 +97,8 @@ QVariant ClientBusinessCentreModel::data(
 
     const auto& bc = business_centres_[row];
 
-    if (role == Qt::DecorationRole && index.column() == Column::Flag) {
+    // Show flag icon inline in the Code column
+    if (role == Qt::DecorationRole && index.column() == Column::Code) {
         if (imageCache_) {
             if (bc.image_id) {
                 const auto image_id_str = boost::uuids::to_string(*bc.image_id);
@@ -110,8 +111,6 @@ QVariant ClientBusinessCentreModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Flag:
-            return {};
         case Code:
             return QString::fromStdString(bc.code);
         case Source:
@@ -146,8 +145,6 @@ QVariant ClientBusinessCentreModel::headerData(
         return {};
 
     switch (section) {
-    case Flag:
-        return tr("Flag");
     case Code:
         return tr("Code");
     case Source:

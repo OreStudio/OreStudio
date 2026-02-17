@@ -150,8 +150,7 @@ void BusinessCentreMdiWindow::setupTable() {
 
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::icon_centered,    // Flag
-        cs::mono_bold_left,   // Code
+        cs::mono_bold_left,   // Code (flag icon inline via DecorationRole)
         cs::text_left,        // Source
         cs::text_left,        // Description
         cs::mono_left,        // CodingScheme

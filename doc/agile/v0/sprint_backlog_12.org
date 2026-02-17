@@ -2656,6 +2656,79 @@ EUR | SWIFT  | DEUTSCHE BANK AG  | DE9100223344...  | DEUTDEFF    | [VERIFIED]
 -------------------------------------------------------------------------------
 #+end_example
 
+
+**** Counterparty dialog
+
+#+begin_quote
+This pull request significantly enhances the user experience for managing
+counterparty data by introducing a tabbed detail dialog that allows for inline
+management of related entities like identifiers and contacts, and visualizes
+counterparty hierarchies. It also integrates a robust eventing system for
+real-time data updates and ensures data integrity through mandatory change
+reasons for amendments. Furthermore, critical backend fixes address UUID-related
+errors and a client-side crash during network re-authentication, improving
+overall system stability and reliability.
+
+Highlights:
+
+- Enhanced Counterparty Detail Dialog: The counterparty detail dialog has been
+  completely restructured into a 5-tab layout: General Info, Identifiers,
+  Contacts, Hierarchy, and Metadata. This provides a more organized and
+  comprehensive view of counterparty data.
+- Inline Sub-Entity Management: Users can now manage counterparty identifiers
+  and contact information directly within the detail dialog using dedicated
+  sub-tables and toolbars, streamlining data entry and modification workflows.
+- Counterparty Hierarchy Visualization: A new 'Hierarchy' tab displays the
+  parent-child relationships between counterparties in a tree structure,
+  offering better insights into organizational structures.
+- Change Reason Dialog Integration: The change reason dialog has been integrated
+  for counterparty amendments, ensuring that all modifications are accompanied
+  by a documented reason, consistent with existing country and currency
+  amendment processes.
+- New Eventing System for Counterparty Data: Server-side PostgreSQL change event
+  definitions and client-side subscriptions have been added for counterparties,
+  counterparty identifiers, and counterparty contact information, enabling
+  real-time updates and improved data consistency.
+- Critical Crash Fix during Re-authentication: A crash that occurred when a user
+  clicked 'Disconnect' while auto-reconnect re-authentication was in progress
+  has been resolved by preventing concurrent send_request_sync calls.
+- Tenant ID Fix for Save Handlers: The tenant_id is now correctly set on save
+  handlers for party, counterparty, counterparty_identifier, and
+  counterparty_contact_information, resolving 'invalid input syntax for type
+  uuid' errors.
+#+end_quote
+
+**** Refactor party and counterparty dialogs
+
+#+begin_quote
+This pull request significantly refactors the application's detail dialogs for
+managing Party and Counterparty entities. By adopting a strategy pattern, the
+previously duplicated logic for handling these similar but distinct entity types
+has been centralized into a single, generic EntityDetailDialog. This change
+streamlines the codebase, making it more maintainable and extensible for future
+entity types, while ensuring consistent UI behavior across different entity
+management screens.
+
+Highlights:
+
+- Strategy Pattern Implementation: Implemented a strategy pattern for entity
+  operations, abstracting party and counterparty specific logic into distinct
+  strategy classes.
+- Unified Dialog Class: Consolidated PartyDetailDialog and
+  CounterpartyDetailDialog into a single generic EntityDetailDialog class,
+  reducing code duplication.
+- New Interfaces and Data Structures: Introduced the entity_detail_operations
+  abstract interface and common data structures like entity_data,
+  identifier_entry, and contact_entry to provide a uniform view for different
+  entity types.
+- Code Duplication Reduction: Removed the PartyDetailDialog class and its
+  associated UI file, as its functionality is now handled by the generic
+  EntityDetailDialog.
+- Controller Updates: Modified PartyController and CounterpartyController to
+  instantiate the new generic EntityDetailDialog with the appropriate
+  entity_detail_operations strategy.
+#+end_quote
+
 *** Replace parent combo boxes with server-side type-ahead search      :code:
 
 The entity detail dialogs (party, counterparty) load all entities into a combo
@@ -2686,12 +2759,44 @@ detail dialog combo boxes and related data loading.
 - Replace =load_all_entities()= calls with on-demand search
 - Consider the same approach for country and lookup fetcher if volumes warrant it
 
-*** Analyse caching at dialog level                                    :code:
+*** STARTED Analyse caching at dialog level                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
+    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
+    :END:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more
 sense to have a common core (i.e. non-Qt specific) data-structure that caches
 different types of data which is shared by the different dialogs. This would
 also be reused by different clients such as Wt, shell, etc.
+
+Instead of locking we should use immutable data structures. We should also take
+into account notifications coming in for data changes. It should enable you to
+notify all clients, load the data in the background in a way that does not
+affect dialogs.
+
+We could create workspace component which has all of the data needed, stored
+using immer containers:
+
+- it can have a comms aspect, so that the UI does not need to worry about any of
+  that. You just request say currencies page N, workspace then deals with that.
+  It can just give you the current version. If none, it will load via comms. It
+  also knows about subscriptions so it will tell you about pending subscriptions
+  for a collection you are interested in. As you load more pages, we load these
+  into immer containers ordered by page.
+
+Links:
+
+- [[https://github.com/arximboldi/immer][GH: immer]]
+
+Merged stories:
+
+*Add workspace as a container*
+
+Core needs to have a container for all of the data stored within a context.
+
+Actually, according to Data Priented Principles, we may not need it. This may be
+a UI concept but not a code concept.
 
 *** Filter counterparty dataset size for evaluation tenants            :code:
 
@@ -3314,17 +3419,6 @@ Indicates a type of organization.
 - Code: SD
 - Name: Swap Dealer
 - Description: Registered swap dealer.
-
-*** Add workspace as a container                                       :code:
-    :LOGBOOK:
-    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
-    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
-    :END:
-
-Core needs to have a container for all of the data stored within a context.
-
-Actually, according to Data Priented Principles, we may not need it. This may be
-a UI concept but not a code concept.
 
 *** Add currency and country party-visibility junctions                :code:
 

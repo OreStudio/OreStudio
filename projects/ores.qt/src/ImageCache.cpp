@@ -34,6 +34,7 @@
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
+#include "ores.refdata/messaging/business_centre_protocol.hpp"
 
 namespace ores::qt {
 
@@ -52,7 +53,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
       set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)),
       set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this)),
-      all_available_watcher_(new QFutureWatcher<ImagesResult>(this)) {
+      all_available_watcher_(new QFutureWatcher<ImagesResult>(this)),
+      bc_mapping_watcher_(new QFutureWatcher<BusinessCentreMappingResult>(this)) {
 
     connect(currency_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
         this, &ImageCache::onCurrencyImageIdsLoaded);
@@ -72,6 +74,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onCountryImageSet);
     connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onAllAvailableImagesLoaded);
+    connect(bc_mapping_watcher_, &QFutureWatcher<BusinessCentreMappingResult>::finished,
+        this, &ImageCache::onBusinessCentreMappingLoaded);
 }
 
 void ImageCache::loadAll() {
@@ -135,6 +139,9 @@ void ImageCache::clear() {
     image_icons_.clear();
     pending_image_ids_.clear();
     pending_image_requests_.clear();
+    currency_iso_to_image_id_.clear();
+    country_alpha2_to_image_id_.clear();
+    bc_code_to_country_alpha2_.clear();
     // Don't clear available_images_ - it's metadata used for placeholder lookup
     // and will be refreshed by loadImageList() if needed
     last_load_time_.reset();
@@ -193,16 +200,20 @@ void ImageCache::loadCurrencyImageIds() {
                                        << " currencies from server.";
 
             std::vector<std::string> image_ids;
+            std::unordered_map<std::string, std::string> iso_to_image_id;
             for (const auto& currency : response->currencies) {
                 if (currency.image_id) {
-                    image_ids.push_back(boost::uuids::to_string(*currency.image_id));
+                    auto id_str = boost::uuids::to_string(*currency.image_id);
+                    image_ids.push_back(id_str);
+                    iso_to_image_id.emplace(currency.iso_code, id_str);
                 }
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Extracted " << image_ids.size()
                                        << " image IDs from currencies.";
 
-            return {true, std::move(image_ids)};
+            return {.success = true, .image_ids = std::move(image_ids),
+                    .code_to_image_id = std::move(iso_to_image_id)};
         });
 
     currency_ids_watcher_->setFuture(future);
@@ -217,9 +228,13 @@ void ImageCache::onCurrencyImageIdsLoaded() {
         for (const auto& id : result.image_ids) {
             pending_image_ids_.push_back(id);
         }
+        // Store the code -> image_id mapping
+        currency_iso_to_image_id_ = std::move(result.code_to_image_id);
         BOOST_LOG_SEV(lg(), debug) << "Added " << result.image_ids.size()
                                    << " currency image IDs. Total pending: "
-                                   << pending_image_ids_.size();
+                                   << pending_image_ids_.size()
+                                   << ". Currency mappings: "
+                                   << currency_iso_to_image_id_.size();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load currency image IDs.";
     }
@@ -280,16 +295,20 @@ void ImageCache::loadCountryImageIds() {
                                        << " countries from server.";
 
             std::vector<std::string> image_ids;
+            std::unordered_map<std::string, std::string> alpha2_to_image_id;
             for (const auto& country : response->countries) {
                 if (country.image_id) {
-                    image_ids.push_back(boost::uuids::to_string(*country.image_id));
+                    auto id_str = boost::uuids::to_string(*country.image_id);
+                    image_ids.push_back(id_str);
+                    alpha2_to_image_id.emplace(country.alpha2_code, id_str);
                 }
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Extracted " << image_ids.size()
                                        << " image IDs from countries.";
 
-            return {true, std::move(image_ids)};
+            return {.success = true, .image_ids = std::move(image_ids),
+                    .code_to_image_id = std::move(alpha2_to_image_id)};
         });
 
     country_ids_watcher_->setFuture(future);
@@ -303,15 +322,102 @@ void ImageCache::onCountryImageIdsLoaded() {
         for (const auto& id : result.image_ids) {
             pending_image_ids_.push_back(id);
         }
+        // Store the code -> image_id mapping
+        country_alpha2_to_image_id_ = std::move(result.code_to_image_id);
         BOOST_LOG_SEV(lg(), debug) << "Added " << result.image_ids.size()
                                    << " country image IDs. Total pending: "
-                                   << pending_image_ids_.size();
+                                   << pending_image_ids_.size()
+                                   << ". Country mappings: "
+                                   << country_alpha2_to_image_id_.size();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load country image IDs.";
     }
 
+    // Load business centre -> country mapping before loading images
+    loadBusinessCentreMapping();
+}
+
+void ImageCache::loadBusinessCentreMapping() {
+    BOOST_LOG_SEV(lg(), debug) << "loadBusinessCentreMapping() called.";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load BC mapping: not connected.";
+        loadImagesByIds(pending_image_ids_);
+        return;
+    }
+
+    QPointer<ImageCache> self = this;
+
+    QFuture<BusinessCentreMappingResult> future =
+        QtConcurrent::run([self]() -> BusinessCentreMappingResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching business centres for BC->country mapping.";
+            if (!self) {
+                return {.success = false, .bc_to_country = {}};
+            }
+
+            refdata::messaging::get_business_centres_request request;
+            request.limit = 1000;
+            auto response = self->clientManager_->
+                process_authenticated_request(std::move(request));
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch business centres.";
+                return {.success = false, .bc_to_country = {}};
+            }
+
+            std::unordered_map<std::string, std::string> bc_to_country;
+            for (const auto& bc : response->business_centres) {
+                if (!bc.country_alpha2_code.empty()) {
+                    bc_to_country.emplace(bc.code, bc.country_alpha2_code);
+                }
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Built " << bc_to_country.size()
+                                       << " BC->country mappings.";
+
+            return {.success = true, .bc_to_country = std::move(bc_to_country)};
+        });
+
+    bc_mapping_watcher_->setFuture(future);
+}
+
+void ImageCache::onBusinessCentreMappingLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onBusinessCentreMappingLoaded() callback triggered.";
+
+    auto result = bc_mapping_watcher_->result();
+    if (result.success) {
+        bc_code_to_country_alpha2_ = std::move(result.bc_to_country);
+        BOOST_LOG_SEV(lg(), debug) << "Stored " << bc_code_to_country_alpha2_.size()
+                                   << " BC->country mappings.";
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load BC->country mapping.";
+    }
+
     // Now load all the images
     loadImagesByIds(pending_image_ids_);
+}
+
+QIcon ImageCache::getCurrencyFlagIcon(const std::string& iso_code) {
+    auto it = currency_iso_to_image_id_.find(iso_code);
+    if (it != currency_iso_to_image_id_.end() && !it->second.empty()) {
+        return getIcon(it->second);
+    }
+    return {};
+}
+
+QIcon ImageCache::getCountryFlagIcon(const std::string& alpha2_code) {
+    auto it = country_alpha2_to_image_id_.find(alpha2_code);
+    if (it != country_alpha2_to_image_id_.end() && !it->second.empty()) {
+        return getIcon(it->second);
+    }
+    return {};
+}
+
+QIcon ImageCache::getBusinessCentreFlagIcon(const std::string& bc_code) {
+    auto it = bc_code_to_country_alpha2_.find(bc_code);
+    if (it != bc_code_to_country_alpha2_.end()) {
+        return getCountryFlagIcon(it->second);
+    }
+    return {};
 }
 
 void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {

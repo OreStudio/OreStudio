@@ -20,8 +20,10 @@
 #ifndef ORES_QT_BUSINESS_CENTRE_DETAIL_DIALOG_HPP
 #define ORES_QT_BUSINESS_CENTRE_DETAIL_DIALOG_HPP
 
+#include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/business_centre.hpp"
 
@@ -56,6 +58,7 @@ public:
     ~BusinessCentreDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
     void setBusinessCentre(const refdata::domain::business_centre& business_centre);
     void setCreateMode(bool createMode);
@@ -77,10 +80,13 @@ private:
     void updateUiFromBusinessCentre();
     void updateBusinessCentreFromUi();
     void updateSaveButtonState();
+    void updateFlagIcon();
     bool validateInput();
 
     Ui::BusinessCentreDetailDialog* ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_{nullptr};
+    QAction* codeFlagAction_{nullptr};
     std::string username_;
     refdata::domain::business_centre business_centre_;
     bool createMode_{true};

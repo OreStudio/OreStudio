@@ -20,6 +20,7 @@
 #ifndef ORES_QT_IMAGE_CACHE_HPP
 #define ORES_QT_IMAGE_CACHE_HPP
 
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <QObject>
@@ -186,6 +187,30 @@ public:
      */
     QIcon getNoFlagIcon() const;
 
+    /**
+     * @brief Get flag icon for a currency by its ISO code.
+     *
+     * Looks up the currency's image_id from the cached mapping, then returns
+     * the corresponding icon. Returns empty icon if not found.
+     */
+    QIcon getCurrencyFlagIcon(const std::string& iso_code);
+
+    /**
+     * @brief Get flag icon for a country by its alpha-2 code.
+     *
+     * Looks up the country's image_id from the cached mapping, then returns
+     * the corresponding icon. Returns empty icon if not found.
+     */
+    QIcon getCountryFlagIcon(const std::string& alpha2_code);
+
+    /**
+     * @brief Get flag icon for a business centre by its code.
+     *
+     * Chains business centre code -> country alpha-2 -> country flag icon.
+     * Returns empty icon if any mapping is missing.
+     */
+    QIcon getBusinessCentreFlagIcon(const std::string& bc_code);
+
 signals:
     /**
      * @brief Emitted when images have been loaded.
@@ -232,6 +257,7 @@ signals:
 private slots:
     void onCurrencyImageIdsLoaded();
     void onCountryImageIdsLoaded();
+    void onBusinessCentreMappingLoaded();
     void onImagesLoaded();
     void onImageListLoaded();
     void onSingleImageLoaded();
@@ -272,6 +298,11 @@ private:
     void loadImagesByIds(const std::vector<std::string>& image_ids);
 
     /**
+     * @brief Load business centre -> country alpha-2 mapping.
+     */
+    void loadBusinessCentreMapping();
+
+    /**
      * @brief Load only images that have changed since last load.
      *
      * Uses the modified_since parameter to fetch only changed images.
@@ -281,6 +312,13 @@ private:
     struct ImageIdsResult {
         bool success;
         std::vector<std::string> image_ids;
+        // Code -> image_id mappings populated during fetch
+        std::unordered_map<std::string, std::string> code_to_image_id;
+    };
+
+    struct BusinessCentreMappingResult {
+        bool success;
+        std::unordered_map<std::string, std::string> bc_to_country;
     };
 
     struct ImagesResult {
@@ -357,6 +395,13 @@ private:
 
     // Timestamp of last successful load (for incremental loading)
     std::optional<std::chrono::system_clock::time_point> last_load_time_;
+
+    // Code -> image_id mappings for flag icon lookups
+    std::unordered_map<std::string, std::string> currency_iso_to_image_id_;
+    std::unordered_map<std::string, std::string> country_alpha2_to_image_id_;
+    std::unordered_map<std::string, std::string> bc_code_to_country_alpha2_;
+
+    QFutureWatcher<BusinessCentreMappingResult>* bc_mapping_watcher_;
 };
 
 }

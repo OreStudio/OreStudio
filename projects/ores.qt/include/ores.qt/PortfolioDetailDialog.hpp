@@ -20,8 +20,10 @@
 #ifndef ORES_QT_PORTFOLIO_DETAIL_DIALOG_HPP
 #define ORES_QT_PORTFOLIO_DETAIL_DIALOG_HPP
 
+#include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/portfolio.hpp"
 
@@ -56,6 +58,7 @@ public:
     ~PortfolioDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
     void setPortfolio(const refdata::domain::portfolio& portfolio);
     void setCreateMode(bool createMode);
@@ -77,10 +80,13 @@ private:
     void updateUiFromPortfolio();
     void updatePortfolioFromUi();
     void updateSaveButtonState();
+    void updateFlagIcons();
     bool validateInput();
 
     Ui::PortfolioDetailDialog* ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_{nullptr};
+    QAction* aggregationCcyFlagAction_{nullptr};
     std::string username_;
     refdata::domain::portfolio portfolio_;
     bool createMode_{true};

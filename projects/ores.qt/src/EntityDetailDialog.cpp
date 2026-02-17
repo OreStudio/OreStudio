@@ -35,6 +35,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ui_EntityDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -204,6 +205,14 @@ void EntityDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
+            set_combo_flag_icons(ui_->businessCenterCombo,
+                [this](const std::string& code) {
+                    return imageCache_->getBusinessCentreFlagIcon(code);
+                });
+        });
+    }
 }
 
 void EntityDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
@@ -250,6 +259,13 @@ void EntityDetailDialog::populateLookups() {
         for (const auto& code : result.business_centre_codes) {
             self->ui_->businessCenterCombo->addItem(
                 QString::fromStdString(code));
+        }
+
+        if (self->imageCache_) {
+            set_combo_flag_icons(self->ui_->businessCenterCombo,
+                [&self](const std::string& code) {
+                    return self->imageCache_->getBusinessCentreFlagIcon(code);
+                });
         }
 
         self->updateUiFromEntity();

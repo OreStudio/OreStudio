@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_BookDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -76,6 +77,24 @@ void BookDetailDialog::setupConnections() {
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+}
+
+void BookDetailDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::allLoaded, this,
+                &BookDetailDialog::updateFlagIcons);
+        connect(ui_->ledgerCcyEdit, &QLineEdit::textChanged, this,
+                &BookDetailDialog::updateFlagIcons);
+        updateFlagIcons();
+    }
+}
+
+void BookDetailDialog::updateFlagIcons() {
+    if (!imageCache_) return;
+    const auto ccy = ui_->ledgerCcyEdit->text().trimmed().toStdString();
+    QIcon icon = imageCache_->getCurrencyFlagIcon(ccy);
+    set_line_edit_flag_icon(ui_->ledgerCcyEdit, icon, ledgerCcyFlagAction_);
 }
 
 void BookDetailDialog::setUsername(const std::string& username) {

@@ -154,8 +154,7 @@ void CounterpartyMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::icon_centered, // Flag
-        cs::text_left,     // BusinessCenterCode
+        cs::mono_bold_left, // BusinessCenterCode (flag icon inline via DecorationRole)
         cs::text_left,     // ShortCode
         cs::text_left,     // FullName
         cs::text_left,     // TransliteratedName
@@ -520,7 +519,7 @@ void CounterpartyMdiWindow::saveSettings() {
 }
 
 void CounterpartyMdiWindow::restoreSettings() {
-    static constexpr int settings_version = 2;
+    static constexpr int settings_version = 3;
 
     QSettings settings("OreStudio", "OreStudio");
     settings.beginGroup("CounterpartyListWindow");

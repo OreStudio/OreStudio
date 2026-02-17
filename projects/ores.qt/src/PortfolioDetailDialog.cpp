@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_PortfolioDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -72,6 +73,24 @@ void PortfolioDetailDialog::setupConnections() {
 
 void PortfolioDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+}
+
+void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::allLoaded, this,
+                &PortfolioDetailDialog::updateFlagIcons);
+        connect(ui_->aggregationCcyEdit, &QLineEdit::textChanged, this,
+                &PortfolioDetailDialog::updateFlagIcons);
+        updateFlagIcons();
+    }
+}
+
+void PortfolioDetailDialog::updateFlagIcons() {
+    if (!imageCache_) return;
+    const auto ccy = ui_->aggregationCcyEdit->text().trimmed().toStdString();
+    QIcon icon = imageCache_->getCurrencyFlagIcon(ccy);
+    set_line_edit_flag_icon(ui_->aggregationCcyEdit, icon, aggregationCcyFlagAction_);
 }
 
 void PortfolioDetailDialog::setUsername(const std::string& username) {

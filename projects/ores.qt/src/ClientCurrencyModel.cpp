@@ -62,8 +62,8 @@ ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!currencies_.empty()) {
-                emit dataChanged(index(0, Column::Flag),
-                    index(rowCount() - 1, Column::Flag),
+                emit dataChanged(index(0, Column::IsoCode),
+                    index(rowCount() - 1, Column::IsoCode),
                     {Qt::DecorationRole});
             }
         });
@@ -71,8 +71,8 @@ ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
         // Also refresh when individual images load (on-demand loading)
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!currencies_.empty()) {
-                emit dataChanged(index(0, Column::Flag),
-                    index(rowCount() - 1, Column::Flag),
+                emit dataChanged(index(0, Column::IsoCode),
+                    index(rowCount() - 1, Column::IsoCode),
                     {Qt::DecorationRole});
             }
         });
@@ -101,8 +101,8 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
 
     const auto& currency = currencies_[row];
 
-    // Handle DecorationRole for Flag column
-    if (role == Qt::DecorationRole && index.column() == Column::Flag) {
+    // Show flag icon inline in the ISO Code column
+    if (role == Qt::DecorationRole && index.column() == Column::IsoCode) {
         if (imageCache_ && currency.image_id) {
             const auto image_id_str = boost::uuids::to_string(*currency.image_id);
             return imageCache_->getIcon(image_id_str);
@@ -118,7 +118,6 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
-    case Column::Flag: return {};  // No text for flag column
     case Column::CurrencyName: return QString::fromStdString(currency.name);
     case Column::IsoCode: return QString::fromStdString(currency.iso_code);
     case Column::Version: return currency.version;
@@ -143,7 +142,6 @@ headerData(int section, Qt::Orientation orientation, int role) const {
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case Column::Flag: return tr("Flag");
         case Column::CurrencyName: return tr("Currency Name");
         case Column::IsoCode: return tr("ISO Code");
         case Column::Version: return tr("Version");

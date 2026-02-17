@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_BusinessCentreDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -76,6 +77,24 @@ void BusinessCentreDetailDialog::setupConnections() {
 
 void BusinessCentreDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+}
+
+void BusinessCentreDetailDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::allLoaded, this,
+                &BusinessCentreDetailDialog::updateFlagIcon);
+        connect(ui_->countryAlpha2Edit, &QLineEdit::textChanged, this,
+                &BusinessCentreDetailDialog::updateFlagIcon);
+        updateFlagIcon();
+    }
+}
+
+void BusinessCentreDetailDialog::updateFlagIcon() {
+    if (!imageCache_) return;
+    const auto alpha2 = ui_->countryAlpha2Edit->text().trimmed().toStdString();
+    QIcon icon = imageCache_->getCountryFlagIcon(alpha2);
+    set_line_edit_flag_icon(ui_->codeEdit, icon, codeFlagAction_);
 }
 
 void BusinessCentreDetailDialog::setUsername(const std::string& username) {

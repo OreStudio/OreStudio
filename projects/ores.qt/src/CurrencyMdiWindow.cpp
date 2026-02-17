@@ -181,9 +181,8 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     using cs = column_style;
     currencyTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::icon_centered,    // Flag
         cs::text_left,        // CurrencyName
-        cs::mono_bold_center, // IsoCode
+        cs::mono_bold_left,   // IsoCode (flag icon inline via DecorationRole)
         cs::mono_center,      // Version
         cs::mono_center,      // NumericCode
         cs::mono_center,      // Symbol

@@ -63,7 +63,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_businessCentreEdit">
         <property name="text">
-         <string>Business Centre:</string>
+         <string>Centre:</string>
         </property>
        </widget>
       </item>

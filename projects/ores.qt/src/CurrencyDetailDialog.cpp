@@ -38,6 +38,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/generation/generation_context.hpp"
 #include "ui_CurrencyDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
@@ -252,6 +253,8 @@ void CurrencyDetailDialog::setImageCache(ImageCache* imageCache) {
         // - currencyMappingsLoaded fires before icons are re-rendered
         // - imagesLoaded fires after icons are ready in currency_icons_
         connect(imageCache_, &ImageCache::imagesLoaded,
+            this, &CurrencyDetailDialog::updateFlagDisplay);
+        connect(imageCache_, &ImageCache::allLoaded,
             this, &CurrencyDetailDialog::updateFlagDisplay);
     }
 }
@@ -815,6 +818,11 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     if (!noFlagIcon.isNull()) {
         flagButton_->setIcon(noFlagIcon);
     }
+
+    // Inline flag icon on ISO code field
+    const auto iso = ui_->isoCodeEdit->text().trimmed().toStdString();
+    QIcon inlineIcon = imageCache_->getCurrencyFlagIcon(iso);
+    set_line_edit_flag_icon(ui_->isoCodeEdit, inlineIcon, isoCodeFlagAction_);
 }
 
 void CurrencyDetailDialog::showVersionNavActions(bool visible) {

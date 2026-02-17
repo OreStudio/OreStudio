@@ -29,6 +29,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_CountryDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
@@ -195,6 +196,8 @@ void CountryDetailDialog::setImageCache(ImageCache* imageCache) {
         connect(imageCache_, &ImageCache::countryImageSet,
             this, &CountryDetailDialog::onCountryImageSet);
         connect(imageCache_, &ImageCache::imagesLoaded,
+            this, &CountryDetailDialog::updateFlagDisplay);
+        connect(imageCache_, &ImageCache::allLoaded,
             this, &CountryDetailDialog::updateFlagDisplay);
     }
 }
@@ -717,6 +720,11 @@ void CountryDetailDialog::updateFlagDisplay() {
     if (!noFlagIcon.isNull()) {
         flagButton_->setIcon(noFlagIcon);
     }
+
+    // Inline flag icon on alpha-2 code field
+    const auto alpha2 = ui_->alpha2CodeEdit->text().trimmed().toStdString();
+    QIcon inlineIcon = imageCache_->getCountryFlagIcon(alpha2);
+    set_line_edit_flag_icon(ui_->alpha2CodeEdit, inlineIcon, alpha2FlagAction_);
 }
 
 void CountryDetailDialog::showVersionNavActions(bool visible) {

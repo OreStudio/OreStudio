@@ -2674,6 +2674,27 @@ Set conditions to pause or highlight specific events:
 
 Stories that we want to capture, but won't work on for a while.
 
+*** Replace parent entity combo box with server-side searchable widget :code:
+
+The parent entity combo boxes in =EntityDetailDialog= (used by both
+=PartyDetailOperations= and =CounterpartyDetailOperations=) use a single request
+with =offset=0, limit=1000= which silently truncates results if there are more
+than 1000 entities. The same pattern exists in =LookupFetcher= for country and
+business centre lookups.
+
+The fix is to replace the plain =QComboBox= with a searchable/type-ahead widget
+using =QCompleter= that searches server-side as the user types (like the
+=ClientPartyModel=/=ClientCounterpartyModel= pagination used in the MdiWindow
+list views).
+
+Affected code sites:
+- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
+- =PartyDetailOperations.cpp:118= - =load_all_entities()=
+- =EntityDetailDialog.cpp:346= - =loadAllEntities()=
+- =LookupFetcher.cpp:80,145= - country and business centre fetches
+
+Note: this is low priority - won't impact us until we have >1000 entities.
+
 *** Add claude continuous learning skill                               :code:
 
 #+begin_quote

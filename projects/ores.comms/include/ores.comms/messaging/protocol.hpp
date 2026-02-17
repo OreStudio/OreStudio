@@ -269,8 +269,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 34.0 adds tenant_bootstrap_mode field to login_response. This flag
 // indicates that the authenticated tenant is in bootstrap mode and needs
 // initial setup via the tenant provisioning wizard. Breaking change.
+//
+// Version 34.1 adds counterparty_id filter to get_counterparty_identifiers_request
+// and get_counterparty_contact_informations_request. Adds message handlers for
+// counterparty identifier and counterparty contact information CRUD + history.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 34;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

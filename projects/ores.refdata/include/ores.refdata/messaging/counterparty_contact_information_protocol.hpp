@@ -40,6 +40,8 @@ namespace ores::refdata::messaging {
  * @brief Request to retrieve all counterparty contact informations.
  */
 struct get_counterparty_contact_informations_request final {
+    boost::uuids::uuid counterparty_id{};  ///< Filter by counterparty (nil = all)
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_counterparty_contact_informations_request,
                          ores::utility::serialization::error_code>

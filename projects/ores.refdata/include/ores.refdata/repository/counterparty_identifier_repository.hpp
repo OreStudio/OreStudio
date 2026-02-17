@@ -57,6 +57,7 @@ public:
     std::vector<domain::counterparty_identifier> read_latest();
     std::vector<domain::counterparty_identifier> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::counterparty_identifier> read_latest_by_code(const std::string& code);
+    std::vector<domain::counterparty_identifier> read_latest_by_counterparty_id(const boost::uuids::uuid& counterparty_id);
 
     std::vector<domain::counterparty_identifier> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

@@ -143,6 +143,7 @@ void CounterpartyController::showAddWindow() {
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -185,6 +186,7 @@ void CounterpartyController::showDetailWindow(
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setCounterparty(counterparty);
@@ -307,6 +309,7 @@ void CounterpartyController::onOpenVersion(
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
     detailDialog->setReadOnly(true);
@@ -353,6 +356,7 @@ void CounterpartyController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
     detailDialog->setCreateMode(false);

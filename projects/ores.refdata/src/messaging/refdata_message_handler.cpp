@@ -33,6 +33,8 @@
 #include "ores.refdata/service/contact_type_service.hpp"
 #include "ores.refdata/service/party_service.hpp"
 #include "ores.refdata/service/counterparty_service.hpp"
+#include "ores.refdata/service/counterparty_identifier_service.hpp"
+#include "ores.refdata/service/counterparty_contact_information_service.hpp"
 #include "ores.refdata/service/business_unit_service.hpp"
 #include "ores.refdata/service/portfolio_service.hpp"
 #include "ores.refdata/service/book_service.hpp"
@@ -143,6 +145,24 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_delete_counterparty_request(payload, remote_address);
     case comms::messaging::message_type::get_counterparty_history_request:
         co_return co_await handle_get_counterparty_history_request(payload, remote_address);
+    // Counterparty identifier handlers
+    case comms::messaging::message_type::get_counterparty_identifiers_request:
+        co_return co_await handle_get_counterparty_identifiers_request(payload, remote_address);
+    case comms::messaging::message_type::save_counterparty_identifier_request:
+        co_return co_await handle_save_counterparty_identifier_request(payload, remote_address);
+    case comms::messaging::message_type::delete_counterparty_identifier_request:
+        co_return co_await handle_delete_counterparty_identifier_request(payload, remote_address);
+    case comms::messaging::message_type::get_counterparty_identifier_history_request:
+        co_return co_await handle_get_counterparty_identifier_history_request(payload, remote_address);
+    // Counterparty contact information handlers
+    case comms::messaging::message_type::get_counterparty_contact_informations_request:
+        co_return co_await handle_get_counterparty_contact_informations_request(payload, remote_address);
+    case comms::messaging::message_type::save_counterparty_contact_information_request:
+        co_return co_await handle_save_counterparty_contact_information_request(payload, remote_address);
+    case comms::messaging::message_type::delete_counterparty_contact_information_request:
+        co_return co_await handle_delete_counterparty_contact_information_request(payload, remote_address);
+    case comms::messaging::message_type::get_counterparty_contact_information_history_request:
+        co_return co_await handle_get_counterparty_contact_information_history_request(payload, remote_address);
     // Business unit handlers
     case comms::messaging::message_type::get_business_units_request:
         co_return co_await handle_get_business_units_request(payload, remote_address);
@@ -2432,6 +2452,368 @@ handle_get_book_history_request(std::span<const std::byte> payload,
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error retrieving history for book "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Counterparty Identifier Handlers
+// ============================================================================
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_counterparty_identifiers_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_counterparty_identifiers_request.";
+
+    auto auth = require_authentication(remote_address, "Get counterparty identifiers");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_identifier_service svc(ctx);
+
+    auto request_result = get_counterparty_identifiers_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_counterparty_identifiers_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    std::vector<domain::counterparty_identifier> identifiers;
+    if (request.counterparty_id.is_nil()) {
+        identifiers = svc.list_counterparty_identifiers();
+    } else {
+        identifiers = svc.list_counterparty_identifiers_by_counterparty(request.counterparty_id);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << identifiers.size()
+                              << " counterparty identifiers";
+
+    get_counterparty_identifiers_response response{
+        .counterparty_identifiers = std::move(identifiers)
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_counterparty_identifier_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_counterparty_identifier_request.";
+
+    auto auth = require_authentication(remote_address, "Save counterparty identifier");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_identifier_service svc(ctx);
+
+    auto request_result = save_counterparty_identifier_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_counterparty_identifier_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving counterparty identifier: "
+                              << request.counterparty_identifier.id;
+
+    request.counterparty_identifier.modified_by = auth->username;
+    request.counterparty_identifier.performed_by.clear();
+
+    save_counterparty_identifier_response response;
+    try {
+        svc.save_counterparty_identifier(request.counterparty_identifier);
+        response.success = true;
+        response.message = "Counterparty identifier saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved counterparty identifier: "
+                                  << request.counterparty_identifier.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save counterparty identifier: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty identifier "
+                                   << request.counterparty_identifier.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_counterparty_identifier_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_counterparty_identifier_request.";
+
+    auto auth = require_authentication(remote_address, "Delete counterparty identifier");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_identifier_service svc(ctx);
+
+    auto request_result = delete_counterparty_identifier_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_counterparty_identifier_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " counterparty identifier(s)";
+
+    delete_counterparty_identifier_response response;
+    for (const auto& id : request.ids) {
+        delete_counterparty_identifier_result result;
+        result.id = id;
+
+        try {
+            svc.remove_counterparty_identifier(id);
+            result.success = true;
+            result.message = "Counterparty identifier deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted counterparty identifier: " << id;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete counterparty identifier: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting counterparty identifier "
+                                       << id << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_counterparty_identifier_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_counterparty_identifier_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get counterparty identifier history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_identifier_service svc(ctx);
+
+    auto request_result = get_counterparty_identifier_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_counterparty_identifier_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for counterparty identifier: " << request.id;
+
+    get_counterparty_identifier_history_response response;
+    try {
+        auto history = svc.get_counterparty_identifier_history(request.id);
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for counterparty identifier: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for counterparty identifier "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Counterparty Contact Information Handlers
+// ============================================================================
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_counterparty_contact_informations_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_counterparty_contact_informations_request.";
+
+    auto auth = require_authentication(remote_address, "Get counterparty contact informations");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_contact_information_service svc(ctx);
+
+    auto request_result = get_counterparty_contact_informations_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_counterparty_contact_informations_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    std::vector<domain::counterparty_contact_information> contacts;
+    if (request.counterparty_id.is_nil()) {
+        contacts = svc.list_counterparty_contact_informations();
+    } else {
+        contacts = svc.list_counterparty_contact_informations_by_counterparty(request.counterparty_id);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << contacts.size()
+                              << " counterparty contact informations";
+
+    get_counterparty_contact_informations_response response{
+        .counterparty_contact_informations = std::move(contacts)
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_counterparty_contact_information_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_counterparty_contact_information_request.";
+
+    auto auth = require_authentication(remote_address, "Save counterparty contact information");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_contact_information_service svc(ctx);
+
+    auto request_result = save_counterparty_contact_information_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_counterparty_contact_information_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving counterparty contact information: "
+                              << request.counterparty_contact_information.id;
+
+    request.counterparty_contact_information.modified_by = auth->username;
+    request.counterparty_contact_information.performed_by.clear();
+
+    save_counterparty_contact_information_response response;
+    try {
+        svc.save_counterparty_contact_information(request.counterparty_contact_information);
+        response.success = true;
+        response.message = "Counterparty contact information saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved counterparty contact information: "
+                                  << request.counterparty_contact_information.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save counterparty contact information: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty contact information "
+                                   << request.counterparty_contact_information.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_counterparty_contact_information_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_counterparty_contact_information_request.";
+
+    auto auth = require_authentication(remote_address, "Delete counterparty contact information");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_contact_information_service svc(ctx);
+
+    auto request_result = delete_counterparty_contact_information_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_counterparty_contact_information_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " counterparty contact information(s)";
+
+    delete_counterparty_contact_information_response response;
+    for (const auto& id : request.ids) {
+        delete_counterparty_contact_information_result result;
+        result.id = id;
+
+        try {
+            svc.remove_counterparty_contact_information(id);
+            result.success = true;
+            result.message = "Counterparty contact information deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted counterparty contact information: " << id;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete counterparty contact information: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting counterparty contact information "
+                                       << id << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_counterparty_contact_information_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_counterparty_contact_information_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get counterparty contact information history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::counterparty_contact_information_service svc(ctx);
+
+    auto request_result = get_counterparty_contact_information_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_counterparty_contact_information_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for counterparty contact information: " << request.id;
+
+    get_counterparty_contact_information_history_response response;
+    try {
+        auto history = svc.get_counterparty_contact_information_history(request.id);
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for counterparty contact information: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for counterparty contact information "
                                    << request.id << ": " << e.what();
     }
 

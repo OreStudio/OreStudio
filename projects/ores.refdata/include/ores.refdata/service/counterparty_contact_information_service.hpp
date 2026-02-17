@@ -64,6 +64,12 @@ public:
     std::vector<domain::counterparty_contact_information> list_counterparty_contact_informations();
 
     /**
+     * @brief Lists counterparty contact informations for a specific counterparty.
+     */
+    std::vector<domain::counterparty_contact_information>
+    list_counterparty_contact_informations_by_counterparty(const boost::uuids::uuid& counterparty_id);
+
+    /**
      * @brief Finds a counterparty contact information by its ID.
      */
     std::optional<domain::counterparty_contact_information>

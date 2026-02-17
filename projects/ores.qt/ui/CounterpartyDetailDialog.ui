@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>420</height>
+    <width>750</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>450</width>
-    <height>0</height>
+    <width>700</width>
+    <height>600</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -27,167 +27,233 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="basicInfoGroup">
-     <property name="title">
-      <string>Basic Information</string>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_codeEdit">
-        <property name="text">
-         <string>Short Code:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="codeEdit">
-        <property name="placeholderText">
-         <string>Enter short code</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_nameEdit">
-        <property name="text">
-         <string>Full Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="nameEdit">
-        <property name="placeholderText">
-         <string>Enter full name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_transliteratedNameEdit">
-        <property name="text">
-         <string>Transliterated Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="transliteratedNameEdit">
-        <property name="placeholderText">
-         <string>ASCII transliteration (optional)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_partyTypeEdit">
-        <property name="text">
-         <string>Party Type:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="partyTypeCombo"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_statusEdit">
-        <property name="text">
-         <string>Status:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QComboBox" name="statusCombo"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_businessCenterEdit">
-        <property name="text">
-         <string>Business Center:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QComboBox" name="businessCenterCombo">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QWidget" name="generalInfoTab">
+      <attribute name="title">
+       <string>General Info</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="generalInfoLayout">
+       <item>
+        <widget class="QGroupBox" name="basicInfoGroup">
+         <property name="title">
+          <string>Basic Information</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_codeEdit">
+            <property name="text">
+             <string>Short Code:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="codeEdit">
+            <property name="placeholderText">
+             <string>Enter short code</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_nameEdit">
+            <property name="text">
+             <string>Full Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="nameEdit">
+            <property name="placeholderText">
+             <string>Enter full name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_transliteratedNameEdit">
+            <property name="text">
+             <string>Transliterated Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="transliteratedNameEdit">
+            <property name="placeholderText">
+             <string>ASCII transliteration (optional)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_partyTypeEdit">
+            <property name="text">
+             <string>Party Type:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="partyTypeCombo"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_parentCounterpartyEdit">
+            <property name="text">
+             <string>Parent Counterparty:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="parentCounterpartyCombo">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_statusEdit">
+            <property name="text">
+             <string>Status:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="statusCombo"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_businessCenterEdit">
+            <property name="text">
+             <string>Business Center:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QComboBox" name="businessCenterCombo">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="generalInfoSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="identifiersTab">
+      <attribute name="title">
+       <string>Identifiers</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="identifiersLayout"/>
+     </widget>
+     <widget class="QWidget" name="contactsTab">
+      <attribute name="title">
+       <string>Contacts</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="contactsLayout"/>
+     </widget>
+     <widget class="QWidget" name="hierarchyTab">
+      <attribute name="title">
+       <string>Hierarchy</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="hierarchyLayout"/>
+     </widget>
+     <widget class="QWidget" name="metadataTab">
+      <attribute name="title">
+       <string>Metadata</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="metadataTabLayout">
+       <item>
+        <widget class="QGroupBox" name="metadataGroup">
+         <property name="title">
+          <string>Record Metadata (Read-only)</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelVersion">
+            <property name="text">
+             <string>Version:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="versionEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelModifiedBy">
+            <property name="text">
+             <string>Modified By:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="modifiedByEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelRecordedAt">
+            <property name="text">
+             <string>Recorded At:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="recordedAtEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelCommentary">
+            <property name="text">
+             <string>Commentary:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="commentaryEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="metadataSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="metadataGroup">
-     <property name="title">
-      <string>Metadata (Read-only)</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelVersion">
-        <property name="text">
-         <string>Version:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="versionEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelModifiedBy">
-        <property name="text">
-         <string>Modified By:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="modifiedByEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelRecordedAt">
-        <property name="text">
-         <string>Recorded At:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="recordedAtEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="labelCommentary">
-        <property name="text">
-         <string>Commentary:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="commentaryEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <layout class="QHBoxLayout" name="buttonLayout">

@@ -243,6 +243,34 @@ private:
     handle_get_counterparty_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // Counterparty identifier handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_counterparty_identifiers_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_counterparty_identifier_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_counterparty_identifier_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_counterparty_identifier_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Counterparty contact information handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_counterparty_contact_informations_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_counterparty_contact_information_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_counterparty_contact_information_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_counterparty_contact_information_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // Business unit handlers
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_business_units_request(std::span<const std::byte> payload,

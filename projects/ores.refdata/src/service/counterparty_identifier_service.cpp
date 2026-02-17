@@ -34,6 +34,14 @@ std::vector<domain::counterparty_identifier> counterparty_identifier_service::li
     return repo_.read_latest();
 }
 
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_service::list_counterparty_identifiers_by_counterparty(
+    const boost::uuids::uuid& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty identifiers for counterparty: "
+                               << counterparty_id;
+    return repo_.read_latest_by_counterparty_id(counterparty_id);
+}
+
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::find_counterparty_identifier(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding counterparty identifier: " << id;

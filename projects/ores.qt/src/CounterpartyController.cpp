@@ -27,25 +27,68 @@
 #include "ores.qt/CounterpartyDetailDialog.hpp"
 #include "ores.qt/CounterpartyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.refdata/eventing/counterparty_changed_event.hpp"
+#include "ores.refdata/eventing/counterparty_identifier_changed_event.hpp"
+#include "ores.refdata/eventing/counterparty_contact_information_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view counterparty_event_name =
+        eventing::domain::event_traits<refdata::eventing::counterparty_changed_event>::name;
+    constexpr std::string_view counterparty_identifier_event_name =
+        eventing::domain::event_traits<refdata::eventing::counterparty_identifier_changed_event>::name;
+    constexpr std::string_view counterparty_contact_event_name =
+        eventing::domain::event_traits<refdata::eventing::counterparty_contact_information_changed_event>::name;
+}
 
 CounterpartyController::CounterpartyController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CounterpartyController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CounterpartyController::onNotificationReceived);
+
+        auto subscribeAll = [self = QPointer<CounterpartyController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to counterparty change events";
+            self->clientManager_->subscribeToEvent(std::string{counterparty_event_name});
+            self->clientManager_->subscribeToEvent(std::string{counterparty_identifier_event_name});
+            self->clientManager_->subscribeToEvent(std::string{counterparty_contact_event_name});
+        };
+
+        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
+        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
+
+        if (clientManager_->isConnected()) {
+            subscribeAll();
+        }
+    }
+}
+
+CounterpartyController::~CounterpartyController() {
+    BOOST_LOG_SEV(lg(), debug) << "CounterpartyController destroyed";
+    if (clientManager_) {
+        clientManager_->unsubscribeFromEvent(std::string{counterparty_event_name});
+        clientManager_->unsubscribeFromEvent(std::string{counterparty_identifier_event_name});
+        clientManager_->unsubscribeFromEvent(std::string{counterparty_contact_event_name});
+    }
 }
 
 void CounterpartyController::showListWindow() {
@@ -143,6 +186,10 @@ void CounterpartyController::showAddWindow() {
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -185,6 +232,10 @@ void CounterpartyController::showDetailWindow(
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setCounterparty(counterparty);
@@ -307,6 +358,10 @@ void CounterpartyController::onOpenVersion(
 
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
     detailDialog->setReadOnly(true);
@@ -353,6 +408,10 @@ void CounterpartyController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
     detailDialog->setCreateMode(false);
@@ -385,6 +444,27 @@ void CounterpartyController::onRevertVersion(
 
 EntityListMdiWindow* CounterpartyController::listWindow() const {
     return listWindow_;
+}
+
+void CounterpartyController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds, const QString& /*tenantId*/) {
+
+    const auto eventStd = eventType.toStdString();
+    if (eventStd != counterparty_event_name &&
+        eventStd != counterparty_identifier_event_name &&
+        eventStd != counterparty_contact_event_name) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received " << eventStd << " notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " ids";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked counterparty list window as stale";
+    }
 }
 
 }

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_COUNTERPARTY_CONTROLLER_HPP
 #define ORES_QT_COUNTERPARTY_CONTROLLER_HPP
 
+#include <QDateTime>
 #include <QMdiArea>
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
@@ -31,6 +32,7 @@
 
 namespace ores::qt {
 
+class ChangeReasonCache;
 class CounterpartyMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -59,8 +61,10 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ImageCache* imageCache,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
+    ~CounterpartyController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -80,6 +84,8 @@ private slots:
     void onRevertVersion(const refdata::domain::counterparty& counterparty);
     void onOpenVersion(const refdata::domain::counterparty& counterparty,
                        int versionNumber);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     void showAddWindow();
@@ -87,6 +93,7 @@ private:
     void showHistoryWindow(const refdata::domain::counterparty& counterparty);
 
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
     CounterpartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

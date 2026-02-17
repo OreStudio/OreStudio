@@ -29,6 +29,8 @@
 #include "ores.refdata/messaging/contact_type_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_identifier_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_contact_information_protocol.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"

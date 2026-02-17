@@ -99,6 +99,24 @@ counterparty_identifier_repository::read_latest_by_code(const std::string& code)
 }
 
 std::vector<domain::counterparty_identifier>
+counterparty_identifier_repository::read_latest_by_counterparty_id(
+    const boost::uuids::uuid& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers. Counterparty ID: "
+                               << counterparty_id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto cpty_id_str = boost::uuids::to_string(counterparty_id);
+    const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
+        where("counterparty_id"_c == cpty_id_str && "valid_to"_c == max.value()) |
+        order_by("id_scheme"_c);
+
+    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+        ctx_, query,
+        [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+        lg(), "Reading latest counterparty identifiers by counterparty id.");
+}
+
+std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty identifier versions. Id: " << id;
 

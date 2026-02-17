@@ -109,15 +109,20 @@ read_counterparty_identifier(std::span<const std::byte>& data) {
 // ============================================================================
 
 std::vector<std::byte> get_counterparty_identifiers_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, counterparty_id);
+    return buffer;
 }
 
 std::expected<get_counterparty_identifiers_request, error_code>
 get_counterparty_identifiers_request::deserialize(std::span<const std::byte> data) {
-    if (!data.empty()) {
-        return std::unexpected(error_code::payload_too_large);
-    }
-    return get_counterparty_identifiers_request{};
+    get_counterparty_identifiers_request request;
+
+    auto cpty_id_result = reader::read_uuid(data);
+    if (!cpty_id_result) return std::unexpected(cpty_id_result.error());
+    request.counterparty_id = *cpty_id_result;
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const get_counterparty_identifiers_request& v) {

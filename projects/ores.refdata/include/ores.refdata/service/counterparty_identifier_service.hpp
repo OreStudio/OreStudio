@@ -64,6 +64,12 @@ public:
     std::vector<domain::counterparty_identifier> list_counterparty_identifiers();
 
     /**
+     * @brief Lists counterparty identifiers for a specific counterparty.
+     */
+    std::vector<domain::counterparty_identifier>
+    list_counterparty_identifiers_by_counterparty(const boost::uuids::uuid& counterparty_id);
+
+    /**
      * @brief Finds a counterparty identifier by its ID.
      */
     std::optional<domain::counterparty_identifier>

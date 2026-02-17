@@ -64,6 +64,12 @@ public:
     std::vector<domain::party_contact_information> list_party_contact_informations();
 
     /**
+     * @brief Lists party contact informations for a specific party.
+     */
+    std::vector<domain::party_contact_information>
+    list_party_contact_informations_by_party(const boost::uuids::uuid& party_id);
+
+    /**
      * @brief Finds a party contact information by its ID.
      */
     std::optional<domain::party_contact_information>

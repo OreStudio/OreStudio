@@ -64,6 +64,12 @@ public:
     std::vector<domain::party_identifier> list_party_identifiers();
 
     /**
+     * @brief Lists party identifiers for a specific party.
+     */
+    std::vector<domain::party_identifier>
+    list_party_identifiers_by_party(const boost::uuids::uuid& party_id);
+
+    /**
      * @brief Finds a party identifier by its ID.
      */
     std::optional<domain::party_identifier>

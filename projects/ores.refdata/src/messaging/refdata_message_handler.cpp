@@ -33,6 +33,8 @@
 #include "ores.refdata/service/contact_type_service.hpp"
 #include "ores.refdata/service/party_service.hpp"
 #include "ores.refdata/service/counterparty_service.hpp"
+#include "ores.refdata/service/party_identifier_service.hpp"
+#include "ores.refdata/service/party_contact_information_service.hpp"
 #include "ores.refdata/service/counterparty_identifier_service.hpp"
 #include "ores.refdata/service/counterparty_contact_information_service.hpp"
 #include "ores.refdata/service/business_unit_service.hpp"
@@ -145,6 +147,24 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_delete_counterparty_request(payload, remote_address);
     case comms::messaging::message_type::get_counterparty_history_request:
         co_return co_await handle_get_counterparty_history_request(payload, remote_address);
+    // Party identifier handlers
+    case comms::messaging::message_type::get_party_identifiers_request:
+        co_return co_await handle_get_party_identifiers_request(payload, remote_address);
+    case comms::messaging::message_type::save_party_identifier_request:
+        co_return co_await handle_save_party_identifier_request(payload, remote_address);
+    case comms::messaging::message_type::delete_party_identifier_request:
+        co_return co_await handle_delete_party_identifier_request(payload, remote_address);
+    case comms::messaging::message_type::get_party_identifier_history_request:
+        co_return co_await handle_get_party_identifier_history_request(payload, remote_address);
+    // Party contact information handlers
+    case comms::messaging::message_type::get_party_contact_informations_request:
+        co_return co_await handle_get_party_contact_informations_request(payload, remote_address);
+    case comms::messaging::message_type::save_party_contact_information_request:
+        co_return co_await handle_save_party_contact_information_request(payload, remote_address);
+    case comms::messaging::message_type::delete_party_contact_information_request:
+        co_return co_await handle_delete_party_contact_information_request(payload, remote_address);
+    case comms::messaging::message_type::get_party_contact_information_history_request:
+        co_return co_await handle_get_party_contact_information_history_request(payload, remote_address);
     // Counterparty identifier handlers
     case comms::messaging::message_type::get_counterparty_identifiers_request:
         co_return co_await handle_get_counterparty_identifiers_request(payload, remote_address);
@@ -2818,6 +2838,368 @@ handle_get_counterparty_contact_information_history_request(std::span<const std:
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error retrieving history for counterparty contact information "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Party Identifier Handlers
+// ============================================================================
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_party_identifiers_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_party_identifiers_request.";
+
+    auto auth = require_authentication(remote_address, "Get party identifiers");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_identifier_service svc(ctx);
+
+    auto request_result = get_party_identifiers_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_party_identifiers_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    std::vector<domain::party_identifier> identifiers;
+    if (request.party_id.is_nil()) {
+        identifiers = svc.list_party_identifiers();
+    } else {
+        identifiers = svc.list_party_identifiers_by_party(request.party_id);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << identifiers.size()
+                              << " party identifiers";
+
+    get_party_identifiers_response response{
+        .party_identifiers = std::move(identifiers)
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_party_identifier_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_party_identifier_request.";
+
+    auto auth = require_authentication(remote_address, "Save party identifier");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_identifier_service svc(ctx);
+
+    auto request_result = save_party_identifier_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_party_identifier_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving party identifier: "
+                              << request.party_identifier.id;
+
+    request.party_identifier.tenant_id = auth->tenant_id.to_string();
+    request.party_identifier.modified_by = auth->username;
+    request.party_identifier.performed_by.clear();
+
+    save_party_identifier_response response;
+    try {
+        svc.save_party_identifier(request.party_identifier);
+        response.success = true;
+        response.message = "Party identifier saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved party identifier: "
+                                  << request.party_identifier.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save party identifier: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party identifier "
+                                   << request.party_identifier.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_party_identifier_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_party_identifier_request.";
+
+    auto auth = require_authentication(remote_address, "Delete party identifier");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_identifier_service svc(ctx);
+
+    auto request_result = delete_party_identifier_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_party_identifier_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " party identifier(s)";
+
+    delete_party_identifier_response response;
+    for (const auto& id : request.ids) {
+        delete_party_identifier_result result;
+        result.id = id;
+        try {
+            svc.remove_party_identifier(id);
+            result.success = true;
+            result.message = "Party identifier deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party identifier: "
+                                      << id << " by " << auth->username;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete party identifier: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting party identifier "
+                                       << id << ": " << e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_party_identifier_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_party_identifier_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get party identifier history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_identifier_service svc(ctx);
+
+    auto request_result = get_party_identifier_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_party_identifier_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for party identifier: " << request.id;
+
+    get_party_identifier_history_response response;
+    try {
+        auto history = svc.get_party_identifier_history(request.id);
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for party identifier: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for party identifier "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Party Contact Information Handlers
+// ============================================================================
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_party_contact_informations_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_party_contact_informations_request.";
+
+    auto auth = require_authentication(remote_address, "Get party contact informations");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_contact_information_service svc(ctx);
+
+    auto request_result = get_party_contact_informations_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_party_contact_informations_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+
+    std::vector<domain::party_contact_information> contacts;
+    if (request.party_id.is_nil()) {
+        contacts = svc.list_party_contact_informations();
+    } else {
+        contacts = svc.list_party_contact_informations_by_party(request.party_id);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << contacts.size()
+                              << " party contact informations";
+
+    get_party_contact_informations_response response{
+        .party_contact_informations = std::move(contacts)
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_party_contact_information_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_party_contact_information_request.";
+
+    auto auth = require_authentication(remote_address, "Save party contact information");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_contact_information_service svc(ctx);
+
+    auto request_result = save_party_contact_information_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_party_contact_information_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving party contact information: "
+                              << request.party_contact_information.id;
+
+    request.party_contact_information.tenant_id = auth->tenant_id.to_string();
+    request.party_contact_information.modified_by = auth->username;
+    request.party_contact_information.performed_by.clear();
+
+    save_party_contact_information_response response;
+    try {
+        svc.save_party_contact_information(request.party_contact_information);
+        response.success = true;
+        response.message = "Party contact information saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved party contact information: "
+                                  << request.party_contact_information.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save party contact information: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party contact information "
+                                   << request.party_contact_information.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_party_contact_information_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_party_contact_information_request.";
+
+    auto auth = require_authentication(remote_address, "Delete party contact information");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_contact_information_service svc(ctx);
+
+    auto request_result = delete_party_contact_information_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_party_contact_information_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " party contact information(s)";
+
+    delete_party_contact_information_response response;
+    for (const auto& id : request.ids) {
+        delete_party_contact_information_result result;
+        result.id = id;
+        try {
+            svc.remove_party_contact_information(id);
+            result.success = true;
+            result.message = "Party contact information deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party contact information: "
+                                      << id << " by " << auth->username;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete party contact information: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting party contact information "
+                                       << id << ": " << e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_party_contact_information_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_party_contact_information_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get party contact information history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::party_contact_information_service svc(ctx);
+
+    auto request_result = get_party_contact_information_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_party_contact_information_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for party contact information: " << request.id;
+
+    get_party_contact_information_history_response response;
+    try {
+        auto history = svc.get_party_contact_information_history(request.id);
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for party contact information: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for party contact information "
                                    << request.id << ": " << e.what();
     }
 

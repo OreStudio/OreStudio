@@ -145,9 +145,10 @@ load_all_entities_result party_detail_operations::load_all_entities(
 }
 
 load_identifiers_result party_detail_operations::load_identifiers(
-    ClientManager* cm, const boost::uuids::uuid& /*entity_id*/) const {
+    ClientManager* cm, const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_party_identifiers_request request;
+    request.party_id = entity_id;
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -241,9 +242,10 @@ operation_result party_detail_operations::delete_identifier(
 }
 
 load_contacts_result party_detail_operations::load_contacts(
-    ClientManager* cm, const boost::uuids::uuid& /*entity_id*/) const {
+    ClientManager* cm, const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_party_contact_informations_request request;
+    request.party_id = entity_id;
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(

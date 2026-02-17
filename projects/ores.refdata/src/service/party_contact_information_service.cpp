@@ -34,6 +34,14 @@ std::vector<domain::party_contact_information> party_contact_information_service
     return repo_.read_latest();
 }
 
+std::vector<domain::party_contact_information>
+party_contact_information_service::list_party_contact_informations_by_party(
+    const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party contact informations for party: "
+                               << party_id;
+    return repo_.read_latest_by_party_id(party_id);
+}
+
 std::optional<domain::party_contact_information>
 party_contact_information_service::find_party_contact_information(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party contact information: " << id;

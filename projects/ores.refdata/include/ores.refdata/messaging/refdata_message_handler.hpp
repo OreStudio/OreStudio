@@ -243,6 +243,34 @@ private:
     handle_get_counterparty_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // Party identifier handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_identifiers_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_party_identifier_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_party_identifier_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_identifier_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Party contact information handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_contact_informations_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_party_contact_information_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_party_contact_information_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_party_contact_information_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // Counterparty identifier handlers
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_counterparty_identifiers_request(std::span<const std::byte> payload,

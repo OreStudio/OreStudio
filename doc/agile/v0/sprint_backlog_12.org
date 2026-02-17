@@ -2655,6 +2655,36 @@ EUR | SWIFT  | DEUTSCHE BANK AG  | DE9100223344...  | DEUTDEFF    | [VERIFIED]
 -------------------------------------------------------------------------------
 #+end_example
 
+*** Replace parent combo boxes with server-side type-ahead search      :code:
+
+The entity detail dialogs (party, counterparty) load all entities into a combo
+box for parent selection using a single request with =offset=0, limit=1000=.
+If the system has more than 1,000 entities, the dropdown silently truncates
+results, meaning users cannot select the correct parent and the hierarchy tree
+is incomplete. The same pattern exists for country image maps and lookup
+fetchers.
+
+The fix is to replace the plain =QComboBox= with a searchable type-ahead widget
+backed by =QCompleter= that issues server-side search requests as the user
+types. This is the scalable solution and avoids loading the full dataset into
+memory.
+
+Affected locations:
+
+- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
+- =PartyDetailOperations.cpp:118= - =load_all_entities()=
+- =EntityDetailDialog.cpp:346= - =loadCountryImageMap()=
+- =LookupFetcher.cpp:80,145= - lookup reference data loading
+
+Note: the =MdiWindow= list views already have proper server-side pagination
+via =ClientCounterpartyModel= / =ClientPartyModel=; this issue only affects
+detail dialog combo boxes and related data loading.
+
+- Introduce a reusable =SearchableEntityComboBox= widget with =QCompleter=
+- Add server-side search endpoints for parties and counterparties
+- Replace =load_all_entities()= calls with on-demand search
+- Consider the same approach for country and lookup fetcher if volumes warrant it
+
 *** Filter counterparty dataset size for evaluation tenants            :code:
 
 Evaluation tenants currently import too many counterparties from GLEIF data. Add

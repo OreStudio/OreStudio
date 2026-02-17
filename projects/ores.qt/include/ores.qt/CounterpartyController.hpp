@@ -20,6 +20,7 @@
 #ifndef ORES_QT_COUNTERPARTY_CONTROLLER_HPP
 #define ORES_QT_COUNTERPARTY_CONTROLLER_HPP
 
+#include <QDateTime>
 #include <QMdiArea>
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
@@ -63,6 +64,7 @@ public:
         ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
+    ~CounterpartyController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -82,6 +84,8 @@ private slots:
     void onRevertVersion(const refdata::domain::counterparty& counterparty);
     void onOpenVersion(const refdata::domain::counterparty& counterparty,
                        int versionNumber);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     void showAddWindow();

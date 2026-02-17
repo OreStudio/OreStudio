@@ -2568,6 +2568,7 @@ entity and its corporate descendants as operational parties.
 
 *** STARTED Advanced counterparty dialog                               :code:
     :LOGBOOK:
+    CLOCK: [2026-02-17 Tue 17:40]
     CLOCK: [2026-02-17 Tue 17:36]--[2026-02-17 Tue 17:39] =>  0:03
     CLOCK: [2026-02-17 Tue 17:10]--[2026-02-17 Tue 17:35] =>  0:25
     CLOCK: [2026-02-17 Tue 14:05]--[2026-02-17 Tue 14:20] =>  0:15
@@ -2684,6 +2685,13 @@ detail dialog combo boxes and related data loading.
 - Add server-side search endpoints for parties and counterparties
 - Replace =load_all_entities()= calls with on-demand search
 - Consider the same approach for country and lookup fetcher if volumes warrant it
+
+*** Analyse caching at dialog level                                    :code:
+
+We seem to have a lot of caches lying around at the dialog level. It makes more
+sense to have a common core (i.e. non-Qt specific) data-structure that caches
+different types of data which is shared by the different dialogs. This would
+also be reused by different clients such as Wt, shell, etc.
 
 *** Filter counterparty dataset size for evaluation tenants            :code:
 

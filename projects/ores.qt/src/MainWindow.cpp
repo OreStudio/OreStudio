@@ -1336,7 +1336,7 @@ void MainWindow::createControllers() {
 
     // Create party controller
     partyController_ = std::make_unique<PartyController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), this);
 
     connect(partyController_.get(), &PartyController::statusMessage,

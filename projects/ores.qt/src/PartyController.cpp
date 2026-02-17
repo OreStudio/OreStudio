@@ -44,11 +44,13 @@ PartyController::PartyController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -151,6 +153,9 @@ void PartyController::showAddWindow() {
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -194,6 +199,9 @@ void PartyController::showDetailWindow(
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setEntityData(to_entity_data(party));
@@ -317,6 +325,9 @@ void PartyController::onOpenVersion(
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setEntityData(to_entity_data(party));
     detailDialog->setReadOnly(true);
@@ -364,6 +375,9 @@ void PartyController::onRevertVersion(
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setEntityData(to_entity_data(party));
     detailDialog->setCreateMode(false);

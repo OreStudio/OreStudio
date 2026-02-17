@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/MasterPasswordDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
 #include <QVBoxLayout>
 #include <QFormLayout>
@@ -54,9 +55,15 @@ void MasterPasswordDialog::setupUI() {
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
 
+    const auto lockIcon = IconUtils::createRecoloredIcon(
+        Icon::LockClosed, IconUtils::DefaultIconColor);
+    const auto keyIcon = IconUtils::createRecoloredIcon(
+        Icon::KeyMultiple, IconUtils::DefaultIconColor);
+
     switch (mode_) {
     case Mode::Unlock:
         setWindowTitle(tr("Unlock Connections"));
+        setWindowIcon(lockIcon);
         infoLabel_->setText(tr("Enter the master password to access your saved connections."));
         formLayout->addRow(tr("Password:"), currentPasswordEdit_);
         newPasswordEdit_->hide();
@@ -65,6 +72,7 @@ void MasterPasswordDialog::setupUI() {
 
     case Mode::Create:
         setWindowTitle(tr("Create Master Password"));
+        setWindowIcon(keyIcon);
         infoLabel_->setText(tr(
             "Create a master password to protect your saved connection credentials.\n\n"
             "This password will be used to encrypt your server passwords. "
@@ -79,6 +87,7 @@ void MasterPasswordDialog::setupUI() {
 
     case Mode::Change:
         setWindowTitle(tr("Change Master Password"));
+        setWindowIcon(keyIcon);
         infoLabel_->setText(tr(
             "Enter your current password and a new password.\n\n"
             "All stored connection passwords will be re-encrypted with the new password."));

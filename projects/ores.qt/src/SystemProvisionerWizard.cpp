@@ -19,6 +19,7 @@
  */
 #include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
@@ -51,6 +52,8 @@ SystemProvisionerWizard::SystemProvisionerWizard(
       clientManager_(clientManager) {
 
     setWindowTitle(tr("New System Provisioner"));
+    setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Settings, IconUtils::DefaultIconColor));
     setMinimumSize(900, 700);
     resize(900, 700);
 

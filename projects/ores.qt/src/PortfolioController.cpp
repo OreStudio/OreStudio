@@ -58,7 +58,7 @@ void PortfolioController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PortfolioMdiWindow(clientManager_, username_);
+    listWindow_ = new PortfolioMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &PortfolioMdiWindow::statusChanged,

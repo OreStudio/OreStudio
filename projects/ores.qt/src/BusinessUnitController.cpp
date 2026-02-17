@@ -58,7 +58,7 @@ void BusinessUnitController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BusinessUnitMdiWindow(clientManager_, username_);
+    listWindow_ = new BusinessUnitMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &BusinessUnitMdiWindow::statusChanged,

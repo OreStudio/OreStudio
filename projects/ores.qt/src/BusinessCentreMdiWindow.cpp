@@ -527,6 +527,13 @@ void BusinessCentreMdiWindow::restoreSettings() {
         header->setSectionHidden(ClientBusinessCentreModel::Source, true);
     }
 
+    // Re-apply fixed sizing after restore (saved state may override)
+    header->setStretchLastSection(false);
+    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(
+        ClientBusinessCentreModel::RecordedAt, QHeaderView::Fixed);
+    header->resizeSection(ClientBusinessCentreModel::RecordedAt, 150);
+
     // Restore window size if saved
     if (settings.contains("windowSize")) {
         resize(settings.value("windowSize").toSize());

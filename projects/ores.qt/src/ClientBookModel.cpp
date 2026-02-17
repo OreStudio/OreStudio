@@ -23,6 +23,7 @@
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -37,9 +38,10 @@ namespace {
 }
 
 ClientBookModel::ClientBookModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(book_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -51,6 +53,23 @@ ClientBookModel::ClientBookModel(
             this, &ClientBookModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientBookModel::onPulsingComplete);
+
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
+            if (!books_.empty()) {
+                emit dataChanged(index(0, Column::LedgerCcy),
+                    index(rowCount() - 1, Column::LedgerCcy),
+                    {Qt::DecorationRole});
+            }
+        });
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
+            if (!books_.empty()) {
+                emit dataChanged(index(0, Column::LedgerCcy),
+                    index(rowCount() - 1, Column::LedgerCcy),
+                    {Qt::DecorationRole});
+            }
+        });
+    }
 }
 
 int ClientBookModel::rowCount(const QModelIndex& parent) const {
@@ -75,6 +94,13 @@ QVariant ClientBookModel::data(
         return {};
 
     const auto& book = books_[row];
+
+    if (role == Qt::DecorationRole && index.column() == Column::LedgerCcy) {
+        if (imageCache_ && !book.ledger_ccy.empty()) {
+            return imageCache_->getCurrencyFlagIcon(book.ledger_ccy);
+        }
+        return {};
+    }
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {

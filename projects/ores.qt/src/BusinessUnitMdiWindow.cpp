@@ -41,10 +41,12 @@ using namespace ores::logging;
 
 BusinessUnitMdiWindow::BusinessUnitMdiWindow(
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
@@ -135,7 +137,7 @@ void BusinessUnitMdiWindow::setupToolbar() {
 }
 
 void BusinessUnitMdiWindow::setupTable() {
-    model_ = new ClientBusinessUnitModel(clientManager_, this);
+    model_ = new ClientBusinessUnitModel(clientManager_, imageCache_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);

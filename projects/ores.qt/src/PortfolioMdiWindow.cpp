@@ -41,10 +41,12 @@ using namespace ores::logging;
 
 PortfolioMdiWindow::PortfolioMdiWindow(
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
@@ -135,7 +137,7 @@ void PortfolioMdiWindow::setupToolbar() {
 }
 
 void PortfolioMdiWindow::setupTable() {
-    model_ = new ClientPortfolioModel(clientManager_, this);
+    model_ = new ClientPortfolioModel(clientManager_, imageCache_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);

@@ -31,6 +31,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Model for displaying books fetched from the server.
  *
@@ -67,7 +69,8 @@ public:
     };
 
     explicit ClientBookModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+                             ImageCache* imageCache,
+                             QObject* parent = nullptr);
     ~ClientBookModel() override = default;
 
     // QAbstractTableModel interface
@@ -140,6 +143,7 @@ private:
     void fetch_books(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::vector<refdata::domain::book> books_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

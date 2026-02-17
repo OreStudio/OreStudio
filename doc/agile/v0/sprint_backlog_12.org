@@ -2568,7 +2568,9 @@ entity and its corporate descendants as operational parties.
 
 *** STARTED Advanced counterparty dialog                               :code:
     :LOGBOOK:
-    CLOCK: [2026-02-17 Tue 17:40]
+    CLOCK: [2026-02-17 Tue 21:51]
+    CLOCK: [2026-02-17 Tue 21:25]--[2026-02-17 Tue 21:51] =>  0:26
+    CLOCK: [2026-02-17 Tue 17:40]--[2026-02-17 Tue 20:34] =>  2:54
     CLOCK: [2026-02-17 Tue 17:36]--[2026-02-17 Tue 17:39] =>  0:03
     CLOCK: [2026-02-17 Tue 17:10]--[2026-02-17 Tue 17:35] =>  0:25
     CLOCK: [2026-02-17 Tue 14:05]--[2026-02-17 Tue 14:20] =>  0:15
@@ -2729,36 +2731,6 @@ Highlights:
   entity_detail_operations strategy.
 #+end_quote
 
-*** Replace parent combo boxes with server-side type-ahead search      :code:
-
-The entity detail dialogs (party, counterparty) load all entities into a combo
-box for parent selection using a single request with =offset=0, limit=1000=.
-If the system has more than 1,000 entities, the dropdown silently truncates
-results, meaning users cannot select the correct parent and the hierarchy tree
-is incomplete. The same pattern exists for country image maps and lookup
-fetchers.
-
-The fix is to replace the plain =QComboBox= with a searchable type-ahead widget
-backed by =QCompleter= that issues server-side search requests as the user
-types. This is the scalable solution and avoids loading the full dataset into
-memory.
-
-Affected locations:
-
-- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
-- =PartyDetailOperations.cpp:118= - =load_all_entities()=
-- =EntityDetailDialog.cpp:346= - =loadCountryImageMap()=
-- =LookupFetcher.cpp:80,145= - lookup reference data loading
-
-Note: the =MdiWindow= list views already have proper server-side pagination
-via =ClientCounterpartyModel= / =ClientPartyModel=; this issue only affects
-detail dialog combo boxes and related data loading.
-
-- Introduce a reusable =SearchableEntityComboBox= widget with =QCompleter=
-- Add server-side search endpoints for parties and counterparties
-- Replace =load_all_entities()= calls with on-demand search
-- Consider the same approach for country and lookup fetcher if volumes warrant it
-
 *** STARTED Analyse caching at dialog level                            :code:
     :LOGBOOK:
     CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
@@ -2797,6 +2769,64 @@ Core needs to have a container for all of the data stored within a context.
 
 Actually, according to Data Priented Principles, we may not need it. This may be
 a UI concept but not a code concept.
+
+*** Redesign Qt ImageCache invalidation strategy                       :code:
+
+The current ImageCache invalidation approach is brittle and error-prone. When
+datasets are published, the cache reload is triggered by pattern-matching
+dataset codes (e.g., checking for "flag", "icon", "currenc", "countr" in the
+code string). This is fragile because:
+
+- New dataset types require updating the pattern matching logic
+- The relationship between datasets and cached data is implicit
+- Cache invalidation relies on string matching rather than proper metadata
+
+Proposed improvements:
+
+- Use artefact_type metadata instead of code string matching to determine if
+  cache invalidation is needed
+- Consider a more general cache invalidation framework that can be extended to
+  other caches (ChangeReasonCache, etc.)
+- Investigate using server-side notifications to trigger cache invalidation
+  (similar to the notification system already in place)
+- Document the caching strategy and invalidation rules
+
+Acceptance criteria:
+
+- Cache invalidation is based on structured metadata, not string patterns
+- Adding new image-related datasets doesn't require code changes
+- Cache invalidation logic is documented and maintainable
+
+
+*** Replace parent combo boxes with server-side type-ahead search      :code:
+
+The entity detail dialogs (party, counterparty) load all entities into a combo
+box for parent selection using a single request with =offset=0, limit=1000=.
+If the system has more than 1,000 entities, the dropdown silently truncates
+results, meaning users cannot select the correct parent and the hierarchy tree
+is incomplete. The same pattern exists for country image maps and lookup
+fetchers.
+
+The fix is to replace the plain =QComboBox= with a searchable type-ahead widget
+backed by =QCompleter= that issues server-side search requests as the user
+types. This is the scalable solution and avoids loading the full dataset into
+memory.
+
+Affected locations:
+
+- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
+- =PartyDetailOperations.cpp:118= - =load_all_entities()=
+- =EntityDetailDialog.cpp:346= - =loadCountryImageMap()=
+- =LookupFetcher.cpp:80,145= - lookup reference data loading
+
+Note: the =MdiWindow= list views already have proper server-side pagination
+via =ClientCounterpartyModel= / =ClientPartyModel=; this issue only affects
+detail dialog combo boxes and related data loading.
+
+- Introduce a reusable =SearchableEntityComboBox= widget with =QCompleter=
+- Add server-side search endpoints for parties and counterparties
+- Replace =load_all_entities()= calls with on-demand search
+- Consider the same approach for country and lookup fetcher if volumes warrant it
 
 *** Filter counterparty dataset size for evaluation tenants            :code:
 

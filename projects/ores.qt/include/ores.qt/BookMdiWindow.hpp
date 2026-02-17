@@ -54,6 +54,7 @@ private:
 public:
     explicit BookMdiWindow(
         ClientManager* clientManager,
+        ImageCache* imageCache,
         const QString& username,
         QWidget* parent = nullptr);
     ~BookMdiWindow() override = default;
@@ -101,6 +102,7 @@ private:
     void restoreSettings();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString username_;
 
     QToolBar* toolbar_;

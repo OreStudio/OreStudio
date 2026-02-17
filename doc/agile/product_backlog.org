@@ -583,33 +583,6 @@ Links:
 - [[https://github.com/citusdata/pg_cron][GH: pg_cron]]
 
 
-*** Redesign Qt ImageCache invalidation strategy                       :code:
-
-The current ImageCache invalidation approach is brittle and error-prone. When
-datasets are published, the cache reload is triggered by pattern-matching
-dataset codes (e.g., checking for "flag", "icon", "currenc", "countr" in the
-code string). This is fragile because:
-
-- New dataset types require updating the pattern matching logic
-- The relationship between datasets and cached data is implicit
-- Cache invalidation relies on string matching rather than proper metadata
-
-Proposed improvements:
-
-- Use artefact_type metadata instead of code string matching to determine if
-  cache invalidation is needed
-- Consider a more general cache invalidation framework that can be extended to
-  other caches (ChangeReasonCache, etc.)
-- Investigate using server-side notifications to trigger cache invalidation
-  (similar to the notification system already in place)
-- Document the caching strategy and invalidation rules
-
-Acceptance criteria:
-
-- Cache invalidation is based on structured metadata, not string patterns
-- Adding new image-related datasets doesn't require code changes
-- Cache invalidation logic is documented and maintainable
-
 *** Support tenant specification in shell account commands             :code:
 
 Currently, shell commands like =accounts info <username>= only search within the

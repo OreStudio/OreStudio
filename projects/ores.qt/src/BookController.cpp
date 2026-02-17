@@ -58,7 +58,7 @@ void BookController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookMdiWindow(clientManager_, username_);
+    listWindow_ = new BookMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &BookMdiWindow::statusChanged,

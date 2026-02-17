@@ -1354,7 +1354,7 @@ void MainWindow::createControllers() {
 
     // Create counterparty controller
     counterpartyController_ = std::make_unique<CounterpartyController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), this);
 
     connect(counterpartyController_.get(), &CounterpartyController::statusMessage,

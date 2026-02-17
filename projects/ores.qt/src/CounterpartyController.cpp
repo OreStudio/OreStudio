@@ -37,11 +37,13 @@ CounterpartyController::CounterpartyController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -144,6 +146,9 @@ void CounterpartyController::showAddWindow() {
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -187,6 +192,9 @@ void CounterpartyController::showDetailWindow(
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setCounterparty(counterparty);
@@ -310,6 +318,9 @@ void CounterpartyController::onOpenVersion(
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
     detailDialog->setReadOnly(true);
@@ -357,6 +368,9 @@ void CounterpartyController::onRevertVersion(
     auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCounterparty(counterparty);
     detailDialog->setCreateMode(false);

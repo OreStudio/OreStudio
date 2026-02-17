@@ -1607,6 +1607,7 @@ handle_save_party_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving party: " << request.party.short_code;
 
+    request.party.tenant_id = auth->tenant_id.to_string();
     request.party.modified_by = auth->username;
     request.party.performed_by.clear();
 
@@ -1798,6 +1799,7 @@ handle_save_counterparty_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving counterparty: " << request.counterparty.short_code;
 
+    request.counterparty.tenant_id = auth->tenant_id.to_string();
     request.counterparty.modified_by = auth->username;
     request.counterparty.performed_by.clear();
 
@@ -2526,6 +2528,7 @@ handle_save_counterparty_identifier_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving counterparty identifier: "
                               << request.counterparty_identifier.id;
 
+    request.counterparty_identifier.tenant_id = auth->tenant_id.to_string();
     request.counterparty_identifier.modified_by = auth->username;
     request.counterparty_identifier.performed_by.clear();
 
@@ -2707,6 +2710,7 @@ handle_save_counterparty_contact_information_request(std::span<const std::byte> 
     BOOST_LOG_SEV(lg(), info) << "Saving counterparty contact information: "
                               << request.counterparty_contact_information.id;
 
+    request.counterparty_contact_information.tenant_id = auth->tenant_id.to_string();
     request.counterparty_contact_information.modified_by = auth->username;
     request.counterparty_contact_information.performed_by.clear();
 

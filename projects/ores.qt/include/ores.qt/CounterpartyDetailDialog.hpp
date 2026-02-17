@@ -33,6 +33,10 @@
 #include "ores.refdata/domain/counterparty_contact_information.hpp"
 #include "ores.refdata/domain/party_id_scheme.hpp"
 
+namespace ores::qt {
+class ChangeReasonCache;
+}
+
 namespace Ui {
 class CounterpartyDetailDialog;
 }
@@ -66,6 +70,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setImageCache(ImageCache* imageCache);
+    void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
     void setUsername(const std::string& username);
     void setCounterparty(const refdata::domain::counterparty& counterparty);
     void setCreateMode(bool createMode);
@@ -110,6 +115,7 @@ private:
     Ui::CounterpartyDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
     std::string username_;
     refdata::domain::counterparty counterparty_;
     bool createMode_{true};

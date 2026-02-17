@@ -44,6 +44,9 @@
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -55,6 +58,7 @@ CounterpartyDetailDialog::CounterpartyDetailDialog(QWidget* parent)
       ui_(new Ui::CounterpartyDetailDialog),
       clientManager_(nullptr),
       imageCache_(nullptr),
+      changeReasonCache_(nullptr),
       identifierTable_(nullptr),
       identifierToolbar_(nullptr),
       contactTable_(nullptr),
@@ -183,6 +187,10 @@ void CounterpartyDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void CounterpartyDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
+}
+
+void CounterpartyDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
+    changeReasonCache_ = changeReasonCache;
 }
 
 void CounterpartyDetailDialog::setUsername(const std::string& username) {
@@ -1251,6 +1259,39 @@ void CounterpartyDetailDialog::onSaveClicked() {
     }
 
     updateCounterpartyFromUi();
+
+    // For updates (not creates), require change reason
+    if (!createMode_) {
+        namespace reason = dq::domain::change_reason_constants;
+
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            BOOST_LOG_SEV(lg(), warn) << "Change reasons not loaded, cannot save.";
+            emit errorMessage("Change reasons not loaded. Please try again.");
+            return;
+        }
+
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "No change reasons available for common category.";
+            emit errorMessage("No change reasons available. Please contact administrator.");
+            return;
+        }
+
+        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
+            hasChanges_, this);
+        if (dialog.exec() != QDialog::Accepted) {
+            BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
+            return;
+        }
+
+        counterparty_.change_reason_code = dialog.selectedReasonCode();
+        counterparty_.change_commentary = dialog.commentary();
+
+        BOOST_LOG_SEV(lg(), debug) << "Change reason selected: "
+                                   << counterparty_.change_reason_code
+                                   << ", commentary: " << counterparty_.change_commentary;
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Saving counterparty: " << counterparty_.short_code;
 

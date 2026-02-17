@@ -24,13 +24,20 @@
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyMdiWindow.hpp"
-#include "ores.qt/PartyDetailDialog.hpp"
+#include "ores.qt/EntityDetailDialog.hpp"
+#include "ores.qt/PartyDetailOperations.hpp"
 #include "ores.qt/PartyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    auto make_party_ops() {
+        return std::make_shared<party_detail_operations>();
+    }
+}
 
 PartyController::PartyController(
     QMainWindow* mainWindow,
@@ -141,16 +148,17 @@ void PartyController::onShowHistory(
 void PartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party";
 
-    auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &PartyDetailDialog::statusMessage,
+    connect(detailDialog, &EntityDetailDialog::statusMessage,
             this, &PartyController::statusMessage);
-    connect(detailDialog, &PartyDetailDialog::errorMessage,
+    connect(detailDialog, &EntityDetailDialog::errorMessage,
             this, &PartyController::errorMessage);
-    connect(detailDialog, &PartyDetailDialog::partySaved,
+    connect(detailDialog, &EntityDetailDialog::entitySaved,
             this, [self = QPointer<PartyController>(this)](const QString& code) {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Party saved: " << code.toStdString();
@@ -183,23 +191,24 @@ void PartyController::showDetailWindow(
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << party.short_code;
 
-    auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setParty(party);
+    detailDialog->setEntityData(to_entity_data(party));
 
-    connect(detailDialog, &PartyDetailDialog::statusMessage,
+    connect(detailDialog, &EntityDetailDialog::statusMessage,
             this, &PartyController::statusMessage);
-    connect(detailDialog, &PartyDetailDialog::errorMessage,
+    connect(detailDialog, &EntityDetailDialog::errorMessage,
             this, &PartyController::errorMessage);
-    connect(detailDialog, &PartyDetailDialog::partySaved,
+    connect(detailDialog, &EntityDetailDialog::entitySaved,
             this, [self = QPointer<PartyController>(this)](const QString& code) {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Party saved: " << code.toStdString();
         self->handleEntitySaved();
     });
-    connect(detailDialog, &PartyDetailDialog::partyDeleted,
+    connect(detailDialog, &EntityDetailDialog::entityDeleted,
             this, [self = QPointer<PartyController>(this), key](const QString& code) {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Party deleted: " << code.toStdString();
@@ -305,18 +314,19 @@ void PartyController::onOpenVersion(
         return;
     }
 
-    auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setParty(party);
+    detailDialog->setEntityData(to_entity_data(party));
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &PartyDetailDialog::statusMessage,
+    connect(detailDialog, &EntityDetailDialog::statusMessage,
             this, [self = QPointer<PartyController>(this)](const QString& message) {
         if (!self) return;
         emit self->statusMessage(message);
     });
-    connect(detailDialog, &PartyDetailDialog::errorMessage,
+    connect(detailDialog, &EntityDetailDialog::errorMessage,
             this, [self = QPointer<PartyController>(this)](const QString& message) {
         if (!self) return;
         emit self->errorMessage(message);
@@ -351,17 +361,18 @@ void PartyController::onRevertVersion(
                               << party.version;
 
     // Open detail dialog with the old version data for editing
-    auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setParty(party);
+    detailDialog->setEntityData(to_entity_data(party));
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &PartyDetailDialog::statusMessage,
+    connect(detailDialog, &EntityDetailDialog::statusMessage,
             this, &PartyController::statusMessage);
-    connect(detailDialog, &PartyDetailDialog::errorMessage,
+    connect(detailDialog, &EntityDetailDialog::errorMessage,
             this, &PartyController::errorMessage);
-    connect(detailDialog, &PartyDetailDialog::partySaved,
+    connect(detailDialog, &EntityDetailDialog::entitySaved,
             this, [self = QPointer<PartyController>(this)](const QString& code) {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Party reverted: " << code.toStdString();

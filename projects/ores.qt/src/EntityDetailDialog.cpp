@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/CounterpartyDetailDialog.hpp"
+#include "ores.qt/EntityDetailDialog.hpp"
 
 #include <algorithm>
 #include <QAction>
@@ -34,28 +34,27 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
-#include "ui_CounterpartyDetailDialog.h"
+#include "ui_EntityDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_identifier_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_contact_information_protocol.hpp"
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CounterpartyDetailDialog::CounterpartyDetailDialog(QWidget* parent)
+EntityDetailDialog::EntityDetailDialog(
+    std::shared_ptr<entity_detail_operations> ops,
+    QWidget* parent)
     : DetailDialogBase(parent),
-      ui_(new Ui::CounterpartyDetailDialog),
+      ops_(std::move(ops)),
+      ui_(new Ui::EntityDetailDialog),
       clientManager_(nullptr),
       imageCache_(nullptr),
       changeReasonCache_(nullptr),
@@ -73,20 +72,33 @@ CounterpartyDetailDialog::CounterpartyDetailDialog(QWidget* parent)
     setupConnections();
 }
 
-CounterpartyDetailDialog::~CounterpartyDetailDialog() {
+EntityDetailDialog::~EntityDetailDialog() {
     delete ui_;
 }
 
-void CounterpartyDetailDialog::setupUi() {
+void EntityDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    // Show/hide party_category based on entity type
+    if (ops_->has_party_category()) {
+        ui_->partyCategoryCombo->addItem(
+            QString::fromUtf8(party_categories::operational));
+        ui_->partyCategoryCombo->addItem(
+            QString::fromUtf8(party_categories::system));
+        ui_->partyCategoryCombo->addItem(
+            QString::fromUtf8(party_categories::internal));
+    } else {
+        ui_->label_partyCategoryEdit->setVisible(false);
+        ui_->partyCategoryCombo->setVisible(false);
+    }
 }
 
-void CounterpartyDetailDialog::setupIdentifierTable() {
+void EntityDetailDialog::setupIdentifierTable() {
     identifierToolbar_ = new QToolBar(this);
     identifierToolbar_->setIconSize(QSize(16, 16));
 
@@ -98,9 +110,9 @@ void CounterpartyDetailDialog::setupIdentifierTable() {
         "Delete Identifier");
 
     connect(addAction, &QAction::triggered, this,
-            &CounterpartyDetailDialog::onAddIdentifier);
+            &EntityDetailDialog::onAddIdentifier);
     connect(deleteAction, &QAction::triggered, this,
-            &CounterpartyDetailDialog::onDeleteIdentifier);
+            &EntityDetailDialog::onDeleteIdentifier);
 
     identifierTable_ = new QTableWidget(this);
     identifierTable_->setColumnCount(3);
@@ -115,7 +127,7 @@ void CounterpartyDetailDialog::setupIdentifierTable() {
     ui_->identifiersLayout->addWidget(identifierTable_);
 }
 
-void CounterpartyDetailDialog::setupContactTable() {
+void EntityDetailDialog::setupContactTable() {
     contactToolbar_ = new QToolBar(this);
     contactToolbar_->setIconSize(QSize(16, 16));
 
@@ -127,9 +139,9 @@ void CounterpartyDetailDialog::setupContactTable() {
         "Delete Contact");
 
     connect(addAction, &QAction::triggered, this,
-            &CounterpartyDetailDialog::onAddContact);
+            &EntityDetailDialog::onAddContact);
     connect(deleteAction, &QAction::triggered, this,
-            &CounterpartyDetailDialog::onDeleteContact);
+            &EntityDetailDialog::onDeleteContact);
 
     contactTable_ = new QTableWidget(this);
     contactTable_->setColumnCount(6);
@@ -146,10 +158,10 @@ void CounterpartyDetailDialog::setupContactTable() {
     ui_->contactsLayout->addWidget(contactTable_);
 
     connect(contactTable_, &QTableWidget::cellDoubleClicked, this,
-            &CounterpartyDetailDialog::onContactDoubleClicked);
+            &EntityDetailDialog::onContactDoubleClicked);
 }
 
-void CounterpartyDetailDialog::setupHierarchyTree() {
+void EntityDetailDialog::setupHierarchyTree() {
     hierarchyTree_ = new QTreeWidget(this);
     hierarchyTree_->setHeaderLabels({"Name", "Short Code", "Status"});
     hierarchyTree_->setColumnCount(3);
@@ -158,51 +170,56 @@ void CounterpartyDetailDialog::setupHierarchyTree() {
     ui_->hierarchyLayout->addWidget(hierarchyTree_);
 }
 
-void CounterpartyDetailDialog::setupConnections() {
+void EntityDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this,
-            &CounterpartyDetailDialog::onSaveClicked);
+            &EntityDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &CounterpartyDetailDialog::onDeleteClicked);
+            &EntityDetailDialog::onDeleteClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &CounterpartyDetailDialog::onCodeChanged);
+            &EntityDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &CounterpartyDetailDialog::onFieldChanged);
+            &EntityDetailDialog::onFieldChanged);
     connect(ui_->transliteratedNameEdit, &QLineEdit::textChanged, this,
-            &CounterpartyDetailDialog::onFieldChanged);
+            &EntityDetailDialog::onFieldChanged);
     connect(ui_->partyTypeCombo, &QComboBox::currentTextChanged, this,
-            &CounterpartyDetailDialog::onFieldChanged);
-    connect(ui_->parentCounterpartyCombo, &QComboBox::currentTextChanged, this,
-            &CounterpartyDetailDialog::onFieldChanged);
+            &EntityDetailDialog::onFieldChanged);
+    connect(ui_->parentEntityCombo, &QComboBox::currentTextChanged, this,
+            &EntityDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
-            &CounterpartyDetailDialog::onFieldChanged);
+            &EntityDetailDialog::onFieldChanged);
     connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
-            &CounterpartyDetailDialog::onFieldChanged);
+            &EntityDetailDialog::onFieldChanged);
+
+    if (ops_->has_party_category()) {
+        connect(ui_->partyCategoryCombo, &QComboBox::currentTextChanged, this,
+                &EntityDetailDialog::onFieldChanged);
+    }
 }
 
-void CounterpartyDetailDialog::setClientManager(ClientManager* clientManager) {
+void EntityDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateLookups();
 }
 
-void CounterpartyDetailDialog::setImageCache(ImageCache* imageCache) {
+void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
 }
 
-void CounterpartyDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
+void EntityDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
     changeReasonCache_ = changeReasonCache;
 }
 
-void CounterpartyDetailDialog::setUsername(const std::string& username) {
+void EntityDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CounterpartyDetailDialog::populateLookups() {
+void EntityDetailDialog::populateLookups() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         return;
     }
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
 
     auto task = [cm]() -> lookup_result {
@@ -235,10 +252,10 @@ void CounterpartyDetailDialog::populateLookups() {
                 QString::fromStdString(code));
         }
 
-        self->updateUiFromCounterparty();
+        self->updateUiFromEntity();
 
-        // Also load all counterparties for parent combo + hierarchy
-        self->loadAllCounterparties();
+        // Also load all entities for parent combo + hierarchy
+        self->loadAllEntities();
         self->loadIdSchemes();
         self->loadCountryImageMap();
     });
@@ -247,70 +264,40 @@ void CounterpartyDetailDialog::populateLookups() {
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::loadAllCounterparties() {
+void EntityDetailDialog::loadAllEntities() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         return;
     }
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
+    auto ops = ops_;
 
-    struct CounterpartiesResult {
-        std::vector<refdata::domain::counterparty> counterparties;
-        bool success;
+    auto task = [cm, ops]() -> load_all_entities_result {
+        return ops->load_all_entities(cm);
     };
 
-    auto task = [cm]() -> CounterpartiesResult {
-        refdata::messaging::get_counterparties_request request;
-        request.offset = 0;
-        request.limit = 1000;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_counterparties_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {{}, false};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {{}, false};
-        }
-
-        auto response = refdata::messaging::get_counterparties_response::
-            deserialize(*payload_result);
-        if (!response) {
-            return {{}, false};
-        }
-
-        return {std::move(response->counterparties), true};
-    };
-
-    auto* watcher = new QFutureWatcher<CounterpartiesResult>(self);
-    connect(watcher, &QFutureWatcher<CounterpartiesResult>::finished,
+    auto* watcher = new QFutureWatcher<load_all_entities_result>(self);
+    connect(watcher, &QFutureWatcher<load_all_entities_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (!self || !result.success) return;
 
-        self->allCounterparties_ = std::move(result.counterparties);
+        self->allEntities_ = std::move(result.entities);
         self->populateParentCombo();
         self->buildHierarchyTree();
     });
 
-    QFuture<CounterpartiesResult> future = QtConcurrent::run(task);
+    QFuture<load_all_entities_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::loadIdSchemes() {
+void EntityDetailDialog::loadIdSchemes() {
     if (!clientManager_ || !clientManager_->isConnected()) return;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
 
     struct SchemesResult {
@@ -346,10 +333,10 @@ void CounterpartyDetailDialog::loadIdSchemes() {
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::loadCountryImageMap() {
+void EntityDetailDialog::loadCountryImageMap() {
     if (!clientManager_ || !clientManager_->isConnected()) return;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
 
     using MapType = std::unordered_map<std::string, std::string>;
@@ -389,73 +376,73 @@ void CounterpartyDetailDialog::loadCountryImageMap() {
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::populateParentCombo() {
-    ui_->parentCounterpartyCombo->clear();
-    ui_->parentCounterpartyCombo->addItem("(None)", QVariant());
+void EntityDetailDialog::populateParentCombo() {
+    ui_->parentEntityCombo->clear();
+    ui_->parentEntityCombo->addItem("(None)", QVariant());
 
-    for (const auto& cpty : allCounterparties_) {
+    for (const auto& entry : allEntities_) {
         // Don't allow setting self as parent
-        if (cpty.id == counterparty_.id) continue;
+        if (entry.id == entity_.id) continue;
 
-        QString label = QString::fromStdString(cpty.short_code) + " - " +
-                        QString::fromStdString(cpty.full_name);
-        ui_->parentCounterpartyCombo->addItem(
-            label, QString::fromStdString(boost::uuids::to_string(cpty.id)));
+        QString label = QString::fromStdString(entry.short_code) + " - " +
+                        QString::fromStdString(entry.full_name);
+        ui_->parentEntityCombo->addItem(
+            label, QString::fromStdString(boost::uuids::to_string(entry.id)));
     }
 
     // Set current value
-    if (counterparty_.parent_counterparty_id) {
-        const auto parent_id_str = boost::uuids::to_string(*counterparty_.parent_counterparty_id);
-        for (int i = 0; i < ui_->parentCounterpartyCombo->count(); ++i) {
-            if (ui_->parentCounterpartyCombo->itemData(i).toString().toStdString() == parent_id_str) {
-                ui_->parentCounterpartyCombo->setCurrentIndex(i);
+    if (entity_.parent_id) {
+        const auto parent_id_str = boost::uuids::to_string(*entity_.parent_id);
+        for (int i = 0; i < ui_->parentEntityCombo->count(); ++i) {
+            if (ui_->parentEntityCombo->itemData(i).toString().toStdString() == parent_id_str) {
+                ui_->parentEntityCombo->setCurrentIndex(i);
                 break;
             }
         }
     } else {
-        ui_->parentCounterpartyCombo->setCurrentIndex(0);
+        ui_->parentEntityCombo->setCurrentIndex(0);
     }
 }
 
-void CounterpartyDetailDialog::buildHierarchyTree() {
+void EntityDetailDialog::buildHierarchyTree() {
     hierarchyTree_->clear();
 
-    if (allCounterparties_.empty()) return;
+    if (allEntities_.empty()) return;
 
-    // Build a map of id -> counterparty
-    std::unordered_map<std::string, const refdata::domain::counterparty*> byId;
-    for (const auto& cpty : allCounterparties_) {
-        byId[boost::uuids::to_string(cpty.id)] = &cpty;
+    // Build a map of id -> entry
+    std::unordered_map<std::string, const parent_entity_entry*> byId;
+    for (const auto& entry : allEntities_) {
+        byId[boost::uuids::to_string(entry.id)] = &entry;
     }
 
     // Build a map of parent_id -> children
-    std::unordered_map<std::string, std::vector<const refdata::domain::counterparty*>> children;
-    std::vector<const refdata::domain::counterparty*> roots;
+    std::unordered_map<std::string, std::vector<const parent_entity_entry*>> children;
+    std::vector<const parent_entity_entry*> roots;
 
-    for (const auto& cpty : allCounterparties_) {
-        if (cpty.parent_counterparty_id) {
-            children[boost::uuids::to_string(*cpty.parent_counterparty_id)].push_back(&cpty);
+    for (const auto& entry : allEntities_) {
+        if (entry.parent_id) {
+            children[boost::uuids::to_string(*entry.parent_id)].push_back(&entry);
         } else {
-            roots.push_back(&cpty);
+            roots.push_back(&entry);
         }
     }
 
-    const auto current_id_str = boost::uuids::to_string(counterparty_.id);
+    const auto current_id_str = boost::uuids::to_string(entity_.id);
 
     // Recursive tree builder
-    std::function<QTreeWidgetItem*(const refdata::domain::counterparty*)> buildItem;
-    buildItem = [&](const refdata::domain::counterparty* cpty) -> QTreeWidgetItem* {
+    std::function<QTreeWidgetItem*(const parent_entity_entry*)> buildItem;
+    buildItem = [&](const parent_entity_entry* entry) -> QTreeWidgetItem* {
         auto* item = new QTreeWidgetItem();
-        const auto id_str = boost::uuids::to_string(cpty->id);
+        const auto id_str = boost::uuids::to_string(entry->id);
         const bool isCurrent = (id_str == current_id_str);
 
-        QString name = QString::fromStdString(cpty->full_name);
+        QString name = QString::fromStdString(entry->full_name);
         if (isCurrent) {
             name += " [THIS]";
         }
         item->setText(0, name);
-        item->setText(1, QString::fromStdString(cpty->short_code));
-        item->setText(2, QString::fromStdString(cpty->status));
+        item->setText(1, QString::fromStdString(entry->short_code));
+        item->setText(2, QString::fromStdString(entry->status));
 
         if (isCurrent) {
             QFont font = item->font(0);
@@ -484,15 +471,14 @@ void CounterpartyDetailDialog::buildHierarchyTree() {
     hierarchyTree_->resizeColumnToContents(1);
 }
 
-void CounterpartyDetailDialog::setCounterparty(
-    const refdata::domain::counterparty& counterparty) {
-    counterparty_ = counterparty;
-    updateUiFromCounterparty();
+void EntityDetailDialog::setEntityData(const entity_data& data) {
+    entity_ = data;
+    updateUiFromEntity();
     loadIdentifiers();
     loadContacts();
 }
 
-void CounterpartyDetailDialog::setCreateMode(bool createMode) {
+void EntityDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
@@ -501,7 +487,7 @@ void CounterpartyDetailDialog::setCreateMode(bool createMode) {
         // Hide metadata tab - no data exists yet
         ui_->tabWidget->removeTab(ui_->tabWidget->indexOf(ui_->metadataTab));
 
-        // Disable sub-entity toolbars until counterparty is saved
+        // Disable sub-entity toolbars until entity is saved
         if (identifierToolbar_) identifierToolbar_->setEnabled(false);
         if (contactToolbar_) contactToolbar_->setEnabled(false);
     }
@@ -510,78 +496,92 @@ void CounterpartyDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
-void CounterpartyDetailDialog::setReadOnly(bool readOnly) {
+void EntityDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->transliteratedNameEdit->setReadOnly(readOnly);
     ui_->partyTypeCombo->setEnabled(!readOnly);
-    ui_->parentCounterpartyCombo->setEnabled(!readOnly);
+    ui_->parentEntityCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
     ui_->businessCenterCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 
+    if (ops_->has_party_category()) {
+        ui_->partyCategoryCombo->setEnabled(!readOnly);
+    }
+
     if (identifierToolbar_) identifierToolbar_->setVisible(!readOnly);
     if (contactToolbar_) contactToolbar_->setVisible(!readOnly);
 }
 
-void CounterpartyDetailDialog::updateUiFromCounterparty() {
-    ui_->codeEdit->setText(QString::fromStdString(counterparty_.short_code));
-    ui_->nameEdit->setText(QString::fromStdString(counterparty_.full_name));
+void EntityDetailDialog::updateUiFromEntity() {
+    ui_->codeEdit->setText(QString::fromStdString(entity_.short_code));
+    ui_->nameEdit->setText(QString::fromStdString(entity_.full_name));
     ui_->transliteratedNameEdit->setText(
-        QString::fromStdString(counterparty_.transliterated_name.value_or("")));
-    ui_->partyTypeCombo->setCurrentText(QString::fromStdString(counterparty_.party_type));
-    ui_->statusCombo->setCurrentText(QString::fromStdString(counterparty_.status));
-    ui_->businessCenterCombo->setCurrentText(QString::fromStdString(counterparty_.business_center_code));
+        QString::fromStdString(entity_.transliterated_name.value_or("")));
+    ui_->partyTypeCombo->setCurrentText(QString::fromStdString(entity_.party_type));
+    ui_->statusCombo->setCurrentText(QString::fromStdString(entity_.status));
+    ui_->businessCenterCombo->setCurrentText(QString::fromStdString(entity_.business_center_code));
 
-    ui_->versionEdit->setText(QString::number(counterparty_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(counterparty_.modified_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(counterparty_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(counterparty_.change_commentary));
+    if (ops_->has_party_category() && entity_.party_category) {
+        ui_->partyCategoryCombo->setCurrentText(
+            QString::fromStdString(*entity_.party_category));
+    }
+
+    ui_->versionEdit->setText(QString::number(entity_.version));
+    ui_->modifiedByEdit->setText(QString::fromStdString(entity_.modified_by));
+    ui_->recordedAtEdit->setText(relative_time_helper::format(entity_.recorded_at));
+    ui_->commentaryEdit->setText(QString::fromStdString(entity_.change_commentary));
 }
 
-void CounterpartyDetailDialog::updateCounterpartyFromUi() {
+void EntityDetailDialog::updateEntityFromUi() {
     if (createMode_) {
-        counterparty_.short_code = ui_->codeEdit->text().trimmed().toStdString();
+        entity_.short_code = ui_->codeEdit->text().trimmed().toStdString();
     }
-    counterparty_.full_name = ui_->nameEdit->text().trimmed().toStdString();
+    entity_.full_name = ui_->nameEdit->text().trimmed().toStdString();
     const auto tlit = ui_->transliteratedNameEdit->text().trimmed().toStdString();
-    counterparty_.transliterated_name = tlit.empty() ? std::nullopt : std::optional<std::string>(tlit);
-    counterparty_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
-    counterparty_.status = ui_->statusCombo->currentText().trimmed().toStdString();
-    counterparty_.business_center_code = ui_->businessCenterCombo->currentText().trimmed().toStdString();
-    counterparty_.modified_by = username_;
-    counterparty_.performed_by = username_;
+    entity_.transliterated_name = tlit.empty() ? std::nullopt : std::optional<std::string>(tlit);
+    entity_.party_type = ui_->partyTypeCombo->currentText().trimmed().toStdString();
+    entity_.status = ui_->statusCombo->currentText().trimmed().toStdString();
+    const auto bcc = ui_->businessCenterCombo->currentText().trimmed().toStdString();
+    entity_.business_center_code = bcc.empty() ? std::string("WRLD") : bcc;
+    entity_.modified_by = username_;
+    entity_.performed_by = username_;
 
-    // Parent counterparty
-    int parentIndex = ui_->parentCounterpartyCombo->currentIndex();
-    QVariant parentData = ui_->parentCounterpartyCombo->itemData(parentIndex);
+    if (ops_->has_party_category()) {
+        entity_.party_category = ui_->partyCategoryCombo->currentText().trimmed().toStdString();
+    }
+
+    // Parent entity
+    int parentIndex = ui_->parentEntityCombo->currentIndex();
+    QVariant parentData = ui_->parentEntityCombo->itemData(parentIndex);
     if (parentData.isValid() && !parentData.toString().isEmpty()) {
         auto parent_id_str = parentData.toString().toStdString();
         boost::uuids::string_generator gen;
-        counterparty_.parent_counterparty_id = gen(parent_id_str);
+        entity_.parent_id = gen(parent_id_str);
     } else {
-        counterparty_.parent_counterparty_id = std::nullopt;
+        entity_.parent_id = std::nullopt;
     }
 }
 
-void CounterpartyDetailDialog::onCodeChanged(const QString& /* text */) {
+void EntityDetailDialog::onCodeChanged(const QString& /* text */) {
     hasChanges_ = true;
     updateSaveButtonState();
 }
 
-void CounterpartyDetailDialog::onFieldChanged() {
+void EntityDetailDialog::onFieldChanged() {
     hasChanges_ = true;
     updateSaveButtonState();
 }
 
-void CounterpartyDetailDialog::updateSaveButtonState() {
+void EntityDetailDialog::updateSaveButtonState() {
     bool canSave = hasChanges_ && validateInput() && !readOnly_;
     ui_->saveButton->setEnabled(canSave);
 }
 
-bool CounterpartyDetailDialog::validateInput() {
+bool EntityDetailDialog::validateInput() {
     const QString short_code_val = ui_->codeEdit->text().trimmed();
     const QString full_name_val = ui_->nameEdit->text().trimmed();
 
@@ -592,44 +592,21 @@ bool CounterpartyDetailDialog::validateInput() {
 // Identifier sub-table
 // ============================================================================
 
-void CounterpartyDetailDialog::loadIdentifiers() {
+void EntityDetailDialog::loadIdentifiers() {
     if (!clientManager_ || !clientManager_->isConnected()) return;
-    if (counterparty_.id.is_nil()) return;
+    if (entity_.id.is_nil()) return;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
-    auto cpty_id = counterparty_.id;
+    auto entity_id = entity_.id;
+    auto ops = ops_;
 
-    struct IdentifiersResult {
-        std::vector<refdata::domain::counterparty_identifier> identifiers;
-        bool success;
+    auto task = [cm, entity_id, ops]() -> load_identifiers_result {
+        return ops->load_identifiers(cm, entity_id);
     };
 
-    auto task = [cm, cpty_id]() -> IdentifiersResult {
-        refdata::messaging::get_counterparty_identifiers_request request;
-        request.counterparty_id = cpty_id;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_counterparty_identifiers_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {{}, false};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {{}, false};
-
-        auto response = refdata::messaging::get_counterparty_identifiers_response::
-            deserialize(*payload_result);
-        if (!response) return {{}, false};
-
-        return {std::move(response->counterparty_identifiers), true};
-    };
-
-    auto* watcher = new QFutureWatcher<IdentifiersResult>(self);
-    connect(watcher, &QFutureWatcher<IdentifiersResult>::finished,
+    auto* watcher = new QFutureWatcher<load_identifiers_result>(self);
+    connect(watcher, &QFutureWatcher<load_identifiers_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -640,11 +617,11 @@ void CounterpartyDetailDialog::loadIdentifiers() {
         self->populateIdentifierTable();
     });
 
-    QFuture<IdentifiersResult> future = QtConcurrent::run(task);
+    QFuture<load_identifiers_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::populateIdentifierTable() {
+void EntityDetailDialog::populateIdentifierTable() {
     identifierTable_->setRowCount(0);
     identifierTable_->setRowCount(static_cast<int>(identifiers_.size()));
 
@@ -658,7 +635,7 @@ void CounterpartyDetailDialog::populateIdentifierTable() {
     identifierTable_->resizeColumnsToContents();
 }
 
-void CounterpartyDetailDialog::onAddIdentifier() {
+void EntityDetailDialog::onAddIdentifier() {
     if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
 
     QDialog dialog(this);
@@ -698,49 +675,26 @@ void CounterpartyDetailDialog::onAddIdentifier() {
         return;
     }
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
+    auto ops = ops_;
 
-    refdata::domain::counterparty_identifier newIdent;
+    identifier_entry newIdent;
     boost::uuids::random_generator uuid_gen;
     newIdent.id = uuid_gen();
-    newIdent.counterparty_id = counterparty_.id;
+    newIdent.owner_id = entity_.id;
     newIdent.id_scheme = schemeCombo->currentData().toString().toStdString();
     newIdent.id_value = valueEdit->text().trimmed().toStdString();
     newIdent.description = descEdit->text().trimmed().toStdString();
     newIdent.modified_by = username_;
     newIdent.performed_by = username_;
 
-    struct SaveResult {
-        bool success;
-        std::string message;
+    auto task = [cm, ops, newIdent]() -> operation_result {
+        return ops->save_identifier(cm, newIdent);
     };
 
-    auto task = [cm, newIdent]() -> SaveResult {
-        refdata::messaging::save_counterparty_identifier_request request;
-        request.counterparty_identifier = newIdent;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_counterparty_identifier_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {false, "Failed to communicate with server"};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = refdata::messaging::save_counterparty_identifier_response::
-            deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
-    };
-
-    auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -755,11 +709,11 @@ void CounterpartyDetailDialog::onAddIdentifier() {
         }
     });
 
-    QFuture<SaveResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::onDeleteIdentifier() {
+void EntityDetailDialog::onDeleteIdentifier() {
     if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
 
     int row = identifierTable_->currentRow();
@@ -778,40 +732,17 @@ void CounterpartyDetailDialog::onDeleteIdentifier() {
 
     if (reply != QMessageBox::Yes) return;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
+    auto ops = ops_;
     auto identId = ident.id;
 
-    struct DeleteResult {
-        bool success;
-        std::string message;
+    auto task = [cm, ops, identId]() -> operation_result {
+        return ops->delete_identifier(cm, identId);
     };
 
-    auto task = [cm, identId]() -> DeleteResult {
-        refdata::messaging::delete_counterparty_identifier_request request;
-        request.ids = {identId};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_counterparty_identifier_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {false, "Failed to communicate with server"};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = refdata::messaging::delete_counterparty_identifier_response::
-            deserialize(*payload_result);
-        if (!response || response->results.empty()) return {false, "Invalid server response"};
-
-        return {response->results[0].success, response->results[0].message};
-    };
-
-    auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -826,7 +757,7 @@ void CounterpartyDetailDialog::onDeleteIdentifier() {
         }
     });
 
-    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -834,44 +765,21 @@ void CounterpartyDetailDialog::onDeleteIdentifier() {
 // Contact sub-table
 // ============================================================================
 
-void CounterpartyDetailDialog::loadContacts() {
+void EntityDetailDialog::loadContacts() {
     if (!clientManager_ || !clientManager_->isConnected()) return;
-    if (counterparty_.id.is_nil()) return;
+    if (entity_.id.is_nil()) return;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
-    auto cpty_id = counterparty_.id;
+    auto entity_id = entity_.id;
+    auto ops = ops_;
 
-    struct ContactsResult {
-        std::vector<refdata::domain::counterparty_contact_information> contacts;
-        bool success;
+    auto task = [cm, entity_id, ops]() -> load_contacts_result {
+        return ops->load_contacts(cm, entity_id);
     };
 
-    auto task = [cm, cpty_id]() -> ContactsResult {
-        refdata::messaging::get_counterparty_contact_informations_request request;
-        request.counterparty_id = cpty_id;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_counterparty_contact_informations_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {{}, false};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {{}, false};
-
-        auto response = refdata::messaging::get_counterparty_contact_informations_response::
-            deserialize(*payload_result);
-        if (!response) return {{}, false};
-
-        return {std::move(response->counterparty_contact_informations), true};
-    };
-
-    auto* watcher = new QFutureWatcher<ContactsResult>(self);
-    connect(watcher, &QFutureWatcher<ContactsResult>::finished,
+    auto* watcher = new QFutureWatcher<load_contacts_result>(self);
+    connect(watcher, &QFutureWatcher<load_contacts_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -882,11 +790,11 @@ void CounterpartyDetailDialog::loadContacts() {
         self->populateContactTable();
     });
 
-    QFuture<ContactsResult> future = QtConcurrent::run(task);
+    QFuture<load_contacts_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::populateContactTable() {
+void EntityDetailDialog::populateContactTable() {
     contactTable_->setRowCount(0);
     contactTable_->setRowCount(static_cast<int>(contacts_.size()));
 
@@ -915,7 +823,7 @@ void CounterpartyDetailDialog::populateContactTable() {
     contactTable_->resizeColumnsToContents();
 }
 
-void CounterpartyDetailDialog::onAddContact() {
+void EntityDetailDialog::onAddContact() {
     if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
 
     QDialog dialog(this);
@@ -971,13 +879,14 @@ void CounterpartyDetailDialog::onAddContact() {
         return;
     }
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
+    auto ops = ops_;
 
-    refdata::domain::counterparty_contact_information newContact;
+    contact_entry newContact;
     boost::uuids::random_generator uuid_gen;
     newContact.id = uuid_gen();
-    newContact.counterparty_id = counterparty_.id;
+    newContact.owner_id = entity_.id;
     newContact.contact_type = typeEdit->text().trimmed().toStdString();
     newContact.street_line_1 = streetLine1Edit->text().trimmed().toStdString();
     newContact.street_line_2 = streetLine2Edit->text().trimmed().toStdString();
@@ -991,36 +900,12 @@ void CounterpartyDetailDialog::onAddContact() {
     newContact.modified_by = username_;
     newContact.performed_by = username_;
 
-    struct SaveResult {
-        bool success;
-        std::string message;
+    auto task = [cm, ops, newContact]() -> operation_result {
+        return ops->save_contact(cm, newContact);
     };
 
-    auto task = [cm, newContact]() -> SaveResult {
-        refdata::messaging::save_counterparty_contact_information_request request;
-        request.counterparty_contact_information = newContact;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_counterparty_contact_information_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {false, "Failed to communicate with server"};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = refdata::messaging::save_counterparty_contact_information_response::
-            deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
-    };
-
-    auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -1035,11 +920,11 @@ void CounterpartyDetailDialog::onAddContact() {
         }
     });
 
-    QFuture<SaveResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::onDeleteContact() {
+void EntityDetailDialog::onDeleteContact() {
     if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
 
     int row = contactTable_->currentRow();
@@ -1057,40 +942,17 @@ void CounterpartyDetailDialog::onDeleteContact() {
 
     if (reply != QMessageBox::Yes) return;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
+    auto ops = ops_;
     auto contactId = contact.id;
 
-    struct DeleteResult {
-        bool success;
-        std::string message;
+    auto task = [cm, ops, contactId]() -> operation_result {
+        return ops->delete_contact(cm, contactId);
     };
 
-    auto task = [cm, contactId]() -> DeleteResult {
-        refdata::messaging::delete_counterparty_contact_information_request request;
-        request.ids = {contactId};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_counterparty_contact_information_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {false, "Failed to communicate with server"};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = refdata::messaging::delete_counterparty_contact_information_response::
-            deserialize(*payload_result);
-        if (!response || response->results.empty()) return {false, "Invalid server response"};
-
-        return {response->results[0].success, response->results[0].message};
-    };
-
-    auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -1105,11 +967,11 @@ void CounterpartyDetailDialog::onDeleteContact() {
         }
     });
 
-    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::onContactDoubleClicked(int row, int /* column */) {
+void EntityDetailDialog::onContactDoubleClicked(int row, int /* column */) {
     if (row < 0 || row >= static_cast<int>(contacts_.size())) return;
 
     const auto& contact = contacts_[static_cast<std::size_t>(row)];
@@ -1177,7 +1039,7 @@ void CounterpartyDetailDialog::onContactDoubleClicked(int row, int /* column */)
     if (dialog.exec() != QDialog::Accepted || !editable) return;
 
     // Save updated contact
-    refdata::domain::counterparty_contact_information updated = contact;
+    contact_entry updated = contact;
     updated.contact_type = typeEdit->text().trimmed().toStdString();
     updated.street_line_1 = streetLine1Edit->text().trimmed().toStdString();
     updated.street_line_2 = streetLine2Edit->text().trimmed().toStdString();
@@ -1191,39 +1053,16 @@ void CounterpartyDetailDialog::onContactDoubleClicked(int row, int /* column */)
     updated.modified_by = username_;
     updated.performed_by = username_;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
+    auto ops = ops_;
 
-    struct SaveResult {
-        bool success;
-        std::string message;
+    auto task = [cm, ops, updated]() -> operation_result {
+        return ops->save_contact(cm, updated);
     };
 
-    auto task = [cm, updated]() -> SaveResult {
-        refdata::messaging::save_counterparty_contact_information_request request;
-        request.counterparty_contact_information = updated;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_counterparty_contact_information_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) return {false, "Failed to communicate with server"};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = refdata::messaging::save_counterparty_contact_information_response::
-            deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
-    };
-
-    auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
@@ -1238,7 +1077,7 @@ void CounterpartyDetailDialog::onContactDoubleClicked(int row, int /* column */)
         }
     });
 
-    QFuture<SaveResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -1246,10 +1085,13 @@ void CounterpartyDetailDialog::onContactDoubleClicked(int row, int /* column */)
 // Save / Delete
 // ============================================================================
 
-void CounterpartyDetailDialog::onSaveClicked() {
+void EntityDetailDialog::onSaveClicked() {
+    const auto typeName = ops_->entity_type_name();
+    const auto qTypeName = QString::fromStdString(typeName);
+
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save counterparty while disconnected from server.");
+            QString("Cannot save %1 while disconnected from server.").arg(qTypeName.toLower()));
         return;
     }
 
@@ -1259,7 +1101,7 @@ void CounterpartyDetailDialog::onSaveClicked() {
         return;
     }
 
-    updateCounterpartyFromUi();
+    updateEntityFromUi();
 
     // For updates (not creates), require change reason
     if (!createMode_) {
@@ -1286,70 +1128,38 @@ void CounterpartyDetailDialog::onSaveClicked() {
             return;
         }
 
-        counterparty_.change_reason_code = dialog.selectedReasonCode();
-        counterparty_.change_commentary = dialog.commentary();
+        entity_.change_reason_code = dialog.selectedReasonCode();
+        entity_.change_commentary = dialog.commentary();
 
         BOOST_LOG_SEV(lg(), debug) << "Change reason selected: "
-                                   << counterparty_.change_reason_code
-                                   << ", commentary: " << counterparty_.change_commentary;
+                                   << entity_.change_reason_code
+                                   << ", commentary: " << entity_.change_commentary;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Saving counterparty: " << counterparty_.short_code;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << typeName << ": " << entity_.short_code;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
+    auto ops = ops_;
 
-    struct SaveResult {
-        bool success;
-        std::string message;
-    };
-
-    auto task = [self, counterparty = counterparty_]() -> SaveResult {
+    auto task = [self, ops, entity = entity_]() -> operation_result {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
-
-        refdata::messaging::save_counterparty_request request;
-        request.counterparty = counterparty;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_counterparty_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server"};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = refdata::messaging::save_counterparty_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return ops->save_entity(self->clientManager_, entity);
     };
 
-    auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
+            self, [self, watcher, qTypeName]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Counterparty saved successfully";
-            QString code = QString::fromStdString(self->counterparty_.short_code);
-            emit self->counterpartySaved(code);
-            self->notifySaveSuccess(tr("Counterparty '%1' saved").arg(code));
+            BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " saved successfully";
+            QString code = QString::fromStdString(self->entity_.short_code);
+            emit self->entitySaved(code);
+            self->notifySaveSuccess(
+                tr("%1 '%2' saved").arg(qTypeName).arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -1358,81 +1168,53 @@ void CounterpartyDetailDialog::onSaveClicked() {
         }
     });
 
-    QFuture<SaveResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void CounterpartyDetailDialog::onDeleteClicked() {
+void EntityDetailDialog::onDeleteClicked() {
+    const auto typeName = ops_->entity_type_name();
+    const auto qTypeName = QString::fromStdString(typeName);
+
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete counterparty while disconnected from server.");
+            QString("Cannot delete %1 while disconnected from server.").arg(qTypeName.toLower()));
         return;
     }
 
-    QString code = QString::fromStdString(counterparty_.short_code);
-    auto reply = MessageBoxHelper::question(this, "Delete Counterparty",
-        QString("Are you sure you want to delete counterparty '%1'?").arg(code),
+    QString code = QString::fromStdString(entity_.short_code);
+    auto reply = MessageBoxHelper::question(this,
+        QString("Delete %1").arg(qTypeName),
+        QString("Are you sure you want to delete %1 '%2'?").arg(qTypeName.toLower()).arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting counterparty: " << counterparty_.short_code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << typeName << ": " << entity_.short_code;
 
-    QPointer<CounterpartyDetailDialog> self = this;
+    QPointer<EntityDetailDialog> self = this;
+    auto ops = ops_;
 
-    struct DeleteResult {
-        bool success;
-        std::string message;
-    };
-
-    auto task = [self, id = counterparty_.id]() -> DeleteResult {
+    auto task = [self, ops, id = entity_.id]() -> operation_result {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
-
-        refdata::messaging::delete_counterparty_request request;
-        request.ids = {id};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_counterparty_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server"};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = refdata::messaging::delete_counterparty_response::
-            deserialize(*payload_result);
-
-        if (!response || response->results.empty()) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->results[0].success, response->results[0].message};
+        return ops->delete_entity(self->clientManager_, id);
     };
 
-    auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    auto* watcher = new QFutureWatcher<operation_result>(self);
+    connect(watcher, &QFutureWatcher<operation_result>::finished,
+            self, [self, code, watcher, qTypeName]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Counterparty deleted successfully";
-            emit self->statusMessage(QString("Counterparty '%1' deleted").arg(code));
-            emit self->counterpartyDeleted(code);
+            BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " deleted successfully";
+            emit self->statusMessage(
+                QString("%1 '%2' deleted").arg(qTypeName).arg(code));
+            emit self->entityDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
@@ -1442,7 +1224,7 @@ void CounterpartyDetailDialog::onDeleteClicked() {
         }
     });
 
-    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

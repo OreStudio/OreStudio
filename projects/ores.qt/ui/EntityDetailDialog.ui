@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CounterpartyDetailDialog</class>
- <widget class="QWidget" name="CounterpartyDetailDialog">
+ <class>EntityDetailDialog</class>
+ <widget class="QWidget" name="EntityDetailDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Counterparty Details</string>
+   <string>Entity Details</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -85,47 +85,57 @@
            </widget>
           </item>
           <item row="3" column="0">
+           <widget class="QLabel" name="label_partyCategoryEdit">
+            <property name="text">
+             <string>Category:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="partyCategoryCombo"/>
+          </item>
+          <item row="4" column="0">
            <widget class="QLabel" name="label_partyTypeEdit">
             <property name="text">
              <string>Party Type:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QComboBox" name="partyTypeCombo"/>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_parentCounterpartyEdit">
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_parentEntityEdit">
             <property name="text">
-             <string>Parent Counterparty:</string>
+             <string>Parent:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="parentCounterpartyCombo">
+          <item row="5" column="1">
+           <widget class="QComboBox" name="parentEntityCombo">
             <property name="editable">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="label_statusEdit">
             <property name="text">
              <string>Status:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QComboBox" name="statusCombo"/>
           </item>
-          <item row="6" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="label_businessCenterEdit">
             <property name="text">
              <string>Business Center:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="7" column="1">
            <widget class="QComboBox" name="businessCenterCombo">
             <property name="editable">
              <bool>true</bool>

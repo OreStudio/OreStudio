@@ -498,11 +498,12 @@ void CounterpartyDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
 
     if (createMode) {
-        // Hide tabs that don't apply in create mode
+        // Hide metadata tab - no data exists yet
         ui_->tabWidget->removeTab(ui_->tabWidget->indexOf(ui_->metadataTab));
-        ui_->tabWidget->removeTab(ui_->tabWidget->indexOf(ui_->identifiersTab));
-        ui_->tabWidget->removeTab(ui_->tabWidget->indexOf(ui_->contactsTab));
-        ui_->tabWidget->removeTab(ui_->tabWidget->indexOf(ui_->hierarchyTab));
+
+        // Disable sub-entity toolbars until counterparty is saved
+        if (identifierToolbar_) identifierToolbar_->setEnabled(false);
+        if (contactToolbar_) contactToolbar_->setEnabled(false);
     }
 
     hasChanges_ = false;

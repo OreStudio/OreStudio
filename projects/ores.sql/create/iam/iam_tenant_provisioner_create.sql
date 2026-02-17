@@ -27,14 +27,17 @@
 -- -----------------------------------------------------------------------------
 -- Provision a new tenant with IAM base data
 -- -----------------------------------------------------------------------------
--- Creates a new tenant and copies only system IAM tables:
+-- Creates a new tenant and copies system IAM and refdata lookup tables:
 --   - permissions: Permission definitions
 --   - roles: Role definitions
 --   - role_permissions: Role-permission assignments
+--   - party_categories, party_types, party_statuses: Party classification
+--   - contact_types, party_id_schemes: Contact and identifier lookups
+--   - book_statuses, purpose_types: Book and purpose lookups
 --
--- Reference data (currencies, countries, etc.) is NOT copied during
--- provisioning. Tenants populate refdata via the dataset library using
--- the "Publish Datasets" feature in the Data Librarian.
+-- Transactional reference data (currencies, countries, parties, etc.)
+-- is NOT copied during provisioning. Tenants populate that data via the
+-- dataset library using the "Publish Datasets" feature.
 --
 -- The system tenant must exist and be active.
 -- Caller must have system tenant context set.
@@ -155,15 +158,133 @@ begin
     raise notice 'Copied % role-permission assignments', v_copied_count;
 
     -- =========================================================================
+    -- Copy refdata lookup tables from system tenant
+    -- =========================================================================
+    -- Validation triggers on parties and counterparties check these lookup
+    -- tables against the tenant's own data. They must be seeded before
+    -- inserting the system party.
+
+    -- Party categories (e.g. Operational, System)
+    insert into ores_refdata_party_categories_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_party_categories_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % party categories', v_copied_count;
+
+    -- Party types (e.g. Bank, Corporate, Internal)
+    insert into ores_refdata_party_types_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_party_types_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % party types', v_copied_count;
+
+    -- Party statuses (e.g. Active, Inactive)
+    insert into ores_refdata_party_statuses_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_party_statuses_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % party statuses', v_copied_count;
+
+    -- Contact types (e.g. Email, Phone, Fax)
+    insert into ores_refdata_contact_types_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_contact_types_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % contact types', v_copied_count;
+
+    -- Party ID schemes (e.g. LEI, BIC, DUNS)
+    insert into ores_refdata_party_id_schemes_tbl (
+        code, tenant_id, version, name, description, display_order,
+        coding_scheme_code, max_cardinality,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        coding_scheme_code, max_cardinality,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_party_id_schemes_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % party ID schemes', v_copied_count;
+
+    -- Book statuses (e.g. Active, Closed)
+    insert into ores_refdata_book_statuses_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_book_statuses_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % book statuses', v_copied_count;
+
+    -- Purpose types (e.g. Hedging, Trading)
+    insert into ores_refdata_purpose_types_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        current_user, current_user, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_purpose_types_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % purpose types', v_copied_count;
+
+    -- =========================================================================
     -- Create the system party for the new tenant
     -- =========================================================================
     -- Every tenant gets exactly one system party (party_category='System')
     -- which serves as the root of the party hierarchy. The system party
     -- represents the tenant organisation itself. It is the only party with
     -- parent_party_id = NULL, enforced by a partial unique index.
-    --
-    -- No context switch needed: this function is security definer (bypasses
-    -- RLS), and lookup validation checks system tenant data directly.
 
     -- Seed the WRLD business centre for the new tenant so that the system
     -- party's business_center_code passes validation if later edited via UI.

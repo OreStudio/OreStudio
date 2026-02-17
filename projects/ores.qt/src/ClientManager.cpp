@@ -161,7 +161,9 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
                 std::move(payload)
             );
 
+            reauthenticating_.store(true, std::memory_order_release);
             auto response_result = client_->send_request_sync(std::move(request_frame));
+            reauthenticating_.store(false, std::memory_order_release);
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Re-authentication failed: network error";
@@ -708,8 +710,15 @@ void ClientManager::disconnect() {
             emit streamingStopped();
         }
 
-        // Send logout request before disconnecting
-        logout();
+        // Send logout request before disconnecting, but skip if
+        // re-authentication is in progress to avoid concurrent
+        // send_request_sync calls which can crash
+        if (reauthenticating_.load(std::memory_order_acquire)) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Skipping logout - re-authentication in progress";
+        } else {
+            logout();
+        }
 
         // Detach session (clears session state and event adapter)
         session_.detach_client();

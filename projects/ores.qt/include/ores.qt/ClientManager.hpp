@@ -607,6 +607,10 @@ private:
     // Set to true when user clicks disconnect, checked before emitting reconnecting signal
     std::atomic<bool> user_disconnecting_{false};
 
+    // Flag to prevent concurrent send_request_sync calls during disconnect
+    // Set while reconnected callback is performing re-authentication
+    std::atomic<bool> reauthenticating_{false};
+
     // Stored credentials for re-authentication after reconnection
     // Note: storing password in memory is acceptable for desktop apps since
     // the password was already in memory during initial login

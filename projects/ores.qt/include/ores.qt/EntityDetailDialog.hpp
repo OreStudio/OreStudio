@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_COUNTERPARTY_DETAIL_DIALOG_HPP
-#define ORES_QT_COUNTERPARTY_DETAIL_DIALOG_HPP
+#ifndef ORES_QT_ENTITY_DETAIL_DIALOG_HPP
+#define ORES_QT_ENTITY_DETAIL_DIALOG_HPP
 
 #include <QTableWidget>
 #include <QToolBar>
 #include <QTreeWidget>
+#include <memory>
 #include <unordered_map>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/EntityDetailOperations.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/counterparty.hpp"
-#include "ores.refdata/domain/counterparty_identifier.hpp"
-#include "ores.refdata/domain/counterparty_contact_information.hpp"
 #include "ores.refdata/domain/party_id_scheme.hpp"
 
 namespace ores::qt {
@@ -38,25 +37,25 @@ class ChangeReasonCache;
 }
 
 namespace Ui {
-class CounterpartyDetailDialog;
+class EntityDetailDialog;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Detail dialog for viewing and editing counterparty records.
+ * @brief Shared detail dialog for viewing and editing party and counterparty
+ * records.
  *
- * This dialog allows viewing, creating, and editing counterparties.
- * It supports both create mode (for new records) and edit mode (for
- * existing records). Includes tabbed view with sub-tables for
- * identifiers and contacts, and a hierarchy tree.
+ * This dialog is parameterised via an entity_detail_operations implementation
+ * to handle the protocol-level differences between parties and counterparties.
+ * All UI code (tabs, sub-tables, hierarchy, metadata) is shared.
  */
-class CounterpartyDetailDialog final : public DetailDialogBase {
+class EntityDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.counterparty_detail_dialog";
+        "ores.qt.entity_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -65,20 +64,22 @@ private:
     }
 
 public:
-    explicit CounterpartyDetailDialog(QWidget* parent = nullptr);
-    ~CounterpartyDetailDialog() override;
+    explicit EntityDetailDialog(
+        std::shared_ptr<entity_detail_operations> ops,
+        QWidget* parent = nullptr);
+    ~EntityDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
     void setImageCache(ImageCache* imageCache);
     void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
     void setUsername(const std::string& username);
-    void setCounterparty(const refdata::domain::counterparty& counterparty);
+    void setEntityData(const entity_data& data);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
 signals:
-    void counterpartySaved(const QString& code);
-    void counterpartyDeleted(const QString& code);
+    void entitySaved(const QString& code);
+    void entityDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -100,40 +101,41 @@ private:
     void populateLookups();
     void loadIdentifiers();
     void loadContacts();
-    void loadAllCounterparties();
+    void loadAllEntities();
     void loadIdSchemes();
     void loadCountryImageMap();
     void populateParentCombo();
     void populateIdentifierTable();
     void populateContactTable();
     void buildHierarchyTree();
-    void updateUiFromCounterparty();
-    void updateCounterpartyFromUi();
+    void updateUiFromEntity();
+    void updateEntityFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
-    Ui::CounterpartyDetailDialog* ui_;
+    std::shared_ptr<entity_detail_operations> ops_;
+    Ui::EntityDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
     std::string username_;
-    refdata::domain::counterparty counterparty_;
+    entity_data entity_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    // All counterparties for parent combo + hierarchy
-    std::vector<refdata::domain::counterparty> allCounterparties_;
+    // All entities for parent combo + hierarchy
+    std::vector<parent_entity_entry> allEntities_;
 
     // Identifier sub-table
     QTableWidget* identifierTable_;
     QToolBar* identifierToolbar_;
-    std::vector<refdata::domain::counterparty_identifier> identifiers_;
+    std::vector<identifier_entry> identifiers_;
 
     // Contact sub-table
     QTableWidget* contactTable_;
     QToolBar* contactToolbar_;
-    std::vector<refdata::domain::counterparty_contact_information> contacts_;
+    std::vector<contact_entry> contacts_;
 
     // Identifier schemes
     std::vector<refdata::domain::party_id_scheme> idSchemes_;

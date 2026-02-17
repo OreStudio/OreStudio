@@ -102,6 +102,9 @@ public:
     QString rootLeiName() const { return rootLeiName_; }
     void setRootLeiName(const QString& name) { rootLeiName_ = name; }
 
+    QString leiDatasetSize() const { return leiDatasetSize_; }
+    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+
     bool organisationPublished() const { return organisationPublished_; }
     void setOrganisationPublished(bool v) { organisationPublished_ = v; }
 
@@ -142,6 +145,7 @@ private:
     QString selectedBundleName_;
     QString rootLei_;
     QString rootLeiName_;
+    QString leiDatasetSize_ = "large";
     bool organisationPublished_ = false;
     DataSourceMode dataSourceMode_ = DataSourceMode::gleif;
     QString syntheticCountry_ = "GB";
@@ -279,6 +283,7 @@ private:
 
     TenantProvisioningWizard* wizard_;
     LeiEntityPicker* leiPicker_;
+    QComboBox* datasetSizeCombo_;
     QLabel* instructionLabel_;
     bool leiLoaded_ = false;
 };

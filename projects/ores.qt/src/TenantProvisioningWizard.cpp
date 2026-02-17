@@ -582,6 +582,19 @@ void PartySetupPage::setupUI() {
 
     layout->addSpacing(10);
 
+    // Dataset size selection
+    auto* sizeLayout = new QHBoxLayout();
+    sizeLayout->addWidget(new QLabel(tr("LEI dataset size:"), this));
+    datasetSizeCombo_ = new QComboBox(this);
+    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), "large");
+    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"), "small");
+    datasetSizeCombo_->setCurrentIndex(0);
+    sizeLayout->addWidget(datasetSizeCombo_);
+    sizeLayout->addStretch();
+    layout->addLayout(sizeLayout);
+
+    layout->addSpacing(10);
+
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
     layout->addWidget(leiPicker_);
 }
@@ -599,6 +612,8 @@ bool PartySetupPage::validatePage() {
         wizard_->setRootLei(leiPicker_->selectedLei());
         wizard_->setRootLeiName(leiPicker_->selectedName());
     }
+    wizard_->setLeiDatasetSize(
+        datasetSizeCombo_->currentData().toString());
     return true;
 }
 
@@ -736,6 +751,10 @@ void OrganisationSetupPage::startBundlePublish() {
     if (!rootLei.empty()) {
         params.lei_parties = dq::messaging::lei_parties_params{rootLei};
     }
+    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
+    if (!datasetSize.empty()) {
+        params.lei_dataset_size = datasetSize;
+    }
     const std::string paramsJson = dq::messaging::build_params_json(params);
 
     using ResponseType = dq::messaging::publish_bundle_response;
@@ -808,7 +827,8 @@ void OrganisationSetupPage::startBundlePublish() {
 
     if (!rootLei.empty()) {
         appendLog(tr("Publishing organisation bundle with GLEIF LEI parties "
-                      "(root: %1)...").arg(wizard_->rootLeiName()));
+                      "(root: %1, dataset: %2)...")
+            .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
     } else {
         appendLog(tr("Publishing organisation bundle (business units, portfolios, "
                       "books)..."));

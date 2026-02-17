@@ -49,6 +49,7 @@ struct lei_parties_params final {
 struct publish_bundle_params final {
     std::vector<std::string> opted_in_datasets;
     std::optional<lei_parties_params> lei_parties;
+    std::optional<std::string> lei_dataset_size;
 };
 
 /**

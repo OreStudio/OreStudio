@@ -741,21 +741,27 @@ void OrganisationSetupPage::startBundlePublish() {
     const std::string publishedBy = wizard_->clientManager()->currentUsername();
     ClientManager* clientManager = wizard_->clientManager();
     const std::string rootLei = wizard_->rootLei().toStdString();
+    const std::string bundleCode = wizard_->selectedBundleCode().toStdString();
+    const bool hasLei = !rootLei.empty();
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing organisation bundle"
-                              << (rootLei.empty() ? "" : " with root LEI: ")
+    BOOST_LOG_SEV(lg(), info) << "Publishing organisation data"
+                              << (hasLei ? " with root LEI: " : "")
                               << rootLei;
 
-    // Build params with LEI party configuration if a root LEI was selected
-    dq::messaging::publish_bundle_params params;
-    if (!rootLei.empty()) {
-        params.lei_parties = dq::messaging::lei_parties_params{rootLei};
+    // Build LEI params for re-publishing the base bundle with opt-in datasets
+    std::string leiParamsJson = "{}";
+    if (hasLei) {
+        dq::messaging::publish_bundle_params leiParams;
+        leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
+        const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
+        if (!datasetSize.empty()) {
+            leiParams.lei_dataset_size = datasetSize;
+        }
+        // Opt in the LEI party and counterparty datasets
+        leiParams.opted_in_datasets.push_back("gleif.lei_parties.small");
+        leiParams.opted_in_datasets.push_back("gleif.lei_counterparties.small");
+        leiParamsJson = dq::messaging::build_params_json(leiParams);
     }
-    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-    if (!datasetSize.empty()) {
-        params.lei_dataset_size = datasetSize;
-    }
-    const std::string paramsJson = dq::messaging::build_params_json(params);
 
     using ResponseType = dq::messaging::publish_bundle_response;
 
@@ -803,32 +809,58 @@ void OrganisationSetupPage::startBundlePublish() {
         emit completeChanged();
     });
 
+    // Run both publishes sequentially on a background thread:
+    // 1. If LEI selected: re-publish base bundle with opted-in LEI datasets
+    // 2. Publish organisation bundle for business units, portfolios, books
     QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, publishedBy, paramsJson]() -> std::optional<ResponseType> {
+        [clientManager, publishedBy, bundleCode, leiParamsJson,
+         hasLei]() -> std::optional<ResponseType> {
 
-            dq::messaging::publish_bundle_request request;
-            request.bundle_code = "organisation";
-            request.mode = dq::domain::publication_mode::upsert;
-            request.published_by = publishedBy;
-            request.atomic = true;
-            request.params_json = paramsJson;
+            // Step 1: Publish LEI parties and counterparties from base bundle
+            if (hasLei) {
+                dq::messaging::publish_bundle_request leiRequest;
+                leiRequest.bundle_code = bundleCode;
+                leiRequest.mode = dq::domain::publication_mode::upsert;
+                leiRequest.published_by = publishedBy;
+                leiRequest.atomic = true;
+                leiRequest.params_json = leiParamsJson;
 
-            auto result = clientManager->process_authenticated_request(
-                std::move(request));
+                auto leiResult = clientManager->process_authenticated_request(
+                    std::move(leiRequest));
 
-            if (!result) {
+                if (!leiResult) {
+                    return std::nullopt;
+                }
+                if (!leiResult->success) {
+                    return *leiResult;
+                }
+            }
+
+            // Step 2: Publish organisation bundle (business units, portfolios, books)
+            dq::messaging::publish_bundle_request orgRequest;
+            orgRequest.bundle_code = "organisation";
+            orgRequest.mode = dq::domain::publication_mode::upsert;
+            orgRequest.published_by = publishedBy;
+            orgRequest.atomic = true;
+
+            auto orgResult = clientManager->process_authenticated_request(
+                std::move(orgRequest));
+
+            if (!orgResult) {
                 return std::nullopt;
             }
-            return *result;
+            return *orgResult;
         }
     );
 
     watcher->setFuture(future);
 
-    if (!rootLei.empty()) {
-        appendLog(tr("Publishing organisation bundle with GLEIF LEI parties "
+    if (hasLei) {
+        appendLog(tr("[1/2] Publishing GLEIF LEI parties and counterparties "
                       "(root: %1, dataset: %2)...")
             .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
+        appendLog(tr("[2/2] Publishing organisation structure (business units, "
+                      "portfolios, books)..."));
     } else {
         appendLog(tr("Publishing organisation bundle (business units, portfolios, "
                       "books)..."));

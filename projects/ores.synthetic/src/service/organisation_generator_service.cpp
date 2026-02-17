@@ -26,6 +26,7 @@
 #include <array>
 #include <iomanip>
 #include <sstream>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "ores.utility/string/short_code_generator.hpp"
@@ -759,6 +760,14 @@ void generate_books(
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto root_party_id = result.parties[0].id;
 
+    // Build lookup for O(1) parent portfolio access.
+    std::unordered_map<boost::uuids::uuid, const refdata::domain::portfolio*>
+        portfolio_by_id;
+    portfolio_by_id.reserve(result.portfolios.size());
+    for (const auto& p : result.portfolios) {
+        portfolio_by_id[p.id] = &p;
+    }
+
     int book_seq = 0;
     for (const auto& portfolio : result.portfolios) {
         if (portfolio.is_virtual != 0)
@@ -791,8 +800,10 @@ void generate_books(
 
             // Derive cost centre from parent portfolio's region.
             std::string cc_region = "GEN";
-            for (const auto& parent_p : result.portfolios) {
-                if (parent_p.id == portfolio.parent_portfolio_id) {
+            if (portfolio.parent_portfolio_id) {
+                auto it = portfolio_by_id.find(*portfolio.parent_portfolio_id);
+                if (it != portfolio_by_id.end()) {
+                    const auto& parent_p = *it->second;
                     for (const auto& r : data::region_names) {
                         if (parent_p.name.find(
                             std::string(r)) != std::string::npos) {
@@ -805,7 +816,6 @@ void generate_books(
                             break;
                         }
                     }
-                    break;
                 }
             }
             bk.cost_center = "CC-" + cc_region;

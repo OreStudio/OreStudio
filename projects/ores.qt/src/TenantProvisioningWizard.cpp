@@ -416,7 +416,7 @@ void BundleInstallPage::startPublish() {
 
     watcher->setFuture(future);
 
-    appendLog(tr("Publishing catalogue '%1' (mode: upsert, atomic: true)...")
+    appendLog(tr("Publishing catalogue '%1'...")
         .arg(wizard_->selectedBundleName()));
 }
 
@@ -638,10 +638,10 @@ void CounterpartySetupPage::setupUI() {
     infoLabel->setText(
         tr("Counterparties represent the external entities your organisation "
            "trades with or has business relationships with.\n\n"
-           "Bulk counterparty import from external sources (GLEIF LEI "
-           "registry, CSV/Excel files, external APIs) is planned for a "
-           "future release.\n\n"
-           "You can add counterparties manually from the Counterparties "
+           "Counterparties will be imported automatically from the GLEIF LEI "
+           "registry in the next step, based on the party hierarchy you "
+           "selected.\n\n"
+           "You can also add counterparties manually from the Counterparties "
            "window after completing this wizard. Click Next to continue."));
     layout->addWidget(infoLabel);
 

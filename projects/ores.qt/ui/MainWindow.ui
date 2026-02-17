@@ -206,6 +206,9 @@
    <addaction name="ActionBusinessCentres"/>
    <addaction name="ActionParties"/>
    <addaction name="ActionCounterparties"/>
+   <addaction name="ActionBusinessUnits"/>
+   <addaction name="ActionPortfolios"/>
+   <addaction name="ActionBooks"/>
    <addaction name="ActionAccounts"/>
    <addaction name="ActionTenants"/>
    <addaction name="ActionFeatureFlags"/>

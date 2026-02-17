@@ -34,6 +34,7 @@
  *   - unaccent: Accent-insensitive text search for normalised name generation
  *
  * OPTIONAL EXTENSIONS:
+ *   - pgtap: Unit testing framework for pgTAP SQL tests (recommended)
  *   - timescaledb: Time-series database for session analytics (recommended)
  *     If not available, sessions table will use regular PostgreSQL tables.
  *
@@ -76,6 +77,26 @@ create extension if not exists btree_gist;
 create extension if not exists unaccent;
 \echo 'Installed: unaccent'
 
+-- pgTAP: Unit testing framework (OPTIONAL)
+-- Provides functions for writing SQL-level unit tests (plan, is, ok, etc.)
+-- If not available, pgTAP SQL tests cannot be run.
+do $$
+declare
+    pgtap_available boolean;
+begin
+    select exists (
+        select 1 from pg_available_extensions where name = 'pgtap'
+    ) into pgtap_available;
+
+    if pgtap_available then
+        create extension if not exists pgtap;
+        raise notice 'Installed: pgtap';
+    else
+        raise notice 'pgTAP not available - SQL unit tests will not be runnable';
+        raise notice '(Install with: apt install postgresql-NN-pgtap)';
+    end if;
+end $$;
+
 -- TimescaleDB: Time-series database extension (OPTIONAL)
 -- Provides hypertables, compression, continuous aggregates, and retention policies
 -- If not available, sessions will use regular tables instead.
@@ -106,7 +127,7 @@ end $$;
 -- Show what was installed
 \echo 'Installed extensions:'
 select extname, extversion from pg_extension
-where extname in ('btree_gist', 'unaccent', 'timescaledb')
+where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb')
 order by extname;
 
 \echo ''

@@ -22,10 +22,13 @@
 
 #include <QWizard>
 #include <QWizardPage>
+#include <QComboBox>
 #include <QLabel>
 #include <QProgressBar>
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QCheckBox>
 #include <QTextEdit>
-#include <QTableView>
 #include <QPushButton>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -67,10 +70,16 @@ public:
         Page_Welcome,
         Page_BundleSelection,
         Page_BundleInstall,
+        Page_DataSourceSelection,
         Page_PartySetup,
         Page_CounterpartySetup,
         Page_OrganisationSetup,
         Page_Summary
+    };
+
+    enum class DataSourceMode {
+        gleif,
+        synthetic
     };
 
     explicit TenantProvisioningWizard(
@@ -96,6 +105,27 @@ public:
     bool organisationPublished() const { return organisationPublished_; }
     void setOrganisationPublished(bool v) { organisationPublished_ = v; }
 
+    DataSourceMode dataSourceMode() const { return dataSourceMode_; }
+    void setDataSourceMode(DataSourceMode m) { dataSourceMode_ = m; }
+
+    // Synthetic generation options (set by DataSourceSelectionPage)
+    QString syntheticCountry() const { return syntheticCountry_; }
+    void setSyntheticCountry(const QString& c) { syntheticCountry_ = c; }
+    int syntheticPartyCount() const { return syntheticPartyCount_; }
+    void setSyntheticPartyCount(int c) { syntheticPartyCount_ = c; }
+    int syntheticCounterpartyCount() const { return syntheticCounterpartyCount_; }
+    void setSyntheticCounterpartyCount(int c) { syntheticCounterpartyCount_ = c; }
+    int syntheticPortfolioLeafCount() const { return syntheticPortfolioLeafCount_; }
+    void setSyntheticPortfolioLeafCount(int c) { syntheticPortfolioLeafCount_ = c; }
+    int syntheticBooksPerPortfolio() const { return syntheticBooksPerPortfolio_; }
+    void setSyntheticBooksPerPortfolio(int c) { syntheticBooksPerPortfolio_ = c; }
+    int syntheticBusinessUnitCount() const { return syntheticBusinessUnitCount_; }
+    void setSyntheticBusinessUnitCount(int c) { syntheticBusinessUnitCount_ = c; }
+    bool syntheticGenerateAddresses() const { return syntheticGenerateAddresses_; }
+    void setSyntheticGenerateAddresses(bool v) { syntheticGenerateAddresses_ = v; }
+    bool syntheticGenerateIdentifiers() const { return syntheticGenerateIdentifiers_; }
+    void setSyntheticGenerateIdentifiers(bool v) { syntheticGenerateIdentifiers_ = v; }
+
     /**
      * @brief Clears the system.bootstrap_mode flag for the current tenant.
      */
@@ -113,12 +143,22 @@ private:
     QString rootLei_;
     QString rootLeiName_;
     bool organisationPublished_ = false;
+    DataSourceMode dataSourceMode_ = DataSourceMode::gleif;
+    QString syntheticCountry_ = "GB";
+    int syntheticPartyCount_ = 5;
+    int syntheticCounterpartyCount_ = 10;
+    int syntheticPortfolioLeafCount_ = 8;
+    int syntheticBooksPerPortfolio_ = 2;
+    int syntheticBusinessUnitCount_ = 10;
+    bool syntheticGenerateAddresses_ = true;
+    bool syntheticGenerateIdentifiers_ = true;
 };
 
 // Forward declarations
 class ProvisioningWelcomePage;
 class BundleSelectionPage;
 class BundleInstallPage;
+class DataSourceSelectionPage;
 class PartySetupPage;
 class CounterpartySetupPage;
 class OrganisationSetupPage;
@@ -152,12 +192,13 @@ public:
 
 private:
     void setupUI();
+    void onBundleChanged(int index);
 
     TenantProvisioningWizard* wizard_;
     ClientDatasetBundleModel* bundleModel_;
-    QTableView* bundleTable_;
+    QComboBox* bundleCombo_;
+    QLabel* descriptionLabel_;
     QLabel* statusLabel_;
-    bool bundleSelected_ = false;
 };
 
 /**
@@ -191,6 +232,35 @@ private:
     QTextEdit* logOutput_;
     bool publishComplete_ = false;
     bool publishSuccess_ = false;
+};
+
+/**
+ * @brief Page for choosing between GLEIF registry and synthetic data generation.
+ */
+class DataSourceSelectionPage final : public QWizardPage {
+    Q_OBJECT
+
+public:
+    explicit DataSourceSelectionPage(TenantProvisioningWizard* wizard);
+    bool validatePage() override;
+    int nextId() const override;
+
+private:
+    void setupUI();
+    void onModeChanged();
+
+    TenantProvisioningWizard* wizard_;
+    QRadioButton* gleifRadio_;
+    QRadioButton* syntheticRadio_;
+    QWidget* syntheticOptions_;
+    QComboBox* countryCombo_;
+    QSpinBox* partyCountSpin_;
+    QSpinBox* counterpartyCountSpin_;
+    QSpinBox* portfolioLeafCountSpin_;
+    QSpinBox* booksPerPortfolioSpin_;
+    QSpinBox* businessUnitCountSpin_;
+    QCheckBox* generateAddressesCheck_;
+    QCheckBox* generateIdentifiersCheck_;
 };
 
 /**
@@ -253,6 +323,8 @@ public:
 
 private:
     void startPublish();
+    void startBundlePublish();
+    void startSyntheticGeneration();
     void appendLog(const QString& message);
 
     TenantProvisioningWizard* wizard_;

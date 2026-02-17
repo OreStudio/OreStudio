@@ -36,6 +36,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.comms.lib
     ores.comms.shell.lib
     ores.dq.lib
+    ores.synthetic.lib
     ores.assets.lib
     ores.iam.lib
     ores.connections.lib

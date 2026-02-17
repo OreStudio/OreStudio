@@ -54,7 +54,8 @@ target_link_libraries(${lib_target_name}
         ores.database.lib  # Still required for database access
         ores.utility.lib
         ores.geo.lib
-        ores.dq.lib)
+        ores.dq.lib
+        ores.synthetic.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

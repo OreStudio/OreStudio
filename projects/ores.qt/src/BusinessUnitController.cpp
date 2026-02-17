@@ -75,7 +75,7 @@ void BusinessUnitController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Business Units");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::PeopleTeam, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void BusinessUnitController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Business Unit");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::PeopleTeam, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void BusinessUnitController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Business Unit: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Building, IconUtils::DefaultIconColor));
+        Icon::PeopleTeam, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

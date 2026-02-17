@@ -133,7 +133,7 @@ CountryMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(countryModel_.get());
     countryTableView_->setModel(proxyModel_);
     countryTableView_->setSortingEnabled(true);
-    countryTableView_->sortByColumn(ClientCountryModel::Name, Qt::AscendingOrder);
+    countryTableView_->sortByColumn(ClientCountryModel::Alpha2Code, Qt::AscendingOrder);
 
     using cs = column_style;
     countryTableView_->setItemDelegate(new EntityItemDelegate({
@@ -150,6 +150,9 @@ CountryMdiWindow(ClientManager* clientManager,
     QHeaderView* horizontalHeader(countryTableView_->horizontalHeader());
     countryTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    horizontalHeader->setSectionResizeMode(
+        ClientCountryModel::RecordedAt, QHeaderView::Fixed);
+    horizontalHeader->resizeSection(ClientCountryModel::RecordedAt, 150);
 
     // Setup column visibility (context menu and defaults)
     setupColumnVisibility();

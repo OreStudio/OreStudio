@@ -146,7 +146,7 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
+    tableView_->horizontalHeader()->setStretchLastSection(false);
 
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({

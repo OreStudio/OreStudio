@@ -60,8 +60,8 @@ public:
      * and easier to refactor when columns are added, removed, or reordered.
      */
     enum Column {
-        CurrencyName,
         IsoCode,
+        CurrencyName,
         NumericCode,
         Symbol,
         FractionSymbol,

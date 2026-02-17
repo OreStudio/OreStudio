@@ -177,7 +177,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(currencyModel_.get());
     currencyTableView_->setModel(proxyModel_);
     currencyTableView_->setSortingEnabled(true);
-    currencyTableView_->sortByColumn(0, Qt::AscendingOrder);  // Default sort by name
+    currencyTableView_->sortByColumn(ClientCurrencyModel::IsoCode, Qt::AscendingOrder);
 
     using cs = column_style;
     currencyTableView_->setItemDelegate(new EntityItemDelegate({

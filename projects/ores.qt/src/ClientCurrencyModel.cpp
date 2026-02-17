@@ -143,7 +143,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation == Qt::Horizontal) {
         switch (section) {
         case Column::CurrencyName: return tr("Currency Name");
-        case Column::IsoCode: return tr("ISO Code");
+        case Column::IsoCode: return tr("Code");
         case Column::Version: return tr("Version");
         case Column::NumericCode: return tr("Numeric Code");
         case Column::Symbol: return tr("Symbol");

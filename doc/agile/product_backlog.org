@@ -67,6 +67,98 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Restore list windows after login                                   :code:
+
+After login, reopen all entity list windows that were open when the user last
+closed the application. Save the set of open list windows and their geometry in
+=QSettings= on close, then call =showListWindow()= on the corresponding
+controllers after =onLoginSuccess()=.
+
+This is the simplest and highest-value phase of session restore: list windows
+need no entity-specific data, just a controller type identifier. The existing
+=showListWindow()= API handles everything.
+
+Files to modify:
+
+- =MainWindow.hpp/cpp= - add =saveWindowSession()= / =restoreWindowSession()=;
+  save in =closeEvent()=, restore at end of =onLoginSuccess()=
+- =EntityController.hpp/cpp= - add virtual method to enumerate open windows as
+  serializable records (controller type + window key + geometry)
+
+Also cover the 5 special non-controller windows (event viewer, shell, data
+librarian, telemetry viewer, connection browser).
+
+Acceptance criteria:
+
+- Open several list windows, close the app, reopen and log in: same windows
+  reappear
+- Window geometry (size, position within MDI area) is restored
+- Special non-controller windows are also restored
+- No windows open if settings are empty (first launch)
+
+*** Restore detail and history windows after login                     :code:
+
+Extend session restore to reopen detail and history windows for specific
+entities. This is significantly more complex than list-only restore because
+detail/history windows receive fully-hydrated domain objects, but on restore we
+only have an identifier string.
+
+Each controller needs a new async path:
+
+- =restoreDetailWindow(identifier)= - fetch entity by code/UUID from server,
+  then call =showDetailWindow(entity)=
+- =restoreHistoryWindow(identifier)= - fetch entity, then call
+  =showHistoryWindow(entity)=
+
+For text-PK entities (currencies, countries, business centres, etc.), the
+identifier is the code string. For UUID-PK entities (parties, counterparties,
+books, portfolios, etc.), the identifier is the UUID string.
+
+Files to modify:
+
+- =EntityController.hpp/cpp= - add virtual =restoreWindowFromSession(type,
+  identifier)=
+- All ~28 =*Controller.cpp= files - implement the async fetch + show path
+- =MainWindow.cpp= - extend restore logic to handle detail/history window types
+
+Depends on: "Restore list windows after login"
+
+Acceptance criteria:
+
+- Detail and history windows for previously-viewed entities are restored
+- If an entity no longer exists on the server, the window is silently skipped
+- Version windows (read-only historical versions) are also restored
+
+*** Restore detached window state after login                          :code:
+
+Extend session restore to preserve whether windows were detached (floating) or
+attached to the MDI area. Save the detach state and screen-absolute geometry for
+detached windows. On restore, recreate detached windows as floating =Qt::Window=
+instances at their saved screen positions.
+
+Also handle edge cases:
+
+- Saved geometry references a monitor that no longer exists: fall back to
+  attaching the window to the MDI area
+- Per-user session storage using =session/<username>/windows= QSettings key, so
+  different users get their own workspace layout
+
+Files to modify:
+
+- =MainWindow.cpp= - extend save/restore to include detach state and absolute
+  geometry
+- =DetachableMdiSubWindow.hpp/cpp= - add =isDetached()= accessor if not present;
+  add =restoreDetachedState()= method
+
+Depends on: "Restore detail and history windows after login"
+
+Acceptance criteria:
+
+- Detached windows reappear as floating windows at their saved screen positions
+- Attached windows reappear inside the MDI area at their saved positions
+- Invalid screen geometry gracefully falls back to MDI-attached
+- Different usernames get independent session layouts
+
 *** Methodology screen review                                          :code:
 
 - make name column bigger.

@@ -938,11 +938,11 @@ void ImageCache::onAllAvailableImagesLoaded() {
 
 std::string ImageCache::getNoFlagImageId() const {
     for (const auto& img : available_images_) {
-        if (img.key == "no-flag") {
+        if (img.key == "xx") {
             return img.image_id;
         }
     }
-    BOOST_LOG_SEV(lg(), warn) << "No 'no-flag' image found in available images.";
+    BOOST_LOG_SEV(lg(), warn) << "No 'xx' placeholder flag image found in available images.";
     return {};
 }
 

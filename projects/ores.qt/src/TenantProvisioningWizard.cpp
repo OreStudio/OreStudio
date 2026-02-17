@@ -304,6 +304,11 @@ BundleInstallPage::BundleInstallPage(TenantProvisioningWizard* wizard)
 
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
     logOutput_ = new QTextEdit(this);
@@ -323,7 +328,10 @@ void BundleInstallPage::initializePage() {
     statusLabel_->setText(tr("Publishing catalogue '%1'...").arg(
         wizard_->selectedBundleName()));
     progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet("");
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
 
     startPublish();
 }
@@ -655,6 +663,11 @@ OrganisationSetupPage::OrganisationSetupPage(
 
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
     logOutput_ = new QTextEdit(this);
@@ -672,7 +685,10 @@ void OrganisationSetupPage::initializePage() {
     publishSuccess_ = false;
     logOutput_->clear();
     progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet("");
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
 
     const bool isSynthetic = wizard_->dataSourceMode() ==
         TenantProvisioningWizard::DataSourceMode::synthetic;

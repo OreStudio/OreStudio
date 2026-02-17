@@ -23,16 +23,16 @@ TEMPORAL_006 ores_dq_change_reason_categories_tbl
 TEMPORAL_006 ores_dq_change_reasons_tbl
 
 # =============================================================================
-# Lightweight junction tables - intentionally omit version/modified_by
+# Lightweight junction tables - intentionally omit version
 # These are simple relationship tables without full audit trail
 # =============================================================================
 TEMPORAL_004 ores_dq_dataset_dependencies_tbl
-TEMPORAL_005 ores_dq_dataset_dependencies_tbl
 
 # =============================================================================
 # System-managed tables - no user audit trail needed
 # =============================================================================
 TEMPORAL_004 ores_iam_permissions_tbl
+TEMPORAL_005 ores_iam_permissions_tbl
 
 # =============================================================================
 # Artefact/staging tables - tenant_id not in PK by design

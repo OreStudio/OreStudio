@@ -193,7 +193,7 @@ begin
 
     insert into ores_dq_dataset_dependencies_tbl (
         tenant_id, dataset_code, dependency_code, role,
-        recorded_by, change_reason_code, change_commentary,
+        modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (

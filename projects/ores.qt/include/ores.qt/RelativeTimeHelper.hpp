@@ -63,6 +63,17 @@ public:
      * @return Relative time string (e.g., "5 minutes ago", "yesterday").
      */
     static QString format(const std::chrono::system_clock::time_point& recorded_at);
+
+    /**
+     * @brief Always formats as relative time, regardless of global mode.
+     */
+    static QString format_relative(const QString& recorded_at);
+
+    /**
+     * @brief Always formats as relative time, regardless of global mode.
+     */
+    static QString format_relative(
+        const std::chrono::system_clock::time_point& recorded_at);
 };
 
 }

@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<business_unit>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Party" << "Unit Name" << "Code" << "Business Centre" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Party" << "Unit Name" << "Code" << "Business Centre" << "Status" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& bu : v) {
-        table << boost::uuids::to_string(bu.party_id) << bu.unit_name << bu.unit_code << bu.business_centre_code << bu.modified_by << bu.version << fort::endr;
+        table << boost::uuids::to_string(bu.party_id) << bu.unit_name << bu.unit_code << bu.business_centre_code << bu.status << bu.modified_by << bu.version << fort::endr;
     }
     return table.to_string();
 }

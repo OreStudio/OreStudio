@@ -677,6 +677,7 @@ void CountryMdiWindow::restoreSettings() {
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to restore header state, applying defaults";
+            header->setSectionHidden(ClientCountryModel::Alpha3Code, true);
             header->setSectionHidden(ClientCountryModel::NumericCode, true);
             header->setSectionHidden(ClientCountryModel::OfficialName, true);
             header->setSectionHidden(ClientCountryModel::Version, true);
@@ -687,7 +688,7 @@ void CountryMdiWindow::restoreSettings() {
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
 
         // Hide these columns by default (still visible in detail view):
-        // NumericCode, OfficialName, Version, ModifiedBy, RecordedAt
+        header->setSectionHidden(ClientCountryModel::Alpha3Code, true);
         header->setSectionHidden(ClientCountryModel::NumericCode, true);
         header->setSectionHidden(ClientCountryModel::OfficialName, true);
         header->setSectionHidden(ClientCountryModel::Version, true);

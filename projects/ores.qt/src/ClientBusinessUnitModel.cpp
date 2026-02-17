@@ -84,6 +84,8 @@ QVariant ClientBusinessUnitModel::data(
             return QString::fromStdString(business_unit.unit_name);
         case BusinessCentreCode:
             return QString::fromStdString(business_unit.business_centre_code);
+        case Status:
+            return QString::fromStdString(business_unit.status);
         case Version:
             return business_unit.version;
         case ModifiedBy:
@@ -114,6 +116,8 @@ QVariant ClientBusinessUnitModel::headerData(
         return tr("Name");
     case BusinessCentreCode:
         return tr("Business Centre");
+    case Status:
+        return tr("Status");
     case Version:
         return tr("Version");
     case ModifiedBy:

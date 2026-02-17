@@ -62,7 +62,6 @@ public:
     enum Column {
         CurrencyName,
         IsoCode,
-        Version,
         NumericCode,
         Symbol,
         FractionSymbol,
@@ -71,6 +70,7 @@ public:
         RoundingPrecision,
         Format,
         CurrencyType,
+        Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount  // Must be last - represents total number of columns

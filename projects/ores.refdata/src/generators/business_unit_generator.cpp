@@ -45,6 +45,7 @@ domain::business_unit generate_synthetic_business_unit(
     r.parent_business_unit_id = std::nullopt;
     r.unit_code = std::string("DESK") + std::to_string(idx);
     r.business_centre_code = std::string("GBLO");
+    r.status = "Active";
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

@@ -39,7 +39,7 @@
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -241,8 +241,7 @@ void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     ui_->officialNameEdit->setText(QString::fromStdString(country.official_name));
     ui_->versionEdit->setText(QString::number(country.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(country.modified_by));
-    ui_->recordedAtEdit->setText(QString::fromStdString(
-        platform::time::datetime::format_time_point(country.recorded_at)));
+    ui_->recordedAtEdit->setText(relative_time_helper::format(country.recorded_at));
     ui_->changeReasonEdit->setText(QString::fromStdString(country.change_reason_code));
     ui_->commentaryEdit->setText(QString::fromStdString(country.change_commentary));
 

@@ -29,6 +29,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/BadgeColors.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
@@ -153,22 +154,27 @@ void PartyMdiWindow::setupTable() {
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
     using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
+    auto* delegate = new EntityItemDelegate({
         cs::mono_bold_left, // BusinessCenterCode (flag icon inline via DecorationRole)
         cs::text_left,     // ShortCode
         cs::text_left,     // FullName
         cs::text_left,     // TransliteratedName
         cs::text_left,     // PartyCategory
         cs::text_left,     // PartyType
-        cs::text_left,     // Status
+        cs::badge_centered, // Status
         cs::mono_center,   // Version
         cs::text_left,     // ModifiedBy
         cs::mono_left      // RecordedAt
-    }, tableView_));
+    }, tableView_);
+    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    tableView_->setItemDelegate(delegate);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
     tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    tableView_->horizontalHeader()->setSectionResizeMode(
+        ClientPartyModel::RecordedAt, QHeaderView::Fixed);
+    tableView_->horizontalHeader()->resizeSection(ClientPartyModel::RecordedAt, 150);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

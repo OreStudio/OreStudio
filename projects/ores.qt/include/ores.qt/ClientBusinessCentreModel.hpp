@@ -58,10 +58,10 @@ public:
      */
     enum Column {
         Code,
-        Source,
-        Description,
-        CodingScheme,
         CountryAlpha2,
+        Description,
+        Source,
+        CodingScheme,
         Version,
         ModifiedBy,
         RecordedAt,

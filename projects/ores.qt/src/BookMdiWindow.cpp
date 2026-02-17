@@ -28,6 +28,8 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/BadgeColors.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
@@ -143,6 +145,19 @@ void BookMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate({
+        cs::text_left,      // Name
+        cs::mono_center,    // LedgerCcy
+        cs::badge_centered, // BookStatus
+        cs::text_left,      // CostCenter
+        cs::mono_center,    // IsTradingBook
+        cs::mono_center,    // Version
+        cs::text_left,      // ModifiedBy
+        cs::mono_left       // RecordedAt
+    }, tableView_);
+    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    tableView_->setItemDelegate(delegate);
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
@@ -156,6 +171,8 @@ void BookMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientBookModel::Version, 80);
     tableView_->setColumnWidth(ClientBookModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientBookModel::RecordedAt, 150);
+    tableView_->horizontalHeader()->setSectionResizeMode(
+        ClientBookModel::RecordedAt, QHeaderView::Fixed);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

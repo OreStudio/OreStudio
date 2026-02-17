@@ -86,6 +86,8 @@ QVariant ClientPortfolioModel::data(
             return QString::fromStdString(portfolio.aggregation_ccy);
         case IsVirtual:
             return portfolio.is_virtual;
+        case Status:
+            return QString::fromStdString(portfolio.status);
         case Version:
             return portfolio.version;
         case ModifiedBy:
@@ -118,6 +120,8 @@ QVariant ClientPortfolioModel::headerData(
         return tr("Agg. Currency");
     case IsVirtual:
         return tr("Virtual");
+    case Status:
+        return tr("Status");
     case Version:
         return tr("Version");
     case ModifiedBy:

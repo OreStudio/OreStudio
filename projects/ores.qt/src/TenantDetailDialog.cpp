@@ -163,6 +163,7 @@ void TenantDetailDialog::updateUiFromTenant() {
 
     ui_->versionEdit->setText(QString::number(tenant_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(tenant_.modified_by));
+    ui_->changeReasonEdit->setText(QString::fromStdString(tenant_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(tenant_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(tenant_.change_commentary));
 }

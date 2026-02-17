@@ -150,11 +150,11 @@ void BusinessCentreMdiWindow::setupTable() {
 
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::mono_bold_left,   // Code (flag icon inline via DecorationRole)
-        cs::text_left,        // Source
+        cs::mono_bold_left,   // Code
+        cs::mono_bold_center, // CountryAlpha2 (flag icon inline via DecorationRole)
         cs::text_left,        // Description
+        cs::text_left,        // Source
         cs::mono_left,        // CodingScheme
-        cs::mono_bold_center, // CountryAlpha2
         cs::mono_center,      // Version
         cs::text_left,        // ModifiedBy
         cs::mono_left         // RecordedAt
@@ -163,6 +163,9 @@ void BusinessCentreMdiWindow::setupTable() {
     QHeaderView* horizontalHeader(tableView_->horizontalHeader());
     tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    horizontalHeader->setSectionResizeMode(
+        ClientBusinessCentreModel::RecordedAt, QHeaderView::Fixed);
+    horizontalHeader->resizeSection(ClientBusinessCentreModel::RecordedAt, 150);
 
     // Setup column visibility with context menu
     setupColumnVisibility();
@@ -520,6 +523,8 @@ void BusinessCentreMdiWindow::restoreSettings() {
     } else {
         // Apply default column visibility
         BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
+        header->setSectionHidden(ClientBusinessCentreModel::CodingScheme, true);
+        header->setSectionHidden(ClientBusinessCentreModel::Source, true);
     }
 
     // Restore window size if saved

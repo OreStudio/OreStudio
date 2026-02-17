@@ -25,6 +25,7 @@
 #include "ui_BusinessUnitDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
@@ -67,30 +68,64 @@ void BusinessUnitDetailDialog::setupConnections() {
             &BusinessUnitDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &BusinessUnitDetailDialog::onFieldChanged);
-    connect(ui_->businessCentreEdit, &QLineEdit::textChanged, this,
+    connect(ui_->businessCentreCombo, &QComboBox::currentTextChanged, this,
+            &BusinessUnitDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &BusinessUnitDetailDialog::onFieldChanged);
 }
 
 void BusinessUnitDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateBusinessCentres();
 }
 
 void BusinessUnitDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this,
-                &BusinessUnitDetailDialog::updateFlagIcons);
-        connect(ui_->businessCentreEdit, &QLineEdit::textChanged, this,
-                &BusinessUnitDetailDialog::updateFlagIcons);
-        updateFlagIcons();
+        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
+            set_combo_flag_icons(ui_->businessCentreCombo,
+                [this](const std::string& code) {
+                    return imageCache_->getBusinessCentreFlagIcon(code);
+                });
+        });
     }
 }
 
-void BusinessUnitDetailDialog::updateFlagIcons() {
-    if (!imageCache_) return;
-    const auto bc = ui_->businessCentreEdit->text().trimmed().toStdString();
-    QIcon icon = imageCache_->getBusinessCentreFlagIcon(bc);
-    set_line_edit_flag_icon(ui_->businessCentreEdit, icon, businessCentreFlagAction_);
+void BusinessUnitDetailDialog::populateBusinessCentres() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<BusinessUnitDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> lookup_result {
+        return fetch_party_lookups(cm);
+    };
+
+    auto* watcher = new QFutureWatcher<lookup_result>(self);
+    connect(watcher, &QFutureWatcher<lookup_result>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->ui_->businessCentreCombo->clear();
+        for (const auto& code : result.business_centre_codes) {
+            self->ui_->businessCentreCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        if (self->imageCache_) {
+            set_combo_flag_icons(self->ui_->businessCentreCombo,
+                [&self](const std::string& code) {
+                    return self->imageCache_->getBusinessCentreFlagIcon(code);
+                });
+        }
+
+        self->updateUiFromUnit();
+    });
+
+    QFuture<lookup_result> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void BusinessUnitDetailDialog::setUsername(const std::string& username) {
@@ -120,7 +155,8 @@ void BusinessUnitDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->businessCentreEdit->setReadOnly(readOnly);
+    ui_->businessCentreCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -128,10 +164,12 @@ void BusinessUnitDetailDialog::setReadOnly(bool readOnly) {
 void BusinessUnitDetailDialog::updateUiFromUnit() {
     ui_->codeEdit->setText(QString::fromStdString(business_unit_.unit_code));
     ui_->nameEdit->setText(QString::fromStdString(business_unit_.unit_name));
-    ui_->businessCentreEdit->setText(QString::fromStdString(business_unit_.business_centre_code));
+    ui_->businessCentreCombo->setCurrentText(QString::fromStdString(business_unit_.business_centre_code));
+    ui_->statusCombo->setCurrentText(QString::fromStdString(business_unit_.status));
 
     ui_->versionEdit->setText(QString::number(business_unit_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(business_unit_.modified_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(business_unit_.modified_by));
+    ui_->changeReasonEdit->setText(QString::fromStdString(business_unit_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(business_unit_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(business_unit_.change_commentary));
 }
@@ -141,7 +179,8 @@ void BusinessUnitDetailDialog::updateUnitFromUi() {
         business_unit_.unit_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     business_unit_.unit_name = ui_->nameEdit->text().trimmed().toStdString();
-    business_unit_.business_centre_code = ui_->businessCentreEdit->text().trimmed().toStdString();
+    business_unit_.business_centre_code = ui_->businessCentreCombo->currentText().trimmed().toStdString();
+    business_unit_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     business_unit_.modified_by = username_;
     business_unit_.performed_by = username_;
 }

@@ -58,6 +58,7 @@ public:
         UnitCode,
         UnitName,
         BusinessCentreCode,
+        Status,
         Version,
         ModifiedBy,
         RecordedAt,

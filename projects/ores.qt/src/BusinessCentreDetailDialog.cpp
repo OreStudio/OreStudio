@@ -140,6 +140,7 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
 
     ui_->versionEdit->setText(QString::number(business_centre_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(business_centre_.modified_by));
+    ui_->changeReasonEdit->setText(QString::fromStdString(business_centre_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(business_centre_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(business_centre_.change_commentary));
 }

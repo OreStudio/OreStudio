@@ -59,6 +59,7 @@ public:
         PurposeType,
         AggregationCcy,
         IsVirtual,
+        Status,
         Version,
         ModifiedBy,
         RecordedAt,

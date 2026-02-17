@@ -49,7 +49,7 @@
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -303,8 +303,7 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
     ui_->versionEdit->setText(QString::number(currency.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(currency.modified_by));
-    ui_->recordedAtEdit->setText(QString::fromStdString(
-        platform::time::datetime::format_time_point(currency.recorded_at)));
+    ui_->recordedAtEdit->setText(relative_time_helper::format(currency.recorded_at));
     ui_->changeReasonEdit->setText(QString::fromStdString(currency.change_reason_code));
     ui_->commentaryEdit->setText(QString::fromStdString(currency.change_commentary));
 

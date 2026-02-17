@@ -47,6 +47,8 @@ void serialize_country(std::vector<std::byte>& buffer, const domain::country& co
     if (country.image_id) {
         writer::write_uuid(buffer, *country.image_id);
     }
+    writer::write_string(buffer, country.modified_by);
+    writer::write_string(buffer, country.performed_by);
     writer::write_string(buffer, country.change_reason_code);
     writer::write_string(buffer, country.change_commentary);
     writer::write_string(buffer,
@@ -90,6 +92,13 @@ deserialize_country(std::span<const std::byte>& data) {
         country.image_id = *image_id;
     }
 
+    auto modified_by = reader::read_string(data);
+    if (!modified_by) return std::unexpected(modified_by.error());
+    country.modified_by = *modified_by;
+
+    auto performed_by = reader::read_string(data);
+    if (!performed_by) return std::unexpected(performed_by.error());
+    country.performed_by = *performed_by;
 
     auto change_reason_code = reader::read_string(data);
     if (!change_reason_code) return std::unexpected(change_reason_code.error());

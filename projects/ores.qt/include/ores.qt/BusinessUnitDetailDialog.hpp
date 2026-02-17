@@ -20,7 +20,6 @@
 #ifndef ORES_QT_BUSINESS_UNIT_DETAIL_DIALOG_HPP
 #define ORES_QT_BUSINESS_UNIT_DETAIL_DIALOG_HPP
 
-#include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
@@ -80,13 +79,12 @@ private:
     void updateUiFromUnit();
     void updateUnitFromUi();
     void updateSaveButtonState();
-    void updateFlagIcons();
+    void populateBusinessCentres();
     bool validateInput();
 
     Ui::BusinessUnitDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_{nullptr};
-    QAction* businessCentreFlagAction_{nullptr};
     std::string username_;
     refdata::domain::business_unit business_unit_;
     bool createMode_{true};

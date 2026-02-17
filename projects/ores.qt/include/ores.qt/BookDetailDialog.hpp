@@ -20,7 +20,6 @@
 #ifndef ORES_QT_BOOK_DETAIL_DIALOG_HPP
 #define ORES_QT_BOOK_DETAIL_DIALOG_HPP
 
-#include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
@@ -80,13 +79,12 @@ private:
     void updateUiFromBook();
     void updateBookFromUi();
     void updateSaveButtonState();
-    void updateFlagIcons();
+    void populateCurrencyCombo();
     bool validateInput();
 
     Ui::BookDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_{nullptr};
-    QAction* ledgerCcyFlagAction_{nullptr};
     std::string username_;
     refdata::domain::book book_;
     bool createMode_{true};

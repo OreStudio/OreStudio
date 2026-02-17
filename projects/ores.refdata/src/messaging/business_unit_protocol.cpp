@@ -51,6 +51,7 @@ void write_business_unit(std::vector<std::byte>& buffer,
     }
     writer::write_string(buffer, bu.unit_code);
     writer::write_string(buffer, bu.business_centre_code);
+    writer::write_string(buffer, bu.status);
     writer::write_string(buffer, bu.modified_by);
     writer::write_string(buffer, bu.performed_by);
     writer::write_string(buffer, bu.change_reason_code);
@@ -94,6 +95,10 @@ read_business_unit(std::span<const std::byte>& data) {
     auto business_centre_code_result = reader::read_string(data);
     if (!business_centre_code_result) return std::unexpected(business_centre_code_result.error());
     bu.business_centre_code = *business_centre_code_result;
+
+    auto status_result = reader::read_string(data);
+    if (!status_result) return std::unexpected(status_result.error());
+    bu.status = *status_result;
 
     auto modified_by_result = reader::read_string(data);
     if (!modified_by_result) return std::unexpected(modified_by_result.error());

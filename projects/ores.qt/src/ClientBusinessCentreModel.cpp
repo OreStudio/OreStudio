@@ -97,8 +97,8 @@ QVariant ClientBusinessCentreModel::data(
 
     const auto& bc = business_centres_[row];
 
-    // Show flag icon inline in the Code column
-    if (role == Qt::DecorationRole && index.column() == Column::Code) {
+    // Show flag icon inline in the CountryAlpha2 column
+    if (role == Qt::DecorationRole && index.column() == Column::CountryAlpha2) {
         if (imageCache_) {
             if (bc.image_id) {
                 const auto image_id_str = boost::uuids::to_string(*bc.image_id);
@@ -115,8 +115,10 @@ QVariant ClientBusinessCentreModel::data(
             return QString::fromStdString(bc.code);
         case Source:
             return QString::fromStdString(bc.source);
-        case Description:
-            return QString::fromStdString(bc.description);
+        case Description: {
+            const auto text = QString::fromStdString(bc.description);
+            return text.length() > 30 ? text.left(30) + QStringLiteral("...") : text;
+        }
         case CodingScheme:
             return QString::fromStdString(bc.coding_scheme_code);
         case CountryAlpha2:

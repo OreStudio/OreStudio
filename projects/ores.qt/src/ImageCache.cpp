@@ -24,6 +24,8 @@
 #include <sstream>
 #include <rfl/json.hpp>
 #include "ores.platform/time/datetime.hpp"
+#include <QPainter>
+#include <QPixmap>
 #include <QTimer>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
@@ -946,14 +948,26 @@ std::string ImageCache::getNoFlagImageId() const {
 
 QIcon ImageCache::getNoFlagIcon() const {
     std::string no_flag_id = getNoFlagImageId();
-    if (no_flag_id.empty()) {
-        return {};
+    if (!no_flag_id.empty()) {
+        auto it = image_icons_.find(no_flag_id);
+        if (it != image_icons_.end()) {
+            return it->second;
+        }
     }
-    auto it = image_icons_.find(no_flag_id);
-    if (it != image_icons_.end()) {
-        return it->second;
+
+    // Return a locally-generated fallback placeholder when the server
+    // image hasn't loaded yet, avoiding empty icons and log errors.
+    static QIcon fallback;
+    if (fallback.isNull()) {
+        QPixmap px(24, 16);
+        px.fill(QColor(200, 200, 200));
+        QPainter painter(&px);
+        painter.setPen(QColor(160, 160, 160));
+        painter.drawRect(0, 0, 23, 15);
+        painter.end();
+        fallback = QIcon(px);
     }
-    return {};
+    return fallback;
 }
 
 void ImageCache::setCurrencyImage(const std::string& iso_code,

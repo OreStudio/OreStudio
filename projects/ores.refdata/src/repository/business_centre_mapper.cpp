@@ -46,6 +46,7 @@ domain::business_centre business_centre_mapper::map(const business_centre_entity
         r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
     }
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
@@ -75,6 +76,7 @@ business_centre_entity business_centre_mapper::map(const domain::business_centre
         r.image_id = boost::uuids::to_string(*v.image_id);
     }
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers

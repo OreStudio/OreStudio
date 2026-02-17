@@ -28,10 +28,10 @@ std::string convert_to_table(const std::vector<portfolio>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Purpose" << "Currency" << "Virtual" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Name" << "Purpose" << "Currency" << "Virtual" << "Status" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& pf : v) {
-        table << pf.name << pf.purpose_type << pf.aggregation_ccy << pf.is_virtual << pf.modified_by << pf.version << fort::endr;
+        table << pf.name << pf.purpose_type << pf.aggregation_ccy << pf.is_virtual << pf.status << pf.modified_by << pf.version << fort::endr;
     }
     return table.to_string();
 }

@@ -27,6 +27,8 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/BadgeColors.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -152,9 +154,27 @@ void PortfolioMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientPortfolioModel::PurposeType, 120);
     tableView_->setColumnWidth(ClientPortfolioModel::AggregationCcy, 120);
     tableView_->setColumnWidth(ClientPortfolioModel::IsVirtual, 70);
+    tableView_->setColumnWidth(ClientPortfolioModel::Status, 100);
     tableView_->setColumnWidth(ClientPortfolioModel::Version, 80);
     tableView_->setColumnWidth(ClientPortfolioModel::ModifiedBy, 120);
     tableView_->setColumnWidth(ClientPortfolioModel::RecordedAt, 150);
+    tableView_->horizontalHeader()->setSectionResizeMode(
+        ClientPortfolioModel::RecordedAt, QHeaderView::Fixed);
+
+    // Configure badge delegate for Status column
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate({
+        cs::text_left,      // Name
+        cs::text_left,      // PurposeType
+        cs::text_left,      // AggregationCcy
+        cs::mono_center,    // IsVirtual
+        cs::badge_centered, // Status
+        cs::mono_center,    // Version
+        cs::text_left,      // ModifiedBy
+        cs::mono_left       // RecordedAt
+    }, tableView_);
+    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    tableView_->setItemDelegate(delegate);
 
     // Setup column visibility with context menu
     setupColumnVisibility();

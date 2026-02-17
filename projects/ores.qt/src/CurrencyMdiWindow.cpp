@@ -183,7 +183,6 @@ CurrencyMdiWindow(ClientManager* clientManager,
     currencyTableView_->setItemDelegate(new EntityItemDelegate({
         cs::text_left,        // CurrencyName
         cs::mono_bold_left,   // IsoCode (flag icon inline via DecorationRole)
-        cs::mono_center,      // Version
         cs::mono_center,      // NumericCode
         cs::mono_center,      // Symbol
         cs::mono_center,      // FractionSymbol
@@ -192,6 +191,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
         cs::mono_right,       // RoundingPrecision
         cs::text_left,        // Format
         cs::text_left,        // CurrencyType
+        cs::mono_center,      // Version
         cs::text_left,        // ModifiedBy
         cs::mono_left         // RecordedAt
     }, currencyTableView_));
@@ -199,6 +199,9 @@ CurrencyMdiWindow(ClientManager* clientManager,
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
     currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    horizontalHeader->setSectionResizeMode(
+        ClientCurrencyModel::RecordedAt, QHeaderView::Fixed);
+    horizontalHeader->resizeSection(ClientCurrencyModel::RecordedAt, 150);
 
     // Setup column visibility (context menu and defaults)
     setupColumnVisibility();

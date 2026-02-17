@@ -20,7 +20,9 @@
 #ifndef ORES_QT_ENTITY_ITEM_DELEGATE_HPP
 #define ORES_QT_ENTITY_ITEM_DELEGATE_HPP
 
+#include <functional>
 #include <vector>
+#include <QColor>
 #include <QFont>
 #include <QStyledItemDelegate>
 
@@ -37,8 +39,19 @@ enum class column_style {
     mono_bold_left,     ///< Monospace bold, left-aligned.
     mono_right,         ///< Monospace, right-aligned.
     mono_bold_center,   ///< Monospace bold, centered.
-    icon_centered       ///< Centered DecorationRole icon (flag columns).
+    icon_centered,      ///< Centered DecorationRole icon (flag columns).
+    badge_centered      ///< Coloured badge pill, centered.
 };
+
+struct badge_color_pair {
+    QColor background;
+    QColor foreground;
+};
+
+/**
+ * @brief Callback that resolves a display-text value to badge colours.
+ */
+using badge_color_resolver = std::function<badge_color_pair(const QString& value)>;
 
 /**
  * @brief Data-driven item delegate configured by a per-column style vector.
@@ -56,9 +69,12 @@ public:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
         const QModelIndex& index) const override;
 
+    void set_badge_color_resolver(badge_color_resolver resolver);
+
 private:
     std::vector<column_style> styles_;
     QFont monospaceFont_;
+    badge_color_resolver badge_resolver_;
 };
 
 }

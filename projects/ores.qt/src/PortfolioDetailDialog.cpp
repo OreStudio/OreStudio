@@ -25,6 +25,7 @@
 #include "ui_PortfolioDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
@@ -67,30 +68,64 @@ void PortfolioDetailDialog::setupConnections() {
             &PortfolioDetailDialog::onCodeChanged);
     connect(ui_->purposeTypeEdit, &QLineEdit::textChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
-    connect(ui_->aggregationCcyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->aggregationCcyCombo, &QComboBox::currentTextChanged, this,
+            &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
 }
 
 void PortfolioDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateCurrencyCombo();
 }
 
 void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this,
-                &PortfolioDetailDialog::updateFlagIcons);
-        connect(ui_->aggregationCcyEdit, &QLineEdit::textChanged, this,
-                &PortfolioDetailDialog::updateFlagIcons);
-        updateFlagIcons();
+        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
+            set_combo_flag_icons(ui_->aggregationCcyCombo,
+                [this](const std::string& code) {
+                    return imageCache_->getCurrencyFlagIcon(code);
+                });
+        });
     }
 }
 
-void PortfolioDetailDialog::updateFlagIcons() {
-    if (!imageCache_) return;
-    const auto ccy = ui_->aggregationCcyEdit->text().trimmed().toStdString();
-    QIcon icon = imageCache_->getCurrencyFlagIcon(ccy);
-    set_line_edit_flag_icon(ui_->aggregationCcyEdit, icon, aggregationCcyFlagAction_);
+void PortfolioDetailDialog::populateCurrencyCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<PortfolioDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<std::string> {
+        return fetch_currency_codes(cm);
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished,
+            self, [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->ui_->aggregationCcyCombo->clear();
+        for (const auto& code : codes) {
+            self->ui_->aggregationCcyCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        if (self->imageCache_) {
+            set_combo_flag_icons(self->ui_->aggregationCcyCombo,
+                [&self](const std::string& code) {
+                    return self->imageCache_->getCurrencyFlagIcon(code);
+                });
+        }
+
+        self->updateUiFromPortfolio();
+    });
+
+    QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void PortfolioDetailDialog::setUsername(const std::string& username) {
@@ -120,7 +155,8 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
     ui_->purposeTypeEdit->setReadOnly(readOnly);
-    ui_->aggregationCcyEdit->setReadOnly(readOnly);
+    ui_->aggregationCcyCombo->setEnabled(!readOnly);
+    ui_->statusCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -128,10 +164,12 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
 void PortfolioDetailDialog::updateUiFromPortfolio() {
     ui_->nameEdit->setText(QString::fromStdString(portfolio_.name));
     ui_->purposeTypeEdit->setText(QString::fromStdString(portfolio_.purpose_type));
-    ui_->aggregationCcyEdit->setText(QString::fromStdString(portfolio_.aggregation_ccy));
+    ui_->aggregationCcyCombo->setCurrentText(QString::fromStdString(portfolio_.aggregation_ccy));
+    ui_->statusCombo->setCurrentText(QString::fromStdString(portfolio_.status));
 
     ui_->versionEdit->setText(QString::number(portfolio_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(portfolio_.modified_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(portfolio_.modified_by));
+    ui_->changeReasonEdit->setText(QString::fromStdString(portfolio_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(portfolio_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(portfolio_.change_commentary));
 }
@@ -141,7 +179,8 @@ void PortfolioDetailDialog::updatePortfolioFromUi() {
         portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
     portfolio_.purpose_type = ui_->purposeTypeEdit->text().trimmed().toStdString();
-    portfolio_.aggregation_ccy = ui_->aggregationCcyEdit->text().trimmed().toStdString();
+    portfolio_.aggregation_ccy = ui_->aggregationCcyCombo->currentText().trimmed().toStdString();
+    portfolio_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     portfolio_.modified_by = username_;
     portfolio_.performed_by = username_;
 }

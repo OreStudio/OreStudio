@@ -30,6 +30,9 @@
 #include "ores.refdata/messaging/registrar.hpp"
 #include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.refdata/eventing/country_changed_event.hpp"
+#include "ores.refdata/eventing/party_changed_event.hpp"
+#include "ores.refdata/eventing/party_identifier_changed_event.hpp"
+#include "ores.refdata/eventing/party_contact_information_changed_event.hpp"
 #include "ores.refdata/eventing/counterparty_changed_event.hpp"
 #include "ores.refdata/eventing/counterparty_identifier_changed_event.hpp"
 #include "ores.refdata/eventing/counterparty_contact_information_changed_event.hpp"
@@ -189,6 +192,18 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         event_source, "ores.refdata.country", "ores_countries",
         *channel_registry, "Country data modified");
     eventing::service::registrar::register_mapping<
+        refdata::eventing::party_changed_event>(
+        event_source, "ores.refdata.party", "ores_parties",
+        *channel_registry, "Party data modified");
+    eventing::service::registrar::register_mapping<
+        refdata::eventing::party_identifier_changed_event>(
+        event_source, "ores.refdata.party_identifier", "ores_party_identifiers",
+        *channel_registry, "Party identifier data modified");
+    eventing::service::registrar::register_mapping<
+        refdata::eventing::party_contact_information_changed_event>(
+        event_source, "ores.refdata.party_contact_information", "ores_party_contact_informations",
+        *channel_registry, "Party contact information data modified");
+    eventing::service::registrar::register_mapping<
         refdata::eventing::counterparty_changed_event>(
         event_source, "ores.refdata.counterparty", "ores_counterparties",
         *channel_registry, "Counterparty data modified");
@@ -295,6 +310,30 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 refdata::eventing::country_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.alpha2_codes, e.tenant_id);
+        });
+
+    auto party_sub = event_bus.subscribe<refdata::eventing::party_changed_event>(
+        [&subscription_mgr](const refdata::eventing::party_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                refdata::eventing::party_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
+        });
+
+    auto party_identifier_sub = event_bus.subscribe<refdata::eventing::party_identifier_changed_event>(
+        [&subscription_mgr](const refdata::eventing::party_identifier_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                refdata::eventing::party_identifier_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
+        });
+
+    auto party_contact_sub = event_bus.subscribe<refdata::eventing::party_contact_information_changed_event>(
+        [&subscription_mgr](const refdata::eventing::party_contact_information_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                refdata::eventing::party_contact_information_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
         });
 
     auto counterparty_sub = event_bus.subscribe<refdata::eventing::counterparty_changed_event>(

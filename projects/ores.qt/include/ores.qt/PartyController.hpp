@@ -20,6 +20,7 @@
 #ifndef ORES_QT_PARTY_CONTROLLER_HPP
 #define ORES_QT_PARTY_CONTROLLER_HPP
 
+#include <QDateTime>
 #include <QMdiArea>
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
@@ -64,6 +65,8 @@ public:
         const QString& username,
         QObject* parent = nullptr);
 
+    ~PartyController() override;
+
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
@@ -82,6 +85,8 @@ private slots:
     void onRevertVersion(const refdata::domain::party& party);
     void onOpenVersion(const refdata::domain::party& party,
                        int versionNumber);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     void showAddWindow();

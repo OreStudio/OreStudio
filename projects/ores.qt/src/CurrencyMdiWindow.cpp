@@ -198,11 +198,10 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     initializeTableSettings(currencyTableView_, currencyModel_.get(),
         "CurrencyListWindow",
-        {ClientCurrencyModel::NumericCode, ClientCurrencyModel::Symbol,
-         ClientCurrencyModel::FractionSymbol, ClientCurrencyModel::FractionsPerUnit,
+        {ClientCurrencyModel::FractionSymbol, ClientCurrencyModel::FractionsPerUnit,
          ClientCurrencyModel::RoundingType, ClientCurrencyModel::RoundingPrecision,
          ClientCurrencyModel::Format, ClientCurrencyModel::CurrencyType},
-        {1000, 600}, 1);
+        {1000, 600}, 2);
 
     // Connect signals
     connect(currencyModel_.get(), &ClientCurrencyModel::dataLoaded,

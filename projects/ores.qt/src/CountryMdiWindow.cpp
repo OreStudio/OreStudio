@@ -150,9 +150,8 @@ CountryMdiWindow(ClientManager* clientManager,
     initializeTableSettings(countryTableView_, countryModel_.get(),
         "CountryListWindow",
         {ClientCountryModel::Alpha3Code, ClientCountryModel::NumericCode,
-         ClientCountryModel::OfficialName, ClientCountryModel::Version,
-         ClientCountryModel::ModifiedBy, ClientCountryModel::RecordedAt},
-        {900, 600}, 1);
+         ClientCountryModel::OfficialName},
+        {900, 600}, 2);
 
     // Connect signals
     connect(countryModel_.get(), &ClientCountryModel::dataLoaded,

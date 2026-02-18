@@ -105,12 +105,12 @@ QVariant ClientBusinessUnitModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case BusinessCentreCode:
+            return QString::fromStdString(business_unit.business_centre_code);
         case UnitCode:
             return QString::fromStdString(business_unit.unit_code);
         case UnitName:
             return QString::fromStdString(business_unit.unit_name);
-        case BusinessCentreCode:
-            return QString::fromStdString(business_unit.business_centre_code);
         case Status:
             return QString::fromStdString(business_unit.status);
         case Version:
@@ -137,12 +137,12 @@ QVariant ClientBusinessUnitModel::headerData(
         return {};
 
     switch (section) {
+    case BusinessCentreCode:
+        return tr("Centre");
     case UnitCode:
         return tr("Code");
     case UnitName:
         return tr("Name");
-    case BusinessCentreCode:
-        return tr("Centre");
     case Status:
         return tr("Status");
     case Version:

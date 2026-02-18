@@ -58,16 +58,16 @@ ClientBusinessCentreModel::ClientBusinessCentreModel(
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!business_centres_.empty()) {
-                emit dataChanged(index(0, Column::Code),
-                    index(rowCount() - 1, Column::Code),
+                emit dataChanged(index(0, Column::CountryAlpha2),
+                    index(rowCount() - 1, Column::CountryAlpha2),
                     {Qt::DecorationRole});
             }
         });
 
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!business_centres_.empty()) {
-                emit dataChanged(index(0, Column::Code),
-                    index(rowCount() - 1, Column::Code),
+                emit dataChanged(index(0, Column::CountryAlpha2),
+                    index(rowCount() - 1, Column::CountryAlpha2),
                     {Qt::DecorationRole});
             }
         });
@@ -111,18 +111,18 @@ QVariant ClientBusinessCentreModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case CountryAlpha2:
+            return QString::fromStdString(bc.country_alpha2_code);
         case Code:
             return QString::fromStdString(bc.code);
-        case Source:
-            return QString::fromStdString(bc.source);
         case Description: {
             const auto text = QString::fromStdString(bc.description);
             return text.length() > 30 ? text.left(30) + QStringLiteral("...") : text;
         }
+        case Source:
+            return QString::fromStdString(bc.source);
         case CodingScheme:
             return QString::fromStdString(bc.coding_scheme_code);
-        case CountryAlpha2:
-            return QString::fromStdString(bc.country_alpha2_code);
         case Version:
             return bc.version;
         case ModifiedBy:
@@ -147,16 +147,16 @@ QVariant ClientBusinessCentreModel::headerData(
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Source:
-        return tr("Source");
-    case Description:
-        return tr("Description");
-    case CodingScheme:
-        return tr("Coding Scheme");
     case CountryAlpha2:
         return tr("Country");
+    case Code:
+        return tr("Code");
+    case Description:
+        return tr("Description");
+    case Source:
+        return tr("Source");
+    case CodingScheme:
+        return tr("Coding Scheme");
     case Version:
         return tr("Version");
     case ModifiedBy:

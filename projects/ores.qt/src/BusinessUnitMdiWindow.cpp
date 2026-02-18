@@ -147,14 +147,14 @@ void BusinessUnitMdiWindow::setupTable() {
     initializeTableSettings(tableView_, model_,
         "BusinessUnitListWindow",
         {},
-        {900, 400}, 1);
+        {900, 400}, 2);
 
     // Configure badge delegate for Status column
     using cs = column_style;
     auto* delegate = new EntityItemDelegate({
+        cs::text_left,      // BusinessCentreCode
         cs::text_left,      // UnitCode
         cs::text_left,      // UnitName
-        cs::text_left,      // BusinessCentreCode
         cs::badge_centered, // Status
         cs::mono_center,    // Version
         cs::text_left,      // ModifiedBy

@@ -57,9 +57,9 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
+        BusinessCentreCode,
         UnitCode,
         UnitName,
-        BusinessCentreCode,
         Status,
         Version,
         ModifiedBy,

@@ -22,6 +22,7 @@
 
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/book.hpp"
 
@@ -56,6 +57,7 @@ public:
     ~BookDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
     void setBook(const refdata::domain::book& book);
     void setCreateMode(bool createMode);
@@ -77,10 +79,12 @@ private:
     void updateUiFromBook();
     void updateBookFromUi();
     void updateSaveButtonState();
+    void populateCurrencyCombo();
     bool validateInput();
 
     Ui::BookDetailDialog* ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::book book_;
     bool createMode_{true};

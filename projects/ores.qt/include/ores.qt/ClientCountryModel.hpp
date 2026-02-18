@@ -57,10 +57,9 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        Flag,           // Country flag icon
-        Name,           // Short name
         Alpha2Code,     // ISO 3166-1 alpha-2 code
         Alpha3Code,     // ISO 3166-1 alpha-3 code
+        Name,           // Short name
         NumericCode,    // ISO 3166-1 numeric code
         OfficialName,   // Official name
         Version,        // Version number

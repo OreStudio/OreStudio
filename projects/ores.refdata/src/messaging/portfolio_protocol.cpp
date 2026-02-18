@@ -55,6 +55,7 @@ void write_portfolio(std::vector<std::byte>& buffer,
     writer::write_string(buffer, pf.purpose_type);
     writer::write_string(buffer, pf.aggregation_ccy);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(pf.is_virtual));
+    writer::write_string(buffer, pf.status);
     writer::write_string(buffer, pf.modified_by);
     writer::write_string(buffer, pf.performed_by);
     writer::write_string(buffer, pf.change_reason_code);
@@ -106,6 +107,10 @@ read_portfolio(std::span<const std::byte>& data) {
     auto is_virtual_result = reader::read_uint32(data);
     if (!is_virtual_result) return std::unexpected(is_virtual_result.error());
     pf.is_virtual = static_cast<int>(*is_virtual_result);
+
+    auto status_result = reader::read_string(data);
+    if (!status_result) return std::unexpected(status_result.error());
+    pf.status = *status_result;
 
     auto modified_by_result = reader::read_string(data);
     if (!modified_by_result) return std::unexpected(modified_by_result.error());

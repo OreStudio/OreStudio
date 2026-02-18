@@ -28,12 +28,22 @@
 #include "ores.qt/PartyDetailOperations.hpp"
 #include "ores.qt/PartyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.refdata/eventing/party_changed_event.hpp"
+#include "ores.refdata/eventing/party_identifier_changed_event.hpp"
+#include "ores.refdata/eventing/party_contact_information_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
+    constexpr std::string_view party_event_name =
+        eventing::domain::event_traits<refdata::eventing::party_changed_event>::name;
+    constexpr std::string_view party_identifier_event_name =
+        eventing::domain::event_traits<refdata::eventing::party_identifier_changed_event>::name;
+    constexpr std::string_view party_contact_event_name =
+        eventing::domain::event_traits<refdata::eventing::party_contact_information_changed_event>::name;
+
     auto make_party_ops() {
         return std::make_shared<party_detail_operations>();
     }
@@ -44,15 +54,46 @@ PartyController::PartyController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "PartyController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &PartyController::onNotificationReceived);
+
+        auto subscribeAll = [self = QPointer<PartyController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to party change events";
+            self->clientManager_->subscribeToEvent(std::string{party_event_name});
+            self->clientManager_->subscribeToEvent(std::string{party_identifier_event_name});
+            self->clientManager_->subscribeToEvent(std::string{party_contact_event_name});
+        };
+
+        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
+        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
+
+        if (clientManager_->isConnected()) {
+            subscribeAll();
+        }
+    }
+}
+
+PartyController::~PartyController() {
+    BOOST_LOG_SEV(lg(), debug) << "PartyController destroyed";
+    if (clientManager_) {
+        clientManager_->unsubscribeFromEvent(std::string{party_event_name});
+        clientManager_->unsubscribeFromEvent(std::string{party_identifier_event_name});
+        clientManager_->unsubscribeFromEvent(std::string{party_contact_event_name});
+    }
 }
 
 void PartyController::showListWindow() {
@@ -151,6 +192,9 @@ void PartyController::showAddWindow() {
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -194,6 +238,9 @@ void PartyController::showDetailWindow(
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setEntityData(to_entity_data(party));
@@ -317,6 +364,9 @@ void PartyController::onOpenVersion(
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setEntityData(to_entity_data(party));
     detailDialog->setReadOnly(true);
@@ -364,6 +414,9 @@ void PartyController::onRevertVersion(
     auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setEntityData(to_entity_data(party));
     detailDialog->setCreateMode(false);
@@ -396,6 +449,27 @@ void PartyController::onRevertVersion(
 
 EntityListMdiWindow* PartyController::listWindow() const {
     return listWindow_;
+}
+
+void PartyController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds, const QString& /*tenantId*/) {
+
+    const auto eventStd = eventType.toStdString();
+    if (eventStd != party_event_name &&
+        eventStd != party_identifier_event_name &&
+        eventStd != party_contact_event_name) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received " << eventStd << " notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " ids";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked party list window as stale";
+    }
 }
 
 }

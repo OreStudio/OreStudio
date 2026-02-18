@@ -22,12 +22,12 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/BadgeColors.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
@@ -39,10 +39,12 @@ using namespace ores::logging;
 
 BookMdiWindow::BookMdiWindow(
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username),
       toolbar_(nullptr),
       tableView_(nullptr),
@@ -60,10 +62,6 @@ BookMdiWindow::BookMdiWindow(
 
     // Initial load
     reload();
-}
-
-QSize BookMdiWindow::sizeHint() const {
-    return {900, 400};
 }
 
 void BookMdiWindow::setupUi() {
@@ -133,7 +131,7 @@ void BookMdiWindow::setupToolbar() {
 }
 
 void BookMdiWindow::setupTable() {
-    model_ = new ClientBookModel(clientManager_, this);
+    model_ = new ClientBookModel(clientManager_, imageCache_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -143,25 +141,24 @@ void BookMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate({
+        cs::text_left,      // Name
+        cs::mono_center,    // LedgerCcy
+        cs::badge_centered, // BookStatus
+        cs::text_left,      // CostCenter
+        cs::mono_center,    // IsTradingBook
+        cs::mono_center,    // Version
+        cs::text_left,      // ModifiedBy
+        cs::mono_left       // RecordedAt
+    }, tableView_);
+    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    tableView_->setItemDelegate(delegate);
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    // Set column widths
-    tableView_->setColumnWidth(ClientBookModel::Name, 200);
-    tableView_->setColumnWidth(ClientBookModel::LedgerCcy, 100);
-    tableView_->setColumnWidth(ClientBookModel::BookStatus, 100);
-    tableView_->setColumnWidth(ClientBookModel::CostCenter, 120);
-    tableView_->setColumnWidth(ClientBookModel::IsTradingBook, 70);
-    tableView_->setColumnWidth(ClientBookModel::Version, 80);
-    tableView_->setColumnWidth(ClientBookModel::ModifiedBy, 120);
-    tableView_->setColumnWidth(ClientBookModel::RecordedAt, 150);
-
-    // Setup column visibility with context menu
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(tableView_, model_, "BookListWindow",
+        {}, {900, 400}, 1);
 }
 
 void BookMdiWindow::setupConnections() {
@@ -431,84 +428,6 @@ void BookMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void BookMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &BookMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this,
-            &BookMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this,
-            &BookMdiWindow::saveSettings);
-}
-
-void BookMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void BookMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("BookListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = tableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-}
-
-void BookMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("BookListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-    } else {
-        // Apply default column visibility
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-    }
-
-    // Restore window size if saved
-    if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
-    }
-
-    settings.endGroup();
 }
 
 }

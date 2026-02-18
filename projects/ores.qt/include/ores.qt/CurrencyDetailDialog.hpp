@@ -172,6 +172,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
+    QAction* isoCodeFlagAction_{nullptr};
     refdata::domain::currency currentCurrency_;
     QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";

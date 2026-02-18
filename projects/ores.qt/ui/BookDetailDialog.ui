@@ -47,16 +47,16 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_ledgerCcyEdit">
+       <widget class="QLabel" name="label_ledgerCcyCombo">
         <property name="text">
-         <string>Ledger Currency:</string>
+         <string>Currency:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="ledgerCcyEdit">
-        <property name="placeholderText">
-         <string>Enter ledger currency</string>
+       <widget class="QComboBox" name="ledgerCcyCombo">
+        <property name="editable">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -126,41 +126,61 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labelRecordedBy">
+       <widget class="QLabel" name="labelModifiedBy">
         <property name="text">
-         <string>Recorded By:</string>
+         <string>Modified By:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="recordedByEdit">
+       <widget class="QLineEdit" name="modifiedByEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="labelRecordedAt">
+       <widget class="QLabel" name="labelChangeReason">
         <property name="text">
-         <string>Recorded At:</string>
+         <string>Change Reason:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="recordedAtEdit">
+       <widget class="QLineEdit" name="changeReasonEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="3" column="0">
+       <widget class="QLabel" name="labelRecordedAt">
+        <property name="text">
+         <string>Recorded At:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="recordedAtEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>250</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
        <widget class="QLabel" name="labelCommentary">
         <property name="text">
          <string>Commentary:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="commentaryEdit">
         <property name="readOnly">
          <bool>true</bool>

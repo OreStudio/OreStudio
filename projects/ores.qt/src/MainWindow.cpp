@@ -1336,7 +1336,7 @@ void MainWindow::createControllers() {
 
     // Create party controller
     partyController_ = std::make_unique<PartyController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), this);
 
     connect(partyController_.get(), &PartyController::statusMessage,
@@ -1389,7 +1389,7 @@ void MainWindow::createControllers() {
 
     // Create business unit controller
     businessUnitController_ = std::make_unique<BusinessUnitController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
 
     connect(businessUnitController_.get(), &BusinessUnitController::statusMessage,
             this, [this](const QString& message) {
@@ -1406,7 +1406,7 @@ void MainWindow::createControllers() {
 
     // Create portfolio controller
     portfolioController_ = std::make_unique<PortfolioController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
 
     connect(portfolioController_.get(), &PortfolioController::statusMessage,
             this, [this](const QString& message) {
@@ -1423,7 +1423,7 @@ void MainWindow::createControllers() {
 
     // Create book controller
     bookController_ = std::make_unique<BookController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
 
     connect(bookController_.get(), &BookController::statusMessage,
             this, [this](const QString& message) {

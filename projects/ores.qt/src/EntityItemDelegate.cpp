@@ -48,6 +48,26 @@ void EntityItemDelegate::paint(QPainter* painter,
     case column_style::icon_centered:
         DelegatePaintUtils::paint_centered_icon(painter, option, index);
         return;
+    case column_style::badge_centered: {
+        // Draw selection/hover background first
+        opt.text.clear();
+        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
+
+        const QString text = index.data(Qt::DisplayRole).toString();
+        if (!text.isEmpty()) {
+            badge_color_pair colors{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (badge_resolver_)
+                colors = badge_resolver_(text);
+
+            QFont badgeFont = opt.font;
+            badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+            badgeFont.setBold(true);
+
+            DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
+                text, colors.background, colors.foreground, badgeFont);
+        }
+        return;
+    }
     case column_style::text_left:
         opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
         break;
@@ -79,6 +99,10 @@ void EntityItemDelegate::paint(QPainter* painter,
     }
 
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
+}
+
+void EntityItemDelegate::set_badge_color_resolver(badge_color_resolver resolver) {
+    badge_resolver_ = std::move(resolver);
 }
 
 }

@@ -21,7 +21,6 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QSettings>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
@@ -52,7 +51,6 @@ DatasetMdiWindow::DatasetMdiWindow(
     setupUi();
     setupToolbar();
     setupConnections();
-    loadColumnVisibility();
 
     model_->refresh();
 }
@@ -84,9 +82,12 @@ void DatasetMdiWindow::setupUi() {
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
     tableView_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientDatasetModel::Name, Qt::AscendingOrder);
+
+    initializeTableSettings(tableView_, model_,
+        "DatasetMdiWindow",
+        {}, {900, 400}, 1);
 
     layout->addWidget(tableView_);
 }
@@ -277,26 +278,6 @@ void DatasetMdiWindow::updateActionStates() {
 void DatasetMdiWindow::reload() {
     clearStaleIndicator();
     model_->refresh();
-}
-
-void DatasetMdiWindow::saveColumnVisibility() {
-    QSettings settings;
-    settings.beginGroup("DatasetMdiWindow");
-    for (int i = 0; i < model_->columnCount(); ++i) {
-        settings.setValue(QString("column_%1_visible").arg(i),
-                          !tableView_->isColumnHidden(i));
-    }
-    settings.endGroup();
-}
-
-void DatasetMdiWindow::loadColumnVisibility() {
-    QSettings settings;
-    settings.beginGroup("DatasetMdiWindow");
-    for (int i = 0; i < model_->columnCount(); ++i) {
-        bool visible = settings.value(QString("column_%1_visible").arg(i), true).toBool();
-        tableView_->setColumnHidden(i, !visible);
-    }
-    settings.endGroup();
 }
 
 }

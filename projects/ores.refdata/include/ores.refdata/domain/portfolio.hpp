@@ -95,6 +95,11 @@ struct portfolio final {
     int is_virtual;
 
     /**
+     * @brief Current lifecycle status (Active, Inactive, Closed).
+     */
+    std::string status;
+
+    /**
      * @brief Username of the person who last modified this portfolio.
      */
     std::string modified_by;

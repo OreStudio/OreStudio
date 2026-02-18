@@ -43,6 +43,7 @@ struct portfolio_entity {
     std::string purpose_type;
     std::string aggregation_ccy;
     int is_virtual;
+    std::string status;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

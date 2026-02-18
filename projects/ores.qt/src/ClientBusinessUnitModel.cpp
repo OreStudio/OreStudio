@@ -23,6 +23,7 @@
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -37,9 +38,10 @@ namespace {
 }
 
 ClientBusinessUnitModel::ClientBusinessUnitModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(business_unit_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -51,6 +53,23 @@ ClientBusinessUnitModel::ClientBusinessUnitModel(
             this, &ClientBusinessUnitModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientBusinessUnitModel::onPulsingComplete);
+
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
+            if (!business_units_.empty()) {
+                emit dataChanged(index(0, Column::BusinessCentreCode),
+                    index(rowCount() - 1, Column::BusinessCentreCode),
+                    {Qt::DecorationRole});
+            }
+        });
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
+            if (!business_units_.empty()) {
+                emit dataChanged(index(0, Column::BusinessCentreCode),
+                    index(rowCount() - 1, Column::BusinessCentreCode),
+                    {Qt::DecorationRole});
+            }
+        });
+    }
 }
 
 int ClientBusinessUnitModel::rowCount(const QModelIndex& parent) const {
@@ -76,6 +95,14 @@ QVariant ClientBusinessUnitModel::data(
 
     const auto& business_unit = business_units_[row];
 
+    if (role == Qt::DecorationRole && index.column() == Column::BusinessCentreCode) {
+        if (imageCache_ && !business_unit.business_centre_code.empty()) {
+            return imageCache_->getBusinessCentreFlagIcon(
+                business_unit.business_centre_code);
+        }
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case UnitCode:
@@ -84,6 +111,8 @@ QVariant ClientBusinessUnitModel::data(
             return QString::fromStdString(business_unit.unit_name);
         case BusinessCentreCode:
             return QString::fromStdString(business_unit.business_centre_code);
+        case Status:
+            return QString::fromStdString(business_unit.status);
         case Version:
             return business_unit.version;
         case ModifiedBy:
@@ -113,7 +142,9 @@ QVariant ClientBusinessUnitModel::headerData(
     case UnitName:
         return tr("Name");
     case BusinessCentreCode:
-        return tr("Business Centre");
+        return tr("Centre");
+    case Status:
+        return tr("Status");
     case Version:
         return tr("Version");
     case ModifiedBy:

@@ -61,8 +61,8 @@ ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache,
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!countries_.empty()) {
-                emit dataChanged(index(0, Column::Flag),
-                    index(rowCount() - 1, Column::Flag),
+                emit dataChanged(index(0, Column::Alpha2Code),
+                    index(rowCount() - 1, Column::Alpha2Code),
                     {Qt::DecorationRole});
             }
         });
@@ -70,8 +70,8 @@ ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache,
         // Also refresh when individual images load (on-demand loading)
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!countries_.empty()) {
-                emit dataChanged(index(0, Column::Flag),
-                    index(rowCount() - 1, Column::Flag),
+                emit dataChanged(index(0, Column::Alpha2Code),
+                    index(rowCount() - 1, Column::Alpha2Code),
                     {Qt::DecorationRole});
             }
         });
@@ -100,8 +100,8 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
 
     const auto& country = countries_[row];
 
-    // Handle DecorationRole for Flag column
-    if (role == Qt::DecorationRole && index.column() == Column::Flag) {
+    // Show flag icon inline in the Alpha-2 Code column
+    if (role == Qt::DecorationRole && index.column() == Column::Alpha2Code) {
         if (imageCache_) {
             if (country.image_id) {
                 const auto image_id_str = boost::uuids::to_string(*country.image_id);
@@ -120,7 +120,6 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
-    case Column::Flag: return {};  // No text for flag column
     case Column::Name: return QString::fromStdString(country.name);
     case Column::Alpha2Code: return QString::fromStdString(country.alpha2_code);
     case Column::Alpha3Code: return QString::fromStdString(country.alpha3_code);
@@ -140,7 +139,6 @@ headerData(int section, Qt::Orientation orientation, int role) const {
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case Column::Flag: return tr("Flag");
         case Column::Name: return tr("Name");
         case Column::Alpha2Code: return tr("Alpha-2");
         case Column::Alpha3Code: return tr("Alpha-3");

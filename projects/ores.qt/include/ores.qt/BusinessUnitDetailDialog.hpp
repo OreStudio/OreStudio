@@ -22,6 +22,7 @@
 
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/business_unit.hpp"
 
@@ -56,6 +57,7 @@ public:
     ~BusinessUnitDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
     void setUnit(const refdata::domain::business_unit& business_unit);
     void setCreateMode(bool createMode);
@@ -77,10 +79,12 @@ private:
     void updateUiFromUnit();
     void updateUnitFromUi();
     void updateSaveButtonState();
+    void populateBusinessCentres();
     bool validateInput();
 
     Ui::BusinessUnitDetailDialog* ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::business_unit business_unit_;
     bool createMode_{true};

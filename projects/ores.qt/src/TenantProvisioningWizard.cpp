@@ -20,6 +20,7 @@
 #include "ores.qt/TenantProvisioningWizard.hpp"
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
 
 #include <QVBoxLayout>
@@ -49,6 +50,8 @@ TenantProvisioningWizard::TenantProvisioningWizard(
       clientManager_(clientManager) {
 
     setWindowTitle(tr("New Tenant Provisioner"));
+    setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::BuildingSkyscraper, IconUtils::DefaultIconColor));
     setMinimumSize(900, 700);
     resize(900, 700);
 
@@ -304,6 +307,11 @@ BundleInstallPage::BundleInstallPage(TenantProvisioningWizard* wizard)
 
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
     logOutput_ = new QTextEdit(this);
@@ -323,7 +331,10 @@ void BundleInstallPage::initializePage() {
     statusLabel_->setText(tr("Publishing catalogue '%1'...").arg(
         wizard_->selectedBundleName()));
     progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet("");
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
 
     startPublish();
 }
@@ -405,7 +416,7 @@ void BundleInstallPage::startPublish() {
 
     watcher->setFuture(future);
 
-    appendLog(tr("Publishing catalogue '%1' (mode: upsert, atomic: true)...")
+    appendLog(tr("Publishing catalogue '%1'...")
         .arg(wizard_->selectedBundleName()));
 }
 
@@ -571,6 +582,19 @@ void PartySetupPage::setupUI() {
 
     layout->addSpacing(10);
 
+    // Dataset size selection
+    auto* sizeLayout = new QHBoxLayout();
+    sizeLayout->addWidget(new QLabel(tr("LEI dataset size:"), this));
+    datasetSizeCombo_ = new QComboBox(this);
+    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), "large");
+    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"), "small");
+    datasetSizeCombo_->setCurrentIndex(0);
+    sizeLayout->addWidget(datasetSizeCombo_);
+    sizeLayout->addStretch();
+    layout->addLayout(sizeLayout);
+
+    layout->addSpacing(10);
+
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
     layout->addWidget(leiPicker_);
 }
@@ -588,6 +612,8 @@ bool PartySetupPage::validatePage() {
         wizard_->setRootLei(leiPicker_->selectedLei());
         wizard_->setRootLeiName(leiPicker_->selectedName());
     }
+    wizard_->setLeiDatasetSize(
+        datasetSizeCombo_->currentData().toString());
     return true;
 }
 
@@ -612,26 +638,14 @@ void CounterpartySetupPage::setupUI() {
     infoLabel->setText(
         tr("Counterparties represent the external entities your organisation "
            "trades with or has business relationships with.\n\n"
-           "Counterparty import is a planned feature that will allow you to "
-           "bulk-import counterparties from external sources such as:\n\n"
-           "  - GLEIF LEI registry\n"
-           "  - CSV/Excel files\n"
-           "  - External APIs\n\n"
-           "For now, you can add counterparties manually from the "
-           "Counterparties window after completing this wizard."));
+           "Counterparties will be imported automatically from the GLEIF LEI "
+           "registry in the next step, based on the party hierarchy you "
+           "selected.\n\n"
+           "You can also add counterparties manually from the Counterparties "
+           "window after completing this wizard. Click Next to continue."));
     layout->addWidget(infoLabel);
 
     layout->addStretch();
-
-    auto* noteBox = new QGroupBox(tr("Coming Soon"), this);
-    auto* noteLayout = new QVBoxLayout(noteBox);
-    auto* noteLabel = new QLabel(
-        tr("Automated counterparty import will be available in a future "
-           "release. Click Next to continue."),
-        this);
-    noteLabel->setWordWrap(true);
-    noteLayout->addWidget(noteLabel);
-    layout->addWidget(noteBox);
 }
 
 // ============================================================================
@@ -643,8 +657,7 @@ OrganisationSetupPage::OrganisationSetupPage(
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Organisation Setup"));
-    setSubTitle(tr("Publishing sample business units, portfolios, and trading "
-                   "books for your organisation."));
+    setSubTitle(tr("Setting up your organisation's structure."));
     setFinalPage(false);
 
     auto* layout = new QVBoxLayout(this);
@@ -655,6 +668,11 @@ OrganisationSetupPage::OrganisationSetupPage(
 
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
     logOutput_ = new QTextEdit(this);
@@ -672,7 +690,10 @@ void OrganisationSetupPage::initializePage() {
     publishSuccess_ = false;
     logOutput_->clear();
     progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet("");
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
 
     const bool isSynthetic = wizard_->dataSourceMode() ==
         TenantProvisioningWizard::DataSourceMode::synthetic;
@@ -681,9 +702,14 @@ void OrganisationSetupPage::initializePage() {
         setSubTitle(tr("Generating synthetic parties, counterparties, "
                        "business units, portfolios, and trading books."));
         statusLabel_->setText(tr("Generating synthetic organisation data..."));
+    } else if (!wizard_->rootLei().isEmpty()) {
+        setSubTitle(tr("Publishing GLEIF party hierarchy, business units, "
+                       "portfolios, and trading books for your organisation."));
+        statusLabel_->setText(tr("Publishing organisation data with GLEIF "
+                                 "parties..."));
     } else {
-        setSubTitle(tr("Publishing sample business units, portfolios, and "
-                       "trading books for your organisation."));
+        setSubTitle(tr("Publishing business units, portfolios, and trading "
+                       "books for your organisation."));
         statusLabel_->setText(tr("Publishing organisation data..."));
     }
 
@@ -714,8 +740,29 @@ void OrganisationSetupPage::startPublish() {
 void OrganisationSetupPage::startBundlePublish() {
     const std::string publishedBy = wizard_->clientManager()->currentUsername();
     ClientManager* clientManager = wizard_->clientManager();
+    const std::string rootLei = wizard_->rootLei().toStdString();
+    const std::string bundleCode = wizard_->selectedBundleCode().toStdString();
+    const bool hasLei = !rootLei.empty();
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing organisation bundle";
+    BOOST_LOG_SEV(lg(), info) << "Publishing organisation data"
+                              << (hasLei ? " with root LEI: " : "")
+                              << rootLei;
+
+    // Build LEI params for re-publishing the base bundle with opt-in datasets
+    std::string leiParamsJson = "{}";
+    if (hasLei) {
+        dq::messaging::publish_bundle_params leiParams;
+        leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
+        const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
+        if (!datasetSize.empty()) {
+            leiParams.lei_dataset_size = datasetSize;
+        }
+        // Opt in the LEI party and counterparty datasets
+        const std::string size = datasetSize.empty() ? "small" : datasetSize;
+        leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
+        leiParams.opted_in_datasets.push_back("gleif.lei_counterparties." + size);
+        leiParamsJson = dq::messaging::build_params_json(leiParams);
+    }
 
     using ResponseType = dq::messaging::publish_bundle_response;
 
@@ -763,29 +810,62 @@ void OrganisationSetupPage::startBundlePublish() {
         emit completeChanged();
     });
 
+    // Run both publishes sequentially on a background thread:
+    // 1. If LEI selected: re-publish base bundle with opted-in LEI datasets
+    // 2. Publish organisation bundle for business units, portfolios, books
     QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, publishedBy]() -> std::optional<ResponseType> {
+        [clientManager, publishedBy, bundleCode, leiParamsJson,
+         hasLei]() -> std::optional<ResponseType> {
 
-            dq::messaging::publish_bundle_request request;
-            request.bundle_code = "organisation";
-            request.mode = dq::domain::publication_mode::upsert;
-            request.published_by = publishedBy;
-            request.atomic = true;
+            // Step 1: Publish LEI parties and counterparties from base bundle
+            if (hasLei) {
+                dq::messaging::publish_bundle_request leiRequest;
+                leiRequest.bundle_code = bundleCode;
+                leiRequest.mode = dq::domain::publication_mode::upsert;
+                leiRequest.published_by = publishedBy;
+                leiRequest.atomic = true;
+                leiRequest.params_json = leiParamsJson;
 
-            auto result = clientManager->process_authenticated_request(
-                std::move(request));
+                auto leiResult = clientManager->process_authenticated_request(
+                    std::move(leiRequest));
 
-            if (!result) {
+                if (!leiResult) {
+                    return std::nullopt;
+                }
+                if (!leiResult->success) {
+                    return *leiResult;
+                }
+            }
+
+            // Step 2: Publish organisation bundle (business units, portfolios, books)
+            dq::messaging::publish_bundle_request orgRequest;
+            orgRequest.bundle_code = "organisation";
+            orgRequest.mode = dq::domain::publication_mode::upsert;
+            orgRequest.published_by = publishedBy;
+            orgRequest.atomic = true;
+
+            auto orgResult = clientManager->process_authenticated_request(
+                std::move(orgRequest));
+
+            if (!orgResult) {
                 return std::nullopt;
             }
-            return *result;
+            return *orgResult;
         }
     );
 
     watcher->setFuture(future);
 
-    appendLog(tr("Publishing organisation bundle (business units, portfolios, "
-                  "books)..."));
+    if (hasLei) {
+        appendLog(tr("[1/2] Publishing GLEIF LEI parties and counterparties "
+                      "(root: %1, dataset: %2)...")
+            .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
+        appendLog(tr("[2/2] Publishing organisation structure (business units, "
+                      "portfolios, books)..."));
+    } else {
+        appendLog(tr("Publishing organisation bundle (business units, portfolios, "
+                      "books)..."));
+    }
 }
 
 void OrganisationSetupPage::startSyntheticGeneration() {

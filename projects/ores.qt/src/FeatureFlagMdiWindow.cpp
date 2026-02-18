@@ -110,9 +110,11 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
     featureFlagTableView_->setSortingEnabled(true);
     featureFlagTableView_->sortByColumn(0, Qt::AscendingOrder);
 
-    QHeaderView* horizontalHeader(featureFlagTableView_->horizontalHeader());
     featureFlagTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    initializeTableSettings(featureFlagTableView_, featureFlagModel_.get(),
+        "FeatureFlagMdiWindow",
+        {}, {900, 400}, 1);
 
     // Connect signals
     connect(featureFlagModel_.get(), &ClientFeatureFlagModel::dataLoaded,
@@ -404,16 +406,6 @@ void FeatureFlagMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-QSize FeatureFlagMdiWindow::sizeHint() const {
-    const int minimumWidth = 850;
-    const int minimumHeight = 400;
-
-    QSize baseSize = QWidget::sizeHint();
-
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
 }
 
 void FeatureFlagMdiWindow::updateActionStates() {

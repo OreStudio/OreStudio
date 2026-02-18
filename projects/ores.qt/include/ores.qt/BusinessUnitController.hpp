@@ -24,6 +24,7 @@
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/business_unit.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ImageCache* imageCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const refdata::domain::business_unit& business_unit);
     void showHistoryWindow(const refdata::domain::business_unit& business_unit);
 
+    ImageCache* imageCache_;
     BusinessUnitMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

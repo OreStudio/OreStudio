@@ -163,6 +163,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
+    QAction* alpha2FlagAction_{nullptr};
     refdata::domain::country currentCountry_;
     QString pendingImageId_;
 

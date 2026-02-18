@@ -42,8 +42,6 @@
 #include <QAction>
 #include <QPixmap>
 #include <QImage>
-#include <QMenu>
-#include <QSettings>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -177,14 +175,12 @@ CurrencyMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(currencyModel_.get());
     currencyTableView_->setModel(proxyModel_);
     currencyTableView_->setSortingEnabled(true);
-    currencyTableView_->sortByColumn(0, Qt::AscendingOrder);  // Default sort by name
+    currencyTableView_->sortByColumn(ClientCurrencyModel::IsoCode, Qt::AscendingOrder);
 
     using cs = column_style;
     currencyTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::icon_centered,    // Flag
         cs::text_left,        // CurrencyName
-        cs::mono_bold_center, // IsoCode
-        cs::mono_center,      // Version
+        cs::mono_bold_left,   // IsoCode (flag icon inline via DecorationRole)
         cs::mono_center,      // NumericCode
         cs::mono_center,      // Symbol
         cs::mono_center,      // FractionSymbol
@@ -193,19 +189,19 @@ CurrencyMdiWindow(ClientManager* clientManager,
         cs::mono_right,       // RoundingPrecision
         cs::text_left,        // Format
         cs::text_left,        // CurrencyType
+        cs::mono_center,      // Version
         cs::text_left,        // ModifiedBy
         cs::mono_left         // RecordedAt
     }, currencyTableView_));
 
-    QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
     currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    // Setup column visibility (context menu and defaults)
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(currencyTableView_, currencyModel_.get(),
+        "CurrencyListWindow",
+        {ClientCurrencyModel::FractionSymbol, ClientCurrencyModel::FractionsPerUnit,
+         ClientCurrencyModel::RoundingType, ClientCurrencyModel::RoundingPrecision,
+         ClientCurrencyModel::Format, ClientCurrencyModel::CurrencyType},
+        {1000, 600}, 2);
 
     // Connect signals
     connect(currencyModel_.get(), &ClientCurrencyModel::dataLoaded,
@@ -808,19 +804,6 @@ void CurrencyMdiWindow::exportToXML() {
     }
 }
 
-QSize CurrencyMdiWindow::sizeHint() const {
-    if (savedWindowSize_.isValid())
-        return savedWindowSize_;
-
-    const int minimumWidth = 1000;
-    const int minimumHeight = 600;
-
-    QSize baseSize = QWidget::sizeHint();
-
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
-}
-
 void CurrencyMdiWindow::updateActionStates() {
     const int selection_count = currencyTableView_
         ->selectionModel()->selectedRows().count();
@@ -838,111 +821,6 @@ void CurrencyMdiWindow::setupReloadAction() {
     connect(reloadAction_, &QAction::triggered, this, &CurrencyMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
-}
-
-void CurrencyMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = currencyTableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &CurrencyMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this, &CurrencyMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this, &CurrencyMdiWindow::saveSettings);
-}
-
-void CurrencyMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = currencyTableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < currencyModel_->columnCount(); ++col) {
-        QString columnName = currencyModel_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void CurrencyMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("CurrencyListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = currencyTableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-
-    BOOST_LOG_SEV(lg(), trace) << "Saved currency list window settings";
-}
-
-void CurrencyMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("CurrencyListWindow");
-
-    QHeaderView* header = currencyTableView_->horizontalHeader();
-
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state, falling back to defaults if corrupted
-        const bool restored =
-            header->restoreState(settings.value("headerState").toByteArray());
-        if (restored) {
-            BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-        } else {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to restore header state, applying defaults";
-            header->setSectionHidden(ClientCurrencyModel::NumericCode, true);
-            header->setSectionHidden(ClientCurrencyModel::Symbol, true);
-            header->setSectionHidden(ClientCurrencyModel::FractionSymbol, true);
-            header->setSectionHidden(ClientCurrencyModel::FractionsPerUnit, true);
-            header->setSectionHidden(ClientCurrencyModel::RoundingType, true);
-            header->setSectionHidden(ClientCurrencyModel::RoundingPrecision, true);
-            header->setSectionHidden(ClientCurrencyModel::Format, true);
-            header->setSectionHidden(ClientCurrencyModel::CurrencyType, true);
-        }
-    } else {
-        // Apply default column visibility (hide detail-oriented columns)
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-
-        // Hide these columns by default (still visible in detail view):
-        // NumericCode, Symbol, FractionSymbol, FractionsPerUnit,
-        // RoundingType, RoundingPrecision, Format, CurrencyType
-        header->setSectionHidden(ClientCurrencyModel::NumericCode, true);
-        header->setSectionHidden(ClientCurrencyModel::Symbol, true);
-        header->setSectionHidden(ClientCurrencyModel::FractionSymbol, true);
-        header->setSectionHidden(ClientCurrencyModel::FractionsPerUnit, true);
-        header->setSectionHidden(ClientCurrencyModel::RoundingType, true);
-        header->setSectionHidden(ClientCurrencyModel::RoundingPrecision, true);
-        header->setSectionHidden(ClientCurrencyModel::Format, true);
-        header->setSectionHidden(ClientCurrencyModel::CurrencyType, true);
-    }
-
-    // Restore window size if saved
-    if (settings.contains("windowSize")) {
-        savedWindowSize_ = settings.value("windowSize").toSize();
-        BOOST_LOG_SEV(lg(), debug) << "Restored window size from settings";
-    }
-
-    settings.endGroup();
 }
 
 void CurrencyMdiWindow::setupGenerateAction() {

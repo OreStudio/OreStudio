@@ -23,7 +23,9 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_BookDetailDialog.h"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
@@ -64,7 +66,7 @@ void BookDetailDialog::setupConnections() {
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onCodeChanged);
-    connect(ui_->ledgerCcyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->ledgerCcyCombo, &QComboBox::currentTextChanged, this,
             &BookDetailDialog::onFieldChanged);
     connect(ui_->glAccountRefEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onFieldChanged);
@@ -76,6 +78,56 @@ void BookDetailDialog::setupConnections() {
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateCurrencyCombo();
+}
+
+void BookDetailDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
+            set_combo_flag_icons(ui_->ledgerCcyCombo,
+                [this](const std::string& code) {
+                    return imageCache_->getCurrencyFlagIcon(code);
+                });
+        });
+    }
+}
+
+void BookDetailDialog::populateCurrencyCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<BookDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<std::string> {
+        return fetch_currency_codes(cm);
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished,
+            self, [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->ui_->ledgerCcyCombo->clear();
+        for (const auto& code : codes) {
+            self->ui_->ledgerCcyCombo->addItem(
+                QString::fromStdString(code));
+        }
+
+        if (self->imageCache_) {
+            set_combo_flag_icons(self->ui_->ledgerCcyCombo,
+                [&self](const std::string& code) {
+                    return self->imageCache_->getCurrencyFlagIcon(code);
+                });
+        }
+
+        self->updateUiFromBook();
+    });
+
+    QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void BookDetailDialog::setUsername(const std::string& username) {
@@ -104,7 +156,7 @@ void BookDetailDialog::setCreateMode(bool createMode) {
 void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
-    ui_->ledgerCcyEdit->setReadOnly(readOnly);
+    ui_->ledgerCcyCombo->setEnabled(!readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
     ui_->bookStatusEdit->setReadOnly(readOnly);
@@ -114,13 +166,14 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
 
 void BookDetailDialog::updateUiFromBook() {
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
-    ui_->ledgerCcyEdit->setText(QString::fromStdString(book_.ledger_ccy));
+    ui_->ledgerCcyCombo->setCurrentText(QString::fromStdString(book_.ledger_ccy));
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
     ui_->bookStatusEdit->setText(QString::fromStdString(book_.book_status));
 
     ui_->versionEdit->setText(QString::number(book_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(book_.modified_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(book_.modified_by));
+    ui_->changeReasonEdit->setText(QString::fromStdString(book_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(book_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(book_.change_commentary));
 }
@@ -129,7 +182,7 @@ void BookDetailDialog::updateBookFromUi() {
     if (createMode_) {
         book_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
-    book_.ledger_ccy = ui_->ledgerCcyEdit->text().trimmed().toStdString();
+    book_.ledger_ccy = ui_->ledgerCcyCombo->currentText().trimmed().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
     book_.book_status = ui_->bookStatusEdit->text().trimmed().toStdString();

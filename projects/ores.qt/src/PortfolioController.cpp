@@ -36,10 +36,12 @@ PortfolioController::PortfolioController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      imageCache_(imageCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -56,7 +58,7 @@ void PortfolioController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PortfolioMdiWindow(clientManager_, username_);
+    listWindow_ = new PortfolioMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &PortfolioMdiWindow::statusChanged,
@@ -141,6 +143,7 @@ void PortfolioController::showAddWindow() {
 
     auto* detailDialog = new PortfolioDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -183,6 +186,7 @@ void PortfolioController::showDetailWindow(
 
     auto* detailDialog = new PortfolioDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setPortfolio(portfolio);
@@ -305,6 +309,7 @@ void PortfolioController::onOpenVersion(
 
     auto* detailDialog = new PortfolioDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPortfolio(portfolio);
     detailDialog->setReadOnly(true);
@@ -351,6 +356,7 @@ void PortfolioController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PortfolioDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPortfolio(portfolio);
     detailDialog->setCreateMode(false);

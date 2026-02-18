@@ -109,15 +109,20 @@ read_party_identifier(std::span<const std::byte>& data) {
 // ============================================================================
 
 std::vector<std::byte> get_party_identifiers_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, party_id);
+    return buffer;
 }
 
 std::expected<get_party_identifiers_request, error_code>
 get_party_identifiers_request::deserialize(std::span<const std::byte> data) {
-    if (!data.empty()) {
-        return std::unexpected(error_code::payload_too_large);
-    }
-    return get_party_identifiers_request{};
+    get_party_identifiers_request request;
+
+    auto party_id_result = reader::read_uuid(data);
+    if (!party_id_result) return std::unexpected(party_id_result.error());
+    request.party_id = *party_id_result;
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const get_party_identifiers_request& v) {

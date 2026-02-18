@@ -28,6 +28,7 @@
 #include "ores.refdata/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata/messaging/party_contact_information_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 
 namespace ores::qt {
 
@@ -49,7 +50,7 @@ operation_result party_detail_operations::save_entity(
     p.full_name = data.full_name;
     p.short_code = data.short_code;
     p.transliterated_name = data.transliterated_name;
-    p.party_category = data.party_category.value_or("Operational");
+    p.party_category = data.party_category.value_or(std::string{party_categories::operational});
     p.party_type = data.party_type;
     p.parent_party_id = data.parent_id;
     p.business_center_code = data.business_center_code;
@@ -145,9 +146,10 @@ load_all_entities_result party_detail_operations::load_all_entities(
 }
 
 load_identifiers_result party_detail_operations::load_identifiers(
-    ClientManager* cm, const boost::uuids::uuid& /*entity_id*/) const {
+    ClientManager* cm, const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_party_identifiers_request request;
+    request.party_id = entity_id;
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -241,9 +243,10 @@ operation_result party_detail_operations::delete_identifier(
 }
 
 load_contacts_result party_detail_operations::load_contacts(
-    ClientManager* cm, const boost::uuids::uuid& /*entity_id*/) const {
+    ClientManager* cm, const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_party_contact_informations_request request;
+    request.party_id = entity_id;
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_PARTY_CONTROLLER_HPP
 #define ORES_QT_PARTY_CONTROLLER_HPP
 
+#include <QDateTime>
 #include <QMdiArea>
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
@@ -31,6 +32,7 @@
 
 namespace ores::qt {
 
+class ChangeReasonCache;
 class PartyMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -59,8 +61,11 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ImageCache* imageCache,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
+
+    ~PartyController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -80,6 +85,8 @@ private slots:
     void onRevertVersion(const refdata::domain::party& party);
     void onOpenVersion(const refdata::domain::party& party,
                        int versionNumber);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds, const QString& tenantId);
 
 private:
     void showAddWindow();
@@ -87,6 +94,7 @@ private:
     void showHistoryWindow(const refdata::domain::party& party);
 
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
     PartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

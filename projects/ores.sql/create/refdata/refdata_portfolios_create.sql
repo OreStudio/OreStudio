@@ -39,6 +39,7 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "purpose_type" text not null,
     "aggregation_ccy" text null,
     "is_virtual" integer not null,
+    "status" text not null default 'Active',
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -54,11 +54,10 @@ private:
 public:
     explicit BusinessUnitMdiWindow(
         ClientManager* clientManager,
+        ImageCache* imageCache,
         const QString& username,
         QWidget* parent = nullptr);
     ~BusinessUnitMdiWindow() override = default;
-
-    QSize sizeHint() const override;
 
 public slots:
     void reload() override;
@@ -82,9 +81,6 @@ private slots:
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
 
-private slots:
-    void showHeaderContextMenu(const QPoint& pos);
-
 protected:
     QString normalRefreshTooltip() const override {
         return tr("Refresh business units");
@@ -94,13 +90,11 @@ private:
     void setupUi();
     void setupToolbar();
     void setupTable();
-    void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings() override;
-    void restoreSettings();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString username_;
 
     QToolBar* toolbar_;

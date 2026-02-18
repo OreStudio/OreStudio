@@ -60,8 +60,6 @@ public:
 
     ClientCountryModel* countryModel() const { return countryModel_.get(); }
 
-    QSize sizeHint() const override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
@@ -92,10 +90,6 @@ protected:
 private:
     void updateActionStates();
     void setupReloadAction();
-    void setupColumnVisibility();
-    void showHeaderContextMenu(const QPoint& pos);
-    void saveSettings() override;
-    void restoreSettings();
 
 private:
     QVBoxLayout* verticalLayout_;

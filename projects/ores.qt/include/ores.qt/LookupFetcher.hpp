@@ -67,6 +67,15 @@ lookup_result fetch_party_lookups(ClientManager* cm);
 lookup_result fetch_tenant_lookups(ClientManager* cm);
 
 /**
+ * @brief Fetches currency ISO codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by detail dialogs that need a currency combo box.
+ * Returns empty vector on failure.
+ */
+std::vector<std::string> fetch_currency_codes(ClientManager* cm);
+
+/**
  * @brief Fetches business centre code to image ID mapping from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.

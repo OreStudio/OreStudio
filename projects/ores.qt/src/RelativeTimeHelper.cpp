@@ -20,6 +20,7 @@
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 #include <QDateTime>
+#include "ores.qt/TimestampFormat.hpp"
 #include "ores.platform/time/relative_time_formatter.hpp"
 
 namespace ores::qt {
@@ -49,22 +50,31 @@ parse_datetime(const QString& datetime_str) {
 }
 
 QString relative_time_helper::format(const std::string& recorded_at) {
-    return format(QString::fromStdString(recorded_at));
+    return timestamp_formatter::format(recorded_at);
 }
 
 QString relative_time_helper::format(const QString& recorded_at) {
+    return timestamp_formatter::format(recorded_at);
+}
+
+QString relative_time_helper::format(
+    const std::chrono::system_clock::time_point& recorded_at) {
+    return timestamp_formatter::format(recorded_at);
+}
+
+QString relative_time_helper::format_relative(const QString& recorded_at) {
     if (recorded_at.isEmpty())
         return recorded_at;
 
     auto tp = parse_datetime(recorded_at);
     if (!tp.has_value())
-        return recorded_at; // Return original if parsing fails
+        return recorded_at;
 
     platform::time::relative_time_formatter formatter;
     return QString::fromStdString(formatter.format(*tp));
 }
 
-QString relative_time_helper::format(
+QString relative_time_helper::format_relative(
     const std::chrono::system_clock::time_point& recorded_at) {
     platform::time::relative_time_formatter formatter;
     return QString::fromStdString(formatter.format(recorded_at));

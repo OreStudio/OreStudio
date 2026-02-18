@@ -36,10 +36,12 @@ BookController::BookController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      imageCache_(imageCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -56,7 +58,7 @@ void BookController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookMdiWindow(clientManager_, username_);
+    listWindow_ = new BookMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &BookMdiWindow::statusChanged,
@@ -141,6 +143,7 @@ void BookController::showAddWindow() {
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -183,6 +186,7 @@ void BookController::showDetailWindow(
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setBook(book);
@@ -305,6 +309,7 @@ void BookController::onOpenVersion(
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBook(book);
     detailDialog->setReadOnly(true);
@@ -351,6 +356,7 @@ void BookController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBook(book);
     detailDialog->setCreateMode(false);

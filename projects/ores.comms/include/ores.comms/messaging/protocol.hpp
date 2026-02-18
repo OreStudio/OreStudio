@@ -273,8 +273,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 34.1 adds counterparty_id filter to get_counterparty_identifiers_request
 // and get_counterparty_contact_informations_request. Adds message handlers for
 // counterparty identifier and counterparty contact information CRUD + history.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 34;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+//
+// Version 35.0 adds party_id filter to get_party_identifiers_request and
+// get_party_contact_informations_request. Adds message handlers for party
+// identifier and party contact information CRUD + history. Breaking change
+// as the wire format for these requests changes from empty to UUID payload.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 35;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

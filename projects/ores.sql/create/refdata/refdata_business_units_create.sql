@@ -38,6 +38,7 @@ create table if not exists "ores_refdata_business_units_tbl" (
     "parent_business_unit_id" uuid null,
     "unit_code" text null,
     "business_centre_code" text null,
+    "status" text not null default 'Active',
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

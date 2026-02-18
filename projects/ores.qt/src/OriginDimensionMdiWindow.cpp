@@ -22,8 +22,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
@@ -59,10 +57,6 @@ OriginDimensionMdiWindow::OriginDimensionMdiWindow(
 
     // Initial load
     reload();
-}
-
-QSize OriginDimensionMdiWindow::sizeHint() const {
-    return {800, 400};
 }
 
 void OriginDimensionMdiWindow::setupUi() {
@@ -149,21 +143,12 @@ void OriginDimensionMdiWindow::setupTable() {
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    // Set column widths
-    tableView_->setColumnWidth(ClientOriginDimensionModel::Code, 150);
-    tableView_->setColumnWidth(ClientOriginDimensionModel::Name, 200);
-    tableView_->setColumnWidth(ClientOriginDimensionModel::Description, 250);
-    tableView_->setColumnWidth(ClientOriginDimensionModel::Version, 80);
-    tableView_->setColumnWidth(ClientOriginDimensionModel::ModifiedBy, 120);
-
-    // Setup column visibility with context menu
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(tableView_, model_,
+        "OriginDimensionListWindow",
+        {ClientOriginDimensionModel::Description},
+        {800, 400}, 1);
 }
 
 void OriginDimensionMdiWindow::setupConnections() {
@@ -405,92 +390,6 @@ void OriginDimensionMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void OriginDimensionMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &OriginDimensionMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this,
-            &OriginDimensionMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this,
-            &OriginDimensionMdiWindow::saveSettings);
-}
-
-void OriginDimensionMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void OriginDimensionMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("OriginDimensionListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = tableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-}
-
-void OriginDimensionMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("OriginDimensionListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state, falling back to defaults if corrupted
-        const bool restored =
-            header->restoreState(settings.value("headerState").toByteArray());
-        if (restored) {
-            BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-        } else {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to restore header state, applying defaults";
-            header->setSectionHidden(ClientOriginDimensionModel::Description, true);
-        }
-    } else {
-        // Apply default column visibility (hide Description by default)
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-        header->setSectionHidden(ClientOriginDimensionModel::Description, true);
-    }
-
-    // Restore window size if saved
-    if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
-    }
-
-    settings.endGroup();
 }
 
 }

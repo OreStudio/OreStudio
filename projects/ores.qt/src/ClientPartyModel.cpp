@@ -59,8 +59,8 @@ ClientPartyModel::ClientPartyModel(
         connect(imageCache_, &ImageCache::imageLoaded,
                 this, [this](const QString&) {
             if (!parties_.empty()) {
-                emit dataChanged(index(0, Flag),
-                    index(rowCount() - 1, Flag), {Qt::DecorationRole});
+                emit dataChanged(index(0, BusinessCenterCode),
+                    index(rowCount() - 1, BusinessCenterCode), {Qt::DecorationRole});
             }
         });
     }
@@ -91,7 +91,7 @@ QVariant ClientPartyModel::data(
 
     const auto& party = parties_[row];
 
-    if (role == Qt::DecorationRole && index.column() == Flag) {
+    if (role == Qt::DecorationRole && index.column() == BusinessCenterCode) {
         if (imageCache_) {
             auto it = bc_code_to_image_id_.find(party.business_center_code);
             if (it != bc_code_to_image_id_.end() && !it->second.empty()) {
@@ -104,8 +104,6 @@ QVariant ClientPartyModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Flag:
-            return {};
         case ShortCode:
             return QString::fromStdString(party.short_code);
         case FullName:
@@ -145,8 +143,6 @@ QVariant ClientPartyModel::headerData(
         return {};
 
     switch (section) {
-    case Flag:
-        return tr("Flag");
     case ShortCode:
         return tr("Code");
     case FullName:
@@ -359,8 +355,8 @@ void ClientPartyModel::fetch_business_centres() {
         self->bc_code_to_image_id_ = std::move(mapping);
 
         if (!self->parties_.empty()) {
-            emit self->dataChanged(self->index(0, Flag),
-                self->index(self->rowCount() - 1, Flag),
+            emit self->dataChanged(self->index(0, BusinessCenterCode),
+                self->index(self->rowCount() - 1, BusinessCenterCode),
                 {Qt::DecorationRole});
         }
     });

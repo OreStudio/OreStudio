@@ -1778,6 +1778,7 @@ TEST_CASE("get_party_identifiers_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     get_party_identifiers_request original;
+    original.party_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1786,6 +1787,7 @@ TEST_CASE("get_party_identifiers_request_serialize_deserialize", tags) {
     const auto result = get_party_identifiers_request::deserialize(serialized);
 
     REQUIRE(result.has_value());
+    CHECK(result->party_id == original.party_id);
     BOOST_LOG_SEV(lg, debug) << "Deserialized request successfully";
 }
 
@@ -1971,6 +1973,7 @@ TEST_CASE("get_party_contact_informations_request_serialize_deserialize", tags) 
     auto lg(make_logger(test_suite));
 
     get_party_contact_informations_request original;
+    original.party_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1979,6 +1982,7 @@ TEST_CASE("get_party_contact_informations_request_serialize_deserialize", tags) 
     const auto result = get_party_contact_informations_request::deserialize(serialized);
 
     REQUIRE(result.has_value());
+    CHECK(result->party_id == original.party_id);
     BOOST_LOG_SEV(lg, debug) << "Deserialized request successfully";
 }
 

@@ -34,6 +34,14 @@ std::vector<domain::party_identifier> party_identifier_service::list_party_ident
     return repo_.read_latest();
 }
 
+std::vector<domain::party_identifier>
+party_identifier_service::list_party_identifiers_by_party(
+    const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party identifiers for party: "
+                               << party_id;
+    return repo_.read_latest_by_party_id(party_id);
+}
+
 std::optional<domain::party_identifier>
 party_identifier_service::find_party_identifier(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party identifier: " << id;

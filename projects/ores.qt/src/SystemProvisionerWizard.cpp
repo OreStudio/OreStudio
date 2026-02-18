@@ -19,6 +19,7 @@
  */
 #include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
 
 #include <QVBoxLayout>
@@ -51,6 +52,8 @@ SystemProvisionerWizard::SystemProvisionerWizard(
       clientManager_(clientManager) {
 
     setWindowTitle(tr("New System Provisioner"));
+    setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Settings, IconUtils::DefaultIconColor));
     setMinimumSize(900, 700);
     resize(900, 700);
 
@@ -787,6 +790,11 @@ ProvisionerApplyPage::ProvisionerApplyPage(SystemProvisionerWizard* wizard)
 
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
     logOutput_ = new QTextEdit(this);
@@ -807,7 +815,10 @@ void ProvisionerApplyPage::initializePage() {
     logOutput_->clear();
     statusLabel_->setText(tr("Provisioning tenant..."));
     progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet("");
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
 
     startProvisioning();
 }

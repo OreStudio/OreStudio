@@ -23,6 +23,7 @@
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -37,9 +38,10 @@ namespace {
 }
 
 ClientPortfolioModel::ClientPortfolioModel(
-    ClientManager* clientManager, QObject* parent)
+    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(portfolio_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
@@ -51,6 +53,23 @@ ClientPortfolioModel::ClientPortfolioModel(
             this, &ClientPortfolioModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
             this, &ClientPortfolioModel::onPulsingComplete);
+
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
+            if (!portfolios_.empty()) {
+                emit dataChanged(index(0, Column::AggregationCcy),
+                    index(rowCount() - 1, Column::AggregationCcy),
+                    {Qt::DecorationRole});
+            }
+        });
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
+            if (!portfolios_.empty()) {
+                emit dataChanged(index(0, Column::AggregationCcy),
+                    index(rowCount() - 1, Column::AggregationCcy),
+                    {Qt::DecorationRole});
+            }
+        });
+    }
 }
 
 int ClientPortfolioModel::rowCount(const QModelIndex& parent) const {
@@ -76,6 +95,13 @@ QVariant ClientPortfolioModel::data(
 
     const auto& portfolio = portfolios_[row];
 
+    if (role == Qt::DecorationRole && index.column() == Column::AggregationCcy) {
+        if (imageCache_ && !portfolio.aggregation_ccy.empty()) {
+            return imageCache_->getCurrencyFlagIcon(portfolio.aggregation_ccy);
+        }
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case Name:
@@ -86,6 +112,8 @@ QVariant ClientPortfolioModel::data(
             return QString::fromStdString(portfolio.aggregation_ccy);
         case IsVirtual:
             return portfolio.is_virtual;
+        case Status:
+            return QString::fromStdString(portfolio.status);
         case Version:
             return portfolio.version;
         case ModifiedBy:
@@ -118,6 +146,8 @@ QVariant ClientPortfolioModel::headerData(
         return tr("Agg. Currency");
     case IsVirtual:
         return tr("Virtual");
+    case Status:
+        return tr("Status");
     case Version:
         return tr("Version");
     case ModifiedBy:

@@ -31,6 +31,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Model for displaying portfolios fetched from the server.
  *
@@ -59,6 +61,7 @@ public:
         PurposeType,
         AggregationCcy,
         IsVirtual,
+        Status,
         Version,
         ModifiedBy,
         RecordedAt,
@@ -66,6 +69,7 @@ public:
     };
 
     explicit ClientPortfolioModel(ClientManager* clientManager,
+                                       ImageCache* imageCache,
                                        QObject* parent = nullptr);
     ~ClientPortfolioModel() override = default;
 
@@ -139,6 +143,7 @@ private:
     void fetch_portfolios(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::vector<refdata::domain::portfolio> portfolios_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

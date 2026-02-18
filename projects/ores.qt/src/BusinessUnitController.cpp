@@ -36,10 +36,12 @@ BusinessUnitController::BusinessUnitController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      imageCache_(imageCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -56,7 +58,7 @@ void BusinessUnitController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BusinessUnitMdiWindow(clientManager_, username_);
+    listWindow_ = new BusinessUnitMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_, &BusinessUnitMdiWindow::statusChanged,
@@ -141,6 +143,7 @@ void BusinessUnitController::showAddWindow() {
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -183,6 +186,7 @@ void BusinessUnitController::showDetailWindow(
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setUnit(business_unit);
@@ -305,6 +309,7 @@ void BusinessUnitController::onOpenVersion(
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setUnit(business_unit);
     detailDialog->setReadOnly(true);
@@ -351,6 +356,7 @@ void BusinessUnitController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setUnit(business_unit);
     detailDialog->setCreateMode(false);

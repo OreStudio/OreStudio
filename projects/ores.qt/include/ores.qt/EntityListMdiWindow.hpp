@@ -25,6 +25,7 @@
 #include <QTimer>
 #include <QIcon>
 #include <QCloseEvent>
+#include <QTableView>
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -70,6 +71,8 @@ public:
     explicit EntityListMdiWindow(QWidget* parent = nullptr);
     ~EntityListMdiWindow() override;
 
+    QSize sizeHint() const override;
+
 public slots:
     /**
      * @brief Mark the list as stale (data changed on server).
@@ -98,13 +101,36 @@ public slots:
     /**
      * @brief Save window settings (column visibility, window size, etc.).
      *
-     * Override this in subclasses to persist window-specific settings.
+     * When initializeTableSettings() has been called, this saves header state
+     * and window size automatically. Otherwise it is a no-op.
      * Called automatically on close via closeEvent().
      */
-    virtual void saveSettings() {}
+    virtual void saveSettings();
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+
+    /**
+     * @brief Configure table header, column visibility, and settings persistence.
+     *
+     * Call once in setupTable() after creating tableView and model.
+     * Sets ResizeToContents on all columns, wires up column visibility context
+     * menu, restores saved header state and window size.
+     *
+     * @param tableView       The QTableView to manage
+     * @param sourceModel     The source model (for column count/headers)
+     * @param settingsGroup   QSettings group name (e.g. "CountryListWindow")
+     * @param defaultHiddenColumns  Columns hidden by default when no saved state
+     * @param defaultSize     Default window size when no saved size
+     * @param settingsVersion Bump when column layout changes to discard old state
+     */
+    void initializeTableSettings(QTableView* tableView,
+                                  QAbstractItemModel* sourceModel,
+                                  const QString& settingsGroup,
+                                  const QVector<int>& defaultHiddenColumns = {},
+                                  const QSize& defaultSize = {900, 400},
+                                  int settingsVersion = 1);
+
     /**
      * @brief Initialize the stale indicator support.
      *
@@ -136,7 +162,11 @@ private slots:
 
 private:
     void startPulseAnimation();
+    void setupColumnVisibility();
+    void showHeaderContextMenu(const QPoint& pos);
+    void restoreTableSettings();
 
+    // Stale indicator members
     QAction* refreshAction_{nullptr};
     QTimer* pulseTimer_{nullptr};
     QIcon normalReloadIcon_;
@@ -144,13 +174,20 @@ private:
     bool pulseState_{false};
     int pulseCount_{0};
 
+    // Table settings members
+    QTableView* settingsTableView_{nullptr};
+    QAbstractItemModel* settingsModel_{nullptr};
+    QString settingsGroup_;
+    QVector<int> defaultHiddenColumns_;
+    QSize defaultSize_{900, 400};
+    int settingsVersion_{1};
+
 protected:
     /**
      * @brief Saved window size from QSettings.
      *
-     * Set this in restoreSettings() when loading a previously saved window size.
-     * Check it in sizeHint() to return the saved size instead of the default,
-     * so that the controller's resize(sizeHint()) uses the persisted size.
+     * Set by initializeTableSettings() when restoring a previously saved window
+     * size. Used by sizeHint() to return the saved size instead of the default.
      */
     QSize savedWindowSize_;
 };

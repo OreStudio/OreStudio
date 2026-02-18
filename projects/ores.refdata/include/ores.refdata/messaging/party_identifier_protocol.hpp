@@ -37,9 +37,11 @@ namespace ores::refdata::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all party identifiers.
+ * @brief Request to retrieve party identifiers.
  */
 struct get_party_identifiers_request final {
+    boost::uuids::uuid party_id{};  ///< Filter by party (nil = all)
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_party_identifiers_request,
                          ores::utility::serialization::error_code>

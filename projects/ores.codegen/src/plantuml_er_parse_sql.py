@@ -662,13 +662,14 @@ class SQLParser:
                               f"Temporal table '{name}' missing 'version' column",
                               entity_name=name)
 
-        # Check audit columns (skip for junction tables and permissions)
-        if 'junction' not in name and 'permission' not in name:
-            if 'modified_by' not in col_names:
-                self._add_warning(file_path, line_num, 'TEMPORAL_005',
-                                  f"Temporal table '{name}' missing 'modified_by' column",
-                                  entity_name=name)
+        # Check modified_by column (required on all temporal tables)
+        if 'modified_by' not in col_names:
+            self._add_warning(file_path, line_num, 'TEMPORAL_005',
+                              f"Temporal table '{name}' missing 'modified_by' column",
+                              entity_name=name)
 
+        # Check change_reason_code (skip for junction tables and permissions)
+        if 'junction' not in name and 'permission' not in name:
             if 'change_reason_code' not in col_names:
                 self._add_warning(file_path, line_num, 'TEMPORAL_006',
                                   f"Temporal table '{name}' missing 'change_reason_code' column",

@@ -46,6 +46,7 @@ domain::portfolio generate_synthetic_portfolio(
     r.purpose_type = std::string("Risk");
     r.aggregation_ccy = std::string("USD");
     r.is_virtual = 0;
+    r.status = "Active";
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

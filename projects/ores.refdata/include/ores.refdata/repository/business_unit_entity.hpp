@@ -42,6 +42,7 @@ struct business_unit_entity {
     std::optional<std::string> parent_business_unit_id;
     std::string unit_code;
     std::string business_centre_code;
+    std::string status;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -53,8 +53,6 @@ public:
                               const QString& username,
                               QWidget* parent = nullptr);
 
-    QSize sizeHint() const override { return QSize(800, 500); }
-
 public slots:
     void reload() override;
 

@@ -31,6 +31,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Model for displaying business units fetched from the server.
  *
@@ -58,6 +60,7 @@ public:
         UnitCode,
         UnitName,
         BusinessCentreCode,
+        Status,
         Version,
         ModifiedBy,
         RecordedAt,
@@ -65,6 +68,7 @@ public:
     };
 
     explicit ClientBusinessUnitModel(ClientManager* clientManager,
+                                       ImageCache* imageCache,
                                        QObject* parent = nullptr);
     ~ClientBusinessUnitModel() override = default;
 
@@ -138,6 +142,7 @@ private:
     void fetch_business_units(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::vector<refdata::domain::business_unit> business_units_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

@@ -88,6 +88,11 @@ struct business_unit final {
     std::string business_centre_code;
 
     /**
+     * @brief Current lifecycle status (Active, Inactive, Closed).
+     */
+    std::string status;
+
+    /**
      * @brief Username of the person who last modified this business unit.
      */
     std::string modified_by;

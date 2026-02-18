@@ -57,6 +57,7 @@ public:
     std::vector<domain::party_identifier> read_latest();
     std::vector<domain::party_identifier> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::party_identifier> read_latest_by_code(const std::string& code);
+    std::vector<domain::party_identifier> read_latest_by_party_id(const boost::uuids::uuid& party_id);
 
     std::vector<domain::party_identifier> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

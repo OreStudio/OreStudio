@@ -36,8 +36,6 @@
 #include <QMessageBox>
 #include <QToolBar>
 #include <QAction>
-#include <QMenu>
-#include <QSettings>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -133,13 +131,12 @@ CountryMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(countryModel_.get());
     countryTableView_->setModel(proxyModel_);
     countryTableView_->setSortingEnabled(true);
-    countryTableView_->sortByColumn(ClientCountryModel::Name, Qt::AscendingOrder);
+    countryTableView_->sortByColumn(ClientCountryModel::Alpha2Code, Qt::AscendingOrder);
 
     using cs = column_style;
     countryTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::icon_centered,    // Flag
         cs::text_left,        // Name
-        cs::mono_bold_center, // Alpha2Code
+        cs::mono_bold_left,   // Alpha2Code (flag icon inline via DecorationRole)
         cs::mono_bold_center, // Alpha3Code
         cs::mono_center,      // NumericCode
         cs::text_left,        // OfficialName
@@ -148,15 +145,13 @@ CountryMdiWindow(ClientManager* clientManager,
         cs::mono_left         // RecordedAt
     }, countryTableView_));
 
-    QHeaderView* horizontalHeader(countryTableView_->horizontalHeader());
     countryTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    // Setup column visibility (context menu and defaults)
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(countryTableView_, countryModel_.get(),
+        "CountryListWindow",
+        {ClientCountryModel::Alpha3Code, ClientCountryModel::NumericCode,
+         ClientCountryModel::OfficialName},
+        {900, 600}, 2);
 
     // Connect signals
     connect(countryModel_.get(), &ClientCountryModel::dataLoaded,
@@ -584,19 +579,6 @@ void CountryMdiWindow::exportToCSV() {
     }
 }
 
-QSize CountryMdiWindow::sizeHint() const {
-    if (savedWindowSize_.isValid())
-        return savedWindowSize_;
-
-    const int minimumWidth = 900;
-    const int minimumHeight = 600;
-
-    QSize baseSize = EntityListMdiWindow::sizeHint();
-
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
-}
-
 void CountryMdiWindow::updateActionStates() {
     const int selection_count = countryTableView_
         ->selectionModel()->selectedRows().count();
@@ -613,95 +595,6 @@ void CountryMdiWindow::setupReloadAction() {
     connect(reloadAction_, &QAction::triggered, this, &CountryMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
-}
-
-void CountryMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = countryTableView_->horizontalHeader();
-
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &CountryMdiWindow::showHeaderContextMenu);
-
-    connect(header, &QHeaderView::sectionMoved, this, &CountryMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this, &CountryMdiWindow::saveSettings);
-}
-
-void CountryMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = countryTableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    for (int col = 0; col < countryModel_->columnCount(); ++col) {
-        QString columnName = countryModel_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void CountryMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("CountryListWindow");
-
-    QHeaderView* header = countryTableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-
-    BOOST_LOG_SEV(lg(), trace) << "Saved country list window settings";
-}
-
-void CountryMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("CountryListWindow");
-
-    QHeaderView* header = countryTableView_->horizontalHeader();
-
-    if (settings.contains("headerState")) {
-        // Restore header state, falling back to defaults if corrupted
-        const bool restored =
-            header->restoreState(settings.value("headerState").toByteArray());
-        if (restored) {
-            BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-        } else {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to restore header state, applying defaults";
-            header->setSectionHidden(ClientCountryModel::NumericCode, true);
-            header->setSectionHidden(ClientCountryModel::OfficialName, true);
-            header->setSectionHidden(ClientCountryModel::Version, true);
-            header->setSectionHidden(ClientCountryModel::ModifiedBy, true);
-            header->setSectionHidden(ClientCountryModel::RecordedAt, true);
-        }
-    } else {
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-
-        // Hide these columns by default (still visible in detail view):
-        // NumericCode, OfficialName, Version, ModifiedBy, RecordedAt
-        header->setSectionHidden(ClientCountryModel::NumericCode, true);
-        header->setSectionHidden(ClientCountryModel::OfficialName, true);
-        header->setSectionHidden(ClientCountryModel::Version, true);
-        header->setSectionHidden(ClientCountryModel::ModifiedBy, true);
-        header->setSectionHidden(ClientCountryModel::RecordedAt, true);
-    }
-
-    if (settings.contains("windowSize")) {
-        savedWindowSize_ = settings.value("windowSize").toSize();
-        BOOST_LOG_SEV(lg(), debug) << "Restored window size from settings";
-    }
-
-    settings.endGroup();
 }
 
 }

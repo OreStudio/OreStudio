@@ -318,10 +318,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
         CHECK(retrieved_ccy.rounding_precision == original_ccy.rounding_precision);
         CHECK(retrieved_ccy.format == original_ccy.format);
         CHECK(retrieved_ccy.currency_type == original_ccy.currency_type);
-        // Note: modified_by is no longer sent over the wire (audit trail
-        // fields are validated server-side only). recorded_at is set by
-        // the repository.
-        CHECK(retrieved_ccy.modified_by.empty());
+        CHECK(retrieved_ccy.modified_by == original_ccy.modified_by);
         CHECK(retrieved_ccy.recorded_at != std::chrono::system_clock::time_point{});
 
         test_completed = true;

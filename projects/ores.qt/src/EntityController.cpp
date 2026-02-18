@@ -171,6 +171,15 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     } else {
         window->show();
     }
+
+    if (referenceWindow) {
+        QPointer<EntityController> self = this;
+        QPointer<DetachableMdiSubWindow> refPtr = referenceWindow;
+        connect(window, &QObject::destroyed, this, [self, refPtr]() {
+            if (self && refPtr)
+                self->bring_window_to_front(refPtr.data());
+        });
+    }
 }
 
 void EntityController::connect_dialog_close(DetailDialogBase* dialog,

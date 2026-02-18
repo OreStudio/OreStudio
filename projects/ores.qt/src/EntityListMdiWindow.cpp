@@ -18,6 +18,10 @@
  *
  */
 #include "ores.qt/EntityListMdiWindow.hpp"
+
+#include <QHeaderView>
+#include <QMenu>
+#include <QSettings>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 
@@ -93,6 +97,109 @@ void EntityListMdiWindow::onPulseTimeout() {
         pulseTimer_->stop();
         refreshAction_->setIcon(pulseReloadIcon_);
     }
+}
+
+void EntityListMdiWindow::initializeTableSettings(
+    QTableView* tableView,
+    QAbstractItemModel* sourceModel,
+    const QString& settingsGroup,
+    const QVector<int>& defaultHiddenColumns,
+    const QSize& defaultSize,
+    int settingsVersion) {
+
+    settingsTableView_ = tableView;
+    settingsModel_ = sourceModel;
+    settingsGroup_ = settingsGroup;
+    defaultHiddenColumns_ = defaultHiddenColumns;
+    defaultSize_ = defaultSize;
+    settingsVersion_ = settingsVersion;
+
+    auto* header = settingsTableView_->horizontalHeader();
+    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    setupColumnVisibility();
+    restoreTableSettings();
+}
+
+QSize EntityListMdiWindow::sizeHint() const {
+    if (savedWindowSize_.isValid())
+        return savedWindowSize_;
+    return defaultSize_;
+}
+
+void EntityListMdiWindow::saveSettings() {
+    if (!settingsTableView_)
+        return;
+
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup(settingsGroup_);
+
+    auto* header = settingsTableView_->horizontalHeader();
+    settings.setValue("headerState", header->saveState());
+    settings.setValue("windowSize", size());
+
+    settings.endGroup();
+}
+
+void EntityListMdiWindow::restoreTableSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup(settingsGroup_);
+
+    auto* header = settingsTableView_->horizontalHeader();
+
+    const int saved = settings.value("settingsVersion", 0).toInt();
+    if (saved == settingsVersion_ && settings.contains("headerState")) {
+        header->restoreState(settings.value("headerState").toByteArray());
+    } else {
+        settings.remove("headerState");
+        settings.setValue("settingsVersion", settingsVersion_);
+        for (int col : defaultHiddenColumns_) {
+            header->setSectionHidden(col, true);
+        }
+    }
+
+    // Always enforce ResizeToContents (guards against stale saved state)
+    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    if (settings.contains("windowSize"))
+        savedWindowSize_ = settings.value("windowSize").toSize();
+
+    settings.endGroup();
+}
+
+void EntityListMdiWindow::setupColumnVisibility() {
+    auto* header = settingsTableView_->horizontalHeader();
+    header->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(header, &QHeaderView::customContextMenuRequested,
+            this, &EntityListMdiWindow::showHeaderContextMenu);
+
+    connect(header, &QHeaderView::sectionMoved,
+            this, &EntityListMdiWindow::saveSettings);
+    connect(header, &QHeaderView::sectionResized,
+            this, &EntityListMdiWindow::saveSettings);
+}
+
+void EntityListMdiWindow::showHeaderContextMenu(const QPoint& pos) {
+    auto* header = settingsTableView_->horizontalHeader();
+    QMenu menu(this);
+    menu.setTitle(tr("Columns"));
+
+    for (int col = 0; col < settingsModel_->columnCount(); ++col) {
+        QString columnName = settingsModel_->headerData(
+            col, Qt::Horizontal, Qt::DisplayRole).toString();
+
+        QAction* action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(!header->isSectionHidden(col));
+
+        connect(action, &QAction::toggled, this,
+                [this, header, col](bool visible) {
+            header->setSectionHidden(col, !visible);
+            saveSettings();
+        });
+    }
+
+    menu.exec(header->mapToGlobal(pos));
 }
 
 }

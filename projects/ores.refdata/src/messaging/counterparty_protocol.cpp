@@ -52,6 +52,8 @@ void write_counterparty(std::vector<std::byte>& buffer,
     }
     writer::write_string(buffer, cp.business_center_code);
     writer::write_string(buffer, cp.status);
+    writer::write_string(buffer, cp.modified_by);
+    writer::write_string(buffer, cp.performed_by);
     writer::write_string(buffer, cp.change_reason_code);
     writer::write_string(buffer, cp.change_commentary);
     writer::write_string(buffer,
@@ -102,7 +104,13 @@ read_counterparty(std::span<const std::byte>& data) {
     if (!status_result) return std::unexpected(status_result.error());
     cp.status = *status_result;
 
+    auto modified_by_result = reader::read_string(data);
+    if (!modified_by_result) return std::unexpected(modified_by_result.error());
+    cp.modified_by = *modified_by_result;
 
+    auto performed_by_result = reader::read_string(data);
+    if (!performed_by_result) return std::unexpected(performed_by_result.error());
+    cp.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());

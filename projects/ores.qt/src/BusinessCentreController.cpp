@@ -143,6 +143,7 @@ void BusinessCentreController::showAddWindow() {
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -185,6 +186,7 @@ void BusinessCentreController::showDetailWindow(
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setBusinessCentre(business_centre);
@@ -307,6 +309,7 @@ void BusinessCentreController::onOpenVersion(
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBusinessCentre(business_centre);
     detailDialog->setReadOnly(true);
@@ -353,6 +356,7 @@ void BusinessCentreController::onRevertVersion(
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBusinessCentre(business_centre);
     detailDialog->setCreateMode(false);

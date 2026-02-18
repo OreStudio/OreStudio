@@ -23,6 +23,7 @@
 #include "ores.refdata/messaging/party_type_protocol.hpp"
 #include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -134,6 +135,21 @@ lookup_result fetch_tenant_lookups(ClientManager* cm) {
     }
 
     return result;
+}
+
+std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm) return codes;
+
+    refdata::messaging::get_currencies_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& ccy : response->currencies) {
+            codes.push_back(ccy.iso_code);
+        }
+    }
+    return codes;
 }
 
 std::unordered_map<std::string, std::string>

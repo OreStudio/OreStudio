@@ -60,10 +60,8 @@ public:
      * and easier to refactor when columns are added, removed, or reordered.
      */
     enum Column {
-        Flag,          // Currency flag icon
-        CurrencyName,
         IsoCode,
-        Version,
+        CurrencyName,
         NumericCode,
         Symbol,
         FractionSymbol,
@@ -72,6 +70,7 @@ public:
         RoundingPrecision,
         Format,
         CurrencyType,
+        Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount  // Must be last - represents total number of columns

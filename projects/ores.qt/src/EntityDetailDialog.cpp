@@ -478,8 +478,28 @@ void EntityDetailDialog::buildHierarchyTree() {
         return item;
     };
 
-    for (const auto* root : roots) {
-        hierarchyTree_->addTopLevelItem(buildItem(root));
+    // Find the root of the current entity's hierarchy by walking up parent_id
+    const parent_entity_entry* currentRoot = nullptr;
+    auto it = byId.find(current_id_str);
+    if (it != byId.end()) {
+        const parent_entity_entry* entry = it->second;
+        while (entry->parent_id) {
+            auto parentIt = byId.find(boost::uuids::to_string(*entry->parent_id));
+            if (parentIt != byId.end()) {
+                entry = parentIt->second;
+            } else {
+                break;
+            }
+        }
+        currentRoot = entry;
+    }
+
+    if (currentRoot) {
+        hierarchyTree_->addTopLevelItem(buildItem(currentRoot));
+    } else {
+        for (const auto* root : roots) {
+            hierarchyTree_->addTopLevelItem(buildItem(root));
+        }
     }
 
     hierarchyTree_->expandAll();

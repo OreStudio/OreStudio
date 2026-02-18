@@ -65,6 +65,7 @@ void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
         QIcon icon = resolver(code);
         combo->setItemIcon(i, icon);
     }
+    combo->update();
 }
 
 }

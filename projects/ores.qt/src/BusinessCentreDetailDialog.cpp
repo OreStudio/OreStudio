@@ -28,6 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -71,30 +72,77 @@ void BusinessCentreDetailDialog::setupConnections() {
             &BusinessCentreDetailDialog::onFieldChanged);
     connect(ui_->codingSchemeEdit, &QLineEdit::textChanged, this,
             &BusinessCentreDetailDialog::onFieldChanged);
-    connect(ui_->countryAlpha2Edit, &QLineEdit::textChanged, this,
+    connect(ui_->countryAlpha2Combo, &QComboBox::currentTextChanged, this,
             &BusinessCentreDetailDialog::onFieldChanged);
 }
 
 void BusinessCentreDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateCountries();
+}
+
+void BusinessCentreDetailDialog::populateCountries() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<BusinessCentreDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<std::string> {
+        refdata::messaging::get_countries_request request;
+        request.limit = 1000;
+        auto response = cm->process_authenticated_request(std::move(request));
+        if (!response) return {};
+
+        std::vector<std::string> codes;
+        codes.reserve(response->countries.size());
+        for (const auto& country : response->countries) {
+            codes.push_back(country.alpha2_code);
+        }
+        return codes;
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished,
+            self, [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        self->ui_->countryAlpha2Combo->blockSignals(true);
+        const auto current = self->ui_->countryAlpha2Combo->currentText();
+        self->ui_->countryAlpha2Combo->clear();
+        for (const auto& code : codes) {
+            self->ui_->countryAlpha2Combo->addItem(
+                QString::fromStdString(code));
+        }
+        if (!current.isEmpty()) {
+            self->ui_->countryAlpha2Combo->setCurrentText(current);
+        }
+        self->ui_->countryAlpha2Combo->blockSignals(false);
+
+        self->updateCountryFlagIcons();
+    });
+
+    QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void BusinessCentreDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     if (imageCache_) {
         connect(imageCache_, &ImageCache::allLoaded, this,
-                &BusinessCentreDetailDialog::updateFlagIcon);
-        connect(ui_->countryAlpha2Edit, &QLineEdit::textChanged, this,
-                &BusinessCentreDetailDialog::updateFlagIcon);
-        updateFlagIcon();
+                &BusinessCentreDetailDialog::updateCountryFlagIcons);
+        updateCountryFlagIcons();
     }
 }
 
-void BusinessCentreDetailDialog::updateFlagIcon() {
+void BusinessCentreDetailDialog::updateCountryFlagIcons() {
     if (!imageCache_) return;
-    const auto alpha2 = ui_->countryAlpha2Edit->text().trimmed().toStdString();
-    QIcon icon = imageCache_->getCountryFlagIcon(alpha2);
-    set_line_edit_flag_icon(ui_->codeEdit, icon, codeFlagAction_);
+    set_combo_flag_icons(ui_->countryAlpha2Combo,
+        [this](const std::string& code) {
+            return imageCache_->getCountryFlagIcon(code);
+        });
 }
 
 void BusinessCentreDetailDialog::setUsername(const std::string& username) {
@@ -126,7 +174,7 @@ void BusinessCentreDetailDialog::setReadOnly(bool readOnly) {
     ui_->sourceEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->codingSchemeEdit->setReadOnly(readOnly);
-    ui_->countryAlpha2Edit->setReadOnly(readOnly);
+    ui_->countryAlpha2Combo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -136,7 +184,7 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
     ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
-    ui_->countryAlpha2Edit->setText(QString::fromStdString(business_centre_.country_alpha2_code));
+    ui_->countryAlpha2Combo->setCurrentText(QString::fromStdString(business_centre_.country_alpha2_code));
 
     ui_->versionEdit->setText(QString::number(business_centre_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(business_centre_.modified_by));
@@ -152,7 +200,7 @@ void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
     business_centre_.source = ui_->sourceEdit->text().trimmed().toStdString();
     business_centre_.description = ui_->descriptionEdit->text().trimmed().toStdString();
     business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
-    business_centre_.country_alpha2_code = ui_->countryAlpha2Edit->text().trimmed().toStdString();
+    business_centre_.country_alpha2_code = ui_->countryAlpha2Combo->currentText().trimmed().toStdString();
     business_centre_.modified_by = username_;
     business_centre_.performed_by = username_;
 }

@@ -94,9 +94,9 @@ signals:
 private slots:
     void onRolesLoaded();
 
-private:
+public:
     /**
-     * @brief Enumeration of table columns.
+     * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
         Name,
@@ -108,6 +108,7 @@ private:
         ColumnCount
     };
 
+private:
     struct FetchResult {
         bool success;
         std::vector<iam::domain::role> roles;

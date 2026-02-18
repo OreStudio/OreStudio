@@ -21,7 +21,6 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QSettings>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
@@ -52,7 +51,6 @@ MethodologyMdiWindow::MethodologyMdiWindow(
     setupUi();
     setupToolbar();
     setupConnections();
-    loadColumnVisibility();
 
     model_->refresh();
 }
@@ -76,9 +74,12 @@ void MethodologyMdiWindow::setupUi() {
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
     tableView_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientMethodologyModel::Name, Qt::AscendingOrder);
+
+    initializeTableSettings(tableView_, model_,
+        "MethodologyMdiWindow",
+        {}, {900, 400}, 1);
 
     layout->addWidget(tableView_);
 }
@@ -269,26 +270,6 @@ void MethodologyMdiWindow::updateActionStates() {
 void MethodologyMdiWindow::reload() {
     clearStaleIndicator();
     model_->refresh();
-}
-
-void MethodologyMdiWindow::saveColumnVisibility() {
-    QSettings settings;
-    settings.beginGroup("MethodologyMdiWindow");
-    for (int i = 0; i < model_->columnCount(); ++i) {
-        settings.setValue(QString("column_%1_visible").arg(i),
-                          !tableView_->isColumnHidden(i));
-    }
-    settings.endGroup();
-}
-
-void MethodologyMdiWindow::loadColumnVisibility() {
-    QSettings settings;
-    settings.beginGroup("MethodologyMdiWindow");
-    for (int i = 0; i < model_->columnCount(); ++i) {
-        bool visible = settings.value(QString("column_%1_visible").arg(i), true).toBool();
-        tableView_->setColumnHidden(i, !visible);
-    }
-    settings.endGroup();
 }
 
 }

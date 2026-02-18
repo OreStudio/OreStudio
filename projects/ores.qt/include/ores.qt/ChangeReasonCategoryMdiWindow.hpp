@@ -58,8 +58,6 @@ public:
         QWidget* parent = nullptr);
     ~ChangeReasonCategoryMdiWindow() override = default;
 
-    QSize sizeHint() const override;
-
 public slots:
     void reload() override;
 
@@ -83,18 +81,12 @@ private slots:
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
 
-private slots:
-    void showHeaderContextMenu(const QPoint& pos);
-
 private:
     void setupUi();
     void setupToolbar();
     void setupTable();
-    void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings() override;
-    void restoreSettings();
 
     ClientManager* clientManager_;
     QString username_;

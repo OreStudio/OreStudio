@@ -422,7 +422,10 @@ The MdiWindow inherits from =EntityListMdiWindow= which provides:
 - =markAsStale()= / =clearStaleIndicator()= for stale indicator support
 - Pure virtual =reload()= method
 - =initializeStaleIndicator(QAction*, QString)= helper for toolbar setup
+- =initializeTableSettings()= for column resize, visibility, settings persistence, and window size
 - =normalRefreshTooltip()= / =staleRefreshTooltip()= virtual methods for customization
+- =sizeHint()= override — returns saved window size or default from =initializeTableSettings()=
+- =saveSettings()= — automatically saves header state and window size on close
 
 #+begin_src cpp
 #ifndef ORES_QT_<ENTITY>_MDI_WINDOW_HPP
@@ -461,7 +464,6 @@ public:
     ~<Entity>MdiWindow() override = default;
 
     Client<Entity>Model* model() const { return model_.get(); }
-    QSize sizeHint() const override { return QSize(900, 600); }
 
 public slots:
     void reload() override;  // Pure virtual from EntityListMdiWindow
@@ -537,7 +539,18 @@ private:
 10. Update action states.
 11. Load initial data if connected.
 
-**** Standard table configuration
+**** Standard table configuration and settings
+
+After creating the table view and model, call =initializeTableSettings()= from
+the base class. This single call handles:
+
+- Setting =ResizeToContents= on all columns
+- Column visibility context menu (right-click header to show/hide columns)
+- Saving/restoring header state (column order, visibility, width) via =QSettings=
+- Saving/restoring window size via =QSettings=
+- Settings version management (bump to discard stale saved state)
+- Default hidden columns (applied when no saved state or version mismatch)
+- =sizeHint()= returns saved window size or the default size you specify
 
 #+begin_src cpp
 tableView_->setAlternatingRowColors(true);
@@ -546,51 +559,32 @@ tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
 tableView_->setWordWrap(false);
 tableView_->setSortingEnabled(true);
 tableView_->verticalHeader()->setVisible(false);
-tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+// This replaces ALL manual column setup, save/restore, and column visibility code.
+// Parameters: tableView, sourceModel, settingsGroup, defaultHiddenColumns, defaultSize, settingsVersion
+initializeTableSettings(tableView_, model_.get(),
+    "<Entity>ListWindow",
+    {Client<Entity>Model::Description},  // Columns hidden by default (or {} for none)
+    {900, 400},  // Default window size
+    1);          // Bump when column layout changes
 #+end_src
 
-*Important*: Do NOT use =setColumnWidth()= or =setStretchLastSection(true)=.
-All list windows must use =ResizeToContents= consistently so columns auto-size
-to actual data and behave identically across all entity windows (countries,
-currencies, parties, counterparties, etc.).
+*Important*: Do NOT use =setColumnWidth()=, =setStretchLastSection(true)=, or
+=setSectionResizeMode(QHeaderView::Fixed)=. All list windows must use
+=ResizeToContents= consistently (set by =initializeTableSettings()=) so columns
+auto-size to actual data and behave identically across all entity windows.
+
+*Do NOT implement* the following in subclasses — they are handled by the base class:
+- =sizeHint()= — returns saved window size or default from =initializeTableSettings()=
+- =saveSettings()= — saves header state and window size on close
+- =setupColumnVisibility()= / =showHeaderContextMenu()= — column visibility context menu
+- Any manual =QSettings= save/restore code
 
 **** Settings versioning for column layout
 
 When column layout changes (columns added, removed, renamed, or reordered),
-bump the =settings_version= constant in =restoreSettings()= to invalidate
+bump the =settingsVersion= parameter in =initializeTableSettings()= to invalidate
 cached header state. This forces users to get the new defaults on next launch.
-
-#+begin_src cpp
-void <Entity>MdiWindow::restoreSettings() {
-    static constexpr int settings_version = 1;
-
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("<Entity>ListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    const auto saved_version = settings.value("settingsVersion", 0).toInt();
-    if (saved_version == settings_version && settings.contains("headerState")) {
-        header->restoreState(settings.value("headerState").toByteArray());
-    } else {
-        if (saved_version != settings_version) {
-            settings.remove("headerState");
-            settings.setValue("settingsVersion", settings_version);
-        }
-    }
-
-    // Always enforce columns that must be hidden (regardless of saved state)
-    // header->hideSection(Client<Entity>Model::SomeColumn);
-
-    // Store saved size for sizeHint() so MDI sub-window gets correct dimensions
-    if (settings.contains("windowSize")) {
-        savedWindowSize_ = settings.value("windowSize").toSize();
-    }
-
-    settings.endGroup();
-}
-#+end_src
 
 **** Non-Latin text detection for transliterated names
 
@@ -1883,13 +1877,17 @@ Use the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill for i
 
 ** Window size hints
 
-| Window Type | Size |
-|-------------+------|
-| List (standard) | 900x600 |
-| List (large) | 1000x600 |
-| List (small) | 700x400 |
-| Detail dialog | 600x500 |
-| History dialog | 900x600 |
+Pass the default size as the 5th argument to =initializeTableSettings()=.
+The base class =sizeHint()= returns this value (or the saved window size if the
+user has resized it previously).
+
+| Window Type | Size | Notes |
+|-------------+------+-------|
+| List (standard) | 900x400 | Default for most entities |
+| List (large) | 1000x600 | Currencies, countries |
+| List (small) | 700x400 | Roles |
+| Detail dialog | 600x500 | |
+| History dialog | 900x600 | |
 
 
 ** Color constants

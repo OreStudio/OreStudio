@@ -41,8 +41,6 @@ public:
         QWidget* parent = nullptr);
     ~{{domain_entity.entity_pascal}}MdiWindow() override = default;
 
-    QSize sizeHint() const override;
-
 public slots:
     void reload() override;
 
@@ -66,9 +64,6 @@ private slots:
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
 
-private slots:
-    void showHeaderContextMenu(const QPoint& pos);
-
 protected:
     QString normalRefreshTooltip() const override {
         return tr("Refresh {{domain_entity.entity_plural_words}}");
@@ -78,11 +73,8 @@ private:
     void setupUi();
     void setupToolbar();
     void setupTable();
-    void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings();
-    void restoreSettings();
 
     ClientManager* clientManager_;
     QString username_;

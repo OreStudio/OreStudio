@@ -60,8 +60,6 @@ public:
         QWidget* parent = nullptr);
     ~PartyMdiWindow() override = default;
 
-    QSize sizeHint() const override;
-
 public slots:
     void reload() override;
 
@@ -85,9 +83,6 @@ private slots:
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
 
-private slots:
-    void showHeaderContextMenu(const QPoint& pos);
-
 protected:
     QString normalRefreshTooltip() const override {
         return tr("Refresh parties");
@@ -96,11 +91,8 @@ private:
     void setupUi();
     void setupToolbar();
     void setupTable();
-    void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings() override;
-    void restoreSettings();
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;

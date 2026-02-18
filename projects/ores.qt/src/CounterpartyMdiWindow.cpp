@@ -22,8 +22,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
@@ -64,16 +62,6 @@ CounterpartyMdiWindow::CounterpartyMdiWindow(
 
     // Initial load
     reload();
-}
-
-QSize CounterpartyMdiWindow::sizeHint() const {
-    if (savedWindowSize_.isValid()) {
-        BOOST_LOG_SEV(lg(), debug) << "sizeHint returning saved size: "
-            << savedWindowSize_.width() << "x" << savedWindowSize_.height();
-        return savedWindowSize_;
-    }
-    BOOST_LOG_SEV(lg(), debug) << "sizeHint returning default size: 900x400";
-    return {900, 400};
 }
 
 void CounterpartyMdiWindow::setupUi() {
@@ -170,16 +158,11 @@ void CounterpartyMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
     tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    tableView_->horizontalHeader()->setSectionResizeMode(
-        ClientCounterpartyModel::RecordedAt, QHeaderView::Fixed);
-    tableView_->horizontalHeader()->resizeSection(ClientCounterpartyModel::RecordedAt, 150);
 
-    // Setup column visibility with context menu
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(tableView_, model_,
+        "CounterpartyListWindow",
+        {ClientCounterpartyModel::TransliteratedName},
+        {900, 400}, 4);
 }
 
 void CounterpartyMdiWindow::setupConnections() {
@@ -466,96 +449,6 @@ void CounterpartyMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void CounterpartyMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &CounterpartyMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this,
-            &CounterpartyMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this,
-            &CounterpartyMdiWindow::saveSettings);
-}
-
-void CounterpartyMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void CounterpartyMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("CounterpartyListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = tableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-    BOOST_LOG_SEV(lg(), debug) << "Saved counterparty window size: "
-        << size().width() << "x" << size().height();
-
-    settings.endGroup();
-}
-
-void CounterpartyMdiWindow::restoreSettings() {
-    static constexpr int settings_version = 3;
-
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("CounterpartyListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Check if saved settings match current version
-    const auto saved_version = settings.value("settingsVersion", 0).toInt();
-    if (saved_version == settings_version && settings.contains("headerState")) {
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-    } else {
-        if (saved_version != settings_version) {
-            BOOST_LOG_SEV(lg(), debug)
-                << "Settings version changed (" << saved_version
-                << " -> " << settings_version << "), resetting to defaults";
-            settings.remove("headerState");
-            settings.setValue("settingsVersion", settings_version);
-        }
-    }
-
-    // Always hide transliterated name (data merged into Name column)
-    header->hideSection(ClientCounterpartyModel::TransliteratedName);
-
-    // Restore window size if saved (used by sizeHint for MDI sub-window sizing)
-    if (settings.contains("windowSize")) {
-        savedWindowSize_ = settings.value("windowSize").toSize();
-    }
-
-    settings.endGroup();
 }
 
 }

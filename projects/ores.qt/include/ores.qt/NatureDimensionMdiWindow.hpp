@@ -51,8 +51,6 @@ public:
         QWidget* parent = nullptr);
     ~NatureDimensionMdiWindow() override = default;
 
-    QSize sizeHint() const override;
-
 public slots:
     void reload() override;
 
@@ -75,7 +73,6 @@ private slots:
     void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
-    void showHeaderContextMenu(const QPoint& pos);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -86,11 +83,8 @@ private:
     void setupUi();
     void setupToolbar();
     void setupTable();
-    void setupColumnVisibility();
     void setupConnections();
     void updateActionStates();
-    void saveSettings() override;
-    void restoreSettings();
 
     ClientManager* clientManager_;
     QString username_;

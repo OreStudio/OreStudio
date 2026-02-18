@@ -60,8 +60,6 @@ public:
 
     ClientCurrencyModel* currencyModel() const { return currencyModel_.get(); }
 
-    QSize sizeHint() const override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
@@ -101,10 +99,6 @@ private:
     void setupReloadAction();
     void setupGenerateAction();
     void updateGenerateActionVisibility();
-    void setupColumnVisibility();
-    void showHeaderContextMenu(const QPoint& pos);
-    void saveSettings() override;
-    void restoreSettings();
 
 private:
     QVBoxLayout* verticalLayout_;

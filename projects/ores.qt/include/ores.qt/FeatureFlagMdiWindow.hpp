@@ -59,8 +59,6 @@ public:
 
     ClientFeatureFlagModel* featureFlagModel() const { return featureFlagModel_.get(); }
 
-    QSize sizeHint() const override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

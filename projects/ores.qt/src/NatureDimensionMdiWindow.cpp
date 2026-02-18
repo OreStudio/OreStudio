@@ -22,8 +22,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
@@ -57,10 +55,6 @@ NatureDimensionMdiWindow::NatureDimensionMdiWindow(
     setupUi();
     setupConnections();
     reload();
-}
-
-QSize NatureDimensionMdiWindow::sizeHint() const {
-    return {800, 400};
 }
 
 void NatureDimensionMdiWindow::setupUi() {
@@ -136,17 +130,12 @@ void NatureDimensionMdiWindow::setupTable() {
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    tableView_->setColumnWidth(ClientNatureDimensionModel::Code, 150);
-    tableView_->setColumnWidth(ClientNatureDimensionModel::Name, 200);
-    tableView_->setColumnWidth(ClientNatureDimensionModel::Description, 250);
-    tableView_->setColumnWidth(ClientNatureDimensionModel::Version, 80);
-    tableView_->setColumnWidth(ClientNatureDimensionModel::ModifiedBy, 120);
-
-    setupColumnVisibility();
-    restoreSettings();
+    initializeTableSettings(tableView_, model_,
+        "NatureDimensionListWindow",
+        {ClientNatureDimensionModel::Description},
+        {900, 400}, 1);
 }
 
 void NatureDimensionMdiWindow::setupConnections() {
@@ -339,56 +328,6 @@ void NatureDimensionMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void NatureDimensionMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &NatureDimensionMdiWindow::showHeaderContextMenu);
-    connect(header, &QHeaderView::sectionMoved, this, &NatureDimensionMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this, &NatureDimensionMdiWindow::saveSettings);
-}
-
-void NatureDimensionMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString();
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-        });
-    }
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void NatureDimensionMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("NatureDimensionListWindow");
-    settings.setValue("headerState", tableView_->horizontalHeader()->saveState());
-    settings.setValue("windowSize", size());
-    settings.endGroup();
-}
-
-void NatureDimensionMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("NatureDimensionListWindow");
-
-    if (settings.contains("headerState")) {
-        tableView_->horizontalHeader()->restoreState(settings.value("headerState").toByteArray());
-    } else {
-        tableView_->horizontalHeader()->setSectionHidden(ClientNatureDimensionModel::Description, true);
-    }
-
-    if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
-    }
-    settings.endGroup();
 }
 
 }

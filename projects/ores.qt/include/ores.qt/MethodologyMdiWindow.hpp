@@ -51,8 +51,6 @@ public:
                                   QWidget* parent = nullptr);
     ~MethodologyMdiWindow() override = default;
 
-    QSize sizeHint() const override { return QSize(900, 600); }
-
 public slots:
     void reload() override;
 
@@ -84,8 +82,6 @@ private:
     void setupToolbar();
     void setupConnections();
     void updateActionStates();
-    void saveColumnVisibility();
-    void loadColumnVisibility();
 
     ClientManager* clientManager_;
     QString username_;

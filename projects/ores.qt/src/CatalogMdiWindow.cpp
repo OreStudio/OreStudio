@@ -69,11 +69,14 @@ void CatalogMdiWindow::setupUi() {
         cs::text_left,   // ModifiedBy
         cs::mono_left    // RecordedAt
     }, tableView_));
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
     model_ = new ClientCatalogModel(clientManager_, this);
     tableView_->setModel(model_);
+
+    initializeTableSettings(tableView_, model_,
+        "CatalogListWindow",
+        {}, {800, 500}, 1);
 
     layout->addWidget(tableView_);
 }

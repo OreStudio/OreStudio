@@ -22,8 +22,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
@@ -59,10 +57,6 @@ ContactTypeMdiWindow::ContactTypeMdiWindow(
 
     // Initial load
     reload();
-}
-
-QSize ContactTypeMdiWindow::sizeHint() const {
-    return {900, 400};
 }
 
 void ContactTypeMdiWindow::setupUi() {
@@ -150,23 +144,12 @@ void ContactTypeMdiWindow::setupTable() {
         cs::mono_left    // RecordedAt
     }, tableView_));
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    // Set column widths
-    tableView_->setColumnWidth(ClientContactTypeModel::Code, 150);
-    tableView_->setColumnWidth(ClientContactTypeModel::Name, 200);
-    tableView_->setColumnWidth(ClientContactTypeModel::Description, 300);
-    tableView_->setColumnWidth(ClientContactTypeModel::DisplayOrder, 80);
-    tableView_->setColumnWidth(ClientContactTypeModel::Version, 80);
-    tableView_->setColumnWidth(ClientContactTypeModel::ModifiedBy, 120);
-    tableView_->setColumnWidth(ClientContactTypeModel::RecordedAt, 150);
-
-    // Setup column visibility with context menu
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(tableView_, model_,
+        "ContactTypeListWindow",
+        {ClientContactTypeModel::Description},
+        {900, 400}, 1);
 }
 
 void ContactTypeMdiWindow::setupConnections() {
@@ -406,85 +389,6 @@ void ContactTypeMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void ContactTypeMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &ContactTypeMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this,
-            &ContactTypeMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this,
-            &ContactTypeMdiWindow::saveSettings);
-}
-
-void ContactTypeMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void ContactTypeMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("ContactTypeListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = tableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-}
-
-void ContactTypeMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("ContactTypeListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-    } else {
-        // Apply default column visibility (hide Description by default)
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-        header->setSectionHidden(ClientContactTypeModel::Description, true);
-    }
-
-    // Restore window size if saved
-    if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
-    }
-
-    settings.endGroup();
 }
 
 }

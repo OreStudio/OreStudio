@@ -21,7 +21,6 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QSettings>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include "ores.qt/IconUtils.hpp"
@@ -51,7 +50,6 @@ CodingSchemeMdiWindow::CodingSchemeMdiWindow(
     setupUi();
     setupToolbar();
     setupConnections();
-    loadColumnVisibility();
 
     model_->refresh();
 }
@@ -78,9 +76,13 @@ void CodingSchemeMdiWindow::setupUi() {
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
     tableView_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientCodingSchemeModel::Code, Qt::AscendingOrder);
+
+    initializeTableSettings(tableView_, model_,
+        "CodingSchemeMdiWindow",
+        {},
+        {900, 400}, 1);
 
     layout->addWidget(tableView_);
 }
@@ -271,26 +273,6 @@ void CodingSchemeMdiWindow::updateActionStates() {
 void CodingSchemeMdiWindow::reload() {
     clearStaleIndicator();
     model_->refresh();
-}
-
-void CodingSchemeMdiWindow::saveColumnVisibility() {
-    QSettings settings;
-    settings.beginGroup("CodingSchemeMdiWindow");
-    for (int i = 0; i < model_->columnCount(); ++i) {
-        settings.setValue(QString("column_%1_visible").arg(i),
-                          !tableView_->isColumnHidden(i));
-    }
-    settings.endGroup();
-}
-
-void CodingSchemeMdiWindow::loadColumnVisibility() {
-    QSettings settings;
-    settings.beginGroup("CodingSchemeMdiWindow");
-    for (int i = 0; i < model_->columnCount(); ++i) {
-        bool visible = settings.value(QString("column_%1_visible").arg(i), true).toBool();
-        tableView_->setColumnHidden(i, !visible);
-    }
-    settings.endGroup();
 }
 
 }

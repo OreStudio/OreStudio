@@ -160,9 +160,10 @@ AccountMdiWindow(ClientManager* clientManager,
     accountTableView_->setSortingEnabled(true);
     accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 
-    QHeaderView* horizontalHeader(accountTableView_->horizontalHeader());
     accountTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    initializeTableSettings(accountTableView_, accountModel_.get(),
+        "AccountListWindow", {}, {800, 500}, 1);
 
     // Connect signals
     connect(accountModel_.get(), &ClientAccountModel::dataLoaded,
@@ -1076,16 +1077,6 @@ void AccountMdiWindow::viewSessionsSelected() {
     BOOST_LOG_SEV(lg(), debug) << "Emitting showSessionHistory for account: "
                              << account->username;
     emit showSessionHistory(account->id, QString::fromStdString(account->username));
-}
-
-QSize AccountMdiWindow::sizeHint() const {
-    const int minimumWidth = 800;
-    const int minimumHeight = 500;
-
-    QSize baseSize = QWidget::sizeHint();
-
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
 }
 
 void AccountMdiWindow::updateActionStates() {

@@ -101,9 +101,12 @@ RoleMdiWindow(ClientManager* clientManager,
     }, roleTableView_));
     roleTableView_->sortByColumn(0, Qt::AscendingOrder);
 
-    QHeaderView* horizontalHeader(roleTableView_->horizontalHeader());
     roleTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    initializeTableSettings(roleTableView_, roleModel_.get(),
+        "RoleListWindow",
+        {ClientRoleModel::Description},
+        {700, 400}, 1);
 
     // Connect signals
     connect(roleModel_.get(), &ClientRoleModel::dataLoaded,
@@ -227,16 +230,6 @@ void RoleMdiWindow::viewSelected() {
     }
 
     onRowDoubleClicked(selected.first());
-}
-
-QSize RoleMdiWindow::sizeHint() const {
-    const int minimumWidth = 700;
-    const int minimumHeight = 400;
-
-    QSize baseSize = QWidget::sizeHint();
-
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
 }
 
 void RoleMdiWindow::updateActionStates() {

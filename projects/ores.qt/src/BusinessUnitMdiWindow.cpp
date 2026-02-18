@@ -22,8 +22,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
@@ -64,10 +62,6 @@ BusinessUnitMdiWindow::BusinessUnitMdiWindow(
 
     // Initial load
     reload();
-}
-
-QSize BusinessUnitMdiWindow::sizeHint() const {
-    return {900, 400};
 }
 
 void BusinessUnitMdiWindow::setupUi() {
@@ -148,19 +142,12 @@ void BusinessUnitMdiWindow::setupTable() {
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    // Set column widths
-    tableView_->setColumnWidth(ClientBusinessUnitModel::UnitCode, 120);
-    tableView_->setColumnWidth(ClientBusinessUnitModel::UnitName, 250);
-    tableView_->setColumnWidth(ClientBusinessUnitModel::BusinessCentreCode, 130);
-    tableView_->setColumnWidth(ClientBusinessUnitModel::Status, 100);
-    tableView_->setColumnWidth(ClientBusinessUnitModel::Version, 80);
-    tableView_->setColumnWidth(ClientBusinessUnitModel::ModifiedBy, 120);
-    tableView_->setColumnWidth(ClientBusinessUnitModel::RecordedAt, 150);
-    tableView_->horizontalHeader()->setSectionResizeMode(
-        ClientBusinessUnitModel::RecordedAt, QHeaderView::Fixed);
+    initializeTableSettings(tableView_, model_,
+        "BusinessUnitListWindow",
+        {},
+        {900, 400}, 1);
 
     // Configure badge delegate for Status column
     using cs = column_style;
@@ -175,12 +162,6 @@ void BusinessUnitMdiWindow::setupTable() {
     }, tableView_);
     delegate->set_badge_color_resolver(resolve_status_badge_color);
     tableView_->setItemDelegate(delegate);
-
-    // Setup column visibility with context menu
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
 }
 
 void BusinessUnitMdiWindow::setupConnections() {
@@ -450,84 +431,6 @@ void BusinessUnitMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void BusinessUnitMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &BusinessUnitMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this,
-            &BusinessUnitMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this,
-            &BusinessUnitMdiWindow::saveSettings);
-}
-
-void BusinessUnitMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void BusinessUnitMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("BusinessUnitListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = tableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-}
-
-void BusinessUnitMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("BusinessUnitListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-    } else {
-        // Apply default column visibility
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-    }
-
-    // Restore window size if saved
-    if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
-    }
-
-    settings.endGroup();
 }
 
 }

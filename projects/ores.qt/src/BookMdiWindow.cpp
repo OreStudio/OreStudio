@@ -22,8 +22,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QMenu>
-#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
@@ -64,10 +62,6 @@ BookMdiWindow::BookMdiWindow(
 
     // Initial load
     reload();
-}
-
-QSize BookMdiWindow::sizeHint() const {
-    return {900, 400};
 }
 
 void BookMdiWindow::setupUi() {
@@ -161,26 +155,10 @@ void BookMdiWindow::setupTable() {
     delegate->set_badge_color_resolver(resolve_status_badge_color);
     tableView_->setItemDelegate(delegate);
     tableView_->setAlternatingRowColors(true);
-    tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    // Set column widths
-    tableView_->setColumnWidth(ClientBookModel::Name, 200);
-    tableView_->setColumnWidth(ClientBookModel::LedgerCcy, 100);
-    tableView_->setColumnWidth(ClientBookModel::BookStatus, 100);
-    tableView_->setColumnWidth(ClientBookModel::CostCenter, 120);
-    tableView_->setColumnWidth(ClientBookModel::IsTradingBook, 70);
-    tableView_->setColumnWidth(ClientBookModel::Version, 80);
-    tableView_->setColumnWidth(ClientBookModel::ModifiedBy, 120);
-    tableView_->setColumnWidth(ClientBookModel::RecordedAt, 150);
-    tableView_->horizontalHeader()->setSectionResizeMode(
-        ClientBookModel::RecordedAt, QHeaderView::Fixed);
-
-    // Setup column visibility with context menu
-    setupColumnVisibility();
-
-    // Restore saved settings (column visibility, window size)
-    restoreSettings();
+    initializeTableSettings(tableView_, model_, "BookListWindow",
+        {}, {900, 400}, 1);
 }
 
 void BookMdiWindow::setupConnections() {
@@ -450,84 +428,6 @@ void BookMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void BookMdiWindow::setupColumnVisibility() {
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Enable context menu on header for column visibility
-    header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &BookMdiWindow::showHeaderContextMenu);
-
-    // Save header state when sections are moved or resized
-    connect(header, &QHeaderView::sectionMoved, this,
-            &BookMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized, this,
-            &BookMdiWindow::saveSettings);
-}
-
-void BookMdiWindow::showHeaderContextMenu(const QPoint& pos) {
-    QHeaderView* header = tableView_->horizontalHeader();
-    QMenu menu(this);
-    menu.setTitle(tr("Columns"));
-
-    // Add action for each column
-    for (int col = 0; col < model_->columnCount(); ++col) {
-        QString columnName = model_->headerData(col, Qt::Horizontal,
-            Qt::DisplayRole).toString();
-
-        QAction* action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(!header->isSectionHidden(col));
-
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
-            header->setSectionHidden(col, !visible);
-            saveSettings();
-            BOOST_LOG_SEV(lg(), debug) << "Column " << col
-                                       << " visibility changed to: " << visible;
-        });
-    }
-
-    menu.exec(header->mapToGlobal(pos));
-}
-
-void BookMdiWindow::saveSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("BookListWindow");
-
-    // Save header state (includes column visibility, order, and widths)
-    QHeaderView* header = tableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-
-    // Save window size
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
-}
-
-void BookMdiWindow::restoreSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup("BookListWindow");
-
-    QHeaderView* header = tableView_->horizontalHeader();
-
-    // Check if we have saved settings
-    if (settings.contains("headerState")) {
-        // Restore header state
-        header->restoreState(settings.value("headerState").toByteArray());
-        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
-    } else {
-        // Apply default column visibility
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
-    }
-
-    // Restore window size if saved
-    if (settings.contains("windowSize")) {
-        resize(settings.value("windowSize").toSize());
-    }
-
-    settings.endGroup();
 }
 
 }

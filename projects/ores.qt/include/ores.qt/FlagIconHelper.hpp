@@ -65,7 +65,47 @@ void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
         QIcon icon = resolver(code);
         combo->setItemIcon(i, icon);
     }
+    // For editable combos, also update the leading icon on the line edit
+    // since the combo's closed display doesn't show item icons.
+    if (combo->isEditable() && combo->lineEdit()) {
+        update_combo_line_edit_icon(combo, resolver);
+    }
     combo->update();
+}
+
+/**
+ * @brief Update the leading icon on an editable QComboBox's line edit.
+ *
+ * Editable combo boxes don't show the current item's icon in the closed
+ * display. This sets a QAction on the internal QLineEdit to show the
+ * flag for the current selection.
+ *
+ * @tparam Resolver  Callable with signature QIcon(const std::string&)
+ * @param combo      The editable combo box
+ * @param resolver   Callable that maps text to an icon
+ */
+template<typename Resolver>
+void update_combo_line_edit_icon(QComboBox* combo, Resolver&& resolver) {
+    auto* lineEdit = combo->lineEdit();
+    if (!lineEdit) return;
+
+    // Remove any existing leading actions we added
+    const auto actions = lineEdit->actions();
+    for (auto* action : actions) {
+        if (action->property("flag_icon").toBool()) {
+            lineEdit->removeAction(action);
+            delete action;
+        }
+    }
+
+    const std::string code = combo->currentText().toStdString();
+    if (!code.empty()) {
+        QIcon icon = resolver(code);
+        if (!icon.isNull()) {
+            auto* action = lineEdit->addAction(icon, QLineEdit::LeadingPosition);
+            action->setProperty("flag_icon", true);
+        }
+    }
 }
 
 }

@@ -110,18 +110,15 @@ void BusinessCentreDetailDialog::populateCountries() {
         if (!self) return;
 
         self->ui_->countryAlpha2Combo->blockSignals(true);
-        const auto current = self->ui_->countryAlpha2Combo->currentText();
         self->ui_->countryAlpha2Combo->clear();
         for (const auto& code : codes) {
             self->ui_->countryAlpha2Combo->addItem(
                 QString::fromStdString(code));
         }
-        if (!current.isEmpty()) {
-            self->ui_->countryAlpha2Combo->setCurrentText(current);
-        }
         self->ui_->countryAlpha2Combo->blockSignals(false);
 
         self->updateCountryFlagIcons();
+        self->updateUiFromBusinessCentre();
     });
 
     QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
@@ -133,6 +130,13 @@ void BusinessCentreDetailDialog::setImageCache(ImageCache* imageCache) {
     if (imageCache_) {
         connect(imageCache_, &ImageCache::allLoaded, this,
                 &BusinessCentreDetailDialog::updateCountryFlagIcons);
+        connect(ui_->countryAlpha2Combo, &QComboBox::currentTextChanged,
+                this, [this]() {
+            update_combo_line_edit_icon(ui_->countryAlpha2Combo,
+                [this](const std::string& code) {
+                    return imageCache_->getCountryFlagIcon(code);
+                });
+        });
         updateCountryFlagIcons();
     }
 }

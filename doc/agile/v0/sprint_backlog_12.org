@@ -66,6 +66,8 @@
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-02-18 Wed 23:24]
+    CLOCK: [2026-02-18 Wed 23:09]--[2026-02-18 Wed 23:23] =>  0:14
     CLOCK: [2026-02-16 Mon 12:20]--[2026-02-16 Mon 12:33] =>  0:13
     CLOCK: [2026-02-12 Thu 22:50]--[2026-02-12 Thu 23:09] =>  0:19
     CLOCK: [2026-02-12 Thu 22:01]--[2026-02-12 Thu 22:30] =>  0:29
@@ -2770,10 +2772,25 @@ using immer containers:
   also knows about subscriptions so it will tell you about pending subscriptions
   for a collection you are interested in. As you load more pages, we load these
   into immer containers ordered by page.
+- once we implement workspaces, we should then make all references to foreign
+  keys "clickable". For example, if you are in a business centre and it has a
+  country we should be able to click on it and open the country. At present we
+  can't do this because the data is kept at the main dialog level.
+- ideally we want a way to cache data in Qt format. We don't need to save this
+  data to the local database. However, we don't want to make the ores.workspace
+  library depend on Qt. Maybe we just need some kind of "extensions" on each
+  frontend (e.g. Wt etc), sort of a qt.workspace which contains the original
+  workspace plus any Qt specific representations. Or maybe use composition.
+- we should add a UI to visualise the workspace, or at least be able to see size
+  usage etc. Baobab style map.
 
 Links:
 
-- [[https://github.com/arximboldi/immer][GH: immer]]
+- [[https://github.com/arximboldi/immer][GH: immer]]: "immer is a library of persistent and immutable data structures
+  written in C++. These enable whole new kinds of architectures for interactive
+  and concurrent programs of striking simplicity, correctness, and performance."
+- [[https://learn.microsoft.com/en-us/aspnet/core/performance/caching/memory?view=aspnetcore-10.0][Cache in-memory in ASP.NET Core]]: get ideas for the caching interfaces and
+  requirements.
 
 Merged stories:
 
@@ -2784,7 +2801,24 @@ Core needs to have a container for all of the data stored within a context.
 Actually, according to Data Priented Principles, we may not need it. This may be
 a UI concept but not a code concept.
 
+*** Add watermark support                                              :code:
+
+Whenever we request entities, we should also return the watermark for that
+entity. This is the highest timestamp of all entities within a set (across all
+pages). This is so we can redo the exact same query with an "as of" and get
+exactly the same result set. Do some analysis with Claude on how best to do
+this. Maybe we should always query as of so that we know what the watermark is
+up front.
+
+Notes:
+
+- once we have watermark, we need to add a staleness indicator to all dialogs.
+  This will require thresholds. If the data is older than X the staleness
+  indicator goes yellow, older than Y it goes red.
+
 *** Redesign Qt ImageCache invalidation strategy                       :code:
+
+Note: this story should only be looked at after we move towards workspaces.
 
 The current ImageCache invalidation approach is brittle and error-prone. When
 datasets are published, the cache reload is triggered by pattern-matching

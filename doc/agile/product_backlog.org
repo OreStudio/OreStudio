@@ -775,7 +775,7 @@ columns as the composite primary key via the migration script, not via the C++
 entity annotation.
 #+end_quote
 
-*** Fix "informations" plural naming in contact information entities    :code:
+*** Fix "informations" plural naming in contact information entities   :code:
 
 The plural of "information" is "information" (uncountable noun). Several codegen
 models and generated files incorrectly use "informations":
@@ -1592,8 +1592,16 @@ Notes:
 
 : ./llama-tts --tts-oute-default -p "You have new currencies." && aplay output.wav
 
-  We could generate sounds up front for main events. This could be the speech
-  sound theme.
+We could generate sounds up front for main events. This could be the speech
+sound theme.
+
+Links:
+
+- [[https://github.com/PeonPing/peon-ping][GH: peon-ping]]: "AI coding agents don't notify you when they finish or need
+  permission. You tab away, lose focus, and waste 15 minutes getting back into
+  flow. peon-ping fixes this with voice lines from Warcraft, StarCraft, Portal,
+  Zelda, and more — works with Claude Code, Codex, Cursor, OpenCode, Kilo CLI,
+  Kiro, Windsurf, Google Antigravity, and any MCP client."
 
 *** Cli clean-ups                                                      :code:
 
@@ -2738,6 +2746,22 @@ Set conditions to pause or highlight specific events:
 ** Far
 
 Stories that we want to capture, but won't work on for a while.
+
+*** Consider integrating whatsapp-mcp                                  :code:
+
+#+begin_quote
+A Model Context Protocol (MCP) server that bridges WhatsApp and AI assistants
+like Claude. It exposes your WhatsApp messages through standardized MCP tools,
+prompts, and resources - allowing AI to read, search, and send messages on your
+behalf.
+
+The Vision: Let AI handle your WhatsApp conversations intelligently, with full
+context and natural language understanding.
+#+end_quote
+
+Links:
+
+- [[https://github.com/felipeadeildo/whatsapp-mcp/issues/24][GH: whatsapp-mcp]]
 
 *** Replace parent entity combo box with server-side searchable widget :code:
 

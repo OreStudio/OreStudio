@@ -758,8 +758,9 @@ void OrganisationSetupPage::startBundlePublish() {
             leiParams.lei_dataset_size = datasetSize;
         }
         // Opt in the LEI party and counterparty datasets
-        leiParams.opted_in_datasets.push_back("gleif.lei_parties.small");
-        leiParams.opted_in_datasets.push_back("gleif.lei_counterparties.small");
+        const std::string size = datasetSize.empty() ? "small" : datasetSize;
+        leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
+        leiParams.opted_in_datasets.push_back("gleif.lei_counterparties." + size);
         leiParamsJson = dq::messaging::build_params_json(leiParams);
     }
 

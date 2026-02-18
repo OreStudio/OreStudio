@@ -156,7 +156,7 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_, "BusinessCentreListWindow",
-        {ClientBusinessCentreModel::Description}, {900, 400}, 2);
+        {ClientBusinessCentreModel::CodingScheme}, {900, 400}, 3);
 }
 
 void BusinessCentreMdiWindow::setupConnections() {

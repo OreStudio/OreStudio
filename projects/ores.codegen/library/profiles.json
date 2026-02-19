@@ -200,6 +200,48 @@
           "output": "projects/ores.{component}/include/ores.{component}/messaging/{enum_name}.hpp"
         }
       ]
+    },
+    "component": {
+      "description": "Component project scaffold (CMakeLists, stubs, tests)",
+      "model_types": ["component"],
+      "templates": [
+        {
+          "template": "cmake_component_root.mustache",
+          "output": "projects/{component_full}/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_src.mustache",
+          "output": "projects/{component_full}/src/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_tests.mustache",
+          "output": "projects/{component_full}/tests/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_modeling.mustache",
+          "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_component_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
+        },
+        {
+          "template": "cpp_component_stub_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/domain/stub.hpp"
+        },
+        {
+          "template": "cpp_component_stub_impl.cpp.mustache",
+          "output": "projects/{component_full}/src/domain/stub.cpp"
+        },
+        {
+          "template": "cpp_component_test_main.cpp.mustache",
+          "output": "projects/{component_full}/tests/main.cpp"
+        },
+        {
+          "template": "cpp_component_stub_test.cpp.mustache",
+          "output": "projects/{component_full}/tests/stub_tests.cpp"
+        }
+      ]
     }
   }
 }

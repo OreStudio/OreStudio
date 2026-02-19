@@ -57,8 +57,8 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        Code,
         CountryAlpha2,
+        Code,
         Description,
         Source,
         CodingScheme,

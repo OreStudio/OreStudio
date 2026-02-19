@@ -143,8 +143,8 @@ void BusinessCentreMdiWindow::setupTable() {
 
     using cs = column_style;
     tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::mono_bold_left,   // Code
         cs::mono_bold_center, // CountryAlpha2 (flag icon inline via DecorationRole)
+        cs::mono_bold_left,   // Code
         cs::text_left,        // Description
         cs::text_left,        // Source
         cs::mono_left,        // CodingScheme
@@ -156,7 +156,7 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_, "BusinessCentreListWindow",
-        {ClientBusinessCentreModel::Description}, {900, 400}, 1);
+        {ClientBusinessCentreModel::CodingScheme}, {900, 400}, 3);
 }
 
 void BusinessCentreMdiWindow::setupConnections() {

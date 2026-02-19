@@ -88,6 +88,13 @@ void BusinessUnitDetailDialog::setImageCache(ImageCache* imageCache) {
                     return imageCache_->getBusinessCentreFlagIcon(code);
                 });
         });
+        connect(ui_->businessCentreCombo, &QComboBox::currentTextChanged,
+                this, [this]() {
+            update_combo_line_edit_icon(ui_->businessCentreCombo,
+                [this](const std::string& code) {
+                    return imageCache_->getBusinessCentreFlagIcon(code);
+                });
+        });
     }
 }
 

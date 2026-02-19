@@ -20,6 +20,7 @@
 #include "ores.qt/EntityDetailDialog.hpp"
 
 #include <algorithm>
+#include <unordered_set>
 #include <QAction>
 #include <QComboBox>
 #include <QDialog>
@@ -478,8 +479,36 @@ void EntityDetailDialog::buildHierarchyTree() {
         return item;
     };
 
-    for (const auto* root : roots) {
-        hierarchyTree_->addTopLevelItem(buildItem(root));
+    // Find the root of the current entity's hierarchy by walking up parent_id
+    const parent_entity_entry* currentRoot = nullptr;
+    auto it = byId.find(current_id_str);
+    if (it != byId.end()) {
+        const parent_entity_entry* entry = it->second;
+        std::unordered_set<std::string> visited;
+        while (entry->parent_id) {
+            const auto parent_id_str = boost::uuids::to_string(*entry->parent_id);
+            if (!visited.insert(parent_id_str).second) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Cycle detected in hierarchy for entity "
+                    << current_id_str;
+                break;
+            }
+            auto parentIt = byId.find(parent_id_str);
+            if (parentIt != byId.end()) {
+                entry = parentIt->second;
+            } else {
+                break;
+            }
+        }
+        currentRoot = entry;
+    }
+
+    if (currentRoot) {
+        hierarchyTree_->addTopLevelItem(buildItem(currentRoot));
+    } else {
+        for (const auto* root : roots) {
+            hierarchyTree_->addTopLevelItem(buildItem(root));
+        }
     }
 
     hierarchyTree_->expandAll();

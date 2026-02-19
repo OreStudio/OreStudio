@@ -195,6 +195,15 @@ enum class message_type : std::uint16_t {
     delete_book_response = 0x107E,
     get_book_history_request = 0x107F,
     get_book_history_response = 0x1080,
+    // Refdata subsystem - Book statuses
+    get_book_statuses_request = 0x1081,
+    get_book_statuses_response = 0x1082,
+    save_book_status_request = 0x1083,
+    save_book_status_response = 0x1084,
+    delete_book_status_request = 0x1085,
+    delete_book_status_response = 0x1086,
+    get_book_status_history_request = 0x1087,
+    get_book_status_history_response = 0x1088,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -622,6 +631,14 @@ enum class message_type : std::uint16_t {
     case message_type::delete_book_response: return "delete_book_response";
     case message_type::get_book_history_request: return "get_book_history_request";
     case message_type::get_book_history_response: return "get_book_history_response";
+    case message_type::get_book_statuses_request: return "get_book_statuses_request";
+    case message_type::get_book_statuses_response: return "get_book_statuses_response";
+    case message_type::save_book_status_request: return "save_book_status_request";
+    case message_type::save_book_status_response: return "save_book_status_response";
+    case message_type::delete_book_status_request: return "delete_book_status_request";
+    case message_type::delete_book_status_response: return "delete_book_status_response";
+    case message_type::get_book_status_history_request: return "get_book_status_history_request";
+    case message_type::get_book_status_history_response: return "get_book_status_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

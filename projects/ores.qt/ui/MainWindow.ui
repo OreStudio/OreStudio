@@ -70,6 +70,7 @@
       <addaction name="ActionBusinessUnits"/>
       <addaction name="ActionPortfolios"/>
       <addaction name="ActionBooks"/>
+      <addaction name="ActionBookStatuses"/>
      </widget>
      <addaction name="CurrenciesAction"/>
      <addaction name="CountriesAction"/>
@@ -559,6 +560,14 @@
    </property>
    <property name="toolTip">
     <string>Manage books</string>
+   </property>
+  </action>
+  <action name="ActionBookStatuses">
+   <property name="text">
+    <string>Book &amp;Statuses</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage book status values</string>
    </property>
   </action>
  </widget>

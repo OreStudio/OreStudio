@@ -113,6 +113,7 @@ void ContactTypeDetailDialog::updateUiFromType() {
 
     ui_->versionEdit->setText(QString::number(type_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(type_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(type_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(type_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(type_.change_commentary));
 }

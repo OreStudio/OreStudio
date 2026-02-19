@@ -577,6 +577,7 @@ void EntityDetailDialog::updateUiFromEntity() {
 
     ui_->versionEdit->setText(QString::number(entity_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(entity_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(entity_.performed_by));
     ui_->changeReasonEdit->setText(QString::fromStdString(entity_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(entity_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(entity_.change_commentary));

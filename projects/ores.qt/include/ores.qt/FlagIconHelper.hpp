@@ -60,13 +60,18 @@ inline void set_line_edit_flag_icon(
  */
 template<typename Resolver>
 void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
-    for (int i = 0; i < combo->count(); ++i) {
-        const std::string code = combo->itemText(i).toStdString();
-        QIcon icon = resolver(code);
-        combo->setItemIcon(i, icon);
+    // For editable combos the style also renders the selected item's icon in
+    // the line-edit area, which would produce two flag images.  Only set item
+    // icons for non-editable combos; editable combos use the line-edit action
+    // exclusively via update_combo_line_edit_icon().
+    if (!combo->isEditable()) {
+        for (int i = 0; i < combo->count(); ++i) {
+            const std::string code = combo->itemText(i).toStdString();
+            QIcon icon = resolver(code);
+            combo->setItemIcon(i, icon);
+        }
     }
-    // For editable combos, also update the leading icon on the line edit
-    // since the combo's closed display doesn't show item icons.
+    // For editable combos, update the leading icon on the line edit.
     if (combo->isEditable() && combo->lineEdit()) {
         update_combo_line_edit_icon(combo, resolver);
     }

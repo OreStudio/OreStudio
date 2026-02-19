@@ -58,8 +58,8 @@ public:
      */
     enum Column {
         Name,
-        PurposeType,
         AggregationCcy,
+        PurposeType,
         IsVirtual,
         Status,
         Version,

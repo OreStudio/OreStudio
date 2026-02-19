@@ -57,15 +57,15 @@ ClientPortfolioModel::ClientPortfolioModel(
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!portfolios_.empty()) {
-                emit dataChanged(index(0, Column::AggregationCcy),
-                    index(rowCount() - 1, Column::AggregationCcy),
+                emit dataChanged(index(0, 0),
+                    index(rowCount() - 1, columnCount() - 1),
                     {Qt::DecorationRole});
             }
         });
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!portfolios_.empty()) {
-                emit dataChanged(index(0, Column::AggregationCcy),
-                    index(rowCount() - 1, Column::AggregationCcy),
+                emit dataChanged(index(0, 0),
+                    index(rowCount() - 1, columnCount() - 1),
                     {Qt::DecorationRole});
             }
         });
@@ -106,12 +106,12 @@ QVariant ClientPortfolioModel::data(
         switch (index.column()) {
         case Name:
             return QString::fromStdString(portfolio.name);
-        case PurposeType:
-            return QString::fromStdString(portfolio.purpose_type);
         case AggregationCcy:
             return QString::fromStdString(portfolio.aggregation_ccy);
+        case PurposeType:
+            return QString::fromStdString(portfolio.purpose_type);
         case IsVirtual:
-            return portfolio.is_virtual;
+            return portfolio.is_virtual != 0 ? tr("Virtual") : QString{};
         case Status:
             return QString::fromStdString(portfolio.status);
         case Version:
@@ -140,12 +140,12 @@ QVariant ClientPortfolioModel::headerData(
     switch (section) {
     case Name:
         return tr("Name");
-    case PurposeType:
-        return tr("Purpose");
     case AggregationCcy:
         return tr("Agg. Currency");
+    case PurposeType:
+        return tr("Purpose");
     case IsVirtual:
-        return tr("Virtual");
+        return tr("Type");
     case Status:
         return tr("Status");
     case Version:

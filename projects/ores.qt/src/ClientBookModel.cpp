@@ -57,15 +57,15 @@ ClientBookModel::ClientBookModel(
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!books_.empty()) {
-                emit dataChanged(index(0, Column::LedgerCcy),
-                    index(rowCount() - 1, Column::LedgerCcy),
+                emit dataChanged(index(0, 0),
+                    index(rowCount() - 1, columnCount() - 1),
                     {Qt::DecorationRole});
             }
         });
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!books_.empty()) {
-                emit dataChanged(index(0, Column::LedgerCcy),
-                    index(rowCount() - 1, Column::LedgerCcy),
+                emit dataChanged(index(0, 0),
+                    index(rowCount() - 1, columnCount() - 1),
                     {Qt::DecorationRole});
             }
         });
@@ -110,10 +110,10 @@ QVariant ClientBookModel::data(
             return QString::fromStdString(book.ledger_ccy);
         case BookStatus:
             return QString::fromStdString(book.book_status);
+        case IsTradingBook:
+            return book.is_trading_book != 0 ? tr("Trading") : tr("Banking");
         case CostCenter:
             return QString::fromStdString(book.cost_center);
-        case IsTradingBook:
-            return book.is_trading_book;
         case Version:
             return book.version;
         case ModifiedBy:
@@ -144,10 +144,10 @@ QVariant ClientBookModel::headerData(
         return tr("Ledger Ccy");
     case BookStatus:
         return tr("Status");
-    case CostCenter:
-        return tr("Cost Center");
     case IsTradingBook:
-        return tr("Trading");
+        return tr("Book Type");
+    case CostCenter:
+        return tr("Cost Centre");
     case Version:
         return tr("Version");
     case ModifiedBy:

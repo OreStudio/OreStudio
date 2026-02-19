@@ -91,6 +91,7 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+    std::string pending_country_;
 };
 
 }

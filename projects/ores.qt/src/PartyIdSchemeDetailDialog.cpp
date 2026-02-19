@@ -113,6 +113,7 @@ void PartyIdSchemeDetailDialog::updateUiFromScheme() {
 
     ui_->versionEdit->setText(QString::number(scheme_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(scheme_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(scheme_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(scheme_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(scheme_.change_commentary));
 }

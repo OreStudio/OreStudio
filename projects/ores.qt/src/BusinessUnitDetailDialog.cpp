@@ -176,6 +176,7 @@ void BusinessUnitDetailDialog::updateUiFromUnit() {
 
     ui_->versionEdit->setText(QString::number(business_unit_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(business_unit_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(business_unit_.performed_by));
     ui_->changeReasonEdit->setText(QString::fromStdString(business_unit_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(business_unit_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(business_unit_.change_commentary));

@@ -147,13 +147,13 @@ void PortfolioMdiWindow::setupTable() {
     initializeTableSettings(tableView_, model_, "PortfolioListWindow",
         {}, {900, 400}, 1);
 
-    // Configure badge delegate for Status column
+    // Configure badge delegate for Status and IsVirtual columns
     using cs = column_style;
     auto* delegate = new EntityItemDelegate({
         cs::text_left,      // Name
+        cs::mono_center,    // AggregationCcy
         cs::text_left,      // PurposeType
-        cs::text_left,      // AggregationCcy
-        cs::mono_center,    // IsVirtual
+        cs::badge_centered, // IsVirtual (Virtual/empty badge)
         cs::badge_centered, // Status
         cs::mono_center,    // Version
         cs::text_left,      // ModifiedBy

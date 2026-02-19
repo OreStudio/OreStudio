@@ -39,8 +39,7 @@ create table if not exists ores_iam_account_roles_tbl (
         role_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to"),
-    check ("change_reason_code" <> '')
+    check ("valid_from" < "valid_to")
 );
 
 create index if not exists ores_iam_account_roles_tenant_idx

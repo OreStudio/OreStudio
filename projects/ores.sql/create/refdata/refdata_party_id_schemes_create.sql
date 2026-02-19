@@ -22,8 +22,6 @@
  * Template: sql_schema_table_create.mustache
  * To modify, update the template and regenerate.
  */
-set schema 'public';
-
 -- =============================================================================
 -- Party Identifier Schemes - Classification of external identifier types (LEI, BIC, MIC, etc.) with cross-reference to DQ coding schemes.
 -- =============================================================================
@@ -51,23 +49,22 @@ create table if not exists "ores_refdata_party_id_schemes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("change_reason_code" <> ''),
     check ("max_cardinality" is null or "max_cardinality" > 0)
 );
 
 create unique index if not exists ores_refdata_party_id_schemes_version_uniq_idx
-on "public"."ores_refdata_party_id_schemes_tbl" (tenant_id, code, version)
+on "ores_refdata_party_id_schemes_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_refdata_party_id_schemes_code_uniq_idx
-on "public"."ores_refdata_party_id_schemes_tbl" (tenant_id, code)
+on "ores_refdata_party_id_schemes_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_refdata_party_id_schemes_tenant_idx
-on "public"."ores_refdata_party_id_schemes_tbl" (tenant_id)
+on "ores_refdata_party_id_schemes_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function public.ores_refdata_party_id_schemes_insert_fn()
+create or replace function ores_refdata_party_id_schemes_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -93,11 +90,10 @@ begin
     end if;
 
     select version into current_version
-    from "public"."ores_refdata_party_id_schemes_tbl"
+    from "ores_refdata_party_id_schemes_tbl"
     where tenant_id = new.tenant_id
       and code = new.code
-      and valid_to = ores_utility_infinity_timestamp_fn()
-    for update;
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -107,7 +103,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "public"."ores_refdata_party_id_schemes_tbl"
+        update "ores_refdata_party_id_schemes_tbl"
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
           and code = new.code
@@ -127,14 +123,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger ores_refdata_party_id_schemes_insert_trg
-before insert on "public"."ores_refdata_party_id_schemes_tbl"
+before insert on "ores_refdata_party_id_schemes_tbl"
 for each row
-execute function public.ores_refdata_party_id_schemes_insert_fn();
+execute function ores_refdata_party_id_schemes_insert_fn();
 
 create or replace rule ores_refdata_party_id_schemes_delete_rule as
-on delete to "public"."ores_refdata_party_id_schemes_tbl"
+on delete to "ores_refdata_party_id_schemes_tbl"
 do instead
-  update "public"."ores_refdata_party_id_schemes_tbl"
+  update "ores_refdata_party_id_schemes_tbl"
   set valid_to = current_timestamp
   where tenant_id = old.tenant_id
   and code = old.code

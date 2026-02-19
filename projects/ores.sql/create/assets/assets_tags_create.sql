@@ -40,8 +40,7 @@ create table if not exists "ores_assets_tags_tbl" (
         tag_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to"),
-    check ("change_reason_code" <> '')
+    check ("valid_from" < "valid_to")
 );
 
 create unique index if not exists ores_assets_tags_version_uniq_idx

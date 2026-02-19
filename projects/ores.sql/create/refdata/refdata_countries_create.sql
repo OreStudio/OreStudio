@@ -48,8 +48,7 @@ create table if not exists "ores_refdata_countries_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("alpha2_code" <> ''),
-    check ("change_reason_code" <> '')
+    check ("alpha2_code" <> '')
 );
 
 create unique index if not exists ores_refdata_countries_version_uniq_idx

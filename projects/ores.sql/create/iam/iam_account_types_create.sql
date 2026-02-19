@@ -17,8 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'public';
-
 -- =============================================================================
 -- Account Types - Valid account type classifications
 -- =============================================================================
@@ -43,23 +41,22 @@ create table if not exists "ores_iam_account_types_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("type" <> ''),
-    check ("change_reason_code" <> '')
+    check ("type" <> '')
 );
 
 create unique index if not exists ores_iam_account_types_version_uniq_idx
-on "public"."ores_iam_account_types_tbl" (tenant_id, type, version)
+on "ores_iam_account_types_tbl" (tenant_id, type, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_iam_account_types_type_uniq_idx
-on "public"."ores_iam_account_types_tbl" (tenant_id, type)
+on "ores_iam_account_types_tbl" (tenant_id, type)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_iam_account_types_tenant_idx
-on "public"."ores_iam_account_types_tbl" (tenant_id)
+on "ores_iam_account_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function public.ores_iam_account_types_insert_fn()
+create or replace function ores_iam_account_types_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -71,11 +68,10 @@ begin
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     select version into current_version
-    from "public"."ores_iam_account_types_tbl"
+    from "ores_iam_account_types_tbl"
     where tenant_id = new.tenant_id
       and type = new.type
-      and valid_to = ores_utility_infinity_timestamp_fn()
-    for update;
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -85,7 +81,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "public"."ores_iam_account_types_tbl"
+        update "ores_iam_account_types_tbl"
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
           and type = new.type
@@ -105,14 +101,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger ores_iam_account_types_insert_trg
-before insert on "public"."ores_iam_account_types_tbl"
+before insert on "ores_iam_account_types_tbl"
 for each row
-execute function public.ores_iam_account_types_insert_fn();
+execute function ores_iam_account_types_insert_fn();
 
 create or replace rule ores_iam_account_types_delete_rule as
-on delete to "public"."ores_iam_account_types_tbl"
+on delete to "ores_iam_account_types_tbl"
 do instead
-  update "public"."ores_iam_account_types_tbl"
+  update "ores_iam_account_types_tbl"
   set valid_to = current_timestamp
   where tenant_id = old.tenant_id
   and type = old.type

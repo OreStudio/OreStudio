@@ -42,8 +42,7 @@ create table if not exists "ores_variability_feature_flags_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("name" <> ''),
-    check ("change_reason_code" <> '')
+    check ("name" <> '')
 );
 
 create unique index if not exists ores_variability_feature_flags_version_uniq_idx

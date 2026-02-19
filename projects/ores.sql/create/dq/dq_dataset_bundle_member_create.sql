@@ -53,8 +53,7 @@ create table if not exists "ores_dq_dataset_bundle_members_tbl" (
         dataset_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to"),
-    check ("change_reason_code" <> '')
+    check ("valid_from" < "valid_to")
 );
 
 -- Index for looking up datasets in a bundle

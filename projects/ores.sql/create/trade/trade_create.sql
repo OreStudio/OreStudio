@@ -49,3 +49,6 @@
 
 \ir ./trade_party_roles_create.sql
 \ir ./trade_party_roles_notify_trigger_create.sql
+
+-- ORE envelope view (depends on trades + party roles)
+\ir ./trade_ore_envelope_view_create.sql

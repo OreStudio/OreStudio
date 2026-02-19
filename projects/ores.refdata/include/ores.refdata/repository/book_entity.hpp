@@ -38,6 +38,7 @@ struct book_entity {
     int version = 0;
     std::string party_id;
     std::string name;
+    std::string description;
     std::string parent_portfolio_id;
     std::string ledger_ccy;
     std::string gl_account_ref;

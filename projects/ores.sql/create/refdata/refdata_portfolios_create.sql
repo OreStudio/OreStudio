@@ -34,6 +34,7 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "name" text not null,
+    "description" text not null default '',
     "parent_portfolio_id" uuid null,
     "owner_unit_id" uuid null,
     "purpose_type" text not null,

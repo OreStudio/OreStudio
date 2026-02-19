@@ -38,6 +38,7 @@ portfolio_mapper::map(const portfolio_entity& v) {
     r.tenant_id = v.tenant_id;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
+    r.description = v.description;
     if (v.parent_portfolio_id.has_value() && !v.parent_portfolio_id->empty())
         r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_portfolio_id);
     if (v.owner_unit_id.has_value() && !v.owner_unit_id->empty())
@@ -65,6 +66,7 @@ portfolio_mapper::map(const domain::portfolio& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.name = v.name;
+    r.description = v.description;
     if (v.parent_portfolio_id)
         r.parent_portfolio_id = boost::uuids::to_string(*v.parent_portfolio_id);
     if (v.owner_unit_id)

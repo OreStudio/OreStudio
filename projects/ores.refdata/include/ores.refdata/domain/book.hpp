@@ -66,6 +66,11 @@ struct book final {
     std::string name;
 
     /**
+     * @brief Optional free-text description of the book.
+     */
+    std::string description;
+
+    /**
      * @brief Links to exactly one portfolio.
      *
      * Mandatory: Every book must belong to a portfolio.

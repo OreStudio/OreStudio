@@ -66,6 +66,8 @@ void BookDetailDialog::setupConnections() {
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
+            &BookDetailDialog::onFieldChanged);
     connect(ui_->ledgerCcyCombo, &QComboBox::currentTextChanged, this,
             &BookDetailDialog::onFieldChanged);
     connect(ui_->glAccountRefEdit, &QLineEdit::textChanged, this,
@@ -169,6 +171,7 @@ void BookDetailDialog::setCreateMode(bool createMode) {
 void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->ledgerCcyCombo->setEnabled(!readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
@@ -180,6 +183,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
 
 void BookDetailDialog::updateUiFromBook() {
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
+    ui_->descriptionEdit->setText(QString::fromStdString(book_.description));
     ui_->ledgerCcyCombo->setCurrentText(QString::fromStdString(book_.ledger_ccy));
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
@@ -198,6 +202,7 @@ void BookDetailDialog::updateBookFromUi() {
     if (createMode_) {
         book_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
+    book_.description = ui_->descriptionEdit->text().trimmed().toStdString();
     book_.ledger_ccy = ui_->ledgerCcyCombo->currentText().trimmed().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();

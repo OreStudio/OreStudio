@@ -66,6 +66,8 @@ void PortfolioDetailDialog::setupConnections() {
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PortfolioDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
+            &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->aggregationCcyCombo, &QComboBox::currentTextChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->purposeTypeCombo, &QComboBox::currentTextChanged, this,
@@ -167,6 +169,7 @@ void PortfolioDetailDialog::setCreateMode(bool createMode) {
 void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->aggregationCcyCombo->setEnabled(!readOnly);
     ui_->purposeTypeCombo->setEnabled(!readOnly);
     ui_->portfolioTypeCombo->setEnabled(!readOnly);
@@ -177,6 +180,7 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
 
 void PortfolioDetailDialog::updateUiFromPortfolio() {
     ui_->nameEdit->setText(QString::fromStdString(portfolio_.name));
+    ui_->descriptionEdit->setText(QString::fromStdString(portfolio_.description));
     ui_->aggregationCcyCombo->setCurrentText(QString::fromStdString(portfolio_.aggregation_ccy));
     ui_->purposeTypeCombo->setCurrentText(QString::fromStdString(portfolio_.purpose_type));
     ui_->portfolioTypeCombo->setCurrentIndex(portfolio_.is_virtual != 0 ? 1 : 0);
@@ -194,6 +198,7 @@ void PortfolioDetailDialog::updatePortfolioFromUi() {
     if (createMode_) {
         portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
+    portfolio_.description = ui_->descriptionEdit->text().trimmed().toStdString();
     portfolio_.aggregation_ccy = ui_->aggregationCcyCombo->currentText().trimmed().toStdString();
     portfolio_.purpose_type = ui_->purposeTypeCombo->currentText().trimmed().toStdString();
     portfolio_.is_virtual = (ui_->portfolioTypeCombo->currentIndex() == 1) ? 1 : 0;

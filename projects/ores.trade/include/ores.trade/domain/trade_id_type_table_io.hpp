@@ -17,3 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_DOMAIN_TRADE_ID_TYPE_TABLE_IO_HPP
+#define ORES_TRADE_DOMAIN_TRADE_ID_TYPE_TABLE_IO_HPP
+
+#include <iosfwd>
+#include <vector>
+#include "ores.trade/domain/trade_id_type.hpp"
+
+namespace ores::trade::domain {
+
+/**
+ * @brief Dumps the trade_id_type objects to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<trade_id_type>& v);
+
+}
+
+#endif

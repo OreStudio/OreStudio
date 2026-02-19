@@ -17,3 +17,69 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trade/repository/trade_type_mapper.hpp"
+
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.trade/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::trade::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::trade_type
+trade_type_mapper::map(const trade_type_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::trade_type r;
+    r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.code = v.code.value();
+    r.description = v.description.value_or("");
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+trade_type_entity
+trade_type_mapper::map(const domain::trade_type& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    trade_type_entity r;
+    r.code = v.code;
+    r.tenant_id = v.tenant_id.to_string();
+    r.version = v.version;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::trade_type>
+trade_type_mapper::map(const std::vector<trade_type_entity>& v) {
+    return map_vector<trade_type_entity, domain::trade_type>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<trade_type_entity>
+trade_type_mapper::map(const std::vector<domain::trade_type>& v) {
+    return map_vector<domain::trade_type, trade_type_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
+}
+
+}

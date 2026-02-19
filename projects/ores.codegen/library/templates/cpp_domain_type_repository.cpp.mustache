@@ -3,7 +3,6 @@
 #include "ores.{{component}}/repository/{{entity_singular}}_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
@@ -21,89 +20,95 @@ std::string {{entity_singular}}_repository::sql() {
     return generate_create_table_sql<{{entity_singular}}_entity>(lg());
 }
 
-{{entity_singular}}_repository::{{entity_singular}}_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void {{entity_singular}}_repository::write(const domain::{{entity_singular}}& {{entity_singular_short}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}} to database: "
-                               << {{entity_singular_short}}.id;
-    execute_write_query(ctx_, {{entity_singular}}_mapper::map({{entity_singular_short}}),
-        lg(), "writing {{entity_singular_words}} to database");
+void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}: " << v.{{primary_key.column}};
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+        lg(), "Writing {{entity_singular_words}} to database.");
 }
 
 void {{entity_singular}}_repository::write(
-    const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}} to database. Count: "
-                               << {{entity_plural_short}}.size();
-    execute_write_query(ctx_, {{entity_singular}}_mapper::map({{entity_plural_short}}),
-        lg(), "writing {{entity_plural_words}} to database");
+    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+        lg(), "Writing {{entity_plural_words}} to database.");
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest() {
+{{entity_singular}}_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+        order_by("{{primary_key.column}}"_c);
+{{/has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}}");
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. Id: " << id;
-
+{{entity_singular}}_repository::read_latest(context ctx, const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. {{primary_key.column}}: " << {{primary_key.column}};
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto id_str = boost::uuids::to_string(id);
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
-        lg(), "Reading latest {{entity_singular_words}} by id.");
+        lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. Code: " << code;
-
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{entity_singular}}_repository::read_all(context ctx, const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. {{primary_key.column}}: " << {{primary_key.column}};
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
-
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
-        ctx_, query,
-        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
-        lg(), "Reading latest {{entity_singular_words}} by code.");
-}
-
-std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_all(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. Id: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("id"_c == id_str) |
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
         order_by("version"_c.desc());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{primary_key.column}}"_c == {{primary_key.column}}) |
+        order_by("version"_c.desc());
+{{/has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
-        lg(), "Reading all {{entity_singular_words}} versions by id.");
+        lg(), "Reading all {{entity_singular_words}} versions by {{primary_key.column}}.");
 }
 
-void {{entity_singular}}_repository::remove(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}} from database: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
+void {{entity_singular}}_repository::remove(context ctx, const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("id"_c == id_str);
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_tenant_id}}
 
-    execute_delete_query(ctx_, query, lg(), "removing {{entity_singular_words}} from database");
+    execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
 }
 
 }

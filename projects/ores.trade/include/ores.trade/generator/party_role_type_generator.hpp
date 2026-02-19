@@ -17,3 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_GENERATOR_PARTY_ROLE_TYPE_GENERATOR_HPP
+#define ORES_TRADE_GENERATOR_PARTY_ROLE_TYPE_GENERATOR_HPP
+
+#include <vector>
+#include "ores.trade/domain/party_role_type.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+
+namespace ores::trade::generator {
+
+/**
+ * @brief Generates a synthetic party_role_type.
+ */
+domain::party_role_type generate_synthetic_party_role_type(
+    utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic party_role_types.
+ */
+std::vector<domain::party_role_type>
+generate_synthetic_party_role_types(std::size_t n,
+    utility::generation::generation_context& ctx);
+
+}
+
+#endif

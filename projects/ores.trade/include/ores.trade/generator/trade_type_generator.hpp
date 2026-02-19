@@ -17,3 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_GENERATOR_TRADE_TYPE_GENERATOR_HPP
+#define ORES_TRADE_GENERATOR_TRADE_TYPE_GENERATOR_HPP
+
+#include <vector>
+#include "ores.trade/domain/trade_type.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+
+namespace ores::trade::generator {
+
+/**
+ * @brief Generates a synthetic trade_type.
+ */
+domain::trade_type generate_synthetic_trade_type(
+    utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic trade_types.
+ */
+std::vector<domain::trade_type>
+generate_synthetic_trade_types(std::size_t n,
+    utility::generation::generation_context& ctx);
+
+}
+
+#endif

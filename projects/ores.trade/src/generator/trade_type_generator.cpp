@@ -17,3 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trade/generator/trade_type_generator.hpp"
+
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/generation/generation_keys.hpp"
+
+namespace ores::trade::generator {
+
+using ores::utility::generation::generation_keys;
+
+domain::trade_type generate_synthetic_trade_type(
+    utility::generation::generation_context& ctx) {
+    static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
+
+    domain::trade_type r;
+    r.version = 1;
+    r.code = std::string(faker::word::noun()) + "_trade_" + std::to_string(++counter);
+    r.description = std::string(faker::lorem::sentence());
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.new";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
+    return r;
+}
+
+std::vector<domain::trade_type>
+generate_synthetic_trade_types(std::size_t n,
+    utility::generation::generation_context& ctx) {
+    std::vector<domain::trade_type> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_trade_type(ctx));
+    return r;
+}
+
+}

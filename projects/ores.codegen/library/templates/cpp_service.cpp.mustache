@@ -3,59 +3,45 @@
 #include "ores.{{component}}/service/{{entity_singular}}_service.hpp"
 
 #include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::{{component}}::service {
 
 using namespace ores::logging;
 
 {{entity_singular}}_service::{{entity_singular}}_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
-    return repo_.read_latest();
+    return repo_.read_latest(ctx_);
 }
 
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::find_{{entity_singular_short}}(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}}: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
-        return std::nullopt;
-    }
+{{entity_singular}}_service::find_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}}: " << {{primary_key.column}};
+    auto results = repo_.read_latest(ctx_, {{primary_key.column}});
+    if (results.empty()) return std::nullopt;
     return results.front();
 }
 
-std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::find_{{entity_singular_short}}_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
-    if (results.empty()) {
-        return std::nullopt;
-    }
-    return results.front();
+void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
+    if (v.{{primary_key.column}}.empty())
+        throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << v.{{primary_key.column}};
+    repo_.write(ctx_, v);
+    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << v.{{primary_key.column}};
 }
 
-void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& {{entity_singular_short}}) {
-    if ({{entity_singular_short}}.id.is_nil()) {
-        throw std::invalid_argument("{{entity_title}} ID cannot be nil.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << {{entity_singular_short}}.id;
-    repo_.write({{entity_singular_short}});
-    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << {{entity_singular_short}}.id;
-}
-
-void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << id;
-    repo_.remove(id);
-    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << id;
+void {{entity_singular}}_service::remove_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
+    repo_.remove(ctx_, {{primary_key.column}});
+    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << {{primary_key.column}};
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}: " << id;
-    return repo_.read_all(id);
+{{entity_singular}}_service::get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}: " << {{primary_key.column}};
+    return repo_.read_all(ctx_, {{primary_key.column}});
 }
 
 }

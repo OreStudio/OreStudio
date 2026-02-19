@@ -1,29 +1,36 @@
 {{{cpp_license}}}
 {{#domain_entity}}
-#include "ores.{{component}}/generators/{{entity_singular}}_generator.hpp"
+#include "ores.{{component}}/{{generator_facet_name}}/{{entity_singular}}_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
-namespace ores::{{component}}::generators {
+namespace ores::{{component}}::{{generator_facet_name}} {
 
 using ores::utility::generation::generation_keys;
 
 domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     utility::generation::generation_context& ctx) {
+    static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
 
     domain::{{entity_singular}} r;
     r.version = 1;
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = {{{primary_key.generator_expr}}};
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
     r.{{primary_key.column}} = ctx.generate_uuid();
+{{/primary_key.is_uuid}}
 {{#natural_keys}}
     r.{{column}} = {{{generator_expr}}};
 {{/natural_keys}}
 {{#columns}}
     r.{{name}} = {{{generator_expr}}};
 {{/columns}}
-    r.recorded_by = modified_by;
+    r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";

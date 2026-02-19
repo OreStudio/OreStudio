@@ -1,13 +1,13 @@
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{component_upper}}_GENERATORS_{{entity_singular_upper}}_GENERATOR_HPP
-#define ORES_{{component_upper}}_GENERATORS_{{entity_singular_upper}}_GENERATOR_HPP
+#ifndef ORES_{{component_upper}}_{{generator_facet_name_upper}}_{{entity_singular_upper}}_GENERATOR_HPP
+#define ORES_{{component_upper}}_{{generator_facet_name_upper}}_{{entity_singular_upper}}_GENERATOR_HPP
 
 #include <vector>
 #include "ores.{{component}}/domain/{{entity_singular}}.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
-namespace ores::{{component}}::generators {
+namespace ores::{{component}}::{{generator_facet_name}} {
 
 /**
  * @brief Generates a synthetic {{entity_singular}}.

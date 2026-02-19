@@ -12,6 +12,7 @@
 {{/primary_key.is_uuid}}
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.{{component}}/domain/{{entity_singular}}.hpp"
 
 namespace ores::{{component}}::messaging {
@@ -79,7 +80,7 @@ std::ostream& operator<<(std::ostream& s, const save_{{entity_singular}}_respons
  * @brief Result for a single {{entity_singular_words}} deletion.
  */
 struct delete_{{entity_singular}}_result final {
-    {{primary_key.cpp_type}} {{primary_key.column}};  ///< Primary key
+    {{{primary_key.cpp_type}}} {{primary_key.column}};  ///< Primary key
     bool success;
     std::string message;
 };
@@ -90,7 +91,7 @@ std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_resul
  * @brief Request to delete one or more {{entity_plural_words}}.
  */
 struct delete_{{entity_singular}}_request final {
-    std::vector<{{primary_key.cpp_type}}> {{primary_key.column}}s;  ///< Primary keys
+    std::vector<{{{primary_key.cpp_type}}}> {{primary_key.column}}s;  ///< Primary keys
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_{{entity_singular}}_request,
@@ -118,7 +119,7 @@ std::ostream& operator<<(std::ostream& s, const delete_{{entity_singular}}_respo
  * @brief Request to retrieve version history for a {{entity_singular_words}}.
  */
 struct get_{{entity_singular}}_history_request final {
-    {{primary_key.cpp_type}} {{primary_key.column}};  ///< Primary key
+    {{{primary_key.cpp_type}}} {{primary_key.column}};  ///< Primary key
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_{{entity_singular}}_history_request,

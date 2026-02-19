@@ -17,3 +17,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_REPOSITORY_TRADE_TYPE_REPOSITORY_HPP
+#define ORES_TRADE_REPOSITORY_TRADE_TYPE_REPOSITORY_HPP
+
+#include <string>
+#include <vector>
+#include <sqlgen/postgres.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.trade/domain/trade_type.hpp"
+
+namespace ores::trade::repository {
+
+/**
+ * @brief Reads and writes trade types to data storage.
+ */
+class trade_type_repository {
+private:
+    inline static std::string_view logger_name =
+        "ores.trade.repository.trade_type_repository";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    std::string sql();
+
+    void write(context ctx, const domain::trade_type& v);
+    void write(context ctx, const std::vector<domain::trade_type>& v);
+
+    std::vector<domain::trade_type> read_latest(context ctx);
+    std::vector<domain::trade_type>
+    read_latest(context ctx, const std::string& code);
+    std::vector<domain::trade_type>
+    read_all(context ctx, const std::string& code);
+
+    void remove(context ctx, const std::string& code);
+};
+
+}
+
+#endif

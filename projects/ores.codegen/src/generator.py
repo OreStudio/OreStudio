@@ -1139,6 +1139,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
+                col['is_nullable_string'] = col.get('nullable', False) and not is_uuid_type
+                col['is_simple'] = not col.get('nullable', False) and not is_uuid_type
                 col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
@@ -1265,6 +1267,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2
             qt['metadata_start_row_plus_3'] = len(detail_fields) + 3
+        # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
+        domain_entity.setdefault('generator_facet_name', 'generators')
+        domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()
+        # Compute whether any columns are UUID-typed (for mapper includes)
+        has_uuid_cols = any(
+            col.get('is_uuid') or col.get('is_optional_uuid')
+            for col in domain_entity.get('columns', [])
+        )
+        domain_entity['has_uuid_columns'] = (
+            has_uuid_cols or domain_entity.get('primary_key', {}).get('is_uuid', False)
+        )
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models

@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component}}/domain/{{entity_singular}}.hpp"
@@ -30,22 +29,18 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit {{entity_singular}}_repository(context ctx);
-
     std::string sql();
 
-    void write(const domain::{{entity_singular}}& {{entity_singular_short}});
-    void write(const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}});
+    void write(context ctx, const domain::{{entity_singular}}& v);
+    void write(context ctx, const std::vector<domain::{{entity_singular}}>& v);
 
-    std::vector<domain::{{entity_singular}}> read_latest();
-    std::vector<domain::{{entity_singular}}> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::{{entity_singular}}> read_latest_by_code(const std::string& code);
+    std::vector<domain::{{entity_singular}}> read_latest(context ctx);
+    std::vector<domain::{{entity_singular}}>
+    read_latest(context ctx, const std::string& {{primary_key.column}});
+    std::vector<domain::{{entity_singular}}>
+    read_all(context ctx, const std::string& {{primary_key.column}});
 
-    std::vector<domain::{{entity_singular}}> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::string& {{primary_key.column}});
 };
 
 }

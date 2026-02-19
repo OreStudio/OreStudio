@@ -213,6 +213,42 @@ enum class message_type : std::uint16_t {
     delete_purpose_type_response = 0x108E,
     get_purpose_type_history_request = 0x108F,
     get_purpose_type_history_response = 0x1090,
+    // Trade subsystem - Trade types
+    get_trade_types_request = 0x8001,
+    get_trade_types_response = 0x8002,
+    save_trade_type_request = 0x8003,
+    save_trade_type_response = 0x8004,
+    delete_trade_type_request = 0x8005,
+    delete_trade_type_response = 0x8006,
+    get_trade_type_history_request = 0x8007,
+    get_trade_type_history_response = 0x8008,
+    // Trade subsystem - Lifecycle events
+    get_lifecycle_events_request = 0x8009,
+    get_lifecycle_events_response = 0x800A,
+    save_lifecycle_event_request = 0x800B,
+    save_lifecycle_event_response = 0x800C,
+    delete_lifecycle_event_request = 0x800D,
+    delete_lifecycle_event_response = 0x800E,
+    get_lifecycle_event_history_request = 0x800F,
+    get_lifecycle_event_history_response = 0x8010,
+    // Trade subsystem - Party role types
+    get_party_role_types_request = 0x8011,
+    get_party_role_types_response = 0x8012,
+    save_party_role_type_request = 0x8013,
+    save_party_role_type_response = 0x8014,
+    delete_party_role_type_request = 0x8015,
+    delete_party_role_type_response = 0x8016,
+    get_party_role_type_history_request = 0x8017,
+    get_party_role_type_history_response = 0x8018,
+    // Trade subsystem - Trade ID types
+    get_trade_id_types_request = 0x8019,
+    get_trade_id_types_response = 0x801A,
+    save_trade_id_type_request = 0x801B,
+    save_trade_id_type_response = 0x801C,
+    delete_trade_id_type_request = 0x801D,
+    delete_trade_id_type_response = 0x801E,
+    get_trade_id_type_history_request = 0x801F,
+    get_trade_id_type_history_response = 0x8020,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -656,6 +692,38 @@ enum class message_type : std::uint16_t {
     case message_type::delete_purpose_type_response: return "delete_purpose_type_response";
     case message_type::get_purpose_type_history_request: return "get_purpose_type_history_request";
     case message_type::get_purpose_type_history_response: return "get_purpose_type_history_response";
+    case message_type::get_trade_types_request: return "get_trade_types_request";
+    case message_type::get_trade_types_response: return "get_trade_types_response";
+    case message_type::save_trade_type_request: return "save_trade_type_request";
+    case message_type::save_trade_type_response: return "save_trade_type_response";
+    case message_type::delete_trade_type_request: return "delete_trade_type_request";
+    case message_type::delete_trade_type_response: return "delete_trade_type_response";
+    case message_type::get_trade_type_history_request: return "get_trade_type_history_request";
+    case message_type::get_trade_type_history_response: return "get_trade_type_history_response";
+    case message_type::get_lifecycle_events_request: return "get_lifecycle_events_request";
+    case message_type::get_lifecycle_events_response: return "get_lifecycle_events_response";
+    case message_type::save_lifecycle_event_request: return "save_lifecycle_event_request";
+    case message_type::save_lifecycle_event_response: return "save_lifecycle_event_response";
+    case message_type::delete_lifecycle_event_request: return "delete_lifecycle_event_request";
+    case message_type::delete_lifecycle_event_response: return "delete_lifecycle_event_response";
+    case message_type::get_lifecycle_event_history_request: return "get_lifecycle_event_history_request";
+    case message_type::get_lifecycle_event_history_response: return "get_lifecycle_event_history_response";
+    case message_type::get_party_role_types_request: return "get_party_role_types_request";
+    case message_type::get_party_role_types_response: return "get_party_role_types_response";
+    case message_type::save_party_role_type_request: return "save_party_role_type_request";
+    case message_type::save_party_role_type_response: return "save_party_role_type_response";
+    case message_type::delete_party_role_type_request: return "delete_party_role_type_request";
+    case message_type::delete_party_role_type_response: return "delete_party_role_type_response";
+    case message_type::get_party_role_type_history_request: return "get_party_role_type_history_request";
+    case message_type::get_party_role_type_history_response: return "get_party_role_type_history_response";
+    case message_type::get_trade_id_types_request: return "get_trade_id_types_request";
+    case message_type::get_trade_id_types_response: return "get_trade_id_types_response";
+    case message_type::save_trade_id_type_request: return "save_trade_id_type_request";
+    case message_type::save_trade_id_type_response: return "save_trade_id_type_response";
+    case message_type::delete_trade_id_type_request: return "delete_trade_id_type_request";
+    case message_type::delete_trade_id_type_response: return "delete_trade_id_type_response";
+    case message_type::get_trade_id_type_history_request: return "get_trade_id_type_history_request";
+    case message_type::get_trade_id_type_history_response: return "get_trade_id_type_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

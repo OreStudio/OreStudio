@@ -17,3 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trade/domain/trade_id_type_json_io.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
+namespace ores::trade::domain {
+
+std::ostream& operator<<(std::ostream& s, const trade_id_type& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

@@ -6,6 +6,9 @@
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{#has_tenant_id}}
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/has_tenant_id}}
 
 namespace ores::{{component}}::domain {
 
@@ -22,6 +25,13 @@ struct {{entity_singular}} final {
      */
     int version = 0;
 
+{{#has_tenant_id}}
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+{{/has_tenant_id}}
     /**
      * @brief {{{primary_key.description}}}
 {{#primary_key.detail}}
@@ -29,7 +39,7 @@ struct {{entity_singular}} final {
      * {{{primary_key.detail}}}
 {{/primary_key.detail}}
      */
-    {{primary_key.cpp_type}} {{primary_key.column}};
+    {{{primary_key.cpp_type}}} {{primary_key.column}};
 
 {{#natural_keys}}
     /**
@@ -39,7 +49,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{cpp_type}} {{column}};
+    {{{cpp_type}}} {{column}};
 
 {{/natural_keys}}
 {{#columns}}
@@ -50,13 +60,13 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/columns}}
     /**
      * @brief Username of the person who last modified this {{entity_singular_words}}.
      */
-    std::string recorded_by;
+    std::string modified_by;
 
     /**
      * @brief Username of the account that performed this action.
@@ -122,7 +132,7 @@ struct {{name_singular}} final {
      * {{{left.detail}}}
 {{/left.detail}}
      */
-    {{left.cpp_type}} {{left.column}};
+    {{{left.cpp_type}}} {{left.column}};
 
     /**
      * @brief {{{right.description}}}
@@ -131,7 +141,7 @@ struct {{name_singular}} final {
      * {{{right.detail}}}
 {{/right.detail}}
      */
-    {{right.cpp_type}} {{right.column}};
+    {{{right.cpp_type}}} {{right.column}};
 
 {{#columns}}
     /**
@@ -141,7 +151,7 @@ struct {{name_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/columns}}
     /**

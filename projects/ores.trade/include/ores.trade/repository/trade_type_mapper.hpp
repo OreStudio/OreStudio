@@ -17,3 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_REPOSITORY_TRADE_TYPE_MAPPER_HPP
+#define ORES_TRADE_REPOSITORY_TRADE_TYPE_MAPPER_HPP
+
+#include "ores.trade/domain/trade_type.hpp"
+#include "ores.trade/repository/trade_type_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace ores::trade::repository {
+
+/**
+ * @brief Maps trade_type domain entities to data storage layer and vice-versa.
+ */
+class trade_type_mapper {
+private:
+    inline static std::string_view logger_name =
+        "ores.trade.repository.trade_type_mapper";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+public:
+    static domain::trade_type map(const trade_type_entity& v);
+    static trade_type_entity map(const domain::trade_type& v);
+
+    static std::vector<domain::trade_type>
+    map(const std::vector<trade_type_entity>& v);
+    static std::vector<trade_type_entity>
+    map(const std::vector<domain::trade_type>& v);
+};
+
+}
+
+#endif

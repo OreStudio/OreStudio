@@ -17,3 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trade/repository/trade_type_entity.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+
+namespace ores::trade::repository {
+
+std::ostream& operator<<(std::ostream& s, const trade_type_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

@@ -17,3 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_REPOSITORY_TRADE_TYPE_ENTITY_HPP
+#define ORES_TRADE_REPOSITORY_TRADE_TYPE_ENTITY_HPP
+
+#include <string>
+#include <optional>
+#include <ostream>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+
+namespace ores::trade::repository {
+
+/**
+ * @brief Represents a trade type in the database.
+ */
+struct trade_type_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_trade_trade_types_tbl";
+
+    sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
+    int version = 0;
+    std::optional<std::string> description;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
+};
+
+std::ostream& operator<<(std::ostream& s, const trade_type_entity& v);
+
+}
+
+#endif

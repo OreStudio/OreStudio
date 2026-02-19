@@ -17,3 +17,55 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_SERVICE_TRADE_TYPE_SERVICE_HPP
+#define ORES_TRADE_SERVICE_TRADE_TYPE_SERVICE_HPP
+
+#include <string>
+#include <vector>
+#include <optional>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.trade/domain/trade_type.hpp"
+#include "ores.trade/repository/trade_type_repository.hpp"
+
+namespace ores::trade::service {
+
+/**
+ * @brief Service for managing trade types.
+ */
+class trade_type_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.trade.service.trade_type_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    explicit trade_type_service(context ctx);
+
+    std::vector<domain::trade_type> list_types();
+
+    std::optional<domain::trade_type>
+    find_type(const std::string& code);
+
+    void save_type(const domain::trade_type& v);
+
+    void remove_type(const std::string& code);
+
+    std::vector<domain::trade_type>
+    get_type_history(const std::string& code);
+
+private:
+    context ctx_;
+    repository::trade_type_repository repo_;
+};
+
+}
+
+#endif

@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component}}/domain/{{entity_singular}}.hpp"
@@ -16,9 +15,6 @@ namespace ores::{{component}}::service {
 
 /**
  * @brief Service for managing {{entity_plural_words}}.
- *
- * This service provides functionality for:
- * - Managing {{entity_plural_words}} (CRUD operations)
  */
 class {{entity_singular}}_service {
 private:
@@ -34,54 +30,22 @@ private:
 public:
     using context = ores::database::context;
 
-    /**
-     * @brief Constructs a {{entity_singular}}_service with required repositories.
-     *
-     * @param ctx The database context.
-     */
     explicit {{entity_singular}}_service(context ctx);
 
-    /**
-     * @brief Lists all {{entity_plural_words}}.
-     */
     std::vector<domain::{{entity_singular}}> list_{{entity_plural_short}}();
 
-    /**
-     * @brief Finds a {{entity_singular_words}} by its ID.
-     */
     std::optional<domain::{{entity_singular}}>
-    find_{{entity_singular_short}}(const boost::uuids::uuid& id);
+    find_{{entity_singular_short}}(const std::string& {{primary_key.column}});
 
-    /**
-     * @brief Finds a {{entity_singular_words}} by its code.
-     */
-    std::optional<domain::{{entity_singular}}>
-    find_{{entity_singular_short}}_by_code(const std::string& code);
+    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& v);
 
-    /**
-     * @brief Saves a {{entity_singular_words}} (creates or updates).
-     *
-     * @param {{entity_singular_short}} The {{entity_singular_words}} to save
-     */
-    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& {{entity_singular_short}});
+    void remove_{{entity_singular_short}}(const std::string& {{primary_key.column}});
 
-    /**
-     * @brief Removes a {{entity_singular_words}}.
-     *
-     * @param id The ID of the {{entity_singular_words}} to remove
-     */
-    void remove_{{entity_singular_short}}(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Gets the version history for a {{entity_singular_words}}.
-     *
-     * @param id The {{entity_singular_words}} ID
-     * @return Vector of all versions, newest first
-     */
     std::vector<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}_history(const boost::uuids::uuid& id);
+    get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}});
 
 private:
+    context ctx_;
     repository::{{entity_singular}}_repository repo_;
 };
 

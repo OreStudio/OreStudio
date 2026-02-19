@@ -17,3 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADE_DOMAIN_LIFECYCLE_EVENT_JSON_IO_HPP
+#define ORES_TRADE_DOMAIN_LIFECYCLE_EVENT_JSON_IO_HPP
+
+#include <iosfwd>
+#include "ores.trade/domain/lifecycle_event.hpp"
+
+namespace ores::trade::domain {
+
+/**
+ * @brief Dumps the lifecycle_event to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const lifecycle_event& v);
+
+}
+
+#endif

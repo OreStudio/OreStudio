@@ -71,6 +71,7 @@
       <addaction name="ActionPortfolios"/>
       <addaction name="ActionBooks"/>
       <addaction name="ActionBookStatuses"/>
+      <addaction name="ActionPurposeTypes"/>
      </widget>
      <addaction name="CurrenciesAction"/>
      <addaction name="CountriesAction"/>
@@ -568,6 +569,14 @@
    </property>
    <property name="toolTip">
     <string>Manage book status values</string>
+   </property>
+  </action>
+  <action name="ActionPurposeTypes">
+   <property name="text">
+    <string>&amp;Purpose Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage portfolio purpose type values</string>
    </property>
   </action>
  </widget>

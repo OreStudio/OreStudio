@@ -42,6 +42,8 @@
 #include "ores.refdata/service/book_service.hpp"
 #include "ores.refdata/service/book_status_service.hpp"
 #include "ores.refdata/messaging/book_status_protocol.hpp"
+#include "ores.refdata/service/purpose_type_service.hpp"
+#include "ores.refdata/messaging/purpose_type_protocol.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -221,6 +223,15 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_delete_book_status_request(payload, remote_address);
     case comms::messaging::message_type::get_book_status_history_request:
         co_return co_await handle_get_book_status_history_request(payload, remote_address);
+    // Purpose type handlers
+    case comms::messaging::message_type::get_purpose_types_request:
+        co_return co_await handle_get_purpose_types_request(payload, remote_address);
+    case comms::messaging::message_type::save_purpose_type_request:
+        co_return co_await handle_save_purpose_type_request(payload, remote_address);
+    case comms::messaging::message_type::delete_purpose_type_request:
+        co_return co_await handle_delete_purpose_type_request(payload, remote_address);
+    case comms::messaging::message_type::get_purpose_type_history_request:
+        co_return co_await handle_get_purpose_type_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown refdata message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -3385,6 +3396,180 @@ handle_get_book_status_history_request(std::span<const std::byte> payload,
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error retrieving history for book status "
+                                   << request.code << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// Purpose type handlers
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_purpose_types_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_purpose_types_request.";
+
+    auto auth = require_authentication(remote_address, "Get purpose types");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::purpose_type_service svc(ctx);
+
+    auto request_result = get_purpose_types_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_purpose_types_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto types = svc.list_types();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << types.size() << " purpose types";
+
+    get_purpose_types_response response{
+        .types = std::move(types)
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_purpose_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_purpose_type_request.";
+
+    auto auth = require_authentication(remote_address, "Save purpose type");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::purpose_type_service svc(ctx);
+
+    auto request_result = save_purpose_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_purpose_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving purpose type: " << request.type.code;
+
+    request.type.modified_by = auth->username;
+    request.type.performed_by.clear();
+
+    save_purpose_type_response response;
+    try {
+        svc.save_type(request.type);
+        response.success = true;
+        response.message = "Purpose type saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved purpose type: "
+                                  << request.type.code << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save purpose type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving purpose type "
+                                   << request.type.code << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_purpose_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_purpose_type_request.";
+
+    auto auth = require_authentication(remote_address, "Delete purpose type");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::purpose_type_service svc(ctx);
+
+    auto request_result = delete_purpose_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_purpose_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " purpose type(s)";
+
+    delete_purpose_type_response response;
+    for (const auto& code : request.codes) {
+        delete_purpose_type_result result;
+        result.code = code;
+
+        try {
+            svc.remove_type(code);
+            result.success = true;
+            result.message = "Purpose type deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted purpose type: " << code;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete purpose type: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting purpose type "
+                                       << code << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_purpose_type_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_purpose_type_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get purpose type history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    service::purpose_type_service svc(ctx);
+
+    auto request_result = get_purpose_type_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_purpose_type_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for purpose type: " << request.code;
+
+    get_purpose_type_history_response response;
+    try {
+        auto history = svc.get_type_history(request.code);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Purpose type not found: " + request.code;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for purpose type: " << request.code;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for purpose type: " << request.code;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for purpose type "
                                    << request.code << ": " << e.what();
     }
 

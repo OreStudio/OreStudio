@@ -204,6 +204,15 @@ enum class message_type : std::uint16_t {
     delete_book_status_response = 0x1086,
     get_book_status_history_request = 0x1087,
     get_book_status_history_response = 0x1088,
+    // Refdata subsystem - Purpose types
+    get_purpose_types_request = 0x1089,
+    get_purpose_types_response = 0x108A,
+    save_purpose_type_request = 0x108B,
+    save_purpose_type_response = 0x108C,
+    delete_purpose_type_request = 0x108D,
+    delete_purpose_type_response = 0x108E,
+    get_purpose_type_history_request = 0x108F,
+    get_purpose_type_history_response = 0x1090,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -639,6 +648,14 @@ enum class message_type : std::uint16_t {
     case message_type::delete_book_status_response: return "delete_book_status_response";
     case message_type::get_book_status_history_request: return "get_book_status_history_request";
     case message_type::get_book_status_history_response: return "get_book_status_history_response";
+    case message_type::get_purpose_types_request: return "get_purpose_types_request";
+    case message_type::get_purpose_types_response: return "get_purpose_types_response";
+    case message_type::save_purpose_type_request: return "save_purpose_type_request";
+    case message_type::save_purpose_type_response: return "save_purpose_type_response";
+    case message_type::delete_purpose_type_request: return "delete_purpose_type_request";
+    case message_type::delete_purpose_type_response: return "delete_purpose_type_response";
+    case message_type::get_purpose_type_history_request: return "get_purpose_type_history_request";
+    case message_type::get_purpose_type_history_response: return "get_purpose_type_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

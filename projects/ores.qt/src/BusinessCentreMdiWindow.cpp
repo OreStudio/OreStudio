@@ -141,22 +141,13 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
 
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::mono_bold_center, // CountryAlpha2 (flag icon inline via DecorationRole)
-        cs::mono_bold_left,   // Code
-        cs::text_left,        // Description
-        cs::text_left,        // Source
-        cs::mono_left,        // CodingScheme
-        cs::mono_center,      // Version
-        cs::text_left,        // ModifiedBy
-        cs::mono_left         // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientBusinessCentreModel::columnStyles(), tableView_));
 
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_, "BusinessCentreListWindow",
-        {ClientBusinessCentreModel::CodingScheme}, {900, 400}, 3);
+    initializeTableSettings(tableView_, model_, ClientBusinessCentreModel::kSettingsGroup,
+        ClientBusinessCentreModel::defaultHiddenColumns(), ClientBusinessCentreModel::kDefaultWindowSize, 3);
 }
 
 void BusinessCentreMdiWindow::setupConnections() {

@@ -133,25 +133,17 @@ CountryMdiWindow(ClientManager* clientManager,
     countryTableView_->setSortingEnabled(true);
     countryTableView_->sortByColumn(ClientCountryModel::Alpha2Code, Qt::AscendingOrder);
 
-    using cs = column_style;
-    countryTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,        // Name
-        cs::mono_bold_left,   // Alpha2Code (flag icon inline via DecorationRole)
-        cs::mono_bold_center, // Alpha3Code
-        cs::mono_center,      // NumericCode
-        cs::text_left,        // OfficialName
-        cs::mono_center,      // Version
-        cs::text_left,        // ModifiedBy
-        cs::mono_left         // RecordedAt
-    }, countryTableView_));
+    // Use column metadata for delegate styles (single source of truth)
+    countryTableView_->setItemDelegate(new EntityItemDelegate(
+        ClientCountryModel::columnStyles(), countryTableView_));
 
     countryTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
+    // Use column metadata for default hidden columns
     initializeTableSettings(countryTableView_, countryModel_.get(),
-        "CountryListWindow",
-        {ClientCountryModel::Alpha3Code, ClientCountryModel::NumericCode,
-         ClientCountryModel::OfficialName},
-        {900, 600}, 2);
+        ClientCountryModel::kSettingsGroup,
+        ClientCountryModel::defaultHiddenColumns(),
+        ClientCountryModel::kDefaultWindowSize, 2);
 
     // Connect signals
     connect(countryModel_.get(), &ClientCountryModel::dataLoaded,

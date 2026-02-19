@@ -60,23 +60,16 @@ void CatalogMdiWindow::setupUi() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Name
-        cs::text_left,   // Description
-        cs::text_left,   // Owner
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientCatalogModel::columnStyles(), tableView_));
     tableView_->verticalHeader()->setVisible(false);
 
     model_ = new ClientCatalogModel(clientManager_, this);
     tableView_->setModel(model_);
 
     initializeTableSettings(tableView_, model_,
-        "CatalogListWindow",
-        {}, {800, 500}, 1);
+        ClientCatalogModel::kSettingsGroup,
+        ClientCatalogModel::defaultHiddenColumns(), ClientCatalogModel::kDefaultWindowSize, 1);
 
     layout->addWidget(tableView_);
 }

@@ -60,14 +60,8 @@ void DataDomainMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Name
-        cs::text_left,   // Description
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientDataDomainModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -76,8 +70,8 @@ void DataDomainMdiWindow::setupUi() {
     tableView_->sortByColumn(ClientDataDomainModel::Name, Qt::AscendingOrder);
 
     initializeTableSettings(tableView_, model_,
-        "DataDomainMdiWindow",
-        {}, {900, 400}, 1);
+        ClientDataDomainModel::kSettingsGroup,
+        ClientDataDomainModel::defaultHiddenColumns(), ClientDataDomainModel::kDefaultWindowSize, 1);
 
     layout->addWidget(tableView_);
 }

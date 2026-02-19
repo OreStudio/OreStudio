@@ -21,11 +21,13 @@
 #define ORES_QT_CLIENT_COUNTRY_MODEL_HPP
 
 #include <vector>
+#include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/country.hpp"
 
@@ -67,6 +69,104 @@ public:
         RecordedAt,     // Timestamp when recorded
         ColumnCount     // Must be last
     };
+
+    /**
+     * @brief Column metadata: header text, style, visibility, and width.
+     *
+     * Order must match the Column enum.
+     */
+    static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
+        {
+            .column = Alpha2Code,
+            .header = std::string_view("Alpha-2"),
+            .style = column_style::mono_bold_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = Alpha3Code,
+            .header = std::string_view("Alpha-3"),
+            .style = column_style::mono_bold_center,
+            .hidden_by_default = true,
+            .default_width = 80
+        },
+        {
+            .column = Name,
+            .header = std::string_view("Name"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = NumericCode,
+            .header = std::string_view("Numeric"),
+            .style = column_style::mono_center,
+            .hidden_by_default = true,
+            .default_width = 70
+        },
+        {
+            .column = OfficialName,
+            .header = std::string_view("Official Name"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = Version,
+            .header = std::string_view("Version"),
+            .style = column_style::mono_center,
+            .hidden_by_default = false,
+            .default_width = 70
+        },
+        {
+            .column = ModifiedBy,
+            .header = std::string_view("Modified By"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = RecordedAt,
+            .header = std::string_view("Recorded At"),
+            .style = column_style::mono_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        }
+    }};
+
+    /**
+     * @brief Default window size for the country list window.
+     */
+    inline static const QSize kDefaultWindowSize = {900, 600};
+
+    /**
+     * @brief Settings group name for persisting window and column state.
+     */
+    static constexpr std::string_view kSettingsGroup = "CountryListWindow";
+
+    /**
+     * @brief Returns a static vector of column styles (built once per process).
+     */
+    static std::vector<column_style> const& columnStyles() {
+        static std::vector<column_style> const kStylesVector = []() {
+            std::vector<column_style> result;
+            result.reserve(kColumnCount);
+            for (std::size_t i = 0; i < kColumnCount; ++i)
+                result.push_back(kColumns[i].style);
+            return result;
+        }();
+        return kStylesVector;
+    }
+
+    /**
+     * @brief Returns a static QVector of hidden column indices (built once per process).
+     */
+    static QVector<int> defaultHiddenColumns() {
+        static QVector<int> const result =
+            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        return result;
+    }
 
     explicit ClientCountryModel(ClientManager* clientManager,
                                 ImageCache* imageCache,

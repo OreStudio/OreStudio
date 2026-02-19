@@ -60,15 +60,8 @@ void SubjectAreaMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Name
-        cs::text_left,   // DomainName
-        cs::text_left,   // Description
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientSubjectAreaModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -77,8 +70,8 @@ void SubjectAreaMdiWindow::setupUi() {
     tableView_->sortByColumn(ClientSubjectAreaModel::Name, Qt::AscendingOrder);
 
     initializeTableSettings(tableView_, model_,
-        "SubjectAreaMdiWindow",
-        {}, {900, 400}, 1);
+        ClientSubjectAreaModel::kSettingsGroup,
+        ClientSubjectAreaModel::defaultHiddenColumns(), ClientSubjectAreaModel::kDefaultWindowSize, 1);
 
     layout->addWidget(tableView_);
 }

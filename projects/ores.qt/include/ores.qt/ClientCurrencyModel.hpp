@@ -21,11 +21,14 @@
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
 #include <vector>
+#include <unordered_set>
+#include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
 
@@ -75,6 +78,138 @@ public:
         RecordedAt,
         ColumnCount  // Must be last - represents total number of columns
     };
+
+    /**
+     * @brief Column metadata: header text, style, visibility, and width.
+     *
+     * Order must match the Column enum.
+     */
+    static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
+        {
+            .column = IsoCode,
+            .header = std::string_view("Code"),
+            .style = column_style::mono_bold_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = CurrencyName,
+            .header = std::string_view("Currency Name"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto},
+        {
+            .column = NumericCode,
+            .header = std::string_view("Numeric Code"),
+            .style = column_style::mono_center,
+            .hidden_by_default = false,
+            .default_width = 70
+        },
+        {
+            .column = Symbol,
+            .header = std::string_view("Symbol"),
+            .style = column_style::mono_center,
+            .hidden_by_default = false,
+            .default_width = 60
+        },
+        {
+            .column = FractionSymbol,
+            .header = std::string_view("Fraction"),
+            .style = column_style::mono_center,
+            .hidden_by_default = true,
+            .default_width = 60
+        },
+        {
+            .column = FractionsPerUnit,
+            .header = std::string_view("Per Unit"),
+            .style = column_style::mono_right,
+            .hidden_by_default = true,
+            .default_width = 70
+        },
+        {
+            .column = RoundingType,
+            .header = std::string_view("Rounding Type"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = RoundingPrecision,
+            .header = std::string_view("Precision"),
+            .style = column_style::mono_right,
+            .hidden_by_default = true,
+            .default_width = 70
+        },
+        {
+            .column = Format,
+            .header = std::string_view("Format"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = CurrencyType,
+            .header = std::string_view("Type"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = Version,
+            .header = std::string_view("Version"),
+            .style = column_style::mono_center,
+            .hidden_by_default = false,
+            .default_width = 70
+        },
+        {
+            .column = ModifiedBy,
+            .header = std::string_view("Modified By"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = RecordedAt,
+            .header = std::string_view("Recorded At"),
+            .style = column_style::mono_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+    }};
+
+    /**
+     * @brief Default window size for the currency list window.
+     */
+    inline static const QSize kDefaultWindowSize = {1000, 600};
+
+    /**
+     * @brief Settings group name for persisting window and column state.
+     */
+    static constexpr std::string_view kSettingsGroup = "CurrencyListWindow";
+
+    /**
+     * @brief Returns a static vector of column styles (built once per process).
+     */
+    static std::vector<column_style> const& columnStyles() {
+        static std::vector<column_style> const kStylesVector = []() {
+            std::vector<column_style> result;
+            result.reserve(kColumnCount);
+            for (std::size_t i = 0; i < kColumnCount; ++i)
+                result.push_back(kColumns[i].style);
+            return result;
+        }();
+        return kStylesVector;
+    }
+
+    /**
+     * @brief Returns a static QVector of hidden column indices (built once per process).
+     */
+    static QVector<int> defaultHiddenColumns() {
+        static QVector<int> const result =
+            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        return result;
+    }
 
     explicit ClientCurrencyModel(ClientManager* clientManager,
                                    ImageCache* imageCache,

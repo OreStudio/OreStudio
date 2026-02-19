@@ -61,15 +61,8 @@ void MethodologyMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Name
-        cs::text_left,   // Description
-        cs::text_left,   // LogicReference
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientMethodologyModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -78,8 +71,8 @@ void MethodologyMdiWindow::setupUi() {
     tableView_->sortByColumn(ClientMethodologyModel::Name, Qt::AscendingOrder);
 
     initializeTableSettings(tableView_, model_,
-        "MethodologyMdiWindow",
-        {}, {900, 400}, 1);
+        ClientMethodologyModel::kSettingsGroup,
+        ClientMethodologyModel::defaultHiddenColumns(), ClientMethodologyModel::kDefaultWindowSize, 1);
 
     layout->addWidget(tableView_);
 }

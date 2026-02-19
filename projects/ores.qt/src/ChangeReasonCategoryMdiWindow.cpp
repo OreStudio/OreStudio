@@ -133,21 +133,15 @@ void ChangeReasonCategoryMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Code
-        cs::text_left,   // Description
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientChangeReasonCategoryModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_,
-        "ChangeReasonCategoryListWindow",
-        {ClientChangeReasonCategoryModel::Description},
-        {900, 400}, 1);
+        ClientChangeReasonCategoryModel::kSettingsGroup,
+        ClientChangeReasonCategoryModel::defaultHiddenColumns(),
+        ClientChangeReasonCategoryModel::kDefaultWindowSize, 1);
 }
 
 void ChangeReasonCategoryMdiWindow::setupConnections() {

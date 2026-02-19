@@ -160,6 +160,7 @@ void ChangeReasonCategoryDetailDialog::setCategory(
 
     ui_->versionEdit->setText(QString::number(category.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(category.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(category.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(category.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(category.change_commentary));
 
@@ -236,6 +237,7 @@ void ChangeReasonCategoryDetailDialog::clearDialog() {
 
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->performedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->commentaryEdit->clear();
 

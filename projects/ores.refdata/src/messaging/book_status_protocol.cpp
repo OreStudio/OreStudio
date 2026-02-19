@@ -76,8 +76,6 @@ read_book_status(std::span<const std::byte>& data) {
     if (!display_order_result) return std::unexpected(display_order_result.error());
     ps.display_order = static_cast<int>(*display_order_result);
 
-
-
     auto change_reason_code_result = reader::read_string(data);
     if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
     ps.change_reason_code = *change_reason_code_result;

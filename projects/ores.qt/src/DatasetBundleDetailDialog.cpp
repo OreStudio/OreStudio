@@ -113,6 +113,7 @@ void DatasetBundleDetailDialog::updateUiFromBundle() {
 
     ui_->versionEdit->setText(QString::number(bundle_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(bundle_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(bundle_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(bundle_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(bundle_.change_commentary));
 }

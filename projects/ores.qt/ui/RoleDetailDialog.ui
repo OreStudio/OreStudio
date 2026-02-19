@@ -111,13 +111,28 @@
        </widget>
       </item>
       <item row="2" column="0">
+       <widget class="QLabel" name="labelPerformedBy">
+        <property name="text">
+         <string>Performed By:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="performedByEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+
+      <item row="3" column="0">
        <widget class="QLabel" name="labelModifiedAt">
         <property name="text">
          <string>Modified At:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="modifiedAtEdit">
         <property name="readOnly">
          <bool>true</bool>

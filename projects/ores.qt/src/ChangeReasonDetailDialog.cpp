@@ -198,6 +198,7 @@ void ChangeReasonDetailDialog::setChangeReason(
 
     ui_->versionEdit->setText(QString::number(reason.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(reason.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(reason.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(reason.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(reason.change_commentary));
 
@@ -292,6 +293,7 @@ void ChangeReasonDetailDialog::clearDialog() {
 
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->performedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->commentaryEdit->clear();
 

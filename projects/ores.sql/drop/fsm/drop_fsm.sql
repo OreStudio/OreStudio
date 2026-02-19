@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,16 +19,18 @@
  */
 
 -- =============================================================================
--- Row-Level Security Policies
+-- Drop FSM Component (Generic Finite State Machine Infrastructure)
 -- =============================================================================
--- RLS policies must be created after all tables and functions are defined.
--- This orchestration file includes all component RLS policies.
+-- Drop in reverse dependency order: transitions first, then states, then machines.
 
-\ir ../iam/iam_rls_policies_create.sql
-\ir ../dq/dq_rls_policies_create.sql
-\ir ../fsm/fsm_rls_policies_create.sql
-\ir ../refdata/refdata_rls_policies_create.sql
-\ir ../assets/assets_rls_policies_create.sql
-\ir ../variability/variability_rls_policies_create.sql
-\ir ../telemetry/telemetry_rls_policies_create.sql
-\ir ../geo/geo_rls_policies_create.sql
+-- Transitions depend on machines and states
+\ir ./fsm_transitions_notify_trigger_drop.sql
+\ir ./fsm_transitions_drop.sql
+
+-- States depend on machines
+\ir ./fsm_states_notify_trigger_drop.sql
+\ir ./fsm_states_drop.sql
+
+-- Machines have no FSM dependencies
+\ir ./fsm_machines_notify_trigger_drop.sql
+\ir ./fsm_machines_drop.sql

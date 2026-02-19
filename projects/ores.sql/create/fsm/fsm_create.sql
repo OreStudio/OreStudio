@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,16 +19,20 @@
  */
 
 -- =============================================================================
--- Row-Level Security Policies
+-- FSM Component (Generic Finite State Machine Infrastructure)
 -- =============================================================================
--- RLS policies must be created after all tables and functions are defined.
--- This orchestration file includes all component RLS policies.
+-- Creates the generic FSM framework tables. The FSM component has no
+-- dependencies on the trade component. It depends on ores.iam (for tenant
+-- validation) and ores.dq (for change reason validation).
 
-\ir ../iam/iam_rls_policies_create.sql
-\ir ../dq/dq_rls_policies_create.sql
-\ir ../fsm/fsm_rls_policies_create.sql
-\ir ../refdata/refdata_rls_policies_create.sql
-\ir ../assets/assets_rls_policies_create.sql
-\ir ../variability/variability_rls_policies_create.sql
-\ir ../telemetry/telemetry_rls_policies_create.sql
-\ir ../geo/geo_rls_policies_create.sql
+-- Machines must be created before states and transitions (soft FK dependency)
+\ir ./fsm_machines_create.sql
+\ir ./fsm_machines_notify_trigger_create.sql
+
+-- States depend on machines
+\ir ./fsm_states_create.sql
+\ir ./fsm_states_notify_trigger_create.sql
+
+-- Transitions depend on both machines and states
+\ir ./fsm_transitions_create.sql
+\ir ./fsm_transitions_notify_trigger_create.sql

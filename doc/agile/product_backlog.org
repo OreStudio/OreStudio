@@ -649,18 +649,6 @@ Notes:
   signature but we can follow the trail back. The state machine determines how
   many signatures are required to promote from staging to main table.
 
-*** Add FSM support to postgres                                        :code:
-
-In order to manage aspects such as trade life-cycles, authorisation, etc. We
-will need to support finite state machines. We should probably implement this
-directly in postgres.
-
-Links:
-
-- [[https://raphael.medaer.me/2019/06/12/pgfsm.html][Versioned FSM (Finite-State Machine) with Postgresql]]
-- [[https://felixge.de/2017/07/27/implementing-state-machines-in-postgresql/][Implementing State Machines in PostgreSQL]]
-- [[https://github.com/michelp/pgfsm/blob/master/pgfsm--0.0.1.sql][pgfsm--0.0.1.sql]]
-
 *** Add pg_cron extension for scheduling                               :code:
 
 We should install pg_cron extension:

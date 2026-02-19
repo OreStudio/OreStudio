@@ -40,8 +40,7 @@ create table if not exists "ores_assets_tags_tbl" (
         tag_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to"),
-    check ("change_reason_code" <> '')
+    check ("valid_from" < "valid_to")
 );
 
 create unique index if not exists ores_assets_tags_version_uniq_idx
@@ -67,7 +66,8 @@ begin
     select version into current_version
     from "ores_assets_tags_tbl"
     where tag_id = new.tag_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

@@ -47,8 +47,7 @@ create table if not exists "ores_iam_account_parties_tbl" (
         party_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to"),
-    check ("change_reason_code" <> '')
+    check ("valid_from" < "valid_to")
 );
 
 -- Index for looking up parties for an account
@@ -106,7 +105,8 @@ begin
     where tenant_id = new.tenant_id
     and account_id = new.account_id
     and party_id = new.party_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

@@ -22,8 +22,6 @@
  * Template: sql_schema_table_create.mustache
  * To modify, update the template and regenerate.
  */
-set schema 'public';
-
 -- =============================================================================
 -- Rounding Types - Valid rounding methods per ORE XML schema (roundingType)
 -- =============================================================================
@@ -48,23 +46,22 @@ create table if not exists "ores_refdata_rounding_types_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> ''),
-    check ("change_reason_code" <> '')
+    check ("code" <> '')
 );
 
 create unique index if not exists ores_refdata_rounding_types_version_uniq_idx
-on "public"."ores_refdata_rounding_types_tbl" (tenant_id, code, version)
+on "ores_refdata_rounding_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ores_refdata_rounding_types_code_uniq_idx
-on "public"."ores_refdata_rounding_types_tbl" (tenant_id, code)
+on "ores_refdata_rounding_types_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ores_refdata_rounding_types_tenant_idx
-on "public"."ores_refdata_rounding_types_tbl" (tenant_id)
+on "ores_refdata_rounding_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function public.ores_refdata_rounding_types_insert_fn()
+create or replace function ores_refdata_rounding_types_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -76,7 +73,7 @@ begin
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     select version into current_version
-    from "public"."ores_refdata_rounding_types_tbl"
+    from "ores_refdata_rounding_types_tbl"
     where tenant_id = new.tenant_id
       and code = new.code
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -90,7 +87,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "public"."ores_refdata_rounding_types_tbl"
+        update "ores_refdata_rounding_types_tbl"
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
           and code = new.code
@@ -110,14 +107,14 @@ end;
 $$ language plpgsql;
 
 create or replace trigger ores_refdata_rounding_types_insert_trg
-before insert on "public"."ores_refdata_rounding_types_tbl"
+before insert on "ores_refdata_rounding_types_tbl"
 for each row
-execute function public.ores_refdata_rounding_types_insert_fn();
+execute function ores_refdata_rounding_types_insert_fn();
 
 create or replace rule ores_refdata_rounding_types_delete_rule as
-on delete to "public"."ores_refdata_rounding_types_tbl"
+on delete to "ores_refdata_rounding_types_tbl"
 do instead
-  update "public"."ores_refdata_rounding_types_tbl"
+  update "ores_refdata_rounding_types_tbl"
   set valid_to = current_timestamp
   where tenant_id = old.tenant_id
   and code = old.code

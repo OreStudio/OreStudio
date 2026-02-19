@@ -122,7 +122,8 @@ begin
     from "ores_dq_coding_schemes_tbl"
     where tenant_id = NEW.tenant_id
       and code = NEW.code
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         -- This insert is an update. Check version and increment.

@@ -76,7 +76,8 @@ begin
     from "ores_dq_catalogs_tbl"
     where tenant_id = NEW.tenant_id
       and name = NEW.name
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         -- This insert is an update. Check version and increment.

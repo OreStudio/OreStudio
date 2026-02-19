@@ -24,6 +24,8 @@
 -- RLS policies must be dropped before the tables they reference. This
 -- orchestration file includes all component RLS policy drops.
 
+\ir ../trade/trade_rls_policies_drop.sql
+\ir ../fsm/fsm_rls_policies_drop.sql
 \ir ../geo/geo_rls_policies_drop.sql
 \ir ../assets/assets_rls_policies_drop.sql
 \ir ../telemetry/telemetry_rls_policies_drop.sql

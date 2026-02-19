@@ -48,8 +48,7 @@ create table if not exists "ores_refdata_countries_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("alpha2_code" <> ''),
-    check ("change_reason_code" <> '')
+    check ("alpha2_code" <> '')
 );
 
 create unique index if not exists ores_refdata_countries_version_uniq_idx
@@ -94,7 +93,8 @@ begin
     from "ores_refdata_countries_tbl"
     where tenant_id = new.tenant_id
     and alpha2_code = new.alpha2_code
-    and valid_to = ores_utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

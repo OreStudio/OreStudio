@@ -26,6 +26,8 @@
 
 \ir ../iam/iam_rls_policies_create.sql
 \ir ../dq/dq_rls_policies_create.sql
+\ir ../fsm/fsm_rls_policies_create.sql
+\ir ../trade/trade_rls_policies_create.sql
 \ir ../refdata/refdata_rls_policies_create.sql
 \ir ../assets/assets_rls_policies_create.sql
 \ir ../variability/variability_rls_policies_create.sql

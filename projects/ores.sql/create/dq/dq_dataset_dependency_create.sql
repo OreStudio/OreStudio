@@ -53,7 +53,6 @@ create table if not exists "ores_dq_dataset_dependencies_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("change_reason_code" <> ''),
     check ("dataset_code" <> "dependency_code")  -- Prevent self-dependency
 );
 
@@ -94,9 +93,7 @@ begin
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
-    if new.modified_by is null or new.modified_by = '' then
-        new.modified_by = current_user;
-    end if;
+    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 

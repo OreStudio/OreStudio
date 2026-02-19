@@ -184,7 +184,8 @@ begin
     from "ores_dq_datasets_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then

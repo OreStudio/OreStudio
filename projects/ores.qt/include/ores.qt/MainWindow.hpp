@@ -79,6 +79,8 @@ class BusinessCentreController;
 class BusinessUnitController;
 class PortfolioController;
 class BookController;
+class BookStatusController;
+class PurposeTypeController;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -564,6 +566,8 @@ private:
     std::unique_ptr<BusinessUnitController> businessUnitController_;
     std::unique_ptr<PortfolioController> portfolioController_;
     std::unique_ptr<BookController> bookController_;
+    std::unique_ptr<BookStatusController> bookStatusController_;
+    std::unique_ptr<PurposeTypeController> purposeTypeController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

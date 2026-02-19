@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "name" text not null,
+    "description" text not null default '',
     "parent_portfolio_id" uuid not null,
     "ledger_ccy" text not null,
     "gl_account_ref" text null,

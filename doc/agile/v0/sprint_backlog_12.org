@@ -66,7 +66,7 @@
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
-    CLOCK: [2026-02-18 Wed 23:24]
+    CLOCK: [2026-02-18 Wed 23:24]--[2026-02-19 Thu 10:00] => 10:36
     CLOCK: [2026-02-18 Wed 23:09]--[2026-02-18 Wed 23:23] =>  0:14
     CLOCK: [2026-02-16 Mon 12:20]--[2026-02-16 Mon 12:33] =>  0:13
     CLOCK: [2026-02-12 Thu 22:50]--[2026-02-12 Thu 23:09] =>  0:19
@@ -2784,6 +2784,10 @@ using immer containers:
 - we should add a UI to visualise the workspace, or at least be able to see size
   usage etc. Baobab style map.
 
+Notes:
+
+- actually this is not "workspace", its ores.caching.
+
 Links:
 
 - [[https://github.com/arximboldi/immer][GH: immer]]: "immer is a library of persistent and immutable data structures
@@ -2801,7 +2805,64 @@ Core needs to have a container for all of the data stored within a context.
 Actually, according to Data Priented Principles, we may not need it. This may be
 a UI concept but not a code concept.
 
-*** Add watermark support                                              :code:
+*** STARTED Add FSM support to postgres                                :code:
+
+In order to manage aspects such as trade life-cycles, authorisation, etc. We
+will need to support finite state machines. We should probably implement this
+directly in postgres.
+
+Links:
+
+- [[https://raphael.medaer.me/2019/06/12/pgfsm.html][Versioned FSM (Finite-State Machine) with Postgresql]]
+- [[https://felixge.de/2017/07/27/implementing-state-machines-in-postgresql/][Implementing State Machines in PostgreSQL]]
+- [[https://github.com/michelp/pgfsm/blob/master/pgfsm--0.0.1.sql][pgfsm--0.0.1.sql]]
+
+*** STARTED Add trade envelope support                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-19 Thu 09:00]--[2026-02-19 Thu 10:00] =>  1:00
+    :END:
+
+At the basic infrastructure needed to support trade envelopes.
+
+#+begin_quote
+This pull request significantly enhances the database schema by introducing a
+robust, generic Finite State Machine (FSM) framework and a detailed trade
+envelope. The FSM enables sophisticated lifecycle management for various
+domains, with trade lifecycle being its initial client. The trade envelope
+schema provides normalized structures for trade identity, temporal versioning,
+identifiers, and party roles, facilitating efficient querying and integration
+with systems like ORE. Accompanying these new features are extensive convention
+fixes across existing SQL files and updates to code generation templates,
+ensuring consistency and maintainability across the codebase.
+
+Highlights:
+
+- Unified Trade Envelope and FSM Schema: Implemented a comprehensive trade
+  envelope and Finite State Machine (FSM) schema, as detailed in the design
+  document, to support trade identity, temporal versioning, and lifecycle
+  management.
+- Generic FSM Framework: Introduced a reusable FSM framework in PostgreSQL,
+  including tables for machines, states, and transitions, with notification
+  triggers and Row-Level Security (RLS) policies.
+- Trade Reference Data and Core Tables: Added four new trade reference data
+  tables (trade types, lifecycle events, party role types, trade ID types) and
+  core trade envelope tables (ores_trade_trades_tbl, ores_trade_identifiers_tbl,
+  ores_trade_party_roles_tbl), complete with soft-FK validation and RLS.
+- ORE Envelope View and Sample Data: Created ores_trade_ore_envelope_vw to
+  flatten the latest trade state into the ORE structure, alongside a sample data
+  script demonstrating a booking and novation lifecycle.
+- SQL Convention Alignment: Fixed convention drifts across 40 existing SQL files
+  by removing set schema 'public', schema-qualified table names, for update;
+  idioms, stale check ("change_reason_code" <> '') constraints, and updating
+  modified_by patterns.
+- Code Generation Enhancements: Updated codegen templates
+  (sql_schema_domain_entity_create.mustache,
+  sql_schema_junction_create.mustache, sql_schema_table_create.mustache) to
+  align with new hand-crafted conventions and added a new script
+  (generate_trade_schema.sh) for trade schema generation.
+#+end_quote
+
+*** Add high-watermark support                                         :code:
 
 Whenever we request entities, we should also return the watermark for that
 entity. This is the highest timestamp of all entities within a set (across all

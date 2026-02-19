@@ -47,6 +47,8 @@ namespace ores::refdata::messaging {
  * - Business unit CRUD + history
  * - Portfolio CRUD + history
  * - Book CRUD + history
+ * - Book status CRUD + history
+ * - Purpose type CRUD + history
  */
 class refdata_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
@@ -339,6 +341,34 @@ private:
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_book_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Book status handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_book_statuses_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_book_status_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_book_status_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_book_status_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Purpose type handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_purpose_types_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_purpose_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_purpose_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_purpose_type_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     std::shared_ptr<variability::service::system_flags_service> system_flags_;

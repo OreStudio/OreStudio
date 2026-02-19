@@ -80,6 +80,7 @@ private:
     void updateBookFromUi();
     void updateSaveButtonState();
     void populateCurrencyCombo();
+    void populateBookStatusCombo();
     bool validateInput();
 
     Ui::BookDetailDialog* ui_;

@@ -114,6 +114,7 @@ void OriginDimensionDetailDialog::updateUiFromDimension() {
 
     ui_->versionEdit->setText(QString::number(dimension_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(dimension_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(dimension_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(dimension_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(dimension_.change_commentary));
 }

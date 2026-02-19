@@ -113,6 +113,7 @@ void TenantTypeDetailDialog::updateUiFromType() {
 
     ui_->versionEdit->setText(QString::number(tenant_type_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(tenant_type_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(tenant_type_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(tenant_type_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(tenant_type_.change_commentary));
 }

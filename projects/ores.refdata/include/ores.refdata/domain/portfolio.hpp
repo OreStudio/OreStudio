@@ -60,6 +60,11 @@ struct portfolio final {
     std::string name;
 
     /**
+     * @brief Optional free-text description of the portfolio.
+     */
+    std::string description;
+
+    /**
      * @brief Self-referencing FK. NULL indicates a root node.
      *
      * Links to the parent portfolio in the hierarchy.

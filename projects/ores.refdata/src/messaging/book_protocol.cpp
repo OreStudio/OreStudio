@@ -45,6 +45,7 @@ void write_book(std::vector<std::byte>& buffer,
     writer::write_uuid(buffer, bk.id);
     writer::write_uuid(buffer, bk.party_id);
     writer::write_string(buffer, bk.name);
+    writer::write_string(buffer, bk.description);
     writer::write_uuid(buffer, bk.parent_portfolio_id);
     writer::write_string(buffer, bk.ledger_ccy);
     writer::write_string(buffer, bk.gl_account_ref);
@@ -78,6 +79,10 @@ read_book(std::span<const std::byte>& data) {
     auto name_result = reader::read_string(data);
     if (!name_result) return std::unexpected(name_result.error());
     bk.name = *name_result;
+
+    auto description_result = reader::read_string(data);
+    if (!description_result) return std::unexpected(description_result.error());
+    bk.description = *description_result;
 
     auto parent_portfolio_id_result = reader::read_uuid(data);
     if (!parent_portfolio_id_result) return std::unexpected(parent_portfolio_id_result.error());

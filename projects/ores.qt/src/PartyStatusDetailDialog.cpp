@@ -113,6 +113,7 @@ void PartyStatusDetailDialog::updateUiFromStatus() {
 
     ui_->versionEdit->setText(QString::number(status_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(status_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(status_.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(status_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(status_.change_commentary));
 }

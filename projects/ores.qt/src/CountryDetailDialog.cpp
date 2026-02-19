@@ -241,6 +241,7 @@ void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     ui_->officialNameEdit->setText(QString::fromStdString(country.official_name));
     ui_->versionEdit->setText(QString::number(country.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(country.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(country.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(country.recorded_at));
     ui_->changeReasonEdit->setText(QString::fromStdString(country.change_reason_code));
     ui_->commentaryEdit->setText(QString::fromStdString(country.change_commentary));
@@ -277,6 +278,7 @@ void CountryDetailDialog::clearDialog() {
     ui_->officialNameEdit->clear();
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->performedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->changeReasonEdit->clear();
     ui_->commentaryEdit->clear();

@@ -222,7 +222,7 @@
                <item row="5" column="0">
                 <widget class="QLabel" name="businessCenterValueLabel">
                  <property name="text">
-                  <string>Business Center:</string>
+                  <string>Business Centre:</string>
                  </property>
                 </widget>
                </item>

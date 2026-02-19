@@ -303,6 +303,7 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
     ui_->versionEdit->setText(QString::number(currency.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(currency.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(currency.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(currency.recorded_at));
     ui_->changeReasonEdit->setText(QString::fromStdString(currency.change_reason_code));
     ui_->commentaryEdit->setText(QString::fromStdString(currency.change_commentary));
@@ -349,6 +350,7 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->currencyTypeEdit->clear();
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->performedByEdit->clear();
     ui_->recordedAtEdit->clear();
     ui_->changeReasonEdit->clear();
     ui_->commentaryEdit->clear();

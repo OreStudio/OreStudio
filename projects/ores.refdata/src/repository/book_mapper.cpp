@@ -39,6 +39,7 @@ book_mapper::map(const book_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
+    r.description = v.description;
     r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.parent_portfolio_id);
     r.ledger_ccy = v.ledger_ccy;
     r.gl_account_ref = v.gl_account_ref;
@@ -65,6 +66,7 @@ book_mapper::map(const domain::book& v) {
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;
+    r.description = v.description;
     r.parent_portfolio_id = boost::uuids::to_string(v.parent_portfolio_id);
     r.ledger_ccy = v.ledger_ccy;
     r.gl_account_ref = v.gl_account_ref;

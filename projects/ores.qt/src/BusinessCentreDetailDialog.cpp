@@ -119,6 +119,12 @@ void BusinessCentreDetailDialog::populateCountries() {
 
         self->updateCountryFlagIcons();
         self->updateUiFromBusinessCentre();
+
+        // Apply the pending country selection now that the combo is populated.
+        if (!self->pending_country_.empty()) {
+            self->ui_->countryAlpha2Combo->setCurrentText(
+                QString::fromStdString(self->pending_country_));
+        }
     });
 
     QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
@@ -156,7 +162,13 @@ void BusinessCentreDetailDialog::setUsername(const std::string& username) {
 void BusinessCentreDetailDialog::setBusinessCentre(
     const refdata::domain::business_centre& business_centre) {
     business_centre_ = business_centre;
+    pending_country_ = business_centre.country_alpha2_code;
     updateUiFromBusinessCentre();
+    // If the combo already has items (populated before this call), apply now.
+    if (ui_->countryAlpha2Combo->count() > 0) {
+        ui_->countryAlpha2Combo->setCurrentText(
+            QString::fromStdString(pending_country_));
+    }
 }
 
 void BusinessCentreDetailDialog::setCreateMode(bool createMode) {
@@ -188,10 +200,10 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
     ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
-    ui_->countryAlpha2Combo->setCurrentText(QString::fromStdString(business_centre_.country_alpha2_code));
 
     ui_->versionEdit->setText(QString::number(business_centre_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(business_centre_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(business_centre_.performed_by));
     ui_->changeReasonEdit->setText(QString::fromStdString(business_centre_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(business_centre_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(business_centre_.change_commentary));

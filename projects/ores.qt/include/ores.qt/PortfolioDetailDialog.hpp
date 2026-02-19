@@ -80,6 +80,7 @@ private:
     void updatePortfolioFromUi();
     void updateSaveButtonState();
     void populateCurrencyCombo();
+    void populatePurposeTypeCombo();
     bool validateInput();
 
     Ui::PortfolioDetailDialog* ui_;

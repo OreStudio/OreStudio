@@ -355,8 +355,8 @@ void ClientPartyModel::fetch_business_centres() {
         self->bc_code_to_image_id_ = std::move(mapping);
 
         if (!self->parties_.empty()) {
-            emit self->dataChanged(self->index(0, BusinessCenterCode),
-                self->index(self->rowCount() - 1, BusinessCenterCode),
+            emit self->dataChanged(self->index(0, 0),
+                self->index(self->rowCount() - 1, self->columnCount() - 1),
                 {Qt::DecorationRole});
         }
     });

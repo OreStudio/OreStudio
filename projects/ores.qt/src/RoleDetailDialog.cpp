@@ -52,6 +52,7 @@ void RoleDetailDialog::setRole(const iam::domain::role& role) {
     // Populate metadata
     ui_->versionEdit->setText(QString::number(role.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(role.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(role.performed_by));
     ui_->modifiedAtEdit->setText(relative_time_helper::format(role.recorded_at));
 
     // Populate permissions list
@@ -67,6 +68,7 @@ void RoleDetailDialog::clearDialog() {
     ui_->descriptionEdit->clear();
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->performedByEdit->clear();
     ui_->modifiedAtEdit->clear();
     ui_->permissionsList->clear();
 }

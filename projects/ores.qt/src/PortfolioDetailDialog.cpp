@@ -66,9 +66,13 @@ void PortfolioDetailDialog::setupConnections() {
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PortfolioDetailDialog::onCodeChanged);
-    connect(ui_->purposeTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->aggregationCcyCombo, &QComboBox::currentTextChanged, this,
+            &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->purposeTypeCombo, &QComboBox::currentTextChanged, this,
+            &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->portfolioTypeCombo, &QComboBox::currentTextChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
@@ -77,6 +81,7 @@ void PortfolioDetailDialog::setupConnections() {
 void PortfolioDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateCurrencyCombo();
+    populatePurposeTypeCombo();
 }
 
 void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
@@ -128,6 +133,16 @@ void PortfolioDetailDialog::populateCurrencyCombo() {
     watcher->setFuture(future);
 }
 
+void PortfolioDetailDialog::populatePurposeTypeCombo() {
+    ui_->purposeTypeCombo->clear();
+    // Portfolio purpose classifications.
+    // TODO: populate asynchronously from the purpose_types lookup service
+    // once the protocol is available.
+    for (const auto* pt : {"Risk", "Regulatory", "ClientReporting", "Internal"}) {
+        ui_->purposeTypeCombo->addItem(QString::fromUtf8(pt));
+    }
+}
+
 void PortfolioDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -154,8 +169,10 @@ void PortfolioDetailDialog::setCreateMode(bool createMode) {
 void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
-    ui_->purposeTypeEdit->setReadOnly(readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->aggregationCcyCombo->setEnabled(!readOnly);
+    ui_->purposeTypeCombo->setEnabled(!readOnly);
+    ui_->portfolioTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -163,12 +180,15 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
 
 void PortfolioDetailDialog::updateUiFromPortfolio() {
     ui_->nameEdit->setText(QString::fromStdString(portfolio_.name));
-    ui_->purposeTypeEdit->setText(QString::fromStdString(portfolio_.purpose_type));
+    ui_->descriptionEdit->setText(QString::fromStdString(portfolio_.description));
     ui_->aggregationCcyCombo->setCurrentText(QString::fromStdString(portfolio_.aggregation_ccy));
+    ui_->purposeTypeCombo->setCurrentText(QString::fromStdString(portfolio_.purpose_type));
+    ui_->portfolioTypeCombo->setCurrentIndex(portfolio_.is_virtual != 0 ? 1 : 0);
     ui_->statusCombo->setCurrentText(QString::fromStdString(portfolio_.status));
 
     ui_->versionEdit->setText(QString::number(portfolio_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(portfolio_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(portfolio_.performed_by));
     ui_->changeReasonEdit->setText(QString::fromStdString(portfolio_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(portfolio_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(portfolio_.change_commentary));
@@ -178,8 +198,10 @@ void PortfolioDetailDialog::updatePortfolioFromUi() {
     if (createMode_) {
         portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
-    portfolio_.purpose_type = ui_->purposeTypeEdit->text().trimmed().toStdString();
+    portfolio_.description = ui_->descriptionEdit->text().trimmed().toStdString();
     portfolio_.aggregation_ccy = ui_->aggregationCcyCombo->currentText().trimmed().toStdString();
+    portfolio_.purpose_type = ui_->purposeTypeCombo->currentText().trimmed().toStdString();
+    portfolio_.is_virtual = (ui_->portfolioTypeCombo->currentIndex() == 1) ? 1 : 0;
     portfolio_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     portfolio_.modified_by = username_;
     portfolio_.performed_by = username_;

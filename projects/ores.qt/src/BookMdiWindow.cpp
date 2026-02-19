@@ -146,8 +146,8 @@ void BookMdiWindow::setupTable() {
         cs::text_left,      // Name
         cs::mono_center,    // LedgerCcy
         cs::badge_centered, // BookStatus
+        cs::badge_centered, // IsTradingBook (Trading/Banking)
         cs::text_left,      // CostCenter
-        cs::mono_center,    // IsTradingBook
         cs::mono_center,    // Version
         cs::text_left,      // ModifiedBy
         cs::mono_left       // RecordedAt

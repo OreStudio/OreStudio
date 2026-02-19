@@ -44,6 +44,7 @@ void write_portfolio(std::vector<std::byte>& buffer,
     writer::write_uint32(buffer, static_cast<std::uint32_t>(pf.version));
     writer::write_uuid(buffer, pf.id);
     writer::write_string(buffer, pf.name);
+    writer::write_string(buffer, pf.description);
     writer::write_bool(buffer, pf.parent_portfolio_id.has_value());
     if (pf.parent_portfolio_id.has_value()) {
         writer::write_uuid(buffer, *pf.parent_portfolio_id);
@@ -79,6 +80,10 @@ read_portfolio(std::span<const std::byte>& data) {
     auto name_result = reader::read_string(data);
     if (!name_result) return std::unexpected(name_result.error());
     pf.name = *name_result;
+
+    auto description_result = reader::read_string(data);
+    if (!description_result) return std::unexpected(description_result.error());
+    pf.description = *description_result;
 
     auto parent_portfolio_id_present_result = reader::read_bool(data);
     if (!parent_portfolio_id_present_result) return std::unexpected(parent_portfolio_id_present_result.error());

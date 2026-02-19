@@ -172,6 +172,7 @@ void FeatureFlagDetailDialog::setFeatureFlag(
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     ui_->versionEdit->setText(QString::number(flag.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(flag.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(flag.performed_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
 
     isDirty_ = false;
@@ -205,6 +206,7 @@ void FeatureFlagDetailDialog::clearDialog() {
     ui_->descriptionEdit->clear();
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->performedByEdit->clear();
 
     currentFlag_ = {};
     isDirty_ = false;

@@ -66,19 +66,24 @@ void BookDetailDialog::setupConnections() {
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
+            &BookDetailDialog::onFieldChanged);
     connect(ui_->ledgerCcyCombo, &QComboBox::currentTextChanged, this,
             &BookDetailDialog::onFieldChanged);
     connect(ui_->glAccountRefEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onFieldChanged);
     connect(ui_->costCenterEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onFieldChanged);
-    connect(ui_->bookStatusEdit, &QLineEdit::textChanged, this,
+    connect(ui_->bookStatusCombo, &QComboBox::currentTextChanged, this,
+            &BookDetailDialog::onFieldChanged);
+    connect(ui_->bookTypeCombo, &QComboBox::currentTextChanged, this,
             &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateCurrencyCombo();
+    populateBookStatusCombo();
 }
 
 void BookDetailDialog::setImageCache(ImageCache* imageCache) {
@@ -130,6 +135,16 @@ void BookDetailDialog::populateCurrencyCombo() {
     watcher->setFuture(future);
 }
 
+void BookDetailDialog::populateBookStatusCombo() {
+    ui_->bookStatusCombo->clear();
+    // Lifecycle states for books: Active, Closed, Frozen.
+    // TODO: populate asynchronously from the book_statuses lookup service
+    // once the protocol is available.
+    for (const auto* status : {"Active", "Closed", "Frozen"}) {
+        ui_->bookStatusCombo->addItem(QString::fromUtf8(status));
+    }
+}
+
 void BookDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -156,23 +171,28 @@ void BookDetailDialog::setCreateMode(bool createMode) {
 void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
+    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->ledgerCcyCombo->setEnabled(!readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
-    ui_->bookStatusEdit->setReadOnly(readOnly);
+    ui_->bookStatusCombo->setEnabled(!readOnly);
+    ui_->bookTypeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void BookDetailDialog::updateUiFromBook() {
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
+    ui_->descriptionEdit->setText(QString::fromStdString(book_.description));
     ui_->ledgerCcyCombo->setCurrentText(QString::fromStdString(book_.ledger_ccy));
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
-    ui_->bookStatusEdit->setText(QString::fromStdString(book_.book_status));
+    ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
+    ui_->bookTypeCombo->setCurrentIndex(book_.is_trading_book != 0 ? 1 : 0);
 
     ui_->versionEdit->setText(QString::number(book_.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(book_.modified_by));
+    ui_->performedByEdit->setText(QString::fromStdString(book_.performed_by));
     ui_->changeReasonEdit->setText(QString::fromStdString(book_.change_reason_code));
     ui_->recordedAtEdit->setText(relative_time_helper::format(book_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(book_.change_commentary));
@@ -182,10 +202,12 @@ void BookDetailDialog::updateBookFromUi() {
     if (createMode_) {
         book_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
+    book_.description = ui_->descriptionEdit->text().trimmed().toStdString();
     book_.ledger_ccy = ui_->ledgerCcyCombo->currentText().trimmed().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
-    book_.book_status = ui_->bookStatusEdit->text().trimmed().toStdString();
+    book_.book_status = ui_->bookStatusCombo->currentText().trimmed().toStdString();
+    book_.is_trading_book = (ui_->bookTypeCombo->currentIndex() == 1) ? 1 : 0;
     book_.modified_by = username_;
     book_.performed_by = username_;
 }

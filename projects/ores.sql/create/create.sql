@@ -32,6 +32,7 @@
 -- 3. Operational Tables (depend on data governance tables for FK validation)
 -- =============================================================================
 \ir ./fsm/fsm_create.sql
+\ir ./trade/trade_create.sql
 \ir ./refdata/refdata_create.sql
 \ir ./iam/iam_create.sql
 \ir ./variability/variability_create.sql

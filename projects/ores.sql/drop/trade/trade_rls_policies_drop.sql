@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,17 +19,18 @@
  */
 
 -- =============================================================================
--- Row-Level Security Policies
+-- Drop Row-Level Security Policies for Trade Tables
 -- =============================================================================
--- RLS policies must be created after all tables and functions are defined.
--- This orchestration file includes all component RLS policies.
+-- Must be dropped before the corresponding tables are dropped.
 
-\ir ../iam/iam_rls_policies_create.sql
-\ir ../dq/dq_rls_policies_create.sql
-\ir ../fsm/fsm_rls_policies_create.sql
-\ir ../trade/trade_rls_policies_create.sql
-\ir ../refdata/refdata_rls_policies_create.sql
-\ir ../assets/assets_rls_policies_create.sql
-\ir ../variability/variability_rls_policies_create.sql
-\ir ../telemetry/telemetry_rls_policies_create.sql
-\ir ../geo/geo_rls_policies_create.sql
+-- Trade Types
+drop policy if exists ores_trade_trade_types_tenant_isolation_policy on "ores_trade_trade_types_tbl";
+
+-- Lifecycle Events
+drop policy if exists ores_trade_lifecycle_events_tenant_isolation_policy on "ores_trade_lifecycle_events_tbl";
+
+-- Party Role Types
+drop policy if exists ores_trade_party_role_types_tenant_isolation_policy on "ores_trade_party_role_types_tbl";
+
+-- Trade Identifier Types
+drop policy if exists ores_trade_trade_id_types_tenant_isolation_policy on "ores_trade_trade_id_types_tbl";

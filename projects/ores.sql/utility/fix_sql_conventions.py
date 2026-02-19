@@ -5,10 +5,9 @@ Applies the following fixes:
 1. Remove 'set schema 'public';' lines (with trailing blank line)
 2. Remove schema qualification "public"."table" -> "table"
 3. Remove 'public.' prefix from function/trigger declarations
-4. Remove 'for update;' from SELECT version queries (terminating ';' moved to prior line)
-5. Remove spurious check ("change_reason_code" <> '') constraints
-6. Fix trailing comma left after removing last constraint before closing paren
-7. Replace old modified_by/performed_by null-check with validate fn call
+4. Remove spurious check ("change_reason_code" <> '') constraints
+5. Fix trailing comma left after removing last constraint before closing paren
+6. Replace old modified_by/performed_by null-check with validate fn call
 """
 
 import re
@@ -45,16 +44,7 @@ def fix_file(path: Path) -> bool:
         flags=re.IGNORECASE
     )
 
-    # 4. Remove 'for update;' from SELECT version queries.
-    #    The 'for update;' was the statement terminator; move ';' to the preceding
-    #    ores_utility_infinity_timestamp_fn() line instead.
-    text = re.sub(
-        r'(ores_utility_infinity_timestamp_fn\(\))\n(\s+for update;)',
-        r'\1;',
-        text
-    )
-
-    # 5. Remove check ("change_reason_code" <> '') constraint lines
+    # 4. Remove check ("change_reason_code" <> '') constraint lines
     #    May have a trailing comma (middle of list) or not (last constraint)
     text = re.sub(
         r'^\s+check \("change_reason_code" <> \'\'\),?\n',
@@ -63,11 +53,11 @@ def fix_file(path: Path) -> bool:
         flags=re.MULTILINE
     )
 
-    # 6. Fix trailing comma before closing paren left after removing the last constraint
+    # 5. Fix trailing comma before closing paren left after removing the last constraint
     #    Pattern: ,\n); -> \n);
     text = re.sub(r',\n(\);)', r'\n\1', text)
 
-    # 7a. Replace full modified_by + performed_by null-check block
+    # 6a. Replace full modified_by + performed_by null-check block
     old_block_both = (
         "    if new.modified_by is null or new.modified_by = '' then\n"
         "        new.modified_by = current_user;\n"
@@ -82,7 +72,7 @@ def fix_file(path: Path) -> bool:
     )
     text = text.replace(old_block_both, new_block_both)
 
-    # 7b. Replace modified_by-only null-check block (no performed_by)
+    # 6b. Replace modified_by-only null-check block (no performed_by)
     old_block_mod_only = (
         "    if new.modified_by is null or new.modified_by = '' then\n"
         "        new.modified_by = current_user;\n"

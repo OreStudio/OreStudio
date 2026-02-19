@@ -169,7 +169,8 @@ begin
 {{#entity.has_coding_scheme}}
       and coding_scheme_code = new.coding_scheme_code
 {{/entity.has_coding_scheme}}
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

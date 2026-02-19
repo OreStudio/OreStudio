@@ -77,7 +77,8 @@ begin
     from "ores_dq_coding_scheme_authority_types_tbl"
     where tenant_id = NEW.tenant_id
       and code = NEW.code
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then

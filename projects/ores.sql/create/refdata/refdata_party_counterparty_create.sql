@@ -83,7 +83,8 @@ begin
     where tenant_id = new.tenant_id
     and party_id = new.party_id
     and counterparty_id = new.counterparty_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+    and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

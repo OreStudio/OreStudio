@@ -46,8 +46,8 @@ COMPONENT_PREFIXES = {
     'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
     'ores_fsm_': {'name': 'fsm', 'description': 'Finite State Machine', 'schema': 'public', 'color': '#E8EAF6', 'order': 8},
     'ores_trade_': {'name': 'trade', 'description': 'Trade Envelope & Lifecycle', 'schema': 'public', 'color': '#E8F5E9', 'order': 9},
-    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 9},
-    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 10},
+    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 10},
+    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 11},
 }
 
 # Valid schema names for pattern matching

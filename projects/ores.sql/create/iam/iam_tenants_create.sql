@@ -113,7 +113,8 @@ begin
     select version into current_version
     from ores_iam_tenants_tbl
     where id = new.id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

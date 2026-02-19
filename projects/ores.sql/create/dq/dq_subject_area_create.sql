@@ -82,7 +82,8 @@ begin
     where tenant_id = NEW.tenant_id
       and name = NEW.name
       and domain_name = NEW.domain_name
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then

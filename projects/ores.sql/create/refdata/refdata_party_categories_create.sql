@@ -77,7 +77,8 @@ begin
     from "ores_refdata_party_categories_tbl"
     where tenant_id = new.tenant_id
       and code = new.code
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then

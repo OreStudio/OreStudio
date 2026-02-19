@@ -61,23 +61,8 @@ void DatasetMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Code
-        cs::text_left,   // Name
-        cs::text_left,   // Catalog
-        cs::text_left,   // SubjectArea
-        cs::text_left,   // Domain
-        cs::text_left,   // Origin
-        cs::text_left,   // Nature
-        cs::text_left,   // Treatment
-        cs::text_left,   // SourceSystem
-        cs::mono_left,   // AsOfDate
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left,   // RecordedAt
-        cs::text_left    // Tags
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientDatasetModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -86,8 +71,8 @@ void DatasetMdiWindow::setupUi() {
     tableView_->sortByColumn(ClientDatasetModel::Name, Qt::AscendingOrder);
 
     initializeTableSettings(tableView_, model_,
-        "DatasetMdiWindow",
-        {}, {900, 400}, 1);
+        ClientDatasetModel::kSettingsGroup,
+        ClientDatasetModel::defaultHiddenColumns(), ClientDatasetModel::kDefaultWindowSize, 1);
 
     layout->addWidget(tableView_);
 }

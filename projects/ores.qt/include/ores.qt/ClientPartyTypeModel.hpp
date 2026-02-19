@@ -21,9 +21,11 @@
 #define ORES_QT_CLIENT_PARTY_TYPE_MODEL_HPP
 
 #include <vector>
+#include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -64,6 +66,94 @@ public:
         RecordedAt,
         ColumnCount
     };
+
+    /**
+     * @brief Column metadata: header text, style, visibility, and width.
+     *
+     * Order must match the Column enum.
+     */
+    static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
+        {
+            .column = Code,
+            .header = std::string_view("Code"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = Name,
+            .header = std::string_view("Name"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = Description,
+            .header = std::string_view("Description"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = DisplayOrder,
+            .header = std::string_view("Display Order"),
+            .style = column_style::mono_center,
+            .hidden_by_default = false,
+            .default_width = 70
+        },
+        {
+            .column = Version,
+            .header = std::string_view("Version"),
+            .style = column_style::mono_center,
+            .hidden_by_default = false,
+            .default_width = 70
+        },
+        {
+            .column = ModifiedBy,
+            .header = std::string_view("Modified By"),
+            .style = column_style::text_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = RecordedAt,
+            .header = std::string_view("Recorded At"),
+            .style = column_style::mono_left,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        }
+    }};
+
+    /**
+     * @brief Default window size for the party type list window.
+     */
+    inline static const QSize kDefaultWindowSize = {900, 400};
+
+    /**
+     * @brief Settings group name for persisting window and column state.
+     */
+    static constexpr std::string_view kSettingsGroup = "PartyTypeListWindow";
+    /**
+     * @brief Returns a static vector of column styles (built once per process).
+     */
+    static std::vector<column_style> const& columnStyles() {
+        static std::vector<column_style> const kStylesVector = []() {
+            std::vector<column_style> result;
+            result.reserve(kColumnCount);
+            for (std::size_t i = 0; i < kColumnCount; ++i)
+                result.push_back(kColumns[i].style);
+            return result;
+        }();
+        return kStylesVector;
+    }
+
+    /**
+     * @brief Returns a static QVector of hidden column indices (built once per process).
+     */
+    static QVector<int> defaultHiddenColumns() {
+        return ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+    }
 
     explicit ClientPartyTypeModel(ClientManager* clientManager,
                                        QObject* parent = nullptr);

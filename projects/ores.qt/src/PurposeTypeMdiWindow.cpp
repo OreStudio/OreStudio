@@ -133,23 +133,15 @@ void PurposeTypeMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Code
-        cs::text_left,   // Name
-        cs::text_left,   // Description
-        cs::mono_center, // DisplayOrder
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientPurposeTypeModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_,
-        "PurposeTypeListWindow",
-        {ClientPurposeTypeModel::Description},
-        {900, 400}, 1);
+        ClientPurposeTypeModel::kSettingsGroup,
+        ClientPurposeTypeModel::defaultHiddenColumns(),
+        ClientPurposeTypeModel::kDefaultWindowSize, 1);
 }
 
 void PurposeTypeMdiWindow::setupConnections() {

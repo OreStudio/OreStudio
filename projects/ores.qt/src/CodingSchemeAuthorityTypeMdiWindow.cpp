@@ -60,15 +60,8 @@ void CodingSchemeAuthorityTypeMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    tableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Code
-        cs::text_left,   // Name
-        cs::text_left,   // Description
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate(
+        ClientCodingSchemeAuthorityTypeModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -77,9 +70,9 @@ void CodingSchemeAuthorityTypeMdiWindow::setupUi() {
     tableView_->sortByColumn(ClientCodingSchemeAuthorityTypeModel::Code, Qt::AscendingOrder);
 
     initializeTableSettings(tableView_, model_,
-        "CodingSchemeAuthorityTypeMdiWindow",
-        {},
-        {900, 400}, 1);
+        ClientCodingSchemeAuthorityTypeModel::kSettingsGroup,
+        ClientCodingSchemeAuthorityTypeModel::defaultHiddenColumns(),
+        ClientCodingSchemeAuthorityTypeModel::kDefaultWindowSize, 1);
 
     layout->addWidget(tableView_);
 }

@@ -102,14 +102,14 @@ void EntityListMdiWindow::onPulseTimeout() {
 void EntityListMdiWindow::initializeTableSettings(
     QTableView* tableView,
     QAbstractItemModel* sourceModel,
-    const QString& settingsGroup,
+    std::string_view settingsGroup,
     const QVector<int>& defaultHiddenColumns,
     const QSize& defaultSize,
     int settingsVersion) {
 
     settingsTableView_ = tableView;
     settingsModel_ = sourceModel;
-    settingsGroup_ = settingsGroup;
+    settingsGroup_ = QString::fromLatin1(settingsGroup.data(), settingsGroup.size());
     defaultHiddenColumns_ = defaultHiddenColumns;
     defaultSize_ = defaultSize;
     settingsVersion_ = settingsVersion;

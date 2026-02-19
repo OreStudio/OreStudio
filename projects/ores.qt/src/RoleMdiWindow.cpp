@@ -90,23 +90,16 @@ RoleMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(roleModel_.get());
     roleTableView_->setModel(proxyModel_);
     roleTableView_->setSortingEnabled(true);
-    using cs = column_style;
-    roleTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,   // Name
-        cs::text_left,   // Description
-        cs::mono_center, // PermissionCount
-        cs::mono_center, // Version
-        cs::text_left,   // ModifiedBy
-        cs::mono_left    // RecordedAt
-    }, roleTableView_));
+    roleTableView_->setItemDelegate(new EntityItemDelegate(
+        ClientRoleModel::columnStyles(), roleTableView_));
     roleTableView_->sortByColumn(0, Qt::AscendingOrder);
 
     roleTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
     initializeTableSettings(roleTableView_, roleModel_.get(),
-        "RoleListWindow",
-        {ClientRoleModel::Description},
-        {700, 400}, 1);
+        ClientRoleModel::kSettingsGroup,
+        ClientRoleModel::defaultHiddenColumns(),
+        ClientRoleModel::kDefaultWindowSize, 1);
 
     // Connect signals
     connect(roleModel_.get(), &ClientRoleModel::dataLoaded,

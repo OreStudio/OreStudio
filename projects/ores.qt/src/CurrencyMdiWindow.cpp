@@ -177,31 +177,17 @@ CurrencyMdiWindow(ClientManager* clientManager,
     currencyTableView_->setSortingEnabled(true);
     currencyTableView_->sortByColumn(ClientCurrencyModel::IsoCode, Qt::AscendingOrder);
 
-    using cs = column_style;
-    currencyTableView_->setItemDelegate(new EntityItemDelegate({
-        cs::text_left,        // CurrencyName
-        cs::mono_bold_left,   // IsoCode (flag icon inline via DecorationRole)
-        cs::mono_center,      // NumericCode
-        cs::mono_center,      // Symbol
-        cs::mono_center,      // FractionSymbol
-        cs::mono_right,       // FractionsPerUnit
-        cs::text_left,        // RoundingType
-        cs::mono_right,       // RoundingPrecision
-        cs::text_left,        // Format
-        cs::text_left,        // CurrencyType
-        cs::mono_center,      // Version
-        cs::text_left,        // ModifiedBy
-        cs::mono_left         // RecordedAt
-    }, currencyTableView_));
+    // Use column metadata for delegate styles (single source of truth)
+    currencyTableView_->setItemDelegate(new EntityItemDelegate(
+        ClientCurrencyModel::columnStyles(), currencyTableView_));
 
     currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
+    // Use column metadata for default hidden columns
     initializeTableSettings(currencyTableView_, currencyModel_.get(),
-        "CurrencyListWindow",
-        {ClientCurrencyModel::FractionSymbol, ClientCurrencyModel::FractionsPerUnit,
-         ClientCurrencyModel::RoundingType, ClientCurrencyModel::RoundingPrecision,
-         ClientCurrencyModel::Format, ClientCurrencyModel::CurrencyType},
-        {1000, 600}, 2);
+        ClientCurrencyModel::kSettingsGroup,
+        ClientCurrencyModel::defaultHiddenColumns(),
+        ClientCurrencyModel::kDefaultWindowSize, 2);
 
     // Connect signals
     connect(currencyModel_.get(), &ClientCurrencyModel::dataLoaded,

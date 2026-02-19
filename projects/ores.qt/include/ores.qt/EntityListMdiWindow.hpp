@@ -20,6 +20,7 @@
 #ifndef ORES_QT_ENTITY_LIST_MDI_WINDOW_HPP
 #define ORES_QT_ENTITY_LIST_MDI_WINDOW_HPP
 
+#include <string_view>
 #include <QWidget>
 #include <QAction>
 #include <QTimer>
@@ -126,7 +127,7 @@ protected:
      */
     void initializeTableSettings(QTableView* tableView,
                                   QAbstractItemModel* sourceModel,
-                                  const QString& settingsGroup,
+                                  std::string_view settingsGroup,
                                   const QVector<int>& defaultHiddenColumns = {},
                                   const QSize& defaultSize = {900, 400},
                                   int settingsVersion = 1);

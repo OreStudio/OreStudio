@@ -18,24 +18,7 @@
  *
  */
 
--- =============================================================================
--- Drop Trade Component
--- =============================================================================
--- Drop all trade tables in reverse dependency order.
-
--- Trade envelope (depends on reference data, drop first)
-\ir ./trade_trades_notify_trigger_drop.sql
-\ir ./trade_trades_drop.sql
-
--- Trade reference data (no inter-dependencies within reference data)
-\ir ./trade_trade_id_types_notify_trigger_drop.sql
-\ir ./trade_trade_id_types_drop.sql
-
-\ir ./trade_party_role_types_notify_trigger_drop.sql
-\ir ./trade_party_role_types_drop.sql
-
-\ir ./trade_lifecycle_events_notify_trigger_drop.sql
-\ir ./trade_lifecycle_events_drop.sql
-
-\ir ./trade_trade_types_notify_trigger_drop.sql
-\ir ./trade_trade_types_drop.sql
+drop rule if exists ores_trade_trades_delete_rule on "ores_trade_trades_tbl";
+drop trigger if exists ores_trade_trades_insert_trg on "ores_trade_trades_tbl";
+drop function if exists ores_trade_trades_insert_fn;
+drop table if exists "ores_trade_trades_tbl";

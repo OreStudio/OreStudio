@@ -74,3 +74,16 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Trades
+-- -----------------------------------------------------------------------------
+alter table ores_trade_trades_tbl enable row level security;
+
+create policy ores_trade_trades_tenant_isolation_policy on ores_trade_trades_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

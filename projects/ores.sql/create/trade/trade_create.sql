@@ -38,3 +38,7 @@
 
 \ir ./trade_trade_id_types_create.sql
 \ir ./trade_trade_id_types_notify_trigger_create.sql
+
+-- Trade envelope (depends on reference data above)
+\ir ./trade_trades_create.sql
+\ir ./trade_trades_notify_trigger_create.sql

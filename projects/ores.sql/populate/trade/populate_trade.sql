@@ -18,24 +18,20 @@
  *
  */
 
--- =============================================================================
--- Drop Trade Component
--- =============================================================================
--- Drop all trade tables in reverse dependency order.
+/**
+ * Trade Population Master Script
+ *
+ * Populates the trade component with all reference data.
+ * All scripts are idempotent and can be safely re-run.
+ */
 
--- Trade envelope (depends on reference data, drop first)
-\ir ./trade_trades_notify_trigger_drop.sql
-\ir ./trade_trades_drop.sql
+\echo '=== Trade Population ==='
+\echo ''
 
--- Trade reference data (no inter-dependencies within reference data)
-\ir ./trade_trade_id_types_notify_trigger_drop.sql
-\ir ./trade_trade_id_types_drop.sql
+\ir ./trade_trade_types_populate.sql
+\ir ./trade_lifecycle_events_populate.sql
+\ir ./trade_party_role_types_populate.sql
+\ir ./trade_trade_id_types_populate.sql
 
-\ir ./trade_party_role_types_notify_trigger_drop.sql
-\ir ./trade_party_role_types_drop.sql
-
-\ir ./trade_lifecycle_events_notify_trigger_drop.sql
-\ir ./trade_lifecycle_events_drop.sql
-
-\ir ./trade_trade_types_notify_trigger_drop.sql
-\ir ./trade_trade_types_drop.sql
+\echo ''
+\echo '=== Trade Population Complete ==='

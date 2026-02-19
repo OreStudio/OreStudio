@@ -42,3 +42,10 @@
 -- Trade envelope (depends on reference data above)
 \ir ./trade_trades_create.sql
 \ir ./trade_trades_notify_trigger_create.sql
+
+-- Trade junction tables (depend on trades)
+\ir ./trade_identifiers_create.sql
+\ir ./trade_identifiers_notify_trigger_create.sql
+
+\ir ./trade_party_roles_create.sql
+\ir ./trade_party_roles_notify_trigger_create.sql

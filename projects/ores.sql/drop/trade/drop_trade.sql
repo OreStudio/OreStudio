@@ -23,7 +23,14 @@
 -- =============================================================================
 -- Drop all trade tables in reverse dependency order.
 
--- Trade envelope (depends on reference data, drop first)
+-- Trade junction tables (depend on trades, drop first)
+\ir ./trade_party_roles_notify_trigger_drop.sql
+\ir ./trade_party_roles_drop.sql
+
+\ir ./trade_identifiers_notify_trigger_drop.sql
+\ir ./trade_identifiers_drop.sql
+
+-- Trade envelope (depends on reference data, drop after junction tables)
 \ir ./trade_trades_notify_trigger_drop.sql
 \ir ./trade_trades_drop.sql
 

@@ -87,3 +87,29 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Trade Identifiers
+-- -----------------------------------------------------------------------------
+alter table ores_trade_identifiers_tbl enable row level security;
+
+create policy ores_trade_identifiers_tenant_isolation_policy on ores_trade_identifiers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Trade Party Roles
+-- -----------------------------------------------------------------------------
+alter table ores_trade_party_roles_tbl enable row level security;
+
+create policy ores_trade_party_roles_tenant_isolation_policy on ores_trade_party_roles_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

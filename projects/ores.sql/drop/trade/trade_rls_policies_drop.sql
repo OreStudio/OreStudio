@@ -35,5 +35,11 @@ drop policy if exists ores_trade_party_role_types_tenant_isolation_policy on "or
 -- Trade Identifier Types
 drop policy if exists ores_trade_trade_id_types_tenant_isolation_policy on "ores_trade_trade_id_types_tbl";
 
+-- Trade Party Roles
+drop policy if exists ores_trade_party_roles_tenant_isolation_policy on "ores_trade_party_roles_tbl";
+
+-- Trade Identifiers
+drop policy if exists ores_trade_identifiers_tenant_isolation_policy on "ores_trade_identifiers_tbl";
+
 -- Trades
 drop policy if exists ores_trade_trades_tenant_isolation_policy on "ores_trade_trades_tbl";

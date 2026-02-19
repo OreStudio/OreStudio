@@ -152,7 +152,9 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        return ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result =
+            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        return result;
     }
 
     explicit ClientTenantTypeModel(ClientManager* clientManager,

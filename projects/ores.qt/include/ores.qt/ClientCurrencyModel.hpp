@@ -89,7 +89,7 @@ public:
         {
             .column = IsoCode,
             .header = std::string_view("Code"),
-            .style = column_style::text_left,
+            .style = column_style::mono_bold_left,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },
@@ -206,7 +206,9 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        return ::ores::qt::defaultHiddenColumns(kColumns);
+        static QVector<int> const result =
+            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        return result;
     }
 
     explicit ClientCurrencyModel(ClientManager* clientManager,

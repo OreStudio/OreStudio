@@ -80,14 +80,14 @@ public:
         {
             .column = CountryAlpha2,
             .header = std::string_view("Country"),
-            .style = column_style::text_left,
+            .style = column_style::mono_bold_center,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },
         {
             .column = Code,
             .header = std::string_view("Code"),
-            .style = column_style::text_left,
+            .style = column_style::mono_bold_left,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },
@@ -108,7 +108,7 @@ public:
         {
             .column = CodingScheme,
             .header = std::string_view("Coding Scheme"),
-            .style = column_style::text_left,
+            .style = column_style::mono_left,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },
@@ -163,7 +163,9 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        return ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result =
+            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        return result;
     }
 
     explicit ClientBusinessCentreModel(ClientManager* clientManager,

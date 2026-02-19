@@ -150,9 +150,8 @@ public:
         static std::vector<column_style> const kStylesVector = []() {
             std::vector<column_style> result;
             result.reserve(kColumnCount);
-            for (std::size_t i = 0; i < kColumnCount; ++i) {
+            for (std::size_t i = 0; i < kColumnCount; ++i)
                 result.push_back(kColumns[i].style);
-            }
             return result;
         }();
         return kStylesVector;
@@ -162,7 +161,9 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        return ::ores::qt::defaultHiddenColumns(kColumns);
+        static QVector<int> const result =
+            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        return result;
     }
 
     explicit ClientTenantModel(ClientManager* clientManager,

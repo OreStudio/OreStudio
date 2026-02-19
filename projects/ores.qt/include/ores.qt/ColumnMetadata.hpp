@@ -73,124 +73,34 @@ struct ColumnMetadata {
 };
 
 /**
- * @brief Helper to build a std::array of column styles from metadata.
+ * @brief Builds a QVector of hidden column indices from a metadata array.
+ *
+ * This function performs no caching; call sites that want a cached result
+ * should wrap this in a static local in their own function, ensuring the
+ * static is unique per model rather than shared across all models with
+ * the same column count.
  *
  * Usage in model header:
- *   static constexpr std::array<column_style, kColumnCount> kStylesArray = makeStylesArray(kColumns);
- *
- * @tparam N The size of the metadata array.
- * @param columns The column metadata array.
- * @return std::array of column_style values.
- */
-template <std::size_t N>
-[[nodiscard]] static constexpr auto makeStylesArray(const std::array<ColumnMetadata, N>& columns) {
-    std::array<column_style, N> styles{};
-    for (std::size_t i = 0; i < N; ++i) {
-        styles[i] = columns[i].style;
-    }
-    return styles;
-}
-
-/**
- * @brief Helper to build a vector of column styles (runtime, cached).
- *
- * Note: Due to C++ static initialization limitations, models should inline this:
- *   static std::vector<column_style> const& columnStyles() {
- *       static std::vector<column_style> const kStylesVector = []() {
- *           std::vector<column_style> result;
- *           result.reserve(kColumnCount);
- *           for (std::size_t i = 0; i < kColumnCount; ++i)
- *               result.push_back(kColumns[i].style);
- *           return result;
- *       }();
- *       return kStylesVector;
- *   }
- *
- * This template is provided for reference but cannot be used directly due to
- * lambda capture limitations with function parameters in static initialization.
- *
- * @tparam N The size of the metadata array.
- * @param columns The column metadata array.
- * @return Static const vector of column styles.
- */
-template <std::size_t N>
-[[nodiscard]] static std::vector<column_style>
-columnStylesVector(const std::array<ColumnMetadata, N>& columns) {
-    std::vector<column_style> result;
-    result.reserve(N);
-    for (std::size_t i = 0; i < N; ++i) {
-        result.push_back(columns[i].style);
-    }
-    return result;
-}
-
-/**
- * @brief Helper to build an array of hidden column indices at compile-time.
- *
- * Note: Due to C++ constexpr limitations, the count must be computed inline.
- * Usage in model header:
- *   static constexpr std::size_t kHiddenCount = []() constexpr {
- *       std::size_t c = 0;
- *       for (auto const& col : kColumns) if (col.hidden_by_default) ++c;
- *       return c;
- *   }();
- *   static constexpr std::array<int, kHiddenCount> kHiddenArray = []() constexpr {
- *       std::array<int, kHiddenCount> h{};
- *       std::size_t idx = 0;
- *       for (std::size_t i = 0; i < kColumnCount; ++i)
- *           if (kColumns[i].hidden_by_default) h[idx++] = i;
- *       return h;
- *   }();
- *
- * @tparam N The size of the metadata array.
- * @param columns The column metadata array.
- * @return std::array of column indices that are hidden by default.
- */
-template <std::size_t N>
-[[nodiscard]] static constexpr auto
-makeHiddenColumnsArray(const std::array<ColumnMetadata, N>& columns) {
-    // Note: This can't be used directly in template parameters due to C++
-    // constexpr limitations. Models should compute kHiddenCount inline instead.
-    std::size_t count = 0;
-    for (std::size_t i = 0; i < N; ++i) {
-        if (columns[i].hidden_by_default) ++count;
-    }
-    std::array<int, 10> hidden{};  // Placeholder - don't use this function directly
-    return hidden;
-}
-
-/**
- * @brief Helper to build a QVector of hidden column indices (runtime, cached).
- *
- * Usage in model header:
+ * @code
  *   static QVector<int> defaultHiddenColumns() {
- *       return ::ores::qt::defaultHiddenColumns(kColumns);
+ *       static QVector<int> const result =
+ *           ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+ *       return result;
  *   }
+ * @endcode
  *
- * @tparam N The size of the metadata array.
+ * @tparam N The number of columns.
  * @param columns The column metadata array.
- * @return Static const QVector of hidden column indices.
+ * @return QVector of column indices that are hidden by default.
  */
 template <std::size_t N>
-[[nodiscard]] static QVector<int>
+[[nodiscard]] inline QVector<int>
 defaultHiddenColumns(const std::array<ColumnMetadata, N>& columns) {
-    // Compute hidden count at runtime for the static init
-    std::size_t count = 0;
-    for (std::size_t i = 0; i < N; ++i) {
-        if (columns[i].hidden_by_default) ++count;
-    }
-
-    static std::vector<int> const kHiddenVector = [&]{
-        std::vector<int> result;
-        result.reserve(count);
-        for (std::size_t i = 0; i < N; ++i) {
-            if (columns[i].hidden_by_default)
-                result.push_back(static_cast<int>(i));
-        }
-        return result;
-    }();
-
-    return {kHiddenVector.begin(), kHiddenVector.end()};
+    QVector<int> result;
+    for (std::size_t i = 0; i < N; ++i)
+        if (columns[i].hidden_by_default)
+            result.push_back(columns[i].column);
+    return result;
 }
 
 }

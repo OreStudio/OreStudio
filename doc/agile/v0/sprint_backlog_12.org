@@ -16,57 +16,60 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-18 Wed 23:08], for Wednesday, February 18, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *1:34* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 1:34   |      |      | 100.0 |
-|      | Active                       |        | 1:34 |      | 100.0 |
-| code | Advanced counterparty dialog |        |      | 1:34 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-19 Thu 18:10], for Thursday, February 19, 2026.
+|      | <75>                                          |        |      |      |       |
+| Tags | Headline                                      | Time   |      |      |     % |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                  | *5:00* |      |      | 100.0 |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | Stories                                       | 5:00   |      |      | 100.0 |
+|      | Active                                        |        | 5:00 |      | 100.0 |
+| code | Improve column handling in list widgets in Qt |        |      | 4:00 |  80.0 |
+| code | Add trade envelope support                    |        |      | 1:00 |  20.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-18 Wed 23:08]
+#+CAPTION: Clock summary at [2026-02-19 Thu 18:10]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *60:51* |       |       | 100.0 |
+|       | *Total time*                                       | *66:21* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 60:51   |       |       | 100.0 |
-|       | Active                                             |         | 60:51 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  2:43 |   4.5 |
-| code  | Add bound parameters to sqlgen                     |         |       |  0:51 |   1.4 |
+|       | Stories                                            | 66:21   |       |       | 100.0 |
+|       | Active                                             |         | 66:21 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  3:13 |   4.8 |
+| code  | Add bound parameters to sqlgen                     |         |       |  0:51 |   1.3 |
 | code  | Add roles to account via codes                     |         |       |  0:34 |   0.9 |
-| code  | Implement party related entities at database level |         |       |  4:23 |   7.2 |
+| code  | Implement party related entities at database level |         |       |  4:23 |   6.6 |
 | code  | Add party related support at the domain level      |         |       |  0:23 |   0.6 |
-| code  | Add party related support to Qt                    |         |       |  6:41 |  11.0 |
-| code  | Add GLEIF data to datasets                         |         |       |  6:41 |  11.0 |
-| code  | Brainstorm on multi-party support                  |         |       |  4:00 |   6.6 |
+| code  | Add party related support to Qt                    |         |       |  6:41 |  10.1 |
+| code  | Add GLEIF data to datasets                         |         |       |  6:41 |  10.1 |
+| code  | Brainstorm on multi-party support                  |         |       |  4:00 |   6.0 |
 | code  | Improve code coverage                              |         |       |  0:14 |   0.4 |
-| code  | Improve generators with FK-aware test data         |         |       |  1:44 |   2.8 |
-| code  | Enable all skipped tests                           |         |       |  0:29 |   0.8 |
-| code  | Add central bank related LEIs                      |         |       |  0:35 |   1.0 |
-| code  | Expand unit test coverage for ORE codegened types  |         |       |  0:49 |   1.3 |
-| code  | Add system party support                           |         |       |  3:58 |   6.5 |
-| code  | Add customer party support                         |         |       |  1:33 |   2.5 |
+| code  | Improve generators with FK-aware test data         |         |       |  1:44 |   2.6 |
+| code  | Enable all skipped tests                           |         |       |  0:29 |   0.7 |
+| code  | Add central bank related LEIs                      |         |       |  0:35 |   0.9 |
+| code  | Expand unit test coverage for ORE codegened types  |         |       |  0:49 |   1.2 |
+| code  | Add system party support                           |         |       |  3:58 |   6.0 |
+| code  | Add customer party support                         |         |       |  1:33 |   2.3 |
 | code  | Fix OSX build                                      |         |       |  0:19 |   0.5 |
-| code  | Add pagination to counterparty                     |         |       |  0:58 |   1.6 |
-| code  | Add support for business centres                   |         |       |  3:47 |   6.2 |
+| code  | Add pagination to counterparty                     |         |       |  0:58 |   1.5 |
+| code  | Add support for business centres                   |         |       |  3:47 |   5.7 |
 | code  | Add LEI to BIC dataset                             |         |       |  0:27 |   0.7 |
-| code  | Add proper party short-codes                       |         |       |  2:18 |   3.8 |
-| code  | Polish party and counterparty list UI              |         |       |  1:25 |   2.3 |
-| code  | Implement party-level RLS isolation                |         |       |  2:33 |   4.2 |
-| code  | Add a setup new tenant wizard                      |         |       |  1:27 |   2.4 |
-| code  | Advanced counterparty dialog                       |         |       | 10:46 |  17.7 |
-| code  | Analyse caching at dialog level                    |         |       |  1:13 |   2.0 |
+| code  | Add proper party short-codes                       |         |       |  2:18 |   3.5 |
+| code  | Polish party and counterparty list UI              |         |       |  1:25 |   2.1 |
+| code  | Implement party-level RLS isolation                |         |       |  2:33 |   3.8 |
+| code  | Add a setup new tenant wizard                      |         |       |  1:27 |   2.2 |
+| code  | Advanced counterparty dialog                       |         |       | 10:46 |  16.2 |
+| code  | Improve column handling in list widgets in Qt      |         |       |  4:00 |   6.0 |
+| code  | Analyse caching at dialog level                    |         |       |  1:13 |   1.8 |
+| code  | Add trade envelope support                         |         |       |  1:00 |   1.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
-    CLOCK: [2026-02-18 Wed 23:24]--[2026-02-19 Thu 10:00] => 10:36
+    CLOCK: [2026-02-18 Wed 23:24]--[2026-02-18 Wed 23:40] =>  0:16
     CLOCK: [2026-02-18 Wed 23:09]--[2026-02-18 Wed 23:23] =>  0:14
     CLOCK: [2026-02-16 Mon 12:20]--[2026-02-16 Mon 12:33] =>  0:13
     CLOCK: [2026-02-12 Thu 22:50]--[2026-02-12 Thu 23:09] =>  0:19
@@ -2745,6 +2748,43 @@ Highlights:
 - Controller Updates: Modified PartyController and CounterpartyController to
   instantiate the new generic EntityDetailDialog with the appropriate
   entity_detail_operations strategy.
+#+end_quote
+
+*** COMPLETED Improve column handling in list widgets in Qt            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-19 Thu 18:08]--[2026-02-19 Thu 18:09] =>  0:01
+    CLOCK: [2026-02-19 Thu 17:40]--[2026-02-19 Thu 18:08] =>  0:28
+    CLOCK: [2026-02-19 Thu 13:40]--[2026-02-19 Thu 14:05] =>  0:25
+    CLOCK: [2026-02-19 Thu 10:01]--[2026-02-19 Thu 13:07] =>  3:06
+    :END:
+
+#+begin_quote
+This pull request refactors the column configuration logic across numerous Qt
+list windows by centralizing metadata definitions. It introduces a
+ColumnMetadata struct and moves column styles, default window sizes, and
+settings group names into model headers. This change eliminates scattered inline
+literals, making the application's UI configuration more consistent,
+maintainable, and easier to update by establishing a single source of truth for
+these properties.
+
+Highlights:
+
+- Centralized Column Metadata: Introduced a new ColumnMetadata struct and
+  associated helpers to serve as a single source of truth for column
+  configuration across all Qt list windows.
+- Model Header Refactoring: Updated 24 Client*Model headers to define column
+  styles, default window sizes, and settings group names using static constexpr
+  arrays and constants based on the new ColumnMetadata struct.
+- MDI Window Integration: Modified 24 *MdiWindow.cpp files to consume column
+  configuration directly from their respective model headers, replacing
+  previously hardcoded string and QSize literals.
+- Enum Relocation: Moved the column_style enum from EntityItemDelegate.hpp to
+  the new ColumnMetadata.hpp to consolidate column-related definitions.
+- API Signature Update: Changed the initializeTableSettings function signature
+  in EntityListMdiWindow to accept std::string_view for the settings group
+  parameter, with internal conversion to QString.
+- UI File Adjustments: Adjusted the field ordering for 'Change Reason' and
+  'Recorded At' in several detail dialog .ui files.
 #+end_quote
 
 *** STARTED Analyse caching at dialog level                            :code:

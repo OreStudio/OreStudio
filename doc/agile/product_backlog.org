@@ -2967,6 +2967,82 @@ Links:
 
 *** Add chat support                                                   :code:
 
+Analysis with Gemini:
+
+#+begin_src markdown
+Here is the updated Agile Story, refined for a **library-first** architecture. This version ensures the core logic remains independent of any specific UI, allowing you to link it to your Qt trading terminal, a CLI tool, or even an automated LLM service.
+
+---
+
+## **User Story: Modular Binary Chat Library & Event System**
+
+### **1. High-Level Summary**
+
+,**As a** system architect,
+
+,**I want** to develop a standalone C++ "Chat & Event Engine" library
+
+,**So that** real-time communication, system notifications, and LLM interactions
+can be shared across our Qt GUI, headless CLI tools, and backend services using
+our existing binary protocol.
+
+### **2. Architectural Foundation (The "Engine")**
+
+- **Library Type:** A "headless" C++ shared/static library (`libtradingchat`)
+  with **no UI dependencies**.
+- **Transport:** **Boost.Asio** for asynchronous TCP/TLS networking.
+- **Message Broker:** PostgreSQL **`LISTEN/NOTIFY`** for cross-instance message
+  distribution.
+- **Concurrency:** The library manages its own `boost::asio::io_context` in a
+  background thread to ensure networking never blocks the consumer's UI thread.
+
+### **3. Core Identity & Payload Design**
+
+- **Universal Identity:** Support for three `UserTypes`: `Human`, `System`, and `LLM`.
+- **Flexible Payloads:**
+- `CHAT_MSG`: Standard binary-serialized text.
+- `SYSTEM_ALERT`: High-priority event notifications.
+- `RICH_DATA`: Raw binary blobs for charts, order book snapshots, etc.
+
+- **The "Observer" Interface:** The library will use a **Callback API** (via
+  `std::function` or an abstract `IChatObserver` class) to notify consumers of
+  events like `onMessage`, `onStatusChange`, and `onHistoryLoaded`.
+
+### **4. Technical Tasks for Implementation**
+
+#### **A. Database & Backend (Postgres)**
+
+- Create a schema that stores messages in a `BYTEA` column to preserve your
+  bespoke binary format.
+- Implement a trigger that notifies a channel based on `RoomID`.
+
+#### **B. Core Library (Plain C++17/20)**
+
+- **Protocol Parser:** Logic to wrap/unwrap your bespoke binary headers.
+- **The Manager:** A `ChatClient` class that handles the connection lifecycle.
+- **Notification Listener:** A dedicated Postgres connection using `libpqxx` to
+  monitor the `LISTEN` stream.
+- **History Fetcher:** Logic to request and deserialize "scroll-back" messages
+  from Postgres.
+
+#### **C. Consumers (The Frontends)**
+
+- **Qt Bridge:** A `QObject` wrapper that consumes the library's callbacks and
+  emits Qt Signals (to be handled by QML or Widgets).
+- **CLI Tool:** A lightweight consumer that prints incoming binary data to
+  `stdout` for debugging and automated monitoring.
+
+### **5. Acceptance Criteria**
+
+- [ ] **Modular Testing:** The core library can be compiled and tested using a
+  CLI-only test runner (no Qt required).
+- [ ] **Binary Integrity:** Bespoke binary packets remain bit-perfect from the
+  sender, through the Postgres `BYTEA` storage, to the receiver.
+- [ ] **Thread Safety:** Messages received on the Boost.Asio thread are safely dispatched to the consumer via callbacks.
+- [ ] **LLM Integration:** An LLM service can consume this library to "listen"
+  and "reply" as a Type 2 user.
+#+end_src
+
 Links:
 
 - [[https://github.com/communi/libcommuni][GH libcommuni]]: "A cross-platform IRC framework written with Qt."

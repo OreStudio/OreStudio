@@ -45,18 +45,22 @@ For the full schema mental model, see [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F]
 
 * How to use this skill
 
-*Recommended approach*: Use code generation first. The =ores.codegen= project can
-generate SQL schema files from JSON models, ensuring consistency and reducing
-errors.
+*Code generation is mandatory.* Always use the =ores.codegen= project to
+generate SQL schema files from JSON models. Hand-crafting SQL files is only
+permitted when the entity pattern cannot be expressed in any existing template
+(e.g., complex cross-table soft FK validation logic). If you hand-craft a file,
+update the templates first so the pattern is captured for future use.
 
 ** Priority order
 
-1. *Use code generation*: Create a JSON model and generate the SQL using
-   =--profile sql=. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for details.
-2. *Update templates*: If the entity doesn't fit existing templates, modify the
-   templates in =library/templates/= to support the new pattern.
-3. *Manual creation*: Only create SQL manually as a last resort when code
-   generation cannot support the schema pattern.
+1. *Use code generation* (required): Create a JSON model and run the generator.
+   See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for details.
+2. *Update templates first, then generate*: If the entity needs a new pattern,
+   extend the appropriate template in =library/templates/= before generating.
+3. *Hand-craft as last resort*: Only when the schema pattern genuinely cannot be
+   expressed via templates (e.g., multi-table soft FK chains). In this case,
+   document why codegen was skipped with a comment in the file header, and
+   ensure the file exactly follows the conventions of codegen output.
 
 ** Code generation workflow
 

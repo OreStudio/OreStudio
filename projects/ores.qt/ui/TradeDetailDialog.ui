@@ -33,111 +33,121 @@
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
+       <widget class="QLabel" name="label_bookCombo">
+        <property name="text">
+         <string>Book:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="bookCombo"/>
+      </item>
+      <item row="1" column="0">
        <widget class="QLabel" name="label_externalIdEdit">
         <property name="text">
          <string>External ID:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QLineEdit" name="externalIdEdit">
         <property name="placeholderText">
          <string>Enter external trade ID (e.g., UTI)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_tradeTypeEdit">
         <property name="text">
          <string>Trade Type:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QLineEdit" name="tradeTypeEdit">
         <property name="placeholderText">
          <string>e.g., Swap, FxForward</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_lifecycleEventEdit">
         <property name="text">
          <string>Lifecycle Event:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="lifecycleEventEdit">
         <property name="placeholderText">
          <string>e.g., New, Amendment</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_nettingSetIdEdit">
         <property name="text">
          <string>Netting Set:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="nettingSetIdEdit">
         <property name="placeholderText">
          <string>e.g., NS-001</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="label_tradeDateEdit">
         <property name="text">
          <string>Trade Date:</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <widget class="QLineEdit" name="tradeDateEdit">
         <property name="placeholderText">
          <string>YYYY-MM-DD</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="label_effectiveDateEdit">
         <property name="text">
          <string>Effective Date:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="6" column="1">
        <widget class="QLineEdit" name="effectiveDateEdit">
         <property name="placeholderText">
          <string>YYYY-MM-DD</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="label_terminationDateEdit">
         <property name="text">
          <string>Termination Date:</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QLineEdit" name="terminationDateEdit">
         <property name="placeholderText">
          <string>YYYY-MM-DD</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QLabel" name="label_executionTimestampEdit">
         <property name="text">
          <string>Execution Timestamp:</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QLineEdit" name="executionTimestampEdit">
         <property name="placeholderText">
          <string>YYYY-MM-DD HH:MM:SS</string>

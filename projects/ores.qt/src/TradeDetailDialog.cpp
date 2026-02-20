@@ -19,15 +19,19 @@
  */
 #include "ores.qt/TradeDetailDialog.hpp"
 
+#include <QComboBox>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ui_TradeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.trade/messaging/trade_protocol.hpp"
+#include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -63,6 +67,8 @@ void TradeDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &TradeDetailDialog::onDeleteClicked);
 
+    connect(ui_->bookCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &TradeDetailDialog::onFieldChanged);
     connect(ui_->externalIdEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onCodeChanged);
     connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this,
@@ -83,6 +89,83 @@ void TradeDetailDialog::setupConnections() {
 
 void TradeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    loadBooks();
+}
+
+void TradeDetailDialog::loadBooks() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading books for trade dialog";
+
+    struct BooksResult {
+        bool success;
+        std::vector<refdata::domain::book> books;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    QFuture<BooksResult> future = QtConcurrent::run([self]() -> BooksResult {
+        if (!self || !self->clientManager_)
+            return {false, {}};
+
+        refdata::messaging::get_books_request request;
+        request.offset = 0;
+        request.limit = 1000;
+        auto payload = request.serialize();
+
+        comms::messaging::frame req_frame(
+            comms::messaging::message_type::get_books_request,
+            0, std::move(payload));
+
+        auto response_result = self->clientManager_->sendRequest(std::move(req_frame));
+        if (!response_result) return {false, {}};
+
+        auto decompressed = response_result->decompressed_payload();
+        if (!decompressed) return {false, {}};
+
+        auto response = refdata::messaging::get_books_response::deserialize(*decompressed);
+        if (!response) return {false, {}};
+
+        return {true, std::move(response->books)};
+    });
+
+    auto* watcher = new QFutureWatcher<BooksResult>(self);
+    connect(watcher, &QFutureWatcher<BooksResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self || !result.success) return;
+
+        self->books_ = std::move(result.books);
+
+        self->ui_->bookCombo->blockSignals(true);
+        self->ui_->bookCombo->clear();
+        for (const auto& book : self->books_) {
+            QString name = QString::fromStdString(book.name);
+            QString id = QString::fromStdString(boost::uuids::to_string(book.id));
+            self->ui_->bookCombo->addItem(name, id);
+        }
+        self->ui_->bookCombo->blockSignals(false);
+
+        BOOST_LOG_SEV(lg(), debug) << "Loaded " << self->books_.size() << " books";
+        self->selectCurrentBook();
+    });
+
+    watcher->setFuture(future);
+}
+
+void TradeDetailDialog::selectCurrentBook() {
+    if (trade_.book_id.is_nil()) return;
+
+    const QString target = QString::fromStdString(boost::uuids::to_string(trade_.book_id));
+    for (int i = 0; i < ui_->bookCombo->count(); ++i) {
+        if (ui_->bookCombo->itemData(i).toString() == target) {
+            ui_->bookCombo->blockSignals(true);
+            ui_->bookCombo->setCurrentIndex(i);
+            ui_->bookCombo->blockSignals(false);
+            return;
+        }
+    }
 }
 
 void TradeDetailDialog::setUsername(const std::string& username) {
@@ -93,10 +176,14 @@ void TradeDetailDialog::setTrade(
     const trade::domain::trade& trade) {
     trade_ = trade;
     updateUiFromTrade();
+    // Select book if already loaded; otherwise selectCurrentBook() runs
+    // again after loadBooks() completes via the watcher callback.
+    selectCurrentBook();
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->bookCombo->setEnabled(createMode);
     ui_->externalIdEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
@@ -111,6 +198,7 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
 
 void TradeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
+    ui_->bookCombo->setEnabled(!readOnly);
     ui_->externalIdEdit->setReadOnly(true);
     ui_->tradeTypeEdit->setReadOnly(readOnly);
     ui_->lifecycleEventEdit->setReadOnly(readOnly);
@@ -140,6 +228,14 @@ void TradeDetailDialog::updateUiFromTrade() {
 }
 
 void TradeDetailDialog::updateTradeFromUi() {
+    // Read book selection and derive portfolio_id from it
+    const int bookIdx = ui_->bookCombo->currentIndex();
+    if (bookIdx >= 0 && bookIdx < static_cast<int>(books_.size())) {
+        const auto& book = books_[static_cast<std::size_t>(bookIdx)];
+        trade_.book_id = book.id;
+        trade_.portfolio_id = book.parent_portfolio_id;
+    }
+
     if (createMode_) {
         trade_.external_id = ui_->externalIdEdit->text().trimmed().toStdString();
     }
@@ -170,6 +266,8 @@ void TradeDetailDialog::updateSaveButtonState() {
 }
 
 bool TradeDetailDialog::validateInput() {
+    if (ui_->bookCombo->currentIndex() < 0) return false;
+
     const QString trade_type_val = ui_->tradeTypeEdit->text().trimmed();
     const QString lifecycle_event_val = ui_->lifecycleEventEdit->text().trimmed();
     const QString trade_date_val = ui_->tradeDateEdit->text().trimmed();

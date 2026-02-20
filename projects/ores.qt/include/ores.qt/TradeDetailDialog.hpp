@@ -20,10 +20,12 @@
 #ifndef ORES_QT_TRADE_DETAIL_DIALOG_HPP
 #define ORES_QT_TRADE_DETAIL_DIALOG_HPP
 
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trade/domain/trade.hpp"
+#include "ores.refdata/domain/book.hpp"
 
 namespace Ui {
 class TradeDetailDialog;
@@ -74,6 +76,8 @@ private slots:
 private:
     void setupUi();
     void setupConnections();
+    void loadBooks();
+    void selectCurrentBook();
     void updateUiFromTrade();
     void updateTradeFromUi();
     void updateSaveButtonState();
@@ -83,6 +87,7 @@ private:
     ClientManager* clientManager_;
     std::string username_;
     trade::domain::trade trade_;
+    std::vector<refdata::domain::book> books_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

@@ -32,6 +32,7 @@
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.trade/messaging/trade_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -69,6 +70,8 @@ void TradeDetailDialog::setupConnections() {
 
     connect(ui_->bookCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &TradeDetailDialog::onFieldChanged);
+    connect(ui_->counterpartyCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &TradeDetailDialog::onFieldChanged);
     connect(ui_->externalIdEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onCodeChanged);
     connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this,
@@ -90,6 +93,7 @@ void TradeDetailDialog::setupConnections() {
 void TradeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     loadBooks();
+    loadCounterparties();
 }
 
 void TradeDetailDialog::loadBooks() {
@@ -168,6 +172,88 @@ void TradeDetailDialog::selectCurrentBook() {
     }
 }
 
+void TradeDetailDialog::loadCounterparties() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading counterparties for trade dialog";
+
+    struct CounterpartiesResult {
+        bool success;
+        std::vector<refdata::domain::counterparty> counterparties;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    QFuture<CounterpartiesResult> future = QtConcurrent::run([self]() -> CounterpartiesResult {
+        if (!self || !self->clientManager_)
+            return {false, {}};
+
+        refdata::messaging::get_counterparties_request request;
+        request.offset = 0;
+        request.limit = 1000;
+        auto payload = request.serialize();
+
+        comms::messaging::frame req_frame(
+            comms::messaging::message_type::get_counterparties_request,
+            0, std::move(payload));
+
+        auto response_result = self->clientManager_->sendRequest(std::move(req_frame));
+        if (!response_result) return {false, {}};
+
+        auto decompressed = response_result->decompressed_payload();
+        if (!decompressed) return {false, {}};
+
+        auto response = refdata::messaging::get_counterparties_response::deserialize(*decompressed);
+        if (!response) return {false, {}};
+
+        return {true, std::move(response->counterparties)};
+    });
+
+    auto* watcher = new QFutureWatcher<CounterpartiesResult>(self);
+    connect(watcher, &QFutureWatcher<CounterpartiesResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self || !result.success) return;
+
+        self->counterparties_ = std::move(result.counterparties);
+
+        self->ui_->counterpartyCombo->blockSignals(true);
+        self->ui_->counterpartyCombo->clear();
+        self->ui_->counterpartyCombo->addItem(tr("-- None --"), QString());
+        for (const auto& cp : self->counterparties_) {
+            QString name = QString::fromStdString(cp.full_name);
+            QString id = QString::fromStdString(boost::uuids::to_string(cp.id));
+            self->ui_->counterpartyCombo->addItem(name, id);
+        }
+        self->ui_->counterpartyCombo->blockSignals(false);
+
+        BOOST_LOG_SEV(lg(), debug) << "Loaded " << self->counterparties_.size() << " counterparties";
+        self->selectCurrentCounterparty();
+    });
+
+    watcher->setFuture(future);
+}
+
+void TradeDetailDialog::selectCurrentCounterparty() {
+    if (!trade_.counterparty_id.has_value()) {
+        ui_->counterpartyCombo->blockSignals(true);
+        ui_->counterpartyCombo->setCurrentIndex(0); // "-- None --"
+        ui_->counterpartyCombo->blockSignals(false);
+        return;
+    }
+
+    const QString target = QString::fromStdString(boost::uuids::to_string(*trade_.counterparty_id));
+    for (int i = 0; i < ui_->counterpartyCombo->count(); ++i) {
+        if (ui_->counterpartyCombo->itemData(i).toString() == target) {
+            ui_->counterpartyCombo->blockSignals(true);
+            ui_->counterpartyCombo->setCurrentIndex(i);
+            ui_->counterpartyCombo->blockSignals(false);
+            return;
+        }
+    }
+}
+
 void TradeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -176,14 +262,16 @@ void TradeDetailDialog::setTrade(
     const trade::domain::trade& trade) {
     trade_ = trade;
     updateUiFromTrade();
-    // Select book if already loaded; otherwise selectCurrentBook() runs
-    // again after loadBooks() completes via the watcher callback.
+    // Select book/counterparty if already loaded; otherwise select*() runs
+    // again after load*() completes via the watcher callbacks.
     selectCurrentBook();
+    selectCurrentCounterparty();
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->bookCombo->setEnabled(createMode);
+    ui_->counterpartyCombo->setEnabled(createMode);
     ui_->externalIdEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
@@ -199,6 +287,7 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
 void TradeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->bookCombo->setEnabled(!readOnly);
+    ui_->counterpartyCombo->setEnabled(!readOnly);
     ui_->externalIdEdit->setReadOnly(true);
     ui_->tradeTypeEdit->setReadOnly(readOnly);
     ui_->lifecycleEventEdit->setReadOnly(readOnly);
@@ -234,6 +323,16 @@ void TradeDetailDialog::updateTradeFromUi() {
         const auto& book = books_[static_cast<std::size_t>(bookIdx)];
         trade_.book_id = book.id;
         trade_.portfolio_id = book.parent_portfolio_id;
+    }
+
+    // Read counterparty selection (optional: index 0 = "-- None --")
+    const int cpIdx = ui_->counterpartyCombo->currentIndex();
+    if (cpIdx > 0) {
+        // Indices 1..N map to counterparties_[0..N-1]
+        const auto& cp = counterparties_[static_cast<std::size_t>(cpIdx - 1)];
+        trade_.counterparty_id = cp.id;
+    } else {
+        trade_.counterparty_id = std::nullopt;
     }
 
     if (createMode_) {

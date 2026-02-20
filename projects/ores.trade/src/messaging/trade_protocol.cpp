@@ -50,6 +50,10 @@ void write_trade(std::vector<std::byte>& buffer,
     if (tr.successor_trade_id.has_value()) {
         writer::write_uuid(buffer, *tr.successor_trade_id);
     }
+    writer::write_bool(buffer, tr.counterparty_id.has_value());
+    if (tr.counterparty_id.has_value()) {
+        writer::write_uuid(buffer, *tr.counterparty_id);
+    }
     writer::write_string(buffer, tr.trade_type);
     writer::write_string(buffer, tr.netting_set_id);
     writer::write_string(buffer, tr.lifecycle_event);
@@ -95,6 +99,14 @@ read_trade(std::span<const std::byte>& data) {
         auto successor_trade_id_result = reader::read_uuid(data);
         if (!successor_trade_id_result) return std::unexpected(successor_trade_id_result.error());
         tr.successor_trade_id = *successor_trade_id_result;
+    }
+
+    auto counterparty_id_present_result = reader::read_bool(data);
+    if (!counterparty_id_present_result) return std::unexpected(counterparty_id_present_result.error());
+    if (*counterparty_id_present_result) {
+        auto counterparty_id_result = reader::read_uuid(data);
+        if (!counterparty_id_result) return std::unexpected(counterparty_id_result.error());
+        tr.counterparty_id = *counterparty_id_result;
     }
 
     auto trade_type_result = reader::read_string(data);

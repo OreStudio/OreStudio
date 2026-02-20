@@ -38,6 +38,7 @@ create table if not exists "ores_trade_trades_tbl" (
     "book_id" uuid not null,
     "portfolio_id" uuid not null,
     "successor_trade_id" uuid null,
+    "counterparty_id" uuid null,
     "trade_type" text not null,
     "netting_set_id" text not null,
     "lifecycle_event" text not null,
@@ -135,6 +136,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid successor_trade_id: %. Trade must exist for tenant.', NEW.successor_trade_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate counterparty_id (optional soft FK to ores_refdata_counterparties_tbl)
+    if NEW.counterparty_id is not null then
+        if not exists (
+            select 1 from ores_refdata_counterparties_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.counterparty_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid counterparty_id: %. Counterparty must exist for tenant.', NEW.counterparty_id
                 using errcode = '23503';
         end if;
     end if;

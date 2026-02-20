@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.trade/domain/trade.hpp"
 #include "ores.refdata/domain/book.hpp"
+#include "ores.refdata/domain/counterparty.hpp"
 
 namespace Ui {
 class TradeDetailDialog;
@@ -78,6 +79,8 @@ private:
     void setupConnections();
     void loadBooks();
     void selectCurrentBook();
+    void loadCounterparties();
+    void selectCurrentCounterparty();
     void updateUiFromTrade();
     void updateTradeFromUi();
     void updateSaveButtonState();
@@ -88,6 +91,7 @@ private:
     std::string username_;
     trade::domain::trade trade_;
     std::vector<refdata::domain::book> books_;
+    std::vector<refdata::domain::counterparty> counterparties_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

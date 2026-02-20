@@ -136,6 +136,54 @@
         "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
       },
       "iterator_var": "tr"
+    },
+
+    "qt": {
+      "domain_include": "ores.trade/domain/trade.hpp",
+      "domain_class": "trade::domain::trade",
+      "protocol_include": "ores.trade/messaging/trade_protocol.hpp",
+      "collection_name": "trades",
+      "item_var": "trade",
+      "key_field": "external_id",
+      "has_uuid_primary_key": true,
+      "get_request_class": "trade::messaging::get_trades_request",
+      "get_response_class": "trade::messaging::get_trades_response",
+      "get_message_type": "get_trades_request",
+      "save_request_class": "trade::messaging::save_trade_request",
+      "save_response_class": "trade::messaging::save_trade_response",
+      "save_message_type": "save_trade_request",
+      "save_request_item_field": "trade",
+      "delete_request_class": "trade::messaging::delete_trade_request",
+      "delete_response_class": "trade::messaging::delete_trade_response",
+      "delete_message_type": "delete_trade_request",
+      "history_request_class": "trade::messaging::get_trade_history_request",
+      "history_response_class": "trade::messaging::get_trade_history_response",
+      "history_message_type": "get_trade_history_request",
+      "detail_fields": [
+        {"field": "external_id", "label": "External ID", "widget": "externalIdEdit", "type": "line_edit", "is_key": true, "placeholder": "Enter external trade ID (e.g., UTI)"},
+        {"field": "trade_type", "label": "Trade Type", "widget": "tradeTypeEdit", "type": "line_edit", "is_required": true, "placeholder": "e.g., Swap, FxForward"},
+        {"field": "lifecycle_event", "label": "Lifecycle Event", "widget": "lifecycleEventEdit", "type": "line_edit", "is_required": true, "placeholder": "e.g., New, Amendment"},
+        {"field": "netting_set_id", "label": "Netting Set", "widget": "nettingSetIdEdit", "type": "line_edit", "placeholder": "e.g., NS-001"},
+        {"field": "trade_date", "label": "Trade Date", "widget": "tradeDateEdit", "type": "line_edit", "is_required": true, "placeholder": "YYYY-MM-DD"},
+        {"field": "effective_date", "label": "Effective Date", "widget": "effectiveDateEdit", "type": "line_edit", "is_required": true, "placeholder": "YYYY-MM-DD"},
+        {"field": "termination_date", "label": "Termination Date", "widget": "terminationDateEdit", "type": "line_edit", "is_required": true, "placeholder": "YYYY-MM-DD"},
+        {"field": "execution_timestamp", "label": "Execution Timestamp", "widget": "executionTimestampEdit", "type": "line_edit", "placeholder": "YYYY-MM-DD HH:MM:SS"}
+      ],
+      "columns": [
+        {"enum_name": "ExternalId", "field": "external_id", "header": "External ID", "is_string": true, "width": 180},
+        {"enum_name": "TradeType", "field": "trade_type", "header": "Type", "is_string": true, "width": 120},
+        {"enum_name": "LifecycleEvent", "field": "lifecycle_event", "header": "Event", "is_string": true, "width": 120},
+        {"enum_name": "TradeDate", "field": "trade_date", "header": "Trade Date", "is_string": true, "width": 110},
+        {"enum_name": "EffectiveDate", "field": "effective_date", "header": "Effective", "is_string": true, "width": 110},
+        {"enum_name": "TerminationDate", "field": "termination_date", "header": "Termination", "is_string": true, "width": 110},
+        {"enum_name": "NettingSetId", "field": "netting_set_id", "header": "Netting Set", "is_string": true, "width": 120},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+      "settings_group": "TradeListWindow",
+      "window_title": "Trades",
+      "icon": "DocumentTable"
     }
   }
 }

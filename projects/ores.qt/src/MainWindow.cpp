@@ -78,6 +78,7 @@
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/TradeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -166,6 +167,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionCounterparties->setIcon(IconUtils::createRecoloredIcon(Icon::Handshake, IconUtils::DefaultIconColor));
     ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
+    ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
@@ -581,6 +583,12 @@ MainWindow::MainWindow(QWidget* parent) :
             bookStatusController_->showListWindow();
     });
 
+    // Connect Trades action to controller
+    connect(ui_->ActionTrades, &QAction::triggered, this, [this]() {
+        if (tradeController_)
+            tradeController_->showListWindow();
+    });
+
     // Connect Purpose Types action to controller
     connect(ui_->ActionPurposeTypes, &QAction::triggered, this, [this]() {
         if (purposeTypeController_)
@@ -905,6 +913,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionBooks->setEnabled(isLoggedIn);
     ui_->ActionBookStatuses->setEnabled(isLoggedIn);
     ui_->ActionPurposeTypes->setEnabled(isLoggedIn);
+    ui_->ActionTrades->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1488,6 +1497,23 @@ void MainWindow::createControllers() {
     connect(purposeTypeController_.get(), &PurposeTypeController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(purposeTypeController_.get(), &PurposeTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create trade controller
+    tradeController_ = std::make_unique<TradeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(tradeController_.get(), &TradeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(tradeController_.get(), &TradeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(tradeController_.get(), &TradeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(tradeController_.get(), &TradeController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";

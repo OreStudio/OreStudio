@@ -291,7 +291,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         *channel_registry, "Feature flags modified");
     eventing::service::registrar::register_mapping<
         trading::eventing::trade_changed_event>(
-        event_source, "ores.trading.trade", "ores_trades",
+        event_source, "ores.trading.trade", "ores_trading_trades",
         *channel_registry, "Trade data modified");
 
     // Start the event source to begin listening for database notifications

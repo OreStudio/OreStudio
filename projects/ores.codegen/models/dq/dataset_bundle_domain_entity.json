@@ -68,7 +68,7 @@
         {"column": "code", "header": "Code"},
         {"column": "name", "header": "Name"},
         {"column": "description", "header": "Description"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     },
@@ -100,7 +100,7 @@
         {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
         {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
         {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
         {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
       ],
 

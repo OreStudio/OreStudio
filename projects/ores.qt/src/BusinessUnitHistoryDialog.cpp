@@ -63,7 +63,7 @@ void BusinessUnitHistoryDialog::setupUi() {
     // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Recorded By", "Performed By", "Commentary"});
+        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -304,7 +304,7 @@ void BusinessUnitHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->nameValue->setText(QString::fromStdString(version.unit_name));
     ui_->businessCentreValue->setText(QString::fromStdString(version.business_centre_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.modified_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(
         QString::fromStdString(version.change_commentary));

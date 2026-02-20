@@ -5806,7 +5806,7 @@
               "references": null
             },
             {
-              "name": "recorded_by",
+              "name": "modified_by",
               "type": "text",
               "nullable": false,
               "is_pk": false,

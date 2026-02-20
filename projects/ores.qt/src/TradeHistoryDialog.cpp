@@ -63,7 +63,7 @@ void TradeHistoryDialog::setupUi() {
     // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Recorded By", "Performed By", "Commentary"});
+        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);

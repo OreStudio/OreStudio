@@ -99,7 +99,7 @@
         {"column": "purpose_type", "header": "Purpose"},
         {"column": "aggregation_ccy", "header": "Currency"},
         {"column": "is_virtual", "header": "Virtual"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     },

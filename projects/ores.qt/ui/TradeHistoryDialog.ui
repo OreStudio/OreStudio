@@ -63,7 +63,7 @@
       </column>
       <column>
        <property name="text">
-        <string>Recorded By</string>
+        <string>Modified By</string>
        </property>
       </column>
       <column>

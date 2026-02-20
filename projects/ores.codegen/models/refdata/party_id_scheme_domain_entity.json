@@ -77,7 +77,7 @@
         {"column": "description", "header": "Description"},
         {"column": "coding_scheme_code", "header": "Coding Scheme"},
         {"column": "display_order", "header": "Order"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     },
@@ -111,7 +111,7 @@
         {"enum_name": "CodingSchemeCode", "field": "coding_scheme_code", "header": "Coding Scheme", "is_string": true, "width": 150},
         {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
         {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
         {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
       ],
 

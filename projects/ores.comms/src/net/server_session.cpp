@@ -344,11 +344,20 @@ boost::asio::awaitable<void> server_session::run_notification_writer() {
                 notification_signal_.expires_at(
                     std::chrono::steady_clock::time_point::max());
 
-                // Send all pending notifications
-                co_await send_pending_notifications();
+                // Drain queues in a loop: cancel() calls that arrive while
+                // send_pending_notifications() is co_awaiting are no-ops (no
+                // pending async_wait at that point). Re-check after each flush
+                // to catch notifications enqueued during the send.
+                while (active_) {
+                    co_await send_pending_notifications();
+                    co_await send_pending_database_status();
 
-                // Send all pending database status notifications
-                co_await send_pending_database_status();
+                    std::lock_guard lock(notification_mutex_);
+                    if (pending_notifications_.empty() &&
+                        pending_database_status_.empty()) {
+                        break;
+                    }
+                }
             }
         }
     } catch (const std::exception& e) {

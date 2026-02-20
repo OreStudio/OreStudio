@@ -764,8 +764,6 @@ per-party.
 - Party-scoped queries for currencies and countries filter through junctions.
 - Default: all currencies/countries visible to all parties (opt-in restriction).
 
-
-
 *** Update currency details to use tabs                                :code:
 
 We need a main tab with the currency related properties, then a "system" tab
@@ -773,8 +771,7 @@ with temporal data which is read-only even on edit and a "image" tab with the
 image used to represent the currency. It could also contain some description or
 notes.
 
-
-*** Currencies: Currency Taxonomy Enrichment
+*** Currencies: Currency Taxonomy Enrichment                           :code:
 
 - Goal: Enhance the ores_refdata_currencies_tbl to support logical grouping,
   reporting, and basic behavior defaults.
@@ -789,7 +786,7 @@ notes.
   : USD | fiat | g10
   :  BRL | fiat | emerging
 
-*** Currencies: Party-Specific Settlement Rules
+*** Currencies: Party-Specific Settlement Rules                        :code:
 
 - Goal: Define the "Where." This models what a specific "House" entity (or
   child) is capable of doing.
@@ -844,7 +841,7 @@ Child Party + Currency. If not found, check for a rule for The House +
 Currency. If still not found, default to physical for g10 and cash_settled for
 exotic.
 
-*** Currencies: Contractual Settlement (The "Agreements" Table)
+*** Currencies: Contractual Settlement (The "Agreements" Table)        :code:
 
 - Goal: Define the "How." This is the bridge you mentioned for specific
   counterparties.

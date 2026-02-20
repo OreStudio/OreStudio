@@ -67,6 +67,94 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Currencies: Currency Taxonomy Enrichment
+
+- Goal: Enhance the ores_refdata_currencies_tbl to support logical grouping,
+  reporting, and basic behavior defaults.
+- Requirements:
+  - Field 1: asset_class (Enum/Varchar)
+    Purpose: Defines the nature of the instrument.
+    Allowed Values: fiat, commodity (for XAU/XAG), synthetic, supranational.
+  - Field 2: market_tier (Enum/Varchar)
+    Purpose: Drives UI priority, liquidity expectations, and risk limits.
+    Allowed Values: majors (g10), emerging, exotic, frontier, historical.
+- Example Entries:
+  : USD | fiat | g10
+  :  BRL | fiat | emerging
+
+*** Currencies: Party-Specific Settlement Rules
+
+- Goal: Define the "Where." This models what a specific "House" entity (or
+  child) is capable of doing.
+- Table: =ores_refdata_settlement_capabilities=.
+- Logic: Does "London Desk" have a local Vostro account for "BRL"?
+
+| Field Name              | Type       | Description                                                                        |
+|-------------------------+------------+------------------------------------------------------------------------------------|
+| capability_id           | UUID       | PK                                                                                 |
+| party_id                | INT/FK     | Reference to internal parties. This can be "The House" or a specific child entity. |
+| currency_code           | CHAR(3)/FK | Reference to =ores_refdata_currencies_tbl=.                                        |
+| can_settle_physically   | Boolean    | If true we can settle in this currency.                                            |
+| can_cash_settle         | Boolean    | If true, we can settle in cash on another currency.                                |
+| default_settlement_mode | ENUM       | physical (Deliverable) or cash_settled (Non-Deliverable/NDF).                      |
+| is_active               | BOOL       | To disable capabilities if an account is frozen or closed.                         |
+
+Then, to determine which account to use to settle we need something like
+=ores_refdata_party_nostro_accounts=:
+
+| Field          | Description                                             |
+|----------------+---------------------------------------------------------|
+| party_id       | Which branch of yours owns this account?                |
+| currency_code  | The currency of the account.                            |
+| agent_bank_id  | The external bank (e.g., HSBC, Citi).                   |
+| account_number | The actual IBAN/Account string.                         |
+| is_primary     | Boolean to tell the system which one to use by default. |
+| purpose        | "ENUM: General, CLS, Intercompany, Custody."            |
+
+This tells us what account to use when settlement comes. We cannot have a
+capability without at least one account.
+
+Then, for each currency which can be cash settled, we need to know into which
+currencies they can be cash settled. For that we have
+=ores_refdata_settlement_cash_options=. This is a Junction Table that defines
+the valid "Settlement Pairs." This table answers: "If we are cash-settling
+Currency X, what are the allowed 'Destination' currencies for this House
+Entity?"
+
+| Schema              | FieldType | Description                                                       |
+|---------------------+-----------+-------------------------------------------------------------------|
+| capability_id       | FK        | Links to =ores_refdata_settlement_capabilities=.                  |
+| settlement_currency | CHAR(3)   | The "Destination" currency (e.g., USD, EUR).                      |
+| is_primary          | BOOLEAN   | The default currency the desk prefers to use for NDFs.            |
+| fixing_source_id    | FK        | Which index provides the rate to convert X to the Settlement CCY? |
+
+If cash settled is true, we must have a corresponding entry in this table.
+
+**** The "Relative" Logic Requirement:
+
+The system must perform a Hierarchical Lookup: Check for a rule specific to the
+Child Party + Currency. If not found, check for a rule for The House +
+Currency. If still not found, default to physical for g10 and cash_settled for
+exotic.
+
+*** Currencies: Contractual Settlement (The "Agreements" Table)
+
+- Goal: Define the "How." This is the bridge you mentioned for specific
+  counterparties.
+- Table: =ores_refdata_settlement_agreements.=
+- Logic: "Even though London can settle NDFs, for this specific Hedge Fund, we
+  always settle in USD."
+
+Fields:
+
+| Schema                 | Description             |
+|------------------------+-------------------------|
+| party_id               | Our side.               |
+| counterparty_id        | Their side.             |
+| currency_code          | The currency.           |
+| agreed_settlement_type | NDF, Physical, Net_USD. |
+| agreement_ref          | e.g., "ISDA-2023-GS".   |
+
 *** Restore list windows after login                                   :code:
 
 After login, reopen all entity list windows that were open when the user last
@@ -1590,6 +1678,13 @@ Links:
   flow. peon-ping fixes this with voice lines from Warcraft, StarCraft, Portal,
   Zelda, and more — works with Claude Code, Codex, Cursor, OpenCode, Kilo CLI,
   Kiro, Windsurf, Google Antigravity, and any MCP client."
+- [[https://huggingface.co/microsoft/VibeVoice-Realtime-0.5B][VibeVoice: A Frontier Open-Source Text-to-Speech Model]]: "VibeVoice-Realtime is
+  a lightweight real‑time text-to-speech model supporting streaming text input
+  and robust long-form speech generation. It can be used to build realtime TTS
+  services, narrate live data streams, and let different LLMs start speaking
+  from their very first tokens (plug in your preferred model) long before a full
+  answer is generated. It produces initial audible speech in ~300 ms (hardware
+  dependent)."
 
 *** Cli clean-ups                                                      :code:
 
@@ -2734,6 +2829,22 @@ Set conditions to pause or highlight specific events:
 ** Far
 
 Stories that we want to capture, but won't work on for a while.
+
+*** Investigate time series forecasting with LLMs                      :code:
+
+- [[https://timecopilot.dev/][TimeCopilot]]: "TimeCopilot is an open-source forecasting agent that combines
+  the power of large language models with state-of-the-art time series
+  foundation models (Amazon Chronos, Salesforce Moirai, Google TimesFM, Nixtla
+  TimeGPT, etc.). It automates and explains complex forecasting workflows,
+  making time series analysis more accessible while maintaining
+  professional-grade accuracy."
+- [[https://research.google/blog/a-decoder-only-foundation-model-for-time-series-forecasting/][A decoder-only foundation model for time-series forecasting]]: "TimesFM is a
+  forecasting model, pre-trained on a large time-series corpus of 100 billion
+  real world time-points, that displays impressive zero-shot performance on a
+  variety of public benchmarks from different domains and granularities."
+- [[https://github.com/google-research/timesfm][GH: timesfm:]] "TimesFM (Time Series Foundation Model) is a pretrained
+  time-series foundation model developed by Google Research for time-series
+  forecasting."
 
 *** Consider integrating whatsapp-mcp                                  :code:
 

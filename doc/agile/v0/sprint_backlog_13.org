@@ -17,25 +17,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 00:00], for Friday, February 20, 2026.
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2026-02-20 Fri 15:18], for Friday, February 20, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:08* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:08   |      |      | 100.0 |
+|       | Active                                |        | 0:08 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:08 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 00:00]
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2026-02-20 Fri 15:18]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:08* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:08   |      |      | 100.0 |
+|       | Active                                |        | 0:08 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:08 | 100.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2026-02-20 Fri 15:10]--[2026-02-20 Fri 15:18] =>  0:08
+    :END:
 
-Updates to sprint and product backlog.
+ Updates to sprint and product backlog.
 
 #+begin_src emacs-lisp :exports none
 ;; agenda

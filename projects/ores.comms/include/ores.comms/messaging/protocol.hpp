@@ -278,7 +278,15 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_party_contact_informations_request. Adds message handlers for party
 // identifier and party contact information CRUD + history. Breaking change
 // as the wire format for these requests changes from empty to UUID payload.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 35;
+//
+// Version 36.0 adds trade subsystem. New messages: get_trades_request/response
+// (0x8000/0x8001), save_trade_request/response (0x8002/0x8003),
+// delete_trade_request/response (0x8004/0x8005),
+// get_trade_history_request/response (0x8006/0x8007).
+// get_trades_request adds offset/limit pagination fields (uint32).
+// get_trades_response adds total_available_count field (uint32) before trades.
+// Breaking change as the wire format is incompatible with previous versions.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 36;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

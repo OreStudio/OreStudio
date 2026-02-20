@@ -11,7 +11,6 @@
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -31,6 +30,18 @@ using namespace ores::logging;
 
 {{domain_entity.entity_pascal}}DetailDialog::~{{domain_entity.entity_pascal}}DetailDialog() {
     delete ui_;
+}
+
+QTabWidget* {{domain_entity.entity_pascal}}DetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* {{domain_entity.entity_pascal}}DetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* {{domain_entity.entity_pascal}}DetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
@@ -87,11 +98,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
     ui_->{{domain_entity.qt.key_widget}}->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
+    setProvenanceEnabled(!createMode);
+
     if (createMode) {
 {{#domain_entity.qt.has_uuid_primary_key}}
         {{domain_entity.qt.item_var}}_.id = boost::uuids::random_generator()();
 {{/domain_entity.qt.has_uuid_primary_key}}
-        ui_->metadataGroup->setVisible(false);
     }
 
     hasChanges_ = false;
@@ -122,10 +134,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{/is_text_edit}}
 {{/domain_entity.qt.detail_fields}}
 
-    ui_->versionEdit->setText(QString::number({{domain_entity.qt.item_var}}_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.modified_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format({{domain_entity.qt.item_var}}_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.change_commentary));
+    populateProvenance({{domain_entity.qt.item_var}}_.version,
+                       {{domain_entity.qt.item_var}}_.modified_by,
+                       {{domain_entity.qt.item_var}}_.performed_by,
+                       {{domain_entity.qt.item_var}}_.recorded_at,
+                       {{domain_entity.qt.item_var}}_.change_reason_code,
+                       {{domain_entity.qt.item_var}}_.change_commentary);
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_pascal_short}}FromUi() {

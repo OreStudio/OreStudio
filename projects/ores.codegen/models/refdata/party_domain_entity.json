@@ -99,7 +99,7 @@
         {"column": "party_type", "header": "Type"},
         {"column": "status", "header": "Status"},
         {"column": "business_center_code", "header": "Business Center"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     },
@@ -144,7 +144,7 @@
         {"enum_name": "Status", "field": "status", "header": "Status", "is_string": true, "width": 100},
         {"enum_name": "BusinessCenterCode", "field": "business_center_code", "header": "Business Center", "is_string": true, "width": 130},
         {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "RecordedBy", "field": "recorded_by", "header": "Recorded By", "is_string": true, "width": 120},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
         {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
       ],
       "settings_group": "PartyListWindow",

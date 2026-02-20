@@ -62,6 +62,7 @@
 #include "ores.assets/messaging/registrar.hpp"
 #include "ores.telemetry/messaging/registrar.hpp"
 #include "ores.trade/messaging/registrar.hpp"
+#include "ores.trade/eventing/trade_changed_event.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -288,6 +289,10 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         variability::eventing::feature_flags_changed_event>(
         event_source, "ores.variability.feature_flag", "ores_feature_flags",
         *channel_registry, "Feature flags modified");
+    eventing::service::registrar::register_mapping<
+        trade::eventing::trade_changed_event>(
+        event_source, "ores.trade.trade", "ores_trades",
+        *channel_registry, "Trade data modified");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -511,6 +516,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 variability::eventing::feature_flags_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.flag_names, e.tenant_id);
+        });
+
+    auto trade_sub = event_bus.subscribe<trade::eventing::trade_changed_event>(
+        [&subscription_mgr](const trade::eventing::trade_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                trade::eventing::trade_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.trade_ids, e.tenant_id);
         });
 
     // Create server with subscription manager

@@ -145,7 +145,7 @@
         {"column": "country_code", "header": "Country"},
         {"column": "phone", "header": "Phone"},
         {"column": "email", "header": "Email"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     }

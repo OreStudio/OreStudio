@@ -89,7 +89,7 @@
         {"column": "unit_name", "header": "Unit Name"},
         {"column": "unit_code", "header": "Code"},
         {"column": "business_centre_code", "header": "Business Centre"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     },

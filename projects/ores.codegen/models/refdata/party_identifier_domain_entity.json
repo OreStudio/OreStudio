@@ -80,7 +80,7 @@
         {"column": "id_scheme", "header": "Scheme"},
         {"column": "id_value", "header": "Value"},
         {"column": "description", "header": "Description"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     }

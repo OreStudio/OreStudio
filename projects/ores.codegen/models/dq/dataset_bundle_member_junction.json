@@ -70,7 +70,7 @@
         {"column": "bundle_code", "header": "Bundle"},
         {"column": "dataset_code", "header": "Dataset"},
         {"column": "display_order", "header": "Order"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     }

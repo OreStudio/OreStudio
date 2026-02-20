@@ -53,9 +53,13 @@ public:
 
     std::vector<domain::trade> read_latest(context ctx);
     std::vector<domain::trade>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::trade>
     read_latest(context ctx, const std::string& id);
     std::vector<domain::trade>
     read_all(context ctx, const std::string& id);
+
+    std::uint32_t count_latest(context ctx);
 
     void remove(context ctx, const std::string& id);
 };

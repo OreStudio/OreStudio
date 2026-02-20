@@ -81,6 +81,7 @@ class PortfolioController;
 class BookController;
 class BookStatusController;
 class PurposeTypeController;
+class TradeController;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -568,6 +569,7 @@ private:
     std::unique_ptr<BookController> bookController_;
     std::unique_ptr<BookStatusController> bookStatusController_;
     std::unique_ptr<PurposeTypeController> purposeTypeController_;
+    std::unique_ptr<TradeController> tradeController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

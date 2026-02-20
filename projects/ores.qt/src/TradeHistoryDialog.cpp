@@ -17,29 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/PortfolioHistoryDialog.hpp"
+#include "ores.qt/TradeHistoryDialog.hpp"
 
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include "ui_PortfolioHistoryDialog.h"
+#include "ui_TradeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/portfolio_protocol.hpp"
+#include "ores.trade/messaging/trade_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PortfolioHistoryDialog::PortfolioHistoryDialog(
+TradeHistoryDialog::TradeHistoryDialog(
     const boost::uuids::uuid& id,
     const QString& code,
     ClientManager* clientManager,
     QWidget* parent)
     : QWidget(parent),
-      ui_(new Ui::PortfolioHistoryDialog),
+      ui_(new Ui::TradeHistoryDialog),
       id_(id),
       code_(code),
       clientManager_(clientManager),
@@ -53,11 +53,11 @@ PortfolioHistoryDialog::PortfolioHistoryDialog(
     setupConnections();
 }
 
-PortfolioHistoryDialog::~PortfolioHistoryDialog() {
+TradeHistoryDialog::~TradeHistoryDialog() {
     delete ui_;
 }
 
-void PortfolioHistoryDialog::setupUi() {
+void TradeHistoryDialog::setupUi() {
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -75,7 +75,7 @@ void PortfolioHistoryDialog::setupUi() {
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
-void PortfolioHistoryDialog::setupToolbar() {
+void TradeHistoryDialog::setupToolbar() {
     toolbar_ = new QToolBar(this);
     toolbar_->setMovable(false);
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -101,30 +101,30 @@ void PortfolioHistoryDialog::setupToolbar() {
     }
 }
 
-void PortfolioHistoryDialog::setupConnections() {
+void TradeHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &PortfolioHistoryDialog::onVersionSelected);
+            this, &TradeHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered,
-            this, &PortfolioHistoryDialog::onOpenVersionClicked);
+            this, &TradeHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
-            this, &PortfolioHistoryDialog::onRevertClicked);
+            this, &TradeHistoryDialog::onRevertClicked);
 }
 
-void PortfolioHistoryDialog::loadHistory() {
+void TradeHistoryDialog::loadHistory() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for portfolio: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for trade: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<PortfolioHistoryDialog> self = this;
+    QPointer<TradeHistoryDialog> self = this;
 
     struct HistoryResult {
         bool success;
         std::string message;
-        std::vector<refdata::domain::portfolio> versions;
+        std::vector<trade::domain::trade> versions;
     };
 
     auto task = [self, id = id_]() -> HistoryResult {
@@ -132,12 +132,12 @@ void PortfolioHistoryDialog::loadHistory() {
             return {false, "Dialog closed", {}};
         }
 
-        refdata::messaging::get_portfolio_history_request request;
+        trade::messaging::get_trade_history_request request;
         request.id = id;
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_portfolio_history_request,
+            comms::messaging::message_type::get_trade_history_request,
             0, std::move(payload)
         );
 
@@ -153,7 +153,7 @@ void PortfolioHistoryDialog::loadHistory() {
             return {false, "Failed to decompress response", {}};
         }
 
-        auto response = refdata::messaging::get_portfolio_history_response::
+        auto response = trade::messaging::get_trade_history_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -185,7 +185,7 @@ void PortfolioHistoryDialog::loadHistory() {
     watcher->setFuture(future);
 }
 
-void PortfolioHistoryDialog::updateVersionList() {
+void TradeHistoryDialog::updateVersionList() {
     ui_->versionListWidget->setRowCount(0);
 
     for (const auto& version : versions_) {
@@ -219,7 +219,7 @@ void PortfolioHistoryDialog::updateVersionList() {
     }
 }
 
-void PortfolioHistoryDialog::onVersionSelected() {
+void TradeHistoryDialog::onVersionSelected() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) {
         updateActionStates();
@@ -232,7 +232,7 @@ void PortfolioHistoryDialog::onVersionSelected() {
     updateActionStates();
 }
 
-void PortfolioHistoryDialog::updateChangesTable(int currentVersionIndex) {
+void TradeHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
     if (currentVersionIndex < 0 ||
@@ -264,22 +264,52 @@ void PortfolioHistoryDialog::updateChangesTable(int currentVersionIndex) {
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-    if (current.name != previous.name) {
-        addChange("Name",
-                  QString::fromStdString(previous.name),
-                  QString::fromStdString(current.name));
+    if (current.external_id != previous.external_id) {
+        addChange("External ID",
+                  QString::fromStdString(previous.external_id),
+                  QString::fromStdString(current.external_id));
     }
 
-    if (current.purpose_type != previous.purpose_type) {
-        addChange("Purpose Type",
-                  QString::fromStdString(previous.purpose_type),
-                  QString::fromStdString(current.purpose_type));
+    if (current.trade_type != previous.trade_type) {
+        addChange("Trade Type",
+                  QString::fromStdString(previous.trade_type),
+                  QString::fromStdString(current.trade_type));
     }
 
-    if (current.aggregation_ccy != previous.aggregation_ccy) {
-        addChange("Aggregation Currency",
-                  QString::fromStdString(previous.aggregation_ccy),
-                  QString::fromStdString(current.aggregation_ccy));
+    if (current.lifecycle_event != previous.lifecycle_event) {
+        addChange("Lifecycle Event",
+                  QString::fromStdString(previous.lifecycle_event),
+                  QString::fromStdString(current.lifecycle_event));
+    }
+
+    if (current.netting_set_id != previous.netting_set_id) {
+        addChange("Netting Set",
+                  QString::fromStdString(previous.netting_set_id),
+                  QString::fromStdString(current.netting_set_id));
+    }
+
+    if (current.trade_date != previous.trade_date) {
+        addChange("Trade Date",
+                  QString::fromStdString(previous.trade_date),
+                  QString::fromStdString(current.trade_date));
+    }
+
+    if (current.effective_date != previous.effective_date) {
+        addChange("Effective Date",
+                  QString::fromStdString(previous.effective_date),
+                  QString::fromStdString(current.effective_date));
+    }
+
+    if (current.termination_date != previous.termination_date) {
+        addChange("Termination Date",
+                  QString::fromStdString(previous.termination_date),
+                  QString::fromStdString(current.termination_date));
+    }
+
+    if (current.execution_timestamp != previous.execution_timestamp) {
+        addChange("Execution Timestamp",
+                  QString::fromStdString(previous.execution_timestamp),
+                  QString::fromStdString(current.execution_timestamp));
     }
 
 
@@ -292,7 +322,7 @@ void PortfolioHistoryDialog::updateChangesTable(int currentVersionIndex) {
     }
 }
 
-void PortfolioHistoryDialog::updateFullDetails(int versionIndex) {
+void TradeHistoryDialog::updateFullDetails(int versionIndex) {
     if (versionIndex < 0 ||
         static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
@@ -300,9 +330,14 @@ void PortfolioHistoryDialog::updateFullDetails(int versionIndex) {
 
     const auto& version = versions_[versionIndex];
 
-    ui_->nameValue->setText(QString::fromStdString(version.name));
-    ui_->purposeTypeValue->setText(QString::fromStdString(version.purpose_type));
-    ui_->aggregationCcyValue->setText(QString::fromStdString(version.aggregation_ccy));
+    ui_->externalIdValue->setText(QString::fromStdString(version.external_id));
+    ui_->tradeTypeValue->setText(QString::fromStdString(version.trade_type));
+    ui_->lifecycleEventValue->setText(QString::fromStdString(version.lifecycle_event));
+    ui_->nettingSetIdValue->setText(QString::fromStdString(version.netting_set_id));
+    ui_->tradeDateValue->setText(QString::fromStdString(version.trade_date));
+    ui_->effectiveDateValue->setText(QString::fromStdString(version.effective_date));
+    ui_->terminationDateValue->setText(QString::fromStdString(version.termination_date));
+    ui_->executionTimestampValue->setText(QString::fromStdString(version.execution_timestamp));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
@@ -310,7 +345,7 @@ void PortfolioHistoryDialog::updateFullDetails(int versionIndex) {
         QString::fromStdString(version.change_commentary));
 }
 
-void PortfolioHistoryDialog::updateActionStates() {
+void TradeHistoryDialog::updateActionStates() {
     auto selected = ui_->versionListWidget->selectedItems();
     bool hasSelection = !selected.isEmpty();
     bool isNotLatest = hasSelection && selected.first()->row() > 0;
@@ -319,7 +354,7 @@ void PortfolioHistoryDialog::updateActionStates() {
     revertAction_->setEnabled(isNotLatest);
 }
 
-void PortfolioHistoryDialog::onOpenVersionClicked() {
+void TradeHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) return;
 
@@ -329,7 +364,7 @@ void PortfolioHistoryDialog::onOpenVersionClicked() {
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
-void PortfolioHistoryDialog::onRevertClicked() {
+void TradeHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) return;
 

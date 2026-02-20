@@ -117,7 +117,7 @@
         {"column": "ledger_ccy", "header": "Currency"},
         {"column": "book_status", "header": "Status"},
         {"column": "is_trading_book", "header": "Trading Book"},
-        {"column": "recorded_by", "header": "Recorded By"},
+        {"column": "modified_by", "header": "Modified By"},
         {"column": "version", "header": "Version"}
       ]
     },

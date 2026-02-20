@@ -169,8 +169,10 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                 }
 
                 {{domain_entity.qt.get_request_class}} request;
+{{#domain_entity.qt.has_pagination}}
                 request.offset = offset;
                 request.limit = limit;
+{{/domain_entity.qt.has_pagination}}
 
                 auto result = self->clientManager_->
                     process_authenticated_request(std::move(request));
@@ -185,6 +187,7 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                             .error_details = {}};
                 }
 
+{{#domain_entity.qt.has_pagination}}
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.qt.collection_name}}.size()
                                            << " {{domain_entity.entity_plural_words}}, total available: "
                                            << result->total_available_count;
@@ -192,6 +195,17 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                         .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.qt.collection_name}}),
                         .total_available_count = result->total_available_count,
                         .error_message = {}, .error_details = {}};
+{{/domain_entity.qt.has_pagination}}
+{{^domain_entity.qt.has_pagination}}
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.qt.collection_name}}.size()
+                                           << " {{domain_entity.entity_plural_words}}";
+                const std::uint32_t count =
+                    static_cast<std::uint32_t>(result->{{domain_entity.qt.collection_name}}.size());
+                return {.success = true,
+                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.qt.collection_name}}),
+                        .total_available_count = count,
+                        .error_message = {}, .error_details = {}};
+{{/domain_entity.qt.has_pagination}}
             }, "{{domain_entity.entity_plural_words}}");
         });
 

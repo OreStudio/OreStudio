@@ -41,6 +41,7 @@ trade_mapper::map(const trade_entity& v) {
     r.book_id = boost::lexical_cast<boost::uuids::uuid>(v.book_id);
     r.portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.portfolio_id);
     r.successor_trade_id = v.successor_trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.successor_trade_id)) : std::nullopt;
+    r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
     r.netting_set_id = v.netting_set_id;
     r.lifecycle_event = v.lifecycle_event;
@@ -72,6 +73,7 @@ trade_mapper::map(const domain::trade& v) {
     r.book_id = boost::uuids::to_string(v.book_id);
     r.portfolio_id = boost::uuids::to_string(v.portfolio_id);
     r.successor_trade_id = v.successor_trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.successor_trade_id)) : std::nullopt;
+    r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::uuids::to_string(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
     r.netting_set_id = v.netting_set_id;
     r.lifecycle_event = v.lifecycle_event;

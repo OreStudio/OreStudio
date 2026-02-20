@@ -51,6 +51,11 @@ public:
 
     std::vector<domain::trade> list_trades();
 
+    std::vector<domain::trade>
+    list_trades(std::uint32_t offset, std::uint32_t limit);
+
+    std::uint32_t count_trades();
+
     std::optional<domain::trade>
     find_trade(const std::string& id);
 

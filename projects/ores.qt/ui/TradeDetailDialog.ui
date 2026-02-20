@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>{{domain_entity.entity_pascal}}DetailDialog</class>
- <widget class="QWidget" name="{{domain_entity.entity_pascal}}DetailDialog">
+ <class>TradeDetailDialog</class>
+ <widget class="QWidget" name="TradeDetailDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>420</height>
+    <height>460</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>{{domain_entity.entity_title}} Details</string>
+   <string>Trade Details</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -32,43 +32,138 @@
       <string>Basic Information</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
-{{#domain_entity.qt.detail_fields}}
-      <item row="{{_row_index}}" column="0">
-       <widget class="QLabel" name="label_{{widget}}">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_bookCombo">
         <property name="text">
-         <string>{{label}}:</string>
+         <string>Book:</string>
         </property>
        </widget>
       </item>
-      <item row="{{_row_index}}" column="1">
-{{#is_line_edit}}
-       <widget class="QLineEdit" name="{{widget}}">
-        <property name="placeholderText">
-         <string>{{placeholder}}</string>
-        </property>
-       </widget>
-{{/is_line_edit}}
-{{#is_text_edit}}
-       <widget class="QTextEdit" name="{{widget}}">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>80</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>120</height>
-         </size>
-        </property>
-        <property name="placeholderText">
-         <string>{{placeholder}}</string>
-        </property>
-       </widget>
-{{/is_text_edit}}
+      <item row="0" column="1">
+       <widget class="QComboBox" name="bookCombo"/>
       </item>
-{{/domain_entity.qt.detail_fields}}
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_counterpartyCombo">
+        <property name="text">
+         <string>Counterparty:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="counterpartyCombo"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_externalIdEdit">
+        <property name="text">
+         <string>External ID:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="externalIdEdit">
+        <property name="placeholderText">
+         <string>Enter external trade ID (e.g., UTI)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_tradeTypeEdit">
+        <property name="text">
+         <string>Trade Type:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="tradeTypeEdit">
+        <property name="placeholderText">
+         <string>e.g., Swap, FxForward</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_lifecycleEventEdit">
+        <property name="text">
+         <string>Lifecycle Event:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="lifecycleEventEdit">
+        <property name="placeholderText">
+         <string>e.g., New, Amendment</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_nettingSetIdEdit">
+        <property name="text">
+         <string>Netting Set:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="nettingSetIdEdit">
+        <property name="placeholderText">
+         <string>e.g., NS-001</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_tradeDateEdit">
+        <property name="text">
+         <string>Trade Date:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="tradeDateEdit">
+        <property name="placeholderText">
+         <string>YYYY-MM-DD</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_effectiveDateEdit">
+        <property name="text">
+         <string>Effective Date:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="effectiveDateEdit">
+        <property name="placeholderText">
+         <string>YYYY-MM-DD</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_terminationDateEdit">
+        <property name="text">
+         <string>Termination Date:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QLineEdit" name="terminationDateEdit">
+        <property name="placeholderText">
+         <string>YYYY-MM-DD</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_executionTimestampEdit">
+        <property name="text">
+         <string>Execution Timestamp:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QLineEdit" name="executionTimestampEdit">
+        <property name="placeholderText">
+         <string>YYYY-MM-DD HH:MM:SS</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

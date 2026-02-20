@@ -118,6 +118,7 @@
      <addaction name="ActionChangeReasons"/>
     </widget>
     <addaction name="menuReferenceData"/>
+    <addaction name="ActionTrades"/>
     <addaction name="menuAssets"/>
     <addaction name="menuQuality"/>
    </widget>
@@ -545,6 +546,14 @@
    </property>
    <property name="toolTip">
     <string>Manage business units</string>
+   </property>
+  </action>
+  <action name="ActionTrades">
+   <property name="text">
+    <string>&amp;Trades</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage trades</string>
    </property>
   </action>
   <action name="ActionPortfolios">

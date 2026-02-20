@@ -42,6 +42,7 @@ struct trade_entity {
     std::string book_id;
     std::string portfolio_id;
     std::optional<std::string> successor_trade_id;
+    std::optional<std::string> counterparty_id;
     std::string trade_type;
     std::string netting_set_id;
     std::string lifecycle_event;

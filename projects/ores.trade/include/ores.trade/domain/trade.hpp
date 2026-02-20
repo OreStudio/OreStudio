@@ -82,6 +82,14 @@ struct trade final {
     std::optional<boost::uuids::uuid> successor_trade_id;
 
     /**
+     * @brief Counterparty for this trade.
+     *
+     * Soft FK to ores_refdata_counterparties_tbl. Optional: some trades
+     * may not have a counterparty (e.g., internal transfers).
+     */
+    std::optional<boost::uuids::uuid> counterparty_id;
+
+    /**
      * @brief ORE instrument type code (e.g. Swap, FxForward, CapFloor).
      *
      * Soft FK to ores_trade_trade_types_tbl.

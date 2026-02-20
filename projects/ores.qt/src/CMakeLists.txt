@@ -33,6 +33,7 @@ qt_add_executable(${exe_binary_name} ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES}
 target_link_libraries(${exe_binary_name} PRIVATE
     ores.ore.lib
     ores.refdata.lib
+    ores.trade.lib
     ores.comms.lib
     ores.comms.shell.lib
     ores.dq.lib

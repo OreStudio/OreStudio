@@ -5,6 +5,9 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+{{#domain_entity.qt.has_uuid_primary_key}}
+#include <boost/uuid/random_generator.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -81,10 +84,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::set{{domain_entity.entity_pasc
 
 void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->codeEdit->setReadOnly(!createMode);
+    ui_->{{domain_entity.qt.key_widget}}->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
     if (createMode) {
+{{#domain_entity.qt.has_uuid_primary_key}}
+        {{domain_entity.qt.item_var}}_.id = boost::uuids::random_generator()();
+{{/domain_entity.qt.has_uuid_primary_key}}
         ui_->metadataGroup->setVisible(false);
     }
 
@@ -117,7 +123,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{/domain_entity.qt.detail_fields}}
 
     ui_->versionEdit->setText(QString::number({{domain_entity.qt.item_var}}_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.recorded_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format({{domain_entity.qt.item_var}}_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.change_commentary));
 }
@@ -140,7 +146,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{/is_text_edit}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
-    {{domain_entity.qt.item_var}}_.recorded_by = username_;
+    {{domain_entity.qt.item_var}}_.modified_by = username_;
     {{domain_entity.qt.item_var}}_.performed_by = username_;
 }
 

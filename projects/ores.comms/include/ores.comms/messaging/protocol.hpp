@@ -298,6 +298,8 @@ constexpr std::uint16_t DQ_SUBSYSTEM_MIN = 0x6000;
 constexpr std::uint16_t DQ_SUBSYSTEM_MAX = 0x6FFF;
 constexpr std::uint16_t SYNTHETIC_SUBSYSTEM_MIN = 0x7000;
 constexpr std::uint16_t SYNTHETIC_SUBSYSTEM_MAX = 0x7FFF;
+constexpr std::uint16_t TRADE_SUBSYSTEM_MIN = 0x8000;
+constexpr std::uint16_t TRADE_SUBSYSTEM_MAX = 0x8FFF;
 
 }
 

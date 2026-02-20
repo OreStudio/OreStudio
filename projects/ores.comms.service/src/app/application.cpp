@@ -61,6 +61,7 @@
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.assets/messaging/registrar.hpp"
 #include "ores.telemetry/messaging/registrar.hpp"
+#include "ores.trade/messaging/registrar.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -545,6 +546,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::dq::messaging::registrar::register_handlers(*srv, ctx, auth_service);
     ores::synthetic::messaging::registrar::register_handlers(*srv, ctx, auth_service);
+    ores::trade::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
 
     // Register subscription handler for subscribe/unsubscribe/list_event_channels messages
     auto subscription_handler =

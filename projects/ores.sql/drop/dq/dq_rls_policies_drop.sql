@@ -23,6 +23,8 @@
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
 
+\ir ./dq_fsm_rls_policies_drop.sql
+
 -- Dataset Bundle Members
 drop policy if exists ores_dq_dataset_bundle_members_modification_policy on "ores_dq_dataset_bundle_members_tbl";
 drop policy if exists ores_dq_dataset_bundle_members_read_policy on "ores_dq_dataset_bundle_members_tbl";

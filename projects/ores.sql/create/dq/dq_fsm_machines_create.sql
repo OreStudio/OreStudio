@@ -24,7 +24,7 @@
  * domain (e.g., trade lifecycle, row signing, authorisation).
  */
 
-create table if not exists "ores_fsm_machines_tbl" (
+create table if not exists "ores_dq_fsm_machines_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -47,26 +47,26 @@ create table if not exists "ores_fsm_machines_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_fsm_machines_version_uniq_idx
-on "ores_fsm_machines_tbl" (tenant_id, id, version)
+create unique index if not exists ores_dq_fsm_machines_version_uniq_idx
+on "ores_dq_fsm_machines_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_fsm_machines_id_uniq_idx
-on "ores_fsm_machines_tbl" (tenant_id, id)
+create unique index if not exists ores_dq_fsm_machines_id_uniq_idx
+on "ores_dq_fsm_machines_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Natural key: unique machine name per tenant
-create unique index if not exists ores_fsm_machines_name_uniq_idx
-on "ores_fsm_machines_tbl" (tenant_id, name)
+create unique index if not exists ores_dq_fsm_machines_name_uniq_idx
+on "ores_dq_fsm_machines_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index for efficient filtering
-create index if not exists ores_fsm_machines_tenant_idx
-on "ores_fsm_machines_tbl" (tenant_id)
+create index if not exists ores_dq_fsm_machines_tenant_idx
+on "ores_dq_fsm_machines_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_fsm_machines_insert_fn()
+create or replace function ores_dq_fsm_machines_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -76,7 +76,7 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores_fsm_machines_tbl"
+    from "ores_dq_fsm_machines_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -90,7 +90,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores_fsm_machines_tbl"
+        update "ores_dq_fsm_machines_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -112,13 +112,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_fsm_machines_insert_trg
-before insert on "ores_fsm_machines_tbl"
-for each row execute function ores_fsm_machines_insert_fn();
+create or replace trigger ores_dq_fsm_machines_insert_trg
+before insert on "ores_dq_fsm_machines_tbl"
+for each row execute function ores_dq_fsm_machines_insert_fn();
 
-create or replace rule ores_fsm_machines_delete_rule as
-on delete to "ores_fsm_machines_tbl" do instead
-    update "ores_fsm_machines_tbl"
+create or replace rule ores_dq_fsm_machines_delete_rule as
+on delete to "ores_dq_fsm_machines_tbl" do instead
+    update "ores_dq_fsm_machines_tbl"
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
       and id = OLD.id

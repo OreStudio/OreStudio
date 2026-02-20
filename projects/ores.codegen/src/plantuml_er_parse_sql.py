@@ -44,7 +44,7 @@ COMPONENT_PREFIXES = {
     'ores_variability_': {'name': 'variability', 'description': 'Feature Flags', 'schema': 'public', 'color': '#E8F5E9', 'order': 5},
     'ores_telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'schema': 'public', 'color': '#FCE4EC', 'order': 6},
     'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
-    'ores_fsm_': {'name': 'fsm', 'description': 'Finite State Machine', 'schema': 'public', 'color': '#E8EAF6', 'order': 8},
+    'ores_dq_fsm_': {'name': 'dq_fsm', 'description': 'FSM (Data Quality)', 'schema': 'public', 'color': '#E8EAF6', 'order': 8},
     'ores_trading_': {'name': 'trading', 'description': 'Trading & Lifecycle', 'schema': 'public', 'color': '#E8F5E9', 'order': 9},
     'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 10},
     'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 11},

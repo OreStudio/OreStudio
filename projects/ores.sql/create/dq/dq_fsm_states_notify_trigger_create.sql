@@ -18,11 +18,11 @@
  *
  */
 
-create or replace function ores_fsm_states_notify_fn()
+create or replace function ores_dq_fsm_states_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.fsm.state';
+    entity_name text := 'ores.dq.fsm.state';
     change_timestamp timestamptz := NOW();
     changed_id text;
     changed_tenant_id text;
@@ -42,12 +42,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_states', notification_payload::text);
+    perform pg_notify('ores_dq_fsm_states', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_fsm_states_notify_trg
-after insert or update or delete on ores_fsm_states_tbl
-for each row execute function ores_fsm_states_notify_fn();
+create or replace trigger ores_dq_fsm_states_notify_trg
+after insert or update or delete on ores_dq_fsm_states_tbl
+for each row execute function ores_dq_fsm_states_notify_fn();

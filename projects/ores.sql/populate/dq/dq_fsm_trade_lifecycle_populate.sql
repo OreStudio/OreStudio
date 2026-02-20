@@ -46,7 +46,7 @@ begin
     -- -------------------------------------------------------------------------
     -- Check if already seeded
     select id into v_machine_id
-    from ores_fsm_machines_tbl
+    from ores_dq_fsm_machines_tbl
     where tenant_id = v_sys_tenant
       and name = 'trade_lifecycle'
       and valid_to = ores_utility_infinity_timestamp_fn();
@@ -58,7 +58,7 @@ begin
 
     v_machine_id := gen_random_uuid();
 
-    insert into ores_fsm_machines_tbl (
+    insert into ores_dq_fsm_machines_tbl (
         id, tenant_id, version,
         name, description,
         modified_by, change_reason_code, change_commentary
@@ -80,7 +80,7 @@ begin
     v_state_partial_termination := gen_random_uuid();
     v_state_full_termination  := gen_random_uuid();
 
-    insert into ores_fsm_states_tbl (
+    insert into ores_dq_fsm_states_tbl (
         id, tenant_id, version,
         machine_id, name, is_initial, is_terminal,
         modified_by, change_reason_code, change_commentary
@@ -106,7 +106,7 @@ begin
     -- -------------------------------------------------------------------------
     -- Transitions (15 total - all legal lifecycle paths)
     -- -------------------------------------------------------------------------
-    insert into ores_fsm_transitions_tbl (
+    insert into ores_dq_fsm_transitions_tbl (
         id, tenant_id, version,
         machine_id, from_state_id, to_state_id, name, guard_function,
         modified_by, change_reason_code, change_commentary
@@ -167,10 +167,10 @@ $$;
 
 -- Summary
 select 'FSM Machines' as entity, count(*) as count
-from ores_fsm_machines_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+from ores_dq_fsm_machines_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'FSM States', count(*)
-from ores_fsm_states_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+from ores_dq_fsm_states_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'FSM Transitions', count(*)
-from ores_fsm_transitions_tbl where valid_to = ores_utility_infinity_timestamp_fn();
+from ores_dq_fsm_transitions_tbl where valid_to = ores_utility_infinity_timestamp_fn();

@@ -19,10 +19,10 @@
  */
 
 -- FSM Transitions
-drop policy if exists ores_fsm_transitions_tenant_isolation_policy on "ores_fsm_transitions_tbl";
+drop policy if exists ores_dq_fsm_transitions_tenant_isolation_policy on "ores_dq_fsm_transitions_tbl";
 
 -- FSM States
-drop policy if exists ores_fsm_states_tenant_isolation_policy on "ores_fsm_states_tbl";
+drop policy if exists ores_dq_fsm_states_tenant_isolation_policy on "ores_dq_fsm_states_tbl";
 
 -- FSM Machines
-drop policy if exists ores_fsm_machines_tenant_isolation_policy on "ores_fsm_machines_tbl";
+drop policy if exists ores_dq_fsm_machines_tenant_isolation_policy on "ores_dq_fsm_machines_tbl";

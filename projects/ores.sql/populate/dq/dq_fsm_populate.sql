@@ -18,5 +18,17 @@
  *
  */
 
-drop trigger if exists ores_fsm_states_notify_trg on "ores_fsm_states_tbl";
-drop function if exists ores_fsm_states_notify_fn;
+/**
+ * FSM Population Master Script
+ *
+ * Populates the FSM component with all state machine definitions.
+ * All scripts are idempotent and can be safely re-run.
+ */
+
+\echo '=== FSM Population ==='
+\echo ''
+
+\ir ./dq_fsm_trade_lifecycle_populate.sql
+
+\echo ''
+\echo '=== FSM Population Complete ==='

@@ -18,22 +18,20 @@
  *
  */
 /**
- * FSM Transitions Table
+ * FSM States Table
  *
- * Defines valid state-to-state transitions within a machine. Both from_state_id
- * and to_state_id must belong to the same machine. Optionally references a
- * guard function for business rule enforcement.
+ * Defines valid states within a machine. Each state belongs to exactly one
+ * machine and may be designated as initial or terminal.
  */
 
-create table if not exists "ores_fsm_transitions_tbl" (
+create table if not exists "ores_dq_fsm_states_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "machine_id" uuid not null,
-    "from_state_id" uuid not null,
-    "to_state_id" uuid not null,
     "name" text not null,
-    "guard_function" text null,
+    "is_initial" integer not null default 0,
+    "is_terminal" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -47,47 +45,47 @@ create table if not exists "ores_fsm_transitions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("is_initial" in (0, 1)),
+    check ("is_terminal" in (0, 1))
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_fsm_transitions_version_uniq_idx
-on "ores_fsm_transitions_tbl" (tenant_id, id, version)
+create unique index if not exists ores_dq_fsm_states_version_uniq_idx
+on "ores_dq_fsm_states_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_fsm_transitions_id_uniq_idx
-on "ores_fsm_transitions_tbl" (tenant_id, id)
+create unique index if not exists ores_dq_fsm_states_id_uniq_idx
+on "ores_dq_fsm_states_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Prevent duplicate transitions per machine (same from/to state pair)
-create unique index if not exists ores_fsm_transitions_machine_states_uniq_idx
-on "ores_fsm_transitions_tbl" (tenant_id, machine_id, from_state_id, to_state_id)
+-- Natural key: unique state name per machine within tenant
+create unique index if not exists ores_dq_fsm_states_machine_name_uniq_idx
+on "ores_dq_fsm_states_tbl" (tenant_id, machine_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index for efficient filtering
-create index if not exists ores_fsm_transitions_tenant_idx
-on "ores_fsm_transitions_tbl" (tenant_id)
+create index if not exists ores_dq_fsm_states_tenant_idx
+on "ores_dq_fsm_states_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Machine index for efficient transition lookups
-create index if not exists ores_fsm_transitions_machine_idx
-on "ores_fsm_transitions_tbl" (tenant_id, machine_id)
+-- Machine index for efficient state lookups
+create index if not exists ores_dq_fsm_states_machine_idx
+on "ores_dq_fsm_states_tbl" (tenant_id, machine_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_fsm_transitions_insert_fn()
+create or replace function ores_dq_fsm_states_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
-    from_machine_id uuid;
-    to_machine_id uuid;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate machine_id (mandatory soft FK)
     if not exists (
-        select 1 from ores_fsm_machines_tbl
+        select 1 from ores_dq_fsm_machines_tbl
         where tenant_id = NEW.tenant_id and id = NEW.machine_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -96,46 +94,9 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate from_state_id (mandatory soft FK) and retrieve its machine
-    select machine_id into from_machine_id
-    from ores_fsm_states_tbl
-    where tenant_id = NEW.tenant_id and id = NEW.from_state_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
-
-    if not found then
-        raise exception 'Invalid from_state_id: %. No active FSM state found with this id.',
-            NEW.from_state_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate to_state_id (mandatory soft FK) and retrieve its machine
-    select machine_id into to_machine_id
-    from ores_fsm_states_tbl
-    where tenant_id = NEW.tenant_id and id = NEW.to_state_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
-
-    if not found then
-        raise exception 'Invalid to_state_id: %. No active FSM state found with this id.',
-            NEW.to_state_id
-            using errcode = '23503';
-    end if;
-
-    -- Ensure both states belong to the declared machine
-    if from_machine_id <> NEW.machine_id then
-        raise exception 'from_state_id % belongs to machine %, not the declared machine_id %.',
-            NEW.from_state_id, from_machine_id, NEW.machine_id
-            using errcode = '23503';
-    end if;
-
-    if to_machine_id <> NEW.machine_id then
-        raise exception 'to_state_id % belongs to machine %, not the declared machine_id %.',
-            NEW.to_state_id, to_machine_id, NEW.machine_id
-            using errcode = '23503';
-    end if;
-
     -- Version management
     select version into current_version
-    from "ores_fsm_transitions_tbl"
+    from "ores_dq_fsm_states_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -149,7 +110,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores_fsm_transitions_tbl"
+        update "ores_dq_fsm_states_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -171,13 +132,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_fsm_transitions_insert_trg
-before insert on "ores_fsm_transitions_tbl"
-for each row execute function ores_fsm_transitions_insert_fn();
+create or replace trigger ores_dq_fsm_states_insert_trg
+before insert on "ores_dq_fsm_states_tbl"
+for each row execute function ores_dq_fsm_states_insert_fn();
 
-create or replace rule ores_fsm_transitions_delete_rule as
-on delete to "ores_fsm_transitions_tbl" do instead
-    update "ores_fsm_transitions_tbl"
+create or replace rule ores_dq_fsm_states_delete_rule as
+on delete to "ores_dq_fsm_states_tbl" do instead
+    update "ores_dq_fsm_states_tbl"
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
       and id = OLD.id

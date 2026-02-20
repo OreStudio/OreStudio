@@ -18,7 +18,19 @@
  *
  */
 
-drop rule if exists ores_fsm_transitions_delete_rule on "ores_fsm_transitions_tbl";
-drop trigger if exists ores_fsm_transitions_insert_trg on "ores_fsm_transitions_tbl";
-drop function if exists ores_fsm_transitions_insert_fn;
-drop table if exists "ores_fsm_transitions_tbl";
+-- =============================================================================
+-- Drop FSM Framework (Finite State Machine Infrastructure)
+-- =============================================================================
+-- Drop in reverse dependency order: transitions first, then states, then machines.
+
+-- Transitions depend on machines and states
+\ir ./dq_fsm_transitions_notify_trigger_drop.sql
+\ir ./dq_fsm_transitions_drop.sql
+
+-- States depend on machines
+\ir ./dq_fsm_states_notify_trigger_drop.sql
+\ir ./dq_fsm_states_drop.sql
+
+-- Machines have no FSM dependencies
+\ir ./dq_fsm_machines_notify_trigger_drop.sql
+\ir ./dq_fsm_machines_drop.sql

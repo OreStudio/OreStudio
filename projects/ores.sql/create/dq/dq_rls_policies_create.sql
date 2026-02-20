@@ -267,3 +267,5 @@ create policy ores_dq_dataset_bundle_members_modification_policy on ores_dq_data
 for all
 using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+\ir ./dq_fsm_rls_policies_create.sql

@@ -23,7 +23,7 @@
  *
  * Seeds the database with valid lifecycle event types.
  * The fsm_state_id column is left null here; it is linked to FSM states
- * in fsm_trade_lifecycle_populate.sql after states are created.
+ * in dq_fsm_trade_lifecycle_populate.sql after states are created.
  *
  * This script is idempotent.
  */

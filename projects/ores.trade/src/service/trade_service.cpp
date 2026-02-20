@@ -33,6 +33,18 @@ std::vector<domain::trade> trade_service::list_trades() {
     return repo_.read_latest(ctx_);
 }
 
+std::vector<domain::trade>
+trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing trades with offset=" << offset
+                               << ", limit=" << limit;
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t trade_service::count_trades() {
+    BOOST_LOG_SEV(lg(), debug) << "Counting trades";
+    return repo_.count_latest(ctx_);
+}
+
 std::optional<domain::trade>
 trade_service::find_trade(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding trade: " << id;

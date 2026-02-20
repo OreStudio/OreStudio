@@ -183,7 +183,8 @@
       ],
       "settings_group": "TradeListWindow",
       "window_title": "Trades",
-      "icon": "DocumentTable"
+      "icon": "DocumentTable",
+      "has_pagination": true
     }
   }
 }

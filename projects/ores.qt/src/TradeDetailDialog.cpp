@@ -132,7 +132,7 @@ void TradeDetailDialog::updateUiFromTrade() {
     ui_->executionTimestampEdit->setText(QString::fromStdString(trade_.execution_timestamp));
 
     ui_->versionEdit->setText(QString::number(trade_.version));
-    ui_->recordedByEdit->setText(QString::fromStdString(trade_.modified_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(trade_.modified_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(trade_.recorded_at));
     ui_->commentaryEdit->setText(QString::fromStdString(trade_.change_commentary));
 }

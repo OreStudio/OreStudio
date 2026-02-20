@@ -40,6 +40,9 @@ namespace ores::trade::messaging {
  * @brief Request to retrieve all trades.
  */
 struct get_trades_request final {
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+
     std::vector<std::byte> serialize() const;
     static std::expected<get_trades_request,
                          ores::utility::serialization::error_code>
@@ -53,6 +56,7 @@ std::ostream& operator<<(std::ostream& s, const get_trades_request& v);
  */
 struct get_trades_response final {
     std::vector<domain::trade> trades;
+    std::uint32_t total_available_count = 0;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_trades_response,

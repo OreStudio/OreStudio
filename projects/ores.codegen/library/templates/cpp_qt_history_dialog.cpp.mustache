@@ -217,7 +217,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
         auto* recordedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.recorded_by));
+            QString::fromStdString(version.modified_by));
         ui_->versionListWidget->setItem(row, 2, recordedByItem);
 
         auto* performedByItem = new QTableWidgetItem(
@@ -310,7 +310,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
     ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
 {{/domain_entity.qt.detail_fields}}
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(
         QString::fromStdString(version.change_commentary));

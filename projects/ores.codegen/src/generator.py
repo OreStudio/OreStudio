@@ -1260,6 +1260,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if required_fields:
                 required_fields[-1]['_is_last'] = True
             qt['required_fields'] = required_fields
+            # Expose the key field's widget name for setCreateMode
+            key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
+            qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
+            # Default has_pagination to False if not set
+            qt['has_pagination'] = qt.get('has_pagination', False)
             qt['has_text_edit_fields'] = any(
                 f.get('type') == 'text_edit' for f in detail_fields
             )

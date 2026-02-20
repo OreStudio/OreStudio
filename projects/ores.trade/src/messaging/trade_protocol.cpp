@@ -159,15 +159,25 @@ read_trade(std::span<const std::byte>& data) {
 // ============================================================================
 
 std::vector<std::byte> get_trades_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, offset);
+    writer::write_uint32(buffer, limit);
+    return buffer;
 }
 
 std::expected<get_trades_request, error_code>
 get_trades_request::deserialize(std::span<const std::byte> data) {
-    if (!data.empty()) {
-        return std::unexpected(error_code::payload_too_large);
-    }
-    return get_trades_request{};
+    get_trades_request request;
+
+    auto offset_result = reader::read_uint32(data);
+    if (!offset_result) return std::unexpected(offset_result.error());
+    request.offset = *offset_result;
+
+    auto limit_result = reader::read_uint32(data);
+    if (!limit_result) return std::unexpected(limit_result.error());
+    request.limit = *limit_result;
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const get_trades_request& v) {
@@ -177,6 +187,7 @@ std::ostream& operator<<(std::ostream& s, const get_trades_request& v) {
 
 std::vector<std::byte> get_trades_response::serialize() const {
     std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, total_available_count);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(trades.size()));
     for (const auto& tr : trades) {
         write_trade(buffer, tr);
@@ -187,6 +198,10 @@ std::vector<std::byte> get_trades_response::serialize() const {
 std::expected<get_trades_response, error_code>
 get_trades_response::deserialize(std::span<const std::byte> data) {
     get_trades_response response;
+
+    auto total_result = reader::read_uint32(data);
+    if (!total_result) return std::unexpected(total_result.error());
+    response.total_available_count = *total_result;
 
     auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());

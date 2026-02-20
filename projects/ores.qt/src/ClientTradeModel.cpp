@@ -210,6 +210,8 @@ void ClientTradeModel::fetch_trades(
                 }
 
                 trade::messaging::get_trades_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result = self->clientManager_->
                     process_authenticated_request(std::move(request));
@@ -225,12 +227,11 @@ void ClientTradeModel::fetch_trades(
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->trades.size()
-                                           << " trades";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->trades.size());
+                                           << " trades, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .trades = std::move(result->trades),
-                        .total_available_count = count,
+                        .total_available_count = result->total_available_count,
                         .error_message = {}, .error_details = {}};
             }, "trades");
         });

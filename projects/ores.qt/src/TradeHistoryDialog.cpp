@@ -339,7 +339,7 @@ void TradeHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->terminationDateValue->setText(QString::fromStdString(version.termination_date));
     ui_->executionTimestampValue->setText(QString::fromStdString(version.execution_timestamp));
     ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->recordedByValue->setText(QString::fromStdString(version.modified_by));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(
         QString::fromStdString(version.change_commentary));

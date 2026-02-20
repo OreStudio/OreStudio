@@ -729,10 +729,16 @@ trade_message_handler::handle_get_trades_request(
         co_return std::unexpected(request_result.error());
     }
 
-    auto trades = svc.list_trades();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << trades.size() << " trades";
+    const auto& request = *request_result;
+    auto trades = svc.list_trades(request.offset, request.limit);
+    const auto total = svc.count_trades();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << trades.size()
+                              << " trades, total available: " << total;
 
-    get_trades_response response{ .trades = std::move(trades) };
+    get_trades_response response{
+        .trades = std::move(trades),
+        .total_available_count = total
+    };
     co_return response.serialize();
 }
 

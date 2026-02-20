@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/random_generator.hpp>
 #include "ui_TradeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -100,6 +101,7 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
 
     if (createMode) {
+        trade_.id = boost::uuids::random_generator()();
         ui_->metadataGroup->setVisible(false);
     }
 

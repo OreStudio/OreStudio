@@ -16,59 +16,62 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-19 Thu 18:10], for Thursday, February 19, 2026.
-|      | <75>                                          |        |      |      |       |
-| Tags | Headline                                      | Time   |      |      |     % |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *5:00* |      |      | 100.0 |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 5:00   |      |      | 100.0 |
-|      | Active                                        |        | 5:00 |      | 100.0 |
-| code | Improve column handling in list widgets in Qt |        |      | 4:00 |  80.0 |
-| code | Add trade envelope support                    |        |      | 1:00 |  20.0 |
+#+CAPTION: Clock summary at [2026-02-20 Fri 14:54], for Friday, February 20, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *3:30* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 3:30   |      |      | 100.0 |
+|       | Active                                |        | 3:30 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:24 |  11.4 |
+| code  | Add FSM support to postgres           |        |      | 1:01 |  29.0 |
+| code  | Add trade support                     |        |      | 2:05 |  59.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-19 Thu 18:10]
+#+CAPTION: Clock summary at [2026-02-20 Fri 14:54]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *66:21* |       |       | 100.0 |
+|       | *Total time*                                       | *70:51* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 66:21   |       |       | 100.0 |
-|       | Active                                             |         | 66:21 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  3:13 |   4.8 |
-| code  | Add bound parameters to sqlgen                     |         |       |  0:51 |   1.3 |
-| code  | Add roles to account via codes                     |         |       |  0:34 |   0.9 |
-| code  | Implement party related entities at database level |         |       |  4:23 |   6.6 |
-| code  | Add party related support at the domain level      |         |       |  0:23 |   0.6 |
-| code  | Add party related support to Qt                    |         |       |  6:41 |  10.1 |
-| code  | Add GLEIF data to datasets                         |         |       |  6:41 |  10.1 |
-| code  | Brainstorm on multi-party support                  |         |       |  4:00 |   6.0 |
-| code  | Improve code coverage                              |         |       |  0:14 |   0.4 |
-| code  | Improve generators with FK-aware test data         |         |       |  1:44 |   2.6 |
+|       | Stories                                            | 70:51   |       |       | 100.0 |
+|       | Active                                             |         | 70:51 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  3:37 |   5.1 |
+| code  | Add bound parameters to sqlgen                     |         |       |  0:51 |   1.2 |
+| code  | Add roles to account via codes                     |         |       |  0:34 |   0.8 |
+| code  | Implement party related entities at database level |         |       |  4:23 |   6.2 |
+| code  | Add party related support at the domain level      |         |       |  0:23 |   0.5 |
+| code  | Add party related support to Qt                    |         |       |  6:41 |   9.4 |
+| code  | Add GLEIF data to datasets                         |         |       |  6:41 |   9.4 |
+| code  | Brainstorm on multi-party support                  |         |       |  4:00 |   5.6 |
+| code  | Improve code coverage                              |         |       |  0:14 |   0.3 |
+| code  | Improve generators with FK-aware test data         |         |       |  1:44 |   2.4 |
 | code  | Enable all skipped tests                           |         |       |  0:29 |   0.7 |
-| code  | Add central bank related LEIs                      |         |       |  0:35 |   0.9 |
+| code  | Add central bank related LEIs                      |         |       |  0:35 |   0.8 |
 | code  | Expand unit test coverage for ORE codegened types  |         |       |  0:49 |   1.2 |
-| code  | Add system party support                           |         |       |  3:58 |   6.0 |
-| code  | Add customer party support                         |         |       |  1:33 |   2.3 |
-| code  | Fix OSX build                                      |         |       |  0:19 |   0.5 |
-| code  | Add pagination to counterparty                     |         |       |  0:58 |   1.5 |
-| code  | Add support for business centres                   |         |       |  3:47 |   5.7 |
-| code  | Add LEI to BIC dataset                             |         |       |  0:27 |   0.7 |
-| code  | Add proper party short-codes                       |         |       |  2:18 |   3.5 |
-| code  | Polish party and counterparty list UI              |         |       |  1:25 |   2.1 |
-| code  | Implement party-level RLS isolation                |         |       |  2:33 |   3.8 |
-| code  | Add a setup new tenant wizard                      |         |       |  1:27 |   2.2 |
-| code  | Advanced counterparty dialog                       |         |       | 10:46 |  16.2 |
-| code  | Improve column handling in list widgets in Qt      |         |       |  4:00 |   6.0 |
-| code  | Analyse caching at dialog level                    |         |       |  1:13 |   1.8 |
-| code  | Add trade envelope support                         |         |       |  1:00 |   1.5 |
+| code  | Add system party support                           |         |       |  3:58 |   5.6 |
+| code  | Add customer party support                         |         |       |  1:33 |   2.2 |
+| code  | Fix OSX build                                      |         |       |  0:19 |   0.4 |
+| code  | Add pagination to counterparty                     |         |       |  0:58 |   1.4 |
+| code  | Add support for business centres                   |         |       |  3:47 |   5.3 |
+| code  | Add LEI to BIC dataset                             |         |       |  0:27 |   0.6 |
+| code  | Add proper party short-codes                       |         |       |  2:18 |   3.2 |
+| code  | Polish party and counterparty list UI              |         |       |  1:25 |   2.0 |
+| code  | Implement party-level RLS isolation                |         |       |  2:33 |   3.6 |
+| code  | Add a setup new tenant wizard                      |         |       |  1:27 |   2.0 |
+| code  | Advanced counterparty dialog                       |         |       | 10:46 |  15.2 |
+| code  | Improve column handling in list widgets in Qt      |         |       |  4:00 |   5.6 |
+| code  | Analyse caching at dialog level                    |         |       |  1:13 |   1.7 |
+| code  | Add FSM support to postgres                        |         |       |  1:01 |   1.4 |
+| code  | Add trade support                                  |         |       |  4:05 |   5.8 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
+    CLOCK: [2026-02-20 Fri 14:30]--[2026-02-20 Fri 14:54] =>  0:24
     CLOCK: [2026-02-18 Wed 23:24]--[2026-02-18 Wed 23:40] =>  0:16
     CLOCK: [2026-02-18 Wed 23:09]--[2026-02-18 Wed 23:23] =>  0:14
     CLOCK: [2026-02-16 Mon 12:20]--[2026-02-16 Mon 12:33] =>  0:13
@@ -2787,7 +2790,7 @@ Highlights:
   'Recorded At' in several detail dialog .ui files.
 #+end_quote
 
-*** STARTED Analyse caching at dialog level                            :code:
+*** POSTPONED Analyse caching at dialog level                          :code:
     :LOGBOOK:
     CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
     CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
@@ -2845,7 +2848,10 @@ Core needs to have a container for all of the data stored within a context.
 Actually, according to Data Priented Principles, we may not need it. This may be
 a UI concept but not a code concept.
 
-*** STARTED Add FSM support to postgres                                :code:
+*** COMPLETED Add FSM support to postgres                              :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-20 Fri 09:05]--[2026-02-20 Fri 10:06] =>  1:01
+    :END:
 
 In order to manage aspects such as trade life-cycles, authorisation, etc. We
 will need to support finite state machines. We should probably implement this
@@ -2857,8 +2863,9 @@ Links:
 - [[https://felixge.de/2017/07/27/implementing-state-machines-in-postgresql/][Implementing State Machines in PostgreSQL]]
 - [[https://github.com/michelp/pgfsm/blob/master/pgfsm--0.0.1.sql][pgfsm--0.0.1.sql]]
 
-*** STARTED Add trade envelope support                                 :code:
+*** COMPLETED Add trade support                                        :code:
     :LOGBOOK:
+    CLOCK: [2026-02-19 Thu 23:00]--[2026-02-20 Fri 02:05] =>  3:05
     CLOCK: [2026-02-19 Thu 09:00]--[2026-02-19 Thu 10:00] =>  1:00
     :END:
 
@@ -2902,711 +2909,33 @@ Highlights:
   (generate_trade_schema.sh) for trade schema generation.
 #+end_quote
 
-*** Add high-watermark support                                         :code:
-
-Whenever we request entities, we should also return the watermark for that
-entity. This is the highest timestamp of all entities within a set (across all
-pages). This is so we can redo the exact same query with an "as of" and get
-exactly the same result set. Do some analysis with Claude on how best to do
-this. Maybe we should always query as of so that we know what the watermark is
-up front.
-
-Notes:
-
-- once we have watermark, we need to add a staleness indicator to all dialogs.
-  This will require thresholds. If the data is older than X the staleness
-  indicator goes yellow, older than Y it goes red.
-
-*** Redesign Qt ImageCache invalidation strategy                       :code:
-
-Note: this story should only be looked at after we move towards workspaces.
-
-The current ImageCache invalidation approach is brittle and error-prone. When
-datasets are published, the cache reload is triggered by pattern-matching
-dataset codes (e.g., checking for "flag", "icon", "currenc", "countr" in the
-code string). This is fragile because:
-
-- New dataset types require updating the pattern matching logic
-- The relationship between datasets and cached data is implicit
-- Cache invalidation relies on string matching rather than proper metadata
-
-Proposed improvements:
-
-- Use artefact_type metadata instead of code string matching to determine if
-  cache invalidation is needed
-- Consider a more general cache invalidation framework that can be extended to
-  other caches (ChangeReasonCache, etc.)
-- Investigate using server-side notifications to trigger cache invalidation
-  (similar to the notification system already in place)
-- Document the caching strategy and invalidation rules
-
-Acceptance criteria:
-
-- Cache invalidation is based on structured metadata, not string patterns
-- Adding new image-related datasets doesn't require code changes
-- Cache invalidation logic is documented and maintainable
-
-
-*** Replace parent combo boxes with server-side type-ahead search      :code:
-
-The entity detail dialogs (party, counterparty) load all entities into a combo
-box for parent selection using a single request with =offset=0, limit=1000=.
-If the system has more than 1,000 entities, the dropdown silently truncates
-results, meaning users cannot select the correct parent and the hierarchy tree
-is incomplete. The same pattern exists for country image maps and lookup
-fetchers.
-
-The fix is to replace the plain =QComboBox= with a searchable type-ahead widget
-backed by =QCompleter= that issues server-side search requests as the user
-types. This is the scalable solution and avoids loading the full dataset into
-memory.
-
-Affected locations:
-
-- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
-- =PartyDetailOperations.cpp:118= - =load_all_entities()=
-- =EntityDetailDialog.cpp:346= - =loadCountryImageMap()=
-- =LookupFetcher.cpp:80,145= - lookup reference data loading
-
-Note: the =MdiWindow= list views already have proper server-side pagination
-via =ClientCounterpartyModel= / =ClientPartyModel=; this issue only affects
-detail dialog combo boxes and related data loading.
-
-- Introduce a reusable =SearchableEntityComboBox= widget with =QCompleter=
-- Add server-side search endpoints for parties and counterparties
-- Replace =load_all_entities()= calls with on-demand search
-- Consider the same approach for country and lookup fetcher if volumes warrant it
-
-*** Filter counterparty dataset size for evaluation tenants            :code:
-
-Evaluation tenants currently import too many counterparties from GLEIF data. Add
-options to limit the dataset to a configurable percentage or count, providing
-enough data to evaluate the system without overwhelming the tenant.
-
-*** Improve tenant deletion safety and cascading                       :code:
-
-Tenant deletion needs proper safeguards and cascading behaviour.
-
-- Deleting any tenant should show an impact summary before proceeding.
-- Deleting a tenant should trigger cascading deletion of associated parties.
-- Deleting the root tenant should return an error (prevent accidental deletion).
-
-*** Allow super admin to reset tenant admin accounts                   :code:
-
-The super admin currently cannot reset a tenant admin account's password or
-credentials. Add this capability to the account management UI.
-
-*** Add tenant type management dialog                                  :code:
-
-There is currently no UI to view or manage tenant types. Add a dialog accessible
-from the administration menu to list, view, and edit tenant type reference data.
-
-*** Add shell commands for parties and counterparties                  :code:
-
-The shell currently has no commands for party or counterparty CRUD. Add list,
-add, history, and delete commands following the existing shell entity pattern.
-
-Related story: "Add sub-menus to shell".
-
-*** Suppress staging dataset publication warnings                      :code:
-
-Staging datasets (e.g. =gleif.lei_entities.small=, =gleif.lei_relationships.small=)
-show confusing "No populate_function for artefact_type" warnings during bundle
-publication. These datasets are dependencies that load into staging tables and
-don't publish to production directly — this is working as designed. Suppress or
-reclassify these log messages to avoid confusion.
-
-*** Add account permissions visibility and tabbed dialog               :code:
-
-Users have no way to see what permissions an account has. The accounts dialog
-also needs a tabbed layout to display all available information.
-
-- Add a permissions tab showing effective permissions for the account.
-- Use tabbed dialog layout (General, Permissions, Sessions, etc.).
-- Clicking on a user should show profile details: admin sees full details, others
-  see only key fields (email, etc.).
-
-*** Allow creating new connections from login dialog                   :code:
-
-The login dialog should have a button or link to create a new server connection,
-so users don't have to navigate to the connections dialog separately.
-
-*** Polish business centre UI and data quality                         :code:
-
-Several data quality and UI issues with business centres.
-
-- WRLD should have UN flag and source = Internal.
-- Hard-code NY* centres (NYFD, NYSE, USNY) to US country.
-- Add a city name field parsed from descriptions (regex for parenthesised text).
-- Do not display description column by default.
-- Country should be a combo box.
-- Fix missing country flags.
-- Do not display coding scheme column by default.
-- Move country column next to code.
-- Reduce recorded_at column width.
-
-*** Add validation and ISO compliance flags for reference data         :code:
-
-Several validation gaps and missing metadata in reference data entities.
-
-- It is possible to create a country without a name; likely a currency too. Add
-  required field validation.
-- Fictional countries should have X prefixes (following ISO 3166 conventions).
-- Add an "is ISO compliant" flag (or similar) for currencies and countries that
-  are part of the ISO standard vs. custom/internal entries.
-
-*** Standardise Qt window behaviour and UI consistency                 :code:
-
-Several inconsistencies in window behaviour across the application.
-
-- Remove maximise button from MDI child windows.
-- Standardise window type: main entity windows should behave the same as
-  history/detail dialogs (consistent minimise/maximise button behaviour).
-- Generate button should only appear in "new" mode, not "edit".
-- Add save button to currency list (needed for generation workflow).
-- Add configuration option to disable quit confirmation dialog.
-- Allow password visibility toggle in password input fields.
-
-*** Improve session management and server-side housekeeping            :code:
-
-Session tracking and lifecycle management needs improvement.
-
-- Session should record whether telemetry is enabled or not.
-- Send and receive byte counters are empty in sessions display.
-- Server should periodically housekeep sessions: mark disconnected sessions as
-  orphan, mark sessions as finished when connection drops.
-
-*** Reduce duplicated Qt code and clean up technical debt              :code:
-
-Several areas of duplicated code and legacy artefacts that should be cleaned up.
-
-- Qt network error message processing is duplicated across dialogs; extract into
-  shared utility.
-- Merge common functionality between entities in =ores.qt=.
-- Raw SQL in image repository should be replaced with a database function.
-- Remove legacy password salt field from accounts.
-- Add =ores.analyser= to system model documentation.
-- Bootstrap mode flag change does not generate a new version; fix versioning.
-
-*** Expand repository test coverage and infrastructure                 :code:
-
-Test coverage gaps and infrastructure improvements needed.
-
-- No repository tests for change reason entity. Audit all entities for coverage.
-- No generators for roles and permissions; add them.
-- Test suites should log version at startup. Info script needs to grep log for
-  version across all suites.
-
-*** Add version comparison and revert improvements                     :code:
-
-Improvements to entity version history and comparison features.
-
-- In the history diff dialog, add a "from version" combo box that lets users
-  compare against any previous version (not just the immediately preceding one).
-- Revert-to-version should be a server-side operation taking current version and
-  target version parameters.
-
-*** Raise events for account profile updates                           :code:
-
-Updating email from "My Account" does not raise an event. Account profile
-changes should emit events through the event bus for consistency with other
-entity modifications.
-
-*** Add batch editing with staging workflow                        :analysis:
-
-Investigate a workflow where users can "locally modify" multiple entities and
-then save the batch in a single operation. Similar to git's staging concept. Need
-to determine appropriate terminology and iconography for this feature. Consider:
-what do we call the staged state? What icon represents "stage for save"?
-
-*** Evaluate change reasons for role permission tables             :analysis:
-
-Should role and permission junction tables have change reason support? Analyse
-whether the audit trail benefit justifies the additional complexity for these
-administrative tables.
-
-*** Add HBAC support for books and portfolios                          :code:
-
-Gemini:
+**** Rename trade to trading
 
 #+begin_quote
-In a professional trading system, you are describing Hierarchical Role-Based
-Access Control (HRBAC). To make this idiomatic and scalable, you need to
-decouple the "Who" (Users/Groups) from the "What" (Portfolios/Books) using an
-Access Control List (ACL) that supports Inheritance.
+This pull request implements a significant refactoring by renaming the
+ores.trade component to ores.trading. This change aims to enhance clarity and
+consistency throughout the system by adopting more precise terminology. The
+rename has been meticulously applied across all layers, including C++ source
+code, build configurations, database schemas, code generation definitions, and
+documentation, ensuring a unified and updated component identity.
 
-Here is how to structure this to avoid the nightmare of manual user management.
+Highlights:
 
-1. The Domain Model: Groups and Roles
-
-Instead of assigning a user directly to a book, you introduce a User Group
-(e.g., "North America FX Traders").
-
-- User Group: A collection of Users.
-- Role: A collection of Permissions (e.g., View, Trade, Close_Book).
-- Access Grant: The link that says Group A has Role X on Portfolio Y.
-
-2. Permission Inheritance (The "Cascading" Rule)
-
-This is the most critical part of your requirement: "Permissioned to a portfolio
-= permissioned to all children."
-
-*The Logic*
-
-When a user attempts to access a Book, the system should check for a permission
-record at:
-
-- The Book itself.
-- If not found, its parent Portfolio.
-- If not found, its parent Business Unit, and so on up to the Party.
-
-*The "Effective Permission" Calculation*
-
-In your Qt UI or API, you calculate the Effective Permission.
-
-If I am in the "Senior Managers" group and that group is assigned View access at
-the Global Equities Portfolio level, I automatically see every book under it.
-
-- Override Rule: Usually, an explicit "Deny" at a lower level beats an "Allow"
-  from a higher level (though most trading systems stick to additive permissions
-  for simplicity).
-
-3. Idiomatic Table Structure
-
-To support this in your Postgres schema (with your Staging/Master setup), you
-need a permission table that points to your entity hierarchy.
-
-| Column         | Description                                       |
-|----------------+---------------------------------------------------|
-| Subject_ID     | The ID of the User Group (e.g., "FX_Desk_Group"). |
-| Object_Type    | PARTY, PORTFOLIO, or BOOK.                        |
-| Object_ID      | The UUID of the specific entity.                  |
-| Role_ID        | The Role (e.g., READ_ONLY, FULL_TRADER).          |
-| Is_Inheritable | Boolean (usually defaults to True).               |
-
-4. UI Implementation: The "Access" Tab
-
-In your Organization Manager Qt screen, when you select a Portfolio or Book in
-the tree, the detail pane should have an "Access Control" tab.
-
-- Inherited Permissions List: A read-only list showing groups that have access
-  because of a parent node (e.g., "Group: Risk_Admin (Inherited from: The
-  House)").
-- Explicit Permissions List: Where you add/remove groups specifically for this
-  node.
-
-5. Security and "The House" Context
-
-Since your system runs in the context of "The House" (the Tenant), you need a
-"God Role" (System Admin) that is implicitly permissioned at the Party (Root)
-level. This ensures you never get locked out of a branch of the tree.
-
-*The "Four-Eyes" for Permissions*
-
-Because permissions are sensitive, changes to this table should also go through
-your staging schema.
-
-- Maker: Proposes adding "Group B" to "Portfolio C".
-- Checker: Approves the grant.
-- Audit: The temporal table tracks exactly when a user gained access to a
-  specific book—crucial for regulatory "Who saw what" inquiries.
+- Component Rename: The ores.trade component has been comprehensively renamed to
+  ores.trading across the entire codebase.
+- Codebase-Wide Impact: This rename includes updates to C++ directories,
+  headers, namespaces, CMake targets, SQL tables/objects, codegen models, and
+  documentation.
+- SQL Schema Migration: All SQL table prefixes and associated database objects
+  (indexes, functions, triggers, rules, RLS policies, notification channels)
+  have been migrated from ores_trade_*_tbl to ores_trading_*_tbl.
+- Terminology Update: The 'trade envelope' wording has been removed from most
+  comments and descriptions, with specific exceptions for FpML-related usage and
+  a formal SQL view name.
+- Documentation Removal: A comprehensive design document,
+  doc/plans/2026-02-16-trade-envelope-and-fsm-design.org, was removed as part of
+  this refactoring.
 #+end_quote
-
-*** Understanding Settlements and SSI                              :analysis:
-
-This is a very complicated topic. We should try to summarise it and see what is
-the smallest subset that we need in order to see full trade lifecycle.
-
-Links:
-
-- [[https://www.cslucas.com/user-guide/how-to-set-up-counterparty-ssi/][How to Set Up Counterparty SSI]]
-- [[https://docs.oracle.com/cd/E99951_01/html/Settlements/Settlements_Manual_Intro_002.htm][Settlements Service]]
-
-*** Add ISO 20022 Support                                              :code:
-
-As per Gemini:
-
-#+begin_quote
-Summary Mapping for your C++ Logic
-
-| Internal Event  | ISO 20022 Message | Action                                          |
-|-----------------+-------------------+-------------------------------------------------|
-| TradeExecuted   | fxtr.014          | Confirm terms with counterparty.                |
-| Send Funds      | pacs.009          | Instruct the  bank to move cash.                |
-| Check Progress  | pacs.002          | Update UI "Settlement Status" to 'In Progress'. |
-| Funds Confirmed | camt.054          | Update UI to 'Settled'.                         |
-| EOD Reconcile   | camt.053          | Verify internal ledger vs bank balance.         |
-|                 |                   |                                                 |
-
-Pro-Tip for your Implementation: Since you're using C++, don't try to build
-every message at once:
-
-- Start with pacs.009 (Sending money).
-- Follow with pacs.002 (Handling the response).
-- Add camt.053 (Reconciling at night).
-
-*ISO 20022 Asset Class Mapping*
-
-If you move beyond FX, you switch "prefixes." Here is how the ISO 20022 world is
-carved up:
-
-| Message Prefix | Asset Class / Domain  | Example Use Case                                     |
-|----------------+-----------------------+------------------------------------------------------|
-| fxtr           | Foreign Exchange      | "Spot, Forwards, NDFs, FX Swaps."                    |
-| sese           | Securities Settlement | "Settlement of Equities, Bonds, ETNs."               |
-| semt           | Securities Management | "Custody statements, holding reports."               |
-| setr           | Securities Trade      | Trade capture/subscription for Mutual Funds.         |
-| auth           | Regulatory Reporting  | "OTC Derivatives (IRS, CDS), Transaction reporting." |
-| pacs           | Payments              | The cash resulting from any of the above.            |
-
-*FPML vs ISO 20022*
-
-For Swaps and other Derivatives, the messaging is split between Trade Reporting
-and Lifecycle/Confirmation.
-
-- auth (Authorities): In the modern MX world, Interest Rate Swaps are largely
-  reported using the auth series (specifically under EMIR or MiFIR regulations).
-  - auth.030: Derived from the "Trade Reporting" business area, used for
-    Reporting of OTC derivatives.
-- FpML (The "De Facto" standard): As we discussed earlier, while ISO 20022 has
-  auth messages for regulation, FpML remains the industry standard for the
-  actual bilateral confirmation of IRS trades. Most modern systems use FpML for
-  the "contract" and then use pacs for the resulting cash flows.
-
-| Feature         | FpML (Financial products Markup Language)                                   | ISO 20022 (MX)                                                          |
-|-----------------+-----------------------------------------------------------------------------+-------------------------------------------------------------------------|
-| Primary Domain  | "Derivatives & OTC Trades (Swaps, Options, Forwards)."                      | Payments & Securities Settlement.                                       |
-| Focus           | "The economics of the trade (strike price, tenors, floating rate indexes)." | "The movement of value (sender, receiver, amount, intermediary banks)." |
-| Lifecycle Stage | "Front-to-Middle Office: Execution, Affirmation, and Confirmation."         | "Back Office: Payment clearing, settlement, and reporting."             |
-| Complexity      | Extremely deep. Can describe a 30-year complex interest rate swap.          | Broad. Designed to move money across any border or system.              |
-#+end_quote
-
-*** Extend login flow with party selection                             :code:
-
-After authentication, look up the user's associated parties from
-=account_parties=. If one party, auto-select. If multiple, return the party list
-to the client for selection. The client displays a party picker widget. After
-selection, compute the visible party set and bind to the session.
-
-**** Acceptance Criteria
-
-- Login response includes available parties.
-- Party picker displayed when user has multiple parties.
-- Selected party stored in session and displayed in application window.
-- Party context immutable for session lifetime.
-
-
-*** Add party role scheme entity                                       :code:
-
-The following is the analysis for adding support to party schemes.
-
-Contains a code representing a related party role. This can be extended to
-provide custom roles.
-
-- Obtained on 2025-11-10.
-- Version 4-1.
-- URL: http://www.fpml.org/coding-scheme/party-role-4-1.xml
-
-Code
-Description
-
-- Code: Accountant
-- Description: Organization responsible for preparing the accounting for the
-  trade.
-
-- Code: Allocation
-- Description: Agent The organization responsible for supplying the allocations
-  for a trade to be allocated to multiple accounts/organizations.
-
-- Code: Arranging
-- Description: Broker The organization that arranged the trade, i.e. brought
-  together the counterparties. Synonyms/Alternatives: Inter-dealer broker,
-  agent.
-
-- Code: Beneficiary
-- Description: Organization that suffers the economic benefit of the trade. The
-  beneficiary may be distinct from the principal/counterparty - an example
-  occurs when a hedge fund trades via a prime broker; in this case the principal
-  is the prime broker, but the beneficiary is the hedge fund. This can be
-  represented as a payer/receiver account in the name of the hedge fund, but it
-  is also possible to add the party role of "Beneficiary" at the
-  partyTradeInformation level.
-
-- Code: Booking
-- Description: Party The entity for which the organization supporting the
-  trade's processing has booked/recorded the trade. This is used in
-  non-reporting workflows situations in which the trade doesn't need to be
-  reported but a firm still wants to specify their own side.
-
-- Code: Buyer
-- Description: Acquirer of the legal title to the financial instrument. In the
-  case of an option, the buyer is the holder of the option. In the case of a
-  swap or forward, the buyer will be determined by industry best practice. This
-  does not refer to an investor or investment manager or other organization on
-  what is typically called the "Buy side"; for that, see the "Client" role.
-  Corresponds to "Buyer" as defined in certain regulations such as ESMA MiFID
-  II/MIFIR RTS 22 field 9.
-
-- Code: Buyer
-- Description: DecisionMaker The party or person who, having legal authority to
-  act on behalf of the trade counterparty acting as Buyer as defined in this
-  coding scheme, made the decision to acquire the financial instrument.
-  Corresponds to "buyer decision maker" as defined in ESMA's MIFIR RTS 23
-  report. This does not refer to the decision maker for what is traditionally
-  called the "Buy side"; for that, see the "Client Decision Maker" role.
-
-- Code: Clearing
-- Description: Client An organization that clears trades through a clearing
-  house, via a clearing broker (member of the clearing house) who acts as an
-  agent on its behalf. The term "client" refers to the organization's role in
-  the clearing process in relation to its clearing broker, and not whether it is
-  a price maker or taker in the execution process.
-
-- Code: Clearing
-- Description: ExceptionParty A party to the trade that claims a clearing
-  exception, such as an end-user exception under Dodd-Frank Act provisions.
-
-- Code: Clearing
-- Description: Firm Organization that submits the trade to a clearing house on
-  behalf of the principal. Synonyms/alternates: Futures Commission Merchant
-  (FCM), Clearing Broker, Clearing Member Firm. Some implementations use
-  "Clearing Broker" as synonym.
-
-- Code: Clearing
-- Description: Organization The organization that acts as a central counterparty
-  to clear a derivatives contract. This is used to represent the role of Central
-  Counterparties (CCPs) or Derivative Clearing Organizations (DCOs). Sometimes
-  called "ClearingService". Some implementations also use the term "Clearer".
-
-- Code: Client
-- Description: Client as defined under ESMA MIFIR. This is generally the
-  investor or other client of an investment firm, and is synonymous with the
-  Beneficiary in many circumstances.
-
-- Code: Client
-- Description: DecisionMaker The party or person who, having legal authority to
-  act on behalf of a trade counterparty, made the decision to acquire or sell
-  the financial instrument.
-
-- Code: Confirmation
-- Description: Platform Organization serving as a financial intermediary for the
-  purposes of electronic confirmation or providing services for post-processing
-  of transactional data.
-
-- Code: Contractual
-- Description: Party A party to a contractual document. If the intended usage
-  relates to the context of the trade lifecycle, more specific annotations have
-  been defined which might be more appropriate.
-
-- Code: Counterparty
-- Description: An economic counterparty to the trade. Synonym: principal.
-
-- Code: Counter
-- Description: PartyAffiliate Organization offiially attached to the
-  counterparty. e.g. partner, branch, subsidiary.
-
-- Code: Counter
-- Description: PartyUltimateParent The topmost entity or organization, within
-  the corporate hierarchy, responsible for the reporting party.
-
-- Code: Credit
-- Description: SupportProvider Organization that enhances the credit of another
-  organization (similar to guarantor, but may not fully guarantee the
-  obligation).
-
-- Code: Custodian
-- Description: Organization that maintains custody of the asset represented by
-  the trade on behalf of the owner/principal.
-
-- Code: Data
-- Description: Submitter Entity submitting the transaction report to the
-  competent authority.
-
-- Code: Disputing
-- Description: Party Organization that is disputing the trade or transaction.
-
-- Code: Document
-- Description: Repository A marketplace organization which purpose is to
-  maintain document records. If the intended usage relates to the context of the
-  trade lifecycle, more specific annotations have been defined which might be
-  more appropriate.
-
-- Code: Executing
-- Description: Broker The (generally sell-side) organization that executed the
-  trade; the price-making party.
-
-- Code: Executing
-- Description: Entity Entity executing the transaction. If the transaction is
-  executed directly by the reporting party, it will be the reporting party. If
-  it is executed by an execution agent or an affiliated party on behalf of the
-  reporting party, it will be that affiliate or agent.
-
-- Code: Execution
-- Description: Agent The (generally buy-side) organization that acts to execute
-  trades on behalf of an investor. Typically this is an investment manager or
-  asset manager, and also makes the investment decisions for the investor. If
-  required, a separate InvestmentDecision role can be specified to distinguish
-  that the party making the investment decision is different.
-
-- Code: Execution
-- Description: Facility The facility, exchange, or market where the trade was
-  executed. Synonym: Swap Execution Facility, Designated Contract Market,
-  Execution Venue.
-
-- Code: Guarantor
-- Description: Organization that backs (guarantees) the credit risk of the
-  trade.
-
-- Code: Margin
-- Description: Affiliate Margin affiliate as defined by U.S. margin and capital
-  rules §23.151.
-
-- Code: Order
-- Description: Transmitter The entity transmitting the order to the reporting
-  firm. Synonym: Transmitting Firm.
-
-- Code: Prime
-- Description: Broker The organization that takes on or took on the credit risk
-  for this trade by stepping in between the two economic parties (without a
-  central counterparty clearing mechanism).
-
-- Code: Prior
-- Description: TradeRepository The trade repository at which the trade was
-  reported previous to the current trade repository.
-
-- Code: PTRR
-- Description: CompressionProvider A party providing a post trade risk reduction
-  service in the form of compression.
-
-- Code: PTRR
-- Description: RebalancingProvider A party providing a post trade risk reduction
-  service in the form of portfolio rebalancing.
-
-- Code: Publication
-- Description: Venue The reporting service (whether trade repository, market
-  data service, or exchange/facility/venue data distribution service) that
-  published the report of this trade.
-
-- Code: Reporting
-- Description: Party The party with the regulatory responsibility to report this
-  trade.
-
-- Code: Reporting
-- Description: PartyAffiliate Organization offiially attached to the reporting
-  party e.g. partner, branch, subsidiary.
-
-- Code: Reporting
-- Description: PartyUltimateParent The topmost entity or organization, within
-  the corporate hierarchy, responsible for the reporting party.
-
-- Code: Seller
-- Description: A counterparty in a trade, which performs in one of the following
-  capacities: 1) it transfers or agrees to transfer in the future an instrument
-  or title to that instrument in exchange for payment, 2) it writes a
-  derivatives instrument such as an option or a swap in which it provides risk
-  protection to the buyer. This does not refer to the broker/dealer or other
-  organization on what is typically called the "Sell side"; for that, see the
-  "Executing Broker" role. Corresponds to "Seller" as defined in certain
-  regulations such as ESMA MiFID II/MIFIR RTS 22 field 16.
-
-- Code: Seller
-- Description: DecisionMaker The party or person who, having legal authority to
-  act on behalf of the trade counterparty acting as Seller as defined in this
-  coding scheme, made the decision to sell the financial instrument. Corresponds
-  to "seller decision maker" as defined in ESMA's MIFIR RTS 23 report. This does
-  not refer to the decision maker for what is traditionally called the "Sell
-  side"; for that, see the "Trader" person role.
-
-- Code: Settlement
-- Description: Agent The organization that makes or receives payments on behalf
-  of the given principal party.
-
-- Code: Trade
-- Description: Repository An organization that maintains records of the trade
-  for regulatory reporting purposes.
-
-- Code: Trade
-- Description: Source The organization that originally supplied the record of
-  the trade. In the context of regulatory reporting, it is the submitter of the
-  trade record to a regulator or TR.
-
-- Code: Trading
-- Description: Manager The entity responsible for managing the
-  assets/investments of this party. Synonnym: Asset Manager, Investment Manager,
-  Trading Advisory.
-
-- Code: Trading
-- Description: Partner An entity with which this party trades from time to time,
-  ie. with which it acts as a counterparty on some transactions. This role is
-  used for static reference data, not individual transactions.
-
-
-*** Accounts need to have a human or robot field                       :code:
-
-Look for correct terminology (actor type?).
-
-
-*** Add sub-menus to shell                                             :code:
-
-There are a lot of entries in the shell main menu, we need to group them. These
-could be based on the component.
-
-Notes:
-
-- shell has no parties or counterparties commands.
-- It should be possible to set the "output type" or format in the shell, from
-  json to table. Find the correct terminology for this.
-
-*** System provisioner needs an icon                                   :code:
-
-Dialog is using default ORE icon.
-
-*** Add a organisation type scheme entity                              :code:
-
-Indicates a type of organization.
-
-- Obtained on 2016-06-13
-- Version 2-0
-- URL: http://www.fpml.org/coding-scheme/organization-type-2-0.xml
-
-- Code: MSP
-- Name: Major Swap Participant
-- Description: A significant participant in the swaps market, for example as
-  defined by the Dodd-Frank Act.
-
-- Code: NaturalPerson
-- Name: Natural Person
-- Description: A human being.
-
-- Code: non-SD/MSP
-- Name: Non Swap Dealer or Major Swap Participant
-- Description: A firm that is neither a swap dealer nor a major swaps participant under the Dodd-Frank Act.
-
-- Code: SD
-- Name: Swap Dealer
-- Description: Registered swap dealer.
-
-*** Add currency and country party-visibility junctions                :code:
-
-Add junction tables (=party_currencies=, =party_countries=) that control which
-currencies and countries a given party can see and use. The underlying reference
-data definitions remain shared at the tenant level; only visibility is
-per-party.
-
-**** Acceptance Criteria
-
-- Junction tables created with proper constraints.
-- Party-scoped queries for currencies and countries filter through junctions.
-- Default: all currencies/countries visible to all parties (opt-in restriction).
-
-
-
-*** Update currency details to use tabs                                :code:
-
-We need a main tab with the currency related properties, then a "system" tab
-with temporal data which is read-only even on edit and a "image" tab with the
-image used to represent the currency. It could also contain some description or
-notes.
 
 * Footer
 

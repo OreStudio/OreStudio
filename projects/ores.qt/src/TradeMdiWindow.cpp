@@ -28,7 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.trade/messaging/trade_protocol.hpp"
+#include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -314,7 +314,7 @@ void TradeMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << ids.size() << " trades";
 
-        trade::messaging::delete_trade_request request;
+        trading::messaging::delete_trade_request request;
         request.ids = ids;
         auto payload = request.serialize();
 
@@ -343,7 +343,7 @@ void TradeMdiWindow::deleteSelected() {
             return results;
         }
 
-        auto response = trade::messaging::delete_trade_response::
+        auto response = trading::messaging::delete_trade_response::
             deserialize(*payload_result);
 
         if (!response) {

@@ -19,7 +19,7 @@
  */
 
 /**
- * pgTAP tests for ores_trade_trades_tbl trigger behavior.
+ * pgTAP tests for ores_trading_trades_tbl trigger behavior.
  *
  * Tests cover:
  * - Valid insert gets version 1 and correct temporal columns
@@ -69,7 +69,7 @@ insert into ores_refdata_portfolios_tbl (
 -- Test 1: Valid insert gets version 1
 -- =============================================================================
 
-insert into ores_trade_trades_tbl (
+insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
     trade_type, netting_set_id, lifecycle_event,
@@ -86,7 +86,7 @@ insert into ores_trade_trades_tbl (
 );
 
 select is(
-    (select version from ores_trade_trades_tbl
+    (select version from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -99,7 +99,7 @@ select is(
 -- =============================================================================
 
 select is(
-    (select valid_to from ores_trade_trades_tbl
+    (select valid_to from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -112,7 +112,7 @@ select is(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_trades_tbl (
+    $$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
         trade_type, netting_set_id, lifecycle_event,
@@ -137,7 +137,7 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_trades_tbl (
+    $$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
         trade_type, netting_set_id, lifecycle_event,
@@ -162,7 +162,7 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_trades_tbl (
+    $$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
         trade_type, netting_set_id, lifecycle_event,
@@ -187,7 +187,7 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_trades_tbl (
+    $$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
         trade_type, netting_set_id, lifecycle_event,
@@ -212,7 +212,7 @@ select throws_ok(
 -- =============================================================================
 
 -- Insert amendment (same id, version 0 = accept current)
-insert into ores_trade_trades_tbl (
+insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
     trade_type, netting_set_id, lifecycle_event,
@@ -230,7 +230,7 @@ insert into ores_trade_trades_tbl (
 
 -- New current row has version 2
 select is(
-    (select version from ores_trade_trades_tbl
+    (select version from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -243,7 +243,7 @@ select is(
 -- =============================================================================
 
 select is(
-    (select count(*)::integer from ores_trade_trades_tbl
+    (select count(*)::integer from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to != ores_utility_infinity_timestamp_fn()),
@@ -255,12 +255,12 @@ select is(
 -- Test 9: Soft delete via DELETE rule
 -- =============================================================================
 
-delete from ores_trade_trades_tbl
+delete from ores_trading_trades_tbl
 where id = 'c1000000-0000-0000-0000-000000000001'::uuid
   and tenant_id = ores_iam_system_tenant_id_fn();
 
 select is(
-    (select count(*)::integer from ores_trade_trades_tbl
+    (select count(*)::integer from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),

@@ -19,7 +19,7 @@
  */
 
 /**
- * pgTAP tests for ores_trade_party_roles_tbl trigger behavior.
+ * pgTAP tests for ores_trading_party_roles_tbl trigger behavior.
  *
  * Tests cover:
  * - Valid insert gets version 1
@@ -60,7 +60,7 @@ insert into ores_refdata_portfolios_tbl (
     current_user, current_user, 'system.test', 'Test portfolio'
 );
 
-insert into ores_trade_trades_tbl (
+insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
     trade_type, netting_set_id, lifecycle_event,
@@ -91,7 +91,7 @@ insert into ores_refdata_counterparties_tbl (
 -- Test 1: Valid insert gets version 1
 -- =============================================================================
 
-insert into ores_trade_party_roles_tbl (
+insert into ores_trading_party_roles_tbl (
     id, tenant_id, version,
     trade_id, counterparty_id, role,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -105,7 +105,7 @@ insert into ores_trade_party_roles_tbl (
 );
 
 select is(
-    (select version from ores_trade_party_roles_tbl
+    (select version from ores_trading_party_roles_tbl
      where id = 'e3000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -118,7 +118,7 @@ select is(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_party_roles_tbl (
+    $$insert into ores_trading_party_roles_tbl (
         id, tenant_id, version,
         trade_id, counterparty_id, role,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -140,7 +140,7 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_party_roles_tbl (
+    $$insert into ores_trading_party_roles_tbl (
         id, tenant_id, version,
         trade_id, counterparty_id, role,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -162,7 +162,7 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trade_party_roles_tbl (
+    $$insert into ores_trading_party_roles_tbl (
         id, tenant_id, version,
         trade_id, counterparty_id, role,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -183,12 +183,12 @@ select throws_ok(
 -- Test 5: Soft delete
 -- =============================================================================
 
-delete from ores_trade_party_roles_tbl
+delete from ores_trading_party_roles_tbl
 where id = 'e3000000-0000-0000-0000-000000000001'::uuid
   and tenant_id = ores_iam_system_tenant_id_fn();
 
 select is(
-    (select count(*)::integer from ores_trade_party_roles_tbl
+    (select count(*)::integer from ores_trading_party_roles_tbl
      where id = 'e3000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -201,7 +201,7 @@ select is(
 -- =============================================================================
 
 select ok(
-    (select count(*) > 0 from ores_trade_party_roles_tbl
+    (select count(*) > 0 from ores_trading_party_roles_tbl
      where id = 'e3000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()
        and valid_to != ores_utility_infinity_timestamp_fn()),

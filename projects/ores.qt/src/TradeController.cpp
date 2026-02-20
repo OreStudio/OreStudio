@@ -28,7 +28,7 @@
 #include "ores.qt/TradeHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.trade/eventing/trade_changed_event.hpp"
+#include "ores.trading/eventing/trade_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -36,7 +36,7 @@ using namespace ores::logging;
 
 namespace {
 constexpr std::string_view trade_event_name =
-    eventing::domain::event_traits<trade::eventing::trade_changed_event>::name;
+    eventing::domain::event_traits<trading::eventing::trade_changed_event>::name;
 }
 
 TradeController::TradeController(
@@ -127,7 +127,7 @@ void TradeController::reloadListWindow() {
 }
 
 void TradeController::onShowDetails(
-    const trade::domain::trade& trade) {
+    const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.external_id;
     showDetailWindow(trade);
 }
@@ -138,7 +138,7 @@ void TradeController::onAddNewRequested() {
 }
 
 void TradeController::onShowHistory(
-    const trade::domain::trade& trade) {
+    const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << trade.external_id;
     showHistoryWindow(trade);
 }
@@ -176,7 +176,7 @@ void TradeController::showAddWindow() {
 }
 
 void TradeController::showDetailWindow(
-    const trade::domain::trade& trade) {
+    const trading::domain::trade& trade) {
 
     const QString identifier = QString::fromStdString(trade.external_id);
     const QString key = build_window_key("details", identifier);
@@ -235,7 +235,7 @@ void TradeController::showDetailWindow(
 }
 
 void TradeController::showHistoryWindow(
-    const trade::domain::trade& trade) {
+    const trading::domain::trade& trade) {
     const QString code = QString::fromStdString(trade.external_id);
     BOOST_LOG_SEV(lg(), info) << "Opening history window for trade: "
                               << trade.external_id;
@@ -296,7 +296,7 @@ void TradeController::showHistoryWindow(
 }
 
 void TradeController::onOpenVersion(
-    const trade::domain::trade& trade, int versionNumber) {
+    const trading::domain::trade& trade, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for trade: " << trade.external_id;
 
@@ -351,7 +351,7 @@ void TradeController::onOpenVersion(
 }
 
 void TradeController::onRevertVersion(
-    const trade::domain::trade& trade) {
+    const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), info) << "Reverting trade to version: "
                               << trade.version;
 

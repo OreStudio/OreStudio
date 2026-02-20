@@ -27,7 +27,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trade/domain/trade.hpp"
+#include "ores.trading/domain/trade.hpp"
 
 namespace ores::qt {
 
@@ -90,7 +90,7 @@ public:
      * @param row The row index.
      * @return The trade, or nullptr if row is invalid.
      */
-    const trade::domain::trade* getTrade(int row) const;
+    const trading::domain::trade* getTrade(int row) const;
 
     /**
      * @brief Load a specific page of data.
@@ -133,7 +133,7 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<trade::domain::trade> trades;
+        std::vector<trading::domain::trade> trades;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
@@ -142,14 +142,14 @@ private:
     void fetch_trades(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<trade::domain::trade> trades_;
+    std::vector<trading::domain::trade> trades_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using TradeKeyExtractor = std::string(*)(const trade::domain::trade&);
-    RecencyTracker<trade::domain::trade, TradeKeyExtractor> recencyTracker_;
+    using TradeKeyExtractor = std::string(*)(const trading::domain::trade&);
+    RecencyTracker<trading::domain::trade, TradeKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

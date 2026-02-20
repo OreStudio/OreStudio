@@ -30,7 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trade/messaging/trade_protocol.hpp"
+#include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -259,7 +259,7 @@ void TradeDetailDialog::setUsername(const std::string& username) {
 }
 
 void TradeDetailDialog::setTrade(
-    const trade::domain::trade& trade) {
+    const trading::domain::trade& trade) {
     trade_ = trade;
     updateUiFromTrade();
     // Select book/counterparty if already loaded; otherwise select*() runs
@@ -405,7 +405,7 @@ void TradeDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
         }
 
-        trade::messaging::save_trade_request request;
+        trading::messaging::save_trade_request request;
         request.trade = trade;
         auto payload = request.serialize();
 
@@ -426,7 +426,7 @@ void TradeDetailDialog::onSaveClicked() {
             return {false, "Failed to decompress response"};
         }
 
-        auto response = trade::messaging::save_trade_response::
+        auto response = trading::messaging::save_trade_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -489,7 +489,7 @@ void TradeDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
         }
 
-        trade::messaging::delete_trade_request request;
+        trading::messaging::delete_trade_request request;
         request.ids = {id};
         auto payload = request.serialize();
 
@@ -510,7 +510,7 @@ void TradeDetailDialog::onDeleteClicked() {
             return {false, "Failed to decompress response"};
         }
 
-        auto response = trade::messaging::delete_trade_response::
+        auto response = trading::messaging::delete_trade_response::
             deserialize(*payload_result);
 
         if (!response || response->results.empty()) {

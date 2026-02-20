@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "trading",
+    "full_name": "ores.trading",
+    "brief": "Trading domain component",
+    "description": "Provides domain types, repositories, services and protocol support for trade management including trade types, lifecycle events, party roles and trade identifiers."
+  }
+}

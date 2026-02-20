@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trade/domain/trade.hpp"
+#include "ores.trading/domain/trade.hpp"
 
 namespace Ui {
 class TradeHistoryDialog;
@@ -66,9 +66,9 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const trade::domain::trade& trade,
+    void openVersionRequested(const trading::domain::trade& trade,
                               int versionNumber);
-    void revertVersionRequested(const trade::domain::trade& trade);
+    void revertVersionRequested(const trading::domain::trade& trade);
 
 private slots:
     void onVersionSelected();
@@ -88,7 +88,7 @@ private:
     boost::uuids::uuid id_;
     QString code_;
     ClientManager* clientManager_;
-    std::vector<trade::domain::trade> versions_;
+    std::vector<trading::domain::trade> versions_;
 
     QToolBar* toolbar_;
     QAction* openVersionAction_;

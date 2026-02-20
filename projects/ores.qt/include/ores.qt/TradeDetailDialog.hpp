@@ -24,7 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trade/domain/trade.hpp"
+#include "ores.trading/domain/trade.hpp"
 #include "ores.refdata/domain/book.hpp"
 #include "ores.refdata/domain/counterparty.hpp"
 
@@ -60,7 +60,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setTrade(const trade::domain::trade& trade);
+    void setTrade(const trading::domain::trade& trade);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
@@ -89,7 +89,7 @@ private:
     Ui::TradeDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    trade::domain::trade trade_;
+    trading::domain::trade trade_;
     std::vector<refdata::domain::book> books_;
     std::vector<refdata::domain::counterparty> counterparties_;
     bool createMode_{true};

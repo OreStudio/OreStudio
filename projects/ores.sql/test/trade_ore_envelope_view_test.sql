@@ -82,7 +82,7 @@ insert into ores_refdata_counterparties_tbl (
 );
 
 -- Book the initial trade
-insert into ores_trade_trades_tbl (
+insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
     trade_type, netting_set_id, lifecycle_event,
@@ -99,7 +99,7 @@ insert into ores_trade_trades_tbl (
 );
 
 -- Assign Counterparty role to Alpha Bank
-insert into ores_trade_party_roles_tbl (
+insert into ores_trading_party_roles_tbl (
     id, tenant_id, version,
     trade_id, counterparty_id, role,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -153,7 +153,7 @@ select is(
 -- =============================================================================
 
 -- A trade with no party roles assigned
-insert into ores_trade_trades_tbl (
+insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
     trade_type, netting_set_id, lifecycle_event,
@@ -182,7 +182,7 @@ select is(
 -- =============================================================================
 
 -- Apply novation
-insert into ores_trade_trades_tbl (
+insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
     trade_type, netting_set_id, lifecycle_event,
@@ -199,12 +199,12 @@ insert into ores_trade_trades_tbl (
 );
 
 -- Soft-delete Alpha Bank's Counterparty role
-delete from ores_trade_party_roles_tbl
+delete from ores_trading_party_roles_tbl
 where id = 'f3000000-0000-0000-0000-000000000001'::uuid
   and tenant_id = ores_iam_system_tenant_id_fn();
 
 -- Assign Counterparty role to Beta Bank
-insert into ores_trade_party_roles_tbl (
+insert into ores_trading_party_roles_tbl (
     id, tenant_id, version,
     trade_id, counterparty_id, role,
     modified_by, performed_by, change_reason_code, change_commentary

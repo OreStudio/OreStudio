@@ -31,7 +31,7 @@
 \ir ./telemetry/telemetry_drop.sql
 \ir ./variability/variability_drop.sql
 \ir ./iam/iam_drop.sql
-\ir ./trade/drop_trade.sql
+\ir ./trading/drop_trading.sql
 \ir ./refdata/refdata_drop.sql
 \ir ./fsm/drop_fsm.sql
 

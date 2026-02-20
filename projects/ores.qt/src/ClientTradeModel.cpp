@@ -20,7 +20,7 @@
 #include "ores.qt/ClientTradeModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.trade/messaging/trade_protocol.hpp"
+#include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -31,7 +31,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-    std::string trade_key_extractor(const trade::domain::trade& e) {
+    std::string trade_key_extractor(const trading::domain::trade& e) {
         return e.external_id;
     }
 }
@@ -209,7 +209,7 @@ void ClientTradeModel::fetch_trades(
                             .error_details = {}};
                 }
 
-                trade::messaging::get_trades_request request;
+                trading::messaging::get_trades_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -285,7 +285,7 @@ void ClientTradeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const trade::domain::trade*
+const trading::domain::trade*
 ClientTradeModel::getTrade(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= trades_.size())

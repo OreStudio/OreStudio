@@ -25,7 +25,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trade/domain/trade.hpp"
+#include "ores.trading/domain/trade.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
@@ -72,17 +72,17 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const trade::domain::trade& trade);
+    void onShowDetails(const trading::domain::trade& trade);
     void onAddNewRequested();
-    void onShowHistory(const trade::domain::trade& trade);
-    void onRevertVersion(const trade::domain::trade& trade);
-    void onOpenVersion(const trade::domain::trade& trade,
+    void onShowHistory(const trading::domain::trade& trade);
+    void onRevertVersion(const trading::domain::trade& trade);
+    void onOpenVersion(const trading::domain::trade& trade,
                        int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const trade::domain::trade& trade);
-    void showHistoryWindow(const trade::domain::trade& trade);
+    void showDetailWindow(const trading::domain::trade& trade);
+    void showHistoryWindow(const trading::domain::trade& trade);
 
     TradeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

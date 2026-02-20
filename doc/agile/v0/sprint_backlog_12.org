@@ -2886,8 +2886,8 @@ Highlights:
   triggers and Row-Level Security (RLS) policies.
 - Trade Reference Data and Core Tables: Added four new trade reference data
   tables (trade types, lifecycle events, party role types, trade ID types) and
-  core trade envelope tables (ores_trade_trades_tbl, ores_trade_identifiers_tbl,
-  ores_trade_party_roles_tbl), complete with soft-FK validation and RLS.
+  core trade envelope tables (ores_trading_trades_tbl, ores_trading_identifiers_tbl,
+  ores_trading_party_roles_tbl), complete with soft-FK validation and RLS.
 - ORE Envelope View and Sample Data: Created ores_trade_ore_envelope_vw to
   flatten the latest trade state into the ORE structure, alongside a sample data
   script demonstrating a booking and novation lifecycle.

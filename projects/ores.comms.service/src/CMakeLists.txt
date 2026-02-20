@@ -56,7 +56,7 @@ target_link_libraries(${lib_target_name}
         ores.geo.lib
         ores.dq.lib
         ores.synthetic.lib
-        ores.trade.lib)
+        ores.trading.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

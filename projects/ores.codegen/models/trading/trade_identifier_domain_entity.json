@@ -1,0 +1,87 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "entity_singular": "trade_identifier",
+    "entity_plural": "trade_identifiers",
+    "entity_title": "Trade Identifier",
+    "has_tenant_id": true,
+    "generator_facet_name": "generator",
+    "brief": "External identifier (UTI, USI, internal) assigned to a trade.",
+    "description": "Junction entity assigning external identifiers to trades.\nEach trade can have multiple identifiers of different types.\nThe issuing_party_id references either a party or counterparty.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this trade identifier record.",
+      "detail": "Surrogate key for the trade identifier record."
+    },
+
+    "columns": [
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Trade this identifier belongs to.",
+        "detail": "Soft FK to ores_trading_trades_tbl.",
+        "generator_expr": "ctx.generate_uuid()"
+      },
+      {
+        "name": "issuing_party_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Party or counterparty that issued this identifier.",
+        "detail": "Soft FK to parties or counterparties. Absent if issuer unknown.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "id_value",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "The identifier value.",
+        "detail": "e.g., UTI value, internal trade reference.",
+        "generator_expr": "std::string(\"ID-\") + std::to_string(++counter)"
+      },
+      {
+        "name": "id_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Type of identifier (e.g. UTI, USI, Internal).",
+        "detail": "Soft FK to ores_trading_trade_id_types_tbl.",
+        "generator_expr": "std::string(\"Internal\")"
+      },
+      {
+        "name": "id_scheme",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional scheme qualifier for the identifier.",
+        "detail": "e.g., the LEI namespace for UTI schemes.",
+        "generator_expr": "std::string()"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_trading_identifiers_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "identifier",
+      "entity_plural_short": "identifiers",
+      "entity_singular_words": "trade identifier",
+      "entity_plural_words": "trade identifiers"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "ti"
+    }
+  }
+}

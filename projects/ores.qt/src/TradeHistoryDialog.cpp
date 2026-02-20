@@ -26,7 +26,7 @@
 #include "ui_TradeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trade/messaging/trade_protocol.hpp"
+#include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -124,7 +124,7 @@ void TradeHistoryDialog::loadHistory() {
     struct HistoryResult {
         bool success;
         std::string message;
-        std::vector<trade::domain::trade> versions;
+        std::vector<trading::domain::trade> versions;
     };
 
     auto task = [self, id = id_]() -> HistoryResult {
@@ -132,7 +132,7 @@ void TradeHistoryDialog::loadHistory() {
             return {false, "Dialog closed", {}};
         }
 
-        trade::messaging::get_trade_history_request request;
+        trading::messaging::get_trade_history_request request;
         request.id = id;
         auto payload = request.serialize();
 
@@ -153,7 +153,7 @@ void TradeHistoryDialog::loadHistory() {
             return {false, "Failed to decompress response", {}};
         }
 
-        auto response = trade::messaging::get_trade_history_response::
+        auto response = trading::messaging::get_trade_history_response::
             deserialize(*payload_result);
 
         if (!response) {

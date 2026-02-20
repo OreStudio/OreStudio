@@ -111,6 +111,11 @@ public:
      */
     [[nodiscard]] QString isoCode() const;
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 signals:
     void currencyUpdated(const QString& iso_code);
     void currencyCreated(const QString& iso_code);

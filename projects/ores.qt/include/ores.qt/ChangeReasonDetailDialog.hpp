@@ -22,9 +22,11 @@
 
 #include <vector>
 #include <QAction>
+#include <QTabWidget>
 #include <QToolBar>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/change_reason.hpp"
 #include "ores.dq/domain/change_reason_category.hpp"
@@ -80,6 +82,11 @@ signals:
     void isDirtyChanged(bool dirty);
     void changeReasonSaved(const QString& code);
     void changeReasonDeleted(const QString& code);
+
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
 
 private slots:
     void onSaveClicked();

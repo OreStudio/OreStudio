@@ -73,6 +73,11 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private:
     void setupUi();
     void setupConnections();

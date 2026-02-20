@@ -21,9 +21,11 @@
 #define ORES_QT_CATALOG_DETAIL_DIALOG_HPP
 
 #include <string>
+#include <QTabWidget>
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace Ui {
@@ -60,6 +62,11 @@ public:
 signals:
     void catalogSaved(const QString& name);
     void catalogDeleted(const QString& name);
+
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
 
 private slots:
     void onSaveClicked();

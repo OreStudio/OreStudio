@@ -58,6 +58,11 @@ signals:
     void dimensionSaved(const QString& code);
     void dimensionDeleted(const QString& code);
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private slots:
     void onSaveClicked();
     void onDeleteClicked();

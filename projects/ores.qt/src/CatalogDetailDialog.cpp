@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CatalogDetailDialog.h"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -49,6 +50,10 @@ CatalogDetailDialog::~CatalogDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* CatalogDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* CatalogDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* CatalogDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void CatalogDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
@@ -66,6 +71,7 @@ void CatalogDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
+    setProvenanceEnabled(!createMode);
 }
 
 void CatalogDetailDialog::setReadOnly(bool readOnly) {
@@ -85,6 +91,9 @@ void CatalogDetailDialog::updateUiFromCatalog() {
     ui_->ownerEdit->setText(
         catalog_.owner ? QString::fromStdString(*catalog_.owner) : QString());
     ui_->commentaryEdit->clear();
+
+    populateProvenance(catalog_.version, catalog_.modified_by, catalog_.performed_by,
+                       catalog_.recorded_at, "", catalog_.change_commentary);
 }
 
 void CatalogDetailDialog::updateCatalogFromUi() {

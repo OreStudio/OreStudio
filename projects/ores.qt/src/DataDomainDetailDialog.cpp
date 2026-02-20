@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_DataDomainDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +47,10 @@ DataDomainDetailDialog::~DataDomainDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* DataDomainDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* DataDomainDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* DataDomainDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void DataDomainDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &DataDomainDetailDialog::onSaveClicked);
@@ -55,6 +60,7 @@ void DataDomainDetailDialog::setupConnections() {
 
 void DataDomainDetailDialog::setCreateMode(bool create) {
     isCreateMode_ = create;
+    setProvenanceEnabled(!create);
     updateUiState();
 }
 
@@ -65,6 +71,9 @@ void DataDomainDetailDialog::setDomain(
     ui_->nameEdit->setText(QString::fromStdString(domain.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(domain.description));
     ui_->commentaryEdit->setPlainText(QString::fromStdString(domain.change_commentary));
+
+    populateProvenance(domain_.version, domain_.modified_by, domain_.performed_by,
+                       domain_.recorded_at, "", domain_.change_commentary);
 
     updateUiState();
 }

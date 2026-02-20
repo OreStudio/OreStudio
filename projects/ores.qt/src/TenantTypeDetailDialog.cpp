@@ -25,7 +25,6 @@
 #include "ui_TenantTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +45,10 @@ TenantTypeDetailDialog::TenantTypeDetailDialog(QWidget* parent)
 TenantTypeDetailDialog::~TenantTypeDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* TenantTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* TenantTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* TenantTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void TenantTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -89,9 +92,7 @@ void TenantTypeDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -111,11 +112,9 @@ void TenantTypeDetailDialog::updateUiFromType() {
     ui_->nameEdit->setText(QString::fromStdString(tenant_type_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(tenant_type_.description));
 
-    ui_->versionEdit->setText(QString::number(tenant_type_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(tenant_type_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(tenant_type_.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(tenant_type_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(tenant_type_.change_commentary));
+    populateProvenance(tenant_type_.version, tenant_type_.modified_by,
+        tenant_type_.performed_by, tenant_type_.recorded_at,
+        tenant_type_.change_reason_code, tenant_type_.change_commentary);
 }
 
 void TenantTypeDetailDialog::updateTypeFromUi() {

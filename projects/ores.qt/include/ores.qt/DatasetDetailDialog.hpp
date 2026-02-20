@@ -60,6 +60,11 @@ signals:
     void datasetSaved(const boost::uuids::uuid& id);
     void datasetDeleted(const boost::uuids::uuid& id);
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private slots:
     void onSaveClicked();
     void onDeleteClicked();

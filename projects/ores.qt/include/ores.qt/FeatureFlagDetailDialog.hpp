@@ -78,6 +78,11 @@ signals:
     void featureFlagSaved(const QString& name);
     void featureFlagDeleted(const QString& name);
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private slots:
     void onSaveClicked();
     void onDeleteClicked();

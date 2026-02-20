@@ -48,6 +48,10 @@ MethodologyDetailDialog::~MethodologyDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* MethodologyDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* MethodologyDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* MethodologyDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void MethodologyDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &MethodologyDetailDialog::onSaveClicked);
@@ -57,6 +61,7 @@ void MethodologyDetailDialog::setupConnections() {
 
 void MethodologyDetailDialog::setCreateMode(bool create) {
     isCreateMode_ = create;
+    setProvenanceEnabled(!create);
     updateUiState();
 }
 
@@ -75,6 +80,10 @@ void MethodologyDetailDialog::setMethodology(
     if (methodology.implementation_details) {
         ui_->implementationEdit->setPlainText(QString::fromStdString(*methodology.implementation_details));
     }
+
+    populateProvenance(methodology_.version, methodology_.modified_by,
+                       methodology_.performed_by, methodology_.recorded_at,
+                       "", methodology_.change_commentary);
 
     updateUiState();
 }

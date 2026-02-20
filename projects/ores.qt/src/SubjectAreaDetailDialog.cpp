@@ -46,6 +46,10 @@ SubjectAreaDetailDialog::~SubjectAreaDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* SubjectAreaDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* SubjectAreaDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* SubjectAreaDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void SubjectAreaDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &SubjectAreaDetailDialog::onSaveClicked);
@@ -72,6 +76,10 @@ void SubjectAreaDetailDialog::setSubjectArea(
         ui_->domainCombo->setCurrentIndex(index);
     }
 
+    populateProvenance(subject_area_.version, subject_area_.modified_by,
+        subject_area_.performed_by, subject_area_.recorded_at,
+        "", subject_area_.change_commentary);
+
     updateUiState();
 }
 
@@ -88,6 +96,7 @@ void SubjectAreaDetailDialog::updateUiState() {
 
     ui_->saveButton->setVisible(!isReadOnly_);
     ui_->deleteButton->setVisible(!isCreateMode_ && !isReadOnly_);
+    setProvenanceEnabled(!isCreateMode_);
 }
 
 void SubjectAreaDetailDialog::loadDomains() {

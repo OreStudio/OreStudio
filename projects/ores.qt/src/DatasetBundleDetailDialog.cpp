@@ -25,7 +25,7 @@
 #include "ui_DatasetBundleDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +46,10 @@ DatasetBundleDetailDialog::DatasetBundleDetailDialog(QWidget* parent)
 DatasetBundleDetailDialog::~DatasetBundleDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* DatasetBundleDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* DatasetBundleDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* DatasetBundleDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void DatasetBundleDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -88,11 +92,7 @@ void DatasetBundleDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
-
+    setProvenanceEnabled(!createMode);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -111,11 +111,9 @@ void DatasetBundleDetailDialog::updateUiFromBundle() {
     ui_->nameEdit->setText(QString::fromStdString(bundle_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(bundle_.description));
 
-    ui_->versionEdit->setText(QString::number(bundle_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(bundle_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(bundle_.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(bundle_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(bundle_.change_commentary));
+    populateProvenance(bundle_.version, bundle_.modified_by, bundle_.performed_by,
+                       bundle_.recorded_at, bundle_.change_reason_code,
+                       bundle_.change_commentary);
 }
 
 void DatasetBundleDetailDialog::updateBundleFromUi() {

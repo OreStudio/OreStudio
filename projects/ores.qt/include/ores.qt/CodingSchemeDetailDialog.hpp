@@ -20,8 +20,10 @@
 #ifndef ORES_QT_CODING_SCHEME_DETAIL_DIALOG_HPP
 #define ORES_QT_CODING_SCHEME_DETAIL_DIALOG_HPP
 
+#include <QTabWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/coding_scheme.hpp"
 
@@ -58,6 +60,11 @@ public:
 signals:
     void schemeSaved(const QString& code);
     void schemeDeleted(const QString& code);
+
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
 
 private slots:
     void onSaveClicked();

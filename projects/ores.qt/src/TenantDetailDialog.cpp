@@ -26,7 +26,6 @@
 #include "ui_TenantDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -48,6 +47,10 @@ TenantDetailDialog::TenantDetailDialog(QWidget* parent)
 TenantDetailDialog::~TenantDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* TenantDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* TenantDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* TenantDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void TenantDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -135,9 +138,7 @@ void TenantDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -161,12 +162,9 @@ void TenantDetailDialog::updateUiFromTenant() {
     ui_->hostnameEdit->setText(QString::fromStdString(tenant_.hostname));
     ui_->statusCombo->setCurrentText(QString::fromStdString(tenant_.status));
 
-    ui_->versionEdit->setText(QString::number(tenant_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(tenant_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(tenant_.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(tenant_.change_reason_code));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(tenant_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(tenant_.change_commentary));
+    populateProvenance(tenant_.version, tenant_.modified_by,
+        tenant_.performed_by, tenant_.recorded_at,
+        tenant_.change_reason_code, tenant_.change_commentary);
 }
 
 void TenantDetailDialog::updateTenantFromUi() {

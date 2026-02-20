@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_CodingSchemeDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -46,6 +47,10 @@ CodingSchemeDetailDialog::CodingSchemeDetailDialog(QWidget* parent)
 CodingSchemeDetailDialog::~CodingSchemeDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* CodingSchemeDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* CodingSchemeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* CodingSchemeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void CodingSchemeDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
@@ -182,6 +187,7 @@ void CodingSchemeDetailDialog::loadLookupData() {
 
 void CodingSchemeDetailDialog::setCreateMode(bool create) {
     isCreateMode_ = create;
+    setProvenanceEnabled(!create);
     updateUiState();
 }
 
@@ -206,6 +212,9 @@ void CodingSchemeDetailDialog::setScheme(
 
     int ddIdx = ui_->domainCombo->findText(QString::fromStdString(scheme.domain_name));
     if (ddIdx >= 0) ui_->domainCombo->setCurrentIndex(ddIdx);
+
+    populateProvenance(scheme.version, scheme.modified_by, scheme.performed_by,
+                       scheme.recorded_at, "", scheme.change_commentary);
 
     updateUiState();
 }

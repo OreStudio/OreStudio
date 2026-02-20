@@ -46,6 +46,10 @@ TreatmentDimensionDetailDialog::~TreatmentDimensionDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* TreatmentDimensionDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* TreatmentDimensionDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* TreatmentDimensionDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void TreatmentDimensionDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &TreatmentDimensionDetailDialog::onSaveClicked);
@@ -67,6 +71,10 @@ void TreatmentDimensionDetailDialog::setDimension(
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension.description));
     ui_->commentaryEdit->setPlainText(QString::fromStdString(dimension.change_commentary));
 
+    populateProvenance(dimension_.version, dimension_.modified_by,
+        dimension_.performed_by, dimension_.recorded_at,
+        "", dimension_.change_commentary);
+
     updateUiState();
 }
 
@@ -83,6 +91,7 @@ void TreatmentDimensionDetailDialog::updateUiState() {
 
     ui_->saveButton->setVisible(!isReadOnly_);
     ui_->deleteButton->setVisible(!isCreateMode_ && !isReadOnly_);
+    setProvenanceEnabled(!isCreateMode_);
 }
 
 void TreatmentDimensionDetailDialog::onSaveClicked() {

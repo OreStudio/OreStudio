@@ -53,6 +53,10 @@ DatasetDetailDialog::~DatasetDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* DatasetDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* DatasetDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* DatasetDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void DatasetDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &DatasetDetailDialog::onSaveClicked);
@@ -392,6 +396,7 @@ void DatasetDetailDialog::loadLookupData() {
 
 void DatasetDetailDialog::setCreateMode(bool create) {
     isCreateMode_ = create;
+    setProvenanceEnabled(!create);
     updateUiState();
 }
 
@@ -447,6 +452,9 @@ void DatasetDetailDialog::setDataset(const dq::domain::dataset& dataset) {
     auto asOfDate = std::chrono::duration_cast<std::chrono::seconds>(
         dataset.as_of_date.time_since_epoch()).count();
     ui_->asOfDateEdit->setDate(QDateTime::fromSecsSinceEpoch(asOfDate).date());
+
+    populateProvenance(dataset_.version, dataset_.modified_by, dataset_.performed_by,
+                       dataset_.recorded_at, "", dataset_.change_commentary);
 
     updateUiState();
 }

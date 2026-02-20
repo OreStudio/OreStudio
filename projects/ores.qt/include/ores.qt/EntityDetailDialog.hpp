@@ -92,6 +92,11 @@ private slots:
     void onDeleteContact();
     void onContactDoubleClicked(int row, int column);
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private:
     void setupUi();
     void setupConnections();

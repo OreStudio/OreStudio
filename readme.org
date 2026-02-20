@@ -17,7 +17,7 @@
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
 #+html: <a href="https://doc.qt.io/qt-6/"><img alt="Qt6" src="https://img.shields.io/badge/Qt-6-blue"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
-#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_12.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-12-blue.svg"/></a>
+#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_13.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-13-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
 #+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/discord/1254062142626332732?color=5865F2&amp;logo=discord&amp;logoColor=white"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
@@ -35,7 +35,7 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml"><img alt="Continuous Windows" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml"><img alt="Continuous MacOS.yml" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml"><img alt="Nightly Linux" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml/badge.svg"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.11.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.12.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
 #+html: <a href="https://deepwiki.com/OreStudio/OreStudio"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"/></a>
@@ -227,7 +227,7 @@ Notes:
 /Volumes/OreStudio-${VERSION}-Darwin/orestudio.app/Contents/Resources/bin
 #+end_src
 
-Where =${VERSION}= is your ORE Studio version, such as =0.0.12=.
+Where =${VERSION}= is your ORE Studio version, such as =0.0.13=.
 
 * Building From Source
 

@@ -173,6 +173,8 @@ Backlogs]]. The last entry is the active sprint.
    :resource_id: s13
    :END:
 
+- [[id:9A4009E7-0E6C-11F1-852D-40B0768014EB][Sprint Backlog 13]] | Trade support and FSM.
+
 ** Sprint 14
    :PROPERTIES:
    :resource_id: s14

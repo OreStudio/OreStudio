@@ -48,6 +48,8 @@ which itself builds atop of [[https://github.com/lballabio/QuantLib][QuantLib]].
 has *no affiliation whatsoever* with ORE or QuantLib, but you cannot understand
 ORE Studio without at least a basic understanding of both of these projects.
 
+[[./assets/images/ore_studio-v0.0.12.png]]
+
 QuantLib is defined as follows:
 
 #+begin_quote

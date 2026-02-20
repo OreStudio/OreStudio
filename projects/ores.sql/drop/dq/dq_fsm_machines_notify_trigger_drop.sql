@@ -18,7 +18,5 @@
  *
  */
 
-drop rule if exists ores_fsm_states_delete_rule on "ores_fsm_states_tbl";
-drop trigger if exists ores_fsm_states_insert_trg on "ores_fsm_states_tbl";
-drop function if exists ores_fsm_states_insert_fn;
-drop table if exists "ores_fsm_states_tbl";
+drop trigger if exists ores_dq_fsm_machines_notify_trg on "ores_dq_fsm_machines_tbl";
+drop function if exists ores_dq_fsm_machines_notify_fn;

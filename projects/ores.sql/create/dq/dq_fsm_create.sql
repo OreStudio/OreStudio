@@ -18,17 +18,21 @@
  *
  */
 
-/**
- * FSM Population Master Script
- *
- * Populates the FSM component with all state machine definitions.
- * All scripts are idempotent and can be safely re-run.
- */
+-- =============================================================================
+-- FSM Framework (Finite State Machine Infrastructure, part of DQ metadata layer)
+-- =============================================================================
+-- Creates the generic FSM framework tables. FSM is part of the DQ metadata
+-- layer. It depends on ores.iam (for tenant validation) and ores.dq (for
+-- change reason validation).
 
-\echo '=== FSM Population ==='
-\echo ''
+-- Machines must be created before states and transitions (soft FK dependency)
+\ir ./dq_fsm_machines_create.sql
+\ir ./dq_fsm_machines_notify_trigger_create.sql
 
-\ir ./fsm_trade_lifecycle_populate.sql
+-- States depend on machines
+\ir ./dq_fsm_states_create.sql
+\ir ./dq_fsm_states_notify_trigger_create.sql
 
-\echo ''
-\echo '=== FSM Population Complete ==='
+-- Transitions depend on both machines and states
+\ir ./dq_fsm_transitions_create.sql
+\ir ./dq_fsm_transitions_notify_trigger_create.sql

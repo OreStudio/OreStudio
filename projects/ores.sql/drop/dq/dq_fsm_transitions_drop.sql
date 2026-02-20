@@ -18,19 +18,7 @@
  *
  */
 
--- =============================================================================
--- Drop FSM Component (Generic Finite State Machine Infrastructure)
--- =============================================================================
--- Drop in reverse dependency order: transitions first, then states, then machines.
-
--- Transitions depend on machines and states
-\ir ./fsm_transitions_notify_trigger_drop.sql
-\ir ./fsm_transitions_drop.sql
-
--- States depend on machines
-\ir ./fsm_states_notify_trigger_drop.sql
-\ir ./fsm_states_drop.sql
-
--- Machines have no FSM dependencies
-\ir ./fsm_machines_notify_trigger_drop.sql
-\ir ./fsm_machines_drop.sql
+drop rule if exists ores_dq_fsm_transitions_delete_rule on "ores_dq_fsm_transitions_tbl";
+drop trigger if exists ores_dq_fsm_transitions_insert_trg on "ores_dq_fsm_transitions_tbl";
+drop function if exists ores_dq_fsm_transitions_insert_fn;
+drop table if exists "ores_dq_fsm_transitions_tbl";

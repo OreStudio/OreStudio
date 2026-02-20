@@ -18,5 +18,5 @@
  *
  */
 
-drop trigger if exists ores_fsm_transitions_notify_trg on "ores_fsm_transitions_tbl";
-drop function if exists ores_fsm_transitions_notify_fn;
+drop trigger if exists ores_dq_fsm_transitions_notify_trg on "ores_dq_fsm_transitions_tbl";
+drop function if exists ores_dq_fsm_transitions_notify_fn;

@@ -33,7 +33,6 @@
 \ir ./iam/iam_drop.sql
 \ir ./trading/drop_trading.sql
 \ir ./refdata/refdata_drop.sql
-\ir ./fsm/drop_fsm.sql
 
 -- =============================================================================
 -- 3. Data Governance Tables (dropped after operational tables)

@@ -18,6 +18,9 @@
  *
  */
 
+-- FSM Framework (must be dropped before change reasons)
+\ir ./dq_fsm_drop.sql
+
 -- DQ Functions
 \ir ./dq_functions_drop.sql
 

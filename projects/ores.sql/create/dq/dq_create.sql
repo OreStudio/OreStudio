@@ -132,3 +132,5 @@
 \ir ./dq_portfolios_publish_create.sql
 \ir ./dq_books_publish_create.sql
 
+-- FSM Framework (finite state machine infrastructure, part of DQ metadata layer)
+\ir ./dq_fsm_create.sql

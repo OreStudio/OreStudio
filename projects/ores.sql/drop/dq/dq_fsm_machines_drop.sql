@@ -18,21 +18,7 @@
  *
  */
 
--- =============================================================================
--- FSM Component (Generic Finite State Machine Infrastructure)
--- =============================================================================
--- Creates the generic FSM framework tables. The FSM component has no
--- dependencies on the trade component. It depends on ores.iam (for tenant
--- validation) and ores.dq (for change reason validation).
-
--- Machines must be created before states and transitions (soft FK dependency)
-\ir ./fsm_machines_create.sql
-\ir ./fsm_machines_notify_trigger_create.sql
-
--- States depend on machines
-\ir ./fsm_states_create.sql
-\ir ./fsm_states_notify_trigger_create.sql
-
--- Transitions depend on both machines and states
-\ir ./fsm_transitions_create.sql
-\ir ./fsm_transitions_notify_trigger_create.sql
+drop rule if exists ores_dq_fsm_machines_delete_rule on "ores_dq_fsm_machines_tbl";
+drop trigger if exists ores_dq_fsm_machines_insert_trg on "ores_dq_fsm_machines_tbl";
+drop function if exists ores_dq_fsm_machines_insert_fn;
+drop table if exists "ores_dq_fsm_machines_tbl";

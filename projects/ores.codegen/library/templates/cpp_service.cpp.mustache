@@ -25,7 +25,12 @@ std::optional<domain::{{entity_singular}}>
 }
 
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
+{{#primary_key.is_uuid}}
+    if (v.{{primary_key.column}}.is_nil())
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
     if (v.{{primary_key.column}}.empty())
+{{/primary_key.is_uuid}}
         throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << v.{{primary_key.column}};
     repo_.write(ctx_, v);

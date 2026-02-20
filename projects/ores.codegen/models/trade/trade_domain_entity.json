@@ -1,0 +1,141 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trade",
+    "entity_singular": "trade",
+    "entity_plural": "trades",
+    "entity_title": "Trade",
+    "has_tenant_id": true,
+    "generator_facet_name": "generator",
+    "brief": "Trade envelope capturing FpML Trade Header and ORE Envelope properties.",
+    "description": "Temporal trade envelope. Each lifecycle event (New, Amendment, Novation,\netc.) creates a new temporal row for the same trade id. The internal party\nis derived from book_id via books.party_id.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this trade.",
+      "detail": "Surrogate key for the trade record."
+    },
+
+    "columns": [
+      {
+        "name": "external_id",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional external trade identifier.",
+        "detail": "e.g., UTI prefix or legacy system ID.",
+        "generator_expr": "std::string()"
+      },
+      {
+        "name": "book_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Book that owns this trade.",
+        "detail": "Soft FK to ores_refdata_books_tbl.",
+        "generator_expr": "ctx.generate_uuid()"
+      },
+      {
+        "name": "portfolio_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Portfolio this trade belongs to.",
+        "detail": "Soft FK to ores_refdata_portfolios_tbl.",
+        "generator_expr": "ctx.generate_uuid()"
+      },
+      {
+        "name": "successor_trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "UUID of the trade that replaced this one (e.g., after novation).",
+        "detail": "Self-referencing soft FK. Absent for active trades.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "trade_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "ORE instrument type code (e.g. Swap, FxForward, CapFloor).",
+        "detail": "Soft FK to ores_trade_trade_types_tbl.",
+        "generator_expr": "std::string(\"Swap\")"
+      },
+      {
+        "name": "netting_set_id",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Netting set identifier for ORE aggregation.",
+        "detail": "Groups trades under the same netting agreement.",
+        "generator_expr": "std::string(\"NS-001\")"
+      },
+      {
+        "name": "lifecycle_event",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Lifecycle event type (e.g. New, Amendment, Novation, Termination).",
+        "detail": "Soft FK to ores_trade_lifecycle_events_tbl.",
+        "generator_expr": "std::string(\"New\")"
+      },
+      {
+        "name": "trade_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Date the trade was agreed.",
+        "detail": "ISO 8601 date: YYYY-MM-DD.",
+        "generator_expr": "std::string(\"2025-01-15\")"
+      },
+      {
+        "name": "execution_timestamp",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Timestamp when the trade was executed (with timezone).",
+        "detail": "ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ.",
+        "generator_expr": "std::string(\"2025-01-15 10:00:00\")"
+      },
+      {
+        "name": "effective_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Date from which the trade is effective.",
+        "detail": "ISO 8601 date: YYYY-MM-DD.",
+        "generator_expr": "std::string(\"2025-01-16\")"
+      },
+      {
+        "name": "termination_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Date on which the trade matures or terminates.",
+        "detail": "ISO 8601 date: YYYY-MM-DD.",
+        "generator_expr": "std::string(\"2026-01-15\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_trade_trades_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "trade",
+      "entity_plural_short": "trades",
+      "entity_singular_words": "trade",
+      "entity_plural_words": "trades"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "tr"
+    }
+  }
+}

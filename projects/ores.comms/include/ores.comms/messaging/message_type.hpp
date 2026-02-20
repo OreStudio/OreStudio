@@ -249,6 +249,33 @@ enum class message_type : std::uint16_t {
     delete_trade_id_type_response = 0x801E,
     get_trade_id_type_history_request = 0x801F,
     get_trade_id_type_history_response = 0x8020,
+    // Trade subsystem - Trades
+    get_trades_request = 0x8021,
+    get_trades_response = 0x8022,
+    save_trade_request = 0x8023,
+    save_trade_response = 0x8024,
+    delete_trade_request = 0x8025,
+    delete_trade_response = 0x8026,
+    get_trade_history_request = 0x8027,
+    get_trade_history_response = 0x8028,
+    // Trade subsystem - Trade identifiers
+    get_trade_identifiers_request = 0x8029,
+    get_trade_identifiers_response = 0x802A,
+    save_trade_identifier_request = 0x802B,
+    save_trade_identifier_response = 0x802C,
+    delete_trade_identifier_request = 0x802D,
+    delete_trade_identifier_response = 0x802E,
+    get_trade_identifier_history_request = 0x802F,
+    get_trade_identifier_history_response = 0x8030,
+    // Trade subsystem - Trade party roles
+    get_trade_party_roles_request = 0x8031,
+    get_trade_party_roles_response = 0x8032,
+    save_trade_party_role_request = 0x8033,
+    save_trade_party_role_response = 0x8034,
+    delete_trade_party_role_request = 0x8035,
+    delete_trade_party_role_response = 0x8036,
+    get_trade_party_role_history_request = 0x8037,
+    get_trade_party_role_history_response = 0x8038,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -724,6 +751,30 @@ enum class message_type : std::uint16_t {
     case message_type::delete_trade_id_type_response: return "delete_trade_id_type_response";
     case message_type::get_trade_id_type_history_request: return "get_trade_id_type_history_request";
     case message_type::get_trade_id_type_history_response: return "get_trade_id_type_history_response";
+    case message_type::get_trades_request: return "get_trades_request";
+    case message_type::get_trades_response: return "get_trades_response";
+    case message_type::save_trade_request: return "save_trade_request";
+    case message_type::save_trade_response: return "save_trade_response";
+    case message_type::delete_trade_request: return "delete_trade_request";
+    case message_type::delete_trade_response: return "delete_trade_response";
+    case message_type::get_trade_history_request: return "get_trade_history_request";
+    case message_type::get_trade_history_response: return "get_trade_history_response";
+    case message_type::get_trade_identifiers_request: return "get_trade_identifiers_request";
+    case message_type::get_trade_identifiers_response: return "get_trade_identifiers_response";
+    case message_type::save_trade_identifier_request: return "save_trade_identifier_request";
+    case message_type::save_trade_identifier_response: return "save_trade_identifier_response";
+    case message_type::delete_trade_identifier_request: return "delete_trade_identifier_request";
+    case message_type::delete_trade_identifier_response: return "delete_trade_identifier_response";
+    case message_type::get_trade_identifier_history_request: return "get_trade_identifier_history_request";
+    case message_type::get_trade_identifier_history_response: return "get_trade_identifier_history_response";
+    case message_type::get_trade_party_roles_request: return "get_trade_party_roles_request";
+    case message_type::get_trade_party_roles_response: return "get_trade_party_roles_response";
+    case message_type::save_trade_party_role_request: return "save_trade_party_role_request";
+    case message_type::save_trade_party_role_response: return "save_trade_party_role_response";
+    case message_type::delete_trade_party_role_request: return "delete_trade_party_role_request";
+    case message_type::delete_trade_party_role_response: return "delete_trade_party_role_response";
+    case message_type::get_trade_party_role_history_request: return "get_trade_party_role_history_request";
+    case message_type::get_trade_party_role_history_response: return "get_trade_party_role_history_response";
     case message_type::get_accounts_request: return "get_accounts_request";
     case message_type::get_accounts_response: return "get_accounts_response";
     case message_type::login_request: return "login_request";

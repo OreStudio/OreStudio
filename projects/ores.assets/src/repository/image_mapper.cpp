@@ -41,7 +41,9 @@ domain::image image_mapper::map(const image_entity& v) {
     r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
+    if (!v.valid_from)
+        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
+    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
     return r;

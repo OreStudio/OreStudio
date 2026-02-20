@@ -27,10 +27,17 @@
 #include "ores.qt/TradeDetailDialog.hpp"
 #include "ores.qt/TradeHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.trade/eventing/trade_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view trade_event_name =
+    eventing::domain::event_traits<trade::eventing::trade_changed_event>::name;
+}
 
 TradeController::TradeController(
     QMainWindow* mainWindow,
@@ -39,7 +46,7 @@ TradeController::TradeController(
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
+          trade_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 

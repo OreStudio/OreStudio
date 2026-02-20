@@ -2,8 +2,10 @@
 {{#domain_entity}}
 #include "ores.{{component}}/repository/{{entity_singular}}_mapper.hpp"
 
+{{#has_uuid_columns}}
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+{{/has_uuid_columns}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -18,18 +20,39 @@ domain::{{entity_singular}}
 
     domain::{{entity_singular}} r;
     r.version = v.version;
+{{#has_tenant_id}}
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+{{/has_tenant_id}}
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.{{primary_key.column}}.value();
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
     r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
+{{/primary_key.is_uuid}}
 {{#natural_keys}}
     r.{{column}} = v.{{column}};
 {{/natural_keys}}
 {{#columns}}
+{{#is_uuid}}
+    r.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_nullable_string}}
+    r.{{name}} = v.{{name}}.value_or("");
+{{/is_nullable_string}}
+{{#is_simple}}
     r.{{name}} = v.{{name}};
+{{/is_simple}}
 {{/columns}}
-    r.recorded_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    if (!v.valid_from)
+        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
+    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -40,15 +63,34 @@ domain::{{entity_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     {{entity_singular}}_entity r;
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.{{primary_key.column}};
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
     r.{{primary_key.column}} = boost::uuids::to_string(v.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#has_tenant_id}}
+    r.tenant_id = v.tenant_id.to_string();
+{{/has_tenant_id}}
     r.version = v.version;
 {{#natural_keys}}
     r.{{column}} = v.{{column}};
 {{/natural_keys}}
 {{#columns}}
+{{#is_uuid}}
+    r.{{name}} = boost::uuids::to_string(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_nullable_string}}
+    r.{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(v.{{name}});
+{{/is_nullable_string}}
+{{#is_simple}}
     r.{{name}} = v.{{name}};
+{{/is_simple}}
 {{/columns}}
-    r.modified_by = v.recorded_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

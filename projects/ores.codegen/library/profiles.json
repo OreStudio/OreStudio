@@ -86,7 +86,7 @@
     },
     "domain": {
       "description": "Domain types (class, JSON I/O, table)",
-      "model_types": ["schema"],
+      "model_types": ["schema", "domain_entity"],
       "templates": [
         {
           "template": "cpp_domain_type_class.hpp.mustache",
@@ -94,33 +94,33 @@
         },
         {
           "template": "cpp_domain_type_json_io.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/io/{entity}_json_io.hpp"
+          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_json_io.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.cpp.mustache",
-          "output": "projects/ores.{component}/src/io/{entity}_json_io.cpp"
+          "output": "projects/ores.{component}/src/domain/{entity}_json_io.cpp"
         },
         {
           "template": "cpp_domain_type_table.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/io/{entity}_table.hpp"
+          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_table.hpp"
         },
         {
           "template": "cpp_domain_type_table.cpp.mustache",
-          "output": "projects/ores.{component}/src/io/{entity}_table.cpp"
+          "output": "projects/ores.{component}/src/domain/{entity}_table.cpp"
         },
         {
           "template": "cpp_domain_type_table_io.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/io/{entity}_table_io.hpp"
+          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_table_io.hpp"
         },
         {
           "template": "cpp_domain_type_table_io.cpp.mustache",
-          "output": "projects/ores.{component}/src/io/{entity}_table_io.cpp"
+          "output": "projects/ores.{component}/src/domain/{entity}_table_io.cpp"
         }
       ]
     },
     "generator": {
       "description": "Fake data generators for testing",
-      "model_types": ["schema"],
+      "model_types": ["schema", "domain_entity"],
       "templates": [
         {
           "template": "cpp_domain_type_generator.hpp.mustache",
@@ -134,7 +134,7 @@
     },
     "repository": {
       "description": "Repository layer (entity, mapper, CRUD)",
-      "model_types": ["schema"],
+      "model_types": ["schema", "domain_entity"],
       "templates": [
         {
           "template": "cpp_domain_type_entity.hpp.mustache",
@@ -164,7 +164,7 @@
     },
     "service": {
       "description": "Service layer",
-      "model_types": ["schema"],
+      "model_types": ["schema", "domain_entity"],
       "templates": [
         {
           "template": "cpp_service.hpp.mustache",
@@ -178,8 +178,13 @@
     },
     "all-cpp": {
       "description": "All C++ facets (domain, repository, service, protocol, generator)",
-      "model_types": ["schema"],
+      "model_types": ["schema", "domain_entity"],
       "includes": ["domain", "generator", "repository", "service", "protocol"]
+    },
+    "all": {
+      "description": "All artefacts: SQL schema and all C++ facets",
+      "model_types": ["domain_entity"],
+      "includes": ["sql", "all-cpp"]
     },
     "plantuml": {
       "description": "PlantUML ER diagrams",
@@ -198,6 +203,48 @@
         {
           "template": "cpp_enum.hpp.mustache",
           "output": "projects/ores.{component}/include/ores.{component}/messaging/{enum_name}.hpp"
+        }
+      ]
+    },
+    "component": {
+      "description": "Component project scaffold (CMakeLists, stubs, tests)",
+      "model_types": ["component"],
+      "templates": [
+        {
+          "template": "cmake_component_root.mustache",
+          "output": "projects/{component_full}/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_src.mustache",
+          "output": "projects/{component_full}/src/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_tests.mustache",
+          "output": "projects/{component_full}/tests/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_modeling.mustache",
+          "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_component_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
+        },
+        {
+          "template": "cpp_component_stub_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/domain/stub.hpp"
+        },
+        {
+          "template": "cpp_component_stub_impl.cpp.mustache",
+          "output": "projects/{component_full}/src/domain/stub.cpp"
+        },
+        {
+          "template": "cpp_component_test_main.cpp.mustache",
+          "output": "projects/{component_full}/tests/main.cpp"
+        },
+        {
+          "template": "cpp_component_stub_test.cpp.mustache",
+          "output": "projects/{component_full}/tests/stub_tests.cpp"
         }
       ]
     }

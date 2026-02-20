@@ -4,6 +4,8 @@
 #define ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
 
 #include <string>
+#include <optional>
+#include <ostream>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
@@ -17,19 +19,33 @@ struct {{entity_singular}}_entity {
     constexpr static const char* tablename = "{{sql.tablename}}";
 
     sqlgen::PrimaryKey<std::string> {{primary_key.column}};
+{{#has_tenant_id}}
+    std::string tenant_id;
+{{/has_tenant_id}}
     int version = 0;
 {{#natural_keys}}
     std::string {{column}};
 {{/natural_keys}}
 {{#columns}}
-    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+{{#is_optional_uuid}}
+    std::optional<std::string> {{name}};
+{{/is_optional_uuid}}
+{{#is_uuid}}
+    std::string {{name}};
+{{/is_uuid}}
+{{#is_nullable_string}}
+    std::optional<{{{cpp_type}}}> {{name}};
+{{/is_nullable_string}}
+{{#is_simple}}
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{/is_simple}}
 {{/columns}}
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
@@ -64,7 +80,7 @@ struct {{name_singular}}_entity {
     std::string {{right.column}};
     int version = 0;
 {{#columns}}
-    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 {{/columns}}
     std::string modified_by;
     std::string performed_by;

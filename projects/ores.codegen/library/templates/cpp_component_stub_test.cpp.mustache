@@ -1,0 +1,18 @@
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/domain/stub.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+
+namespace {
+
+const std::string tags("[domain]");
+
+}
+
+using namespace ores::{{name}}::domain;
+
+TEST_CASE("create_stub", tags) {
+    REQUIRE(stub_function() == "STUB code to be removed");
+}
+{{/component}}

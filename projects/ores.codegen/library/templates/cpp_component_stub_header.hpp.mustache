@@ -1,0 +1,22 @@
+{{{cpp_license}}}
+{{#component}}
+#ifndef ORES_{{name_upper}}_DOMAIN_STUB_HPP
+#define ORES_{{name_upper}}_DOMAIN_STUB_HPP
+
+#include <string>
+
+namespace ores::{{name}}::domain {
+
+/**
+ * @brief Stub to be removed once real domain types are added.
+ */
+struct stub final {
+    int version = 0;
+};
+
+std::string stub_function();
+
+}
+
+#endif
+{{/component}}

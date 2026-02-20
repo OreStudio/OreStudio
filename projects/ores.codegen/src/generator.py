@@ -58,6 +58,8 @@ def format_comment_block(text, lang='sql'):
     comment_formats = {
         'sql': {'prefix': ' * ', 'suffix': '', 'start': '/*', 'end': ' */'},
         'c++': {'prefix': ' * ', 'suffix': '', 'start': '/*', 'end': ' */'},
+        'cmake': {'prefix': '# ', 'suffix': '', 'start': '#', 'end': ''},
+        'plantuml': {'prefix': "' ", 'suffix': '', 'start': "'", 'end': ''},
         'python': {'prefix': '# ', 'suffix': '', 'start': '"""', 'end': '"""'},
         'javascript': {'prefix': ' * ', 'suffix': '', 'start': '/**', 'end': ' */'},
     }
@@ -116,6 +118,8 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
     comment_formats = {
         'sql': {'prefix': ' * ', 'suffix': '', 'start': '/*', 'end': ' */'},
         'c++': {'prefix': ' * ', 'suffix': '', 'start': '/*', 'end': ' */'},
+        'cmake': {'prefix': '# ', 'suffix': '', 'start': '#', 'end': ''},
+        'plantuml': {'prefix': "' ", 'suffix': '', 'start': "'", 'end': ''},
         'python': {'prefix': '# ', 'suffix': '', 'start': '"""', 'end': '"""'},
         'javascript': {'prefix': ' * ', 'suffix': '', 'start': '/**', 'end': ' */'},
     }
@@ -132,11 +136,13 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
             # Special handling: the copyright line should have the standard prefix like other content lines
             formatted_line = f"{fmt['prefix']}{line}"
         else:  # Empty line
-            formatted_line = " *"  # Just the asterisk for empty lines within the comment block
+            # Use prefix stripped of trailing space (e.g. ' * ' -> ' *', '# ' -> '#', "' " -> "'")
+            formatted_line = fmt['prefix'].rstrip()
         formatted_lines.append(formatted_line)
 
     # Combine everything with proper start and end markers, including the modeline
-    result = f"{fmt['start']} -*- {modeline_info} -*-\n" + '\n'.join(formatted_lines) + f"\n{fmt['end']}"
+    end_part = f"\n{fmt['end']}" if fmt['end'] else ""
+    result = f"{fmt['start']} -*- {modeline_info} -*-\n" + '\n'.join(formatted_lines) + end_part
 
     return result
 
@@ -260,6 +266,19 @@ def is_enum_model(model_filename):
     return model_filename.endswith("_enum.json")
 
 
+def is_component_model(model_filename):
+    """
+    Check if a model file is a component scaffold model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a component model
+    """
+    return model_filename.endswith("_component.json")
+
+
 def get_model_type(model_filename):
     """
     Determine the model type from the filename.
@@ -274,6 +293,8 @@ def get_model_type(model_filename):
         return 'domain_entity'
     elif is_junction_model(model_filename):
         return 'junction'
+    elif is_component_model(model_filename):
+        return 'component'
     elif is_enum_model(model_filename):
         return 'enum'
     elif is_entity_schema_model(model_filename):
@@ -361,6 +382,14 @@ def resolve_output_path(output_pattern, model_data, model_type):
 
         result = result.replace('{component}', component)
         result = result.replace('{enum_name}', enum_name)
+
+    elif model_type == 'component' and 'component' in model_data:
+        component = model_data['component']
+        name = component.get('name', 'unknown')
+        full_name = component.get('full_name', f'ores.{name}')
+
+        result = result.replace('{component}', name)
+        result = result.replace('{component_full}', full_name)
 
     elif 'schema' in model_data:
         schema = model_data['schema']
@@ -886,6 +915,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_domain_entity = is_domain_entity_model(model_filename)
     is_junction = is_junction_model(model_filename)
     is_enum = is_enum_model(model_filename)
+    is_component = is_component_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -904,6 +934,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     elif is_enum:
         # Enum models use a specific template
         templates_to_process = [t[0] for t in get_enum_template_mappings()]
+    elif is_component:
+        # Component scaffold models must be used via a profile (no default templates)
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Component model '{model_filename}' requires --profile component")
+            return
     elif is_schema_model:
         # Entity schema models use a different template set
         templates_to_process = [t[0] for t in get_schema_template_mappings()]
@@ -973,6 +1010,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         )
         data['cpp_license'] = cpp_license
         data['cpp_modeline'] = cpp_modeline
+
+        # Get the CMake modeline and generate CMake license
+        cmake_modeline = data['modelines'].get('cmake', '')
+        if cmake_modeline:
+            cmake_license = generate_license_with_header(
+                data['licence-GPL-v3'],
+                cmake_modeline,
+                'cmake'
+            )
+            data['cmake_license'] = cmake_license
+            data['cmake_modeline'] = cmake_modeline
 
     # Add the model data to the template data
     # Use the model filename (without extension) as the key
@@ -1049,6 +1097,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # Mark last for SQL formatting if needed
                 _mark_last_item(ds['dataset_dependencies'])
 
+    # Special processing for component scaffold models
+    if is_component and isinstance(model, dict) and 'component' in model:
+        component = model['component']
+        name = component.get('name', 'unknown')
+        full_name = component.get('full_name', f'ores.{name}')
+        component['full_name_upper'] = full_name.replace('.', '_').upper()
+        component['name_upper'] = name.upper()
+        data['component'] = component
+
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:
         entity = model['entity']
@@ -1082,6 +1139,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
+                col['is_nullable_string'] = col.get('nullable', False) and not is_uuid_type
+                col['is_simple'] = not col.get('nullable', False) and not is_uuid_type
                 col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
@@ -1208,6 +1267,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2
             qt['metadata_start_row_plus_3'] = len(detail_fields) + 3
+        # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
+        domain_entity.setdefault('generator_facet_name', 'generators')
+        domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()
+        # Compute whether any columns are UUID-typed (for mapper includes)
+        has_uuid_cols = any(
+            col.get('is_uuid') or col.get('is_optional_uuid')
+            for col in domain_entity.get('columns', [])
+        )
+        domain_entity['has_uuid_columns'] = (
+            has_uuid_cols or domain_entity.get('primary_key', {}).get('is_uuid', False)
+        )
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models

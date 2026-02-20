@@ -17,34 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 16:14], for Friday, February 20, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:02* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:02   |      |      | 100.0 |
-|       | Active                                |        | 1:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:02 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-20 Fri 16:38], for Friday, February 20, 2026.
+|       | <75>                                       |        |      |      |       |
+| Tags  | Headline                                   | Time   |      |      |     % |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | *Total time*                               | *1:24* |      |      | 100.0 |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | Stories                                    | 1:24   |      |      | 100.0 |
+|       | Active                                     |        | 1:24 |      | 100.0 |
+| agile | Sprint and product backlog refinement      |        |      | 0:08 |   9.5 |
+| infra | Generate release notes for previous sprint |        |      | 1:16 |  90.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 15:18]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:08* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:08   |      |      | 100.0 |
-|       | Active                                |        | 0:08 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:08 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-20 Fri 16:38]
+|       | <75>                                       |        |      |      |       |
+| Tags  | Headline                                   | Time   |      |      |     % |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | *Total time*                               | *1:24* |      |      | 100.0 |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | Stories                                    | 1:24   |      |      | 100.0 |
+|       | Active                                     |        | 1:24 |      | 100.0 |
+| agile | Sprint and product backlog refinement      |        |      | 0:08 |   9.5 |
+| infra | Generate release notes for previous sprint |        |      | 1:16 |  90.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
-    CLOCK: [2026-02-20 Fri 16:14]--[2026-02-20 Fri 16:21] =>  0:07
-    CLOCK: [2026-02-20 Fri 15:19]--[2026-02-20 Fri 16:13] =>  0:54
     CLOCK: [2026-02-20 Fri 15:10]--[2026-02-20 Fri 15:18] =>  0:08
     :END:
 
@@ -189,6 +189,18 @@ print(p)
 
 #+RESULTS: tags-chart
 [[file:sprint_backlog_13_tags.png]]
+
+*** COMPLETED Generate release notes for previous sprint              :infra:
+    :LOGBOOK:
+    CLOCK: [2026-02-20 Fri 16:36]--[2026-02-20 Fri 16:37] =>  0:01
+    CLOCK: [2026-02-20 Fri 16:22]--[2026-02-20 Fri 16:36] =>  0:14
+    CLOCK: [2026-02-20 Fri 16:14]--[2026-02-20 Fri 16:21] =>  0:07
+    CLOCK: [2026-02-20 Fri 15:19]--[2026-02-20 Fri 16:13] =>  0:54
+    :END:
+
+We now have so much text that we are bursting the prompt window. We need to
+first feed the sprint backlog to summarise it and then use the summarised output
+to generate the release notes. The process is a bit more time consuming now.
 
 *** Add high-watermark support                                         :code:
 

@@ -198,7 +198,6 @@ void CodingSchemeDetailDialog::setScheme(
     ui_->codeEdit->setText(QString::fromStdString(scheme.code));
     ui_->nameEdit->setText(QString::fromStdString(scheme.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(scheme.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(scheme.change_commentary));
 
     if (scheme.uri) {
         ui_->uriEdit->setText(QString::fromStdString(*scheme.uri));
@@ -228,7 +227,6 @@ void CodingSchemeDetailDialog::updateUiState() {
     ui_->codeEdit->setReadOnly(!isCreateMode_ || isReadOnly_);
     ui_->nameEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
     ui_->uriEdit->setReadOnly(isReadOnly_);
     ui_->authorityTypeCombo->setEnabled(!isReadOnly_);
     ui_->subjectAreaCombo->setEnabled(!isReadOnly_);
@@ -242,7 +240,6 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     QString code = ui_->codeEdit->text().trimmed();
     QString name = ui_->nameEdit->text().trimmed();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
     QString uri = ui_->uriEdit->text().trimmed();
     QString authorityType = ui_->authorityTypeCombo->currentText();
     QString subjectArea = ui_->subjectAreaCombo->currentText();
@@ -264,7 +261,6 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     scheme.code = code.toStdString();
     scheme.name = name.toStdString();
     scheme.description = description.toStdString();
-    scheme.change_commentary = commentary.toStdString();
     scheme.authority_type = authorityType.toStdString();
     scheme.subject_area_name = subjectArea.toStdString();
     scheme.domain_name = domain.toStdString();

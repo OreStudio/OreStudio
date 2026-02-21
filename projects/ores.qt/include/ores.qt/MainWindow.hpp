@@ -622,6 +622,12 @@ private:
     /** @brief Shell MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* shellWindow_{nullptr};
 
+    /** @brief My Sessions MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* mySessionsWindow_{nullptr};
+
+    /** @brief My Account MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* myAccountWindow_{nullptr};
+
     /** @brief Name of the connection used for current login (empty if manual) */
     QString activeConnectionName_;
 

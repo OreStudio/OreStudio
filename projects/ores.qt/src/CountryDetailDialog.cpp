@@ -162,7 +162,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
 
-        ui_->flagTab->layout()->addWidget(flagContainer);
+        ui_->flagGroup->layout()->addWidget(flagContainer);
     }
 
     // Connect signals for editable fields to detect changes

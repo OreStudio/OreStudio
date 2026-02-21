@@ -1637,8 +1637,31 @@ void MainWindow::onAboutTriggered() {
 
 void MainWindow::onMyAccountTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "My Account triggered";
-    MyAccountDialog dialog(clientManager_, this);
-    dialog.exec();
+
+    if (myAccountWindow_) {
+        myAccountWindow_->showNormal();
+        mdiArea_->setActiveSubWindow(myAccountWindow_);
+        return;
+    }
+
+    auto* accountWidget = new MyAccountDialog(clientManager_, this);
+    connect(accountWidget, &MyAccountDialog::viewSessionHistoryRequested,
+            this, &MainWindow::onMySessionsTriggered);
+
+    myAccountWindow_ = new DetachableMdiSubWindow();
+    myAccountWindow_->setWidget(accountWidget);
+    myAccountWindow_->setWindowTitle(tr("My Account"));
+    myAccountWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    myAccountWindow_->resize(500, 400);
+
+    connect(myAccountWindow_, &QObject::destroyed, this, [this]() {
+        allDetachableWindows_.removeOne(myAccountWindow_);
+        myAccountWindow_ = nullptr;
+    });
+
+    mdiArea_->addSubWindow(myAccountWindow_);
+    allDetachableWindows_.append(myAccountWindow_);
+    myAccountWindow_->show();
 }
 
 void MainWindow::onMySessionsTriggered() {
@@ -1646,6 +1669,12 @@ void MainWindow::onMySessionsTriggered() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Not connected, cannot show sessions";
+        return;
+    }
+
+    if (mySessionsWindow_) {
+        mySessionsWindow_->showNormal();
+        mdiArea_->setActiveSubWindow(mySessionsWindow_);
         return;
     }
 
@@ -1657,11 +1686,23 @@ void MainWindow::onMySessionsTriggered() {
 
     const QString username = QString::fromStdString(clientManager_->currentUsername());
 
-    auto* sessionDialog = new SessionHistoryDialog(clientManager_, this);
-    sessionDialog->setAccount(*accountId, username);
-    sessionDialog->setAttribute(Qt::WA_DeleteOnClose);
-    sessionDialog->setModal(false);
-    sessionDialog->show();
+    auto* sessionWidget = new SessionHistoryDialog(clientManager_, this);
+    sessionWidget->setAccount(*accountId, username);
+
+    mySessionsWindow_ = new DetachableMdiSubWindow();
+    mySessionsWindow_->setWidget(sessionWidget);
+    mySessionsWindow_->setWindowTitle(tr("My Sessions - %1").arg(username));
+    mySessionsWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    mySessionsWindow_->resize(900, 500);
+
+    connect(mySessionsWindow_, &QObject::destroyed, this, [this]() {
+        allDetachableWindows_.removeOne(mySessionsWindow_);
+        mySessionsWindow_ = nullptr;
+    });
+
+    mdiArea_->addSubWindow(mySessionsWindow_);
+    allDetachableWindows_.append(mySessionsWindow_);
+    mySessionsWindow_->show();
 }
 
 void MainWindow::onDetachAllTriggered() {

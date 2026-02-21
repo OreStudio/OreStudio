@@ -69,7 +69,6 @@ void TreatmentDimensionDetailDialog::setDimension(
     ui_->codeEdit->setText(QString::fromStdString(dimension.code));
     ui_->nameEdit->setText(QString::fromStdString(dimension.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(dimension.change_commentary));
 
     populateProvenance(dimension_.version, dimension_.modified_by,
         dimension_.performed_by, dimension_.recorded_at,
@@ -87,7 +86,6 @@ void TreatmentDimensionDetailDialog::updateUiState() {
     ui_->codeEdit->setReadOnly(!isCreateMode_ || isReadOnly_);
     ui_->nameEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
 
     ui_->saveButton->setVisible(!isReadOnly_);
     ui_->deleteButton->setVisible(!isCreateMode_ && !isReadOnly_);
@@ -98,7 +96,6 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
     QString code = ui_->codeEdit->text().trimmed();
     QString name = ui_->nameEdit->text().trimmed();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
 
     if (code.isEmpty()) {
         MessageBoxHelper::warning(this, tr("Validation Error"),
@@ -116,7 +113,6 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
     dim.code = code.toStdString();
     dim.name = name.toStdString();
     dim.description = description.toStdString();
-    dim.change_commentary = commentary.toStdString();
     dim.modified_by = username_;
     dim.version = isCreateMode_ ? 0 : dimension_.version;
 

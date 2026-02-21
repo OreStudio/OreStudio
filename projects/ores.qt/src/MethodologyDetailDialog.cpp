@@ -71,7 +71,6 @@ void MethodologyDetailDialog::setMethodology(
 
     ui_->nameEdit->setText(QString::fromStdString(methodology.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(methodology.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(methodology.change_commentary));
 
     if (methodology.logic_reference) {
         ui_->logicReferenceEdit->setText(QString::fromStdString(*methodology.logic_reference));
@@ -96,7 +95,6 @@ void MethodologyDetailDialog::setReadOnly(bool readOnly) {
 void MethodologyDetailDialog::updateUiState() {
     ui_->nameEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
     ui_->logicReferenceEdit->setReadOnly(isReadOnly_);
     ui_->implementationEdit->setReadOnly(isReadOnly_);
 
@@ -107,7 +105,6 @@ void MethodologyDetailDialog::updateUiState() {
 void MethodologyDetailDialog::onSaveClicked() {
     QString name = ui_->nameEdit->text().trimmed();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
     QString logicRef = ui_->logicReferenceEdit->text().trimmed();
     QString implementation = ui_->implementationEdit->toPlainText().trimmed();
 
@@ -121,7 +118,6 @@ void MethodologyDetailDialog::onSaveClicked() {
     methodology.id = isCreateMode_ ? boost::uuids::random_generator()() : methodology_.id;
     methodology.name = name.toStdString();
     methodology.description = description.toStdString();
-    methodology.change_commentary = commentary.toStdString();
     methodology.modified_by = username_;
     methodology.version = isCreateMode_ ? 0 : methodology_.version;
 

@@ -70,7 +70,6 @@ void DataDomainDetailDialog::setDomain(
 
     ui_->nameEdit->setText(QString::fromStdString(domain.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(domain.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(domain.change_commentary));
 
     populateProvenance(domain_.version, domain_.modified_by, domain_.performed_by,
                        domain_.recorded_at, "", domain_.change_commentary);
@@ -86,7 +85,6 @@ void DataDomainDetailDialog::setReadOnly(bool readOnly) {
 void DataDomainDetailDialog::updateUiState() {
     ui_->nameEdit->setReadOnly(!isCreateMode_ || isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
 
     ui_->saveButton->setVisible(!isReadOnly_);
     ui_->deleteButton->setVisible(!isCreateMode_ && !isReadOnly_);
@@ -95,7 +93,6 @@ void DataDomainDetailDialog::updateUiState() {
 void DataDomainDetailDialog::onSaveClicked() {
     QString name = ui_->nameEdit->text().trimmed();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
 
     if (name.isEmpty()) {
         MessageBoxHelper::warning(this, tr("Validation Error"),
@@ -106,7 +103,6 @@ void DataDomainDetailDialog::onSaveClicked() {
     dq::domain::data_domain domain;
     domain.name = name.toStdString();
     domain.description = description.toStdString();
-    domain.change_commentary = commentary.toStdString();
     domain.modified_by = username_;
     domain.version = isCreateMode_ ? 0 : domain_.version;
 

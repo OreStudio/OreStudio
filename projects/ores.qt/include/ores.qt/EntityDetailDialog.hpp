@@ -91,6 +91,7 @@ private slots:
     void onAddContact();
     void onDeleteContact();
     void onContactDoubleClicked(int row, int column);
+    void onBusinessCentreChanged(const QString& code);
 
 protected:
     QTabWidget* tabWidget() const override;

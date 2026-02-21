@@ -406,7 +406,6 @@ void DatasetDetailDialog::setDataset(const dq::domain::dataset& dataset) {
     ui_->nameEdit->setText(QString::fromStdString(dataset.name));
     ui_->codeEdit->setText(QString::fromStdString(dataset.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dataset.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(dataset.change_commentary));
     ui_->sourceSystemEdit->setText(QString::fromStdString(dataset.source_system_id));
     ui_->businessContextEdit->setPlainText(QString::fromStdString(dataset.business_context));
     ui_->lineageDepthSpin->setValue(dataset.lineage_depth);
@@ -468,7 +467,6 @@ void DatasetDetailDialog::updateUiState() {
     ui_->nameEdit->setReadOnly(isReadOnly_);
     ui_->codeEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
     ui_->sourceSystemEdit->setReadOnly(isReadOnly_);
     ui_->businessContextEdit->setReadOnly(isReadOnly_);
     ui_->licenseEdit->setReadOnly(isReadOnly_);
@@ -508,7 +506,6 @@ void DatasetDetailDialog::onSaveClicked() {
     dataset.name = name.toStdString();
     dataset.code = code.toStdString();
     dataset.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    dataset.change_commentary = ui_->commentaryEdit->toPlainText().trimmed().toStdString();
     dataset.source_system_id = ui_->sourceSystemEdit->text().trimmed().toStdString();
     dataset.business_context = ui_->businessContextEdit->toPlainText().trimmed().toStdString();
     dataset.lineage_depth = ui_->lineageDepthSpin->value();

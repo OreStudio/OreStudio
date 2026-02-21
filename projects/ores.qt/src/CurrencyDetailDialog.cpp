@@ -167,8 +167,8 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
 
-    // Add clickable flag button after toolbar
-    if (mainLayout) {
+    // Add clickable flag button into the iconGroup in the General tab
+    {
         auto* flagContainer = new QWidget(this);
         auto* flagLayout = new QHBoxLayout(flagContainer);
         flagLayout->setContentsMargins(0, 4, 0, 4);
@@ -187,7 +187,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
 
-        mainLayout->insertWidget(1, flagContainer);
+        ui_->iconGroup->layout()->addWidget(flagContainer);
     }
 
     // Connect signals for editable fields to detect changes

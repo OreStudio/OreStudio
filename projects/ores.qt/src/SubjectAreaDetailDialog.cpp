@@ -68,7 +68,6 @@ void SubjectAreaDetailDialog::setSubjectArea(
 
     ui_->nameEdit->setText(QString::fromStdString(subject_area.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(subject_area.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(subject_area.change_commentary));
 
     // Select the domain in combo box
     int index = ui_->domainCombo->findText(QString::fromStdString(subject_area.domain_name));
@@ -92,7 +91,6 @@ void SubjectAreaDetailDialog::updateUiState() {
     ui_->nameEdit->setReadOnly(!isCreateMode_ || isReadOnly_);
     ui_->domainCombo->setEnabled(isCreateMode_ && !isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
 
     ui_->saveButton->setVisible(!isReadOnly_);
     ui_->deleteButton->setVisible(!isCreateMode_ && !isReadOnly_);
@@ -170,7 +168,6 @@ void SubjectAreaDetailDialog::onSaveClicked() {
     QString name = ui_->nameEdit->text().trimmed();
     QString domain_name = ui_->domainCombo->currentText();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
 
     if (name.isEmpty()) {
         MessageBoxHelper::warning(this, tr("Validation Error"),
@@ -188,7 +185,6 @@ void SubjectAreaDetailDialog::onSaveClicked() {
     subject_area.name = name.toStdString();
     subject_area.domain_name = domain_name.toStdString();
     subject_area.description = description.toStdString();
-    subject_area.change_commentary = commentary.toStdString();
     subject_area.modified_by = username_;
     subject_area.version = isCreateMode_ ? 0 : subject_area_.version;
 

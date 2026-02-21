@@ -96,22 +96,17 @@
          </item>
          <item row="3" column="1">
           <widget class="QPlainTextEdit" name="implementationEdit">
-           <property name="maximumHeight">
-            <number>80</number>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>100</height>
+            </size>
            </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="commentaryLabel">
-           <property name="text">
-            <string>Change Commentary:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QPlainTextEdit" name="commentaryEdit">
-           <property name="maximumHeight">
-            <number>80</number>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>300</height>
+            </size>
            </property>
           </widget>
          </item>

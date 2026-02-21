@@ -79,7 +79,6 @@ void CatalogDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->ownerEdit->setReadOnly(readOnly);
-    ui_->commentaryEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(false);
 }
@@ -90,8 +89,6 @@ void CatalogDetailDialog::updateUiFromCatalog() {
         QString::fromStdString(catalog_.description));
     ui_->ownerEdit->setText(
         catalog_.owner ? QString::fromStdString(*catalog_.owner) : QString());
-    ui_->commentaryEdit->clear();
-
     populateProvenance(catalog_.version, catalog_.modified_by, catalog_.performed_by,
                        catalog_.recorded_at, "", catalog_.change_commentary);
 }
@@ -108,8 +105,6 @@ void CatalogDetailDialog::updateCatalogFromUi() {
         catalog_.owner = owner.toStdString();
     }
 
-    catalog_.change_commentary =
-        ui_->commentaryEdit->toPlainText().trimmed().toStdString();
     catalog_.modified_by = username_;
 }
 

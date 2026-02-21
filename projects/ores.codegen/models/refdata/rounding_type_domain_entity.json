@@ -1,0 +1,112 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "refdata",
+    "entity_singular": "rounding_type",
+    "entity_plural": "rounding_types",
+    "entity_title": "Rounding Type",
+    "brief": "Valid rounding methods per ORE XML schema.",
+    "description": "Reference data table defining valid rounding method classifications.\nValues match xs:enumeration in ORE's currencyconfig.xsd.\n\nRounding types are managed by the system tenant and are used to\nspecify how currency amounts are rounded in financial calculations.",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique rounding type code.",
+      "detail": "Examples: 'Up', 'Down', 'Closest', 'Floor', 'Ceiling'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the rounding type.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" Rounding\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the rounding type with numeric examples.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_rounding_types_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "type",
+      "entity_plural_short": "types",
+      "entity_singular_words": "rounding type",
+      "entity_plural_words": "rounding types"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "rt",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.refdata/domain/rounding_type.hpp",
+      "domain_class": "refdata::domain::rounding_type",
+      "protocol_include": "ores.refdata/messaging/rounding_type_protocol.hpp",
+      "collection_name": "types",
+      "item_var": "type",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "refdata::messaging::get_rounding_types_request",
+      "get_response_class": "refdata::messaging::get_rounding_types_response",
+      "get_message_type": "get_rounding_types_request",
+      "save_request_class": "refdata::messaging::save_rounding_type_request",
+      "save_response_class": "refdata::messaging::save_rounding_type_response",
+      "save_message_type": "save_rounding_type_request",
+      "delete_request_class": "refdata::messaging::delete_rounding_type_request",
+      "delete_response_class": "refdata::messaging::delete_rounding_type_response",
+      "delete_message_type": "delete_rounding_type_request",
+      "history_request_class": "refdata::messaging::get_rounding_type_history_request",
+      "history_response_class": "refdata::messaging::get_rounding_type_history_response",
+      "history_message_type": "get_rounding_type_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 150},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "RoundingTypeListWindow",
+      "window_title": "Rounding Types",
+      "icon": "NumberSymbol"
+    }
+  }
+}

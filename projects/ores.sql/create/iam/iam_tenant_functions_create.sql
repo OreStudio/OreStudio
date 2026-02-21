@@ -230,6 +230,18 @@ exception
 end;
 $$ language plpgsql stable;
 
+-- Get current actor username from session variable.
+-- Set by the application layer before calling privileged SECURITY DEFINER functions.
+create or replace function ores_iam_current_actor_fn()
+returns text as $$
+begin
+    return nullif(current_setting('app.current_actor', true), '');
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+
 -- Get visible party IDs from session variable as uuid array
 create or replace function ores_iam_visible_party_ids_fn()
 returns uuid[] as $$
@@ -303,7 +315,6 @@ $$ language plpgsql security definer;
 --   - Bootstrap (accounts table empty): empty → defaults to current_user;
 --     non-empty → pass-through (no validation yet)
 --   - Normal operation: empty → raises exception (application must set this);
---     current_user → always valid (covers service roles);
 --     valid username → valid; invalid string → raises exception
 --
 create or replace function ores_iam_validate_account_username_fn(
@@ -324,11 +335,6 @@ begin
         raise exception 'modified_by cannot be null or empty. '
             'Application code must set this field explicitly.'
             using errcode = '23502';
-    end if;
-
-    -- Current DB session user is always valid (covers all service accounts)
-    if p_username = current_user then
-        return p_username;
     end if;
 
     -- Validate username exists in accounts table

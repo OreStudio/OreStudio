@@ -62,7 +62,12 @@ declare
     v_new_tenant_id uuid;
     v_system_tenant_id uuid;
     v_copied_count integer;
+    v_actor text;
 begin
+    -- Resolve actor: prefer session GUC (set by application), fall back to current_user.
+    -- current_user is always ores_ddl_user inside SECURITY DEFINER functions.
+    v_actor := coalesce(ores_iam_current_actor_fn(), current_user);
+
     -- Get system tenant ID
     v_system_tenant_id := ores_iam_system_tenant_id_fn();
 
@@ -93,7 +98,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         v_new_tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',
-        current_user, current_user, 'system.new_record', 'Tenant provisioned'
+        v_actor, v_actor, 'system.new_record', 'Tenant provisioned'
     );
 
     raise notice 'Created tenant: % (id: %)', p_code, v_new_tenant_id;
@@ -123,7 +128,7 @@ begin
     )
     select
         gen_random_uuid(), v_new_tenant_id, name, description,
-        current_user, current_user, 'system.new_record', 'Copied from system tenant during provisioning'
+        v_actor, v_actor, 'system.new_record', 'Copied from system tenant during provisioning'
     from ores_iam_roles_tbl
     where tenant_id = v_system_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
@@ -171,7 +176,7 @@ begin
     )
     select
         code, v_new_tenant_id, 0, name, description, display_order,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_categories_tbl
     where tenant_id = v_system_tenant_id
@@ -187,7 +192,7 @@ begin
     )
     select
         code, v_new_tenant_id, 0, name, description, display_order,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_types_tbl
     where tenant_id = v_system_tenant_id
@@ -203,7 +208,7 @@ begin
     )
     select
         code, v_new_tenant_id, 0, name, description, display_order,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_statuses_tbl
     where tenant_id = v_system_tenant_id
@@ -219,7 +224,7 @@ begin
     )
     select
         code, v_new_tenant_id, 0, name, description, display_order,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_contact_types_tbl
     where tenant_id = v_system_tenant_id
@@ -237,7 +242,7 @@ begin
     select
         code, v_new_tenant_id, 0, name, description, display_order,
         coding_scheme_code, max_cardinality,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_id_schemes_tbl
     where tenant_id = v_system_tenant_id
@@ -253,7 +258,7 @@ begin
     )
     select
         code, v_new_tenant_id, 0, name, description, display_order,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_book_statuses_tbl
     where tenant_id = v_system_tenant_id
@@ -269,7 +274,7 @@ begin
     )
     select
         code, v_new_tenant_id, 0, name, description, display_order,
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_purpose_types_tbl
     where tenant_id = v_system_tenant_id
@@ -295,7 +300,7 @@ begin
     ) values (
         'WRLD', v_new_tenant_id, 0, 'NONE',
         'World. Global business centre for entities not tied to a specific geographic location.',
-        current_user, current_user,
+        v_actor, v_actor,
         'system.new_record', 'System business centre for tenant'
     );
 
@@ -309,7 +314,7 @@ begin
         gen_random_uuid(), v_new_tenant_id,
         p_name || ' (System Party)', p_code || '_system', 'System',
         'Internal', 'WRLD', null, 'Active',
-        current_user, current_user, 'system.new_record',
+        v_actor, v_actor, 'system.new_record',
         'System party created during tenant provisioning'
     );
 

@@ -65,9 +65,7 @@ begin
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.assigned_at = current_timestamp;
-    if new.assigned_by is null or new.assigned_by = '' then
-        new.assigned_by = current_user;
-    end if;
+    new.assigned_by := ores_iam_validate_account_username_fn(new.assigned_by);
 
     return new;
 end;

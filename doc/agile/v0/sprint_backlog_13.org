@@ -706,8 +706,6 @@ Or maybe as a tooltip? whatever is idiomatic. Things to show:
 - when connected: server, bytes sent, received, status of connection.
 - when disconnected: retries, disconnected since.
 
-
-
 *** Reduce duplicated Qt code and clean up technical debt              :code:
 
 Several areas of duplicated code and legacy artefacts that should be cleaned up.

@@ -27,9 +27,9 @@
  *
  * The foundation layer includes:
  * - Change Control: Categories and reasons for audit trail
- * - Reference Data Lookup Tables: Rounding types
+ * - IAM: Service accounts, permissions, and roles for access control
  * - Data Governance Framework: Domains, subject areas, authority types, coding schemes
- * - IAM: Permissions and roles for access control
+ * - Reference Data Lookup Tables: Rounding types, party data, etc.
  * - System Configuration: Feature flags for runtime configuration
  *
  * All scripts are idempotent and can be safely re-run.
@@ -60,6 +60,16 @@
 
 \echo '--- Change Control ---'
 \ir ../dq/dq_change_reasons_populate.sql
+
+-- =============================================================================
+-- IAM (Identity and Access Management)
+-- =============================================================================
+-- Must run before DQ/refdata so that service accounts exist in ores_iam_accounts_tbl.
+-- After this, validate_account_username_fn validates against the accounts table.
+
+\echo ''
+\echo '--- IAM ---'
+\ir ../iam/iam_populate.sql
 
 -- =============================================================================
 -- Data Governance Framework
@@ -96,14 +106,6 @@
 \ir ../refdata/refdata_book_statuses_populate.sql
 \ir ../refdata/refdata_system_business_centre_populate.sql
 \ir ../refdata/refdata_system_party_populate.sql
-
--- =============================================================================
--- IAM (Identity and Access Management)
--- =============================================================================
-
-\echo ''
-\echo '--- IAM ---'
-\ir ../iam/iam_populate.sql
 
 -- =============================================================================
 -- System Configuration (Feature Flags)

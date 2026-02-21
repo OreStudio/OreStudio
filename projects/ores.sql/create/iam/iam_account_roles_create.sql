@@ -70,9 +70,7 @@ begin
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.assigned_at = current_timestamp;
-    if new.assigned_by is null or new.assigned_by = '' then
-        new.assigned_by = current_user;
-    end if;
+    new.assigned_by := ores_iam_validate_account_username_fn(coalesce(nullif(new.assigned_by, ''), ores_iam_current_actor_fn(), current_user));
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 

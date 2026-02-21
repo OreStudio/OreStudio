@@ -17,30 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 16:38], for Friday, February 20, 2026.
+#+CAPTION: Clock summary at [2026-02-20 Fri 23:48], for Friday, February 20, 2026.
 |       | <75>                                       |        |      |      |       |
 | Tags  | Headline                                   | Time   |      |      |     % |
 |-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *1:24* |      |      | 100.0 |
+|       | *Total time*                               | *4:24* |      |      | 100.0 |
 |-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 1:24   |      |      | 100.0 |
-|       | Active                                     |        | 1:24 |      | 100.0 |
-| agile | Sprint and product backlog refinement      |        |      | 0:08 |   9.5 |
-| infra | Generate release notes for previous sprint |        |      | 1:16 |  90.5 |
+|       | Stories                                    | 4:24   |      |      | 100.0 |
+|       | Active                                     |        | 4:24 |      | 100.0 |
+| agile | Sprint and product backlog refinement      |        |      | 0:08 |   3.0 |
+| infra | Generate release notes for previous sprint |        |      | 1:16 |  28.8 |
+| code  | Merge FSM into DQ                          |        |      | 0:34 |  12.9 |
+| code  | Make all details dialogs tabbed            |        |      | 2:26 |  55.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 16:38]
+#+CAPTION: Clock summary at [2026-02-20 Fri 23:48]
 |       | <75>                                       |        |      |      |       |
 | Tags  | Headline                                   | Time   |      |      |     % |
 |-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *1:24* |      |      | 100.0 |
+|       | *Total time*                               | *4:24* |      |      | 100.0 |
 |-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 1:24   |      |      | 100.0 |
-|       | Active                                     |        | 1:24 |      | 100.0 |
-| agile | Sprint and product backlog refinement      |        |      | 0:08 |   9.5 |
-| infra | Generate release notes for previous sprint |        |      | 1:16 |  90.5 |
+|       | Stories                                    | 4:24   |      |      | 100.0 |
+|       | Active                                     |        | 4:24 |      | 100.0 |
+| agile | Sprint and product backlog refinement      |        |      | 0:08 |   3.0 |
+| infra | Generate release notes for previous sprint |        |      | 1:16 |  28.8 |
+| code  | Merge FSM into DQ                          |        |      | 0:34 |  12.9 |
+| code  | Make all details dialogs tabbed            |        |      | 2:26 |  55.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -202,6 +206,181 @@ We now have so much text that we are bursting the prompt window. We need to
 first feed the sprint backlog to summarise it and then use the summarised output
 to generate the release notes. The process is a bit more time consuming now.
 
+*** COMPLETED Merge FSM into DQ                                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-20 Fri 17:27]--[2026-02-20 Fri 17:42] =>  0:15
+    CLOCK: [2026-02-20 Fri 16:38]--[2026-02-20 Fri 16:57] =>  0:19
+    :END:
+
+We considered first adding FSM as a stand alone component, but in reality it is
+part of the DQ framework. DQ is becoming a meta-data framework for all aspects
+related to ensuring the data quality in the system. We will probably also put
+four eyes into DQ.
+
+#+begin_quote
+This pull request refactors the Finite State Machine (FSM) component by
+integrating it directly into the Data Quality (DQ) layer. This consolidation is
+driven by the understanding that state machines serve as critical metadata
+infrastructure for managing data quality. The changes involve a comprehensive
+renaming of SQL objects and file paths to align FSM with its new home within DQ,
+ensuring a more logical and maintainable architecture.
+
+Highlights:
+
+- FSM Component Consolidation: The Finite State Machine (FSM) component has been
+  fully integrated into the Data Quality (DQ) layer, recognizing state machines
+  as core metadata infrastructure for data quality.
+- SQL Identifier Renaming: All SQL identifiers previously prefixed with
+  ores_fsm_* have been systematically renamed to ores_dq_fsm_* to reflect their
+  new organizational structure within the DQ component.
+- File Relocation: All FSM-related SQL schema, trigger, RLS policy, and
+  population scripts have been moved from their original fsm/ subdirectories
+  into the dq/ subdirectories.
+- Notification Channel Updates: PostgreSQL pg_notify channels for FSM entities
+  (machines, states, transitions) have been updated to use the new ores_dq_fsm_
+  prefix.
+- Entity String Renaming: Internal entity strings used for FSM components have
+  been updated from ores.fsm.* to ores.dq.fsm.*.
+#+end_quote
+
+*** STARTED Make all details dialogs tabbed                            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-20 Fri 22:48]--[2026-02-20 Fri 23:48] =>  1:00
+    CLOCK: [2026-02-20 Fri 22:10]--[2026-02-20 Fri 22:24] =>  0:14
+    CLOCK: [2026-02-20 Fri 17:43]--[2026-02-20 Fri 18:55] =>  1:12
+    :END:
+
+At present we have very long dialogs for details. Make all of them tabbed.
+
+*** STARTED Analyse caching at dialog level                            :code:
+
+We seem to have a lot of caches lying around at the dialog level. It makes more
+sense to have a common core (i.e. non-Qt specific) data-structure that caches
+different types of data which is shared by the different dialogs. This would
+also be reused by different clients such as Wt, shell, etc.
+
+Instead of locking we should use immutable data structures. We should also take
+into account notifications coming in for data changes. It should enable you to
+notify all clients, load the data in the background in a way that does not
+affect dialogs.
+
+We could create workspace component which has all of the data needed, stored
+using immer containers:
+
+- it can have a comms aspect, so that the UI does not need to worry about any of
+  that. You just request say currencies page N, workspace then deals with that.
+  It can just give you the current version. If none, it will load via comms. It
+  also knows about subscriptions so it will tell you about pending subscriptions
+  for a collection you are interested in. As you load more pages, we load these
+  into immer containers ordered by page.
+- once we implement workspaces, we should then make all references to foreign
+  keys "clickable". For example, if you are in a business centre and it has a
+  country we should be able to click on it and open the country. At present we
+  can't do this because the data is kept at the main dialog level.
+- ideally we want a way to cache data in Qt format. We don't need to save this
+  data to the local database. However, we don't want to make the
+  =ores.workspace= library depend on Qt. Maybe we just need some kind of
+  "extensions" on each frontend (e.g. Wt etc), sort of a qt.workspace which
+  contains the original workspace plus any Qt specific representations. Or maybe
+  use composition.
+- we should add a UI to visualise the workspace, or at least be able to see size
+  usage etc. Baobab style map.
+
+Notes:
+
+- actually this is not "workspace", its ores.caching.
+- caching seems more like a component-level phenomena rather than having a
+  dedicated component in the entire product. A component like ores.caching would
+  have to depend on every component anyways, and it would not provide a lot of
+  valuable services. Makes more sense to have a =ores.refdata/caching= and so
+  on, with possibly a front-end service which deals with cache misses/hits and
+  can persist data locally into say SQLite. It could also handle the look up
+  data locally first, then do a remote get etc. All of this is transparent from
+  a client perspective. We could also have a feature flag to enable/disable
+  caching (in memory, local storage, etc).
+
+Analysis with Gemini:
+
+#+begin_src markdown
+## User Story: Implement a High-Performance Reactive Caching Service for Reference Data
+
+- **As a** system architect,
+- **I want** a centralized Reference Data Service that manages data via a
+  multi-tiered caching strategy (L1 Memory, L2 Disk) and incremental updates,
+- **So that** my application can access large volumes of lookup data with
+  near-zero latency, maintain thread safety without lock contention, and
+  minimize network overhead.
+
+---
+
+### Acceptance Criteria
+
+#### 1. Multi-Tiered "Smart" Loading Logic
+
+- **Cold Start:** On initialization, the service must check the **L2 (SQLite)**
+  cache for an existing "Page" snapshot.
+- **As-Of Load:** If no L2 cache exists, the service must perform a full "As-Of"
+  load from the remote connection for a specific timestamp.
+- **Since (Delta) Load:** If an L2 snapshot exists, the service must only
+  request "Since" updates (changes/deltas) from the remote connection based on
+  the last known timestamp in the L2 store.
+- **L2 Persistence:** All data fetched via "As-Of" or "Since" must be mapped
+  back to its data representation and persisted to **SQLite** to facilitate
+  future warm starts.
+
+#### 2. Immutable L1 Cache (immer)
+
+- **Thread Safety:** The L1 (in-memory) cache must use **immer** persistent data
+  structures (`immer::map`) to provide lock-free read access for concurrent
+  threads.
+- **Structural Sharing:** Updates to the cache via "Since" loads must use
+  immer’s **transient/persistent** pattern to update only changed entities while
+  sharing memory for unchanged data.
+- **Atomic Swaps:** The service must provide an atomic mechanism to swap the
+  "current" version of the page, ensuring readers always see a consistent
+  snapshot.
+
+#### 3. Reactive Subscription & Staleness
+
+- **Notifications:** The service must subscribe to data change notifications.
+- **Stale State Management:** Upon receiving a notification, the service must
+  mark the relevant collection as stale and trigger an automated "Since" load to
+  synchronize the L1 and L2 tiers.
+
+#### 4. Data Mapping
+
+- **Bi-Directional Mapping:** The service must utilize mappers to translate
+  between raw data representations (for SQLite storage) and domain entities (for
+  L1 memory storage).
+
+---
+
+### Technical Notes
+
+- **L1:** `immer::map<std::string, std::shared_ptr<const Entity>>`.
+- **L2:** SQLite table indexed by `page_id` and `timestamp` storing serialized
+  blobs.
+- **Performance Goal:** Reading from L1 should require no mutex locking, relying
+  on the immutability of the underlying immer structure.
+#+end_src
+
+Links:
+
+- [[https://github.com/arximboldi/immer][GH: immer]]: "immer is a library of persistent and immutable data structures
+  written in C++. These enable whole new kinds of architectures for interactive
+  and concurrent programs of striking simplicity, correctness, and performance."
+- [[https://learn.microsoft.com/en-us/aspnet/core/performance/caching/memory?view=aspnetcore-10.0][Cache in-memory in ASP.NET Core]]: get ideas for the caching interfaces and
+  requirements.
+
+Merged stories:
+
+*Add workspace as a container*
+
+Core needs to have a container for all of the data stored within a context.
+
+Actually, according to Data Priented Principles, we may not need it. This may be
+a UI concept but not a code concept.
+
 *** Add high-watermark support                                         :code:
 
 Whenever we request entities, we should also return the watermark for that
@@ -245,7 +424,6 @@ Acceptance criteria:
 - Cache invalidation is based on structured metadata, not string patterns
 - Adding new image-related datasets doesn't require code changes
 - Cache invalidation logic is documented and maintainable
-
 
 *** Replace parent combo boxes with server-side type-ahead search      :code:
 
@@ -301,6 +479,16 @@ credentials. Add this capability to the account management UI.
 There is currently no UI to view or manage tenant types. Add a dialog accessible
 from the administration menu to list, view, and edit tenant type reference data.
 
+*** Add account permissions visibility and tabbed dialog               :code:
+
+Users have no way to see what permissions an account has. The accounts dialog
+also needs a tabbed layout to display all available information.
+
+- Add a permissions tab showing effective permissions for the account.
+- Use tabbed dialog layout (General, Permissions, Sessions, etc.).
+- Clicking on a user should show profile details: admin sees full details, others
+  see only key fields (email, etc.).
+
 *** Add shell commands for parties and counterparties                  :code:
 
 The shell currently has no commands for party or counterparty CRUD. Add list,
@@ -315,16 +503,6 @@ show confusing "No populate_function for artefact_type" warnings during bundle
 publication. These datasets are dependencies that load into staging tables and
 don't publish to production directly — this is working as designed. Suppress or
 reclassify these log messages to avoid confusion.
-
-*** Add account permissions visibility and tabbed dialog               :code:
-
-Users have no way to see what permissions an account has. The accounts dialog
-also needs a tabbed layout to display all available information.
-
-- Add a permissions tab showing effective permissions for the account.
-- Use tabbed dialog layout (General, Permissions, Sessions, etc.).
-- Clicking on a user should show profile details: admin sees full details, others
-  see only key fields (email, etc.).
 
 *** Allow creating new connections from login dialog                   :code:
 
@@ -905,6 +1083,11 @@ We need a main tab with the currency related properties, then a "system" tab
 with temporal data which is read-only even on edit and a "image" tab with the
 image used to represent the currency. It could also contain some description or
 notes.
+
+*** Currencies: Country relationship                                   :code:
+
+At present currencies are linked to flags directly via an image id. We should
+also be linked to a country, where such a linkage exists.
 
 *** Currencies: Currency Taxonomy Enrichment                           :code:
 

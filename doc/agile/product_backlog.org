@@ -67,6 +67,20 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Associating annotations with entities                              :code:
+
+It should be possible to associate annotations with any entity in the system.
+For example, with books, portfolios, trades, etc. This could be a very simple
+table with a UUID, a text field, and the usual timestamps. Then, we could add a
+notes tab to entities which just loads all notes matching that UUID and shows
+them chronologically. Need to be temporal but the display is as a list:
+
+- ID: UUID of the note.
+- Entity ID: UUID of the entity being annotated
+- Text: Annotation text.
+- User: Modified by of the entry.
+- Time: valid from of the entry.
+
 *** Restore list windows after login                                   :code:
 
 After login, reopen all entity list windows that were open when the user last
@@ -1597,6 +1611,15 @@ Links:
   from their very first tokens (plug in your preferred model) long before a full
   answer is generated. It produces initial audible speech in ~300 ms (hardware
   dependent)."
+- [[https://github.com/soldier444xd/KittenTTS][GH: KittenTTS]]: "KittenTTS is a compact, fast, and friendly text-to-speech
+  model. It delivers natural voice output at a tiny footprint, designed to run
+  on mobile devices, edge devices, and lightweight servers. It fits under 25 MB
+  and focuses on clear, lifelike speech without sacrificing performance. This
+  project aims to give developers a reliable TTS option that’s easy to deploy,
+  easy to run, and easy to extend."
+- [[https://github.com/KittenML/KittenTTS][GH: KittenTTS]]: "Kitten TTS is an open-source realistic text-to-speech model
+  with just 15 million parameters, designed for lightweight deployment and
+  high-quality voice synthesis."
 
 *** Cli clean-ups                                                      :code:
 
@@ -2757,6 +2780,11 @@ Stories that we want to capture, but won't work on for a while.
 - [[https://github.com/google-research/timesfm][GH: timesfm:]] "TimesFM (Time Series Foundation Model) is a pretrained
   time-series foundation model developed by Google Research for time-series
   forecasting."
+- [[https://huggingface.co/shinfxh/reverso][HF: reverso]]: "Efficient time-series foundation models for zero-shot
+  forecasting."
+- [[https://github.com/shinfxh/reverso][reverso]]: "By combining long convolutions with linear RNN layers, Reverso
+  matches the performance of transformer-based models that are over 100x
+  larger."
 
 *** Consider integrating whatsapp-mcp                                  :code:
 

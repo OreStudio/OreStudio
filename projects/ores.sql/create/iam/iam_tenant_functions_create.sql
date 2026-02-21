@@ -230,6 +230,18 @@ exception
 end;
 $$ language plpgsql stable;
 
+-- Get current actor username from session variable.
+-- Set by the application layer before calling privileged SECURITY DEFINER functions.
+create or replace function ores_iam_current_actor_fn()
+returns text as $$
+begin
+    return nullif(current_setting('app.current_actor', true), '');
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+
 -- Get visible party IDs from session variable as uuid array
 create or replace function ores_iam_visible_party_ids_fn()
 returns uuid[] as $$
@@ -299,20 +311,43 @@ $$ language plpgsql security definer;
 -- Validates that a modified_by value is a legitimate account username.
 -- Called from every insert trigger to enforce audit trail integrity.
 --
+-- Must be SECURITY DEFINER to bypass RLS when looking up service accounts
+-- in the system tenant (e.g. ores_test_dml_user), which would otherwise
+-- be invisible when a non-system tenant context is active.
+--
+-- Bootstrap detection is based on the current tenant's accounts only
+-- (using the session tenant GUC), so that test tenants that have no
+-- user accounts remain in bootstrap mode even after system service accounts
+-- are created. This allows test generators to use arbitrary modified_by
+-- values until strict per-tenant account validation is fully adopted.
+--
 -- Semantics:
---   - Bootstrap (accounts table empty): empty → defaults to current_user;
---     non-empty → pass-through (no validation yet)
---   - Normal operation: empty → raises exception (application must set this);
---     current_user → always valid (covers service roles);
---     valid username → valid; invalid string → raises exception
+--   - Bootstrap (current-tenant accounts empty): empty → defaults to
+--     current_user; non-empty → pass-through (no validation yet)
+--   - Normal operation: empty → raises exception (application must set
+--     this); valid username → valid; invalid string → raises exception
 --
 create or replace function ores_iam_validate_account_username_fn(
     p_username text
 ) returns text as $$
+declare
+    v_tenant_id uuid;
 begin
-    -- During bootstrap (no accounts exist yet), allow any value
-    -- and default empty to current_user (the DB service role)
-    if not exists (select 1 from ores_iam_accounts_tbl limit 1) then
+    -- Determine the current tenant for bootstrap detection.
+    -- Fall back to system tenant if no session tenant is set.
+    v_tenant_id := coalesce(
+        ores_iam_current_tenant_id_fn(),
+        ores_iam_system_tenant_id_fn()
+    );
+
+    -- During bootstrap for this tenant (no user accounts exist yet),
+    -- allow any value and default empty to current_user.
+    if not exists (
+        select 1 from ores_iam_accounts_tbl
+        where tenant_id = v_tenant_id
+          and account_type != 'service'
+        limit 1
+    ) then
         if p_username is null or p_username = '' then
             return current_user;
         end if;
@@ -326,12 +361,8 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Current DB session user is always valid (covers all service accounts)
-    if p_username = current_user then
-        return p_username;
-    end if;
-
-    -- Validate username exists in accounts table
+    -- Validate username exists in accounts table across all tenants
+    -- (service accounts in the system tenant must be visible here)
     if not exists (
         select 1 from ores_iam_accounts_tbl
         where username = p_username
@@ -343,4 +374,4 @@ begin
 
     return p_username;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;

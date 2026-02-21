@@ -53,6 +53,10 @@ create table if not exists "ores_refdata_business_centres_tbl" (
     check ("code" <> '')
 );
 
+-- Migrate existing tables: add city_name if it was added after initial creation
+alter table if exists "ores_refdata_business_centres_tbl"
+    add column if not exists "city_name" text null;
+
 create unique index if not exists ores_refdata_business_centres_version_uniq_idx
 on "ores_refdata_business_centres_tbl" (tenant_id, code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();

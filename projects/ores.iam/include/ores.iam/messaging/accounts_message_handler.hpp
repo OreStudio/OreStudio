@@ -506,6 +506,34 @@ private:
     handle_select_party_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    /**
+     * @brief Handle get_account_parties_by_account_request message.
+     *
+     * Requires authentication. Returns all parties assigned to an account.
+     */
+    handler_result
+    handle_get_account_parties_by_account_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle save_account_party_request message.
+     *
+     * Requires authentication. Creates or updates an account-party link.
+     */
+    handler_result
+    handle_save_account_party_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle delete_account_party_request message.
+     *
+     * Requires authentication. Removes one or more account-party links.
+     */
+    handler_result
+    handle_delete_account_party_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // =========================================================================
     // Tenant Management Handlers
     // =========================================================================

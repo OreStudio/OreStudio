@@ -110,6 +110,7 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
         // Set up disconnect callback (events are now published by the client directly)
         new_client->set_disconnect_callback([this]() {
             BOOST_LOG_SEV(lg(), warn) << "Client detected disconnect";
+            disconnected_since_ = std::chrono::steady_clock::now();
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
         });
@@ -208,6 +209,7 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
                         << "Suppressing reconnected signal - user disconnect in progress";
                     return;
                 }
+                disconnected_since_.reset();
                 emit reconnected();
             }, Qt::QueuedConnection);
         });
@@ -696,6 +698,7 @@ SignupResult ClientManager::signup(
 void ClientManager::disconnect() {
     // Set flag FIRST to prevent any pending reconnecting signals from being emitted
     user_disconnecting_.store(true, std::memory_order_release);
+    disconnected_since_.reset();
 
     if (client_) {
         BOOST_LOG_SEV(lg(), info) << "Disconnecting client (user-initiated)";
@@ -813,6 +816,23 @@ bool ClientManager::logout() {
 
 bool ClientManager::isConnected() const {
     return client_ && client_->is_connected();
+}
+
+std::uint64_t ClientManager::bytesSent() const {
+    return client_ ? client_->bytes_sent() : 0;
+}
+
+std::uint64_t ClientManager::bytesReceived() const {
+    return client_ ? client_->bytes_received() : 0;
+}
+
+std::uint64_t ClientManager::lastRttMs() const {
+    return client_ ? client_->last_rtt_ms() : 0;
+}
+
+std::optional<std::chrono::steady_clock::time_point>
+ClientManager::disconnectedSince() const {
+    return disconnected_since_;
 }
 
 bool ClientManager::isAdmin() const {
@@ -989,6 +1009,63 @@ std::optional<std::vector<iam::domain::session>> ClientManager::getActiveSession
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Get active sessions exception: " << e.what();
+        return std::nullopt;
+    }
+}
+
+std::optional<std::vector<iam::messaging::session_sample_dto>>
+ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
+    if (!isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot get session samples: not connected";
+        return std::nullopt;
+    }
+
+    try {
+        iam::messaging::get_session_samples_request request{.session_id = sessionId};
+
+        auto payload = request.serialize();
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_session_samples_request,
+            0,
+            std::move(payload)
+        );
+
+        auto response_result = client_->send_request_sync(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Get session samples failed: network error";
+            return std::nullopt;
+        }
+
+        const auto& header = response_result->header();
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Get session samples failed: decompression error";
+            return std::nullopt;
+        }
+
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
+            BOOST_LOG_SEV(lg(), error) << "Get session samples failed: "
+                << (error_resp ? error_resp->message : "unknown error");
+            return std::nullopt;
+        }
+
+        auto response = iam::messaging::get_session_samples_response::deserialize(*payload_result);
+        if (!response || !response->success) {
+            BOOST_LOG_SEV(lg(), error) << "Get session samples failed: "
+                << (response ? response->message : "invalid response");
+            return std::nullopt;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Retrieved " << response->samples.size()
+                                   << " samples for session";
+
+        return std::move(response->samples);
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Get session samples exception: " << e.what();
         return std::nullopt;
     }
 }

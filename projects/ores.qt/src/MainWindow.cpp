@@ -19,6 +19,7 @@
  */
 #include "ores.qt/MainWindow.hpp"
 
+#include <chrono>
 #include <functional>
 #include <QDebug>
 #include <QTableView>
@@ -121,6 +122,7 @@ MainWindow::MainWindow(QWidget* parent) :
     connectionStatusIconLabel_ = new QLabel(this);
     connectionStatusIconLabel_->setFixedWidth(20);
     connectionStatusIconLabel_->setAlignment(Qt::AlignCenter);
+    connectionStatusIconLabel_->installEventFilter(this);
     ui_->statusbar->addPermanentWidget(connectionStatusIconLabel_);
 
     ui_->horizontalLayout_3->addWidget(mdiArea_);
@@ -812,6 +814,57 @@ MainWindow::MainWindow(QWidget* parent) :
     updateWindowTitle();
 
     BOOST_LOG_SEV(lg(), info) << "Main window created.";
+}
+
+QString MainWindow::buildConnectionTooltip() const {
+    if (!clientManager_) return QString();
+
+    const bool connected = clientManager_->isConnected();
+    const auto disc_since = clientManager_->disconnectedSince();
+    const auto host = clientManager_->connectedHost();
+
+    // Never connected
+    if (host.empty() && !connected && !disc_since) return QString();
+
+    if (connected) {
+        const auto sent = clientManager_->bytesSent();
+        const auto recv = clientManager_->bytesReceived();
+        const auto rtt  = clientManager_->lastRttMs();
+
+        auto format_bytes = [](std::uint64_t b) -> QString {
+            if (b < 1024)
+                return QString("%1 B").arg(b);
+            if (b < 1024 * 1024)
+                return QString("%1 KB").arg(b / 1024.0, 0, 'f', 1);
+            return QString("%1 MB").arg(b / (1024.0 * 1024.0), 0, 'f', 2);
+        };
+
+        return QString("Server: %1:%2\nSent: %3\nReceived: %4\nLatency: %5 ms")
+            .arg(QString::fromStdString(host))
+            .arg(clientManager_->connectedPort())
+            .arg(format_bytes(sent))
+            .arg(format_bytes(recv))
+            .arg(rtt);
+    }
+
+    if (disc_since) {
+        const auto secs = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::steady_clock::now() - *disc_since).count();
+        const auto mins = secs / 60;
+        QString duration = mins > 0
+            ? QString("%1m %2s").arg(mins).arg(secs % 60)
+            : QString("%1s").arg(secs);
+        return QString("Disconnected for: %1\nRetrying...").arg(duration);
+    }
+
+    return QString();
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == connectionStatusIconLabel_ && event->type() == QEvent::ToolTip) {
+        connectionStatusIconLabel_->setToolTip(buildConnectionTooltip());
+    }
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {

@@ -32,6 +32,7 @@
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/session_samples_protocol.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
@@ -161,6 +162,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_session_statistics_request(payload, remote_address);
     case message_type::get_active_sessions_request:
         co_return co_await handle_get_active_sessions_request(payload, remote_address);
+    case message_type::get_session_samples_request:
+        co_return co_await handle_get_session_samples_request(payload, remote_address);
     // RBAC messages
     case message_type::list_roles_request:
         co_return co_await handle_list_roles_request(payload, remote_address);
@@ -1060,6 +1063,17 @@ handle_logout_request(std::span<const std::byte> payload,
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn) << "Failed to persist session end to database: "
                                           << e.what();
+            }
+            if (!sess->samples.empty()) {
+                try {
+                    sess_repo.insert_samples(sess->id, sess->samples);
+                    BOOST_LOG_SEV(lg(), debug) << "Inserted " << sess->samples.size()
+                                               << " samples for session: "
+                                               << boost::uuids::to_string(sess->id);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to persist session samples: "
+                                              << e.what();
+                }
             }
         }
 
@@ -2098,6 +2112,98 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
         .sessions = std::move(active_sessions)
     };
     co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_session_samples_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_session_samples_request from "
+                               << remote_address;
+
+    auto request_result = get_session_samples_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_session_samples_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    const auto session_id_str = boost::uuids::to_string(request.session_id);
+
+    // Get the requester's session
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Get session samples denied: no active session for "
+                                  << remote_address;
+        get_session_samples_response response{
+            .success = false,
+            .message = "Not authenticated"
+        };
+        co_return response.serialize();
+    }
+
+    // Create per-request context with session's tenant
+    auto ctx = make_request_context(*session);
+    repository::session_repository sess_repo(ctx);
+
+    // Verify the requester owns the session or is an admin
+    const bool is_admin = auth_service_->has_permission(session->account_id,
+        domain::permissions::accounts_read);
+
+    if (!is_admin) {
+        auto db_session = sess_repo.read(request.session_id);
+        if (!db_session) {
+            BOOST_LOG_SEV(lg(), warn) << "Get session samples: session not found: "
+                                      << session_id_str;
+            get_session_samples_response response{
+                .success = false,
+                .message = "Session not found"
+            };
+            co_return response.serialize();
+        }
+
+        if (db_session->account_id != session->account_id) {
+            BOOST_LOG_SEV(lg(), warn) << "Get session samples denied: non-admin trying to "
+                                      << "access samples for session " << session_id_str;
+            get_session_samples_response response{
+                .success = false,
+                .message = "Not authorised to view samples for this session"
+            };
+            co_return response.serialize();
+        }
+    }
+
+    try {
+        auto samples = sess_repo.read_samples(request.session_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << samples.size()
+                                  << " samples for session " << session_id_str;
+
+        get_session_samples_response response;
+        response.success = true;
+        response.samples.reserve(samples.size());
+
+        for (const auto& s : samples) {
+            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                s.timestamp.time_since_epoch()).count();
+            session_sample_dto dto{
+                .sample_time_ms = static_cast<std::uint64_t>(ms),
+                .bytes_sent     = s.bytes_sent,
+                .bytes_received = s.bytes_received,
+                .latency_ms     = s.latency_ms
+            };
+            response.samples.push_back(std::move(dto));
+        }
+
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to read session samples: " << e.what();
+        get_session_samples_response response{
+            .success = false,
+            .message = e.what()
+        };
+        co_return response.serialize();
+    }
 }
 
 // =============================================================================

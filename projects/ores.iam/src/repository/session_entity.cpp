@@ -35,4 +35,9 @@ std::ostream& operator<<(std::ostream& s, const session_statistics_entity& v) {
     return s;
 }
 
+std::ostream& operator<<(std::ostream& s, const session_sample_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

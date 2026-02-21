@@ -23,13 +23,17 @@
 #include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
+#include <QSplitter>
 #include <QAbstractTableModel>
 #include <QFutureWatcher>
+#include <QItemSelection>
+#include <QtCharts/QChartView>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
+#include "ores.iam/messaging/session_samples_protocol.hpp"
 
 namespace ores::qt {
 
@@ -50,6 +54,8 @@ public:
 
     void setSessions(const std::vector<iam::domain::session>& sessions);
     void clear();
+
+    const std::vector<iam::domain::session>& sessions() const { return sessions_; }
 
 private:
     enum Column {
@@ -111,12 +117,17 @@ signals:
 
 private slots:
     void onSessionsLoaded();
+    void onSamplesLoaded();
+    void onSessionSelectionChanged(const QItemSelection& selected,
+                                   const QItemSelection& deselected);
 
 private:
     void setupUi();
 
     QTableView* tableView_;
     SessionHistoryModel* model_;
+    QSplitter* splitter_;
+    QChartView* chartView_;
     ClientManager* clientManager_;
     boost::uuids::uuid accountId_;
     QString username_;
@@ -127,7 +138,15 @@ private:
         std::uint32_t total_count;
     };
 
+    struct FetchSamplesResult {
+        bool success;
+        boost::uuids::uuid session_id;
+        QString session_label;
+        std::vector<iam::messaging::session_sample_dto> samples;
+    };
+
     QFutureWatcher<FetchResult>* watcher_;
+    QFutureWatcher<FetchSamplesResult>* samplesWatcher_;
 };
 
 }

@@ -1318,6 +1318,124 @@ Tests run in a single transaction with rollback, which means:
   =current_timestamp= returning the same value (transaction frozen)
 - For version increment tests, use separate transactions or integration tests
 
+* Time-Series Tables (TimescaleDB)
+
+** When to use hypertables
+
+Use a TimescaleDB hypertable (instead of a plain PostgreSQL table) when:
+
+- Data is written frequently at high volume (heartbeat samples, telemetry, events)
+- Queries are almost exclusively time-range based (e.g., last N minutes, last
+  session)
+- The data has a clear foreign key to an entity (session, device, account) that
+  acts as a natural partition key for compression and indexing
+- Retention beyond a configurable window is not needed
+
+Plain tables remain preferable for:
+
+- Low-volume audit/history data (session start/end, account changes)
+- Bitemporal records where =valid_from= / =valid_to= are not monotonically increasing
+- Reference data with infrequent writes
+
+** Partitioning column
+
+Always choose a timestamp column as the partitioning dimension. In ORE Studio
+the naming convention is =sample_time=, =event_time=, or =recorded_at= (with
+type =timestamptz=).
+
+#+begin_src sql
+SELECT create_hypertable('ores_iam_session_samples_tbl', 'sample_time');
+#+end_src
+
+** Chunk interval guidelines
+
+| Data type              | Recommended interval |
+|------------------------+----------------------|
+| High-frequency samples | 1 day                |
+| Session telemetry      | 7 days               |
+| Coarse metrics         | 30 days              |
+
+#+begin_src sql
+SELECT set_chunk_time_interval('ores_iam_session_samples_tbl',
+    INTERVAL '1 day');
+#+end_src
+
+** Compression
+
+Enable compression after a short window (3–7 days) to reduce storage. Segment
+by the foreign-key column (e.g., =session_id=) so that time-range queries per
+entity can decompress only the relevant chunks.
+
+#+begin_src sql
+ALTER TABLE ores_iam_session_samples_tbl SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'session_id'
+);
+SELECT add_compression_policy('ores_iam_session_samples_tbl',
+    INTERVAL '7 days');
+#+end_src
+
+** Retention
+
+Drop old chunks automatically. Typical retention periods:
+
+| Data type            | Retention |
+|----------------------+-----------|
+| Session samples      | 30 days   |
+| Telemetry / events   | 90 days   |
+| Coarse daily metrics | 365 days  |
+
+#+begin_src sql
+SELECT add_retention_policy('ores_iam_session_samples_tbl',
+    INTERVAL '30 days');
+#+end_src
+
+** Canonical example: =ores_iam_session_samples_tbl=
+
+#+begin_src sql
+CREATE TABLE IF NOT EXISTS "ores_iam_session_samples_tbl" (
+    "session_id"     text          not null,
+    "sample_time"    timestamptz   not null,
+    "bytes_sent"     bigint        not null default 0,
+    "bytes_received" bigint        not null default 0,
+    "latency_ms"     bigint        not null default 0,
+    primary key (session_id, sample_time)
+);
+
+SELECT create_hypertable('ores_iam_session_samples_tbl', 'sample_time',
+    if_not_exists => TRUE);
+
+CREATE INDEX IF NOT EXISTS
+    "ores_iam_session_samples_session_id_sample_time_idx"
+    ON "ores_iam_session_samples_tbl" (session_id, sample_time DESC);
+
+ALTER TABLE ores_iam_session_samples_tbl SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'session_id'
+);
+SELECT add_compression_policy('ores_iam_session_samples_tbl',
+    INTERVAL '7 days');
+SELECT add_retention_policy('ores_iam_session_samples_tbl',
+    INTERVAL '30 days');
+#+end_src
+
+** Index pattern
+
+Always add a composite index =(foreign_key, time DESC)= in addition to the
+primary key. This enables efficient time-range queries filtered by entity:
+
+#+begin_src sql
+-- Fetch latest N samples for a session
+SELECT * FROM ores_iam_session_samples_tbl
+WHERE session_id = $1
+ORDER BY sample_time DESC
+LIMIT 100;
+#+end_src
+
+The =DESC= ordering matches the most-common access pattern (latest samples first
+for chart display and monitoring). TimescaleDB's chunk exclusion makes this
+query efficient even over very large datasets.
+
 * Artefacts                                                        :noexport:
 
 ** Licence

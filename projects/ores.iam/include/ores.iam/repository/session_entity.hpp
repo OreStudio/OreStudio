@@ -129,6 +129,41 @@ struct session_statistics_entity {
 
 std::ostream& operator<<(std::ostream& s, const session_statistics_entity& v);
 
+/**
+ * @brief Entity for a single time-series sample in the session samples hypertable.
+ */
+struct session_sample_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_iam_session_samples_tbl";
+
+    /**
+     * @brief Session UUID — part of composite primary key.
+     */
+    sqlgen::PrimaryKey<std::string> session_id;
+
+    /**
+     * @brief Sample timestamp — part of composite primary key and partition column.
+     */
+    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sample_time;
+
+    /**
+     * @brief Cumulative bytes sent at sample time.
+     */
+    std::int64_t bytes_sent = 0;
+
+    /**
+     * @brief Cumulative bytes received at sample time.
+     */
+    std::int64_t bytes_received = 0;
+
+    /**
+     * @brief Round-trip time reported by the client in this ping, in milliseconds.
+     */
+    std::int64_t latency_ms = 0;
+};
+
+std::ostream& operator<<(std::ostream& s, const session_sample_entity& v);
+
 }
 
 #endif

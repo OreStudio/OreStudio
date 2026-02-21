@@ -215,18 +215,32 @@ boost::asio::awaitable<void> server_session::process_messages() {
             }
 
             const auto& request_frame = *read_result.frame;
+            auto remote_addr = conn_->remote_address();
             BOOST_LOG_SEV(lg(), debug) << "Received message type "
                                       << request_frame.header().type;
 
             // Handle ping messages directly (built-in protocol feature)
             if (request_frame.header().type == messaging::message_type::ping) {
+                // Record bytes sample at heartbeat frequency for time-series tracking
+                if (sessions_) {
+                    auto ping_result = messaging::ping::deserialize(request_frame.payload());
+                    const auto latency = ping_result ? ping_result->latency_ms : 0;
+                    sessions_->record_sample(remote_addr,
+                        conn_->bytes_sent(), conn_->bytes_received(), latency);
+                }
                 co_await service::heartbeat_service::handle_ping(
                     *conn_, ++sequence_number_, request_frame.correlation_id());
                 continue;  // Don't send additional response
             }
 
+            // Update session bytes before logout so they are persisted correctly
+            if (request_frame.header().type == messaging::message_type::logout_request
+                    && sessions_) {
+                sessions_->update_session_bytes(remote_addr,
+                    conn_->bytes_sent(), conn_->bytes_received());
+            }
+
             // Dispatch to appropriate handler
-            auto remote_addr = conn_->remote_address();
             messaging::frame response_frame{messaging::message_type::error_response, 0, {}};
 
             try {

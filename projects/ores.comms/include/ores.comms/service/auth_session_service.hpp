@@ -138,6 +138,21 @@ public:
         std::uint64_t bytes_sent, std::uint64_t bytes_received);
 
     /**
+     * @brief Record a time-series sample for an active session.
+     *
+     * Called at heartbeat frequency to capture cumulative byte counts and RTT.
+     * Samples are stored in-memory and persisted to the database at logout.
+     *
+     * @param remote_address The client's remote address
+     * @param bytes_sent Cumulative bytes sent at this moment
+     * @param bytes_received Cumulative bytes received at this moment
+     * @param latency_ms RTT reported by the client in this ping (ms), 0 if unknown
+     */
+    void record_sample(const std::string& remote_address,
+        std::uint64_t bytes_sent, std::uint64_t bytes_received,
+        std::uint64_t latency_ms = 0);
+
+    /**
      * @brief Remove session for a remote address.
      *
      * @param remote_address The client's remote address

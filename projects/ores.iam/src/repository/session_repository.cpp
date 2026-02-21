@@ -349,6 +349,69 @@ session_repository::read_aggregate_daily_statistics(
     return {};
 }
 
+void session_repository::insert_samples(const boost::uuids::uuid& session_id,
+    const std::vector<comms::service::session_sample>& samples) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Inserting " << samples.size()
+                               << " samples for session: "
+                               << boost::uuids::to_string(session_id);
+
+    if (samples.empty()) {
+        return;
+    }
+
+    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
+
+    std::vector<session_sample_entity> entities;
+    entities.reserve(samples.size());
+    for (const auto& s : samples) {
+        session_sample_entity e;
+        e.session_id = session_id_str;
+        e.sample_time = timepoint_to_timestamp(s.timestamp, lg());
+        e.bytes_sent = static_cast<std::int64_t>(s.bytes_sent);
+        e.bytes_received = static_cast<std::int64_t>(s.bytes_received);
+        e.latency_ms = static_cast<std::int64_t>(s.latency_ms);
+        entities.push_back(std::move(e));
+    }
+
+    const auto r = sqlgen::session(ctx_.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(entities))
+        .and_then(commit);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Samples inserted successfully.";
+}
+
+std::vector<comms::service::session_sample>
+session_repository::read_samples(const boost::uuids::uuid& session_id) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading samples for session: "
+                               << boost::uuids::to_string(session_id);
+
+    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
+    const auto query = sqlgen::read<std::vector<session_sample_entity>> |
+        where("session_id"_c == session_id_str) |
+        order_by("sample_time"_c.asc());
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    std::vector<comms::service::session_sample> result;
+    result.reserve(r->size());
+    for (const auto& e : *r) {
+        comms::service::session_sample s;
+        s.timestamp = timestamp_to_timepoint(e.sample_time.value());
+        s.bytes_sent = static_cast<std::uint64_t>(e.bytes_sent);
+        s.bytes_received = static_cast<std::uint64_t>(e.bytes_received);
+        s.latency_ms = static_cast<std::uint64_t>(e.latency_ms);
+        result.push_back(std::move(s));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " samples.";
+    return result;
+}
+
 void session_repository::remove_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing sessions for account: "
                                << boost::uuids::to_string(account_id);

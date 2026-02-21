@@ -19,12 +19,18 @@
  */
 #include "ores.qt/SessionHistoryDialog.hpp"
 
+#include <algorithm>
 #include <QDateTime>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QPainter>
 #include <QPushButton>
 #include <QtConcurrent>
+#include <QtCharts/QChart>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QDateTimeAxis>
+#include <QtCharts/QValueAxis>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -165,22 +171,27 @@ SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager,
                                            QWidget* parent)
     : QWidget(parent),
       clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      samplesWatcher_(new QFutureWatcher<FetchSamplesResult>(this)) {
     setupUi();
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &SessionHistoryDialog::onSessionsLoaded);
+    connect(samplesWatcher_, &QFutureWatcher<FetchSamplesResult>::finished,
+            this, &SessionHistoryDialog::onSamplesLoaded);
 }
 
 SessionHistoryDialog::~SessionHistoryDialog() = default;
 
 void SessionHistoryDialog::setupUi() {
     setWindowTitle(tr("Session History"));
-    setMinimumSize(800, 400);
+    setMinimumSize(900, 600);
 
     auto* layout = new QVBoxLayout(this);
 
-    // Table view
+    splitter_ = new QSplitter(Qt::Vertical, this);
+
+    // Table view (top pane)
     tableView_ = new QTableView(this);
     model_ = new SessionHistoryModel(this);
     tableView_->setModel(model_);
@@ -189,7 +200,25 @@ void SessionHistoryDialog::setupUi() {
     tableView_->setAlternatingRowColors(true);
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->verticalHeader()->setVisible(false);
-    layout->addWidget(tableView_);
+    splitter_->addWidget(tableView_);
+
+    // Chart view (bottom pane)
+    auto* chart = new QChart();
+    chart->setTitle(tr("Select a session to view bytes over time"));
+    chart->legend()->setVisible(true);
+    chartView_ = new QChartView(chart, this);
+    chartView_->setRenderHint(QPainter::Antialiasing);
+    chartView_->setMinimumHeight(200);
+    splitter_->addWidget(chartView_);
+
+    splitter_->setStretchFactor(0, 2);
+    splitter_->setStretchFactor(1, 1);
+
+    layout->addWidget(splitter_);
+
+    // Connect selection signal
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &SessionHistoryDialog::onSessionSelectionChanged);
 
     // Button bar
     auto* refreshButton = new QPushButton(tr("Refresh"), this);
@@ -257,6 +286,110 @@ void SessionHistoryDialog::onSessionsLoaded() {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load sessions";
         emit errorMessage(tr("Failed to load session history"));
     }
+}
+
+void SessionHistoryDialog::onSessionSelectionChanged(
+    const QItemSelection& selected, const QItemSelection&) {
+
+    if (selected.isEmpty()) return;
+
+    const int row = selected.indexes().first().row();
+    if (row < 0 || row >= static_cast<int>(model_->sessions().size())) return;
+
+    const auto& session = model_->sessions()[static_cast<std::size_t>(row)];
+    const auto session_id = session.id;
+    auto qdt = QDateTime::fromSecsSinceEpoch(
+        std::chrono::system_clock::to_time_t(session.start_time));
+    const QString label = qdt.toString("yyyy-MM-dd hh:mm:ss");
+
+    // Show loading state in chart title
+    chartView_->chart()->setTitle(tr("Loading samples for session: %1").arg(label));
+
+    auto future = QtConcurrent::run([this, session_id, label]() -> FetchSamplesResult {
+        try {
+            auto samples = clientManager_->getSessionSamples(session_id);
+            if (samples) {
+                return FetchSamplesResult{
+                    .success = true,
+                    .session_id = session_id,
+                    .session_label = label,
+                    .samples = std::move(*samples)
+                };
+            }
+            return FetchSamplesResult{.success = false, .session_id = session_id,
+                                      .session_label = label};
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch samples: " << e.what();
+            return FetchSamplesResult{.success = false, .session_id = session_id,
+                                      .session_label = label};
+        }
+    });
+
+    samplesWatcher_->setFuture(future);
+}
+
+void SessionHistoryDialog::onSamplesLoaded() {
+    auto result = samplesWatcher_->result();
+
+    auto* chart = chartView_->chart();
+    chart->removeAllSeries();
+
+    // Remove any existing axes
+    const auto axes = chart->axes();
+    for (auto* axis : axes) {
+        chart->removeAxis(axis);
+    }
+
+    if (!result.success || result.samples.empty()) {
+        chart->setTitle(result.success
+            ? tr("Session: %1 (no samples)").arg(result.session_label)
+            : tr("Failed to load samples for: %1").arg(result.session_label));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Displaying " << result.samples.size()
+                               << " samples for session " << result.session_label.toStdString();
+
+    auto* sent_series = new QLineSeries();
+    sent_series->setName(tr("Sent"));
+    auto* recv_series = new QLineSeries();
+    recv_series->setName(tr("Received"));
+
+    qreal max_bytes = 0;
+    for (const auto& s : result.samples) {
+        const qreal t = static_cast<qreal>(s.sample_time_ms);
+        const qreal bs = static_cast<qreal>(s.bytes_sent);
+        const qreal br = static_cast<qreal>(s.bytes_received);
+        sent_series->append(t, bs);
+        recv_series->append(t, br);
+        max_bytes = std::max({max_bytes, bs, br});
+    }
+
+    chart->addSeries(sent_series);
+    chart->addSeries(recv_series);
+
+    // X axis: date-time
+    auto* x_axis = new QDateTimeAxis();
+    x_axis->setFormat("hh:mm:ss");
+    x_axis->setTitleText(tr("Time"));
+    chart->addAxis(x_axis, Qt::AlignBottom);
+    sent_series->attachAxis(x_axis);
+    recv_series->attachAxis(x_axis);
+
+    // Y axis: bytes
+    auto* y_axis = new QValueAxis();
+    y_axis->setTitleText(tr("Bytes"));
+    y_axis->setRange(0, max_bytes * 1.05);
+    chart->addAxis(y_axis, Qt::AlignLeft);
+    sent_series->attachAxis(y_axis);
+    recv_series->attachAxis(y_axis);
+
+    chart->setTitle(tr("Session: %1").arg(result.session_label));
+    chart->legend()->setVisible(true);
+
+    // Colour the series
+    sent_series->setColor(QColor(30, 144, 255));   // dodger blue
+    recv_series->setColor(QColor(50, 205, 50));    // lime green
 }
 
 }

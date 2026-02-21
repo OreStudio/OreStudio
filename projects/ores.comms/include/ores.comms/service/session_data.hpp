@@ -32,6 +32,36 @@
 namespace ores::comms::service {
 
 /**
+ * @brief A single bytes-sent/received sample captured at heartbeat time.
+ *
+ * Samples are collected server-side on each heartbeat ping and stored
+ * in-memory until the session ends, then bulk-inserted to the database.
+ */
+struct session_sample final {
+    /**
+     * @brief When this sample was taken.
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Cumulative bytes sent on the connection at sample time.
+     */
+    std::uint64_t bytes_sent = 0;
+
+    /**
+     * @brief Cumulative bytes received on the connection at sample time.
+     */
+    std::uint64_t bytes_received = 0;
+
+    /**
+     * @brief Round-trip time reported by the client in this ping, in milliseconds.
+     *
+     * Zero if not reported (first ping or older client).
+     */
+    std::uint64_t latency_ms = 0;
+};
+
+/**
  * @brief Protocol used for the session connection.
  */
 enum class session_protocol : std::uint8_t {
@@ -141,6 +171,15 @@ struct session_data final {
      * @brief Total bytes received from the client during this session.
      */
     std::uint64_t bytes_received = 0;
+
+    /**
+     * @brief Time-series samples recorded at heartbeat frequency.
+     *
+     * Each entry captures cumulative bytes at a specific point in time.
+     * Collected server-side on each heartbeat ping. Persisted to the
+     * session_samples hypertable at logout.
+     */
+    std::vector<session_sample> samples;
 
     /**
      * @brief ISO 3166-1 alpha-2 country code from geolocation.

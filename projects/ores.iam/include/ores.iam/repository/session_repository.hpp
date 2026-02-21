@@ -27,6 +27,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.comms/service/session_data.hpp"
 #include "ores.iam/domain/session.hpp"
 
 namespace ores::iam::repository {
@@ -172,6 +173,27 @@ public:
     std::vector<domain::session_statistics> read_aggregate_daily_statistics(
         const std::chrono::system_clock::time_point& start,
         const std::chrono::system_clock::time_point& end);
+
+    /**
+     * @brief Inserts time-series samples for a session in a single batch.
+     *
+     * Called at logout to persist all in-memory samples accumulated during
+     * the session. Wrapped in a single transaction for efficiency.
+     *
+     * @param session_id The session UUID
+     * @param samples Collection of samples recorded at heartbeat frequency
+     */
+    void insert_samples(const boost::uuids::uuid& session_id,
+        const std::vector<comms::service::session_sample>& samples);
+
+    /**
+     * @brief Reads all time-series samples for a session, ordered by time.
+     *
+     * @param session_id The session UUID
+     * @return Samples ordered by sample_time ascending
+     */
+    std::vector<comms::service::session_sample>
+    read_samples(const boost::uuids::uuid& session_id);
 
     /**
      * @brief Removes all sessions for an account.

@@ -173,13 +173,33 @@ struct session_data final {
     std::uint64_t bytes_received = 0;
 
     /**
-     * @brief Time-series samples recorded at heartbeat frequency.
+     * @brief Cumulative bytes sent at the time of the last sample, used to
+     *        compute per-interval deltas for the next sample.
+     */
+    std::uint64_t last_sample_bytes_sent = 0;
+
+    /**
+     * @brief Cumulative bytes received at the time of the last sample.
+     */
+    std::uint64_t last_sample_bytes_received = 0;
+
+    /**
+     * @brief Time-series samples accumulating since the last flush.
      *
-     * Each entry captures cumulative bytes at a specific point in time.
-     * Collected server-side on each heartbeat ping. Persisted to the
-     * session_samples hypertable at logout.
+     * Each entry captures the bytes transferred IN that heartbeat interval
+     * (delta, not cumulative). When the flush threshold is reached, samples
+     * are moved to flush_pending and this vector is cleared. Any remaining
+     * samples are flushed at logout.
      */
     std::vector<session_sample> samples;
+
+    /**
+     * @brief Samples ready to be persisted to the database.
+     *
+     * Populated by record_sample() when the flush threshold is reached.
+     * Drained by accounts_message_handler on the next non-ping request.
+     */
+    std::vector<session_sample> flush_pending;
 
     /**
      * @brief ISO 3166-1 alpha-2 country code from geolocation.

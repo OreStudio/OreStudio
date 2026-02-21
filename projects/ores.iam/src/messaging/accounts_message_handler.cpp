@@ -106,6 +106,19 @@ accounts_message_handler::handle_message(message_type type,
 
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
 
+    // Drain any sample batches queued by record_sample() since the last request
+    if (auto pending = sessions_->take_pending_samples(remote_address)) {
+        auto& [session_id, samples] = *pending;
+        try {
+            session_repo_.insert_samples(session_id, samples);
+            BOOST_LOG_SEV(lg(), debug) << "Periodic flush: inserted " << samples.size()
+                                       << " samples for session "
+                                       << boost::uuids::to_string(session_id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to flush pending samples: " << e.what();
+        }
+    }
+
     // Check bootstrap mode - only allow bootstrap endpoints
     const bool in_bootstrap = system_flags_->is_bootstrap_mode_enabled();
     const bool is_bootstrap_endpoint =
@@ -1064,11 +1077,16 @@ handle_logout_request(std::span<const std::byte> payload,
                 BOOST_LOG_SEV(lg(), warn) << "Failed to persist session end to database: "
                                           << e.what();
             }
-            if (!sess->samples.empty()) {
+            // Merge any pending flush batch with remaining accumulator samples
+            auto all_samples = std::move(sess->flush_pending);
+            all_samples.insert(all_samples.end(),
+                std::make_move_iterator(sess->samples.begin()),
+                std::make_move_iterator(sess->samples.end()));
+            if (!all_samples.empty()) {
                 try {
-                    sess_repo.insert_samples(sess->id, sess->samples);
-                    BOOST_LOG_SEV(lg(), debug) << "Inserted " << sess->samples.size()
-                                               << " samples for session: "
+                    sess_repo.insert_samples(sess->id, all_samples);
+                    BOOST_LOG_SEV(lg(), debug) << "Inserted " << all_samples.size()
+                                               << " samples at logout for session: "
                                                << boost::uuids::to_string(sess->id);
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to persist session samples: "

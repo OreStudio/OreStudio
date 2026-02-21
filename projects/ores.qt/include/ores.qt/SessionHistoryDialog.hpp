@@ -140,6 +140,7 @@ private:
 
     struct FetchSamplesResult {
         bool success;
+        bool is_active = false;  // true if the session is still running
         boost::uuids::uuid session_id;
         QString session_label;
         std::vector<iam::messaging::session_sample_dto> samples;

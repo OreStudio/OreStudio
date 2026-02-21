@@ -32,6 +32,7 @@
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QValueAxis>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -300,39 +301,32 @@ void SessionHistoryDialog::onSessionSelectionChanged(
 
     const auto& session = model_->sessions()[static_cast<std::size_t>(row)];
     const auto session_id = session.id;
+    const bool is_active = !session.end_time.has_value();
     auto qdt = QDateTime::fromSecsSinceEpoch(
         std::chrono::system_clock::to_time_t(session.start_time));
     const QString label = qdt.toString("yyyy-MM-dd hh:mm:ss");
 
-    // Active sessions have no samples yet — they are persisted at logout
-    if (!session.end_time) {
-        chartView_->chart()->removeAllSeries();
-        const auto axes = chartView_->chart()->axes();
-        for (auto* axis : axes) chartView_->chart()->removeAxis(axis);
-        chartView_->chart()->setTitle(tr("Session in progress — samples available after logout"));
-        return;
-    }
-
     // Show loading state in chart title
     chartView_->chart()->setTitle(tr("Loading samples for session: %1").arg(label));
 
-    auto future = QtConcurrent::run([this, session_id, label]() -> FetchSamplesResult {
+    auto future = QtConcurrent::run([this, session_id, label, is_active]() -> FetchSamplesResult {
         try {
             auto samples = clientManager_->getSessionSamples(session_id);
             if (samples) {
                 return FetchSamplesResult{
                     .success = true,
+                    .is_active = is_active,
                     .session_id = session_id,
                     .session_label = label,
                     .samples = std::move(*samples)
                 };
             }
-            return FetchSamplesResult{.success = false, .session_id = session_id,
-                                      .session_label = label};
+            return FetchSamplesResult{.success = false, .is_active = is_active,
+                                      .session_id = session_id, .session_label = label};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch samples: " << e.what();
-            return FetchSamplesResult{.success = false, .session_id = session_id,
-                                      .session_label = label};
+            return FetchSamplesResult{.success = false, .is_active = is_active,
+                                      .session_id = session_id, .session_label = label};
         }
     });
 
@@ -352,9 +346,14 @@ void SessionHistoryDialog::onSamplesLoaded() {
     }
 
     if (!result.success || result.samples.empty()) {
-        chart->setTitle(result.success
-            ? tr("Session: %1 (no samples)").arg(result.session_label)
-            : tr("Failed to load samples for: %1").arg(result.session_label));
+        if (!result.success) {
+            chart->setTitle(tr("Failed to load samples for: %1").arg(result.session_label));
+        } else if (result.is_active) {
+            chart->setTitle(tr("Session in progress — no data yet (samples flush every %1 heartbeats)")
+                .arg(comms::service::auth_session_service::sample_flush_interval));
+        } else {
+            chart->setTitle(tr("Session: %1 (no samples recorded)").arg(result.session_label));
+        }
         return;
     }
 
@@ -395,7 +394,9 @@ void SessionHistoryDialog::onSamplesLoaded() {
     sent_series->attachAxis(y_axis);
     recv_series->attachAxis(y_axis);
 
-    chart->setTitle(tr("Session: %1").arg(result.session_label));
+    chart->setTitle(result.is_active
+        ? tr("Session: %1 (in progress — partial data)").arg(result.session_label)
+        : tr("Session: %1").arg(result.session_label));
     chart->legend()->setVisible(true);
 
     // Colour the series

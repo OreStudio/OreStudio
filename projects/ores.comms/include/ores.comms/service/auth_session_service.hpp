@@ -140,8 +140,9 @@ public:
     /**
      * @brief Record a time-series sample for an active session.
      *
-     * Called at heartbeat frequency to capture cumulative byte counts and RTT.
-     * Samples are stored in-memory and persisted to the database at logout.
+     * Computes the delta bytes since the previous sample and appends it to
+     * the session's accumulator. Every @c sample_flush_interval samples the
+     * accumulator is moved to flush_pending for the handler to persist.
      *
      * @param remote_address The client's remote address
      * @param bytes_sent Cumulative bytes sent at this moment
@@ -151,6 +152,21 @@ public:
     void record_sample(const std::string& remote_address,
         std::uint64_t bytes_sent, std::uint64_t bytes_received,
         std::uint64_t latency_ms = 0);
+
+    /**
+     * @brief Take any samples ready to be flushed for a session.
+     *
+     * Returns and clears flush_pending for the given session. Returns nullopt
+     * if the session is not found or has nothing pending.
+     *
+     * @param remote_address The client's remote address
+     * @return {session_id, samples} if pending, nullopt otherwise
+     */
+    [[nodiscard]] std::optional<std::pair<boost::uuids::uuid, std::vector<session_sample>>>
+    take_pending_samples(const std::string& remote_address);
+
+    /// Number of samples accumulated before they are moved to flush_pending.
+    static constexpr std::size_t sample_flush_interval = 10;
 
     /**
      * @brief Remove session for a remote address.

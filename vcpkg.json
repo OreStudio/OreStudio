@@ -33,7 +33,7 @@
         "faker-cxx",
         "catch2",
         "libfort",
-        "qt6-charts"
+        "qtcharts"
     ],
     "default-features": [ "wt" ],
     "features": {

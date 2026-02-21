@@ -166,7 +166,8 @@ public:
     take_pending_samples(const std::string& remote_address);
 
     /// Number of samples accumulated before they are moved to flush_pending.
-    static constexpr std::size_t sample_flush_interval = 10;
+    /// At the default 30s heartbeat interval this gives a ~60s flush cadence.
+    static constexpr std::size_t sample_flush_interval = 2;
 
     /**
      * @brief Remove session for a remote address.

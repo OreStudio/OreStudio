@@ -59,8 +59,8 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        Code,
         CountryAlpha2,
+        Code,
         City,
         Source,
         Description,
@@ -79,16 +79,16 @@ public:
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
     static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
         {
-            .column = Code,
-            .header = std::string_view("Code"),
-            .style = column_style::mono_bold_left,
+            .column = CountryAlpha2,
+            .header = std::string_view("Country"),
+            .style = column_style::mono_bold_center,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },
         {
-            .column = CountryAlpha2,
-            .header = std::string_view("Country"),
-            .style = column_style::mono_bold_center,
+            .column = Code,
+            .header = std::string_view("Code"),
+            .style = column_style::mono_bold_left,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },

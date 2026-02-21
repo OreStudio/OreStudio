@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>420</height>
+    <width>600</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>450</width>
-    <height>0</height>
+    <width>600</width>
+    <height>500</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -27,193 +27,112 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="basicInfoGroup">
-     <property name="title">
-      <string>Basic Information</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_codeEdit">
-        <property name="text">
-         <string>Unit Code:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="codeEdit">
-        <property name="placeholderText">
-         <string>Enter unit code</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_nameEdit">
-        <property name="text">
-         <string>Unit Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="nameEdit">
-        <property name="placeholderText">
-         <string>Enter unit name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_businessCentreCombo">
-        <property name="text">
-         <string>Centre:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="businessCentreCombo">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_statusCombo">
-        <property name="text">
-         <string>Status:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="statusCombo">
-        <item>
-         <property name="text">
-          <string>Active</string>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="generalTab">
+      <attribute name="title"><string>General</string></attribute>
+      <layout class="QVBoxLayout" name="generalLayout">
+       <item>
+        <widget class="QGroupBox" name="basicInfoGroup">
+         <property name="title">
+          <string>Basic Information</string>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Inactive</string>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_codeEdit">
+            <property name="text">
+             <string>Unit Code:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="codeEdit">
+            <property name="placeholderText">
+             <string>Enter unit code</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_nameEdit">
+            <property name="text">
+             <string>Unit Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="nameEdit">
+            <property name="placeholderText">
+             <string>Enter unit name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_businessCentreCombo">
+            <property name="text">
+             <string>Centre:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="businessCentreCombo">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_statusCombo">
+            <property name="text">
+             <string>Status:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="statusCombo">
+            <item>
+             <property name="text">
+              <string>Active</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Inactive</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Closed</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Closed</string>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
          </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="provenanceTab">
+      <attribute name="title"><string>Provenance</string></attribute>
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
+       <item>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="metadataGroup">
-     <property name="title">
-      <string>Metadata (Read-only)</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelVersion">
-        <property name="text">
-         <string>Version:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="versionEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelModifiedBy">
-        <property name="text">
-         <string>Modified By:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="modifiedByEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelPerformedBy">
-        <property name="text">
-         <string>Performed By:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="performedByEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="labelChangeReason">
-        <property name="text">
-         <string>Change Reason:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="changeReasonEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="labelRecordedAt">
-        <property name="text">
-         <string>Recorded At:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="recordedAtEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>250</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="labelCommentary">
-        <property name="text">
-         <string>Commentary:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="commentaryEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <layout class="QHBoxLayout" name="buttonLayout">
@@ -251,6 +170,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

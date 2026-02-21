@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_CodingSchemeDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -46,6 +47,10 @@ CodingSchemeDetailDialog::CodingSchemeDetailDialog(QWidget* parent)
 CodingSchemeDetailDialog::~CodingSchemeDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* CodingSchemeDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* CodingSchemeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* CodingSchemeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void CodingSchemeDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
@@ -182,6 +187,7 @@ void CodingSchemeDetailDialog::loadLookupData() {
 
 void CodingSchemeDetailDialog::setCreateMode(bool create) {
     isCreateMode_ = create;
+    setProvenanceEnabled(!create);
     updateUiState();
 }
 
@@ -192,7 +198,6 @@ void CodingSchemeDetailDialog::setScheme(
     ui_->codeEdit->setText(QString::fromStdString(scheme.code));
     ui_->nameEdit->setText(QString::fromStdString(scheme.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(scheme.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(scheme.change_commentary));
 
     if (scheme.uri) {
         ui_->uriEdit->setText(QString::fromStdString(*scheme.uri));
@@ -207,6 +212,9 @@ void CodingSchemeDetailDialog::setScheme(
     int ddIdx = ui_->domainCombo->findText(QString::fromStdString(scheme.domain_name));
     if (ddIdx >= 0) ui_->domainCombo->setCurrentIndex(ddIdx);
 
+    populateProvenance(scheme.version, scheme.modified_by, scheme.performed_by,
+                       scheme.recorded_at, "", scheme.change_commentary);
+
     updateUiState();
 }
 
@@ -219,7 +227,6 @@ void CodingSchemeDetailDialog::updateUiState() {
     ui_->codeEdit->setReadOnly(!isCreateMode_ || isReadOnly_);
     ui_->nameEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
     ui_->uriEdit->setReadOnly(isReadOnly_);
     ui_->authorityTypeCombo->setEnabled(!isReadOnly_);
     ui_->subjectAreaCombo->setEnabled(!isReadOnly_);
@@ -233,7 +240,6 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     QString code = ui_->codeEdit->text().trimmed();
     QString name = ui_->nameEdit->text().trimmed();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
     QString uri = ui_->uriEdit->text().trimmed();
     QString authorityType = ui_->authorityTypeCombo->currentText();
     QString subjectArea = ui_->subjectAreaCombo->currentText();
@@ -255,7 +261,6 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     scheme.code = code.toStdString();
     scheme.name = name.toStdString();
     scheme.description = description.toStdString();
-    scheme.change_commentary = commentary.toStdString();
     scheme.authority_type = authorityType.toStdString();
     scheme.subject_area_name = subjectArea.toStdString();
     scheme.domain_name = domain.toStdString();

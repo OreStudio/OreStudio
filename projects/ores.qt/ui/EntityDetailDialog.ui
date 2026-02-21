@@ -136,11 +136,40 @@
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="QComboBox" name="businessCenterCombo">
-            <property name="editable">
-             <bool>true</bool>
+           <layout class="QHBoxLayout" name="businessCentreLayout">
+            <property name="spacing">
+             <number>4</number>
             </property>
-           </widget>
+            <item>
+             <widget class="QComboBox" name="businessCenterCombo">
+              <property name="editable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="businessCentreFlagLabel">
+              <property name="minimumSize">
+               <size>
+                <width>32</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>32</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="scaledContents">
+               <bool>true</bool>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -178,122 +207,13 @@
       </attribute>
       <layout class="QVBoxLayout" name="hierarchyLayout"/>
      </widget>
-     <widget class="QWidget" name="metadataTab">
+     <widget class="QWidget" name="provenanceTab">
       <attribute name="title">
-       <string>Metadata</string>
+       <string>Provenance</string>
       </attribute>
-      <layout class="QVBoxLayout" name="metadataTabLayout">
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
        <item>
-        <widget class="QGroupBox" name="metadataGroup">
-         <property name="title">
-          <string>Record Metadata (Read-only)</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="labelVersion">
-            <property name="text">
-             <string>Version:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="versionEdit">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="labelModifiedBy">
-            <property name="text">
-             <string>Modified By:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="modifiedByEdit">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="labelPerformedBy">
-            <property name="text">
-             <string>Performed By:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="performedByEdit">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="labelChangeReason">
-            <property name="text">
-             <string>Change Reason:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="changeReasonEdit">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="labelRecordedAt">
-            <property name="text">
-             <string>Recorded At:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="recordedAtEdit">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>250</width>
-              <height>16777215</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="labelCommentary">
-            <property name="text">
-             <string>Commentary:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="commentaryEdit">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="metadataSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
        </item>
       </layout>
      </widget>
@@ -335,6 +255,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

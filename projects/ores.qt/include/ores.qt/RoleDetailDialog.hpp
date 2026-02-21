@@ -80,6 +80,11 @@ public:
 
 signals:
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private:
     void populatePermissionsList();
 

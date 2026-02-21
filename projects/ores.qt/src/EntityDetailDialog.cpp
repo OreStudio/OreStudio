@@ -27,6 +27,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QHeaderView>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QVBoxLayout>
@@ -39,7 +40,6 @@
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
@@ -77,6 +77,10 @@ EntityDetailDialog::EntityDetailDialog(
 EntityDetailDialog::~EntityDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* EntityDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* EntityDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* EntityDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void EntityDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -192,6 +196,8 @@ void EntityDetailDialog::setupConnections() {
             &EntityDetailDialog::onFieldChanged);
     connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
             &EntityDetailDialog::onFieldChanged);
+    connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
+            &EntityDetailDialog::onBusinessCentreChanged);
 
     if (ops_->has_party_category()) {
         connect(ui_->partyCategoryCombo, &QComboBox::currentTextChanged, this,
@@ -212,6 +218,7 @@ void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
                 [this](const std::string& code) {
                     return imageCache_->getBusinessCentreFlagIcon(code);
                 });
+            onBusinessCentreChanged(ui_->businessCenterCombo->currentText());
         });
     }
 }
@@ -529,8 +536,7 @@ void EntityDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
 
     if (createMode) {
-        // Hide metadata tab - no data exists yet
-        ui_->tabWidget->removeTab(ui_->tabWidget->indexOf(ui_->metadataTab));
+        setProvenanceEnabled(false);
 
         // Disable sub-entity toolbars until entity is saved
         if (identifierToolbar_) identifierToolbar_->setEnabled(false);
@@ -575,12 +581,9 @@ void EntityDetailDialog::updateUiFromEntity() {
             QString::fromStdString(*entity_.party_category));
     }
 
-    ui_->versionEdit->setText(QString::number(entity_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(entity_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(entity_.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(entity_.change_reason_code));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(entity_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(entity_.change_commentary));
+    populateProvenance(entity_.version, entity_.modified_by, entity_.performed_by,
+                       entity_.recorded_at, entity_.change_reason_code,
+                       entity_.change_commentary);
 }
 
 void EntityDetailDialog::updateEntityFromUi() {
@@ -621,6 +624,22 @@ void EntityDetailDialog::onCodeChanged(const QString& /* text */) {
 void EntityDetailDialog::onFieldChanged() {
     hasChanges_ = true;
     updateSaveButtonState();
+}
+
+void EntityDetailDialog::onBusinessCentreChanged(const QString& code) {
+    if (!imageCache_ || !ui_->businessCentreFlagLabel) return;
+
+    if (code.isEmpty()) {
+        ui_->businessCentreFlagLabel->clear();
+        return;
+    }
+
+    const auto icon = imageCache_->getBusinessCentreFlagIcon(code.toStdString());
+    if (icon.isNull()) {
+        ui_->businessCentreFlagLabel->clear();
+    } else {
+        ui_->businessCentreFlagLabel->setPixmap(icon.pixmap(32, 24));
+    }
 }
 
 void EntityDetailDialog::updateSaveButtonState() {

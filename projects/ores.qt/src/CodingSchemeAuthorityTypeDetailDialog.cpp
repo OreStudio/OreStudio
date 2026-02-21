@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_CodingSchemeAuthorityTypeDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +47,10 @@ CodingSchemeAuthorityTypeDetailDialog::~CodingSchemeAuthorityTypeDetailDialog() 
     delete ui_;
 }
 
+QTabWidget* CodingSchemeAuthorityTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* CodingSchemeAuthorityTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* CodingSchemeAuthorityTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void CodingSchemeAuthorityTypeDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &CodingSchemeAuthorityTypeDetailDialog::onSaveClicked);
@@ -55,6 +60,7 @@ void CodingSchemeAuthorityTypeDetailDialog::setupConnections() {
 
 void CodingSchemeAuthorityTypeDetailDialog::setCreateMode(bool create) {
     isCreateMode_ = create;
+    setProvenanceEnabled(!create);
     updateUiState();
 }
 
@@ -65,7 +71,10 @@ void CodingSchemeAuthorityTypeDetailDialog::setAuthorityType(
     ui_->codeEdit->setText(QString::fromStdString(authorityType.code));
     ui_->nameEdit->setText(QString::fromStdString(authorityType.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(authorityType.description));
-    ui_->commentaryEdit->setPlainText(QString::fromStdString(authorityType.change_commentary));
+
+    populateProvenance(authorityType_.version, authorityType_.modified_by,
+                       authorityType_.performed_by, authorityType_.recorded_at,
+                       "", authorityType_.change_commentary);
 
     updateUiState();
 }
@@ -79,7 +88,6 @@ void CodingSchemeAuthorityTypeDetailDialog::updateUiState() {
     ui_->codeEdit->setReadOnly(!isCreateMode_ || isReadOnly_);
     ui_->nameEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
-    ui_->commentaryEdit->setReadOnly(isReadOnly_);
 
     ui_->saveButton->setVisible(!isReadOnly_);
     ui_->deleteButton->setVisible(!isCreateMode_ && !isReadOnly_);
@@ -89,7 +97,6 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
     QString code = ui_->codeEdit->text().trimmed();
     QString name = ui_->nameEdit->text().trimmed();
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
-    QString commentary = ui_->commentaryEdit->toPlainText().trimmed();
 
     if (code.isEmpty()) {
         MessageBoxHelper::warning(this, tr("Validation Error"),
@@ -107,7 +114,6 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
     at.code = code.toStdString();
     at.name = name.toStdString();
     at.description = description.toStdString();
-    at.change_commentary = commentary.toStdString();
     at.modified_by = username_;
     at.version = isCreateMode_ ? 0 : authorityType_.version;
 

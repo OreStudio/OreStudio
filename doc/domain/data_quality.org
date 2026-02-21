@@ -70,3 +70,33 @@ There are six industry-standard dimensions used by [[https://en.wikipedia.org/wi
   for what reason).
 - *Data profiling*: Store statistical metadata about data characteristics.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]]
+
+* Record Provenance Fields
+
+Every reference data entity in ORE Studio carries six standard provenance fields
+that together answer the "who, when, and why" of the last change. These fields
+are set by a combination of the application layer and the database trigger.
+
+| C++ Field          | UI Label      | Set By      | Meaning                                                        |
+|--------------------+---------------+-------------+----------------------------------------------------------------|
+| =version=          | Version       | DB trigger  | Monotonically increasing integer; starts at 1, incremented on each update |
+| =modified_by=      | Modified By   | Application | Username of the account that submitted the change request      |
+| =performed_by=     | Performed By  | Application | Username on whose behalf the change was performed (may differ from modified_by in delegated workflows) |
+| =recorded_at=      | Recorded At   | DB trigger  | Wall-clock timestamp (UTC) when the database row was last written |
+| =change_reason_code= | Change Reason | Application | Optional code referencing a =change_reason= record explaining the business justification |
+| =change_commentary=  | Commentary    | Application | Optional free-text note accompanying the change (displayed in a multi-line area in the UI) |
+
+** Relation to SQL temporal columns
+
+These provenance fields live in the current ("live") table alongside the entity
+data. The database trigger also writes a copy of every version into a companion
+=_history= table, where each row has additional =valid_from= / =valid_to= columns
+that bound its lifespan in the system (system-time bitemporality).
+
+** Qt UI presentation
+
+In the Qt UI all six fields are displayed in a =ProvenanceWidget= (a promoted
+=QWidget= containing a read-only form layout). The widget lives in a dedicated
+*Provenance* tab of each detail dialog. The tab is disabled (greyed out, not
+hidden) in create mode because provenance data does not yet exist for a record
+that has not been saved.

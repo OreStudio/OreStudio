@@ -150,6 +150,11 @@ signals:
      */
     void revertRequested(const iam::domain::account& account);
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private slots:
     void onSaveClicked();
     void onResetClicked();

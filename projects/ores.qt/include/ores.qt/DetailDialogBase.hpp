@@ -20,9 +20,15 @@
 #ifndef ORES_QT_DETAIL_DIALOG_BASE_HPP
 #define ORES_QT_DETAIL_DIALOG_BASE_HPP
 
+#include <chrono>
+#include <string>
 #include <QWidget>
 
+class QTabWidget;
+
 namespace ores::qt {
+
+class ProvenanceWidget;
 
 /**
  * @brief Base class for all detail dialogs.
@@ -32,24 +38,34 @@ namespace ores::qt {
  * - statusMessage signal for status bar updates
  * - requestClose() method to emit the closeRequested signal
  * - notifySaveSuccess() helper for consistent post-save behavior
+ * - Shared tab / provenance management via pure-virtual accessors
  *
- * This allows dialogs to request closure without knowing about their
- * container (e.g., DetachableMdiSubWindow). The controller wires the
- * closeRequested signal to the container's close slot.
+ * ## Tab / Provenance Pattern
+ *
+ * Every derived dialog exposes its QTabWidget and provenance tab via three
+ * pure-virtual one-liners, then calls the shared helpers from its
+ * setCreateMode() and updateUiFrom*() implementations:
+ *
+ * @code
+ * // In derived .hpp:
+ * QTabWidget*       tabWidget()        const override { return ui_->tabWidget; }
+ * QWidget*          provenanceTab()    const override { return ui_->provenanceTab; }
+ * ProvenanceWidget* provenanceWidget() const override { return ui_->provenanceWidget; }
+ *
+ * // In setCreateMode():
+ * setProvenanceEnabled(!createMode);
+ *
+ * // In updateUiFromEntity():
+ * populateProvenance(entity_.version, entity_.modified_by, entity_.performed_by,
+ *                    entity_.recorded_at, entity_.change_reason_code,
+ *                    entity_.change_commentary);
+ * @endcode
  *
  * ## Save Success Pattern
  *
  * After a successful save operation, dialogs should:
  * 1. Emit their entity-specific "saved" signal (e.g., dimensionSaved)
  * 2. Call notifySaveSuccess() with a status message
- *
- * Example:
- * @code
- * if (result.success) {
- *     emit dimensionSaved(code);
- *     notifySaveSuccess(tr("Dimension '%1' saved").arg(code));
- * }
- * @endcode
  */
 class DetailDialogBase : public QWidget {
     Q_OBJECT
@@ -82,27 +98,59 @@ signals:
 protected:
     /**
      * @brief Request closure of the container window.
-     *
-     * Call this instead of parentWidget()->close() to maintain
-     * decoupling between the dialog and its container.
      */
     void requestClose() { emit closeRequested(); }
 
     /**
      * @brief Notify that a save operation completed successfully.
-     *
-     * This method handles the common post-save behavior:
-     * 1. Emits statusMessage with the provided message
-     * 2. Closes the dialog via requestClose()
-     *
-     * Call this after emitting any entity-specific "saved" signal.
-     *
-     * @param message Status message to display (e.g., "Currency 'USD' saved")
      */
     void notifySaveSuccess(const QString& message) {
         emit statusMessage(message);
         requestClose();
     }
+
+    // -------------------------------------------------------------------------
+    // Pure-virtual accessors — each derived dialog provides one-liner overrides
+    // that return the corresponding widget from its own ui_ object.
+    // -------------------------------------------------------------------------
+
+    /** @brief Returns the dialog's QTabWidget (named "tabWidget" in .ui). */
+    virtual QTabWidget* tabWidget() const = 0;
+
+    /** @brief Returns the Provenance tab widget (named "provenanceTab" in .ui). */
+    virtual QWidget* provenanceTab() const = 0;
+
+    /** @brief Returns the promoted ProvenanceWidget (named "provenanceWidget" in .ui). */
+    virtual ProvenanceWidget* provenanceWidget() const = 0;
+
+    // -------------------------------------------------------------------------
+    // Shared helpers — call from setCreateMode() and updateUiFrom*()
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Enable or disable the Provenance tab.
+     *
+     * Call with @c false in create mode (no provenance data exists yet) and
+     * with @c true after loading an existing record.
+     */
+    void setProvenanceEnabled(bool enabled);
+
+    /**
+     * @brief Populate the embedded ProvenanceWidget with entity data.
+     *
+     * @param recorded_at  Pass a default-constructed time_point to leave the
+     *                     Recorded At field blank for entities that do not
+     *                     track this column.
+     */
+    void populateProvenance(int version,
+                            const std::string& modified_by,
+                            const std::string& performed_by,
+                            std::chrono::system_clock::time_point recorded_at,
+                            const std::string& change_reason_code,
+                            const std::string& change_commentary);
+
+    /** @brief Clear all fields in the embedded ProvenanceWidget. */
+    void clearProvenance();
 };
 
 }

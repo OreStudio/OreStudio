@@ -25,7 +25,6 @@
 #include "ui_BookStatusDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/book_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +45,10 @@ BookStatusDetailDialog::BookStatusDetailDialog(QWidget* parent)
 BookStatusDetailDialog::~BookStatusDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* BookStatusDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* BookStatusDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* BookStatusDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void BookStatusDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -89,9 +92,7 @@ void BookStatusDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -111,11 +112,9 @@ void BookStatusDetailDialog::updateUiFromStatus() {
     ui_->nameEdit->setText(QString::fromStdString(status_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(status_.description));
 
-    ui_->versionEdit->setText(QString::number(status_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(status_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(status_.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(status_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(status_.change_commentary));
+    populateProvenance(status_.version, status_.modified_by, status_.performed_by,
+                       status_.recorded_at, status_.change_reason_code,
+                       status_.change_commentary);
 }
 
 void BookStatusDetailDialog::updateStatusFromUi() {

@@ -110,6 +110,11 @@ public:
      */
     [[nodiscard]] QString alpha2Code() const;
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 signals:
     void countryUpdated(const QString& alpha2_code);
     void countryCreated(const QString& alpha2_code);

@@ -27,7 +27,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +47,10 @@ BusinessUnitDetailDialog::BusinessUnitDetailDialog(QWidget* parent)
 BusinessUnitDetailDialog::~BusinessUnitDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* BusinessUnitDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* BusinessUnitDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* BusinessUnitDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void BusinessUnitDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -150,9 +153,7 @@ void BusinessUnitDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -174,12 +175,10 @@ void BusinessUnitDetailDialog::updateUiFromUnit() {
     ui_->businessCentreCombo->setCurrentText(QString::fromStdString(business_unit_.business_centre_code));
     ui_->statusCombo->setCurrentText(QString::fromStdString(business_unit_.status));
 
-    ui_->versionEdit->setText(QString::number(business_unit_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(business_unit_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(business_unit_.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(business_unit_.change_reason_code));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(business_unit_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(business_unit_.change_commentary));
+    populateProvenance(business_unit_.version, business_unit_.modified_by,
+                       business_unit_.performed_by, business_unit_.recorded_at,
+                       business_unit_.change_reason_code,
+                       business_unit_.change_commentary);
 }
 
 void BusinessUnitDetailDialog::updateUnitFromUi() {

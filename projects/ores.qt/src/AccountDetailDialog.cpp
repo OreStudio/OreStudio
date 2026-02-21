@@ -19,6 +19,7 @@
  */
 #include "ores.qt/AccountDetailDialog.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -110,11 +111,17 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     // Hide isAdminCheckBox - admin privileges are now managed via RBAC role assignments
     ui_->isAdminCheckBox->setVisible(false);
 
-    // Create roles widget and add it to the layout before login status group
+    // Create roles widget and add it to the Roles tab layout
     rolesWidget_ = new AccountRolesWidget(this);
-    if (mainLayout) {
-        // Insert after login status group (before the spacer)
-        mainLayout->insertWidget(mainLayout->count() - 1, rolesWidget_);
+    auto* rolesTabLayout = qobject_cast<QVBoxLayout*>(ui_->rolesTab->layout());
+    if (rolesTabLayout) {
+        // Remove the placeholder label and insert the roles widget
+        while (rolesTabLayout->count() > 0) {
+            auto* item = rolesTabLayout->takeAt(0);
+            if (item->widget()) item->widget()->deleteLater();
+            delete item;
+        }
+        rolesTabLayout->addWidget(rolesWidget_);
     }
 
     // Connect roles widget signals
@@ -147,6 +154,10 @@ AccountDetailDialog::~AccountDetailDialog() {
     }
 }
 
+QTabWidget* AccountDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* AccountDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* AccountDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     currentAccount_ = account;
     isAddMode_ = account.username.empty();
@@ -155,11 +166,9 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
 
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
-    ui_->versionEdit->setText(QString::number(account.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(account.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(account.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(account.change_reason_code));
-    ui_->changeCommentaryEdit->setPlainText(QString::fromStdString(account.change_commentary));
+
+    populateProvenance(account.version, account.modified_by, account.performed_by,
+        account.recorded_at, account.change_reason_code, account.change_commentary);
 
     // Clear password fields
     ui_->passwordEdit->clear();
@@ -182,17 +191,15 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     // Username is editable only in create mode
     ui_->usernameEdit->setReadOnly(!createMode);
 
-    // Password section is visible only in create mode
-    ui_->passwordGroup->setVisible(createMode);
-
-    // Metadata and login status are not useful in create mode
-    ui_->metadataGroup->setVisible(!createMode);
-    ui_->loginStatusGroup->setVisible(!createMode);
-
-    // Roles widget is hidden in create mode (roles are assigned after creation)
-    if (rolesWidget_) {
-        rolesWidget_->setVisible(!createMode);
-    }
+    // Enable/disable tabs based on mode
+    auto* tw = ui_->tabWidget;
+    const int securityIdx = tw->indexOf(ui_->securityTab);
+    const int loginStatusIdx = tw->indexOf(ui_->loginStatusTab);
+    const int rolesIdx = tw->indexOf(ui_->rolesTab);
+    if (securityIdx >= 0) tw->setTabEnabled(securityIdx, createMode);
+    if (loginStatusIdx >= 0) tw->setTabEnabled(loginStatusIdx, !createMode);
+    if (rolesIdx >= 0) tw->setTabEnabled(rolesIdx, !createMode);
+    setProvenanceEnabled(!createMode);
 }
 
 iam::domain::account AccountDetailDialog::getAccount() const {
@@ -209,11 +216,8 @@ void AccountDetailDialog::clearDialog() {
     ui_->emailEdit->clear();
     ui_->passwordEdit->clear();
     ui_->confirmPasswordEdit->clear();
-    ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
-    ui_->performedByEdit->clear();
-    ui_->changeReasonEdit->clear();
-    ui_->changeCommentaryEdit->clear();
+
+    clearProvenance();
 
     // Clear login status fields
     ui_->onlineEdit->clear();
@@ -644,13 +648,15 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     if (revertAction_)
         revertAction_->setVisible(readOnly);
 
-    // Hide password group in read-only mode
-    ui_->passwordGroup->setVisible(false);
+    // Disable Security tab in read-only mode (password changes not supported)
+    auto* tw = ui_->tabWidget;
+    const int securityIdx = tw->indexOf(ui_->securityTab);
+    if (securityIdx >= 0) tw->setTabEnabled(securityIdx, false);
 
     // Set roles widget to read-only or hide it for historical versions
     if (rolesWidget_) {
         rolesWidget_->setReadOnly(readOnly);
-        // Hide roles widget for historical versions (they don't have role data)
+        // Hide roles widget (in rolesTab) for historical versions
         rolesWidget_->setVisible(versionNumber == 0);
     }
 

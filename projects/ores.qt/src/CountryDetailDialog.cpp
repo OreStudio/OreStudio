@@ -39,7 +39,6 @@
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -142,8 +141,8 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
 
-    // Add clickable flag button after toolbar
-    if (mainLayout) {
+    // Add clickable flag button into the flagTab
+    {
         auto* flagContainer = new QWidget(this);
         auto* flagLayout = new QHBoxLayout(flagContainer);
         flagLayout->setContentsMargins(0, 4, 0, 4);
@@ -163,7 +162,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
 
-        mainLayout->insertWidget(1, flagContainer);
+        ui_->flagGroup->layout()->addWidget(flagContainer);
     }
 
     // Connect signals for editable fields to detect changes
@@ -215,6 +214,10 @@ CountryDetailDialog::~CountryDetailDialog() {
     }
 }
 
+QTabWidget* CountryDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* CountryDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* CountryDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     currentCountry_ = country;
     isAddMode_ = country.alpha2_code.empty();
@@ -239,12 +242,8 @@ void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     ui_->numericCodeEdit->setText(QString::fromStdString(country.numeric_code));
     ui_->nameEdit->setText(QString::fromStdString(country.name));
     ui_->officialNameEdit->setText(QString::fromStdString(country.official_name));
-    ui_->versionEdit->setText(QString::number(country.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(country.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(country.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(country.recorded_at));
-    ui_->changeReasonEdit->setText(QString::fromStdString(country.change_reason_code));
-    ui_->commentaryEdit->setText(QString::fromStdString(country.change_commentary));
+    populateProvenance(country.version, country.modified_by, country.performed_by,
+        country.recorded_at, country.change_reason_code, country.change_commentary);
 
     isDirty_ = false;
     flagChanged_ = false;
@@ -276,12 +275,7 @@ void CountryDetailDialog::clearDialog() {
     ui_->numericCodeEdit->clear();
     ui_->nameEdit->clear();
     ui_->officialNameEdit->clear();
-    ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
-    ui_->performedByEdit->clear();
-    ui_->recordedAtEdit->clear();
-    ui_->changeReasonEdit->clear();
-    ui_->commentaryEdit->clear();
+    clearProvenance();
     pendingImageId_.clear();
 
     isDirty_ = false;

@@ -22,7 +22,6 @@
 #include <QListWidgetItem>
 #include <algorithm>
 #include "ui_RoleDetailDialog.h"
-#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -40,6 +39,10 @@ RoleDetailDialog::~RoleDetailDialog() {
     BOOST_LOG_SEV(lg(), debug) << "RoleDetailDialog destroyed";
 }
 
+QTabWidget* RoleDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* RoleDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* RoleDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void RoleDetailDialog::setRole(const iam::domain::role& role) {
     BOOST_LOG_SEV(lg(), debug) << "Setting role: " << role.name;
 
@@ -49,11 +52,9 @@ void RoleDetailDialog::setRole(const iam::domain::role& role) {
     ui_->nameEdit->setText(QString::fromStdString(role.name));
     ui_->descriptionEdit->setText(QString::fromStdString(role.description));
 
-    // Populate metadata
-    ui_->versionEdit->setText(QString::number(role.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(role.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(role.performed_by));
-    ui_->modifiedAtEdit->setText(relative_time_helper::format(role.recorded_at));
+    // Populate provenance
+    populateProvenance(role.version, role.modified_by, role.performed_by,
+        role.recorded_at, "", "");
 
     // Populate permissions list
     populatePermissionsList();
@@ -66,10 +67,7 @@ void RoleDetailDialog::clearDialog() {
 
     ui_->nameEdit->clear();
     ui_->descriptionEdit->clear();
-    ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
-    ui_->performedByEdit->clear();
-    ui_->modifiedAtEdit->clear();
+    clearProvenance();
     ui_->permissionsList->clear();
 }
 

@@ -10,241 +10,257 @@
     <height>700</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>500</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Dataset</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="titleLabel">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-       <bold>true</bold>
-      </font>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <property name="text">
-      <string>Dataset Details</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QScrollArea" name="scrollArea">
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="nameLabel">
+     <widget class="QWidget" name="generalTab">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="generalLayout">
+       <item>
+        <widget class="QLabel" name="titleLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>Name:</string>
+          <string>Dataset Details</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="nameEdit">
-         <property name="maxLength">
-          <number>255</number>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="codeLabel">
-         <property name="text">
-          <string>Code:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="codeEdit">
-         <property name="maxLength">
-          <number>255</number>
-         </property>
-         <property name="placeholderText">
-          <string>e.g., iso.currencies, fpml.currencies</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="catalogLabel">
-         <property name="text">
-          <string>Catalog:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="catalogCombo"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="subjectAreaLabel">
-         <property name="text">
-          <string>Subject Area:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="subjectAreaCombo"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="domainLabel">
-         <property name="text">
-          <string>Domain:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="domainCombo"/>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="originLabel">
-         <property name="text">
-          <string>Origin:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QComboBox" name="originCombo"/>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="natureLabel">
-         <property name="text">
-          <string>Nature:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QComboBox" name="natureCombo"/>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="treatmentLabel">
-         <property name="text">
-          <string>Treatment:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QComboBox" name="treatmentCombo"/>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="codingSchemeLabel">
-         <property name="text">
-          <string>Coding Scheme:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QComboBox" name="codingSchemeCombo"/>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="methodologyLabel">
-         <property name="text">
-          <string>Methodology:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QComboBox" name="methodologyCombo"/>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="sourceSystemLabel">
-         <property name="text">
-          <string>Source System:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
-        <widget class="QLineEdit" name="sourceSystemEdit">
-         <property name="maxLength">
-          <number>255</number>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QLabel" name="asOfDateLabel">
-         <property name="text">
-          <string>As Of Date:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="1">
-        <widget class="QDateEdit" name="asOfDateEdit">
-         <property name="calendarPopup">
+       <item>
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="widgetResizable">
           <bool>true</bool>
          </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <layout class="QFormLayout" name="formLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="nameLabel">
+             <property name="text">
+              <string>Name:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="nameEdit">
+             <property name="maxLength">
+              <number>255</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="codeLabel">
+             <property name="text">
+              <string>Code:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="codeEdit">
+             <property name="maxLength">
+              <number>255</number>
+             </property>
+             <property name="placeholderText">
+              <string>e.g., iso.currencies, fpml.currencies</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="catalogLabel">
+             <property name="text">
+              <string>Catalog:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="catalogCombo"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="subjectAreaLabel">
+             <property name="text">
+              <string>Subject Area:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QComboBox" name="subjectAreaCombo"/>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="domainLabel">
+             <property name="text">
+              <string>Domain:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QComboBox" name="domainCombo"/>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="originLabel">
+             <property name="text">
+              <string>Origin:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QComboBox" name="originCombo"/>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="natureLabel">
+             <property name="text">
+              <string>Nature:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QComboBox" name="natureCombo"/>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="treatmentLabel">
+             <property name="text">
+              <string>Treatment:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QComboBox" name="treatmentCombo"/>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="codingSchemeLabel">
+             <property name="text">
+              <string>Coding Scheme:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QComboBox" name="codingSchemeCombo"/>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="methodologyLabel">
+             <property name="text">
+              <string>Methodology:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QComboBox" name="methodologyCombo"/>
+           </item>
+           <item row="10" column="0">
+            <widget class="QLabel" name="sourceSystemLabel">
+             <property name="text">
+              <string>Source System:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
+            <widget class="QLineEdit" name="sourceSystemEdit">
+             <property name="maxLength">
+              <number>255</number>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="0">
+            <widget class="QLabel" name="asOfDateLabel">
+             <property name="text">
+              <string>As Of Date:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="1">
+            <widget class="QDateEdit" name="asOfDateEdit">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="12" column="0">
+            <widget class="QLabel" name="lineageDepthLabel">
+             <property name="text">
+              <string>Lineage Depth:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="12" column="1">
+            <widget class="QSpinBox" name="lineageDepthSpin">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item row="13" column="0">
+            <widget class="QLabel" name="descriptionLabel">
+             <property name="text">
+              <string>Description:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="13" column="1">
+            <widget class="QPlainTextEdit" name="descriptionEdit">
+             <property name="maximumHeight">
+              <number>60</number>
+             </property>
+            </widget>
+           </item>
+           <item row="14" column="0">
+            <widget class="QLabel" name="businessContextLabel">
+             <property name="text">
+              <string>Business Context:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="14" column="1">
+            <widget class="QPlainTextEdit" name="businessContextEdit">
+             <property name="maximumHeight">
+              <number>60</number>
+             </property>
+            </widget>
+           </item>
+           <item row="15" column="0">
+            <widget class="QLabel" name="licenseLabel">
+             <property name="text">
+              <string>License Info:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="15" column="1">
+            <widget class="QLineEdit" name="licenseEdit">
+             <property name="maxLength">
+              <number>255</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="lineageDepthLabel">
-         <property name="text">
-          <string>Lineage Depth:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QSpinBox" name="lineageDepthSpin">
-         <property name="minimum">
-          <number>0</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QLabel" name="descriptionLabel">
-         <property name="text">
-          <string>Description:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QPlainTextEdit" name="descriptionEdit">
-         <property name="maximumHeight">
-          <number>60</number>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0">
-        <widget class="QLabel" name="businessContextLabel">
-         <property name="text">
-          <string>Business Context:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QPlainTextEdit" name="businessContextEdit">
-         <property name="maximumHeight">
-          <number>60</number>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="0">
-        <widget class="QLabel" name="licenseLabel">
-         <property name="text">
-          <string>License Info:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="1">
-        <widget class="QLineEdit" name="licenseEdit">
-         <property name="maxLength">
-          <number>255</number>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QLabel" name="commentaryLabel">
-         <property name="text">
-          <string>Change Commentary:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QPlainTextEdit" name="commentaryEdit">
-         <property name="maximumHeight">
-          <number>60</number>
-         </property>
-        </widget>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="provenanceTab">
+      <attribute name="title">
+       <string>Provenance</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
+       <item>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
        </item>
       </layout>
      </widget>
@@ -286,6 +302,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

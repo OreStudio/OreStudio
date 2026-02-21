@@ -27,7 +27,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +47,10 @@ PortfolioDetailDialog::PortfolioDetailDialog(QWidget* parent)
 PortfolioDetailDialog::~PortfolioDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* PortfolioDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* PortfolioDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* PortfolioDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void PortfolioDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -158,9 +161,7 @@ void PortfolioDetailDialog::setCreateMode(bool createMode) {
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -186,12 +187,9 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
     ui_->portfolioTypeCombo->setCurrentIndex(portfolio_.is_virtual != 0 ? 1 : 0);
     ui_->statusCombo->setCurrentText(QString::fromStdString(portfolio_.status));
 
-    ui_->versionEdit->setText(QString::number(portfolio_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(portfolio_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(portfolio_.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(portfolio_.change_reason_code));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(portfolio_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(portfolio_.change_commentary));
+    populateProvenance(portfolio_.version, portfolio_.modified_by,
+        portfolio_.performed_by, portfolio_.recorded_at,
+        portfolio_.change_reason_code, portfolio_.change_commentary);
 }
 
 void PortfolioDetailDialog::updatePortfolioFromUi() {

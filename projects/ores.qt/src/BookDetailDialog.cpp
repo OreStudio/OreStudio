@@ -27,7 +27,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +47,10 @@ BookDetailDialog::BookDetailDialog(QWidget* parent)
 BookDetailDialog::~BookDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* BookDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* BookDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* BookDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void BookDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -160,9 +163,7 @@ void BookDetailDialog::setCreateMode(bool createMode) {
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -190,12 +191,9 @@ void BookDetailDialog::updateUiFromBook() {
     ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
     ui_->bookTypeCombo->setCurrentIndex(book_.is_trading_book != 0 ? 1 : 0);
 
-    ui_->versionEdit->setText(QString::number(book_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(book_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(book_.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(book_.change_reason_code));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(book_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(book_.change_commentary));
+    populateProvenance(book_.version, book_.modified_by, book_.performed_by,
+                       book_.recorded_at, book_.change_reason_code,
+                       book_.change_commentary);
 }
 
 void BookDetailDialog::updateBookFromUi() {

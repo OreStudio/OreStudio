@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>420</height>
+    <width>600</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>450</width>
-    <height>0</height>
+    <width>600</width>
+    <height>500</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -27,128 +27,84 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="basicInfoGroup">
-     <property name="title">
-      <string>Basic Information</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
+    <widget class="QTabWidget" name="tabWidget">
+     <widget class="QWidget" name="generalTab">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="generalLayout">
+       <item>
+        <widget class="QGroupBox" name="basicInfoGroup">
+         <property name="title">
+          <string>Basic Information</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
 {{#domain_entity.qt.detail_fields}}
-      <item row="{{_row_index}}" column="0">
-       <widget class="QLabel" name="label_{{widget}}">
-        <property name="text">
-         <string>{{label}}:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="{{_row_index}}" column="1">
+          <item row="{{_row_index}}" column="0">
+           <widget class="QLabel" name="label_{{widget}}">
+            <property name="text">
+             <string>{{label}}:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="{{_row_index}}" column="1">
 {{#is_line_edit}}
-       <widget class="QLineEdit" name="{{widget}}">
-        <property name="placeholderText">
-         <string>{{placeholder}}</string>
-        </property>
-       </widget>
+           <widget class="QLineEdit" name="{{widget}}">
+            <property name="placeholderText">
+             <string>{{placeholder}}</string>
+            </property>
+           </widget>
 {{/is_line_edit}}
 {{#is_text_edit}}
-       <widget class="QTextEdit" name="{{widget}}">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>80</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>120</height>
-         </size>
-        </property>
-        <property name="placeholderText">
-         <string>{{placeholder}}</string>
-        </property>
-       </widget>
+           <widget class="QTextEdit" name="{{widget}}">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="placeholderText">
+             <string>{{placeholder}}</string>
+            </property>
+           </widget>
 {{/is_text_edit}}
-      </item>
+          </item>
 {{/domain_entity.qt.detail_fields}}
-     </layout>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="provenanceTab">
+      <attribute name="title">
+       <string>Provenance</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
+       <item>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="metadataGroup">
-     <property name="title">
-      <string>Metadata (Read-only)</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelVersion">
-        <property name="text">
-         <string>Version:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="versionEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelModifiedBy">
-        <property name="text">
-         <string>Modified By:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="modifiedByEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelRecordedAt">
-        <property name="text">
-         <string>Recorded At:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="recordedAtEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="labelCommentary">
-        <property name="text">
-         <string>Commentary:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="commentaryEdit">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <layout class="QHBoxLayout" name="buttonLayout">
@@ -186,6 +142,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+   <container>0</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

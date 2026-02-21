@@ -105,9 +105,15 @@
       <addaction name="ActionSubjectAreas"/>
       <addaction name="ActionCatalogs"/>
      </widget>
-     <addaction name="ActionOriginDimensions"/>
-     <addaction name="ActionNatureDimensions"/>
-     <addaction name="ActionTreatmentDimensions"/>
+     <widget class="QMenu" name="menuDimensions">
+      <property name="title">
+       <string>&amp;Dimensions</string>
+      </property>
+      <addaction name="ActionOriginDimensions"/>
+      <addaction name="ActionNatureDimensions"/>
+      <addaction name="ActionTreatmentDimensions"/>
+     </widget>
+     <addaction name="menuDimensions"/>
      <addaction name="ActionMethodologies"/>
      <addaction name="ActionDatasetBundles"/>
      <addaction name="separator"/>
@@ -118,9 +124,14 @@
      <addaction name="ActionChangeReasons"/>
     </widget>
     <addaction name="menuReferenceData"/>
-    <addaction name="ActionTrades"/>
     <addaction name="menuAssets"/>
     <addaction name="menuQuality"/>
+   </widget>
+   <widget class="QMenu" name="menuTrading">
+    <property name="title">
+     <string>&amp;Trading</string>
+    </property>
+    <addaction name="ActionTrades"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
@@ -184,6 +195,7 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
+   <addaction name="menuTrading"/>
    <addaction name="menuSystem"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
@@ -216,6 +228,7 @@
    <addaction name="ActionTenants"/>
    <addaction name="ActionFeatureFlags"/>
    <addaction name="separator"/>
+   <addaction name="ActionTrades"/>
    <addaction name="ActionDataLibrarian"/>
    <addaction name="ActionShell"/>
   </widget>

@@ -62,6 +62,11 @@ private slots:
     void onSaveClicked();
     void onDeleteClicked();
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private:
     void setupConnections();
     void updateUiState();

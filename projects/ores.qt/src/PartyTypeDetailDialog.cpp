@@ -25,7 +25,6 @@
 #include "ui_PartyTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/party_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +45,10 @@ PartyTypeDetailDialog::PartyTypeDetailDialog(QWidget* parent)
 PartyTypeDetailDialog::~PartyTypeDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* PartyTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* PartyTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* PartyTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void PartyTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -89,9 +92,7 @@ void PartyTypeDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -111,11 +112,9 @@ void PartyTypeDetailDialog::updateUiFromType() {
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
 
-    ui_->versionEdit->setText(QString::number(type_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(type_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(type_.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(type_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(type_.change_commentary));
+    populateProvenance(type_.version, type_.modified_by,
+                       type_.performed_by, type_.recorded_at,
+                       type_.change_reason_code, type_.change_commentary);
 }
 
 void PartyTypeDetailDialog::updateTypeFromUi() {

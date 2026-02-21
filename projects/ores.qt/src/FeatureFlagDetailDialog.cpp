@@ -30,7 +30,6 @@
 #include "ui_FeatureFlagDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -160,6 +159,10 @@ FeatureFlagDetailDialog::~FeatureFlagDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* FeatureFlagDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* FeatureFlagDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* FeatureFlagDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void FeatureFlagDetailDialog::setFeatureFlag(
     const variability::domain::feature_flags& flag) {
     currentFlag_ = flag;
@@ -170,10 +173,9 @@ void FeatureFlagDetailDialog::setFeatureFlag(
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
     ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);  // 0=Yes, 1=No
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
-    ui_->versionEdit->setText(QString::number(flag.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(flag.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(flag.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
+    populateProvenance(currentFlag_.version, currentFlag_.modified_by,
+                       currentFlag_.performed_by, currentFlag_.recorded_at,
+                       currentFlag_.change_reason_code, currentFlag_.change_commentary);
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -186,8 +188,7 @@ void FeatureFlagDetailDialog::setCreateMode(bool createMode) {
     // Name is editable only in create mode
     ui_->nameEdit->setReadOnly(!createMode);
 
-    // Metadata is not useful in create mode
-    ui_->metadataGroup->setVisible(!createMode);
+    setProvenanceEnabled(!createMode);
 }
 
 variability::domain::feature_flags FeatureFlagDetailDialog::getFeatureFlag() const {
@@ -204,9 +205,7 @@ void FeatureFlagDetailDialog::clearDialog() {
     ui_->nameEdit->clear();
     ui_->enabledComboBox->setCurrentIndex(1);  // Default to No
     ui_->descriptionEdit->clear();
-    ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
-    ui_->performedByEdit->clear();
+    clearProvenance();
 
     currentFlag_ = {};
     isDirty_ = false;
@@ -482,9 +481,8 @@ void FeatureFlagDetailDialog::displayCurrentVersion() {
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
     ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
-    ui_->versionEdit->setText(QString::number(flag.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(flag.modified_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
+    populateProvenance(flag.version, flag.modified_by, flag.performed_by,
+                       flag.recorded_at, flag.change_reason_code, flag.change_commentary);
 
     updateVersionNavButtonStates();
 

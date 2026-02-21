@@ -20,7 +20,7 @@
 #include "ores.qt/SessionHistoryDialog.hpp"
 
 #include <QDateTime>
-#include <QDialogButtonBox>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>
@@ -163,7 +163,7 @@ void SessionHistoryModel::clear() {
 
 SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager,
                                            QWidget* parent)
-    : QDialog(parent),
+    : QWidget(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)) {
     setupUi();
@@ -191,16 +191,14 @@ void SessionHistoryDialog::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     layout->addWidget(tableView_);
 
-    // Button box
-    auto* buttonBox = new QDialogButtonBox(this);
-    auto* refreshButton = buttonBox->addButton(tr("Refresh"),
-        QDialogButtonBox::ActionRole);
-    buttonBox->addButton(QDialogButtonBox::Close);
-
+    // Button bar
+    auto* refreshButton = new QPushButton(tr("Refresh"), this);
     connect(refreshButton, &QPushButton::clicked, this, &SessionHistoryDialog::refresh);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-    layout->addWidget(buttonBox);
+    auto* buttonLayout = new QHBoxLayout;
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(refreshButton);
+    layout->addLayout(buttonLayout);
 }
 
 void SessionHistoryDialog::setAccount(const boost::uuids::uuid& accountId,

@@ -49,7 +49,6 @@
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -168,8 +167,8 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
 
-    // Add clickable flag button after toolbar
-    if (mainLayout) {
+    // Add clickable flag button into the iconGroup in the General tab
+    {
         auto* flagContainer = new QWidget(this);
         auto* flagLayout = new QHBoxLayout(flagContainer);
         flagLayout->setContentsMargins(0, 4, 0, 4);
@@ -188,7 +187,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
 
-        mainLayout->insertWidget(1, flagContainer);
+        ui_->iconGroup->layout()->addWidget(flagContainer);
     }
 
     // Connect signals for editable fields to detect changes
@@ -272,6 +271,10 @@ CurrencyDetailDialog::~CurrencyDetailDialog() {
     }
 }
 
+QTabWidget* CurrencyDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* CurrencyDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* CurrencyDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
@@ -301,12 +304,8 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
-    ui_->versionEdit->setText(QString::number(currency.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(currency.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(currency.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(currency.recorded_at));
-    ui_->changeReasonEdit->setText(QString::fromStdString(currency.change_reason_code));
-    ui_->commentaryEdit->setText(QString::fromStdString(currency.change_commentary));
+    populateProvenance(currency.version, currency.modified_by, currency.performed_by,
+        currency.recorded_at, currency.change_reason_code, currency.change_commentary);
 
     isDirty_ = false;
     flagChanged_ = false;
@@ -348,12 +347,7 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->roundingPrecisionSpinBox->clear();
     ui_->formatEdit->clear();
     ui_->currencyTypeEdit->clear();
-    ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
-    ui_->performedByEdit->clear();
-    ui_->recordedAtEdit->clear();
-    ui_->changeReasonEdit->clear();
-    ui_->commentaryEdit->clear();
+    clearProvenance();
     pendingImageId_.clear();
 
     isDirty_ = false;

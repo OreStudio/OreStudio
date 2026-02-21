@@ -881,21 +881,86 @@ private:
 
 *** UI file structure
 
-Create a Qt Designer =.ui= file with:
+All detail dialogs use a standard tabbed layout. The standard structure is:
 
-1. Main vertical layout.
-2. Form layout for entity fields.
-3. Metadata group box (version, recorded by, recorded at) - hidden in create mode.
-4. Appropriate input widgets for each field type:
-   - =QLineEdit= for text fields
-   - =QSpinBox= / =QDoubleSpinBox= for numbers
-   - =QCheckBox= for booleans
-   - =QComboBox= for enums or foreign keys
-   - =QDateTimeEdit= for timestamps
+- *General* tab: entity-specific form fields inside a "Basic Information"
+  group box, plus a vertical spacer.
+- (Optional entity-specific tabs: e.g. "Flag", "Formatting", "Rounding".)
+- *Provenance* tab: a promoted =ProvenanceWidget= displaying the six standard
+  provenance fields (see [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][data_quality]] for field descriptions).
+- Button row (=Delete= + =Save=) *outside* the tab widget, at the bottom.
+
+The widget names are standardised so that the three pure-virtual overrides
+in =DetailDialogBase= are uniform across all dialogs:
+
+| Widget         | Type                    | Purpose                        |
+|----------------+-------------------------+--------------------------------|
+| =tabWidget=    | =QTabWidget=            | Container for all tabs         |
+| =generalTab=   | =QWidget=               | First tab (entity fields)      |
+| =provenanceTab= | =QWidget=              | Last tab (provenance fields)   |
+| =provenanceWidget= | =ores::qt::ProvenanceWidget= | Promoted widget inside provenanceTab |
+
+Minimum dialog size: *600×500*.
+
+The =ProvenanceWidget= is declared as a Qt Designer custom widget:
+
+#+begin_src xml
+<customwidgets>
+  <customwidget>
+    <class>ores::qt::ProvenanceWidget</class>
+    <extends>QWidget</extends>
+    <header>ores.qt/ProvenanceWidget.hpp</header>
+    <container>0</container>
+  </customwidget>
+</customwidgets>
+#+end_src
+
+Appropriate input widgets for each field type:
+- =QLineEdit= for text fields
+- =QSpinBox= / =QDoubleSpinBox= for numbers
+- =QCheckBox= for booleans
+- =QComboBox= for enums or foreign keys
+- =QDateTimeEdit= for timestamps
+- =QTextEdit= / =QPlainTextEdit= for multi-line text
+
+*** Header structure additions for tabbed dialogs
+
+Every detail dialog must implement three pure-virtual accessors inherited from
+=DetailDialogBase=. Declare them in the =protected:= section:
+
+#+begin_src cpp
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+#+end_src
+
+Define them in the =.cpp= as one-liners after the destructor:
+
+#+begin_src cpp
+QTabWidget* <Entity>DetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* <Entity>DetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* <Entity>DetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
+#+end_src
 
 *** Implementation patterns
 
 **** Mode handling
+
+Use =setProvenanceEnabled= (provided by =DetailDialogBase=) to enable or disable
+the Provenance tab. The tab stays visible in all modes so the tab strip remains
+uniform; it is merely disabled (greyed out) in create mode.
+
+Use =populateProvenance= to populate all six fields in a single call, and
+=clearProvenance= to reset them.
 
 #+begin_src cpp
 void <Entity>DetailDialog::setCreateMode(bool createMode) {
@@ -904,13 +969,32 @@ void <Entity>DetailDialog::setCreateMode(bool createMode) {
     // Primary key editable only in create mode
     ui_->identifierEdit->setReadOnly(!createMode);
 
-    // Metadata hidden in create mode
-    ui_->metadataGroup->setVisible(!createMode);
+    // Provenance tab disabled in create mode (no data yet)
+    setProvenanceEnabled(!createMode);
 
     // Delete disabled in create mode
     deleteAction_->setEnabled(!createMode);
 
     updateSaveResetButtonState();
+}
+
+void <Entity>DetailDialog::set<Entity>(const <component>::domain::<entity>& entity) {
+    current<Entity>_ = entity;
+    updateUiFrom<Entity>();
+}
+
+void <Entity>DetailDialog::updateUiFrom<Entity>() {
+    // Populate entity-specific fields...
+    ui_->nameEdit->setText(QString::fromStdString(current<Entity>_.name));
+    // ...
+
+    // Populate all six provenance fields via base class helper
+    populateProvenance(current<Entity>_.version,
+                       current<Entity>_.modified_by,
+                       current<Entity>_.performed_by,
+                       current<Entity>_.recorded_at,
+                       current<Entity>_.change_reason_code,
+                       current<Entity>_.change_commentary);
 }
 
 void <Entity>DetailDialog::setReadOnly(bool readOnly, int versionNumber) {
@@ -926,6 +1010,14 @@ void <Entity>DetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     }
 }
 #+end_src
+
+**** Tab enable/disable rules
+
+| Tab | Create mode | Edit mode | Read-only mode |
+|-----+-------------+-----------+----------------|
+| General | enabled | enabled | enabled (fields read-only) |
+| Entity-specific tabs | enabled | enabled | enabled (fields read-only) |
+| Provenance | *disabled* | enabled | enabled |
 
 **** Field change tracking
 

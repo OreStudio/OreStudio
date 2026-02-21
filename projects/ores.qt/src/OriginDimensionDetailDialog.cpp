@@ -26,7 +26,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,6 +46,10 @@ OriginDimensionDetailDialog::OriginDimensionDetailDialog(QWidget* parent)
 OriginDimensionDetailDialog::~OriginDimensionDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* OriginDimensionDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* OriginDimensionDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* OriginDimensionDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void OriginDimensionDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -90,9 +93,7 @@ void OriginDimensionDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -112,11 +113,9 @@ void OriginDimensionDetailDialog::updateUiFromDimension() {
     ui_->nameEdit->setText(QString::fromStdString(dimension_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension_.description));
 
-    ui_->versionEdit->setText(QString::number(dimension_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(dimension_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(dimension_.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(dimension_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(dimension_.change_commentary));
+    populateProvenance(dimension_.version, dimension_.modified_by,
+                       dimension_.performed_by, dimension_.recorded_at,
+                       "", dimension_.change_commentary);
 }
 
 void OriginDimensionDetailDialog::updateDimensionFromUi() {

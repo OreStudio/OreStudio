@@ -23,11 +23,11 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
+#include <QGroupBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.iam/messaging/protocol.hpp"
@@ -38,21 +38,20 @@ namespace ores::qt {
 using namespace ores::logging;
 
 MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
-    : QDialog(parent),
+    : QWidget(parent),
+      toolbar_(new QToolBar(this)),
+      tabWidget_(new QTabWidget(this)),
       username_edit_(new QLineEdit(this)),
       email_edit_(new QLineEdit(this)),
       save_email_button_(new QPushButton("Save", this)),
       email_status_label_(new QLabel(this)),
-      sessions_group_(new QGroupBox("Sessions", this)),
       active_sessions_label_(new QLabel(this)),
       current_session_label_(new QLabel(this)),
       view_sessions_button_(new QPushButton("View Session History", this)),
-      password_group_(new QGroupBox("Change Password", this)),
       new_password_edit_(new QLineEdit(this)),
       confirm_password_edit_(new QLineEdit(this)),
       change_password_button_(new QPushButton("Change Password", this)),
       password_status_label_(new QLabel(this)),
-      close_button_(new QPushButton("Close", this)),
       clientManager_(clientManager) {
 
     setupUI();
@@ -66,8 +65,6 @@ MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
             this, &MyAccountDialog::onSaveEmailClicked);
     connect(view_sessions_button_, &QPushButton::clicked,
             this, &MyAccountDialog::onViewSessionsClicked);
-    connect(close_button_, &QPushButton::clicked,
-            this, &MyAccountDialog::onCloseClicked);
     connect(this, &MyAccountDialog::changePasswordCompleted,
             this, &MyAccountDialog::onChangePasswordResult);
     connect(this, &MyAccountDialog::saveEmailCompleted,
@@ -81,24 +78,30 @@ void MyAccountDialog::setupUI() {
     BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
 
     setWindowTitle("My Account");
-    setModal(true);
-    setMinimumWidth(450);
-    setFixedWidth(450);
-    setSizeGripEnabled(false);
+    setMinimumSize(500, 400);
 
-    const QColor iconColor(220, 220, 220);
+    // Toolbar
+    toolbar_->setMovable(false);
+    toolbar_->setIconSize(QSize(16, 16));
 
-    // Account Info Group
-    auto* account_group = new QGroupBox("Account Information", this);
+    auto* saveAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor),
+        tr("Save Email"));
+    connect(saveAction, &QAction::triggered, this, &MyAccountDialog::onSaveEmailClicked);
+
+    // --- General tab ---
+    auto* generalTab = new QWidget();
+    auto* generalLayout = new QVBoxLayout(generalTab);
+    generalLayout->setContentsMargins(8, 8, 8, 8);
+
+    auto* account_group = new QGroupBox("Account Information", generalTab);
     auto* account_layout = new QFormLayout(account_group);
     account_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
-    // Username (read-only)
     username_edit_->setReadOnly(true);
     username_edit_->setStyleSheet("QLineEdit { background-color: #3a3a3a; }");
     account_layout->addRow("Username:", username_edit_);
 
-    // Email field with save button
     auto* email_layout = new QHBoxLayout();
     email_edit_->setPlaceholderText("Enter email address");
     email_layout->addWidget(email_edit_);
@@ -108,49 +111,33 @@ void MyAccountDialog::setupUI() {
     email_layout->addWidget(save_email_button_);
     account_layout->addRow("Email:", email_layout);
 
-    // Email status label
     email_status_label_->setWordWrap(true);
     email_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
     account_layout->addRow("", email_status_label_);
 
-    // Sessions Group
-    auto* sessions_layout = new QFormLayout(sessions_group_);
-    sessions_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    generalLayout->addWidget(account_group);
+    generalLayout->addStretch();
 
-    active_sessions_label_->setText("Loading...");
-    active_sessions_label_->setStyleSheet("QLabel { font-weight: bold; }");
-    sessions_layout->addRow("Active Sessions:", active_sessions_label_);
+    // --- Security tab ---
+    auto* securityTab = new QWidget();
+    auto* securityLayout = new QVBoxLayout(securityTab);
+    securityLayout->setContentsMargins(8, 8, 8, 8);
 
-    current_session_label_->setText("");
-    current_session_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
-    sessions_layout->addRow("", current_session_label_);
-
-    view_sessions_button_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
-    auto* sessions_button_layout = new QHBoxLayout();
-    sessions_button_layout->addStretch();
-    sessions_button_layout->addWidget(view_sessions_button_);
-    sessions_layout->addRow(sessions_button_layout);
-
-    // Password Change Group
-    auto* password_layout = new QFormLayout(password_group_);
+    auto* password_group = new QGroupBox("Change Password", securityTab);
+    auto* password_layout = new QFormLayout(password_group);
     password_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
-    // New password field
     new_password_edit_->setEchoMode(QLineEdit::Password);
     new_password_edit_->setPlaceholderText("Enter new password");
     password_layout->addRow("New Password:", new_password_edit_);
 
-    // Confirm password field
     confirm_password_edit_->setEchoMode(QLineEdit::Password);
     confirm_password_edit_->setPlaceholderText("Confirm new password");
     password_layout->addRow("Confirm Password:", confirm_password_edit_);
 
-    // Password status label
     password_status_label_->setWordWrap(true);
     password_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
-    // Change password button
     change_password_button_->setIcon(
         IconUtils::createRecoloredIcon(Icon::Key, IconUtils::DefaultIconColor));
 
@@ -158,27 +145,49 @@ void MyAccountDialog::setupUI() {
     password_button_layout->addWidget(password_status_label_);
     password_button_layout->addStretch();
     password_button_layout->addWidget(change_password_button_);
-
     password_layout->addRow(password_button_layout);
 
-    // Close button
-    close_button_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    securityLayout->addWidget(password_group);
+    securityLayout->addStretch();
 
-    auto* button_layout = new QHBoxLayout();
-    button_layout->addStretch();
-    button_layout->addWidget(close_button_);
+    // --- Sessions tab ---
+    auto* sessionsTab = new QWidget();
+    auto* sessionsLayout = new QVBoxLayout(sessionsTab);
+    sessionsLayout->setContentsMargins(8, 8, 8, 8);
+
+    auto* sessions_group = new QGroupBox("Sessions", sessionsTab);
+    auto* sessions_form = new QFormLayout(sessions_group);
+    sessions_form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    active_sessions_label_->setText("Loading...");
+    active_sessions_label_->setStyleSheet("QLabel { font-weight: bold; }");
+    sessions_form->addRow("Active Sessions:", active_sessions_label_);
+
+    current_session_label_->setText("");
+    current_session_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+    sessions_form->addRow("", current_session_label_);
+
+    view_sessions_button_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    auto* sessions_button_layout = new QHBoxLayout();
+    sessions_button_layout->addStretch();
+    sessions_button_layout->addWidget(view_sessions_button_);
+    sessions_form->addRow(sessions_button_layout);
+
+    sessionsLayout->addWidget(sessions_group);
+    sessionsLayout->addStretch();
+
+    // Assemble tabs
+    tabWidget_->addTab(generalTab, tr("General"));
+    tabWidget_->addTab(securityTab, tr("Security"));
+    tabWidget_->addTab(sessionsTab, tr("Sessions"));
 
     // Main layout
     auto* main_layout = new QVBoxLayout(this);
-    main_layout->addWidget(account_group);
-    main_layout->addWidget(sessions_group_);
-    main_layout->addWidget(password_group_);
-    main_layout->addSpacing(10);
-    main_layout->addLayout(button_layout);
-
-    // Set default button
-    close_button_->setDefault(true);
+    main_layout->setContentsMargins(0, 0, 0, 0);
+    main_layout->setSpacing(0);
+    main_layout->addWidget(toolbar_);
+    main_layout->addWidget(tabWidget_);
 
     // Connect password fields for match indicator
     PasswordMatchIndicator::connectFields(
@@ -193,11 +202,9 @@ void MyAccountDialog::loadAccountInfo() {
         return;
     }
 
-    // Get current user info from client manager
     const auto& username = clientManager_->currentUsername();
     username_edit_->setText(QString::fromStdString(username));
 
-    // Get current email from client manager
     const auto& email = clientManager_->currentEmail();
     email_edit_->setText(QString::fromStdString(email));
 
@@ -236,7 +243,6 @@ bool MyAccountDialog::validatePasswordInput() {
         return false;
     }
 
-    // Basic password strength check
     if (new_password.length() < 8) {
         MessageBoxHelper::warning(this, "Weak Password",
             "Password must be at least 8 characters long.");
@@ -266,12 +272,10 @@ void MyAccountDialog::onChangePasswordClicked() {
 
     const auto new_password = new_password_edit_->text();
 
-    // Disable form during request
     enablePasswordForm(false);
     password_status_label_->setText("Changing password...");
     password_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
-    // Perform password change asynchronously
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
     connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
             [this, watcher]() {
@@ -302,7 +306,6 @@ void MyAccountDialog::onChangePasswordClicked() {
 
                 const auto& header = response_result->header();
 
-                // Check for error response
                 if (header.type == comms::messaging::message_type::error_response) {
                     auto payload_result = response_result->decompressed_payload();
                     if (payload_result) {
@@ -314,7 +317,6 @@ void MyAccountDialog::onChangePasswordClicked() {
                     return {false, QString("Unknown server error")};
                 }
 
-                // Decompress payload
                 auto payload_result = response_result->decompressed_payload();
                 if (!payload_result) {
                     return {false, QString("Failed to decompress server response")};
@@ -352,7 +354,6 @@ void MyAccountDialog::onChangePasswordResult(bool success, const QString& error_
         password_status_label_->setText("Password changed successfully!");
         password_status_label_->setStyleSheet("QLabel { color: #0a0; }");
 
-        // Clear the password fields
         new_password_edit_->clear();
         confirm_password_edit_->clear();
 
@@ -395,13 +396,11 @@ void MyAccountDialog::onSaveEmailClicked() {
         return;
     }
 
-    // Disable form during request
     email_edit_->setEnabled(false);
     save_email_button_->setEnabled(false);
     email_status_label_->setText("Saving email...");
     email_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
-    // Perform email update asynchronously
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
     connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
             [this, watcher]() {
@@ -432,7 +431,6 @@ void MyAccountDialog::onSaveEmailClicked() {
 
                 const auto& header = response_result->header();
 
-                // Check for error response
                 if (header.type == comms::messaging::message_type::error_response) {
                     auto payload_result = response_result->decompressed_payload();
                     if (payload_result) {
@@ -444,7 +442,6 @@ void MyAccountDialog::onSaveEmailClicked() {
                     return {false, QString("Unknown server error")};
                 }
 
-                // Decompress payload
                 auto payload_result = response_result->decompressed_payload();
                 if (!payload_result) {
                     return {false, QString("Failed to decompress server response")};
@@ -460,7 +457,6 @@ void MyAccountDialog::onSaveEmailClicked() {
                     return {false, QString::fromStdString(response->message)};
                 }
 
-                // Update the stored email in ClientManager
                 clientManager_->setCurrentEmail(new_email.toStdString());
 
                 return {true, QString()};
@@ -497,11 +493,6 @@ void MyAccountDialog::onSaveEmailResult(bool success, const QString& error_messa
     }
 }
 
-void MyAccountDialog::onCloseClicked() {
-    BOOST_LOG_SEV(lg(), trace) << "On close clicked.";
-    accept();
-}
-
 void MyAccountDialog::loadSessionInfo() {
     BOOST_LOG_SEV(lg(), debug) << "Loading session info.";
 
@@ -511,7 +502,6 @@ void MyAccountDialog::loadSessionInfo() {
         return;
     }
 
-    // Load session info asynchronously
     auto* watcher = new QFutureWatcher<std::optional<std::vector<iam::domain::session>>>(this);
     connect(watcher, &QFutureWatcher<std::optional<std::vector<iam::domain::session>>>::finished,
             [this, watcher]() {
@@ -523,7 +513,6 @@ void MyAccountDialog::loadSessionInfo() {
             active_sessions_label_->setText(QString::number(sessions.size()));
 
             if (!sessions.empty()) {
-                // Show info about the current session (first active session)
                 const auto& current = sessions.front();
                 QString info = QString("Current: %1 (%2)")
                     .arg(QString::fromStdString(current.client_identifier.empty()
@@ -548,24 +537,7 @@ void MyAccountDialog::loadSessionInfo() {
 
 void MyAccountDialog::onViewSessionsClicked() {
     BOOST_LOG_SEV(lg(), debug) << "View sessions clicked.";
-
-    if (!clientManager_) {
-        MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
-        return;
-    }
-
-    auto accountId = clientManager_->accountId();
-    if (!accountId) {
-        MessageBoxHelper::warning(this, "Not Logged In", "Please log in to view session history.");
-        return;
-    }
-
-    // Open session history dialog
-    auto* sessionDialog = new SessionHistoryDialog(clientManager_, this);
-    sessionDialog->setAccount(*accountId, QString::fromStdString(clientManager_->currentUsername()));
-    sessionDialog->setAttribute(Qt::WA_DeleteOnClose);
-    sessionDialog->setModal(false);
-    sessionDialog->show();
+    emit viewSessionHistoryRequested();
 }
 
 }

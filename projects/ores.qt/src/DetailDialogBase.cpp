@@ -19,9 +19,44 @@
  */
 #include "ores.qt/DetailDialogBase.hpp"
 
+#include <QTabWidget>
+#include "ores.qt/ProvenanceWidget.hpp"
+
 namespace ores::qt {
 
 // MOC requires a non-inline destructor for proper vtable generation
 DetailDialogBase::~DetailDialogBase() {}
+
+void DetailDialogBase::setProvenanceEnabled(bool enabled) {
+    auto* tw = tabWidget();
+    auto* pt = provenanceTab();
+    if (!tw || !pt) return;
+
+    for (int i = 0; i < tw->count(); ++i) {
+        if (tw->widget(i) == pt) {
+            tw->setTabEnabled(i, enabled);
+            return;
+        }
+    }
+}
+
+void DetailDialogBase::populateProvenance(
+        int version,
+        const std::string& modified_by,
+        const std::string& performed_by,
+        std::chrono::system_clock::time_point recorded_at,
+        const std::string& change_reason_code,
+        const std::string& change_commentary) {
+    auto* pw = provenanceWidget();
+    if (!pw) return;
+    pw->populate(version, modified_by, performed_by, recorded_at,
+                 change_reason_code, change_commentary);
+}
+
+void DetailDialogBase::clearProvenance() {
+    auto* pw = provenanceWidget();
+    if (!pw) return;
+    pw->clear();
+}
 
 }

@@ -21,26 +21,28 @@
 #define ORES_QT_MYACCOUNTDIALOG_HPP
 
 #include <QLabel>
-#include <QDialog>
+#include <QWidget>
+#include <QTabWidget>
+#include <QToolBar>
 #include <QLineEdit>
-#include <QGroupBox>
 #include <QPushButton>
 #include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Dialog for users to manage their own account details.
+ * @brief Widget for users to manage their own account details.
  *
  * Allows users to:
  * - View their username (read-only)
  * - View/edit their email address
  * - Change their password voluntarily
+ * - View session activity
  *
- * This dialog is accessed via File > My Account menu item and is available
- * only when the user is logged in.
+ * This widget is opened as an MDI subwindow via File > My Account and is
+ * available only when the user is logged in.
  */
-class MyAccountDialog : public QDialog {
+class MyAccountDialog : public QWidget {
     Q_OBJECT
 
 private:
@@ -67,11 +69,11 @@ private slots:
     void onSaveEmailClicked();
     void onSaveEmailResult(bool success, const QString& error_message);
     void onViewSessionsClicked();
-    void onCloseClicked();
 
 signals:
     void changePasswordCompleted(bool success, const QString& error_message);
     void saveEmailCompleted(bool success, const QString& error_message);
+    void viewSessionHistoryRequested();
 
 private:
     void setupUI();
@@ -81,27 +83,28 @@ private:
     bool validatePasswordInput();
 
 private:
-    // Account info section
+    // Toolbar
+    QToolBar* toolbar_;
+
+    // Tab widget
+    QTabWidget* tabWidget_;
+
+    // Account info section (General tab)
     QLineEdit* username_edit_;
     QLineEdit* email_edit_;
     QPushButton* save_email_button_;
     QLabel* email_status_label_;
 
-    // Sessions section
-    QGroupBox* sessions_group_;
+    // Sessions section (Sessions tab)
     QLabel* active_sessions_label_;
     QLabel* current_session_label_;
     QPushButton* view_sessions_button_;
 
-    // Password change section
-    QGroupBox* password_group_;
+    // Password change section (Security tab)
     QLineEdit* new_password_edit_;
     QLineEdit* confirm_password_edit_;
     QPushButton* change_password_button_;
     QLabel* password_status_label_;
-
-    // Dialog buttons
-    QPushButton* close_button_;
 
     // Dependencies
     ClientManager* clientManager_;

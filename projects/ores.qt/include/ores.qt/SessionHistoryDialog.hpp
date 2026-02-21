@@ -20,7 +20,7 @@
 #ifndef ORES_QT_SESSION_HISTORY_DIALOG_HPP
 #define ORES_QT_SESSION_HISTORY_DIALOG_HPP
 
-#include <QDialog>
+#include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QAbstractTableModel>
@@ -73,7 +73,7 @@ private:
  * Shows a table of all sessions with start/end times, durations,
  * bytes transferred, and geolocation information.
  */
-class SessionHistoryDialog : public QDialog {
+class SessionHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:

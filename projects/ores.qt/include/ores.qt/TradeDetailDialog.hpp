@@ -21,8 +21,10 @@
 #define ORES_QT_TRADE_DETAIL_DIALOG_HPP
 
 #include <vector>
+#include <QTabWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading/domain/trade.hpp"
 #include "ores.refdata/domain/book.hpp"
@@ -63,6 +65,11 @@ public:
     void setTrade(const trading::domain::trade& trade);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
 
 signals:
     void tradeSaved(const QString& code);

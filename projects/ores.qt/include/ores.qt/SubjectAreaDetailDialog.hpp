@@ -70,6 +70,11 @@ private slots:
     void onDeleteClicked();
     void onDomainsLoaded();
 
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+
 private:
     void setupConnections();
     void updateUiState();

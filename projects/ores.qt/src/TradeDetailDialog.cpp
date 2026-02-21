@@ -29,7 +29,6 @@
 #include "ui_TradeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
@@ -52,6 +51,10 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
 TradeDetailDialog::~TradeDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* TradeDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* TradeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* TradeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void TradeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -277,9 +280,9 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
 
     if (createMode) {
         trade_.id = boost::uuids::random_generator()();
-        ui_->metadataGroup->setVisible(false);
     }
 
+    setProvenanceEnabled(!createMode);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -310,10 +313,9 @@ void TradeDetailDialog::updateUiFromTrade() {
     ui_->terminationDateEdit->setText(QString::fromStdString(trade_.termination_date));
     ui_->executionTimestampEdit->setText(QString::fromStdString(trade_.execution_timestamp));
 
-    ui_->versionEdit->setText(QString::number(trade_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(trade_.modified_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(trade_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(trade_.change_commentary));
+    populateProvenance(trade_.version, trade_.modified_by, trade_.performed_by,
+                       trade_.recorded_at, trade_.change_reason_code,
+                       trade_.change_commentary);
 }
 
 void TradeDetailDialog::updateTradeFromUi() {

@@ -30,7 +30,7 @@
 #include "ui_ChangeReasonCategoryDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -143,6 +143,10 @@ ChangeReasonCategoryDetailDialog::~ChangeReasonCategoryDetailDialog() {
     delete ui_;
 }
 
+QTabWidget* ChangeReasonCategoryDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* ChangeReasonCategoryDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* ChangeReasonCategoryDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+
 void ChangeReasonCategoryDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
@@ -158,11 +162,8 @@ void ChangeReasonCategoryDetailDialog::setCategory(
     ui_->codeEdit->setText(QString::fromStdString(category.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(category.description));
 
-    ui_->versionEdit->setText(QString::number(category.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(category.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(category.performed_by));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(category.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(category.change_commentary));
+    populateProvenance(category.version, category.modified_by, category.performed_by,
+                       category.recorded_at, "", category.change_commentary);
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -183,8 +184,8 @@ void ChangeReasonCategoryDetailDialog::setCreateMode(bool createMode) {
     // Code is only editable in create mode
     ui_->codeEdit->setReadOnly(!createMode);
 
-    // Hide metadata section in create mode (shows previous version info)
-    ui_->metadataGroup->setVisible(!createMode);
+    // Enable provenance tab only when viewing an existing record
+    setProvenanceEnabled(!createMode);
 
     // Hide delete button in create mode
     deleteAction_->setVisible(!createMode);
@@ -235,11 +236,7 @@ void ChangeReasonCategoryDetailDialog::clearDialog() {
     ui_->codeEdit->clear();
     ui_->descriptionEdit->clear();
 
-    ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
-    ui_->performedByEdit->clear();
-    ui_->recordedAtEdit->clear();
-    ui_->commentaryEdit->clear();
+    clearProvenance();
 
     isDirty_ = false;
     emit isDirtyChanged(false);

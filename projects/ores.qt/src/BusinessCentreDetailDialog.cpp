@@ -26,7 +26,6 @@
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -48,6 +47,10 @@ BusinessCentreDetailDialog::BusinessCentreDetailDialog(QWidget* parent)
 BusinessCentreDetailDialog::~BusinessCentreDetailDialog() {
     delete ui_;
 }
+
+QTabWidget* BusinessCentreDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* BusinessCentreDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* BusinessCentreDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void BusinessCentreDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -176,9 +179,7 @@ void BusinessCentreDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
-    if (createMode) {
-        ui_->metadataGroup->setVisible(false);
-    }
+    setProvenanceEnabled(!createMode);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -201,12 +202,10 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
 
-    ui_->versionEdit->setText(QString::number(business_centre_.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(business_centre_.modified_by));
-    ui_->performedByEdit->setText(QString::fromStdString(business_centre_.performed_by));
-    ui_->changeReasonEdit->setText(QString::fromStdString(business_centre_.change_reason_code));
-    ui_->recordedAtEdit->setText(relative_time_helper::format(business_centre_.recorded_at));
-    ui_->commentaryEdit->setText(QString::fromStdString(business_centre_.change_commentary));
+    populateProvenance(business_centre_.version, business_centre_.modified_by,
+                       business_centre_.performed_by, business_centre_.recorded_at,
+                       business_centre_.change_reason_code,
+                       business_centre_.change_commentary);
 }
 
 void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {

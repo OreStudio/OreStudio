@@ -165,7 +165,9 @@ void CountryController::showListWindow() {
         });
 
     // When the image cache reloads (due to external event), mark the list as stale
-    connect(imageCache_, &ImageCache::allLoaded, this, [self = QPointer<CountryController>(this), countryWidget](){
+    connect(imageCache_, &ImageCache::allLoaded, this,
+            [self = QPointer<CountryController>(this),
+             countryWidget = QPointer<CountryMdiWindow>(countryWidget)](){
         if (!self) return;
         if (countryWidget) {
             countryWidget->markAsStale();

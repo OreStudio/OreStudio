@@ -91,6 +91,7 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
         case Country:
             return QString::fromStdString(session.country_code);
         case BytesSent:
+            if (!session.end_time) return QString("-");
             if (session.bytes_sent >= 1024 * 1024) {
                 return QString("%1 MB").arg(session.bytes_sent / (1024.0 * 1024.0), 0, 'f', 2);
             } else if (session.bytes_sent >= 1024) {
@@ -98,6 +99,7 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
             }
             return QString("%1 B").arg(session.bytes_sent);
         case BytesReceived:
+            if (!session.end_time) return QString("-");
             if (session.bytes_received >= 1024 * 1024) {
                 return QString("%1 MB").arg(session.bytes_received / (1024.0 * 1024.0), 0, 'f', 2);
             } else if (session.bytes_received >= 1024) {
@@ -301,6 +303,15 @@ void SessionHistoryDialog::onSessionSelectionChanged(
     auto qdt = QDateTime::fromSecsSinceEpoch(
         std::chrono::system_clock::to_time_t(session.start_time));
     const QString label = qdt.toString("yyyy-MM-dd hh:mm:ss");
+
+    // Active sessions have no samples yet — they are persisted at logout
+    if (!session.end_time) {
+        chartView_->chart()->removeAllSeries();
+        const auto axes = chartView_->chart()->axes();
+        for (auto* axis : axes) chartView_->chart()->removeAxis(axis);
+        chartView_->chart()->setTitle(tr("Session in progress — samples available after logout"));
+        return;
+    }
 
     // Show loading state in chart title
     chartView_->chart()->setTitle(tr("Loading samples for session: %1").arg(label));

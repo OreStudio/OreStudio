@@ -11,8 +11,9 @@
 ORE Studio implements a multi-tenant architecture where each tenant's data is
 isolated at the database level using PostgreSQL Row-Level Security (RLS). This
 document describes how tenant context flows through the system from user
-authentication to database queries. For multi-party support see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party
-Architecture]].
+authentication to database queries. For the party hierarchy, RLS, and data
+ownership model see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]. For account-party
+rules and the login flow see [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]].
 
 * Core Concepts
 

@@ -28,6 +28,7 @@ authentication and authorization. Key features include:
   fields
 - Synthetic data generation: test account generation for development
 - Multi-tenancy support via the [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]].
+- Multi-party login flow via the [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]].
 
 The module is organised into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]]
 and persistence), service (business logic), messaging (API handlers), security

@@ -314,12 +314,6 @@ ignores roles etc. This could be available on the data librarian.
 At present we have icons which are not very sensible. For methodology we could
 use something that reminds one of a laboratory.
 
-*** Clicking on connection should provide info                         :code:
-
-- when never connected: nothing.
-- when connected: server, bytes sent, received, status of connection.
-- when disconnected: retries, disconnected since.
-
 *** Add coloured icons                                                 :code:
 
 At present we are using black and white icons. These are a bit hard to see. We

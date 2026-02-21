@@ -138,6 +138,20 @@ public:
         std::uint64_t bytes_sent, std::uint64_t bytes_received);
 
     /**
+     * @brief Update party context for an active session.
+     *
+     * Called after the client confirms party selection via select_party_request.
+     *
+     * @param remote_address The client's remote address
+     * @param party_id The selected party UUID
+     * @param visible_party_ids Party IDs visible to the selected party
+     */
+    void update_session_party(
+        const std::string& remote_address,
+        const boost::uuids::uuid& party_id,
+        const std::vector<boost::uuids::uuid>& visible_party_ids);
+
+    /**
      * @brief Remove session for a remote address.
      *
      * @param remote_address The client's remote address

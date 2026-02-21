@@ -111,16 +111,18 @@ QVariant ClientBusinessCentreModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case CountryAlpha2:
-            return QString::fromStdString(bc.country_alpha2_code);
         case Code:
             return QString::fromStdString(bc.code);
+        case CountryAlpha2:
+            return QString::fromStdString(bc.country_alpha2_code);
+        case City:
+            return QString::fromStdString(bc.city_name);
+        case Source:
+            return QString::fromStdString(bc.source);
         case Description: {
             const auto text = QString::fromStdString(bc.description);
             return text.length() > 30 ? text.left(30) + QStringLiteral("...") : text;
         }
-        case Source:
-            return QString::fromStdString(bc.source);
         case CodingScheme:
             return QString::fromStdString(bc.coding_scheme_code);
         case Version:
@@ -147,14 +149,16 @@ QVariant ClientBusinessCentreModel::headerData(
         return {};
 
     switch (section) {
-    case CountryAlpha2:
-        return tr("Country");
     case Code:
         return tr("Code");
-    case Description:
-        return tr("Description");
+    case CountryAlpha2:
+        return tr("Country");
+    case City:
+        return tr("City");
     case Source:
         return tr("Source");
+    case Description:
+        return tr("Description");
     case CodingScheme:
         return tr("Coding Scheme");
     case Version:

@@ -35,7 +35,17 @@
 -- Use a helper function for idempotent creation
 create or replace function ores_seed_system_business_centre_fn()
 returns void as $$
+declare
+    v_image_id uuid;
 begin
+    -- Look up the UN flag image
+    select i.image_id into v_image_id
+    from ores_dq_images_artefact_tbl i
+    join ores_dq_datasets_tbl d on d.id = i.dataset_id
+    where d.code = 'assets.country_flags'
+      and i.key = 'un'
+    limit 1;
+
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
         where tenant_id = ores_iam_system_tenant_id_fn()
@@ -44,17 +54,33 @@ begin
     ) then
         insert into ores_refdata_business_centres_tbl (
             code, tenant_id, version, coding_scheme_code,
-            description, modified_by, performed_by,
+            source, description, image_id,
+            modified_by, performed_by,
             change_reason_code, change_commentary
         ) values (
             'WRLD', ores_iam_system_tenant_id_fn(), 0, 'NONE',
+            'Internal',
             'World. Global business centre for entities not tied to a specific geographic location.',
+            v_image_id,
             current_user, current_user,
             'system.initial_load', 'System business centre for platform tenant'
         );
         raise notice 'Created WRLD business centre for system tenant';
     else
-        raise notice 'WRLD business centre already exists for system tenant';
+        insert into ores_refdata_business_centres_tbl (
+            code, tenant_id, version, coding_scheme_code,
+            source, description, image_id,
+            modified_by, performed_by,
+            change_reason_code, change_commentary
+        ) values (
+            'WRLD', ores_iam_system_tenant_id_fn(), 0, 'NONE',
+            'Internal',
+            'World. Global business centre for entities not tied to a specific geographic location.',
+            v_image_id,
+            current_user, current_user,
+            'system.initial_load', 'Update source and image for WRLD system business centre'
+        );
+        raise notice 'Updated WRLD business centre for system tenant';
     end if;
 end;
 $$ language plpgsql;

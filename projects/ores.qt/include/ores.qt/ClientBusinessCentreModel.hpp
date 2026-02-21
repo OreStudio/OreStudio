@@ -59,10 +59,11 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        CountryAlpha2,
         Code,
-        Description,
+        CountryAlpha2,
+        City,
         Source,
+        Description,
         CodingScheme,
         Version,
         ModifiedBy,
@@ -78,13 +79,6 @@ public:
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
     static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
         {
-            .column = CountryAlpha2,
-            .header = std::string_view("Country"),
-            .style = column_style::mono_bold_center,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
             .column = Code,
             .header = std::string_view("Code"),
             .style = column_style::mono_bold_left,
@@ -92,8 +86,15 @@ public:
             .default_width = kColumnWidthAuto
         },
         {
-            .column = Description,
-            .header = std::string_view("Description"),
+            .column = CountryAlpha2,
+            .header = std::string_view("Country"),
+            .style = column_style::mono_bold_center,
+            .hidden_by_default = false,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = City,
+            .header = std::string_view("City"),
             .style = column_style::text_left,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
@@ -106,10 +107,17 @@ public:
             .default_width = kColumnWidthAuto
         },
         {
+            .column = Description,
+            .header = std::string_view("Description"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
             .column = CodingScheme,
             .header = std::string_view("Coding Scheme"),
             .style = column_style::mono_left,
-            .hidden_by_default = false,
+            .hidden_by_default = true,
             .default_width = kColumnWidthAuto
         },
         {
@@ -131,7 +139,7 @@ public:
             .header = std::string_view("Recorded At"),
             .style = column_style::mono_left,
             .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
+            .default_width = 155
         }
     }};
 

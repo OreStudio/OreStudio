@@ -114,6 +114,7 @@ void BusinessCentreDetailDialog::populateCountries() {
 
         self->ui_->countryAlpha2Combo->blockSignals(true);
         self->ui_->countryAlpha2Combo->clear();
+        self->ui_->countryAlpha2Combo->addItem(QString());
         for (const auto& code : codes) {
             self->ui_->countryAlpha2Combo->addItem(
                 QString::fromStdString(code));
@@ -139,13 +140,6 @@ void BusinessCentreDetailDialog::setImageCache(ImageCache* imageCache) {
     if (imageCache_) {
         connect(imageCache_, &ImageCache::allLoaded, this,
                 &BusinessCentreDetailDialog::updateCountryFlagIcons);
-        connect(ui_->countryAlpha2Combo, &QComboBox::currentTextChanged,
-                this, [this]() {
-            update_combo_line_edit_icon(ui_->countryAlpha2Combo,
-                [this](const std::string& code) {
-                    return imageCache_->getCountryFlagIcon(code);
-                });
-        });
         updateCountryFlagIcons();
     }
 }
@@ -188,6 +182,7 @@ void BusinessCentreDetailDialog::setCreateMode(bool createMode) {
 void BusinessCentreDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
+    ui_->cityNameEdit->setReadOnly(true);
     ui_->sourceEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->codingSchemeEdit->setReadOnly(readOnly);
@@ -198,6 +193,7 @@ void BusinessCentreDetailDialog::setReadOnly(bool readOnly) {
 
 void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));
+    ui_->cityNameEdit->setText(QString::fromStdString(business_centre_.city_name));
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
     ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));

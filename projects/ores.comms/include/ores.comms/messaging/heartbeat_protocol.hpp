@@ -20,10 +20,12 @@
 #ifndef ORES_COMMS_MESSAGING_HEARTBEAT_PROTOCOL_HPP
 #define ORES_COMMS_MESSAGING_HEARTBEAT_PROTOCOL_HPP
 
+#include <span>
 #include <vector>
 #include <cstdint>
 #include <expected>
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::comms::messaging {
 

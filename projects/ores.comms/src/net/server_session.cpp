@@ -22,6 +22,7 @@
 #include <boost/asio/redirect_error.hpp>
 #include <boost/asio/experimental/awaitable_operators.hpp>
 #include "ores.comms/messaging/handshake_protocol.hpp"
+#include "ores.comms/messaging/heartbeat_protocol.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/handshake_service.hpp"
 #include "ores.comms/service/heartbeat_service.hpp"

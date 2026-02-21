@@ -20,6 +20,8 @@
 #ifndef ORES_QT_SESSION_HISTORY_DIALOG_HPP
 #define ORES_QT_SESSION_HISTORY_DIALOG_HPP
 
+#include <QIcon>
+#include <QTimer>
 #include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
@@ -71,6 +73,8 @@ private:
     };
 
     std::vector<iam::domain::session> sessions_;
+    QIcon activeIcon_;
+    QIcon historyIcon_;
 };
 
 /**
@@ -120,6 +124,7 @@ private slots:
     void onSamplesLoaded();
     void onSessionSelectionChanged(const QItemSelection& selected,
                                    const QItemSelection& deselected);
+    void onSampleRefreshTimeout();
 
 private:
     void setupUi();
@@ -148,6 +153,13 @@ private:
 
     QFutureWatcher<FetchResult>* watcher_;
     QFutureWatcher<FetchSamplesResult>* samplesWatcher_;
+    QTimer* sampleRefreshTimer_;
+
+    // Currently selected session state (for auto-refresh)
+    bool hasSelectedSession_ = false;
+    boost::uuids::uuid selectedSessionId_ = {};
+    QString selectedSessionLabel_;
+    bool selectedSessionActive_ = false;
 };
 
 }

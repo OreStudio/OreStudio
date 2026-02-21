@@ -26,6 +26,7 @@
 #include <QLabel>
 #include <QPainter>
 #include <QPushButton>
+#include <QTimer>
 #include <QtConcurrent>
 #include <QtCharts/QChart>
 #include <QtCharts/QLineSeries>
@@ -33,6 +34,7 @@
 #include <QtCharts/QValueAxis>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.comms/service/auth_session_service.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -42,7 +44,11 @@ using namespace ores::logging;
 // SessionHistoryModel implementation
 
 SessionHistoryModel::SessionHistoryModel(QObject* parent)
-    : QAbstractTableModel(parent) {}
+    : QAbstractTableModel(parent),
+      activeIcon_(IconUtils::createRecoloredIcon(Icon::PlugConnectedFilled,
+                                                  IconUtils::ConnectedColor)),
+      historyIcon_(IconUtils::createRecoloredIcon(Icon::History,
+                                                   IconUtils::DefaultIconColor)) {}
 
 int SessionHistoryModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid()) return 0;
@@ -128,6 +134,10 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
         }
     }
 
+    if (role == Qt::DecorationRole && index.column() == StartTime) {
+        return session.end_time ? historyIcon_ : activeIcon_;
+    }
+
     if (role == Qt::ForegroundRole) {
         if (!session.end_time) {
             // Active session - show in green
@@ -175,13 +185,19 @@ SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager,
     : QWidget(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      samplesWatcher_(new QFutureWatcher<FetchSamplesResult>(this)) {
+      samplesWatcher_(new QFutureWatcher<FetchSamplesResult>(this)),
+      sampleRefreshTimer_(new QTimer(this)) {
     setupUi();
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &SessionHistoryDialog::onSessionsLoaded);
     connect(samplesWatcher_, &QFutureWatcher<FetchSamplesResult>::finished,
             this, &SessionHistoryDialog::onSamplesLoaded);
+
+    // Auto-refresh chart every ~60s (sample_flush_interval * heartbeat_interval)
+    connect(sampleRefreshTimer_, &QTimer::timeout,
+            this, &SessionHistoryDialog::onSampleRefreshTimeout);
+    sampleRefreshTimer_->start(60000);
 }
 
 SessionHistoryDialog::~SessionHistoryDialog() = default;
@@ -306,6 +322,12 @@ void SessionHistoryDialog::onSessionSelectionChanged(
         std::chrono::system_clock::to_time_t(session.start_time));
     const QString label = qdt.toString("yyyy-MM-dd hh:mm:ss");
 
+    // Store selected session for auto-refresh
+    hasSelectedSession_ = true;
+    selectedSessionId_ = session_id;
+    selectedSessionLabel_ = label;
+    selectedSessionActive_ = is_active;
+
     // Show loading state in chart title
     chartView_->chart()->setTitle(tr("Loading samples for session: %1").arg(label));
 
@@ -402,6 +424,41 @@ void SessionHistoryDialog::onSamplesLoaded() {
     // Colour the series
     sent_series->setColor(QColor(30, 144, 255));   // dodger blue
     recv_series->setColor(QColor(50, 205, 50));    // lime green
+}
+
+void SessionHistoryDialog::onSampleRefreshTimeout() {
+    if (!hasSelectedSession_ || !selectedSessionActive_) return;
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (samplesWatcher_->isRunning()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Auto-refreshing samples for active session";
+
+    const auto session_id = selectedSessionId_;
+    const auto label = selectedSessionLabel_;
+    const bool is_active = selectedSessionActive_;
+
+    auto future = QtConcurrent::run([this, session_id, label, is_active]() -> FetchSamplesResult {
+        try {
+            auto samples = clientManager_->getSessionSamples(session_id);
+            if (samples) {
+                return FetchSamplesResult{
+                    .success = true,
+                    .is_active = is_active,
+                    .session_id = session_id,
+                    .session_label = label,
+                    .samples = std::move(*samples)
+                };
+            }
+            return FetchSamplesResult{.success = false, .is_active = is_active,
+                                      .session_id = session_id, .session_label = label};
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to auto-refresh samples: " << e.what();
+            return FetchSamplesResult{.success = false, .is_active = is_active,
+                                      .session_id = session_id, .session_label = label};
+        }
+    });
+
+    samplesWatcher_->setFuture(future);
 }
 
 }

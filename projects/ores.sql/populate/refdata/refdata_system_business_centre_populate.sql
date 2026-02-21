@@ -66,7 +66,13 @@ begin
             'system.initial_load', 'System business centre for platform tenant'
         );
         raise notice 'Created WRLD business centre for system tenant';
-    else
+    elsif exists (
+        select 1 from ores_refdata_business_centres_tbl
+        where tenant_id = ores_iam_system_tenant_id_fn()
+        and code = 'WRLD'
+        and valid_to = ores_utility_infinity_timestamp_fn()
+        and (source is distinct from 'Internal' or image_id is distinct from v_image_id)
+    ) then
         insert into ores_refdata_business_centres_tbl (
             code, tenant_id, version, coding_scheme_code,
             source, description, image_id,
@@ -81,6 +87,8 @@ begin
             'system.initial_load', 'Update source and image for WRLD system business centre'
         );
         raise notice 'Updated WRLD business centre for system tenant';
+    else
+        raise notice 'WRLD business centre already up to date';
     end if;
 end;
 $$ language plpgsql;

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DatasetBundleDetailDialog.hpp"
 
+#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -70,7 +71,7 @@ void DatasetBundleDetailDialog::setupConnections() {
             &DatasetBundleDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &DatasetBundleDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &DatasetBundleDetailDialog::onFieldChanged);
 }
 

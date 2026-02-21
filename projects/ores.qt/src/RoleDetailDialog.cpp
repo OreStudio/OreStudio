@@ -50,7 +50,7 @@ void RoleDetailDialog::setRole(const iam::domain::role& role) {
 
     // Populate basic info
     ui_->nameEdit->setText(QString::fromStdString(role.name));
-    ui_->descriptionEdit->setText(QString::fromStdString(role.description));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(role.description));
 
     // Populate provenance
     populateProvenance(role.version, role.modified_by, role.performed_by,

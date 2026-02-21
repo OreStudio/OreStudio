@@ -71,7 +71,7 @@ void BusinessCentreDetailDialog::setupConnections() {
             &BusinessCentreDetailDialog::onCodeChanged);
     connect(ui_->sourceEdit, &QLineEdit::textChanged, this,
             &BusinessCentreDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &BusinessCentreDetailDialog::onFieldChanged);
     connect(ui_->codingSchemeEdit, &QLineEdit::textChanged, this,
             &BusinessCentreDetailDialog::onFieldChanged);
@@ -195,7 +195,7 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));
     ui_->cityNameEdit->setText(QString::fromStdString(business_centre_.city_name));
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
-    ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(business_centre_.description));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
 
     populateProvenance(business_centre_.version, business_centre_.modified_by,
@@ -209,7 +209,7 @@ void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
         business_centre_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     business_centre_.source = ui_->sourceEdit->text().trimmed().toStdString();
-    business_centre_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    business_centre_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
     business_centre_.country_alpha2_code = ui_->countryAlpha2Combo->currentText().trimmed().toStdString();
     business_centre_.modified_by = username_;

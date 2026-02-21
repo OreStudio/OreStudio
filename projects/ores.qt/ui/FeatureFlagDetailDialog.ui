@@ -85,11 +85,11 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QTextEdit" name="descriptionEdit">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>120</height>
+              <height>80</height>
              </size>
             </property>
             <property name="maximumSize">

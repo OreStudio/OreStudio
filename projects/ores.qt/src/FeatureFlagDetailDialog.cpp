@@ -133,7 +133,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
         &FeatureFlagDetailDialog::onFieldChanged);
     connect(ui_->enabledComboBox, &QComboBox::currentIndexChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
 
     // Initially disable save button

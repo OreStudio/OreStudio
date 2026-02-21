@@ -196,8 +196,6 @@ void EntityDetailDialog::setupConnections() {
             &EntityDetailDialog::onFieldChanged);
     connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
             &EntityDetailDialog::onFieldChanged);
-    connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
-            &EntityDetailDialog::onBusinessCentreChanged);
 
     if (ops_->has_party_category()) {
         connect(ui_->partyCategoryCombo, &QComboBox::currentTextChanged, this,
@@ -218,7 +216,6 @@ void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
                 [this](const std::string& code) {
                     return imageCache_->getBusinessCentreFlagIcon(code);
                 });
-            onBusinessCentreChanged(ui_->businessCenterCombo->currentText());
         });
     }
 }
@@ -624,22 +621,6 @@ void EntityDetailDialog::onCodeChanged(const QString& /* text */) {
 void EntityDetailDialog::onFieldChanged() {
     hasChanges_ = true;
     updateSaveButtonState();
-}
-
-void EntityDetailDialog::onBusinessCentreChanged(const QString& code) {
-    if (!imageCache_ || !ui_->businessCentreFlagLabel) return;
-
-    if (code.isEmpty()) {
-        ui_->businessCentreFlagLabel->clear();
-        return;
-    }
-
-    const auto icon = imageCache_->getBusinessCentreFlagIcon(code.toStdString());
-    if (icon.isNull()) {
-        ui_->businessCentreFlagLabel->clear();
-    } else {
-        ui_->businessCentreFlagLabel->setPixmap(icon.pixmap(32, 24));
-    }
 }
 
 void EntityDetailDialog::updateSaveButtonState() {

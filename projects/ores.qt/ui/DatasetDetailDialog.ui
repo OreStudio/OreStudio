@@ -207,44 +207,53 @@
             </widget>
            </item>
            <item row="13" column="0">
-            <widget class="QLabel" name="descriptionLabel">
-             <property name="text">
-              <string>Description:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="13" column="1">
-            <widget class="QPlainTextEdit" name="descriptionEdit">
-             <property name="maximumHeight">
-              <number>60</number>
-             </property>
-            </widget>
-           </item>
-           <item row="14" column="0">
             <widget class="QLabel" name="businessContextLabel">
              <property name="text">
               <string>Business Context:</string>
              </property>
             </widget>
            </item>
-           <item row="14" column="1">
+           <item row="13" column="1">
             <widget class="QPlainTextEdit" name="businessContextEdit">
              <property name="maximumHeight">
               <number>60</number>
              </property>
             </widget>
            </item>
-           <item row="15" column="0">
+           <item row="14" column="0">
             <widget class="QLabel" name="licenseLabel">
              <property name="text">
               <string>License Info:</string>
              </property>
             </widget>
            </item>
-           <item row="15" column="1">
+           <item row="14" column="1">
             <widget class="QLineEdit" name="licenseEdit">
              <property name="maxLength">
               <number>255</number>
+             </property>
+            </widget>
+           </item>
+           <item row="15" column="0">
+            <widget class="QLabel" name="descriptionLabel">
+             <property name="text">
+              <string>Description:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="15" column="1">
+            <widget class="QPlainTextEdit" name="descriptionEdit">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>80</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>150</height>
+              </size>
              </property>
             </widget>
            </item>

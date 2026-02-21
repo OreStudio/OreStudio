@@ -19,6 +19,7 @@
  */
 #include "ores.iam/messaging/accounts_message_handler.hpp"
 
+#include <algorithm>
 #include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -177,6 +178,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_active_sessions_request(payload, remote_address);
     case message_type::get_session_samples_request:
         co_return co_await handle_get_session_samples_request(payload, remote_address);
+    case message_type::select_party_request:
+        co_return co_await handle_select_party_request(payload, remote_address);
     // RBAC messages
     case message_type::list_roles_request:
         co_return co_await handle_list_roles_request(payload, remote_address);
@@ -502,10 +505,21 @@ handle_login_request(std::span<const std::byte> payload,
         sess->client_ip = ip_address;
 
         // Resolve party context from account_parties
+        boost::uuids::uuid response_selected_party_id = boost::uuids::nil_uuid();
+        std::vector<party_summary> response_available_parties;
+        bool no_parties = false;
         try {
             repository::account_party_repository ap_repo(login_ctx);
             auto parties = ap_repo.read_latest_by_account(account.id);
-            if (!parties.empty()) {
+            if (parties.empty()) {
+                // 0 parties is a misconfiguration — every account must have at
+                // least one party (system party for admins, operational party
+                // for users).  Flag the error; login will be rejected below.
+                no_parties = true;
+                BOOST_LOG_SEV(lg(), warn) << "No party assignment for account: "
+                                          << account.id;
+            } else if (parties.size() == 1) {
+                // Auto-select single party
                 sess->party_id = parties.front().party_id;
 
                 // Compute visible party set via SQL function
@@ -521,18 +535,39 @@ handle_login_request(std::span<const std::byte> payload,
                         boost::lexical_cast<boost::uuids::uuid>(s));
                 }
 
+                response_selected_party_id = sess->party_id;
                 BOOST_LOG_SEV(lg(), info) << "Party context resolved: party_id="
                                           << sess->party_id
                                           << ", visible_parties="
                                           << sess->visible_party_ids.size();
             } else {
-                BOOST_LOG_SEV(lg(), debug) << "No party assignment for account: "
-                                           << account.id;
+                // Multiple parties: return list for client-side picker; do not bind session
+                BOOST_LOG_SEV(lg(), info) << "Multiple parties for account "
+                                          << account.id << ": " << parties.size()
+                                          << " parties, deferring selection to client";
+                for (const auto& ap : parties) {
+                    auto names = database::repository::execute_parameterized_string_query(
+                        login_ctx,
+                        "SELECT full_name FROM ores_refdata_parties_tbl "
+                        "WHERE id=$1::uuid AND valid_to='infinity' AND tenant_id=$2::uuid",
+                        {boost::uuids::to_string(ap.party_id),
+                         tenant_id.to_string()},
+                        lg(), "Fetching party name");
+                    const std::string party_name = names.empty() ? "" : names.front();
+                    response_available_parties.push_back(
+                        party_summary{.id = ap.party_id, .name = party_name});
+                }
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to resolve party context: "
                                       << e.what();
             // Continue without party context - tenant-only isolation
+        }
+
+        if (no_parties) {
+            throw std::runtime_error(
+                "Account has no party assignment. "
+                "Please contact your administrator.");
         }
 
         // Retrieve client info stored during handshake
@@ -603,7 +638,9 @@ handle_login_request(std::span<const std::byte> payload,
             .username = account.username,
             .email = account.email,
             .password_reset_required = password_reset_required,
-            .tenant_bootstrap_mode = tenant_bootstrap
+            .tenant_bootstrap_mode = tenant_bootstrap,
+            .selected_party_id = response_selected_party_id,
+            .available_parties = std::move(response_available_parties)
         };
         co_return response.serialize();
 
@@ -2223,6 +2260,71 @@ handle_get_session_samples_request(std::span<const std::byte> payload,
         };
         co_return response.serialize();
     }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_select_party_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing select_party_request from "
+                               << remote_address;
+
+    auto request_result = select_party_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize select_party_request";
+        co_return std::unexpected(request_result.error());
+    }
+    const auto& request = *request_result;
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "select_party_request denied: not authenticated "
+                                  << remote_address;
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
+    }
+
+    auto login_ctx = ctx_.with_tenant(session->tenant_id);
+
+    // Validate requested party is assigned to this account
+    repository::account_party_repository ap_repo(login_ctx);
+    const auto parties = ap_repo.read_latest_by_account(session->account_id);
+
+    const bool party_found = std::ranges::any_of(parties,
+        [&](const auto& ap) { return ap.party_id == request.party_id; });
+
+    if (!party_found) {
+        BOOST_LOG_SEV(lg(), warn) << "select_party_request: party "
+                                  << boost::uuids::to_string(request.party_id)
+                                  << " not assigned to account "
+                                  << boost::uuids::to_string(session->account_id);
+        select_party_response response{
+            .success = false,
+            .error_message = "The requested party is not assigned to your account."
+        };
+        co_return response.serialize();
+    }
+
+    // Compute visible party set via SQL function
+    std::vector<boost::uuids::uuid> visible_ids;
+    auto vis = database::repository::execute_parameterized_string_query(
+        login_ctx,
+        "SELECT unnest(ores_refdata_visible_party_ids_fn("
+        "$1::uuid, $2::uuid))::text",
+        {session->tenant_id.to_string(),
+         boost::uuids::to_string(request.party_id)},
+        lg(), "Computing visible party set");
+    for (const auto& s : vis) {
+        visible_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(s));
+    }
+
+    sessions_->update_session_party(remote_address, request.party_id, visible_ids);
+
+    BOOST_LOG_SEV(lg(), info) << "Party selected for " << remote_address
+                              << ": party_id="
+                              << boost::uuids::to_string(request.party_id)
+                              << ", visible_parties=" << visible_ids.size();
+
+    select_party_response response{.success = true};
+    co_return response.serialize();
 }
 
 // =============================================================================

@@ -370,6 +370,20 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         const bool password_reset_required = response->password_reset_required;
         const bool tenant_bootstrap = response->tenant_bootstrap_mode;
 
+        // Populate party context from login response
+        if (!response->selected_party_id.is_nil()) {
+            // Auto-selected (single party)
+            current_party_id_ = response->selected_party_id;
+            // Look up name from available_parties (may be empty for single-party auto-select)
+            if (!response->available_parties.empty()) {
+                current_party_name_ = QString::fromStdString(
+                    response->available_parties.front().name);
+            }
+        } else {
+            current_party_id_ = boost::uuids::uuid{};
+            current_party_name_.clear();
+        }
+
         // Store credentials for re-authentication after reconnection
         stored_username_ = username;
         stored_password_ = password;
@@ -460,14 +474,86 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
                 .port = connected_port_
             });
         }
+        // Build available_parties list for the result
+        std::vector<PartyInfo> available_parties;
+        available_parties.reserve(response->available_parties.size());
+        for (const auto& ps : response->available_parties) {
+            available_parties.push_back(PartyInfo{
+                .id = ps.id,
+                .name = QString::fromStdString(ps.name)
+            });
+        }
+
         emit loggedIn();
         return {.success = true, .error_message = QString(),
             .password_reset_required = password_reset_required,
-            .tenant_bootstrap_mode = tenant_bootstrap};
+            .tenant_bootstrap_mode = tenant_bootstrap,
+            .selected_party_id = response->selected_party_id,
+            .available_parties = std::move(available_parties)};
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Login failed: " << e.what();
         return {.success = false, .error_message = QString::fromStdString(e.what())};
+    }
+}
+
+bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
+    const QString& party_name) {
+    BOOST_LOG_SEV(lg(), info) << "Selecting party: " << party_name.toStdString();
+
+    if (!client_ || !client_->is_connected()) {
+        BOOST_LOG_SEV(lg(), error) << "selectParty: not connected";
+        return false;
+    }
+
+    try {
+        iam::messaging::select_party_request request{.party_id = party_id};
+        auto payload = request.serialize();
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::select_party_request,
+            0,
+            std::move(payload)
+        );
+
+        auto response_result = client_->send_request_sync(std::move(request_frame));
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "selectParty: network error";
+            return false;
+        }
+
+        const auto& header = response_result->header();
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto payload_result = response_result->decompressed_payload();
+            if (payload_result) {
+                auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
+                if (error_resp) {
+                    BOOST_LOG_SEV(lg(), error) << "selectParty: server error: "
+                                               << error_resp->message;
+                }
+            }
+            return false;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "selectParty: failed to decompress response";
+            return false;
+        }
+
+        auto response = iam::messaging::select_party_response::deserialize(*payload_result);
+        if (!response || !response->success) {
+            BOOST_LOG_SEV(lg(), warn) << "selectParty: server rejected party selection";
+            return false;
+        }
+
+        current_party_id_ = party_id;
+        current_party_name_ = party_name;
+        BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString();
+        return true;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "selectParty failed: " << e.what();
+        return false;
     }
 }
 

@@ -1,0 +1,219 @@
+:PROPERTIES:
+:ID: AAD74D7C-4789-4E54-8B02-EC60231D78A5
+:END:
+#+title: Multi-Party Login Flow
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+This document describes the IAM aspects of multi-party support: the rules
+governing how accounts are associated with parties, the login flow, and the
+wire protocol for party selection. For the party hierarchy, RLS policies, and
+data ownership model see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]].
+
+* Account-Party Rules
+
+Every account must be associated with at least one party. Zero parties is a
+misconfiguration and login is rejected.
+
+** Account Types and Their Parties
+
+| Account Type    | Party Type    | Party Count | Notes                                         |
+|-----------------+---------------+-------------+-----------------------------------------------|
+| Super admin     | =system=      | Exactly 1   | Bound to system party at provisioning         |
+| Tenant admin    | =system=      | Exactly 1   | Bound to system party at tenant bootstrap     |
+| User account    | =operational= | 1 or more   | Assigned by tenant admin after party creation |
+
+Key constraints:
+
+- The *system party* cannot be mapped to user accounts. Only admin accounts
+  (super admin, tenant admin) may be bound to it.
+- A user account *must* have at least one operational party. Having zero
+  parties is treated as a misconfiguration and the login is rejected with an
+  explicit error.
+- Only the *tenant admin* can create new parties via the Parties dialog and
+  assign accounts to them via the Account-Parties junction.
+
+** Invariants
+
+#+begin_example
+Super admin  ──► system party only (auto-assigned, immutable)
+Tenant admin ──► system party only (auto-assigned at bootstrap, immutable)
+User account ──► one or more operational parties (assigned by tenant admin)
+                  (zero parties is forbidden; login will be rejected)
+#+end_example
+
+* Login Flow
+
+After successful password authentication the server queries =account_parties=
+and applies the following rules:
+
+#+begin_example
+┌──────────────────────┐
+│  Login Request       │
+│  user@hostname       │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Resolve tenant       │
+│ from hostname        │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Authenticate user    │
+│ (password check)     │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ Query account_parties│
+│ for this account     │
+└──────────┬───────────┘
+           │
+     ┌─────┴─────┬──────────┬───────────────┐
+     │ 0 parties │ 1 party  │   N parties   │
+     ▼           ▼          ▼               │
+┌─────────┐ ┌─────────┐ ┌──────────────┐   │
+│ Reject  │ │ Auto-   │ │ Return party │   │
+│ login   │ │ select  │ │ list; do not │   │
+│ (error) │ └────┬────┘ │ bind session │   │
+└─────────┘      │      └──────┬───────┘   │
+                 │             │           │
+                 │        ┌────▼─────────┐ │
+                 │        │ Client shows │ │
+                 │        │ party picker │ │
+                 │        └────┬─────────┘ │
+                 │             │           │
+                 └─────────────┘           │
+                               │           │
+                               ▼           │
+                    ┌──────────────────────┐
+                    │ Client sends         │
+                    │ select_party_request │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Server validates     │
+                    │ party belongs to     │
+                    │ account              │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Compute visible      │
+                    │ party set via        │
+                    │ recursive SQL fn     │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Bind party to        │
+                    │ session              │
+                    └──────────────────────┘
+#+end_example
+
+** 0 Parties — Login Rejected
+
+If =account_parties= returns zero rows the login is rejected immediately. The
+client receives a =login_response= with =success = false= and the error message:
+
+: Account has no party assignment. Please contact your administrator.
+
+The server logs a WARN for each such event. This condition indicates a database
+misconfiguration and should be investigated by the tenant admin.
+
+** 1 Party — Auto-Select
+
+The single party is selected automatically without user interaction. The
+=login_response= carries:
+
+- =selected_party_id= — the UUID of the auto-selected party.
+- =available_parties= — empty (no picker needed).
+
+The session is fully bound before the response is sent.
+
+** N Parties — Client-Side Picker
+
+The server fetches the display name of each party from
+=ores_refdata_parties_tbl= and returns them in =login_response.available_parties=.
+The session is *not* bound yet; =selected_party_id= is nil. The client shows a
+=PartyPickerDialog= and, upon confirmation, sends a =select_party_request=.
+
+* Wire Protocol
+
+** =login_response= Extensions
+
+Two fields were appended to the existing =login_response= (protocol v38):
+
+| Field                 | Type                          | Description                                     |
+|-----------------------+-------------------------------+-------------------------------------------------|
+| =selected_party_id=   | UUID (16 bytes)               | Non-nil when party was auto-selected (1 party)  |
+| =available_parties=   | =vector<party_summary>=       | Non-empty when client must show picker (N>1)    |
+
+=party_summary= is a value type serialised inline:
+
+| Field  | Wire Format                  |
+|--------+------------------------------|
+| =id=   | 16 bytes (UUID)              |
+| =name= | uint16 length + UTF-8 bytes  |
+
+** =select_party_request= (0x2046)
+
+Sent by the client after the user selects a party from the picker.
+
+| Field      | Type            | Description           |
+|------------+-----------------+-----------------------|
+| =party_id= | UUID (16 bytes) | The chosen party UUID |
+
+** =select_party_response= (0x2047)
+
+Server confirmation of party binding.
+
+| Field           | Type    | Description                           |
+|-----------------+---------+---------------------------------------|
+| =success=       | bool    | =true= when party was bound           |
+| =error_message= | string  | Non-empty on failure                  |
+
+** Server Validation for =select_party_request=
+
+1. Verify the session is authenticated.
+2. Re-query =account_parties= for the session's account.
+3. Verify the requested =party_id= is in that list; reject if not.
+4. Compute =visible_party_ids= via =ores_refdata_visible_party_ids_fn=.
+5. Call =auth_session_service::update_session_party()= to bind the session.
+6. Return =select_party_response{.success = true}=.
+
+* Error Cases
+
+| Scenario                                   | Outcome                                                  |
+|--------------------------------------------+----------------------------------------------------------|
+| 0 parties assigned to account              | =login_response{success=false, error="..."}=             |
+| N-party picker cancelled by user           | Client disconnects; login form re-enabled                |
+| =party_id= not in account's party list    | =select_party_response{success=false}=                   |
+| Party lookup fails (DB error)              | Session continues without party context (degraded mode)  |
+
+* Protocol Version
+
+The =login_response= extension is a breaking wire-format change. The protocol
+major version was bumped from 37 to 38 at the same time as this feature was
+introduced. Clients and servers with mismatched major versions will fail the
+handshake before login is attempted.
+
+* Related Components
+
+| Component | File                                                                                      | Purpose                                      |
+|-----------+-------------------------------------------------------------------------------------------+----------------------------------------------|
+| refdata   | [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]                    | Party hierarchy, RLS, data ownership         |
+| iam       | [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]                  | Tenant isolation and session management      |
+| iam       | [[proj:projects/ores.iam/src/messaging/accounts_message_handler.cpp]]                     | Login handler and select_party_request impl  |
+| iam       | [[proj:projects/ores.iam/include/ores.iam/messaging/login_protocol.hpp]]                  | Protocol structs and serialisation           |
+| comms     | [[proj:projects/ores.comms/include/ores.comms/messaging/message_type.hpp]]                | Message type enum (0x2046, 0x2047)           |
+| comms     | [[proj:projects/ores.comms/src/service/auth_session_service.cpp]]                         | =update_session_party()= implementation      |
+| qt        | [[proj:projects/ores.qt/src/ClientManager.cpp]]                                           | Client-side party selection                  |
+| qt        | [[proj:projects/ores.qt/src/PartyPickerDialog.cpp]]                                       | Party picker UI                              |
+| qt        | [[proj:projects/ores.qt/src/LoginDialog.cpp]]                                             | =onLoginResult()= multi-party branch         |

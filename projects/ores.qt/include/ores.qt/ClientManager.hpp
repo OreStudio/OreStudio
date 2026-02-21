@@ -46,6 +46,14 @@
 namespace ores::qt {
 
 /**
+ * @brief Summary of a party the user can select during login.
+ */
+struct PartyInfo {
+    boost::uuids::uuid id;
+    QString name;
+};
+
+/**
  * @brief Result of a login attempt.
  */
 struct LoginResult {
@@ -54,6 +62,8 @@ struct LoginResult {
     bool password_reset_required = false;
     bool bootstrap_mode = false;  ///< True if system is in bootstrap mode (no admin exists)
     bool tenant_bootstrap_mode = false;  ///< True if tenant is in bootstrap mode (needs initial setup)
+    boost::uuids::uuid selected_party_id;          ///< nil unless auto-selected
+    std::vector<PartyInfo> available_parties;       ///< empty unless picker needed
 };
 
 /**
@@ -295,6 +305,32 @@ public:
      * @brief Get the stored password used for the current session.
      */
     std::string storedPassword() const { return stored_password_; }
+
+    /**
+     * @brief Get the UUID of the currently selected party.
+     *
+     * @return Party UUID if a party is selected, nil UUID otherwise.
+     */
+    boost::uuids::uuid currentPartyId() const { return current_party_id_; }
+
+    /**
+     * @brief Get the name of the currently selected party.
+     *
+     * @return Party name if a party is selected, empty string otherwise.
+     */
+    QString currentPartyName() const { return current_party_name_; }
+
+    /**
+     * @brief Select a party for the current session.
+     *
+     * Sends select_party_request to the server. On success, updates the
+     * current_party_id_ and current_party_name_ state.
+     *
+     * @param party_id The party UUID to select
+     * @param party_name The display name of the party
+     * @return true if the server accepted the selection, false otherwise
+     */
+    bool selectParty(const boost::uuids::uuid& party_id, const QString& party_name);
 
     /**
      * @brief Send a request if connected.
@@ -670,6 +706,10 @@ private:
     // the password was already in memory during initial login
     std::string stored_username_;
     std::string stored_password_;
+
+    // Currently selected party context
+    boost::uuids::uuid current_party_id_;
+    QString current_party_name_;
 };
 
 }

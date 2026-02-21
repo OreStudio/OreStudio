@@ -496,6 +496,16 @@ private:
     handle_get_session_samples_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    /**
+     * @brief Handle select_party_request message.
+     *
+     * Requires authentication. Validates the requested party_id against
+     * the account's party assignments and updates the session context.
+     */
+    handler_result
+    handle_select_party_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // =========================================================================
     // Tenant Management Handlers
     // =========================================================================

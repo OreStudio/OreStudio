@@ -121,6 +121,7 @@ signals:
     void currencyCreated(const QString& iso_code);
     void currencyDeleted(const QString& iso_code);
     void isDirtyChanged(bool isDirty);
+    void showRoundingTypesRequested();
 
     /**
      * @brief Emitted when user requests to revert to the displayed historical version.
@@ -157,6 +158,7 @@ private:
     void showVersionNavActions(bool visible);
     void setupGenerateAction();
     void updateGenerateActionVisibility();
+    void populateRoundingTypeCombo();
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;

@@ -423,16 +423,6 @@ public:
     std::optional<std::chrono::steady_clock::time_point> disconnectedSince() const;
 
     /**
-     * @brief Get the hostname of the currently (or last) connected server.
-     */
-    std::string connectedHost() const { return connected_host_; }
-
-    /**
-     * @brief Get the port of the currently (or last) connected server.
-     */
-    std::uint16_t connectedPort() const { return connected_port_; }
-
-    /**
      * @brief Get the current client (internal use only).
      */
     std::shared_ptr<comms::net::client> getClient() const { return client_; }

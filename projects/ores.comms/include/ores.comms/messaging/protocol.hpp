@@ -294,7 +294,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 38.0 adds city_name field to business_centre wire format.
 // Serialized as a string after description in serialize_business_centre.
 // Breaking change as existing business centre payloads are incompatible.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 38;
+// Version 39.0 extends login_response with selected_party_id (UUID) and
+// available_parties (count + per-party uuid+name). Adds select_party_request
+// (0x2046) and select_party_response (0x2047) for multi-party account support.
+// Breaking change as existing login_response payloads are incompatible.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 39;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

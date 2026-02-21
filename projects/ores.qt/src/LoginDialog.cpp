@@ -22,6 +22,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangePasswordDialog.hpp"
+#include "ores.qt/PartyPickerDialog.hpp"
 #include "ores.utility/version/version.hpp"
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -420,6 +421,24 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 statusLabel_->setText("");
                 MessageBoxHelper::warning(this, "Password Change Required",
                     "You must change your password to continue. Please login again to retry.");
+            }
+        } else if (!result.available_parties.empty()) {
+            BOOST_LOG_SEV(lg(), info) << "Multiple parties available - showing picker";
+            statusLabel_->setText("Select party...");
+
+            PartyPickerDialog partyDialog(result.available_parties, clientManager_, this);
+            if (partyDialog.exec() == QDialog::Accepted) {
+                BOOST_LOG_SEV(lg(), info) << "Party selected successfully";
+                statusLabel_->setText("Login successful!");
+                emit loginSucceeded(usernameEdit_->text().trimmed());
+                emit closeRequested();
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Party selection canceled by user";
+                clientManager_->disconnect();
+                enableForm(true);
+                statusLabel_->setText("");
+                MessageBoxHelper::warning(this, "Party Selection Required",
+                    "You must select a party to continue.");
             }
         } else if (result.tenant_bootstrap_mode) {
             BOOST_LOG_SEV(lg(), info)

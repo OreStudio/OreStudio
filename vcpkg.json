@@ -32,8 +32,7 @@
         "cli",
         "faker-cxx",
         "catch2",
-        "libfort",
-        "qtcharts"
+        "libfort"
     ],
     "default-features": [ "wt" ],
     "features": {

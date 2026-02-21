@@ -40,6 +40,7 @@ domain::business_centre business_centre_mapper::map(const business_centre_entity
     r.code = v.code.value();
     r.source = v.source.value_or("");
     r.description = v.description.value_or("");
+    r.city_name = v.city_name.value_or("");
     r.coding_scheme_code = v.coding_scheme_code;
     r.country_alpha2_code = v.country_alpha2_code.value_or("");
     if (v.image_id) {
@@ -69,6 +70,9 @@ business_centre_entity business_centre_mapper::map(const domain::business_centre
     }
     if (!v.description.empty()) {
         r.description = v.description;
+    }
+    if (!v.city_name.empty()) {
+        r.city_name = v.city_name;
     }
     r.coding_scheme_code = v.coding_scheme_code;
     if (!v.country_alpha2_code.empty()) {

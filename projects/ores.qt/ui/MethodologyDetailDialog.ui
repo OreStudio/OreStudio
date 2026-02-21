@@ -60,41 +60,27 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="descriptionLabel">
-           <property name="text">
-            <string>Description:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPlainTextEdit" name="descriptionEdit">
-           <property name="maximumHeight">
-            <number>80</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
           <widget class="QLabel" name="logicReferenceLabel">
            <property name="text">
             <string>Logic Reference:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="1" column="1">
           <widget class="QLineEdit" name="logicReferenceEdit">
            <property name="maxLength">
             <number>500</number>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="implementationLabel">
            <property name="text">
             <string>Implementation:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="2" column="1">
           <widget class="QPlainTextEdit" name="implementationEdit">
            <property name="minimumSize">
             <size>
@@ -106,6 +92,29 @@
             <size>
              <width>16777215</width>
              <height>300</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="descriptionLabel">
+           <property name="text">
+            <string>Description:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QPlainTextEdit" name="descriptionEdit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>150</height>
             </size>
            </property>
           </widget>

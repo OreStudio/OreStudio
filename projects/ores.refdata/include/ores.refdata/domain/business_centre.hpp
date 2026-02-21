@@ -61,6 +61,11 @@ struct business_centre final {
     std::string description;
 
     /**
+     * @brief City name derived from description.
+     */
+    std::string city_name;
+
+    /**
      * @brief Code of the coding scheme this business centre belongs to.
      */
     std::string coding_scheme_code;

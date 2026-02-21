@@ -132,7 +132,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
     // Connect signals for editable fields to detect changes
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
         &ChangeReasonCategoryDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
         &ChangeReasonCategoryDetailDialog::onFieldChanged);
 
     // Initially disable save button

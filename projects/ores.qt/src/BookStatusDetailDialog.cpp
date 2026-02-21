@@ -19,6 +19,7 @@
  */
 #include "ores.qt/BookStatusDetailDialog.hpp"
 
+#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -69,7 +70,7 @@ void BookStatusDetailDialog::setupConnections() {
             &BookStatusDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &BookStatusDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &BookStatusDetailDialog::onFieldChanged);
 }
 

@@ -41,6 +41,7 @@ void serialize_business_centre(std::vector<std::byte>& buffer,
     writer::write_string(buffer, bc.code);
     writer::write_string(buffer, bc.source);
     writer::write_string(buffer, bc.description);
+    writer::write_string(buffer, bc.city_name);
     writer::write_string(buffer, bc.coding_scheme_code);
     writer::write_string(buffer, bc.country_alpha2_code);
     writer::write_bool(buffer, bc.image_id.has_value());
@@ -74,6 +75,10 @@ deserialize_business_centre(std::span<const std::byte>& data) {
     auto description = reader::read_string(data);
     if (!description) return std::unexpected(description.error());
     bc.description = *description;
+
+    auto city_name = reader::read_string(data);
+    if (!city_name) return std::unexpected(city_name.error());
+    bc.city_name = *city_name;
 
     auto coding_scheme_code = reader::read_string(data);
     if (!coding_scheme_code) return std::unexpected(coding_scheme_code.error());

@@ -32,6 +32,7 @@ create table if not exists "ores_refdata_business_centres_tbl" (
     "version" integer not null,
     "source" text null,
     "description" text null,
+    "city_name" text null,
     "coding_scheme_code" text not null,
     "country_alpha2_code" text null,
     "image_id" uuid,

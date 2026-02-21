@@ -19,6 +19,7 @@
  */
 #include "ores.qt/OriginDimensionDetailDialog.hpp"
 
+#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -70,7 +71,7 @@ void OriginDimensionDetailDialog::setupConnections() {
             &OriginDimensionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &OriginDimensionDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &OriginDimensionDetailDialog::onFieldChanged);
 }
 

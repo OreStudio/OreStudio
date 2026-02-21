@@ -290,7 +290,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 37.0 adds optional counterparty_id to trade wire format.
 // Serialized as bool flag + conditional UUID after successor_trade_id.
 // Breaking change as existing trade payloads are incompatible.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 37;
+//
+// Version 38.0 adds city_name field to business_centre wire format.
+// Serialized as a string after description in serialize_business_centre.
+// Breaking change as existing business centre payloads are incompatible.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 38;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/NatureDimensionDetailDialog.hpp"
 
+#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -65,7 +66,7 @@ void NatureDimensionDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onDeleteClicked);
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
 }
 
 void NatureDimensionDetailDialog::setClientManager(ClientManager* clientManager) {

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PartyStatusDetailDialog.hpp"
 
+#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -69,7 +70,7 @@ void PartyStatusDetailDialog::setupConnections() {
             &PartyStatusDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PartyStatusDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &PartyStatusDetailDialog::onFieldChanged);
 }
 

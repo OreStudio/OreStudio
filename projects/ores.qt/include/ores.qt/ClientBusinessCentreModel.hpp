@@ -61,8 +61,9 @@ public:
     enum Column {
         CountryAlpha2,
         Code,
-        Description,
+        City,
         Source,
+        Description,
         CodingScheme,
         Version,
         ModifiedBy,
@@ -92,8 +93,8 @@ public:
             .default_width = kColumnWidthAuto
         },
         {
-            .column = Description,
-            .header = std::string_view("Description"),
+            .column = City,
+            .header = std::string_view("City"),
             .style = column_style::text_left,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
@@ -106,10 +107,17 @@ public:
             .default_width = kColumnWidthAuto
         },
         {
+            .column = Description,
+            .header = std::string_view("Description"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
             .column = CodingScheme,
             .header = std::string_view("Coding Scheme"),
             .style = column_style::mono_left,
-            .hidden_by_default = false,
+            .hidden_by_default = true,
             .default_width = kColumnWidthAuto
         },
         {
@@ -131,7 +139,7 @@ public:
             .header = std::string_view("Recorded At"),
             .style = column_style::mono_left,
             .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
+            .default_width = 155
         }
     }};
 

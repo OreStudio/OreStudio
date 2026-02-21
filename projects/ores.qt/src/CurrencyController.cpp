@@ -174,7 +174,9 @@ void CurrencyController::showListWindow() {
         });
     
     // When the image cache reloads (due to external event), mark the list as stale
-    connect(imageCache_, &ImageCache::allLoaded, this, [self = QPointer<CurrencyController>(this), currencyWidget](){
+    connect(imageCache_, &ImageCache::allLoaded, this,
+            [self = QPointer<CurrencyController>(this),
+             currencyWidget = QPointer<CurrencyMdiWindow>(currencyWidget)](){
         if (!self) return;
         if (currencyWidget) {
             currencyWidget->markAsStale();

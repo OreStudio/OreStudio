@@ -108,6 +108,7 @@ declare
     v_exists boolean;
     v_new_version integer;
     v_country_alpha2 text;
+    v_city_name text;
 begin
     -- Validate dataset exists
     select name into v_dataset_name
@@ -170,16 +171,24 @@ begin
             v_country_alpha2 := null;
         end if;
 
+        -- Hard-code NY* to US country (FpML codes with NY prefix are New York-based)
+        if r.code in ('NYFD', 'NYSE') then
+            v_country_alpha2 := 'US';
+        end if;
+
+        -- Derive city name from the start of description (up to first comma or parenthesis)
+        v_city_name := trim((regexp_match(r.description, '^([^,(]+)'))[1]);
+
         -- Insert record - trigger handles versioning automatically
         insert into ores_refdata_business_centres_tbl (
             tenant_id,
             code, version, coding_scheme_code, country_alpha2_code,
-            source, description, image_id,
+            source, description, city_name, image_id,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
             r.code, 0, r.coding_scheme_code, v_country_alpha2,
-            r.source, r.description, r.image_id,
+            r.source, r.description, v_city_name, r.image_id,
             current_user, current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

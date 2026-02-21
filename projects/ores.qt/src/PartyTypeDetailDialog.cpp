@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PartyTypeDetailDialog.hpp"
 
+#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -69,7 +70,7 @@ void PartyTypeDetailDialog::setupConnections() {
             &PartyTypeDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PartyTypeDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &PartyTypeDetailDialog::onFieldChanged);
 }
 

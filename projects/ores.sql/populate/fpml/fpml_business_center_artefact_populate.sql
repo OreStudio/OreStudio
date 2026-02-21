@@ -2664,6 +2664,18 @@ begin
     if v_updated > 0 then
         raise notice 'Set placeholder image for % records without matching flags', v_updated;
     end if;
+
+    -- Fix NY* codes: assign US flag (code prefix 'ny' has no country match)
+    update ores_dq_business_centres_artefact_tbl bc
+    set image_id = (
+        select i.image_id
+        from ores_dq_images_artefact_tbl i
+        where i.dataset_id = v_flags_dataset_id
+          and i.key = 'us'
+        limit 1
+    )
+    where bc.dataset_id = v_dataset_id
+      and bc.code in ('NYFD', 'NYSE');
 end;
 $$;
 

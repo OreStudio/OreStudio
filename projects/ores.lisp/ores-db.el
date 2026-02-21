@@ -433,11 +433,22 @@ falls back to the current project."
                          (project-root pr)))))
     (expand-file-name "projects/ores.sql" root)))
 
-(defun ores-db/run-script (script-name buffer-name &optional args)
+(defun ores-db/sql-scripts-directory-for-env (environment)
+  "Get the SQL scripts directory for a given ENVIRONMENT.
+Assumes all OreStudio environments are siblings under the same parent directory."
+  (when-let* ((root (or ores-db/project-root
+                        (when-let ((pr (project-current)))
+                          (project-root pr))))
+              (root-clean (directory-file-name (expand-file-name root)))
+              (parent (file-name-directory root-clean)))
+    (expand-file-name (format "OreStudio.%s/projects/ores.sql" environment) parent)))
+
+(defun ores-db/run-script (script-name buffer-name &optional args sql-dir)
   "Run SCRIPT-NAME from ores.sql directory in compilation mode.
 BUFFER-NAME is the compilation buffer name.
-ARGS is an optional list of arguments to pass to the script."
-  (let* ((sql-dir (ores-db/sql-scripts-directory))
+ARGS is an optional list of arguments to pass to the script.
+SQL-DIR overrides the default scripts directory when provided."
+  (let* ((sql-dir (or sql-dir (ores-db/sql-scripts-directory)))
          (script-path (expand-file-name script-name sql-dir))
          (postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
          (default-directory sql-dir)
@@ -480,12 +491,17 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
      (list env current-prefix-arg)))
   (unless (yes-or-no-p (format "This will DROP and recreate ores_dev_%s. Are you sure? " environment))
     (user-error "Aborted"))
-  (let ((args (list "-e" environment "-y" "-k")))
+  (let* ((target-dir (ores-db/sql-scripts-directory-for-env environment))
+         (args (list "-e" environment "-y" "-k")))
+    (unless (and target-dir (file-directory-p target-dir))
+      (user-error "SQL scripts directory not found for environment '%s': %s"
+                  environment target-dir))
     (when skip-validation
       (setq args (append args '("--no-sql-validation"))))
     (ores-db/run-script "recreate_env.sh"
                         (format "*ores-db-recreate-%s*" environment)
-                        args)))
+                        args
+                        target-dir)))
 
 (defun ores-db/recreate-current-env (&optional skip-validation)
   "Recreate the database for the current environment.

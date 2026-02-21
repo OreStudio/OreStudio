@@ -161,23 +161,18 @@ export PGPASSWORD="${POSTGRES_PASSWORD}"
 # Source the connection check utility
 source "${SCRIPT_DIR}/utility/check_db_connections.sh"
 
-# Check for active connections to ANY ores database
+# Check for active connections to the target database only
 echo "--- Checking for active connections ---"
-ORES_DATABASES=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -At -c \
-    "SELECT datname FROM pg_database WHERE datname LIKE 'ores_%' ORDER BY datname;" 2>/dev/null)
-
 HAS_CONNECTIONS=0
-for db in ${ORES_DATABASES}; do
-    if ! check_db_connections "${db}" >/dev/null 2>&1; then
-        check_db_connections "${db}"
-        HAS_CONNECTIONS=1
-    fi
-done
+if ! check_db_connections "${DB_NAME}" >/dev/null 2>&1; then
+    check_db_connections "${DB_NAME}"
+    HAS_CONNECTIONS=1
+fi
 
 if [[ "${HAS_CONNECTIONS}" -eq 1 ]]; then
     echo ""
     echo "ERROR: Cannot proceed with recreation - active connections exist."
-    echo "Please disconnect all clients before running the nuclear recreate."
+    echo "Please disconnect all clients before recreating the database."
     exit 1
 fi
 echo "No active connections found."

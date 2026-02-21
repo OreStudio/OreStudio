@@ -28,6 +28,7 @@
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/AccountRolesWidget.hpp"
+#include "ores.qt/AccountPartiesWidget.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -184,7 +185,8 @@ private:
     ClientManager* clientManager_;
     iam::domain::account currentAccount_;
     std::optional<iam::domain::login_info> currentLoginInfo_;
-    AccountRolesWidget* rolesWidget_;
+    AccountRolesWidget*   rolesWidget_;
+    AccountPartiesWidget* partiesWidget_;
 };
 
 }

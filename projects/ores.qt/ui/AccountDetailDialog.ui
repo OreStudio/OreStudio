@@ -285,6 +285,21 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="partiesTab">
+      <attribute name="title"><string>Parties</string></attribute>
+      <layout class="QVBoxLayout" name="partiesLayout">
+       <item>
+        <widget class="QLabel" name="partiesPlaceholderLabel">
+         <property name="text">
+          <string>Party assignments are managed via the Parties widget.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="provenanceTab">
       <attribute name="title"><string>Provenance</string></attribute>
       <layout class="QVBoxLayout" name="provenanceTabLayout">

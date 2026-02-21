@@ -49,6 +49,7 @@ namespace ores::refdata::messaging {
  * - Book CRUD + history
  * - Book status CRUD + history
  * - Purpose type CRUD + history
+ * - Rounding type CRUD + history
  */
 class refdata_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
@@ -369,6 +370,20 @@ private:
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_purpose_type_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Rounding type handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_rounding_types_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_rounding_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_rounding_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_rounding_type_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     std::shared_ptr<variability::service::system_flags_service> system_flags_;

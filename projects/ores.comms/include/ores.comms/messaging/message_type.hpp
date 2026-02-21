@@ -213,6 +213,15 @@ enum class message_type : std::uint16_t {
     delete_purpose_type_response = 0x108E,
     get_purpose_type_history_request = 0x108F,
     get_purpose_type_history_response = 0x1090,
+    // Refdata subsystem - Rounding types
+    get_rounding_types_request = 0x1091,
+    get_rounding_types_response = 0x1092,
+    save_rounding_type_request = 0x1093,
+    save_rounding_type_response = 0x1094,
+    delete_rounding_type_request = 0x1095,
+    delete_rounding_type_response = 0x1096,
+    get_rounding_type_history_request = 0x1097,
+    get_rounding_type_history_response = 0x1098,
     // Trade subsystem - Trade types
     get_trade_types_request = 0x8001,
     get_trade_types_response = 0x8002,
@@ -722,6 +731,14 @@ enum class message_type : std::uint16_t {
     case message_type::delete_purpose_type_response: return "delete_purpose_type_response";
     case message_type::get_purpose_type_history_request: return "get_purpose_type_history_request";
     case message_type::get_purpose_type_history_response: return "get_purpose_type_history_response";
+    case message_type::get_rounding_types_request: return "get_rounding_types_request";
+    case message_type::get_rounding_types_response: return "get_rounding_types_response";
+    case message_type::save_rounding_type_request: return "save_rounding_type_request";
+    case message_type::save_rounding_type_response: return "save_rounding_type_response";
+    case message_type::delete_rounding_type_request: return "delete_rounding_type_request";
+    case message_type::delete_rounding_type_response: return "delete_rounding_type_response";
+    case message_type::get_rounding_type_history_request: return "get_rounding_type_history_request";
+    case message_type::get_rounding_type_history_response: return "get_rounding_type_history_response";
     case message_type::get_trade_types_request: return "get_trade_types_request";
     case message_type::get_trade_types_response: return "get_trade_types_response";
     case message_type::save_trade_type_request: return "save_trade_type_request";

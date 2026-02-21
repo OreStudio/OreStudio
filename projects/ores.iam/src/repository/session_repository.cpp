@@ -392,7 +392,7 @@ session_repository::read_samples(const boost::uuids::uuid& session_id) {
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
     const auto query = sqlgen::read<std::vector<session_sample_entity>> |
         where("session_id"_c == session_id_str) |
-        order_by("sample_time"_c.asc());
+        order_by("sample_time"_c);
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());

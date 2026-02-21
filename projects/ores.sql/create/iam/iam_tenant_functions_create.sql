@@ -311,6 +311,10 @@ $$ language plpgsql security definer;
 -- Validates that a modified_by value is a legitimate account username.
 -- Called from every insert trigger to enforce audit trail integrity.
 --
+-- Must be SECURITY DEFINER so it can see system-tenant service accounts
+-- regardless of the calling session's tenant context (RLS would otherwise
+-- filter out service accounts that belong to the system tenant).
+--
 -- Semantics:
 --   - Bootstrap (accounts table empty): empty → defaults to current_user;
 --     non-empty → pass-through (no validation yet)
@@ -337,7 +341,8 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Validate username exists in accounts table
+    -- Validate username exists in accounts table (across all tenants,
+    -- since service accounts live in the system tenant)
     if not exists (
         select 1 from ores_iam_accounts_tbl
         where username = p_username
@@ -349,4 +354,4 @@ begin
 
     return p_username;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql stable security definer;

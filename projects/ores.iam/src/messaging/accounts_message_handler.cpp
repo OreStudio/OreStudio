@@ -1016,6 +1016,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
                 boost::lexical_cast<boost::uuids::uuid>(system_party_ids.front());
 
             domain::account_party ap;
+            ap.tenant_id          = tenant_id.to_string();
             ap.account_id         = account.id;
             ap.party_id           = system_party_id;
             ap.modified_by        = ctx_.credentials().user;
@@ -2448,6 +2449,7 @@ handle_save_account_party_request(std::span<const std::byte> payload,
 
     try {
         auto ap = request.account_party;
+        ap.tenant_id = session->tenant_id.to_string();
         ap.modified_by = session->username;
 
         auto ctx = make_request_context(*session);

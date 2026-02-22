@@ -108,6 +108,7 @@ void assign_system_party(ores::database::context& ctx,
         boost::lexical_cast<boost::uuids::uuid>(ids.front());
 
     ores::iam::domain::account_party ap;
+    ap.tenant_id          = tenant_id.to_string();
     ap.account_id         = account_id;
     ap.party_id           = party_id;
     ap.modified_by        = db_user;

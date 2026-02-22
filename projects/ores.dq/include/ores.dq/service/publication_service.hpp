@@ -170,6 +170,7 @@ private:
     domain::publication_result publish_dataset(
         const domain::dataset& dataset,
         domain::publication_mode mode,
+        const std::string& published_by,
         const std::map<std::string, domain::artefact_type>& artefact_type_cache);
 
     /**
@@ -195,7 +196,8 @@ private:
     domain::publication_result call_populate_function(
         const domain::dataset& dataset,
         const domain::artefact_type& artefact_type,
-        domain::publication_mode mode);
+        domain::publication_mode mode,
+        const std::string& published_by);
 
     context ctx_;
     repository::dataset_repository dataset_repo_;

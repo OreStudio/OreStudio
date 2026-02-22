@@ -3139,8 +3139,12 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
         return escaped;
     };
 
+    // Set app.current_actor so the provisioner SQL function uses the
+    // authenticated user for modified_by via ores_iam_current_actor_fn().
     const auto sql = std::format(
+        "WITH _actor AS (SELECT set_config('app.current_actor', '{}', true)) "
         "SELECT ores_iam_provision_tenant_fn('{}', '{}', '{}', '{}', '{}')",
+        escape(auth_result->username),
         escape(request.type), escape(request.code), escape(request.name),
         escape(request.hostname), escape(request.description));
 

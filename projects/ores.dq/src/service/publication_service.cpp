@@ -90,7 +90,7 @@ std::vector<domain::publication_result> publication_service::publish(
         BOOST_LOG_SEV(lg(), info) << "Publishing dataset: "
             << dataset.code << " (" << dataset.name << ")";
 
-        auto result = publish_dataset(dataset, mode, artefact_type_cache);
+        auto result = publish_dataset(dataset, mode, published_by, artefact_type_cache);
         results.push_back(result);
 
         if (result.success) {
@@ -275,6 +275,7 @@ publication_service::build_artefact_type_cache(
 domain::publication_result publication_service::publish_dataset(
     const domain::dataset& dataset,
     domain::publication_mode mode,
+    const std::string& published_by,
     const std::map<std::string, domain::artefact_type>& artefact_type_cache) {
 
     BOOST_LOG_SEV(lg(), debug) << "Publishing dataset: " << dataset.code
@@ -322,7 +323,7 @@ domain::publication_result publication_service::publish_dataset(
     }
 
     result.target_table = *artefact_type.target_table;
-    return call_populate_function(dataset, artefact_type, mode);
+    return call_populate_function(dataset, artefact_type, mode, published_by);
 }
 
 void publication_service::record_publication(
@@ -361,7 +362,8 @@ void publication_service::record_publication(
 domain::publication_result publication_service::call_populate_function(
     const domain::dataset& dataset,
     const domain::artefact_type& artefact_type,
-    domain::publication_mode mode) {
+    domain::publication_mode mode,
+    const std::string& published_by) {
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
@@ -376,9 +378,14 @@ domain::publication_result publication_service::call_populate_function(
     BOOST_LOG_SEV(lg(), debug) << "Calling populate function: "
         << function_name << ", mode: " << mode_str;
 
+    // Set app.current_actor so the SQL populate function can use it for
+    // modified_by via ores_iam_current_actor_fn(). The set_config call is
+    // in a CTE within the same statement, so it is transaction-local.
     const auto sql = std::format(
+        "WITH _actor AS (SELECT set_config('app.current_actor', '{}', true)) "
         "SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
-        function_name, dataset_id_str, ctx_.tenant_id().to_string(), mode_str);
+        published_by, function_name, dataset_id_str,
+        ctx_.tenant_id().to_string(), mode_str);
 
     try {
         auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),

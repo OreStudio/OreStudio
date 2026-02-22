@@ -2163,31 +2163,31 @@ handle_get_session_samples_request(std::span<const std::byte> payload,
     auto ctx = make_request_context(*session);
     repository::session_repository sess_repo(ctx);
 
-    // Verify the requester owns the session or is an admin
+    // Always read the session record to verify existence and tenant ownership.
+    // RLS on the sessions table ensures admins can only see sessions within
+    // their own tenant, preventing cross-tenant data leaks even for admins.
     const bool is_admin = auth_service_->has_permission(session->account_id,
         domain::permissions::accounts_read);
 
-    if (!is_admin) {
-        auto db_session = sess_repo.read(request.session_id);
-        if (!db_session) {
-            BOOST_LOG_SEV(lg(), warn) << "Get session samples: session not found: "
-                                      << session_id_str;
-            get_session_samples_response response{
-                .success = false,
-                .message = "Session not found"
-            };
-            co_return response.serialize();
-        }
+    auto db_session = sess_repo.read(request.session_id);
+    if (!db_session) {
+        BOOST_LOG_SEV(lg(), warn) << "Get session samples: session not found or access denied: "
+                                  << session_id_str;
+        get_session_samples_response response{
+            .success = false,
+            .message = "Session not found"
+        };
+        co_return response.serialize();
+    }
 
-        if (db_session->account_id != session->account_id) {
-            BOOST_LOG_SEV(lg(), warn) << "Get session samples denied: non-admin trying to "
-                                      << "access samples for session " << session_id_str;
-            get_session_samples_response response{
-                .success = false,
-                .message = "Not authorised to view samples for this session"
-            };
-            co_return response.serialize();
-        }
+    if (!is_admin && db_session->account_id != session->account_id) {
+        BOOST_LOG_SEV(lg(), warn) << "Get session samples denied: non-admin trying to "
+                                  << "access samples for session " << session_id_str;
+        get_session_samples_response response{
+            .success = false,
+            .message = "Not authorised to view samples for this session"
+        };
+        co_return response.serialize();
     }
 
     try {

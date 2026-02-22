@@ -22,7 +22,6 @@
 #include <vector>
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::testing {
 
@@ -68,7 +67,7 @@ void database_helper::seed_rbac() {
         R"SQL(
         INSERT INTO ores_iam_roles_tbl (id, version, name, description, modified_by,
             change_reason_code, change_commentary, valid_from, valid_to)
-        SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', 'test',
+        SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', 'ores_test_dml_user',
                'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
@@ -80,7 +79,7 @@ void database_helper::seed_rbac() {
         R"SQL(
         INSERT INTO ores_iam_roles_tbl (id, version, name, description, modified_by,
             change_reason_code, change_commentary, valid_from, valid_to)
-        SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', 'test',
+        SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', 'ores_test_dml_user',
                'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
@@ -121,10 +120,12 @@ void database_helper::seed_rbac() {
 }
 
 std::string database_helper::db_user() {
-    using ores::database::repository::execute_raw_string_query;
-    auto result = execute_raw_string_query(context_,
-        "SELECT current_user", lg(), "db_user");
-    return result.empty() ? std::string("system") : result.front();
+    // Return the configured database user rather than SELECT current_user,
+    // because the PostgreSQL session user may differ from the configured user
+    // when peer/trust authentication maps OS users to database users.
+    // The configured user (ores_test_dml_user) is always a valid service
+    // account registered in ores_iam_accounts_tbl.
+    return test_database_manager::make_database_options().user;
 }
 
 }

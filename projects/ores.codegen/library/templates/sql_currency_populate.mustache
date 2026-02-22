@@ -63,7 +63,7 @@ begin
     -- Insert Solvaris currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -78,13 +78,14 @@ begin
         c.rounding_type,
         c.rounding_precision,
         c.format,
-        c.currency_type,
+        c.asset_class,
+        c.market_tier,
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
 {{#country_currency}}
-        ('{{currency_code}}', '{{{currency}}}', {{currency_number}}, '{{{currency_symbol}}}', '{{fraction_symbol}}', {{fractions_per_unit}}, '{{rounding_type}}', {{rounding_precision}}, '{{format}}', '{{currency_type}}', '{{country_code_lower}}'){{^last}},{{/last}}
+        ('{{currency_code}}', '{{{currency}}}', {{currency_number}}, '{{{currency_symbol}}}', '{{fraction_symbol}}', {{fractions_per_unit}}, '{{rounding_type}}', {{rounding_precision}}, '{{format}}', '{{asset_class}}', '{{market_tier}}', '{{country_code_lower}}'){{^last}},{{/last}}
 {{/country_currency}}
-    ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, flag_key)
+    ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, flag_key)
     left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = c.flag_key;
@@ -102,7 +103,7 @@ end $$;
 \echo '--- DQ Solvaris Currencies Summary ---'
 
 with currencies as (
-    select c.currency_type
+    select c.asset_class
     from ores_dq_currencies_artefact_tbl c
     join ores_dq_datasets_tbl d on c.dataset_id = d.id
     where d.subject_area_name = 'Currencies'
@@ -111,6 +112,6 @@ with currencies as (
 )
 select 'Total Solvaris Currencies' as metric, count(*) as count from currencies
 union all
-select 'Fiat Currencies', count(*) from currencies where currency_type = 'fiat.standard'
+select 'Fiat Currencies', count(*) from currencies where asset_class = 'fiat'
 union all
-select 'Synthetic Currencies', count(*) from currencies where currency_type = 'synthetic';
+select 'Synthetic Currencies', count(*) from currencies where asset_class = 'synthetic';

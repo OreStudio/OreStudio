@@ -40,7 +40,8 @@ struct add_currency_options final {
     std::optional<std::string> rounding_type;
     std::optional<int> rounding_precision;
     std::optional<std::string> format;
-    std::optional<std::string> currency_type;
+    std::optional<std::string> asset_class;
+    std::optional<std::string> market_tier;
 };
 
 std::ostream& operator<<(std::ostream& s, const add_currency_options& v);

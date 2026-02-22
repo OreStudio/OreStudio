@@ -56,7 +56,7 @@ TEST_CASE("export_single_currency_to_xml", tags) {
     c.fractions_per_unit = 100;
     c.rounding_type = "Closest";
     c.rounding_precision = 2;
-    c.currency_type = "Major";
+    c.asset_class = "Major";
 
     const auto xml = exporter::export_currency_config({c});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
@@ -117,7 +117,7 @@ TEST_CASE("export_currency_without_optional_fields", tags) {
     c.fractions_per_unit = 100;
     c.rounding_type = "Up";
     c.rounding_precision = 0;
-    // numeric_code and currency_type left empty
+    // numeric_code and asset_class left empty
 
     const auto xml = exporter::export_currency_config({c});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;

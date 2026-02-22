@@ -196,7 +196,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+RESULTS:
 #+begin_src csv
-iso_code,name,numeric_code,symbol,fraction_symbol,fractions_per_unit,rounding_type,rounding_precision,format,currency_type,modified_by,valid_from,valid_to
+iso_code,name,numeric_code,symbol,fraction_symbol,fractions_per_unit,rounding_type,rounding_precision,format,asset_class,market_tier,modified_by,valid_from,valid_to
 PGK,Papua New Guinean kina,598,K,"",100,Closest,2,%3% %1$.2f,"",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
 SOS,Somali shilling,706,K,"",100,Closest,2,%3% %1$.2f,"",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
 ALL,Albanian lek,8,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
@@ -230,7 +230,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:45:39",
     "valid_to": "2025-12-11 23:45:39"
@@ -260,7 +261,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:45:39",
     "valid_to": "2025-12-11 23:45:39"
@@ -276,7 +278,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:44:52",
     "valid_to": "2025-12-11 23:44:52"
@@ -292,7 +295,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:36:31",
     "valid_to": "2025-12-11 23:36:31"
@@ -322,7 +326,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:36:31",
     "valid_to": "2025-12-11 23:36:31"
@@ -338,7 +343,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:36:31",
     "valid_to": "2025-12-11 23:36:31"
@@ -354,7 +360,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:36:31",
     "valid_to": "2025-12-11 23:36:31"
@@ -388,7 +395,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "%3% %1$.2f",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:45:39",
     "valid_to": "2025-12-11 23:45:39"
@@ -404,7 +412,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "%3% %1$.2f",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:45:39",
     "valid_to": "2025-12-11 23:45:39"
@@ -420,7 +429,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:45:39",
     "valid_to": "2025-12-11 23:45:39"
@@ -477,7 +487,8 @@ export ORES_CLI_DB_PASSWORD
     "rounding_type": "Closest",
     "rounding_precision": 2,
     "format": "",
-    "currency_type": "",
+    "asset_class": "fiat",
+    "market_tier": "g10",
     "modified_by": "ores",
     "valid_from": "2025-12-11 23:45:39",
     "valid_to": "2025-12-11 23:45:39"

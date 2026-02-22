@@ -69,7 +69,7 @@ begin
     -- Insert FpML non-ISO currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -84,13 +84,14 @@ begin
         c.rounding_type,
         c.rounding_precision,
         c.format,
-        c.currency_type,
+        c.asset_class,
+        c.market_tier,
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
 {{#items}}
-        ('{{code}}', '{{{name}}}', '{{numeric_code}}', '{{{symbol}}}', '{{fraction_symbol}}', {{fractions_per_unit}}, '{{rounding_type}}', {{rounding_precision}}, '{{format}}', '{{currency_type}}', '{{flag_key}}'){{^last}},{{/last}}
+        ('{{code}}', '{{{name}}}', '{{numeric_code}}', '{{{symbol}}}', '{{fraction_symbol}}', {{fractions_per_unit}}, '{{rounding_type}}', {{rounding_precision}}, '{{format}}', '{{asset_class}}', '{{market_tier}}', '{{flag_key}}'){{^last}},{{/last}}
 {{/items}}
-    ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, flag_key)
+    ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, flag_key)
     left join ores_dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = c.flag_key;
@@ -113,23 +114,16 @@ join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = '{{dataset.code}}'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
 union all
-select 'Offshore (fiat.offshore)', count(*)
+select 'Fiat (asset_class=fiat)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = '{{dataset.code}}'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.offshore'
+  and c.asset_class = 'fiat'
 union all
-select 'Emerging (fiat.emerging)', count(*)
+select 'Historical (market_tier=historical)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = '{{dataset.code}}'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.emerging'
-union all
-select 'Historical (fiat.historical)', count(*)
-from ores_dq_currencies_artefact_tbl c
-join ores_dq_datasets_tbl d on c.dataset_id = d.id
-where d.code = '{{dataset.code}}'
-  and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.historical';
+  and c.market_tier = 'historical';

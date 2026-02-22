@@ -108,20 +108,36 @@ void currency_dialog::setup_form() {
         std::make_unique<Wt::WLineEdit>());
     format_edit_->setPlaceholderText("e.g., #,##0.00");
 
-    auto type_row = content->addWidget(
+    auto asset_class_row = content->addWidget(
         std::make_unique<Wt::WContainerWidget>());
-    type_row->setStyleClass("mb-3");
-    auto type_lbl = type_row->addWidget(
-        std::make_unique<Wt::WLabel>("Currency Type"));
-    type_lbl->setStyleClass("form-label");
-    currency_type_combo_ = type_row->addWidget(
+    asset_class_row->setStyleClass("mb-3");
+    auto asset_class_lbl = asset_class_row->addWidget(
+        std::make_unique<Wt::WLabel>("Asset Class"));
+    asset_class_lbl->setStyleClass("form-label");
+    asset_class_combo_ = asset_class_row->addWidget(
         std::make_unique<Wt::WComboBox>());
-    currency_type_combo_->setStyleClass("form-select");
-    currency_type_combo_->addItem("Fiat");
-    currency_type_combo_->addItem("Crypto");
-    currency_type_combo_->addItem("Commodity");
-    currency_type_combo_->addItem("Other");
-    type_lbl->setBuddy(currency_type_combo_);
+    asset_class_combo_->setStyleClass("form-select");
+    asset_class_combo_->addItem("Fiat");
+    asset_class_combo_->addItem("Crypto");
+    asset_class_combo_->addItem("Commodity");
+    asset_class_combo_->addItem("Other");
+    asset_class_lbl->setBuddy(asset_class_combo_);
+
+    auto market_tier_row = content->addWidget(
+        std::make_unique<Wt::WContainerWidget>());
+    market_tier_row->setStyleClass("mb-3");
+    auto market_tier_lbl = market_tier_row->addWidget(
+        std::make_unique<Wt::WLabel>("Market Tier"));
+    market_tier_lbl->setStyleClass("form-label");
+    market_tier_combo_ = market_tier_row->addWidget(
+        std::make_unique<Wt::WComboBox>());
+    market_tier_combo_->setStyleClass("form-select");
+    market_tier_combo_->addItem("G10");
+    market_tier_combo_->addItem("Major");
+    market_tier_combo_->addItem("Minor");
+    market_tier_combo_->addItem("Exotic");
+    market_tier_combo_->addItem("Other");
+    market_tier_lbl->setBuddy(market_tier_combo_);
 
     status_text_ = content->addWidget(std::make_unique<Wt::WText>());
     status_text_->setStyleClass("text-danger");
@@ -154,9 +170,14 @@ void currency_dialog::set_currency(const currency_data& data) {
         rounding_type_combo_->setCurrentIndex(rounding_idx);
     }
 
-    int type_idx = currency_type_combo_->findText(data.currency_type);
-    if (type_idx >= 0) {
-        currency_type_combo_->setCurrentIndex(type_idx);
+    int asset_class_idx = asset_class_combo_->findText(data.asset_class);
+    if (asset_class_idx >= 0) {
+        asset_class_combo_->setCurrentIndex(asset_class_idx);
+    }
+
+    int market_tier_idx = market_tier_combo_->findText(data.market_tier);
+    if (market_tier_idx >= 0) {
+        market_tier_combo_->setCurrentIndex(market_tier_idx);
     }
 }
 
@@ -171,7 +192,8 @@ currency_data currency_dialog::get_currency() const {
     data.rounding_type = rounding_type_combo_->currentText().toUTF8();
     data.rounding_precision = precision_spinbox_->value();
     data.format = format_edit_->text().toUTF8();
-    data.currency_type = currency_type_combo_->currentText().toUTF8();
+    data.asset_class = asset_class_combo_->currentText().toUTF8();
+    data.market_tier = market_tier_combo_->currentText().toUTF8();
     return data;
 }
 

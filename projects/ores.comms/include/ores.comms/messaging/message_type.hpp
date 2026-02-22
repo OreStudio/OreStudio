@@ -222,6 +222,24 @@ enum class message_type : std::uint16_t {
     delete_rounding_type_response = 0x1096,
     get_rounding_type_history_request = 0x1097,
     get_rounding_type_history_response = 0x1098,
+    // Refdata subsystem - Currency asset classes
+    get_currency_asset_classes_request = 0x1099,
+    get_currency_asset_classes_response = 0x109A,
+    save_currency_asset_class_request = 0x109B,
+    save_currency_asset_class_response = 0x109C,
+    delete_currency_asset_class_request = 0x109D,
+    delete_currency_asset_class_response = 0x109E,
+    get_currency_asset_class_history_request = 0x109F,
+    get_currency_asset_class_history_response = 0x10A0,
+    // Refdata subsystem - Currency market tiers
+    get_currency_market_tiers_request = 0x10A1,
+    get_currency_market_tiers_response = 0x10A2,
+    save_currency_market_tier_request = 0x10A3,
+    save_currency_market_tier_response = 0x10A4,
+    delete_currency_market_tier_request = 0x10A5,
+    delete_currency_market_tier_response = 0x10A6,
+    get_currency_market_tier_history_request = 0x10A7,
+    get_currency_market_tier_history_response = 0x10A8,
     // Trade subsystem - Trade types
     get_trade_types_request = 0x8001,
     get_trade_types_response = 0x8002,
@@ -742,6 +760,22 @@ enum class message_type : std::uint16_t {
     case message_type::delete_rounding_type_response: return "delete_rounding_type_response";
     case message_type::get_rounding_type_history_request: return "get_rounding_type_history_request";
     case message_type::get_rounding_type_history_response: return "get_rounding_type_history_response";
+    case message_type::get_currency_asset_classes_request: return "get_currency_asset_classes_request";
+    case message_type::get_currency_asset_classes_response: return "get_currency_asset_classes_response";
+    case message_type::save_currency_asset_class_request: return "save_currency_asset_class_request";
+    case message_type::save_currency_asset_class_response: return "save_currency_asset_class_response";
+    case message_type::delete_currency_asset_class_request: return "delete_currency_asset_class_request";
+    case message_type::delete_currency_asset_class_response: return "delete_currency_asset_class_response";
+    case message_type::get_currency_asset_class_history_request: return "get_currency_asset_class_history_request";
+    case message_type::get_currency_asset_class_history_response: return "get_currency_asset_class_history_response";
+    case message_type::get_currency_market_tiers_request: return "get_currency_market_tiers_request";
+    case message_type::get_currency_market_tiers_response: return "get_currency_market_tiers_response";
+    case message_type::save_currency_market_tier_request: return "save_currency_market_tier_request";
+    case message_type::save_currency_market_tier_response: return "save_currency_market_tier_response";
+    case message_type::delete_currency_market_tier_request: return "delete_currency_market_tier_request";
+    case message_type::delete_currency_market_tier_response: return "delete_currency_market_tier_response";
+    case message_type::get_currency_market_tier_history_request: return "get_currency_market_tier_history_request";
+    case message_type::get_currency_market_tier_history_response: return "get_currency_market_tier_history_response";
     case message_type::get_trade_types_request: return "get_trade_types_request";
     case message_type::get_trade_types_response: return "get_trade_types_response";
     case message_type::save_trade_type_request: return "save_trade_type_request";

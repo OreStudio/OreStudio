@@ -47,7 +47,8 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_string(buffer, version.data.rounding_type);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.data.rounding_precision));
     writer::write_string(buffer, version.data.format);
-    writer::write_string(buffer, version.data.currency_type);
+    writer::write_string(buffer, version.data.asset_class);
+    writer::write_string(buffer, version.data.market_tier);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(version.data.recorded_at));
 
@@ -109,10 +110,13 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     if (!format) return std::unexpected(format.error());
     version.data.format = *format;
 
-    auto currency_type = reader::read_string(data);
-    if (!currency_type) return std::unexpected(currency_type.error());
-    version.data.currency_type = *currency_type;
+    auto asset_class = reader::read_string(data);
+    if (!asset_class) return std::unexpected(asset_class.error());
+    version.data.asset_class = *asset_class;
 
+    auto market_tier = reader::read_string(data);
+    if (!market_tier) return std::unexpected(market_tier.error());
+    version.data.market_tier = *market_tier;
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());

@@ -72,7 +72,8 @@ public:
         RoundingType,
         RoundingPrecision,
         Format,
-        CurrencyType,
+        AssetClass,
+        MarketTier,
         Version,
         ModifiedBy,
         RecordedAt,
@@ -149,8 +150,15 @@ public:
             .default_width = kColumnWidthAuto
         },
         {
-            .column = CurrencyType,
-            .header = std::string_view("Type"),
+            .column = AssetClass,
+            .header = std::string_view("Asset Class"),
+            .style = column_style::text_left,
+            .hidden_by_default = true,
+            .default_width = kColumnWidthAuto
+        },
+        {
+            .column = MarketTier,
+            .header = std::string_view("Market Tier"),
             .style = column_style::text_left,
             .hidden_by_default = true,
             .default_width = kColumnWidthAuto

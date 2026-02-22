@@ -38,5 +38,9 @@
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata/messaging/currency_asset_class_protocol.hpp"
+#include "ores.refdata/messaging/currency_asset_class_history_protocol.hpp"
+#include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
+#include "ores.refdata/messaging/currency_market_tier_history_protocol.hpp"
 
 #endif

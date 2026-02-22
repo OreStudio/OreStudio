@@ -73,14 +73,24 @@
            <widget class="QLineEdit" name="numericCodeEdit"/>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="labelCurrencyType">
+           <widget class="QLabel" name="labelAssetClass">
             <property name="text">
-             <string>Currency Type:</string>
+             <string>Asset Class:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="currencyTypeEdit"/>
+           <widget class="QLineEdit" name="assetClassEdit"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelMarketTier">
+            <property name="text">
+             <string>Market Tier:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="marketTierEdit"/>
           </item>
          </layout>
         </widget>

@@ -27,6 +27,32 @@
 -- isolated, including the system tenant.
 
 -- -----------------------------------------------------------------------------
+-- Currency Asset Classes
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_asset_classes_tbl enable row level security;
+
+create policy ores_refdata_currency_asset_classes_tenant_isolation_policy on ores_refdata_currency_asset_classes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Currency Market Tiers
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_market_tiers_tbl enable row level security;
+
+create policy ores_refdata_currency_market_tiers_tenant_isolation_policy on ores_refdata_currency_market_tiers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currencies
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currencies_tbl enable row level security;

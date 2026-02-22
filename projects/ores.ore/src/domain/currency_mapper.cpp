@@ -58,7 +58,8 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.rounding_type = to_string(v.RoundingType);
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
     r.format = "";  // Not in XSD
-    r.currency_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    r.asset_class = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    r.market_tier = "";
     r.modified_by = "ores";
     r.change_reason_code = "system.external_data_import";
     r.change_commentary = "Imported from ORE XML";
@@ -85,9 +86,9 @@ currencyDefinition currency_mapper::map(const refdata::domain::currency& v) {
     r.FractionsPerUnit = v.fractions_per_unit;
     r.RoundingType = parse_rounding_type(v.rounding_type);
     r.RoundingPrecision = v.rounding_precision;
-    if (!v.currency_type.empty()) {
+    if (!v.asset_class.empty()) {
         currencyDefinition_CurrencyType_t ct;
-        static_cast<xsd::string&>(ct) = v.currency_type;
+        static_cast<xsd::string&>(ct) = v.asset_class;
         r.CurrencyType = ct;
     }
 

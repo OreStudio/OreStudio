@@ -63,7 +63,8 @@ TEST_CASE("add_currency_options_optional_fields", tags) {
     sut.numeric_code = "978";
     sut.symbol = "€";
     sut.fractions_per_unit = 100;
-    sut.currency_type = "fiat";
+    sut.asset_class = "fiat";
+    sut.market_tier = "g10";
 
     REQUIRE(sut.numeric_code.has_value());
     CHECK(*sut.numeric_code == "978");
@@ -74,8 +75,11 @@ TEST_CASE("add_currency_options_optional_fields", tags) {
     REQUIRE(sut.fractions_per_unit.has_value());
     CHECK(*sut.fractions_per_unit == 100);
 
-    REQUIRE(sut.currency_type.has_value());
-    CHECK(*sut.currency_type == "fiat");
+    REQUIRE(sut.asset_class.has_value());
+    CHECK(*sut.asset_class == "fiat");
+
+    REQUIRE(sut.market_tier.has_value());
+    CHECK(*sut.market_tier == "g10");
 }
 
 TEST_CASE("add_currency_options_streaming", tags) {

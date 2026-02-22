@@ -748,7 +748,8 @@ add_currency(const config::add_currency_options& cfg) const {
     currency.rounding_type = cfg.rounding_type.value_or("Closest");
     currency.rounding_precision = cfg.rounding_precision.value_or(2);
     currency.format = cfg.format.value_or("");
-    currency.currency_type = cfg.currency_type.value_or("");
+    currency.asset_class = cfg.asset_class.value_or("fiat");
+    currency.market_tier = cfg.market_tier.value_or("emerging");
     currency.modified_by = cfg.modified_by;
     currency.performed_by = cfg.modified_by;
     // Note: recorded_at is set by the database triggers via valid_from

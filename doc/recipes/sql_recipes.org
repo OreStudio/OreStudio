@@ -1385,7 +1385,7 @@ select ores.account_has_permission('admin', 'accounts:create') as has_permission
 *** List All Currencies
 
 #+begin_src sql
-select iso_code, name, symbol, numeric_code, currency_type
+select iso_code, name, symbol, numeric_code, asset_class, market_tier
 from ores.currencies
 where valid_to = '9999-12-31 23:59:59'::timestamptz
 order by iso_code
@@ -1394,18 +1394,18 @@ limit 10;
 
 #+RESULTS:
 #+begin_example
-| iso_code | name                          | symbol | numeric_code | currency_type |
-|----------+-------------------------------+--------+--------------+---------------|
-| AED      | UAE Dirham                    | د.إ    |          784 | fiat          |
-| AFN      | Afghan Afghani                | ؋      |          971 | fiat          |
-| ALL      | Albanian Lek                  | L      |          008 | fiat          |
-| AMD      | Armenian Dram                 | ֏     |          051 | fiat          |
-| ANG      | Netherlands Antillean Guilder | ƒ      |          532 | fiat          |
-| AOA      | Angolan Kwanza                | Kz     |          973 | fiat          |
-| ARS      | Argentine Peso                | $      |          032 | fiat          |
-| AUD      | Australian Dollar             | A$     |          036 | fiat          |
-| AWG      | Aruban Florin                 | ƒ      |          533 | fiat          |
-| AZN      | Azerbaijani Manat             | ₼     |          944 | fiat          |
+| iso_code | name                          | symbol | numeric_code | asset_class | market_tier |
+|----------+-------------------------------+--------+--------------+-------------+-------------|
+| AED      | UAE Dirham                    | د.إ    |          784 | fiat        | emerging    |
+| AFN      | Afghan Afghani                | ؋      |          971 | fiat        | frontier    |
+| ALL      | Albanian Lek                  | L      |          008 | fiat        | frontier    |
+| AMD      | Armenian Dram                 | ֏     |          051 | fiat        | frontier    |
+| ANG      | Netherlands Antillean Guilder | ƒ      |          532 | fiat        | exotic      |
+| AOA      | Angolan Kwanza                | Kz     |          973 | fiat        | frontier    |
+| ARS      | Argentine Peso                | $      |          032 | fiat        | emerging    |
+| AUD      | Australian Dollar             | A$     |          036 | fiat        | g10         |
+| AWG      | Aruban Florin                 | ƒ      |          533 | fiat        | exotic      |
+| AZN      | Azerbaijani Manat             | ₼     |          944 | fiat        | frontier    |
 #+end_example
 
 *** Get Currency Details
@@ -1425,23 +1425,43 @@ where iso_code = 'USD'
 | USD      | US Dollar | $      | ¢               |                100 | standard      |                  2 | $#,##0.00 |
 #+end_example
 
-*** Count Currencies by Type
+*** Count Currencies by Asset Class
 
 #+begin_src sql
-select currency_type, count(*) as count
+select asset_class, count(*) as count
 from ores.currencies
 where valid_to = '9999-12-31 23:59:59'::timestamptz
-group by currency_type
+group by asset_class
 order by count desc;
 #+end_src
 
 #+RESULTS:
 #+begin_example
-| currency_type | count |
+| asset_class   | count |
 |---------------+-------|
 | fiat          |   153 |
 | commodity     |     4 |
 | supranational |     1 |
+#+end_example
+
+*** Count Currencies by Market Tier
+
+#+begin_src sql
+select market_tier, count(*) as count
+from ores.currencies
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+group by market_tier
+order by count desc;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| market_tier | count |
+|-------------+-------|
+| emerging    |    80 |
+| frontier    |    45 |
+| g10         |    18 |
+| exotic      |    15 |
 #+end_example
 
 *** Get Currency with Flag Image

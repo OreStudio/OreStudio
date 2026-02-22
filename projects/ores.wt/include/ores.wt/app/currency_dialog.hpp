@@ -43,7 +43,8 @@ struct currency_data {
     std::string rounding_type = "Closest";
     int rounding_precision = 2;
     std::string format;
-    std::string currency_type = "Fiat";
+    std::string asset_class = "Fiat";
+    std::string market_tier = "G10";
     int version = 0;
 };
 
@@ -77,7 +78,8 @@ private:
     Wt::WComboBox* rounding_type_combo_;
     Wt::WSpinBox* precision_spinbox_;
     Wt::WLineEdit* format_edit_;
-    Wt::WComboBox* currency_type_combo_;
+    Wt::WComboBox* asset_class_combo_;
+    Wt::WComboBox* market_tier_combo_;
     Wt::WText* status_text_;
 
     Wt::Signal<currency_data> saved_;

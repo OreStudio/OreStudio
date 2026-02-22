@@ -46,7 +46,8 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
     writer::write_string(buffer, currency.rounding_type);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.rounding_precision));
     writer::write_string(buffer, currency.format);
-    writer::write_string(buffer, currency.currency_type);
+    writer::write_string(buffer, currency.asset_class);
+    writer::write_string(buffer, currency.market_tier);
     // Write optional image_id: bool flag followed by UUID if present
     writer::write_bool(buffer, currency.image_id.has_value());
     if (currency.image_id) {
@@ -104,9 +105,13 @@ deserialize_currency(std::span<const std::byte>& data) {
     if (!format) return std::unexpected(format.error());
     currency.format = *format;
 
-    auto currency_type = reader::read_string(data);
-    if (!currency_type) return std::unexpected(currency_type.error());
-    currency.currency_type = *currency_type;
+    auto asset_class = reader::read_string(data);
+    if (!asset_class) return std::unexpected(asset_class.error());
+    currency.asset_class = *asset_class;
+
+    auto market_tier = reader::read_string(data);
+    if (!market_tier) return std::unexpected(market_tier.error());
+    currency.market_tier = *market_tier;
 
     // Read optional image_id: bool flag followed by UUID if present
     auto has_image_id = reader::read_bool(data);

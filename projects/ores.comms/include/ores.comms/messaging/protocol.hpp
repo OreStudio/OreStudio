@@ -302,11 +302,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 39.1 adds rounding type CRUD and history:
 // - New message types 0x1091-0x1098 (get/save/delete/history for rounding_type)
 //
-// Version 40.0 extends login_response with selected_party_id (UUID) and
-// available_parties (count + per-party uuid+name). Adds select_party_request
-// (0x2046) and select_party_response (0x2047) for multi-party account support.
-// Breaking change as existing login_response payloads are incompatible.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 40;
+// Version 41.0 replaces currency_type field with asset_class and market_tier
+// in currency messages. Adds currency_asset_class (0x1099-0x10A0) and
+// currency_market_tier (0x10A1-0x10A8) message types.
+// Breaking change as existing currency payloads are incompatible.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 41;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

@@ -25,12 +25,21 @@
       {"name": "rounding_type", "type": "text", "nullable": false},
       {"name": "rounding_precision", "type": "integer", "nullable": false},
       {"name": "format", "type": "text", "nullable": false},
-      {"name": "currency_type", "type": "text", "nullable": false}
+      {"name": "asset_class", "type": "text", "nullable": false},
+      {"name": "market_tier", "type": "text", "nullable": false}
     ],
     "validations": [
       {
         "column": "rounding_type",
         "validation_function": "ores_refdata_validate_rounding_type_fn"
+      },
+      {
+        "column": "asset_class",
+        "validation_function": "ores_refdata_validate_currency_asset_class_fn"
+      },
+      {
+        "column": "market_tier",
+        "validation_function": "ores_refdata_validate_currency_market_tier_fn"
       },
       {
         "column": "change_reason_code",

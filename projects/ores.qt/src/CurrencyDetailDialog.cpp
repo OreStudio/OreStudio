@@ -230,7 +230,9 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->formatEdit, &QLineEdit::textChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->currencyTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->assetClassEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->marketTierEdit, &QLineEdit::textChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
 
     // Initially disable save/reset buttons
@@ -330,7 +332,8 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
     ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
-    ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
+    ui_->assetClassEdit->setText(QString::fromStdString(currency.asset_class));
+    ui_->marketTierEdit->setText(QString::fromStdString(currency.market_tier));
     populateProvenance(currency.version, currency.modified_by, currency.performed_by,
         currency.recorded_at, currency.change_reason_code, currency.change_commentary);
 
@@ -352,7 +355,8 @@ refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.rounding_type = ui_->roundingTypeCombo->currentText().toStdString();
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
-    currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
+    currency.asset_class = ui_->assetClassEdit->text().toStdString();
+    currency.market_tier = ui_->marketTierEdit->text().toStdString();
     currency.modified_by = username_.empty() ? "qt_user" : username_;
 
     if (!pendingImageId_.isEmpty()) {
@@ -373,7 +377,8 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->roundingTypeCombo->setCurrentIndex(-1);
     ui_->roundingPrecisionSpinBox->clear();
     ui_->formatEdit->clear();
-    ui_->currencyTypeEdit->clear();
+    ui_->assetClassEdit->clear();
+    ui_->marketTierEdit->clear();
     clearProvenance();
     pendingImageId_.clear();
 
@@ -686,7 +691,8 @@ void CurrencyDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->roundingTypeCombo->setEnabled(!readOnly);
     ui_->roundingPrecisionSpinBox->setReadOnly(readOnly);
     ui_->formatEdit->setReadOnly(readOnly);
-    ui_->currencyTypeEdit->setReadOnly(readOnly);
+    ui_->assetClassEdit->setReadOnly(readOnly);
+    ui_->marketTierEdit->setReadOnly(readOnly);
 }
 
 void CurrencyDetailDialog::updateSaveResetButtonState() {
@@ -1055,7 +1061,8 @@ void CurrencyDetailDialog::onGenerateClicked() {
         ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
         ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
         ui_->formatEdit->setText(QString::fromStdString(currency.format));
-        ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
+        ui_->assetClassEdit->setText(QString::fromStdString(currency.asset_class));
+        ui_->marketTierEdit->setText(QString::fromStdString(currency.market_tier));
 
         // Mark as dirty
         isDirty_ = true;

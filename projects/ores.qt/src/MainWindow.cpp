@@ -79,6 +79,7 @@
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -174,6 +175,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionPurposeTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
+    ui_->ActionRoundingTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -597,6 +599,12 @@ MainWindow::MainWindow(QWidget* parent) :
             purposeTypeController_->showListWindow();
     });
 
+    // Connect Rounding Types action to controller
+    connect(ui_->ActionRoundingTypes, &QAction::triggered, this, [this]() {
+        if (roundingTypeController_)
+            roundingTypeController_->showListWindow();
+    });
+
     // Connect Data Librarian action
     connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
         if (dataLibrarianWindow_) {
@@ -966,6 +974,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionBooks->setEnabled(isLoggedIn);
     ui_->ActionBookStatuses->setEnabled(isLoggedIn);
     ui_->ActionPurposeTypes->setEnabled(isLoggedIn);
+    ui_->ActionRoundingTypes->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
@@ -1551,6 +1560,30 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(purposeTypeController_.get(), &PurposeTypeController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create rounding type controller
+    roundingTypeController_ = std::make_unique<RoundingTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(roundingTypeController_.get(), &RoundingTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(roundingTypeController_.get(), &RoundingTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(roundingTypeController_.get(), &RoundingTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(roundingTypeController_.get(), &RoundingTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Connect currency controller relay to rounding type controller
+    connect(currencyController_.get(), &CurrencyController::showRoundingTypesRequested,
+            this, [this]() {
+        if (roundingTypeController_)
+            roundingTypeController_->showListWindow();
+    });
 
     // Create trade controller
     tradeController_ = std::make_unique<TradeController>(
@@ -2264,6 +2297,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (datasetBundleController_) {
         datasetBundleController_->setUsername(username);
+    }
+    if (roundingTypeController_) {
+        roundingTypeController_->setUsername(username);
     }
 
     updateWindowTitle();

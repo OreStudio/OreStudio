@@ -1145,7 +1145,11 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self || !result.success) {
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch rounding types for combo box.";
+            emit self->errorMessage(tr("Could not load rounding types."));
             return;
         }
 

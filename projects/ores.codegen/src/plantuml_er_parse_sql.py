@@ -876,6 +876,28 @@ class SQLParser:
                                   f"(e.g., dq_, iam_, telemetry_)",
                                   entity_name=view_name)
 
+    def validate_dq_populate_actor(self, create_dir: Path) -> None:
+        """Check that DQ populate functions use the session actor for modified_by.
+
+        Populate functions must use coalesce(ores_iam_current_actor_fn(), current_user)
+        for modified_by in external data imports. Hardcoding current_user captures the
+        database role (e.g. ores_ddl_user) instead of the authenticated session user.
+        """
+        dq_dir = create_dir / 'dq'
+        if not dq_dir.exists():
+            return
+
+        bad_pattern = "current_user, current_user, 'system.external_data_import'"
+        for sql_file in sorted(dq_dir.rglob('*.sql')):
+            with open(sql_file, 'r', encoding='utf-8', errors='replace') as f:
+                for line_num, line in enumerate(f, start=1):
+                    if bad_pattern in line:
+                        self._add_warning(
+                            str(sql_file), line_num, 'DQ_001',
+                            f"DQ populate function uses hardcoded current_user for modified_by. "
+                            f"Use coalesce(ores_iam_current_actor_fn(), current_user) instead.",
+                            entity_name=sql_file.name)
+
     def _add_warning(self, file_path: str, line: int, code: str, message: str,
                      entity_name: str = '') -> None:
         """Add a warning if warnings are enabled and not ignored."""
@@ -1265,6 +1287,9 @@ def main():
 
     # Validate view naming conventions
     sql_parser.validate_view_naming()
+
+    # Validate DQ populate functions use session actor for modified_by
+    sql_parser.validate_dq_populate_actor(create_dir)
 
     # Print summary
     print(f"\n=== Validation Summary ===", file=sys.stderr)

@@ -25,6 +25,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -35,9 +36,11 @@
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/service/account_party_service.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 using namespace ores::iam;
 using namespace ores::iam::messaging;
@@ -79,6 +82,41 @@ void assign_admin_role(std::shared_ptr<service::authorization_service> auth,
     auto admin_role = auth->find_role_by_name(domain::roles::super_admin);
     REQUIRE(admin_role.has_value());
     auth->assign_role(account_id, admin_role->id, db_user);
+}
+
+/**
+ * @brief Assigns the tenant's system party to an account.
+ *
+ * All accounts must have at least one party for login to succeed. Tests
+ * that exercise the real login flow must call this after creating an account.
+ */
+void assign_system_party(ores::database::context& ctx,
+    const ores::utility::uuid::tenant_id& tenant_id,
+    const boost::uuids::uuid& account_id,
+    const std::string& db_user) {
+    auto lg = ores::logging::make_logger("test.assign_system_party");
+    const auto ids =
+        ores::database::repository::execute_parameterized_string_query(
+            ctx,
+            "SELECT ores_iam_account_parties_system_party_id_fn($1::uuid)::text",
+            {tenant_id.to_string()},
+            lg, "Lookup system party for test account");
+    REQUIRE(!ids.empty());
+    REQUIRE(!ids.front().empty());
+
+    const auto party_id =
+        boost::lexical_cast<boost::uuids::uuid>(ids.front());
+
+    ores::iam::domain::account_party ap;
+    ap.account_id         = account_id;
+    ap.party_id           = party_id;
+    ap.modified_by        = db_user;
+    ap.performed_by       = db_user;
+    ap.change_reason_code = "system.new_record";
+    ap.change_commentary  = "System party assigned for test";
+
+    ores::iam::service::account_party_service svc(ctx);
+    svc.save_account_party(ap);
 }
 
 /**
@@ -151,13 +189,17 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
 
     const auto create_payload = ca_rq.serialize();
 
+    boost::uuids::uuid account_id;
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::save_account_request,
             create_payload, admin_endpoint);
         REQUIRE(r.has_value());
+        account_id = save_account_response::deserialize(r.value()).value().account_id;
     });
+
+    assign_system_party(h.context(), h.tenant_id(), account_id, h.db_user());
 
     login_request lrq;
     lrq.principal = ca_rq.principal;
@@ -309,6 +351,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     // Assign admin role to the newly created account
     assign_admin_role(auth_service, admin_id, h.db_user());
+    assign_system_party(h.context(), h.tenant_id(), admin_id, h.db_user());
 
     // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
@@ -424,6 +467,8 @@ TEST_CASE("handle_change_password_request_success", tags) {
         account_id = save_account_response::deserialize(r.value()).value().account_id;
     });
 
+    assign_system_party(h.context(), h.tenant_id(), account_id, h.db_user());
+
     // Login to establish session
     login_request login_rq;
     login_rq.principal = ca_rq.principal;
@@ -528,13 +573,17 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     const auto account = generate_synthetic_account(ctx);
     save_account_request ca_rq(to_save_account_request(account));
 
+    boost::uuids::uuid account_id;
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::save_account_request,
             ca_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
+        account_id = save_account_response::deserialize(r.value()).value().account_id;
     });
+
+    assign_system_party(h.context(), h.tenant_id(), account_id, h.db_user());
 
     // Login to establish session
     login_request login_rq;

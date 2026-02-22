@@ -276,7 +276,7 @@ handle_save_account_request(std::span<const std::byte> payload,
         try {
             // Create a fresh context for this request to avoid race conditions
             // with concurrent requests from different tenants.
-            // Note: uses hostname if provided, otherwise uses handler's configured tenant.
+            // Note: uses hostname if provided, otherwise uses the session's tenant.
             database::context operation_ctx = [&]() {
                 if (!hostname.empty()) {
                     BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
@@ -284,9 +284,9 @@ handle_save_account_request(std::span<const std::byte> payload,
                         database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
                     return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
                 } else {
-                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
-                                               << ctx_.tenant_id().to_string();
-                    return ctx_.with_tenant(ctx_.tenant_id());
+                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using session tenant: "
+                                               << auth_result->tenant_id.to_string();
+                    return make_request_context(*auth_result);
                 }
             }();
 

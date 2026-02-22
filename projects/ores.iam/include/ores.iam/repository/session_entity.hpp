@@ -142,6 +142,11 @@ struct session_sample_entity {
     sqlgen::PrimaryKey<std::string> session_id;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation (RLS).
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Sample timestamp — part of composite primary key and partition column.
      */
     sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sample_time;

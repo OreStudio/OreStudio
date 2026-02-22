@@ -169,15 +169,24 @@ public:
         std::uint64_t latency_ms = 0);
 
     /**
+     * @brief A batch of samples ready to be flushed to the database.
+     */
+    struct pending_samples_batch {
+        boost::uuids::uuid session_id;
+        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+        std::vector<session_sample> samples;
+    };
+
+    /**
      * @brief Take any samples ready to be flushed for a session.
      *
      * Returns and clears flush_pending for the given session. Returns nullopt
      * if the session is not found or has nothing pending.
      *
      * @param remote_address The client's remote address
-     * @return {session_id, samples} if pending, nullopt otherwise
+     * @return batch with session_id, tenant_id and samples if pending, nullopt otherwise
      */
-    [[nodiscard]] std::optional<std::pair<boost::uuids::uuid, std::vector<session_sample>>>
+    [[nodiscard]] std::optional<pending_samples_batch>
     take_pending_samples(const std::string& remote_address);
 
     /// Number of samples accumulated before they are moved to flush_pending.

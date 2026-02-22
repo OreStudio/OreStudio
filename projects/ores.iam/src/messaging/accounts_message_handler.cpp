@@ -108,12 +108,12 @@ accounts_message_handler::handle_message(message_type type,
 
     // Drain any sample batches queued by record_sample() since the last request
     if (auto pending = sessions_->take_pending_samples(remote_address)) {
-        auto& [session_id, samples] = *pending;
         try {
-            session_repo_.insert_samples(session_id, samples);
-            BOOST_LOG_SEV(lg(), debug) << "Periodic flush: inserted " << samples.size()
+            session_repo_.insert_samples(pending->session_id,
+                pending->tenant_id.to_uuid(), pending->samples);
+            BOOST_LOG_SEV(lg(), debug) << "Periodic flush: inserted " << pending->samples.size()
                                        << " samples for session "
-                                       << boost::uuids::to_string(session_id);
+                                       << boost::uuids::to_string(pending->session_id);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to flush pending samples: " << e.what();
         }
@@ -1084,7 +1084,8 @@ handle_logout_request(std::span<const std::byte> payload,
                 std::make_move_iterator(sess->samples.end()));
             if (!all_samples.empty()) {
                 try {
-                    sess_repo.insert_samples(sess->id, all_samples);
+                    sess_repo.insert_samples(sess->id,
+                        sess->tenant_id.to_uuid(), all_samples);
                     BOOST_LOG_SEV(lg(), debug) << "Inserted " << all_samples.size()
                                                << " samples at logout for session: "
                                                << boost::uuids::to_string(sess->id);

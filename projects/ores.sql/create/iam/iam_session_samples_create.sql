@@ -26,6 +26,7 @@
 
 create table if not exists ores_iam_session_samples_tbl (
     "session_id" uuid not null,
+    "tenant_id" uuid not null,
     "sample_time" timestamp with time zone not null,
     "bytes_sent" bigint not null default 0,
     "bytes_received" bigint not null default 0,

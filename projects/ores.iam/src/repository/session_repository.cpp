@@ -350,6 +350,7 @@ session_repository::read_aggregate_daily_statistics(
 }
 
 void session_repository::insert_samples(const boost::uuids::uuid& session_id,
+    const boost::uuids::uuid& tenant_id,
     const std::vector<comms::service::session_sample>& samples) {
 
     BOOST_LOG_SEV(lg(), debug) << "Inserting " << samples.size()
@@ -361,12 +362,14 @@ void session_repository::insert_samples(const boost::uuids::uuid& session_id,
     }
 
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
+    const auto tenant_id_str = boost::lexical_cast<std::string>(tenant_id);
 
     std::vector<session_sample_entity> entities;
     entities.reserve(samples.size());
     for (const auto& s : samples) {
         session_sample_entity e;
         e.session_id = session_id_str;
+        e.tenant_id = tenant_id_str;
         e.sample_time = timepoint_to_timestamp(s.timestamp, lg());
         e.bytes_sent = static_cast<std::int64_t>(s.bytes_sent);
         e.bytes_received = static_cast<std::int64_t>(s.bytes_received);

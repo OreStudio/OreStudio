@@ -181,9 +181,11 @@ public:
      * the session. Wrapped in a single transaction for efficiency.
      *
      * @param session_id The session UUID
+     * @param tenant_id The tenant UUID for RLS isolation
      * @param samples Collection of samples recorded at heartbeat frequency
      */
     void insert_samples(const boost::uuids::uuid& session_id,
+        const boost::uuids::uuid& tenant_id,
         const std::vector<comms::service::session_sample>& samples);
 
     /**

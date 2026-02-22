@@ -137,15 +137,18 @@ void auth_session_service::record_sample(const std::string& remote_address,
     }
 }
 
-std::optional<std::pair<boost::uuids::uuid, std::vector<session_sample>>>
+std::optional<auth_session_service::pending_samples_batch>
 auth_session_service::take_pending_samples(const std::string& remote_address) {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it == sessions_.end() || !it->second || it->second->flush_pending.empty())
         return std::nullopt;
 
-    return std::make_pair(it->second->id,
-        std::exchange(it->second->flush_pending, {}));
+    return pending_samples_batch{
+        .session_id = it->second->id,
+        .tenant_id = it->second->tenant_id,
+        .samples = std::exchange(it->second->flush_pending, {})
+    };
 }
 
 std::shared_ptr<session_data>

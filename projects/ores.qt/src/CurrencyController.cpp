@@ -149,6 +149,8 @@ void CurrencyController::showListWindow() {
             this, &CurrencyController::onShowCurrencyDetails);
     connect(currencyWidget, &CurrencyMdiWindow::showCurrencyHistory,
             this, &CurrencyController::onShowCurrencyHistory);
+    connect(currencyWidget, &CurrencyMdiWindow::showRoundingTypesRequested,
+            this, &CurrencyController::showRoundingTypesRequested);
 
     currencyListWindow_ = new DetachableMdiSubWindow();
     currencyListWindow_->setAttribute(Qt::WA_DeleteOnClose);
@@ -234,6 +236,8 @@ void CurrencyController::onAddNewRequested() {
         if (!self) return;
         emit self->errorMessage(message);
     });
+    connect(detailDialog, &CurrencyDetailDialog::showRoundingTypesRequested,
+            this, &CurrencyController::showRoundingTypesRequested);
 
     detailDialog->setCurrency(new_currency);
 
@@ -290,6 +294,8 @@ void CurrencyController::onShowCurrencyDetails(
         if (!self) return;
         emit self->errorMessage(message);
     });
+    connect(detailDialog, &CurrencyDetailDialog::showRoundingTypesRequested,
+            this, &CurrencyController::showRoundingTypesRequested);
 
     detailDialog->setCurrency(currency);
 

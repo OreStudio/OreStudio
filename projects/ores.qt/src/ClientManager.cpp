@@ -200,6 +200,11 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
                 .email = response->email
             });
 
+            // Reset byte baseline for the new connection so bytesSent()/
+            // bytesReceived() report only post-re-auth traffic.
+            bytes_sent_at_login_.store(client_->bytes_sent(), std::memory_order_relaxed);
+            bytes_received_at_login_.store(client_->bytes_received(), std::memory_order_relaxed);
+
             BOOST_LOG_SEV(lg(), info) << "Re-authentication successful for user '"
                                       << response->username << "'";
 
@@ -407,6 +412,11 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
                                   << "' authenticated to " << connected_host_ << ":" << connected_port_
                                   << ", password_reset_required: " << password_reset_required;
+
+        // Capture byte baseline so bytesSent()/bytesReceived() report only
+        // post-login traffic, even on reused TCP connections.
+        bytes_sent_at_login_.store(client_->bytes_sent(), std::memory_order_relaxed);
+        bytes_received_at_login_.store(client_->bytes_received(), std::memory_order_relaxed);
 
         // Enable recording if it was requested before connection
         if (recording_enabled_ && !recording_directory_.empty()) {
@@ -699,6 +709,8 @@ void ClientManager::disconnect() {
     // Set flag FIRST to prevent any pending reconnecting signals from being emitted
     user_disconnecting_.store(true, std::memory_order_release);
     disconnected_since_.reset();
+    bytes_sent_at_login_.store(0, std::memory_order_relaxed);
+    bytes_received_at_login_.store(0, std::memory_order_relaxed);
 
     if (client_) {
         BOOST_LOG_SEV(lg(), info) << "Disconnecting client (user-initiated)";
@@ -819,11 +831,17 @@ bool ClientManager::isConnected() const {
 }
 
 std::uint64_t ClientManager::bytesSent() const {
-    return client_ ? client_->bytes_sent() : 0;
+    if (!client_) return 0;
+    const auto raw = client_->bytes_sent();
+    const auto baseline = bytes_sent_at_login_.load(std::memory_order_relaxed);
+    return raw >= baseline ? raw - baseline : 0;
 }
 
 std::uint64_t ClientManager::bytesReceived() const {
-    return client_ ? client_->bytes_received() : 0;
+    if (!client_) return 0;
+    const auto raw = client_->bytes_received();
+    const auto baseline = bytes_received_at_login_.load(std::memory_order_relaxed);
+    return raw >= baseline ? raw - baseline : 0;
 }
 
 std::uint64_t ClientManager::lastRttMs() const {

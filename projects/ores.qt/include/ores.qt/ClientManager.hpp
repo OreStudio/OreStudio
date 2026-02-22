@@ -659,6 +659,12 @@ private:
     // Set while reconnected callback is performing re-authentication
     std::atomic<bool> reauthenticating_{false};
 
+    // Cumulative connection bytes at login time. Subtracted from raw byte
+    // counters so bytesSent()/bytesReceived() report only post-login traffic,
+    // even when the TCP connection is reused across multiple login sessions.
+    std::atomic<std::uint64_t> bytes_sent_at_login_{0};
+    std::atomic<std::uint64_t> bytes_received_at_login_{0};
+
     // Stored credentials for re-authentication after reconnection
     // Note: storing password in memory is acceptable for desktop apps since
     // the password was already in memory during initial login

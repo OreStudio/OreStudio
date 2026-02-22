@@ -173,6 +173,17 @@ struct session_data final {
     std::uint64_t bytes_received = 0;
 
     /**
+     * @brief Cumulative connection bytes at the moment of login.
+     *
+     * Set once by init_sample_baseline() immediately after the login response
+     * is written. Subtracted from all subsequent byte-counter reads so that
+     * session bytes reflect only post-login traffic, even when the TCP
+     * connection is reused across multiple login sessions.
+     */
+    std::uint64_t bytes_at_login_sent = 0;
+    std::uint64_t bytes_at_login_received = 0;
+
+    /**
      * @brief Cumulative bytes sent at the time of the last sample, used to
      *        compute per-interval deltas for the next sample.
      */

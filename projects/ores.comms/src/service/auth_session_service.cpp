@@ -84,8 +84,11 @@ void auth_session_service::update_session_bytes(const std::string& remote_addres
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end() && it->second) {
-        it->second->bytes_sent = bytes_sent;
-        it->second->bytes_received = bytes_received;
+        auto& sess = *it->second;
+        sess.bytes_sent = bytes_sent >= sess.bytes_at_login_sent
+            ? bytes_sent - sess.bytes_at_login_sent : 0;
+        sess.bytes_received = bytes_received >= sess.bytes_at_login_received
+            ? bytes_received - sess.bytes_at_login_received : 0;
     }
 }
 
@@ -94,9 +97,11 @@ void auth_session_service::init_sample_baseline(const std::string& remote_addres
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end() && it->second) {
+        it->second->bytes_at_login_sent = bytes_sent;
+        it->second->bytes_at_login_received = bytes_received;
         it->second->last_sample_bytes_sent = bytes_sent;
         it->second->last_sample_bytes_received = bytes_received;
-        BOOST_LOG_SEV(lg(), debug) << "Sample baseline initialised for " << remote_address
+        BOOST_LOG_SEV(lg(), debug) << "Byte baseline initialised for " << remote_address
                                    << " bytes_sent=" << bytes_sent
                                    << " bytes_received=" << bytes_received;
     }

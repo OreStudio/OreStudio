@@ -24,7 +24,8 @@
  * Populates valid rounding methods per ORE XML schema (roundingType).
  * Values match xs:enumeration in ORE's currencyconfig.xsd.
  *
- * This script is idempotent - uses INSERT ON CONFLICT.
+ * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE so that
+ * description text is kept up-to-date in a single atomic statement.
  */
 
 \echo '--- Rounding Types ---'
@@ -35,23 +36,30 @@ insert into ores_refdata_rounding_types_tbl (
 )
 values
     (ores_iam_system_tenant_id_fn(), 'Up', 0, 'Round Up',
-     'Rounds away from zero toward positive infinity. Positive values round up, negative values round to larger absolute value.',
+     'Rounds away from zero. 2.341→2.35, 2.349→2.35. Negative: -2.341→-2.35. Used when amounts must never be understated.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
     (ores_iam_system_tenant_id_fn(), 'Down', 0, 'Round Down',
-     'Rounds toward zero (truncation). Drops fractional digits without rounding, always reducing absolute value.',
+     'Truncates toward zero. 2.349→2.34, -2.341→-2.34. Never overstates amounts; used in conservative contexts.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
     (ores_iam_system_tenant_id_fn(), 'Closest', 0, 'Round to Nearest',
-     'Rounds to the nearest value. When equidistant, uses default tie-breaking (typically banker''s rounding or round half up).',
+     'Round half up to nearest. 2.344→2.34, 2.345→2.35. Default rounding; most common for financial amounts.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
     (ores_iam_system_tenant_id_fn(), 'Floor', 0, 'Floor',
-     'Rounds toward negative infinity. Always rounds to the next lower value regardless of sign.',
+     'Always rounds to next lower value. 2.349→2.34, -2.341→-2.35. Used when rounding must never produce a higher value.',
      4, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
     (ores_iam_system_tenant_id_fn(), 'Ceiling', 0, 'Ceiling',
-     'Rounds toward positive infinity. Always rounds to the next higher value regardless of sign.',
+     'Always rounds to next higher value. 2.341→2.35, -2.349→-2.34. Used when rounding must never produce a lower value.',
      5, current_user, current_user, 'system.initial_load', 'Initial population of rounding types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
-do nothing;
+do update set
+    name = excluded.name,
+    description = excluded.description,
+    display_order = excluded.display_order,
+    modified_by = current_user,
+    performed_by = current_user,
+    change_reason_code = 'system.initial_load',
+    change_commentary = 'Update during initial population';
 
 -- Summary
 select 'refdata_rounding_types' as entity, count(*) as count

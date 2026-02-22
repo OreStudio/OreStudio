@@ -47,6 +47,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata/messaging/rounding_type_protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -106,6 +107,17 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     connect(deleteAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
+
+    toolBar_->addSeparator();
+
+    // Rounding Types navigation action
+    auto* roundingTypesAction = new QAction("Rounding Types...", this);
+    roundingTypesAction->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Tag, IconUtils::DefaultIconColor));
+    roundingTypesAction->setToolTip("Open Rounding Types list");
+    connect(roundingTypesAction, &QAction::triggered, this,
+        [this]() { emit showRoundingTypesRequested(); });
+    toolBar_->addAction(roundingTypesAction);
 
     toolBar_->addSeparator();
 
@@ -204,7 +216,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     connect(ui_->fractionsPerUnitSpinBox,
         QOverload<int>::of(&QSpinBox::valueChanged), this,
         &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->roundingTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->roundingTypeCombo, &QComboBox::currentTextChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->roundingPrecisionSpinBox, QOverload<int>::of(
             &QSpinBox::valueChanged), this,
@@ -235,6 +247,14 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
         // If already logged in, subscribe and check flag
         if (clientManager_->isLoggedIn()) {
             onConnectionEstablished();
+        }
+
+        // Populate rounding type combo if already connected
+        if (clientManager_->isConnected()) {
+            populateRoundingTypeCombo();
+        } else {
+            connect(clientManager_, &ClientManager::loggedIn,
+                    this, &CurrencyDetailDialog::populateRoundingTypeCombo);
         }
     }
 }
@@ -300,7 +320,7 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->symbolEdit->setText(QString::fromStdString(currency.symbol));
     ui_->fractionSymbolEdit->setText(QString::fromStdString(currency.fraction_symbol));
     ui_->fractionsPerUnitSpinBox->setValue(currency.fractions_per_unit);
-    ui_->roundingTypeEdit->setText(QString::fromStdString(currency.rounding_type));
+    ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
     ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
@@ -322,7 +342,7 @@ refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.symbol = ui_->symbolEdit->text().toStdString();
     currency.fraction_symbol = ui_->fractionSymbolEdit->text().toStdString();
     currency.fractions_per_unit = ui_->fractionsPerUnitSpinBox->value();
-    currency.rounding_type = ui_->roundingTypeEdit->text().toStdString();
+    currency.rounding_type = ui_->roundingTypeCombo->currentText().toStdString();
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
     currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
@@ -343,7 +363,7 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->symbolEdit->clear();
     ui_->fractionSymbolEdit->clear();
     ui_->fractionsPerUnitSpinBox->clear();
-    ui_->roundingTypeEdit->clear();
+    ui_->roundingTypeCombo->setCurrentIndex(-1);
     ui_->roundingPrecisionSpinBox->clear();
     ui_->formatEdit->clear();
     ui_->currencyTypeEdit->clear();
@@ -656,7 +676,7 @@ void CurrencyDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->symbolEdit->setReadOnly(readOnly);
     ui_->fractionSymbolEdit->setReadOnly(readOnly);
     ui_->fractionsPerUnitSpinBox->setReadOnly(readOnly);
-    ui_->roundingTypeEdit->setReadOnly(readOnly);
+    ui_->roundingTypeCombo->setEnabled(!readOnly);
     ui_->roundingPrecisionSpinBox->setReadOnly(readOnly);
     ui_->formatEdit->setReadOnly(readOnly);
     ui_->currencyTypeEdit->setReadOnly(readOnly);
@@ -1025,7 +1045,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
         ui_->symbolEdit->setText(QString::fromStdString(currency.symbol));
         ui_->fractionSymbolEdit->setText(QString::fromStdString(currency.fraction_symbol));
         ui_->fractionsPerUnitSpinBox->setValue(currency.fractions_per_unit);
-        ui_->roundingTypeEdit->setText(QString::fromStdString(currency.rounding_type));
+        ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
         ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
         ui_->formatEdit->setText(QString::fromStdString(currency.format));
         ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
@@ -1071,6 +1091,101 @@ void CurrencyDetailDialog::onConnectionEstablished() {
 
     // Use QTimer to delay the visibility check until after event loop processes
     QTimer::singleShot(100, this, &CurrencyDetailDialog::updateGenerateActionVisibility);
+}
+
+void CurrencyDetailDialog::populateRoundingTypeCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Populating rounding type combo";
+
+    QPointer<CurrencyDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<refdata::domain::rounding_type> types;
+    };
+
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        if (!self || !self->clientManager_) {
+            return {false, {}};
+        }
+
+        refdata::messaging::get_rounding_types_request request;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_rounding_types_request,
+            0, std::move(payload));
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+        if (!response_result) {
+            return {false, {}};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, {}};
+        }
+
+        auto response = refdata::messaging::get_rounding_types_response::
+            deserialize(*payload_result);
+        if (!response) {
+            return {false, {}};
+        }
+
+        return {true, std::move(response->types)};
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch rounding types for combo box.";
+            emit self->errorMessage(tr("Could not load rounding types."));
+            return;
+        }
+
+        // Remember current selection
+        QString current = self->ui_->roundingTypeCombo->currentText();
+
+        self->ui_->roundingTypeCombo->blockSignals(true);
+        self->ui_->roundingTypeCombo->clear();
+
+        // Sort by display_order
+        auto& types = result.types;
+        std::sort(types.begin(), types.end(),
+            [](const auto& a, const auto& b) {
+                return a.display_order < b.display_order;
+            });
+
+        for (const auto& type : types) {
+            QString code = QString::fromStdString(type.code);
+            self->ui_->roundingTypeCombo->addItem(code);
+            int idx = self->ui_->roundingTypeCombo->count() - 1;
+            self->ui_->roundingTypeCombo->setItemData(
+                idx, QString::fromStdString(type.description),
+                Qt::ToolTipRole);
+        }
+
+        // Restore selection
+        if (!current.isEmpty()) {
+            self->ui_->roundingTypeCombo->setCurrentText(current);
+        }
+
+        self->ui_->roundingTypeCombo->blockSignals(false);
+        BOOST_LOG_SEV(lg(), debug) << "Rounding type combo populated with "
+                                   << result.types.size() << " entries";
+    });
+
+    watcher->setFuture(future);
 }
 
 }

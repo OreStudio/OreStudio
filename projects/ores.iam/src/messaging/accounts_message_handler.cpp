@@ -3178,7 +3178,7 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
             service::account_setup_service tenant_setup_svc(
                 tenant_account_svc, auth_service_);
 
-            tenant_setup_svc.create_account_with_role(
+            const auto admin_account = tenant_setup_svc.create_account_with_role(
                 request.admin_username,
                 request.admin_email,
                 request.admin_password,
@@ -3188,6 +3188,39 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
 
             BOOST_LOG_SEV(lg(), info)
                 << "Admin account created for tenant " << tenant_id;
+
+            // Assign the tenant's system party so the admin can log in
+            const auto system_party_ids =
+                database::repository::execute_parameterized_string_query(
+                    tenant_ctx,
+                    "SELECT ores_iam_account_parties_system_party_id_fn($1::uuid)::text",
+                    {tenant_id},
+                    lg(), "Looking up system party for tenant admin");
+
+            if (system_party_ids.empty() || system_party_ids.front().empty()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "No system party found for tenant " << tenant_id
+                    << " — skipping party assignment for tenant admin account";
+            } else {
+                const auto system_party_id =
+                    boost::lexical_cast<boost::uuids::uuid>(system_party_ids.front());
+
+                domain::account_party ap;
+                ap.tenant_id          = tenant_id;
+                ap.account_id         = admin_account.id;
+                ap.party_id           = system_party_id;
+                ap.modified_by        = auth_result->username;
+                ap.performed_by       = auth_result->username;
+                ap.change_reason_code = std::string{reason::codes::new_record};
+                ap.change_commentary  =
+                    "System party assigned to tenant admin during tenant onboarding";
+
+                service::account_party_service ap_svc(tenant_ctx);
+                ap_svc.save_account_party(ap);
+
+                BOOST_LOG_SEV(lg(), info)
+                    << "Assigned system party to tenant admin " << admin_account.id;
+            }
         }
 
         provision_tenant_response response{

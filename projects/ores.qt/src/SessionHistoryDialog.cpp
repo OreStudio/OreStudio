@@ -204,6 +204,7 @@ SessionHistoryDialog::~SessionHistoryDialog() = default;
 
 void SessionHistoryDialog::setupUi() {
     setWindowTitle(tr("Session History"));
+    setWindowIcon(IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
     setMinimumSize(900, 600);
 
     auto* layout = new QVBoxLayout(this);
@@ -384,22 +385,38 @@ void SessionHistoryDialog::onSamplesLoaded() {
                                << " samples for session " << result.session_label.toStdString();
 
     auto* sent_series = new QLineSeries();
-    sent_series->setName(tr("Sent"));
+    sent_series->setName(tr("Sent (bytes)"));
     auto* recv_series = new QLineSeries();
-    recv_series->setName(tr("Received"));
+    recv_series->setName(tr("Received (bytes)"));
+    auto* latency_series = new QLineSeries();
+    latency_series->setName(tr("Latency (ms)"));
 
     qreal max_bytes = 0;
+    qreal max_latency = 0;
+    bool has_latency = false;
     for (const auto& s : result.samples) {
         const qreal t = static_cast<qreal>(s.sample_time_ms);
         const qreal bs = static_cast<qreal>(s.bytes_sent);
         const qreal br = static_cast<qreal>(s.bytes_received);
+        const qreal lat = static_cast<qreal>(s.latency_ms);
         sent_series->append(t, bs);
         recv_series->append(t, br);
+        latency_series->append(t, lat);
         max_bytes = std::max({max_bytes, bs, br});
+        if (lat > 0) {
+            max_latency = std::max(max_latency, lat);
+            has_latency = true;
+        }
     }
 
     chart->addSeries(sent_series);
     chart->addSeries(recv_series);
+    if (has_latency) {
+        chart->addSeries(latency_series);
+    } else {
+        delete latency_series;
+        latency_series = nullptr;
+    }
 
     // X axis: date-time
     auto* x_axis = new QDateTimeAxis();
@@ -408,14 +425,24 @@ void SessionHistoryDialog::onSamplesLoaded() {
     chart->addAxis(x_axis, Qt::AlignBottom);
     sent_series->attachAxis(x_axis);
     recv_series->attachAxis(x_axis);
+    if (latency_series) latency_series->attachAxis(x_axis);
 
-    // Y axis: bytes
-    auto* y_axis = new QValueAxis();
-    y_axis->setTitleText(tr("Bytes"));
-    y_axis->setRange(0, max_bytes * 1.05);
-    chart->addAxis(y_axis, Qt::AlignLeft);
-    sent_series->attachAxis(y_axis);
-    recv_series->attachAxis(y_axis);
+    // Left Y axis: bytes
+    auto* y_bytes = new QValueAxis();
+    y_bytes->setTitleText(tr("Bytes"));
+    y_bytes->setRange(0, max_bytes > 0 ? max_bytes * 1.1 : 1);
+    chart->addAxis(y_bytes, Qt::AlignLeft);
+    sent_series->attachAxis(y_bytes);
+    recv_series->attachAxis(y_bytes);
+
+    // Right Y axis: latency (only if we have non-zero data)
+    if (latency_series) {
+        auto* y_latency = new QValueAxis();
+        y_latency->setTitleText(tr("Latency (ms)"));
+        y_latency->setRange(0, max_latency * 1.1);
+        chart->addAxis(y_latency, Qt::AlignRight);
+        latency_series->attachAxis(y_latency);
+    }
 
     chart->setTitle(result.is_active
         ? tr("Session: %1 (in progress — partial data)").arg(result.session_label)
@@ -425,6 +452,9 @@ void SessionHistoryDialog::onSamplesLoaded() {
     // Colour the series
     sent_series->setColor(QColor(30, 144, 255));   // dodger blue
     recv_series->setColor(QColor(50, 205, 50));    // lime green
+    if (latency_series) {
+        latency_series->setColor(QColor(255, 165, 0));  // orange
+    }
 }
 
 void SessionHistoryDialog::onSampleRefreshTimeout() {

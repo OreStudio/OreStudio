@@ -264,6 +264,10 @@ declare
     v_error_msg text;
     v_dataset_params jsonb;
 begin
+    -- Propagate the publisher identity so individual populate functions can
+    -- use ores_iam_current_actor_fn() for modified_by instead of current_user.
+    perform set_config('app.current_actor', p_published_by, true);
+
     -- Validate mode
     if p_mode not in ('upsert', 'insert_only', 'replace_all') then
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;

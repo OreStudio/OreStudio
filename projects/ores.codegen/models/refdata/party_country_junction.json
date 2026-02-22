@@ -1,0 +1,66 @@
+{
+  "junction": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "name": "party_countries",
+    "name_singular": "party_country",
+    "name_title": "Party Country",
+    "name_singular_words": "party country assignment",
+    "brief": "Links a party to a country it can see.",
+    "description": "Junction table controlling which countries are visible to which parties.\nCountry definitions are shared at tenant level; this junction controls\nparty-level visibility.",
+
+    "left": {
+      "column": "party_id",
+      "column_short": "party",
+      "column_title": "Party",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "index_comment": "Index for looking up countries visible to a party",
+      "description": "ID of the party.",
+      "detail": "References ores_refdata_parties_tbl.id (soft FK).",
+      "generator_expr": "ctx.generate_uuid()"
+    },
+
+    "right": {
+      "column": "country_alpha2_code",
+      "column_short": "country",
+      "column_title": "Country",
+      "type": "text",
+      "cpp_type": "std::string",
+      "index_comment": "Index for finding parties that can see a country",
+      "description": "ISO 3166-1 alpha-2 code of the country visible to this party.",
+      "detail": "References ores_refdata_countries_tbl.alpha2_code (soft FK).",
+      "generator_expr": "std::string(\"US\")"
+    },
+
+    "columns": [],
+
+    "sql": {
+      "tablename": "ores_refdata_party_countries_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "party_country",
+      "name_short": "party_countries",
+      "name_singular_words": "party country",
+      "name_words": "party countries",
+      "order_column": "country_alpha2_code"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pc",
+      "table_display": [
+        {"column": "party_id", "header": "Party"},
+        {"column": "country_alpha2_code", "header": "Country"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

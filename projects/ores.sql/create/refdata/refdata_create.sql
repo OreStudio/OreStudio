@@ -89,6 +89,12 @@
 -- Party-counterparty visibility junction
 \ir ./refdata_party_counterparty_create.sql
 
+-- Party-currency visibility junction
+\ir ./refdata_party_currency_create.sql
+
+-- Party-country visibility junction
+\ir ./refdata_party_country_create.sql
+
 -- Party and counterparty identifiers
 \ir ./refdata_party_identifiers_create.sql
 \ir ./refdata_party_identifiers_notify_trigger_create.sql

@@ -378,6 +378,9 @@ enum class message_type : std::uint16_t {
     // IAM subsystem - Tenant provisioning
     provision_tenant_request = 0x2070,
     provision_tenant_response = 0x2071,
+    // IAM subsystem - Session samples (time-series for chart display)
+    get_session_samples_request  = 0x2072,
+    get_session_samples_response = 0x2073,
     // Variability subsystem
     get_feature_flags_request = 0x3000,
     get_feature_flags_response = 0x3001,
@@ -865,6 +868,8 @@ enum class message_type : std::uint16_t {
     case message_type::delete_account_party_response: return "delete_account_party_response";
     case message_type::provision_tenant_request: return "provision_tenant_request";
     case message_type::provision_tenant_response: return "provision_tenant_response";
+    case message_type::get_session_samples_request: return "get_session_samples_request";
+    case message_type::get_session_samples_response: return "get_session_samples_response";
     case message_type::get_feature_flags_request: return "get_feature_flags_request";
     case message_type::get_feature_flags_response: return "get_feature_flags_response";
     case message_type::save_feature_flag_request: return "save_feature_flag_request";

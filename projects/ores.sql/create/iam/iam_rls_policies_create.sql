@@ -135,6 +135,19 @@ for all using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
+-- Session Samples
+-- -----------------------------------------------------------------------------
+alter table ores_iam_session_samples_tbl enable row level security;
+
+create policy ores_iam_session_samples_tenant_isolation_policy on ores_iam_session_samples_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Account Parties (many-to-many)
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_parties_tbl enable row level security;

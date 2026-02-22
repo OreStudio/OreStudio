@@ -41,6 +41,7 @@
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
+#include "ores.iam/messaging/session_samples_protocol.hpp"
 
 namespace ores::qt {
 
@@ -378,6 +379,50 @@ public:
     std::optional<std::vector<iam::domain::session>> getActiveSessions();
 
     /**
+     * @brief Get time-series samples for a session.
+     *
+     * Requires the session to belong to the current user or admin privileges.
+     *
+     * @param sessionId The UUID of the session to query
+     * @return Sample DTOs ordered by sample_time ascending, or nullopt on error
+     */
+    std::optional<std::vector<iam::messaging::session_sample_dto>>
+    getSessionSamples(const boost::uuids::uuid& sessionId);
+
+    // =========================================================================
+    // Connection Status Accessors
+    // =========================================================================
+
+    /**
+     * @brief Get total bytes sent on the current connection.
+     *
+     * @return Bytes sent, or 0 if not connected.
+     */
+    std::uint64_t bytesSent() const;
+
+    /**
+     * @brief Get total bytes received on the current connection.
+     *
+     * @return Bytes received, or 0 if not connected.
+     */
+    std::uint64_t bytesReceived() const;
+
+    /**
+     * @brief Get the last measured round-trip latency.
+     *
+     * @return RTT in milliseconds, or 0 if no heartbeat has completed.
+     */
+    std::uint64_t lastRttMs() const;
+
+    /**
+     * @brief Get the time point when the connection was lost.
+     *
+     * @return Time point if currently disconnected (after having been connected),
+     *         or nullopt if never disconnected or currently connected.
+     */
+    std::optional<std::chrono::steady_clock::time_point> disconnectedSince() const;
+
+    /**
      * @brief Get the current client (internal use only).
      */
     std::shared_ptr<comms::net::client> getClient() const { return client_; }
@@ -603,6 +648,9 @@ private:
     // Whether streaming is enabled (can be set before connection)
     bool streaming_enabled_{false};
 
+    // Time point when the connection was lost (set on disconnect, cleared on reconnect)
+    std::optional<std::chrono::steady_clock::time_point> disconnected_since_;
+
     // Flag to distinguish user-initiated disconnect from connection loss
     // Set to true when user clicks disconnect, checked before emitting reconnecting signal
     std::atomic<bool> user_disconnecting_{false};
@@ -610,6 +658,12 @@ private:
     // Flag to prevent concurrent send_request_sync calls during disconnect
     // Set while reconnected callback is performing re-authentication
     std::atomic<bool> reauthenticating_{false};
+
+    // Cumulative connection bytes at login time. Subtracted from raw byte
+    // counters so bytesSent()/bytesReceived() report only post-login traffic,
+    // even when the TCP connection is reused across multiple login sessions.
+    std::atomic<std::uint64_t> bytes_sent_at_login_{0};
+    std::atomic<std::uint64_t> bytes_received_at_login_{0};
 
     // Stored credentials for re-authentication after reconnection
     // Note: storing password in memory is acceptable for desktop apps since

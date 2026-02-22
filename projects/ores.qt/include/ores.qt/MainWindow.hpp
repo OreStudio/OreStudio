@@ -166,6 +166,14 @@ protected:
      */
     void closeEvent(QCloseEvent* event) override;
 
+    /**
+     * @brief Event filter to intercept tooltip events on the connection icon.
+     *
+     * Dynamically builds the tooltip text just before Qt displays it, so the
+     * bytes/RTT/status values are always current.
+     */
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private slots:
     /**
      * @brief Handles login action from menu/toolbar.
@@ -348,6 +356,15 @@ private:
      * icon.
      */
     void updateMenuState();
+
+    /**
+     * @brief Builds a tooltip string for the connection status icon.
+     *
+     * Returns an empty string if never connected, a connected summary when
+     * online (server, bytes, latency), or a "Disconnected since" message
+     * when the connection has been lost.
+     */
+    QString buildConnectionTooltip() const;
 
     /**
      * @brief Creates all entity controllers after successful login.

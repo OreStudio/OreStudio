@@ -687,6 +687,26 @@ connection_state client::get_state() const {
     return state_.load(std::memory_order_acquire);
 }
 
+std::uint64_t client::bytes_sent() const {
+    std::lock_guard guard{state_mutex_};
+    if (conn_) {
+        return conn_->bytes_sent();
+    }
+    return 0;
+}
+
+std::uint64_t client::bytes_received() const {
+    std::lock_guard guard{state_mutex_};
+    if (conn_) {
+        return conn_->bytes_received();
+    }
+    return 0;
+}
+
+std::uint64_t client::last_rtt_ms() const {
+    return last_rtt_ms_.load(std::memory_order_relaxed);
+}
+
 void client::set_disconnect_callback(disconnect_callback_t callback) {
     std::lock_guard guard{state_mutex_};
     disconnect_callback_ = std::move(callback);
@@ -806,8 +826,12 @@ boost::asio::awaitable<void> client::run_heartbeat() {
             // Register pending request before sending
             auto channel = pending_requests_->register_request(corr_id);
 
-            // Create and send ping frame via write strand
-            auto ping_frame = messaging::create_ping_frame(seq, corr_id);
+            // Build ping frame carrying the previous RTT measurement
+            messaging::ping ping_msg{.latency_ms = last_rtt_ms_.load(std::memory_order_relaxed)};
+            messaging::frame ping_frame{messaging::message_type::ping, seq, corr_id,
+                messaging::ping::serialize(ping_msg)};
+
+            const auto ping_time = std::chrono::steady_clock::now();
             try {
                 co_await write_frame(ping_frame);
             } catch (...) {
@@ -835,7 +859,14 @@ boost::asio::awaitable<void> client::run_heartbeat() {
                 break;
             }
 
-            BOOST_LOG_SEV(lg(), trace) << "Heartbeat pong received";
+            // Update RTT measurement
+            const auto rtt = std::chrono::steady_clock::now() - ping_time;
+            last_rtt_ms_.store(
+                static_cast<std::uint64_t>(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(rtt).count()),
+                std::memory_order_relaxed);
+
+            BOOST_LOG_SEV(lg(), trace) << "Heartbeat pong received (rtt=" << last_rtt_ms_.load() << "ms)";
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() == boost::asio::error::operation_aborted) {

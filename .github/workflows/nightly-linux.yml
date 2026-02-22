@@ -115,6 +115,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
+          modules: 'qtcharts'
           cache: true
 
       - name: Generate DB Passwords

@@ -312,7 +312,7 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
     sessionWindow->setWidget(sessionDialog);
     sessionWindow->setWindowTitle(QString("Session History: %1").arg(username));
     sessionWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(sessionWindow);

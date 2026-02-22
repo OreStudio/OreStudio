@@ -138,6 +138,62 @@ public:
         std::uint64_t bytes_sent, std::uint64_t bytes_received);
 
     /**
+     * @brief Initialize the sample delta baseline after login.
+     *
+     * Called once after the login response is written so that subsequent
+     * sample deltas only reflect post-login traffic. Without this, the
+     * first delta would include bytes accumulated by earlier sessions on
+     * the same long-lived TCP connection.
+     *
+     * @param remote_address The client's remote address
+     * @param bytes_sent Cumulative bytes sent at this moment
+     * @param bytes_received Cumulative bytes received at this moment
+     */
+    void init_sample_baseline(const std::string& remote_address,
+        std::uint64_t bytes_sent, std::uint64_t bytes_received);
+
+    /**
+     * @brief Record a time-series sample for an active session.
+     *
+     * Computes the delta bytes since the previous sample and appends it to
+     * the session's accumulator. Every @c sample_flush_interval samples the
+     * accumulator is moved to flush_pending for the handler to persist.
+     *
+     * @param remote_address The client's remote address
+     * @param bytes_sent Cumulative bytes sent at this moment
+     * @param bytes_received Cumulative bytes received at this moment
+     * @param latency_ms RTT reported by the client in this ping (ms), 0 if unknown
+     */
+    void record_sample(const std::string& remote_address,
+        std::uint64_t bytes_sent, std::uint64_t bytes_received,
+        std::uint64_t latency_ms = 0);
+
+    /**
+     * @brief A batch of samples ready to be flushed to the database.
+     */
+    struct pending_samples_batch {
+        boost::uuids::uuid session_id;
+        utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+        std::vector<session_sample> samples;
+    };
+
+    /**
+     * @brief Take any samples ready to be flushed for a session.
+     *
+     * Returns and clears flush_pending for the given session. Returns nullopt
+     * if the session is not found or has nothing pending.
+     *
+     * @param remote_address The client's remote address
+     * @return batch with session_id, tenant_id and samples if pending, nullopt otherwise
+     */
+    [[nodiscard]] std::optional<pending_samples_batch>
+    take_pending_samples(const std::string& remote_address);
+
+    /// Number of samples accumulated before they are moved to flush_pending.
+    /// At the default 30s heartbeat interval this gives a ~60s flush cadence.
+    static constexpr std::size_t sample_flush_interval = 2;
+
+    /**
      * @brief Remove session for a remote address.
      *
      * @param remote_address The client's remote address

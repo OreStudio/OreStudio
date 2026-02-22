@@ -1,6 +1,6 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,27 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam/repository/session_entity.hpp"
 
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-
-namespace ores::iam::repository {
-
-std::ostream& operator<<(std::ostream& s, const session_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::ostream& operator<<(std::ostream& s, const session_statistics_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::ostream& operator<<(std::ostream& s, const session_sample_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
+drop index if exists ores_iam_session_samples_session_idx;
+drop table if exists ores_iam_session_samples_tbl;

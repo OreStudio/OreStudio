@@ -294,7 +294,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 38.0 adds city_name field to business_centre wire format.
 // Serialized as a string after description in serialize_business_centre.
 // Breaking change as existing business centre payloads are incompatible.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 38;
+//
+// Version 39.0 adds session bytes/RTT time-series sampling:
+// - New message types 0x2072/0x2073 (get_session_samples_request/response)
+// - latency_ms field added to ping wire format (breaking change)
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 39;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

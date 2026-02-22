@@ -42,11 +42,12 @@ TEMPORAL_005 ores_iam_permissions_tbl
 TENANT_002 ores_dq_*_artefact_tbl
 
 # =============================================================================
-# Audit tables - tenant_id not in PK by design
+# Audit/publication tables - tenant_id not in PK by design
 # These are append-only logs with UUID primary keys.
 # tenant_id is present for filtering but not for uniqueness.
 # =============================================================================
 TENANT_002 ores_dq_dataset_publications_tbl
+TENANT_002 ores_dq_bundle_publications_tbl
 
 # =============================================================================
 # Tenants table - tenant_id is always system_tenant_id by design
@@ -64,3 +65,46 @@ TENANT_003 ores_iam_tenants_tbl
 # =============================================================================
 TENANT_002 ores_assets_tags_tbl
 TENANT_003 ores_assets_tags_tbl
+
+# =============================================================================
+# Image tags junction table - temporal, but tag UUIDs are globally unique.
+# tenant_id is present for RLS and filtering; the PK covers the essential
+# uniqueness. EXCLUDE constraint tracks the tag/image pair over time.
+# =============================================================================
+TENANT_002 ores_assets_image_tags_tbl
+TENANT_003 ores_assets_image_tags_tbl
+
+# =============================================================================
+# Geolocation reference table - tenant_id used for RLS but not a primary key
+# column. The table has no conventional PK (it uses a GiST range index); the
+# tenant_id + ip_range combination is sufficient for lookup queries.
+# =============================================================================
+TENANT_002 ores_geo_ip2country_tbl
+
+# =============================================================================
+# IAM temporal junction tables - tenant_id present for RLS but not in PK.
+# The FK-linked UUIDs (account_id, role_id, permission_id) are globally unique,
+# so tenant isolation is enforced via RLS rather than PK membership. The EXCLUDE
+# constraint covers the entity pair + valid period; tenant_id is not needed
+# there because the entity IDs already imply a single tenant.
+# =============================================================================
+TENANT_002 ores_iam_account_roles_tbl
+TENANT_003 ores_iam_account_roles_tbl
+TENANT_002 ores_iam_role_permissions_tbl
+TENANT_003 ores_iam_role_permissions_tbl
+
+# =============================================================================
+# Login info table - single row per account_id; account_id is globally unique
+# so tenant_id is not needed in the primary key.
+# =============================================================================
+TENANT_002 ores_iam_login_info_tbl
+
+# =============================================================================
+# TimescaleDB hypertable tables - tenant_id is present for RLS but excluded
+# from the primary key by design. Hypertable PKs must include the partition
+# column (a timestamp) and typically a UUID; adding tenant_id would add
+# unnecessary width to the partition index without benefit.
+# =============================================================================
+TENANT_002 ores_iam_sessions_tbl
+TENANT_002 ores_iam_session_samples_tbl
+TENANT_002 ores_telemetry_logs_tbl

@@ -84,9 +84,76 @@ void auth_session_service::update_session_bytes(const std::string& remote_addres
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end() && it->second) {
-        it->second->bytes_sent = bytes_sent;
-        it->second->bytes_received = bytes_received;
+        auto& sess = *it->second;
+        sess.bytes_sent = bytes_sent >= sess.bytes_at_login_sent
+            ? bytes_sent - sess.bytes_at_login_sent : 0;
+        sess.bytes_received = bytes_received >= sess.bytes_at_login_received
+            ? bytes_received - sess.bytes_at_login_received : 0;
     }
+}
+
+void auth_session_service::init_sample_baseline(const std::string& remote_address,
+    std::uint64_t bytes_sent, std::uint64_t bytes_received) {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it != sessions_.end() && it->second) {
+        it->second->bytes_at_login_sent = bytes_sent;
+        it->second->bytes_at_login_received = bytes_received;
+        it->second->last_sample_bytes_sent = bytes_sent;
+        it->second->last_sample_bytes_received = bytes_received;
+        BOOST_LOG_SEV(lg(), debug) << "Byte baseline initialised for " << remote_address
+                                   << " bytes_sent=" << bytes_sent
+                                   << " bytes_received=" << bytes_received;
+    }
+}
+
+void auth_session_service::record_sample(const std::string& remote_address,
+    std::uint64_t bytes_sent, std::uint64_t bytes_received,
+    std::uint64_t latency_ms) {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it == sessions_.end() || !it->second) return;
+
+    auto& sess = *it->second;
+
+    // Compute per-interval deltas (not cumulative)
+    const auto delta_sent = bytes_sent - sess.last_sample_bytes_sent;
+    const auto delta_received = bytes_received - sess.last_sample_bytes_received;
+    sess.last_sample_bytes_sent = bytes_sent;
+    sess.last_sample_bytes_received = bytes_received;
+
+    sess.samples.push_back(session_sample{
+        .timestamp = std::chrono::system_clock::now(),
+        .bytes_sent = delta_sent,
+        .bytes_received = delta_received,
+        .latency_ms = latency_ms
+    });
+
+    // Move accumulated samples to flush_pending when threshold is reached
+    if (sess.samples.size() % sample_flush_interval == 0) {
+        if (sess.flush_pending.empty()) {
+            sess.flush_pending = std::move(sess.samples);
+        } else {
+            sess.flush_pending.insert(sess.flush_pending.end(),
+                std::make_move_iterator(sess.samples.begin()),
+                std::make_move_iterator(sess.samples.end()));
+        }
+        sess.samples.clear();
+    }
+}
+
+std::optional<auth_session_service::pending_samples_batch>
+auth_session_service::take_pending_samples(const std::string& remote_address) {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it == sessions_.end() || !it->second || it->second->flush_pending.empty())
+        return std::nullopt;
+
+    return pending_samples_batch{
+        .session_id = it->second->id,
+        .tenant_id = it->second->tenant_id,
+        .samples = std::exchange(it->second->flush_pending, {})
+    };
 }
 
 std::shared_ptr<session_data>

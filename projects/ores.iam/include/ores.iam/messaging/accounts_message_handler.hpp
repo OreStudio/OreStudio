@@ -486,6 +486,16 @@ private:
     handle_get_active_sessions_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    /**
+     * @brief Handle get_session_samples_request message.
+     *
+     * Requires authentication. User must own the session or have admin
+     * privileges. Returns time-series byte/latency samples for a session.
+     */
+    handler_result
+    handle_get_session_samples_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // =========================================================================
     // Tenant Management Handlers
     // =========================================================================

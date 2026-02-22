@@ -89,6 +89,19 @@ void auth_session_service::update_session_bytes(const std::string& remote_addres
     }
 }
 
+void auth_session_service::init_sample_baseline(const std::string& remote_address,
+    std::uint64_t bytes_sent, std::uint64_t bytes_received) {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it != sessions_.end() && it->second) {
+        it->second->last_sample_bytes_sent = bytes_sent;
+        it->second->last_sample_bytes_received = bytes_received;
+        BOOST_LOG_SEV(lg(), debug) << "Sample baseline initialised for " << remote_address
+                                   << " bytes_sent=" << bytes_sent
+                                   << " bytes_received=" << bytes_received;
+    }
+}
+
 void auth_session_service::record_sample(const std::string& remote_address,
     std::uint64_t bytes_sent, std::uint64_t bytes_received,
     std::uint64_t latency_ms) {

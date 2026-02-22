@@ -138,6 +138,21 @@ public:
         std::uint64_t bytes_sent, std::uint64_t bytes_received);
 
     /**
+     * @brief Initialize the sample delta baseline after login.
+     *
+     * Called once after the login response is written so that subsequent
+     * sample deltas only reflect post-login traffic. Without this, the
+     * first delta would include bytes accumulated by earlier sessions on
+     * the same long-lived TCP connection.
+     *
+     * @param remote_address The client's remote address
+     * @param bytes_sent Cumulative bytes sent at this moment
+     * @param bytes_received Cumulative bytes received at this moment
+     */
+    void init_sample_baseline(const std::string& remote_address,
+        std::uint64_t bytes_sent, std::uint64_t bytes_received);
+
+    /**
      * @brief Record a time-series sample for an active session.
      *
      * Computes the delta bytes since the previous sample and appends it to

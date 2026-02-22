@@ -325,6 +325,16 @@ boost::asio::awaitable<void> server_session::process_messages() {
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
                                       << request_frame.header().type;
 
+            // After login succeeds, set the sample baseline to current connection
+            // bytes so that the first heartbeat delta only includes post-login traffic.
+            // Without this, the delta would include bytes from prior sessions that
+            // ran on the same long-lived TCP connection.
+            if (request_frame.header().type == messaging::message_type::login_request
+                    && sessions_ && sessions_->is_authenticated(remote_addr)) {
+                sessions_->init_sample_baseline(remote_addr,
+                    conn_->bytes_sent(), conn_->bytes_received());
+            }
+
             // Close connection after logout
             if (request_frame.header().type == messaging::message_type::logout_request) {
                 BOOST_LOG_SEV(lg(), info) << "Logout completed, closing connection";

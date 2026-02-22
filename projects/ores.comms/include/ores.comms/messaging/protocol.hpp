@@ -298,8 +298,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 39.0 adds session bytes/RTT time-series sampling:
 // - New message types 0x2072/0x2073 (get_session_samples_request/response)
 // - latency_ms field added to ping wire format (breaking change)
+//
+// Version 39.1 adds rounding type CRUD and history:
+// - New message types 0x1091-0x1098 (get/save/delete/history for rounding_type)
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 39;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

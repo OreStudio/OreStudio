@@ -50,7 +50,8 @@ using FutureResult = std::pair<bool, std::string>;
 AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     : DetailDialogBase(parent), ui_(new Ui::AccountDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false),
-      historicalVersion_(0), clientManager_(nullptr), rolesWidget_(nullptr) {
+      historicalVersion_(0), clientManager_(nullptr),
+      rolesWidget_(nullptr), partiesWidget_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -130,6 +131,25 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     connect(rolesWidget_, &AccountRolesWidget::errorMessage,
             this, &AccountDetailDialog::errorMessage);
 
+    // Create parties widget and add it to the Parties tab layout
+    partiesWidget_ = new AccountPartiesWidget(this);
+    auto* partiesTabLayout =
+        qobject_cast<QVBoxLayout*>(ui_->partiesTab->layout());
+    if (partiesTabLayout) {
+        while (partiesTabLayout->count() > 0) {
+            auto* item = partiesTabLayout->takeAt(0);
+            if (item->widget()) item->widget()->deleteLater();
+            delete item;
+        }
+        partiesTabLayout->addWidget(partiesWidget_);
+    }
+
+    // Connect parties widget signals
+    connect(partiesWidget_, &AccountPartiesWidget::statusMessage,
+            this, &AccountDetailDialog::statusMessage);
+    connect(partiesWidget_, &AccountPartiesWidget::errorMessage,
+            this, &AccountDetailDialog::errorMessage);
+
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
 }
@@ -138,6 +158,9 @@ void AccountDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     if (rolesWidget_) {
         rolesWidget_->setClientManager(clientManager);
+    }
+    if (partiesWidget_) {
+        partiesWidget_->setClientManager(clientManager);
     }
 }
 
@@ -180,6 +203,12 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
         rolesWidget_->loadRoles();
     }
 
+    // Set up parties widget for existing accounts
+    if (partiesWidget_ && !isAddMode_) {
+        partiesWidget_->setAccountId(account.id);
+        partiesWidget_->loadParties();
+    }
+
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
@@ -196,9 +225,11 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     const int securityIdx = tw->indexOf(ui_->securityTab);
     const int loginStatusIdx = tw->indexOf(ui_->loginStatusTab);
     const int rolesIdx = tw->indexOf(ui_->rolesTab);
+    const int partiesIdx = tw->indexOf(ui_->partiesTab);
     if (securityIdx >= 0) tw->setTabEnabled(securityIdx, createMode);
     if (loginStatusIdx >= 0) tw->setTabEnabled(loginStatusIdx, !createMode);
     if (rolesIdx >= 0) tw->setTabEnabled(rolesIdx, !createMode);
+    if (partiesIdx >= 0) tw->setTabEnabled(partiesIdx, !createMode);
     setProvenanceEnabled(!createMode);
 }
 
@@ -658,6 +689,12 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
         rolesWidget_->setReadOnly(readOnly);
         // Hide roles widget (in rolesTab) for historical versions
         rolesWidget_->setVisible(versionNumber == 0);
+    }
+
+    // Set parties widget to read-only or hide it for historical versions
+    if (partiesWidget_) {
+        partiesWidget_->setReadOnly(readOnly);
+        partiesWidget_->setVisible(versionNumber == 0);
     }
 
     updateSaveResetButtonState();

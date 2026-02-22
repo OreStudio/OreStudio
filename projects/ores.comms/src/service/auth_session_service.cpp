@@ -156,6 +156,26 @@ auth_session_service::take_pending_samples(const std::string& remote_address) {
     };
 }
 
+void auth_session_service::update_session_party(
+    const std::string& remote_address,
+    const boost::uuids::uuid& party_id,
+    const std::vector<boost::uuids::uuid>& visible_party_ids) {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it != sessions_.end() && it->second) {
+        it->second->party_id = party_id;
+        it->second->visible_party_ids = visible_party_ids;
+        BOOST_LOG_SEV(lg(), debug) << "Session party updated for " << remote_address
+                                   << " party_id=" << party_id
+                                   << ", visible_parties="
+                                   << visible_party_ids.size();
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "update_session_party: session not found for "
+                                   << remote_address;
+    }
+}
+
+
 std::shared_ptr<session_data>
 auth_session_service::remove_session(const std::string& remote_address) {
     std::lock_guard lock(session_mutex_);

@@ -81,6 +81,14 @@ struct login_request final {
 std::ostream& operator<<(std::ostream& s, const login_request& v);
 
 /**
+ * @brief Summary of a party associated with an account.
+ */
+struct party_summary final {
+    boost::uuids::uuid id;
+    std::string name;
+};
+
+/**
  * @brief Response containing authentication result and account information.
  *
  * Note: Administrative privileges are now determined via RBAC.
@@ -96,6 +104,8 @@ struct login_response final {
     std::string email;
     bool password_reset_required = false;
     bool tenant_bootstrap_mode = false;  ///< True if tenant is in bootstrap mode (needs initial setup)
+    boost::uuids::uuid selected_party_id;          ///< nil unless auto-selected
+    std::vector<party_summary> available_parties;  ///< empty if 0 or 1 party
 
     /**
      * @brief Serialize response to bytes.
@@ -114,6 +124,11 @@ struct login_response final {
      * - N bytes: email (UTF-8)
      * - 1 byte: password_reset_required (boolean)
      * - 1 byte: tenant_bootstrap_mode (boolean)
+     * - 16 bytes: selected_party_id (UUID)
+     * - 4 bytes:  available_parties count
+     * - For each party:
+     *   - 16 bytes: id (UUID)
+     *   -  2 bytes: name length + N bytes: name (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 
@@ -201,6 +216,53 @@ struct logout_response final {
 
 std::ostream& operator<<(std::ostream& s, const logout_response& v);
 
+/**
+ * @brief Request to bind the session to a specific party.
+ *
+ * Sent by the client after receiving a login_response with multiple
+ * available_parties. The server validates the party_id against the
+ * account's party assignments before updating the session.
+ */
+struct select_party_request final {
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: party_id (UUID)
+     */
+    std::vector<std::byte> serialize() const;
+
+    static std::expected<select_party_request, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const select_party_request& v);
+
+/**
+ * @brief Response indicating result of party selection.
+ */
+struct select_party_response final {
+    bool success = false;
+    std::string error_message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    static std::expected<select_party_response, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const select_party_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -236,6 +298,17 @@ struct message_traits<iam::messaging::logout_request> {
     using response_type = iam::messaging::logout_response;
     static constexpr message_type request_message_type =
         message_type::logout_request;
+};
+
+/**
+ * @brief Message traits specialization for select_party_request.
+ */
+template<>
+struct message_traits<iam::messaging::select_party_request> {
+    using request_type = iam::messaging::select_party_request;
+    using response_type = iam::messaging::select_party_response;
+    static constexpr message_type request_message_type =
+        message_type::select_party_request;
 };
 
 }

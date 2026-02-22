@@ -72,6 +72,12 @@ std::vector<std::byte> login_response::serialize() const {
     writer::write_string(buffer, email);
     writer::write_bool(buffer, password_reset_required);
     writer::write_bool(buffer, tenant_bootstrap_mode);
+    writer::write_uuid(buffer, selected_party_id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(available_parties.size()));
+    for (const auto& p : available_parties) {
+        writer::write_uuid(buffer, p.id);
+        writer::write_string(buffer, p.name);
+    }
     return buffer;
 }
 
@@ -116,6 +122,30 @@ login_response::deserialize(std::span<const std::byte> data) {
     if (!tenant_bootstrap_mode_result)
         return std::unexpected(tenant_bootstrap_mode_result.error());
     response.tenant_bootstrap_mode = *tenant_bootstrap_mode_result;
+
+    auto selected_party_id_result = reader::read_uuid(data);
+    if (!selected_party_id_result)
+        return std::unexpected(selected_party_id_result.error());
+    response.selected_party_id = *selected_party_id_result;
+
+    auto party_count_result = reader::read_count(data);
+    if (!party_count_result)
+        return std::unexpected(party_count_result.error());
+    const auto party_count = *party_count_result;
+
+    response.available_parties.reserve(party_count);
+    for (std::uint32_t i = 0; i < party_count; ++i) {
+        party_summary ps;
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        ps.id = *id_result;
+
+        auto name_result = reader::read_string(data);
+        if (!name_result) return std::unexpected(name_result.error());
+        ps.name = *name_result;
+
+        response.available_parties.push_back(std::move(ps));
+    }
 
     return response;
 }
@@ -273,6 +303,55 @@ logout_response::deserialize(std::span<const std::byte> data) {
 }
 
 std::ostream& operator<<(std::ostream& s, const logout_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> select_party_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, party_id);
+    return buffer;
+}
+
+std::expected<select_party_request, ores::utility::serialization::error_code>
+select_party_request::deserialize(std::span<const std::byte> data) {
+    select_party_request request;
+
+    auto party_id_result = reader::read_uuid(data);
+    if (!party_id_result) return std::unexpected(party_id_result.error());
+    request.party_id = *party_id_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const select_party_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> select_party_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
+    return buffer;
+}
+
+std::expected<select_party_response, ores::utility::serialization::error_code>
+select_party_response::deserialize(std::span<const std::byte> data) {
+    select_party_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = reader::read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const select_party_response& v) {
     rfl::json::write(v, s);
     return s;
 }

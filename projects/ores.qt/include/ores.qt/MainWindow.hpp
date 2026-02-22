@@ -605,6 +605,9 @@ private:
     /** @brief Username of currently logged-in user */
     std::string username_;
 
+    /** @brief Name of currently selected party (empty if no party) */
+    QString party_name_;
+
     /** @brief System tray icon for notifications */
     QSystemTrayIcon* systemTrayIcon_;
 

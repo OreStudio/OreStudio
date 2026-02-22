@@ -252,6 +252,28 @@ Highlights:
 
 At present we have very long dialogs for details. Make all of them tabbed.
 
+#+begin_quote
+This pull request introduces significant UI enhancements and refactoring across
+various detail dialogs and user-specific windows. The primary goal is to
+standardize the layout of detail dialogs by adopting a tabbed interface,
+centralizing provenance information into a dedicated 'Provenance' tab, and
+improving the overall user experience through better organization and visual
+cues. It also modernizes user account and session management by converting them
+to MDI subwindows, aligning with a more integrated application feel.
+
+Highlights:
+
+Country Detail Dialog: Moved the flag display from a separate tab into the General tab as a group box, resulting in a dialog with two tabs: General and Provenance.
+Currency Detail Dialog: Relocated the icon button from a floating position between the toolbar and tabs into the General tab within an Icon group box.
+Main Window Menus: Added a top-level '&Trading' menu between Data and System, moving the 'Trades' action into it and adding 'Trades' to the toolbar.
+Data Governance Submenu: Introduced a '&Dimensions' submenu within 'Data Governance', containing 'Origin', 'Nature', and 'Treatment Dimension' actions.
+Change Commentary Field Removal: Removed the editable 'Change Commentary' field from the General tab in eight specific detail dialogs (Methodology, TreatmentDimension, DataDomain, CodingSchemeAuthorityType, CodingScheme, SubjectArea, Catalog, Dataset), while retaining a read-only version in the Provenance tab.
+Methodology Detail Dialog: Enlarged the 'Implementation' text area by increasing its minimum height from 100 to 300.
+My Sessions Window: Converted 'My Sessions' from a floating QDialog to an MDI subwindow, allowing re-triggering to bring it to the front.
+My Account Window: Converted 'My Account' from a modal QDialog to a QWidget MDI subwindow, featuring a toolbar with a 'Save Email' action and three tabs: General (account info), Security (change password), and Sessions (session count + 'View History' button). The 'View History' button now emits a signal to open 'My Sessions' in the main window.
+Entity Detail Dialog: Implemented a 32x24 country flag label next to the 'Business Centre' combo box, which updates dynamically upon selection changes via the image cache.
+#+end_quote
+
 *** STARTED Analyse caching at dialog level                            :code:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more
@@ -381,6 +403,142 @@ Core needs to have a container for all of the data stored within a context.
 Actually, according to Data Priented Principles, we may not need it. This may be
 a UI concept but not a code concept.
 
+*** STARTED Add portfolio book tree widget                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-21 Sat 13:01]--[2026-02-21 Sat 13:24] =>  0:23
+    :END:
+
+Add a combined =PortfolioBookTreeMdiWindow= that replaces the separate
+flat-list views for portfolios and books with a unified hierarchical tree
+scoped to the active session party. Clicking a node in the tree filters the
+trade table on the right to show only trades within that branch.
+
+Depends on: "Extend login flow with party selection" (party must be bound to
+session before the tree can scope correctly).
+
+**** Acceptance Criteria
+
+- A single MDI window contains a horizontal splitter: tree on the left, trade
+  table on the right.
+- The tree renders the full portfolio hierarchy for the session party, with
+  books as leaves under their parent portfolios.
+- Node icons are visually distinct:
+  - Real portfolio: =briefcase_20_filled=
+  - Virtual portfolio (=is_virtual=1=): =briefcase_20_regular=
+  - Trading book (=is_trading_book=1=): =book_open_20_filled=
+  - Banking/Risk book (=is_trading_book=0=): =book_open_20_regular=
+- Selecting any node filters the trade table to trades within that subtree.
+- A breadcrumb label above the trade table shows the selected path.
+- The reload button acquires a stale/pulsing indicator when a portfolio, book,
+  or trade change notification arrives.
+- Pagination widget present on the trade table (server-side).
+
+**** Wireframes
+
+***** Main layout
+
+#+begin_example
+┌─ Portfolio Book Tree ──────────────────────────────────────────────────────────┐
+│ [↻ Reload] │ [+ Portfolio] [+ Book] [✎ Edit] [🗑 Delete] [⏱ History]         │
+├────────────────────────────────────────────────────────────────────────────────┤
+│ Party: (bound from session — read-only)                                        │
+├──────────────────────────────┬─────────────────────────────────────────────────┤
+│                              │  Trades › Rates › IR › Rates_EUR_01            │
+│ ▼ ▣ Rates                    │ ┌───────────┬──────────┬──────┬──────┬─────────┐│
+│   ▼ ▣ Rates IR               │ │ Ext ID    │ Type     │ Cpty │ Date │ Matures ││
+│     ├─ ◉ Rates_EUR_01 ●     │ ├───────────┼──────────┼──────┼──────┼─────────┤│
+│     └─ ◉ Rates_USD_01        │ │ UTI-0001  │ IRS      │ DBAG │01-25 │ 01-30   ││
+│   ▼ ▣ Rates FX               │ │ UTI-0002  │ FxFwd    │ HSBC │03-25 │ 09-25   ││
+│     └─ ○ FX_EUR_Vol_01       │ │ UTI-0003  │ CapFloor │ DBAG │11-24 │ 11-27   ││
+│                              │ └───────────┴──────────┴──────┴──────┴─────────┘│
+│ ▼ □ Regulatory [virtual]     │  [←] Page 1 of 3 [→]  Load All (12)            │
+│   ▼ □ Rates Reg [virtual]    │                                                  │
+│     ├─ ◉ Rates_EUR_01        │                                                  │
+│     └─ ◉ Rates_USD_01        │                                                  │
+│                              │                                                  │
+│ ▼ ▣ Equities                 │                                                  │
+│   └─ ○ Equities_EU_01        │                                                  │
+├──────────────────────────────┴─────────────────────────────────────────────────┤
+│ 12 trades • Rates_EUR_01 (Trading Book)                                        │
+└────────────────────────────────────────────────────────────────────────────────┘
+#+end_example
+
+***** Icon legend
+
+#+begin_example
+  ▣  briefcase_20_filled     Real portfolio (non-virtual)
+  □  briefcase_20_regular    Virtual portfolio (is_virtual = 1)
+  ◉  book_open_20_filled     Trading book (is_trading_book = 1)
+  ○  book_open_20_regular    Banking/Risk book (is_trading_book = 0)
+  ●  stale indicator on selected node (pending reload)
+#+end_example
+
+***** Breadcrumb scope behaviour
+
+#+begin_example
+Click: ▣ Rates              → Trades › Rates           (all trades in branch)
+Click: ▣ Rates IR           → Trades › Rates › IR      (subtree trades)
+Click: ◉ Rates_EUR_01       → Trades › Rates › IR › Rates_EUR_01  (book trades)
+Click: □ Regulatory         → Trades › Regulatory      (same trades, virtual view)
+#+end_example
+
+Virtual portfolios surface the same underlying trades as their real counterparts;
+they are reporting overlays, not separate trade containers.
+
+***** Proposed Qt component structure
+
+#+begin_example
+PortfolioBookTreeMdiWindow
+├── QToolBar
+├── QSplitter (horizontal)
+│   ├── QTreeView  ← PortfolioBookTreeModel (QAbstractItemModel)
+│   │                 items: PortfolioTreeNode / BookTreeNode
+│   └── QWidget (right panel)
+│       ├── Breadcrumb QLabel
+│       ├── QTableView ← ClientFilteredTradeModel
+│       └── PaginationWidget
+└── Status QLabel
+#+end_example
+
+*** Polish business centre UI and data quality                         :code:
+
+Several data quality and UI issues with business centres.
+
+- WRLD should have UN flag and source = Internal.
+- Hard-code NY* centres (NYFD, NYSE, USNY) during population to US country.
+- Add a city name field parsed from descriptions (regex for parenthesised text).
+- Do not display description column by default.
+- Country should be a combo box.
+- Fix missing country flags.
+- Do not display coding scheme column by default.
+- Move country column next to code.
+- Reduce recorded_at column width.
+
+#+begin_quote
+This pull request focuses on enhancing the data quality and user interface for
+business centres. It introduces a new 'city_name' field, derived from existing
+descriptions, and integrates it across the database, C++ domain models, and the
+Qt UI. Additionally, it includes specific data fixes for certain business centre
+codes and refines the display of business centre information in the UI.
+
+Highlights:
+
+- SQL Data Enhancements: Added a 'city_name' column to the business centres
+  reference data table and implemented logic to automatically derive city names
+  from existing descriptions during data population.
+- Data Quality Fixes: Hard-coded the country for specific business centre codes
+  (NYFD, NYSE) to 'US' and ensured the correct US flag is displayed in the FpML
+  artefact. The 'WRLD' system business centre was also updated with
+  'source=Internal' and assigned a UN flag.
+- C++ Model Updates: Incorporated the new 'city_name' field into the
+  'business_centre' domain struct, its entity representation, mapper, and the
+  binary messaging protocol, leading to a major protocol version bump to v38.0.
+- Qt UI Improvements: Reordered columns in the business centre list view to
+  prioritize 'Code', 'Country', and 'City', added a dedicated 'City' column, and
+  set 'Description' and 'Coding Scheme' to be hidden by default. The 'Recorded
+  At' column width was fixed, and the country selection combo box in the detail
+  dialog was made non-editable, while also displaying the derived city name.
+#+end_quote
 *** Add high-watermark support                                         :code:
 
 Whenever we request entities, we should also return the watermark for that
@@ -509,20 +667,6 @@ reclassify these log messages to avoid confusion.
 The login dialog should have a button or link to create a new server connection,
 so users don't have to navigate to the connections dialog separately.
 
-*** Polish business centre UI and data quality                         :code:
-
-Several data quality and UI issues with business centres.
-
-- WRLD should have UN flag and source = Internal.
-- Hard-code NY* centres (NYFD, NYSE, USNY) to US country.
-- Add a city name field parsed from descriptions (regex for parenthesised text).
-- Do not display description column by default.
-- Country should be a combo box.
-- Fix missing country flags.
-- Do not display coding scheme column by default.
-- Move country column next to code.
-- Reduce recorded_at column width.
-
 *** Add validation and ISO compliance flags for reference data         :code:
 
 Several validation gaps and missing metadata in reference data entities.
@@ -553,6 +697,14 @@ Session tracking and lifecycle management needs improvement.
 - Send and receive byte counters are empty in sessions display.
 - Server should periodically housekeep sessions: mark disconnected sessions as
   orphan, mark sessions as finished when connection drops.
+
+*** Clicking on connection in status bar should provide info           :code:
+
+Or maybe as a tooltip? whatever is idiomatic. Things to show:
+
+- when never connected: nothing.
+- when connected: server, bytes sent, received, status of connection.
+- when disconnected: retries, disconnected since.
 
 *** Reduce duplicated Qt code and clean up technical debt              :code:
 
@@ -770,9 +922,62 @@ selection, compute the visible party set and bind to the session.
 
 - Login response includes available parties.
 - Party picker displayed when user has multiple parties.
-- Selected party stored in session and displayed in application window.
+- Selected party stored in session and displayed in application window (title
+  bar shows =username @ party_name=).
 - Party context immutable for session lifetime.
 
+**** Design Notes
+
+***** Protocol changes
+
+Extend =login_response= (0x2006) with two fields appended to the wire format:
+
+- =available_parties=: =vector<{uuid id, string name}>= — empty when 0 or 1
+  party (auto-selected); populated when ≥2 parties.
+- =selected_party_id=: =uuid= — non-nil only when the server auto-selected
+  exactly one party; nil when the client must choose.
+
+Add two new messages:
+
+- =select_party_request= (0x2015): ={uuid party_id}=
+- =select_party_response= (0x2016): ={bool success, string error_message}=
+
+***** Server changes (=handle_login_request=)
+
+The party resolution block (lines 488-520 of
+=accounts_message_handler.cpp=) currently always auto-selects
+=parties.front()=. Change to:
+
+- 0 parties → leave session unbound; no change.
+- 1 party → auto-select as now; set =selected_party_id= in response.
+- ≥2 parties → do NOT bind =party_id= yet; return =available_parties= list;
+  leave session unbound until =select_party_request= arrives.
+
+Add =handle_select_party_request=: validate chosen =party_id= is in
+account's =account_parties=, bind =session->party_id=, recompute
+=visible_party_ids=, update both in-memory session and DB record.
+
+***** Client changes
+
+- =LoginResult= gains =available_parties= and =selected_party_id=.
+- =ClientManager= gains =current_party_id_=, =current_party_name_=, and a
+  =selectParty(uuid)= method.
+- =LoginDialog::onLoginResult= gains a new branch after the password-reset
+  check: if =available_parties.size() > 1=, show =PartyPickerDialog= (modal,
+  same pattern as =ChangePasswordDialog=). On reject → disconnect, re-enable
+  form. On accept → call =clientManager_->selectParty(id)=.
+- Main window title set to =username @ party_name= after login completes.
+
+***** Session state machine
+
+#+begin_example
+Not connected
+  → Connected
+  → Authenticated  (party-unbound, only when ≥2 parties)
+  → Party selected (fully operational)
+
+0 or 1 party: Authenticated → Party selected in one step (no picker shown).
+#+end_example
 
 *** Add party role scheme entity                                       :code:
 

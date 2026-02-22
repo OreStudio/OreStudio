@@ -19,6 +19,7 @@
  */
 #include "ores.iam/messaging/accounts_message_handler.hpp"
 
+#include <algorithm>
 #include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -37,6 +38,8 @@
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.iam/repository/account_party_repository.hpp"
+#include "ores.iam/service/account_party_service.hpp"
+#include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
 #include "ores.iam/service/tenant_type_service.hpp"
@@ -177,6 +180,14 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_active_sessions_request(payload, remote_address);
     case message_type::get_session_samples_request:
         co_return co_await handle_get_session_samples_request(payload, remote_address);
+    case message_type::select_party_request:
+        co_return co_await handle_select_party_request(payload, remote_address);
+    case message_type::get_account_parties_by_account_request:
+        co_return co_await handle_get_account_parties_by_account_request(payload, remote_address);
+    case message_type::save_account_party_request:
+        co_return co_await handle_save_account_party_request(payload, remote_address);
+    case message_type::delete_account_party_request:
+        co_return co_await handle_delete_account_party_request(payload, remote_address);
     // RBAC messages
     case message_type::list_roles_request:
         co_return co_await handle_list_roles_request(payload, remote_address);
@@ -502,10 +513,21 @@ handle_login_request(std::span<const std::byte> payload,
         sess->client_ip = ip_address;
 
         // Resolve party context from account_parties
+        boost::uuids::uuid response_selected_party_id = boost::uuids::nil_uuid();
+        std::vector<party_summary> response_available_parties;
+        bool no_parties = false;
         try {
             repository::account_party_repository ap_repo(login_ctx);
             auto parties = ap_repo.read_latest_by_account(account.id);
-            if (!parties.empty()) {
+            if (parties.empty()) {
+                // 0 parties is a misconfiguration — every account must have at
+                // least one party (system party for admins, operational party
+                // for users).  Flag the error; login will be rejected below.
+                no_parties = true;
+                BOOST_LOG_SEV(lg(), warn) << "No party assignment for account: "
+                                          << account.id;
+            } else if (parties.size() == 1) {
+                // Auto-select single party
                 sess->party_id = parties.front().party_id;
 
                 // Compute visible party set via SQL function
@@ -521,18 +543,39 @@ handle_login_request(std::span<const std::byte> payload,
                         boost::lexical_cast<boost::uuids::uuid>(s));
                 }
 
+                response_selected_party_id = sess->party_id;
                 BOOST_LOG_SEV(lg(), info) << "Party context resolved: party_id="
                                           << sess->party_id
                                           << ", visible_parties="
                                           << sess->visible_party_ids.size();
             } else {
-                BOOST_LOG_SEV(lg(), debug) << "No party assignment for account: "
-                                           << account.id;
+                // Multiple parties: return list for client-side picker; do not bind session
+                BOOST_LOG_SEV(lg(), info) << "Multiple parties for account "
+                                          << account.id << ": " << parties.size()
+                                          << " parties, deferring selection to client";
+                for (const auto& ap : parties) {
+                    auto names = database::repository::execute_parameterized_string_query(
+                        login_ctx,
+                        "SELECT full_name FROM ores_refdata_parties_tbl "
+                        "WHERE id=$1::uuid AND valid_to='infinity' AND tenant_id=$2::uuid",
+                        {boost::uuids::to_string(ap.party_id),
+                         tenant_id.to_string()},
+                        lg(), "Fetching party name");
+                    const std::string party_name = names.empty() ? "" : names.front();
+                    response_available_parties.push_back(
+                        party_summary{.id = ap.party_id, .name = party_name});
+                }
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to resolve party context: "
                                       << e.what();
             // Continue without party context - tenant-only isolation
+        }
+
+        if (no_parties) {
+            throw std::runtime_error(
+                "Account has no party assignment. "
+                "Please contact your administrator.");
         }
 
         // Retrieve client info stored during handshake
@@ -603,7 +646,9 @@ handle_login_request(std::span<const std::byte> payload,
             .username = account.username,
             .email = account.email,
             .password_reset_required = password_reset_required,
-            .tenant_bootstrap_mode = tenant_bootstrap
+            .tenant_bootstrap_mode = tenant_bootstrap,
+            .selected_party_id = response_selected_party_id,
+            .available_parties = std::move(response_available_parties)
         };
         co_return response.serialize();
 
@@ -952,6 +997,42 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             domain::roles::super_admin,
             "Initial SuperAdmin account created during system bootstrap"
         );
+
+        // Assign the system party to the new admin account so login succeeds.
+        // Every tenant has exactly one system party (party_category = 'System').
+        const auto system_party_ids =
+            database::repository::execute_parameterized_string_query(
+                signup_ctx,
+                "SELECT ores_iam_account_parties_system_party_id_fn($1::uuid)::text",
+                {tenant_id.to_string()},
+                lg(), "Looking up system party for bootstrap admin");
+
+        if (system_party_ids.empty() || system_party_ids.front().empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "No system party found for tenant " << tenant_id
+                << " — skipping party assignment for admin account";
+        } else {
+            const auto system_party_id =
+                boost::lexical_cast<boost::uuids::uuid>(system_party_ids.front());
+
+            domain::account_party ap;
+            ap.tenant_id          = tenant_id.to_string();
+            ap.account_id         = account.id;
+            ap.party_id           = system_party_id;
+            ap.modified_by        = ctx_.credentials().user;
+            ap.performed_by       = ctx_.credentials().user;
+            ap.change_reason_code = std::string{reason::codes::new_record};
+            ap.change_commentary  =
+                "System party assigned to initial admin account during bootstrap";
+
+            service::account_party_service ap_svc(signup_ctx);
+            ap_svc.save_account_party(ap);
+
+            BOOST_LOG_SEV(lg(), info)
+                << "Assigned system party "
+                << boost::uuids::to_string(system_party_id)
+                << " to initial admin account " << account.id;
+        }
 
         // Exit bootstrap mode - updates database and shared cache
         system_flags_->set_bootstrap_mode(false, ctx_.credentials().user,
@@ -2225,6 +2306,227 @@ handle_get_session_samples_request(std::span<const std::byte> payload,
     }
 }
 
+accounts_message_handler::handler_result accounts_message_handler::
+handle_select_party_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing select_party_request from "
+                               << remote_address;
+
+    auto request_result = select_party_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize select_party_request";
+        co_return std::unexpected(request_result.error());
+    }
+    const auto& request = *request_result;
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "select_party_request denied: not authenticated "
+                                  << remote_address;
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
+    }
+
+    auto login_ctx = ctx_.with_tenant(session->tenant_id);
+
+    // Validate requested party is assigned to this account
+    repository::account_party_repository ap_repo(login_ctx);
+    const auto parties = ap_repo.read_latest_by_account(session->account_id);
+
+    const bool party_found = std::ranges::any_of(parties,
+        [&](const auto& ap) { return ap.party_id == request.party_id; });
+
+    if (!party_found) {
+        BOOST_LOG_SEV(lg(), warn) << "select_party_request: party "
+                                  << boost::uuids::to_string(request.party_id)
+                                  << " not assigned to account "
+                                  << boost::uuids::to_string(session->account_id);
+        select_party_response response{
+            .success = false,
+            .error_message = "The requested party is not assigned to your account."
+        };
+        co_return response.serialize();
+    }
+
+    // Compute visible party set via SQL function
+    std::vector<boost::uuids::uuid> visible_ids;
+    auto vis = database::repository::execute_parameterized_string_query(
+        login_ctx,
+        "SELECT unnest(ores_refdata_visible_party_ids_fn("
+        "$1::uuid, $2::uuid))::text",
+        {session->tenant_id.to_string(),
+         boost::uuids::to_string(request.party_id)},
+        lg(), "Computing visible party set");
+    for (const auto& s : vis) {
+        visible_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(s));
+    }
+
+    sessions_->update_session_party(remote_address, request.party_id, visible_ids);
+
+    BOOST_LOG_SEV(lg(), info) << "Party selected for " << remote_address
+                              << ": party_id="
+                              << boost::uuids::to_string(request.party_id)
+                              << ", visible_parties=" << visible_ids.size();
+
+    select_party_response response{.success = true};
+    co_return response.serialize();
+}
+
+// =============================================================================
+// Account Party Handlers
+// =============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_parties_by_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_parties_by_account_request from "
+                               << remote_address;
+
+    auto request_result =
+        get_account_parties_by_account_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize get_account_parties_by_account_request";
+        co_return std::unexpected(request_result.error());
+    }
+    const auto& request = *request_result;
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "get_account_parties_by_account_request denied: not authenticated "
+            << remote_address;
+        co_return std::unexpected(
+            ores::utility::serialization::error_code::authentication_failed);
+    }
+
+    auto ctx = make_request_context(*session);
+    repository::account_party_repository ap_repo(ctx);
+    const auto parties = ap_repo.read_latest_by_account(request.account_id);
+
+    BOOST_LOG_SEV(lg(), debug) << "Returning " << parties.size()
+                               << " account parties for account "
+                               << boost::uuids::to_string(request.account_id);
+
+    get_account_parties_by_account_response response{.account_parties = parties};
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_account_party_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_account_party_request from "
+                               << remote_address;
+
+    auto request_result = save_account_party_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_party_request";
+        co_return std::unexpected(request_result.error());
+    }
+    const auto& request = *request_result;
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "save_account_party_request denied: not authenticated "
+                                  << remote_address;
+        save_account_party_response response{
+            .success = false, .message = "Authentication required"};
+        co_return response.serialize();
+    }
+
+    if (request.account_party.account_id.is_nil()) {
+        BOOST_LOG_SEV(lg(), warn) << "save_account_party_request: account_id is nil";
+        save_account_party_response response{
+            .success = false, .message = "account_id is required"};
+        co_return response.serialize();
+    }
+
+    if (request.account_party.party_id.is_nil()) {
+        BOOST_LOG_SEV(lg(), warn) << "save_account_party_request: party_id is nil";
+        save_account_party_response response{
+            .success = false, .message = "party_id is required"};
+        co_return response.serialize();
+    }
+
+    try {
+        auto ap = request.account_party;
+        ap.tenant_id = session->tenant_id.to_string();
+        ap.modified_by = session->username;
+
+        auto ctx = make_request_context(*session);
+        service::account_party_service ap_svc(ctx);
+        ap_svc.save_account_party(ap);
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Saved account_party: account="
+            << boost::uuids::to_string(ap.account_id)
+            << " party=" << boost::uuids::to_string(ap.party_id);
+
+        save_account_party_response response{.success = true, .message = ""};
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to save account_party: " << e.what();
+        save_account_party_response response{
+            .success = false,
+            .message = std::string("Failed to save account party: ") + e.what()};
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_account_party_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_party_request from "
+                               << remote_address;
+
+    auto request_result = delete_account_party_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize delete_account_party_request";
+        co_return std::unexpected(request_result.error());
+    }
+    const auto& request = *request_result;
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "delete_account_party_request denied: not authenticated "
+            << remote_address;
+        co_return std::unexpected(
+            ores::utility::serialization::error_code::authentication_failed);
+    }
+
+    auto ctx = make_request_context(*session);
+    repository::account_party_repository ap_repo(ctx);
+    std::vector<delete_account_party_result> results;
+
+    for (const auto& key : request.keys) {
+        try {
+            ap_repo.remove(key.account_id, key.party_id);
+            BOOST_LOG_SEV(lg(), info)
+                << "Deleted account_party: account="
+                << boost::uuids::to_string(key.account_id)
+                << " party=" << boost::uuids::to_string(key.party_id);
+            results.push_back({
+                .account_id = key.account_id,
+                .party_id   = key.party_id,
+                .success    = true,
+                .message    = ""});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to delete account_party: " << e.what();
+            results.push_back({
+                .account_id = key.account_id,
+                .party_id   = key.party_id,
+                .success    = false,
+                .message    = e.what()});
+        }
+    }
+
+    delete_account_party_response response{.results = std::move(results)};
+    co_return response.serialize();
+}
+
 // =============================================================================
 // Tenant Management Handlers
 // =============================================================================
@@ -2876,7 +3178,7 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
             service::account_setup_service tenant_setup_svc(
                 tenant_account_svc, auth_service_);
 
-            tenant_setup_svc.create_account_with_role(
+            const auto admin_account = tenant_setup_svc.create_account_with_role(
                 request.admin_username,
                 request.admin_email,
                 request.admin_password,
@@ -2886,6 +3188,39 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
 
             BOOST_LOG_SEV(lg(), info)
                 << "Admin account created for tenant " << tenant_id;
+
+            // Assign the tenant's system party so the admin can log in
+            const auto system_party_ids =
+                database::repository::execute_parameterized_string_query(
+                    tenant_ctx,
+                    "SELECT ores_iam_account_parties_system_party_id_fn($1::uuid)::text",
+                    {tenant_id},
+                    lg(), "Looking up system party for tenant admin");
+
+            if (system_party_ids.empty() || system_party_ids.front().empty()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "No system party found for tenant " << tenant_id
+                    << " — skipping party assignment for tenant admin account";
+            } else {
+                const auto system_party_id =
+                    boost::lexical_cast<boost::uuids::uuid>(system_party_ids.front());
+
+                domain::account_party ap;
+                ap.tenant_id          = tenant_id;
+                ap.account_id         = admin_account.id;
+                ap.party_id           = system_party_id;
+                ap.modified_by        = auth_result->username;
+                ap.performed_by       = auth_result->username;
+                ap.change_reason_code = std::string{reason::codes::new_record};
+                ap.change_commentary  =
+                    "System party assigned to tenant admin during tenant onboarding";
+
+                service::account_party_service ap_svc(tenant_ctx);
+                ap_svc.save_account_party(ap);
+
+                BOOST_LOG_SEV(lg(), info)
+                    << "Assigned system party to tenant admin " << admin_account.id;
+            }
         }
 
         provision_tenant_response response{

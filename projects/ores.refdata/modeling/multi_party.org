@@ -575,12 +575,13 @@ Party isolation is a strict refinement of tenant isolation:
 
 * Related Components
 
-| Component | File                                                     | Purpose                              |
-|-----------+----------------------------------------------------------+--------------------------------------|
-| design    | doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org | Design rationale and decisions |
-| tenancy   | projects/ores.iam/modeling/multi_tenancy.org             | Companion tenant isolation document  |
-| utility   | include/ores.utility/uuid/tenant_id.hpp                  | Tenant ID wrapper type               |
-| database  | include/ores.database/domain/tenant_aware_pool.hpp       | Connection pool with tenant context  |
-| database  | include/ores.database/domain/context.hpp                 | Database context with tenant         |
-| refdata   | include/ores.refdata/domain/party.hpp                    | Party domain type                    |
-| iam       | ores_iam_account_parties_tbl                             | Account-party junction table         |
+| Component | File                                                                              | Purpose                              |
+|-----------+-----------------------------------------------------------------------------------+--------------------------------------|
+| design    | [[proj:doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org]]         | Design rationale and decisions       |
+| iam       | [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]           | Companion tenant isolation document  |
+| iam       | [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]]               | Account-party rules and login flow   |
+| utility   | [[proj:projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp]]            | Tenant ID wrapper type               |
+| database  | [[proj:projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp]] | Connection pool with tenant context |
+| database  | [[proj:projects/ores.database/include/ores.database/domain/context.hpp]]          | Database context with tenant         |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/party.hpp]]              | Party domain type                    |
+| iam       | =ores_iam_account_parties_tbl=                                                    | Account-party junction table         |

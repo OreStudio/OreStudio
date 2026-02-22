@@ -370,6 +370,7 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {
         ui_->statusbar->showMessage("Disconnected from server.", 5000);
         username_.clear();
+        party_name_.clear();
         activeConnectionName_.clear();
         updateWindowTitle();
     });
@@ -2022,13 +2023,20 @@ void MainWindow::updateWindowTitle() {
     // Add connection info if connected
     if (clientManager_ && clientManager_->isConnected()) {
         if (!username_.empty()) {
-            // Use active connection name if available, otherwise server address
-            QString connectionInfo = !activeConnectionName_.isEmpty()
-                ? activeConnectionName_
-                : QString::fromStdString(clientManager_->serverAddress());
-            title += QString(" - %1@%2")
-                .arg(QString::fromStdString(username_))
-                .arg(connectionInfo);
+            if (!party_name_.isEmpty()) {
+                // Show "username @ party_name" when party context is known
+                title += QString(" - %1 @ %2")
+                    .arg(QString::fromStdString(username_))
+                    .arg(party_name_);
+            } else {
+                // Use active connection name if available, otherwise server address
+                QString connectionInfo = !activeConnectionName_.isEmpty()
+                    ? activeConnectionName_
+                    : QString::fromStdString(clientManager_->serverAddress());
+                title += QString(" - %1@%2")
+                    .arg(QString::fromStdString(username_))
+                    .arg(connectionInfo);
+            }
         } else {
             QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
             title += QString(" - %1").arg(serverInfo);
@@ -2242,6 +2250,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
                                << username.toStdString();
 
     username_ = username.toStdString();
+    party_name_ = clientManager_ ? clientManager_->currentPartyName() : QString();
 
     // Update controllers with new username
     if (currencyController_) {

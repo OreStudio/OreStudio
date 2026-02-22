@@ -348,6 +348,9 @@ enum class message_type : std::uint16_t {
     get_session_statistics_response = 0x2043,
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
+    // IAM - Party selection
+    select_party_request  = 0x2046,
+    select_party_response = 0x2047,
     // IAM subsystem - Tenants
     get_tenants_request = 0x2050,
     get_tenants_response = 0x2051,
@@ -851,6 +854,8 @@ enum class message_type : std::uint16_t {
     case message_type::get_session_statistics_response: return "get_session_statistics_response";
     case message_type::get_active_sessions_request: return "get_active_sessions_request";
     case message_type::get_active_sessions_response: return "get_active_sessions_response";
+    case message_type::select_party_request: return "select_party_request";
+    case message_type::select_party_response: return "select_party_response";
     case message_type::get_tenants_request: return "get_tenants_request";
     case message_type::get_tenants_response: return "get_tenants_response";
     case message_type::save_tenant_request: return "save_tenant_request";

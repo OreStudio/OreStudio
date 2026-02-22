@@ -378,14 +378,9 @@ domain::publication_result publication_service::call_populate_function(
     BOOST_LOG_SEV(lg(), debug) << "Calling populate function: "
         << function_name << ", mode: " << mode_str;
 
-    // Set app.current_actor so the SQL populate function can use it for
-    // modified_by via ores_iam_current_actor_fn(). The set_config call is
-    // in a CTE within the same statement, so it is transaction-local.
     const auto sql = std::format(
-        "WITH _actor AS (SELECT set_config('app.current_actor', '{}', true)) "
         "SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
-        published_by, function_name, dataset_id_str,
-        ctx_.tenant_id().to_string(), mode_str);
+        function_name, dataset_id_str, ctx_.tenant_id().to_string(), mode_str);
 
     try {
         auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),

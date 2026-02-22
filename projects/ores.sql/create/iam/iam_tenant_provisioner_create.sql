@@ -56,7 +56,8 @@ create or replace function ores_iam_provision_tenant_fn(
     p_code text,
     p_name text,
     p_hostname text,
-    p_description text default null
+    p_description text default null,
+    p_actor text default null
 ) returns uuid as $$
 declare
     v_new_tenant_id uuid;
@@ -64,9 +65,10 @@ declare
     v_copied_count integer;
     v_actor text;
 begin
-    -- Resolve actor: prefer session GUC (set by application), fall back to current_user.
+    -- Resolve actor: use explicit parameter if provided, otherwise fall back to
+    -- session GUC (ores_iam_current_actor_fn), then current_user.
     -- current_user is always ores_ddl_user inside SECURITY DEFINER functions.
-    v_actor := coalesce(ores_iam_current_actor_fn(), current_user);
+    v_actor := coalesce(nullif(p_actor, ''), ores_iam_current_actor_fn(), current_user);
 
     -- Get system tenant ID
     v_system_tenant_id := ores_iam_system_tenant_id_fn();

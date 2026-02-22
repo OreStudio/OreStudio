@@ -136,6 +136,16 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     toolBar_->addSeparator();
 
+    auto roundingTypesAction = new QAction("Rounding Types", this);
+    roundingTypesAction->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Tag, IconUtils::DefaultIconColor));
+    roundingTypesAction->setToolTip("Open Rounding Types list");
+    connect(roundingTypesAction, &QAction::triggered, this,
+        [this]() { emit showRoundingTypesRequested(); });
+    toolBar_->addAction(roundingTypesAction);
+
+    toolBar_->addSeparator();
+
     auto importXMLAction = new QAction("Import", this);
     importXMLAction->setIcon(IconUtils::createRecoloredIcon(
             Icon::ImportOre, IconUtils::DefaultIconColor));

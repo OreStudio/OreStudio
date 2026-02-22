@@ -68,6 +68,7 @@ signals:
     void showCurrencyDetails(const refdata::domain::currency& currency);
     void currencyDeleted(const QString& iso_code);
     void showCurrencyHistory(const QString& iso_code);
+    void showRoundingTypesRequested();
 
 public slots:
     void reload() override;

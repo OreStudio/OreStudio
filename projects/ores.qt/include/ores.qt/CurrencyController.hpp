@@ -114,6 +114,9 @@ public:
 
     void reloadListWindow() override;
 
+signals:
+    void showRoundingTypesRequested();
+
 private slots:
     /**
      * @brief Handles request to add a new currency.

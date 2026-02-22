@@ -98,7 +98,6 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
         case Country:
             return QString::fromStdString(session.country_code);
         case BytesSent:
-            if (!session.end_time) return QString("-");
             if (session.bytes_sent >= 1024 * 1024) {
                 return QString("%1 MB").arg(session.bytes_sent / (1024.0 * 1024.0), 0, 'f', 2);
             } else if (session.bytes_sent >= 1024) {
@@ -106,7 +105,6 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
             }
             return QString("%1 B").arg(session.bytes_sent);
         case BytesReceived:
-            if (!session.end_time) return QString("-");
             if (session.bytes_received >= 1024 * 1024) {
                 return QString("%1 MB").arg(session.bytes_received / (1024.0 * 1024.0), 0, 'f', 2);
             } else if (session.bytes_received >= 1024) {
@@ -178,6 +176,19 @@ void SessionHistoryModel::clear() {
     endResetModel();
 }
 
+void SessionHistoryModel::updateActiveBytesFromClient(
+    std::uint64_t bytes_sent, std::uint64_t bytes_received) {
+    for (std::size_t i = 0; i < sessions_.size(); ++i) {
+        if (!sessions_[i].end_time) {
+            sessions_[i].bytes_sent = bytes_sent;
+            sessions_[i].bytes_received = bytes_received;
+            const int row = static_cast<int>(i);
+            emit dataChanged(index(row, BytesSent), index(row, BytesReceived),
+                             {Qt::DisplayRole});
+        }
+    }
+}
+
 // SessionHistoryDialog implementation
 
 SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager,
@@ -204,7 +215,6 @@ SessionHistoryDialog::~SessionHistoryDialog() = default;
 
 void SessionHistoryDialog::setupUi() {
     setWindowTitle(tr("Session History"));
-    setWindowIcon(IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
     setMinimumSize(900, 600);
 
     auto* layout = new QVBoxLayout(this);
@@ -294,6 +304,12 @@ void SessionHistoryDialog::onSessionsLoaded() {
 
     if (result.success) {
         model_->setSessions(result.sessions);
+
+        // Inject live bytes for the active session (DB value is only written at logout)
+        if (clientManager_ && clientManager_->isConnected()) {
+            model_->updateActiveBytesFromClient(
+                clientManager_->bytesSent(), clientManager_->bytesReceived());
+        }
 
         // Resize columns to content
         for (int i = 0; i < model_->columnCount(); ++i) {
@@ -458,8 +474,13 @@ void SessionHistoryDialog::onSamplesLoaded() {
 }
 
 void SessionHistoryDialog::onSampleRefreshTimeout() {
-    if (!hasSelectedSession_ || !selectedSessionActive_) return;
     if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    // Update live byte counters for the active session row (no model reset)
+    model_->updateActiveBytesFromClient(
+        clientManager_->bytesSent(), clientManager_->bytesReceived());
+
+    if (!hasSelectedSession_ || !selectedSessionActive_) return;
     if (samplesWatcher_->isRunning()) return;
 
     BOOST_LOG_SEV(lg(), debug) << "Auto-refreshing samples for active session";

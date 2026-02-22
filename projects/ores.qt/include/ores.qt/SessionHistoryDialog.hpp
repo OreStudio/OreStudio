@@ -57,6 +57,16 @@ public:
     void setSessions(const std::vector<iam::domain::session>& sessions);
     void clear();
 
+    /**
+     * @brief Inject live byte counters into active (no end_time) session rows.
+     *
+     * Called on the UI thread from the auto-refresh timer so that the Sent/
+     * Received columns stay current for the ongoing session without a full
+     * model reset (which would clear the table selection).
+     */
+    void updateActiveBytesFromClient(std::uint64_t bytes_sent,
+                                     std::uint64_t bytes_received);
+
     const std::vector<iam::domain::session>& sessions() const { return sessions_; }
 
 private:

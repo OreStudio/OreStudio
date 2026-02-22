@@ -1745,6 +1745,8 @@ void MainWindow::onMySessionsTriggered() {
     mySessionsWindow_ = new DetachableMdiSubWindow();
     mySessionsWindow_->setWidget(sessionWidget);
     mySessionsWindow_->setWindowTitle(tr("My Sessions - %1").arg(username));
+    mySessionsWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::History, IconUtils::DefaultIconColor));
     mySessionsWindow_->setAttribute(Qt::WA_DeleteOnClose);
     mySessionsWindow_->resize(900, 500);
 

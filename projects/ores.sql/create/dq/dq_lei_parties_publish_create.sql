@@ -249,7 +249,7 @@ begin
                 -- Default business centre from country
                 coalesce(bc_map.business_center_code, 'WRLD'),
                 'Active',
-                current_user, current_user, 'system.external_data_import',
+                coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
             from lei_party_subtree m
             left join lei_party_subtree parent_map on parent_map.lei = m.parent_lei
@@ -284,7 +284,7 @@ begin
     select
         p_target_tenant_id,
         gen_random_uuid(), 0, m.party_uuid, 'LEI', m.lei,
-        current_user, current_user, 'system.external_data_import',
+        coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
         'Imported from GLEIF LEI dataset: ' || v_dataset_name
     from lei_party_subtree m;
 
@@ -300,7 +300,7 @@ begin
         select
             p_target_tenant_id,
             gen_random_uuid(), 0, m.party_uuid, 'BIC', b.bic,
-            current_user, current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from GLEIF LEI-BIC dataset'
         from lei_party_subtree m
         join ores_dq_lei_bic_artefact_tbl b

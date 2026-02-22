@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: b3e7f2a1-9c5d-4e82-af1b-7d8c3e6b0f24
+:END:
+#+title: Currency Taxonomy Enhancement: Asset Class and Market Tier
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+The currency domain type previously had a single =currency_type= field (e.g.
+major, minor, exotic) for classification. This field mixed two orthogonal
+concerns: the asset class of the currency and the market tier it belongs to.
+This plan replaces =currency_type= with two separate, independently managed
+lookup tables: =currency_asset_class= and =currency_market_tier=.
+
+** Problem
+
+The monolithic =currency_type= field:
+
+1. *Conflates two dimensions* — asset class (what the currency represents) and
+   market tier (how liquid/developed the market is) are independent concepts
+   that should be separately governed.
+2. *Lacks governance* — there was no CRUD interface for managing the type values;
+   they were hard-coded or embedded in the currency record.
+3. *Prevents temporal history* — lookup values could not be versioned or audited
+   independently of the currency itself.
+4. *Limits extensibility* — adding new classification schemes required changes to
+   the currency table and protocol.
+
+** Goals
+
+- Replace =currency_type= with two foreign-key references: =asset_class= and
+  =market_tier=.
+- Create fully governed lookup entities with CRUD, history, and notifications.
+- Maintain consistency with the pattern established by other lookup entities
+  (=rounding_type=, =party_type=, =book_status=, etc.).
+- Update all layers: SQL, domain, protocol, messaging, CLI, shell, Qt, Wt, ORE.
+
+* Design
+
+** New Lookup Entities
+
+Both entities share the same structure (versioned lookup table pattern):
+
+| Field              | Type        | Description                            |
+|--------------------+-------------+----------------------------------------|
+| =version=          | =int=       | Optimistic locking / change tracking   |
+| =code=             | =text= (PK) | Unique short code (e.g. =g10=, =major=)|
+| =name=             | =text=      | Human-readable name                    |
+| =description=      | =text=      | Detailed description                   |
+| =display_order=    | =int=       | UI sort order                          |
+| =modified_by=      | =text=      | Last modifier username                 |
+| =performed_by=     | =text=      | Performing account username            |
+| =change_reason_code= | =text=    | Soft FK to =change_reasons=            |
+| =change_commentary=| =text=      | Free-text explanation                  |
+| =recorded_at=      | =timestamptz= | Bitemporal recording timestamp       |
+
+*** currency_asset_class seed values
+
+| Code      | Name              | Description                                      |
+|-----------+-------------------+--------------------------------------------------|
+| =major=   | Major             | Highly traded reserve currencies (USD, EUR, GBP) |
+| =minor=   | Minor             | Stable, moderately traded currencies             |
+| =exotic=  | Exotic            | Less liquid, higher spread currencies            |
+| =crypto=  | Cryptocurrency    | Digital/decentralised currencies                 |
+| =commodity= | Commodity       | Commodity-backed currencies (gold standard era)  |
+| =historical= | Historical     | Currencies no longer in active use               |
+
+*** currency_market_tier seed values
+
+| Code        | Name          | Description                                         |
+|-------------+---------------+-----------------------------------------------------|
+| =g10=       | G10           | Group of 10 major currency markets                  |
+| =emerging=  | Emerging      | Emerging market currencies with growing liquidity   |
+| =exotic=    | Exotic        | Thinly traded, high-spread frontier currencies      |
+| =frontier=  | Frontier      | Very low liquidity, limited convertibility          |
+| =historical= | Historical   | Discontinued currencies                             |
+
+** Protocol Version
+
+Protocol version 41.0 (breaking change). The currency wire format changes:
+- Removes =currency_type= field
+- Adds =asset_class= (string code reference) and =market_tier= (string code reference)
+- Adds 8 new message types for =currency_asset_class= CRUD + history (0x1099-0x10A0)
+- Adds 8 new message types for =currency_market_tier= CRUD + history (0x10A1-0x10A8)
+
+* Implementation
+
+** Layer Breakdown
+
+*** SQL (=ores.sql=)
+
+New files:
+- =refdata_currency_asset_classes_create.sql= — table with =REFERENCES refdata_currencies_asset_classes=
+- =refdata_currency_asset_classes_notify_trigger_create.sql= — LISTEN/NOTIFY trigger
+- =refdata_currency_asset_classes_drop.sql=
+- =refdata_currency_asset_classes_notify_trigger_drop.sql=
+- =refdata_currency_market_tiers_create.sql=
+- =refdata_currency_market_tiers_notify_trigger_create.sql=
+- =refdata_currency_market_tiers_drop.sql=
+- =refdata_currency_market_tiers_notify_trigger_drop.sql=
+- =refdata_currency_asset_classes_populate.sql= — seed data
+- =refdata_currency_market_tiers_populate.sql= — seed data
+
+Modified files:
+- =refdata_currencies_create.sql= — replaces =currency_type= column with =asset_class= and =market_tier=
+- =refdata_create.sql= / =refdata_drop.sql= — orchestration includes new files
+- =refdata_rls_policies_create.sql= / =refdata_rls_policies_drop.sql= — RLS for new tables
+- =dq_currencies_artefact_create.sql= — DQ updated for new columns
+- =dq_population_functions_create.sql= — population functions updated
+- =foundation_populate.sql= — bootstrap order updated
+
+*** C++ Domain (=ores.refdata=)
+
+New types:
+- =domain/currency_asset_class.hpp= — struct with audit fields
+- =domain/currency_asset_class_json_io.{hpp,cpp}= — JSON serialisation
+- =domain/currency_asset_class_table.{hpp,cpp}= — tabular display
+- =domain/currency_asset_class_table_io.{hpp,cpp}= — table I/O
+- =domain/currency_market_tier.hpp= — struct with audit fields
+- =domain/currency_market_tier_json_io.{hpp,cpp}=
+- =domain/currency_market_tier_table.{hpp,cpp}=
+- =domain/currency_market_tier_table_io.{hpp,cpp}=
+- =repository/currency_asset_class_{entity,mapper,repository}.{hpp,cpp}=
+- =repository/currency_market_tier_{entity,mapper,repository}.{hpp,cpp}=
+- =service/currency_asset_class_service.{hpp,cpp}=
+- =service/currency_market_tier_service.{hpp,cpp}=
+- =generators/currency_asset_class_generator.{hpp,cpp}=
+- =generators/currency_market_tier_generator.{hpp,cpp}=
+- =eventing/currency_asset_class_changed_event.hpp=
+- =eventing/currency_market_tier_changed_event.hpp=
+
+Modified:
+- =domain/currency.hpp= — =currency_type= replaced by =asset_class= + =market_tier=
+
+*** Binary Protocol (=ores.comms= + =ores.refdata=)
+
+New message types in =message_type.hpp=:
+- =0x1099=–=0x10A0= — currency asset class CRUD + history
+- =0x10A1=–=0x10A8= — currency market tier CRUD + history
+
+New messaging files:
+- =currency_asset_class_protocol.{hpp,cpp}= — CRUD messages + traits
+- =currency_asset_class_history_protocol.{hpp,cpp}= — history messages + traits
+- =currency_market_tier_protocol.{hpp,cpp}= — CRUD messages + traits
+- =currency_market_tier_history_protocol.{hpp,cpp}= — history messages + traits
+
+Modified:
+- =messaging/protocol.hpp= — aggregation header includes new protocols
+- =messaging/refdata_message_handler.{hpp,cpp}= — switch cases + handler impls
+- =messaging/currency_protocol.cpp= / =currency_history_protocol.cpp= — updated wire format
+
+*** CLI (=ores.cli=)
+
+Modified =add_currency_options.{hpp,cpp}= and =currencies_parser.cpp= to
+replace =--currency-type= with =--asset-class= and =--market-tier= options.
+Updated =add_options_tests.cpp= and =cli_recipes.org=.
+
+*** Shell (=ores.comms.shell=)
+
+Updated =currencies_commands.cpp= to display and accept =asset_class= and
+=market_tier= in lieu of =currency_type=.
+
+*** Qt (=ores.qt=)
+
+Updated =ClientCurrencyModel=, =CurrencyDetailDialog=, =CurrencyHistoryDialog=,
+and =CurrencyDetailDialog.ui= for the new fields.
+
+*** Wt (=ores.wt=)
+
+Updated =currency_dialog= and =currency_list_widget= for new fields.
+
+*** ORE XML Mapper (=ores.ore=)
+
+Updated =currency_mapper.cpp= to map =asset_class= and =market_tier= from/to
+ORE XML. Updated =domain_currency_mapper_tests.cpp=, =xml_exporter_tests.cpp=,
+=xml_importer_tests.cpp=.
+
+*** Codegen (=ores.codegen=)
+
+- New JSON models: =currency_asset_class_entity.json=, =currency_market_tier_entity.json=
+- Updated =currency_entity.json= — =asset_class= and =market_tier= fields
+- Updated mustache templates for SQL population
+- Updated =generator.py= to emit new lookup populate scripts
+
+* Remaining Work
+
+The following items were deferred and should be addressed in follow-up stories:
+
+1. *Qt/Wt lookup management UI* — There is no UI yet to browse and edit
+   =currency_asset_class= and =currency_market_tier= records independently.
+   Follow the =qt-entity-creator= and =wt-entity-creator= skills to create
+   list windows, detail dialogs, and history dialogs for both entities.
+
+2. *CLI commands for lookups* — There are no =currency-asset-class= or
+   =currency-market-tier= CLI sub-commands (import, export, list, delete, add).
+   Follow the =cli-entity-creator= skill.
+
+3. *Shell commands for lookups* — No shell commands for the new lookup entities.
+   Follow the =shell-entity-creator= skill.
+
+4. *HTTP REST endpoints* — No HTTP endpoints for the new lookup entities.
+   Follow the =http-entity-creator= skill.
+
+5. *Unit tests for new domain types* — Tests for =currency_asset_class= and
+   =currency_market_tier= JSON I/O, table I/O, and repository behaviour are
+   not yet written. Follow the =unit-test-writer= skill.
+
+6. *Protocol documentation* — =ores.refdata.protocol.org= has been updated at
+   the model level but the full prose documentation for the new message types
+   should be expanded.
+
+7. *DQ validation rules* — DQ checks for referential integrity between
+   =currencies.asset_class= / =currencies.market_tier= and the new lookup
+   tables should be added.

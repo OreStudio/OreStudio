@@ -459,9 +459,8 @@ class SQLParser:
         if classification == 'temporal':
             self._validate_temporal_table(name, columns, body, file_path, line_num)
 
-        # Validate tenant-aware requirements (all temporal and artefact tables should be tenant-aware)
-        if classification in ('temporal', 'artefact'):
-            self._validate_tenant_aware_table(name, columns, body, pk, file_path, line_num)
+        # Validate tenant-aware requirements (all tables must have a tenant_id column)
+        self._validate_tenant_aware_table(name, columns, body, pk, file_path, line_num)
 
         # Get description from extracted comments
         description = self.table_descriptions.get(name, '')

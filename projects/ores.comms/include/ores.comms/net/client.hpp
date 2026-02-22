@@ -301,6 +301,28 @@ public:
     connection_state get_state() const;
 
     /**
+     * @brief Total bytes sent on the current connection.
+     *
+     * Returns 0 if not connected.
+     */
+    std::uint64_t bytes_sent() const;
+
+    /**
+     * @brief Total bytes received on the current connection.
+     *
+     * Returns 0 if not connected.
+     */
+    std::uint64_t bytes_received() const;
+
+    /**
+     * @brief Last measured round-trip time, in milliseconds.
+     *
+     * Updated after each successful heartbeat ping/pong exchange.
+     * Returns 0 before the first heartbeat completes.
+     */
+    std::uint64_t last_rtt_ms() const;
+
+    /**
      * @brief Set callback to be invoked when disconnect is detected.
      *
      * The callback will be called from the heartbeat coroutine when
@@ -568,6 +590,9 @@ private:
 
     // Session compression type negotiated during handshake
     messaging::compression_type session_compression_{messaging::compression_type::none};
+
+    // Last measured RTT from heartbeat ping/pong (atomic for lock-free reads)
+    std::atomic<std::uint64_t> last_rtt_ms_{0};
 
     // Session recording (protected by state_mutex_ for thread-safe access)
     std::shared_ptr<recording::session_recorder> recorder_;

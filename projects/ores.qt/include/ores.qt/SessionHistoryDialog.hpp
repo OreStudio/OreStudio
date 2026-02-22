@@ -20,16 +20,22 @@
 #ifndef ORES_QT_SESSION_HISTORY_DIALOG_HPP
 #define ORES_QT_SESSION_HISTORY_DIALOG_HPP
 
+#include <QIcon>
+#include <QTimer>
 #include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
+#include <QSplitter>
 #include <QAbstractTableModel>
 #include <QFutureWatcher>
+#include <QItemSelection>
+#include <QtCharts/QChartView>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
+#include "ores.iam/messaging/session_samples_protocol.hpp"
 
 namespace ores::qt {
 
@@ -51,6 +57,18 @@ public:
     void setSessions(const std::vector<iam::domain::session>& sessions);
     void clear();
 
+    /**
+     * @brief Inject live byte counters into active (no end_time) session rows.
+     *
+     * Called on the UI thread from the auto-refresh timer so that the Sent/
+     * Received columns stay current for the ongoing session without a full
+     * model reset (which would clear the table selection).
+     */
+    void updateActiveBytesFromClient(std::uint64_t bytes_sent,
+                                     std::uint64_t bytes_received);
+
+    const std::vector<iam::domain::session>& sessions() const { return sessions_; }
+
 private:
     enum Column {
         StartTime,
@@ -65,6 +83,8 @@ private:
     };
 
     std::vector<iam::domain::session> sessions_;
+    QIcon activeIcon_;
+    QIcon historyIcon_;
 };
 
 /**
@@ -111,12 +131,18 @@ signals:
 
 private slots:
     void onSessionsLoaded();
+    void onSamplesLoaded();
+    void onSessionSelectionChanged(const QItemSelection& selected,
+                                   const QItemSelection& deselected);
+    void onSampleRefreshTimeout();
 
 private:
     void setupUi();
 
     QTableView* tableView_;
     SessionHistoryModel* model_;
+    QSplitter* splitter_;
+    QChartView* chartView_;
     ClientManager* clientManager_;
     boost::uuids::uuid accountId_;
     QString username_;
@@ -127,7 +153,23 @@ private:
         std::uint32_t total_count;
     };
 
+    struct FetchSamplesResult {
+        bool success;
+        bool is_active = false;  // true if the session is still running
+        boost::uuids::uuid session_id;
+        QString session_label;
+        std::vector<iam::messaging::session_sample_dto> samples;
+    };
+
     QFutureWatcher<FetchResult>* watcher_;
+    QFutureWatcher<FetchSamplesResult>* samplesWatcher_;
+    QTimer* sampleRefreshTimer_;
+
+    // Currently selected session state (for auto-refresh)
+    bool hasSelectedSession_ = false;
+    boost::uuids::uuid selectedSessionId_ = {};
+    QString selectedSessionLabel_;
+    bool selectedSessionActive_ = false;
 };
 
 }

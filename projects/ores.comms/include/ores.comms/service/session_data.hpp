@@ -32,6 +32,36 @@
 namespace ores::comms::service {
 
 /**
+ * @brief A single bytes-sent/received sample captured at heartbeat time.
+ *
+ * Samples are collected server-side on each heartbeat ping and stored
+ * in-memory until the session ends, then bulk-inserted to the database.
+ */
+struct session_sample final {
+    /**
+     * @brief When this sample was taken.
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Cumulative bytes sent on the connection at sample time.
+     */
+    std::uint64_t bytes_sent = 0;
+
+    /**
+     * @brief Cumulative bytes received on the connection at sample time.
+     */
+    std::uint64_t bytes_received = 0;
+
+    /**
+     * @brief Round-trip time reported by the client in this ping, in milliseconds.
+     *
+     * Zero if not reported (first ping or older client).
+     */
+    std::uint64_t latency_ms = 0;
+};
+
+/**
  * @brief Protocol used for the session connection.
  */
 enum class session_protocol : std::uint8_t {
@@ -141,6 +171,46 @@ struct session_data final {
      * @brief Total bytes received from the client during this session.
      */
     std::uint64_t bytes_received = 0;
+
+    /**
+     * @brief Cumulative connection bytes at the moment of login.
+     *
+     * Set once by init_sample_baseline() immediately after the login response
+     * is written. Subtracted from all subsequent byte-counter reads so that
+     * session bytes reflect only post-login traffic, even when the TCP
+     * connection is reused across multiple login sessions.
+     */
+    std::uint64_t bytes_at_login_sent = 0;
+    std::uint64_t bytes_at_login_received = 0;
+
+    /**
+     * @brief Cumulative bytes sent at the time of the last sample, used to
+     *        compute per-interval deltas for the next sample.
+     */
+    std::uint64_t last_sample_bytes_sent = 0;
+
+    /**
+     * @brief Cumulative bytes received at the time of the last sample.
+     */
+    std::uint64_t last_sample_bytes_received = 0;
+
+    /**
+     * @brief Time-series samples accumulating since the last flush.
+     *
+     * Each entry captures the bytes transferred IN that heartbeat interval
+     * (delta, not cumulative). When the flush threshold is reached, samples
+     * are moved to flush_pending and this vector is cleared. Any remaining
+     * samples are flushed at logout.
+     */
+    std::vector<session_sample> samples;
+
+    /**
+     * @brief Samples ready to be persisted to the database.
+     *
+     * Populated by record_sample() when the flush threshold is reached.
+     * Drained by accounts_message_handler on the next non-ping request.
+     */
+    std::vector<session_sample> flush_pending;
 
     /**
      * @brief ISO 3166-1 alpha-2 country code from geolocation.

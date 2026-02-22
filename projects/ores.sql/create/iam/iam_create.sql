@@ -36,6 +36,7 @@
 -- Sessions
 \ir ./iam_sessions_create.sql
 \ir ./iam_session_stats_create.sql
+\ir ./iam_session_samples_create.sql
 
 -- RBAC
 \ir ./iam_permissions_create.sql

@@ -20,19 +20,29 @@
 #ifndef ORES_COMMS_MESSAGING_HEARTBEAT_PROTOCOL_HPP
 #define ORES_COMMS_MESSAGING_HEARTBEAT_PROTOCOL_HPP
 
+#include <span>
 #include <vector>
 #include <cstdint>
 #include <expected>
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::comms::messaging {
 
 /**
  * @brief Ping message sent by client to check connection liveness.
  *
- * Lightweight keepalive message with no payload.
+ * Carries the RTT measured from the previous heartbeat exchange so the
+ * server can record it as part of the time-series sample.
  */
 struct ping final {
+    /**
+     * @brief Round-trip time from the previous heartbeat, in milliseconds.
+     *
+     * Zero on the first ping (no previous measurement).
+     */
+    std::uint64_t latency_ms = 0;
+
     /**
      * @brief Serialize to frame payload.
      */

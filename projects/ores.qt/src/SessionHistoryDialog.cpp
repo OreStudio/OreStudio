@@ -223,6 +223,7 @@ void SessionHistoryDialog::setupUi() {
 
     // Chart view (bottom pane)
     auto* chart = new QChart();
+    chart->setTheme(QChart::ChartThemeDark);
     chart->setTitle(tr("Select a session to view bytes over time"));
     chart->legend()->setVisible(true);
     chartView_ = new QChartView(chart, this);

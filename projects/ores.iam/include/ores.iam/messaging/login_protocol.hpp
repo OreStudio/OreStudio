@@ -86,6 +86,7 @@ std::ostream& operator<<(std::ostream& s, const login_request& v);
 struct party_summary final {
     boost::uuids::uuid id;
     std::string name;
+    std::string party_category;  ///< "System" or "Operational"
 };
 
 /**
@@ -105,7 +106,7 @@ struct login_response final {
     bool password_reset_required = false;
     bool tenant_bootstrap_mode = false;  ///< True if tenant is in bootstrap mode (needs initial setup)
     boost::uuids::uuid selected_party_id;          ///< nil unless auto-selected
-    std::vector<party_summary> available_parties;  ///< empty if 0 or 1 party
+    std::vector<party_summary> available_parties;  ///< always includes auto-selected party; empty only if 0 parties (rejected)
 
     /**
      * @brief Serialize response to bytes.
@@ -129,6 +130,7 @@ struct login_response final {
      * - For each party:
      *   - 16 bytes: id (UUID)
      *   -  2 bytes: name length + N bytes: name (UTF-8)
+     *   -  2 bytes: party_category length + N bytes: party_category (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

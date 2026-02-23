@@ -545,9 +545,30 @@ handle_login_request(std::span<const std::byte> payload,
                         boost::lexical_cast<boost::uuids::uuid>(s));
                 }
 
+                // Fetch party info so the client can display the party name
+                // and detect the system party.  Populate available_parties
+                // even for a single party so the client always receives name
+                // and category (consistent with the multi-party path).
+                auto party_info = database::repository::execute_parameterized_string_query(
+                    login_ctx,
+                    "SELECT full_name, party_category "
+                    "FROM ores_refdata_get_party_info_fn($1::uuid, $2::uuid)",
+                    {boost::uuids::to_string(sess->party_id),
+                     tenant_id.to_string()},
+                    lg(), "Fetching single-party info");
+                const std::string single_party_name =
+                    party_info.empty() ? "" : party_info.front();
+                const std::string single_party_category =
+                    party_info.size() < 2 ? "" : party_info[1];
+                response_available_parties.push_back(
+                    party_summary{.id = sess->party_id,
+                                  .name = single_party_name,
+                                  .party_category = single_party_category});
+
                 response_selected_party_id = sess->party_id;
                 BOOST_LOG_SEV(lg(), info) << "Party context resolved: party_id="
                                           << sess->party_id
+                                          << " (" << single_party_name << ")"
                                           << ", visible_parties="
                                           << sess->visible_party_ids.size();
             } else {
@@ -556,16 +577,21 @@ handle_login_request(std::span<const std::byte> payload,
                                           << account.id << ": " << parties.size()
                                           << " parties, deferring selection to client";
                 for (const auto& ap : parties) {
-                    auto names = database::repository::execute_parameterized_string_query(
+                    auto party_info = database::repository::execute_parameterized_string_query(
                         login_ctx,
-                        "SELECT full_name FROM ores_refdata_parties_tbl "
-                        "WHERE id=$1::uuid AND valid_to='infinity' AND tenant_id=$2::uuid",
+                        "SELECT full_name, party_category "
+                        "FROM ores_refdata_get_party_info_fn($1::uuid, $2::uuid)",
                         {boost::uuids::to_string(ap.party_id),
                          tenant_id.to_string()},
-                        lg(), "Fetching party name");
-                    const std::string party_name = names.empty() ? "" : names.front();
+                        lg(), "Fetching party info");
+                    const std::string party_name =
+                        party_info.empty() ? "" : party_info.front();
+                    const std::string party_category =
+                        party_info.size() < 2 ? "" : party_info[1];
                     response_available_parties.push_back(
-                        party_summary{.id = ap.party_id, .name = party_name});
+                        party_summary{.id = ap.party_id,
+                                      .name = party_name,
+                                      .party_category = party_category});
                 }
             }
         } catch (const std::exception& e) {

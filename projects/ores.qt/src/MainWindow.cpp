@@ -2069,6 +2069,11 @@ void MainWindow::updateStatusBarFields() {
     const QString chipStyle =
         "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
         " background: palette(alternateBase); }";
+    const QString warningChipStyle =
+        "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
+        " background: #7a2000; color: #ffccaa; font-weight: bold; }";
+
+    const bool connected = clientManager_ && clientManager_->isConnected();
 
     // Derive tenant name from the @tenant suffix in username_, falling back to
     // the saved connection name when the username carries no tenant suffix.
@@ -2092,9 +2097,18 @@ void MainWindow::updateStatusBarFields() {
         tenantStatusLabel_->setVisible(false);
     }
 
-    if (!party_name_.isEmpty()) {
-        partyStatusLabel_->setText("Party: " + party_name_);
-        partyStatusLabel_->setStyleSheet(chipStyle);
+    if (connected) {
+        if (!party_name_.isEmpty()) {
+            const bool isSystem = clientManager_->isSystemParty();
+            const QString label = isSystem
+                ? "Party: " + party_name_ + " [System]"
+                : "Party: " + party_name_;
+            partyStatusLabel_->setText(label);
+            partyStatusLabel_->setStyleSheet(chipStyle);
+        } else {
+            partyStatusLabel_->setText("Party: [No Party]");
+            partyStatusLabel_->setStyleSheet(warningChipStyle);
+        }
         partyStatusLabel_->setVisible(true);
     } else {
         partyStatusLabel_->setVisible(false);
@@ -2362,6 +2376,17 @@ void MainWindow::onLoginSuccess(const QString& username) {
 
     updateWindowTitle();
     updateMenuState();
+
+    // Warn if no party context — the account is misconfigured.
+    // Under normal circumstances the server rejects logins with no party, so
+    // this is a last-resort defensive check.
+    if (clientManager_ && clientManager_->isConnected() &&
+        party_name_.isEmpty()) {
+        MessageBoxHelper::warning(this, "No Party Assigned",
+            "Your account has no party context.\n\n"
+            "This is a configuration error — please contact your tenant "
+            "administrator to assign your account to a party before continuing.");
+    }
 }
 
 void MainWindow::showSignUpDialog(const QString& host, int port) {

@@ -2038,14 +2038,18 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
 void MainWindow::updateWindowTitle() {
     QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
 
-    // Add connection info if connected
+    // Add connection info if connected.
+    // username_ is in "user@tenant" format from IAM — strip the tenant suffix
+    // for the title bar; the tenant appears in the status bar chip instead.
     if (clientManager_ && clientManager_->isConnected()) {
         const QString server =
             QString::fromStdString(clientManager_->serverAddress());
         if (!username_.empty()) {
-            title += QString(" - %1 @ %2")
-                .arg(QString::fromStdString(username_))
-                .arg(server);
+            const QString fullUser = QString::fromStdString(username_);
+            const int atIdx = fullUser.indexOf('@');
+            const QString displayUser =
+                (atIdx >= 0) ? fullUser.left(atIdx) : fullUser;
+            title += QString(" - %1 @ %2").arg(displayUser).arg(server);
         } else {
             title += QString(" - %1").arg(server);
         }
@@ -2066,8 +2070,22 @@ void MainWindow::updateStatusBarFields() {
         "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
         " background: palette(alternateBase); }";
 
-    if (!activeConnectionName_.isEmpty()) {
-        tenantStatusLabel_->setText("Tenant: " + activeConnectionName_);
+    // Derive tenant name from the @tenant suffix in username_, falling back to
+    // the saved connection name when the username carries no tenant suffix.
+    QString tenantName;
+    if (!username_.empty()) {
+        const QString fullUser = QString::fromStdString(username_);
+        const int atIdx = fullUser.indexOf('@');
+        if (atIdx >= 0) {
+            tenantName = fullUser.mid(atIdx + 1);
+        }
+    }
+    if (tenantName.isEmpty()) {
+        tenantName = activeConnectionName_;
+    }
+
+    if (!tenantName.isEmpty()) {
+        tenantStatusLabel_->setText("Tenant: " + tenantName);
         tenantStatusLabel_->setStyleSheet(chipStyle);
         tenantStatusLabel_->setVisible(true);
     } else {

@@ -79,7 +79,7 @@ begin
     -- Special cases: EUR -> 'eu', XAU -> 'xau', XDR -> 'xdr', etc.
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
     )
     select
         v_currencies_dataset_id,
@@ -94,7 +94,8 @@ begin
         c.rounding_type,
         c.rounding_precision,
         c.format,
-        c.currency_type,
+        split_part(c.currency_type, '.', 1),
+        split_part(c.currency_type, '.', 2),
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
         -- Americas
@@ -291,19 +292,19 @@ from ores_dq_currencies_artefact_tbl
 union all
 select 'Major Fiat Currencies (fiat.major)', count(*)
 from ores_dq_currencies_artefact_tbl
-where currency_type = 'fiat.major'
+where asset_class = 'fiat' and market_tier = 'major'
 union all
 select 'Emerging Fiat Currencies (fiat.emerging)', count(*)
 from ores_dq_currencies_artefact_tbl
-where currency_type = 'fiat.emerging'
+where asset_class = 'fiat' and market_tier = 'emerging'
 union all
 select 'Commodity Currencies (commodity)', count(*)
 from ores_dq_currencies_artefact_tbl
-where currency_type = 'commodity'
+where asset_class = 'commodity'
 union all
 select 'Supranational Currencies (supranational)', count(*)
 from ores_dq_currencies_artefact_tbl
-where currency_type = 'supranational'
+where asset_class = 'supranational'
 union all
 select 'Currencies with Placeholder Flag', count(*)
 from ores_dq_currencies_artefact_tbl c

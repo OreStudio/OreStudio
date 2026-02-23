@@ -79,7 +79,7 @@ begin
     -- Insert cryptocurrencies with icon links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -94,7 +94,8 @@ begin
         c.rounding_type,
         c.rounding_precision,
         c.format,
-        c.currency_type,
+        split_part(c.currency_type, '.', 1),
+        split_part(c.currency_type, '.', 2),
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
         ('BTC', 'Bitcoin', '', '₿', '', 100000000, 'Closest', 8, '#,##0.00000000', 'crypto.major'),
@@ -226,13 +227,13 @@ select 'Major (crypto.major)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Small'
-  and c.currency_type = 'crypto.major'
+  and c.asset_class = 'crypto' and c.market_tier = 'major'
 union all
 select 'Minor (crypto.minor)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Small'
-  and c.currency_type = 'crypto.minor'
+  and c.asset_class = 'crypto' and c.market_tier = 'minor'
 union all
 select 'With Icons', count(*)
 from ores_dq_currencies_artefact_tbl c

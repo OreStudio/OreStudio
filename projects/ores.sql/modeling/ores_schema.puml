@@ -497,7 +497,8 @@ package "refdata" #FFF3E0 {
         * rounding_type : text
         * rounding_precision : integer
         * format : text
-        * currency_type : text
+        * asset_class : text
+        * market_tier : text
           coding_scheme_code : text <<FK>>
           image_id : uuid <<FK>>
         * modified_by : text
@@ -1067,7 +1068,8 @@ package "dq_staging" #F3E5F5 {
         * rounding_type : text
         * rounding_precision : integer
         * format : text
-        * currency_type : text
+        * asset_class : text
+        * market_tier : text
           image_id : uuid <<FK>>
     }
 

@@ -20,11 +20,31 @@
 #ifndef ORES_QT_WIDGET_UTILS_HPP
 #define ORES_QT_WIDGET_UTILS_HPP
 
-#include <QAbstractItemView>
 #include <QComboBox>
+#include <QListView>
+#include <QSize>
 #include <QWidget>
 
 namespace ores::qt {
+
+/**
+ * @brief A QListView that caps its sizeHint height.
+ *
+ * Qt's combo popup sizing queries view()->sizeHint() before calling resize()
+ * on the popup container. Capping that hint here — rather than setMaximumHeight
+ * — ensures the popup frame itself is sized correctly, not just the content area.
+ */
+class BoundedListView : public QListView {
+public:
+    static constexpr int max_popup_height = 250;
+
+    explicit BoundedListView(QWidget* parent = nullptr) : QListView(parent) {}
+
+    QSize sizeHint() const override {
+        const auto s = QListView::sizeHint();
+        return { s.width(), std::min(s.height(), max_popup_height) };
+    }
+};
 
 /**
  * @brief Utility functions for common widget configuration.
@@ -43,9 +63,11 @@ struct WidgetUtils {
     static void setupComboBoxes(QWidget* parent) {
         for (auto* combo : parent->findChildren<QComboBox*>()) {
             combo->setMaxVisibleItems(10);
-            // setMaxVisibleItems is ignored on Linux when items carry icons;
-            // capping the popup view's height is the reliable cross-platform fix.
-            combo->view()->setMaximumHeight(250);
+            // Replace the default popup view with one that caps sizeHint().
+            // setMaxVisibleItems alone is ignored on Linux when items carry
+            // icons; the popup container is sized from the view's sizeHint(),
+            // so overriding that is the reliable cross-platform fix.
+            combo->setView(new BoundedListView(combo));
         }
     }
 };

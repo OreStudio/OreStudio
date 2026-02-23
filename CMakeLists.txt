@@ -36,6 +36,26 @@ set(CMAKE_TOOLCHAIN_FILE
 # Log CMake version. Useful for debugging CMake problems.
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
+#
+# Parallel build configuration check.
+# CMAKE_BUILD_PARALLEL_LEVEL controls cmake --build concurrency.
+# CTEST_PARALLEL_LEVEL controls ctest concurrency.
+# Set them in ~/.bashrc for per-machine configuration (see cmake-runner skill).
+#
+cmake_host_system_information(RESULT ORES_CPU_CORES QUERY NUMBER_OF_LOGICAL_CORES)
+message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL: $ENV{CMAKE_BUILD_PARALLEL_LEVEL} (logical cores: ${ORES_CPU_CORES})")
+message(STATUS "CTEST_PARALLEL_LEVEL: $ENV{CTEST_PARALLEL_LEVEL}")
+if(ORES_CPU_CORES GREATER 1)
+    if("$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "1")
+        message(WARNING "CMAKE_BUILD_PARALLEL_LEVEL is not set (or set to 1) but ${ORES_CPU_CORES} logical cores are available. "
+            "Set it in ~/.bashrc for faster builds: export CMAKE_BUILD_PARALLEL_LEVEL=${ORES_CPU_CORES}")
+    endif()
+    if("$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "1")
+        message(WARNING "CTEST_PARALLEL_LEVEL is not set (or set to 1) but ${ORES_CPU_CORES} logical cores are available. "
+            "Set it in ~/.bashrc for faster tests: export CTEST_PARALLEL_LEVEL=${ORES_CPU_CORES}")
+    endif()
+endif()
+
 # ctest support
 enable_testing()
 configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)

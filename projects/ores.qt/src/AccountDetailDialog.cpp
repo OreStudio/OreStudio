@@ -219,6 +219,7 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     // Set up parties widget for existing accounts
     if (partiesWidget_ && !isAddMode_) {
         partiesWidget_->setAccountId(account.id);
+        partiesWidget_->setAccountType(account.account_type);
         partiesWidget_->loadParties();
     }
 
@@ -242,8 +243,15 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     if (securityIdx >= 0) tw->setTabEnabled(securityIdx, createMode);
     if (loginStatusIdx >= 0) tw->setTabEnabled(loginStatusIdx, !createMode);
     if (rolesIdx >= 0) tw->setTabEnabled(rolesIdx, !createMode);
-    if (partiesIdx >= 0) tw->setTabEnabled(partiesIdx, !createMode);
+    // Parties tab is enabled in both modes: in create mode the user can
+    // pre-select parties to assign once the account is created.
+    if (partiesIdx >= 0) tw->setTabEnabled(partiesIdx, true);
     setProvenanceEnabled(!createMode);
+
+    if (createMode && partiesWidget_) {
+        partiesWidget_->setAccountType("user");
+        partiesWidget_->loadAvailableParties();
+    }
 }
 
 iam::domain::account AccountDetailDialog::getAccount() const {
@@ -385,14 +393,56 @@ void AccountDetailDialog::onSaveClicked() {
                                << currentAccount_.username;
 
     if (isAddMode_) {
-        // Create new account
+        // Warn if no party assigned
+        const bool needsPartySave = partiesWidget_ && partiesWidget_->hasPendingChanges();
+        if (!needsPartySave && partiesWidget_) {
+            if (!partiesWidget_->hasAvailableParties()) {
+                MessageBoxHelper::warning(this, "No Parties Available",
+                    "No parties are defined in the system. "
+                    "The account will be created without a party assignment and "
+                    "will not be able to log in until a party is assigned.");
+                // Non-blocking: allow creation to proceed
+            } else {
+                const auto reply = MessageBoxHelper::question(this,
+                    "No Party Assigned",
+                    "No party has been assigned to this account.\n\n"
+                    "Accounts without a party assignment cannot log in to any "
+                    "party context.\n\nCreate the account without a party?",
+                    QMessageBox::Yes | QMessageBox::No);
+                if (reply != QMessageBox::Yes) return;
+            }
+        }
+
+        // Get change reason for party assignments if needed
+        std::string changeReasonCode;
+        std::string changeCommentary;
+        if (needsPartySave) {
+            namespace reason = dq::domain::change_reason_constants;
+            std::vector<dq::domain::change_reason> reasons;
+            if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+                reasons = changeReasonCache_->getReasonsForAmend(
+                    std::string{reason::categories::common});
+            }
+            ChangeReasonDialog dialog(reasons,
+                ChangeReasonDialog::OperationType::Amend, true, this);
+            if (dialog.exec() != QDialog::Accepted) return;
+            changeReasonCode = dialog.selectedReasonCode();
+            changeCommentary = dialog.commentary();
+        }
+
+        // Capture pending party adds before going async
+        const auto pendingAdds =
+            needsPartySave ? partiesWidget_->pendingAdds()
+                           : std::vector<boost::uuids::uuid>{};
+
         QPointer<AccountDetailDialog> self = this;
         const std::string username = ui_->usernameEdit->text().toStdString();
         const std::string password = ui_->passwordEdit->text().toStdString();
         const std::string email = ui_->emailEdit->text().toStdString();
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, username, password, email]()
+            QtConcurrent::run([self, username, password, email,
+                               pendingAdds, changeReasonCode, changeCommentary]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -428,8 +478,31 @@ void AccountDetailDialog::onSaveClicked() {
                     return {false, "Invalid server response"};
                 }
 
-                // Success if we got an account_id back
-                return {true, boost::uuids::to_string(response->account_id)};
+                const boost::uuids::uuid account_id = response->account_id;
+
+                // Commit any staged party additions
+                for (const auto& partyId : pendingAdds) {
+                    iam::domain::account_party ap;
+                    ap.account_id         = account_id;
+                    ap.party_id           = partyId;
+                    ap.change_reason_code = changeReasonCode;
+                    ap.change_commentary  = changeCommentary;
+                    ap.modified_by        = "";  // server overwrites from session
+
+                    iam::messaging::save_account_party_request party_req;
+                    party_req.account_party = ap;
+
+                    auto result = self->clientManager_->
+                        process_authenticated_request(std::move(party_req));
+                    if (!result)
+                        return {false, "Account created but party assignment failed: "
+                                       + comms::net::to_string(result.error())};
+                    if (!result->success)
+                        return {false, "Account created but party assignment failed: "
+                                       + result->message};
+                }
+
+                return {true, boost::uuids::to_string(account_id)};
             });
 
         auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
@@ -457,6 +530,10 @@ void AccountDetailDialog::onSaveClicked() {
                 } catch (...) {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to parse account ID";
                 }
+
+                // Clear staged party changes (they were committed or user said no)
+                if (self->partiesWidget_)
+                    self->partiesWidget_->loadAvailableParties();
 
                 self->notifySaveSuccess(tr("Account '%1' created")
                     .arg(QString::fromStdString(username)));

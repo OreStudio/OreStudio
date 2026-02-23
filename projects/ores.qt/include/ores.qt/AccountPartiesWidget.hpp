@@ -64,10 +64,13 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setAccountId(const boost::uuids::uuid& accountId);
+    void setAccountType(const std::string& accountType);
     void loadParties();
+    void loadAvailableParties();
     void setReadOnly(bool readOnly);
 
     [[nodiscard]] bool hasPendingChanges() const;
+    [[nodiscard]] bool hasAvailableParties() const;
     [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingAdds() const;
     [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingRemoves() const;
 
@@ -100,6 +103,7 @@ private:
 
     ClientManager*     clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
+    std::string        accountType_;
     bool               readOnly_ = false;
 
     // DB state

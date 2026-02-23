@@ -29,6 +29,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
+#include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -102,6 +103,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     case Column::Username: return QString::fromStdString(account.username);
     case Column::AccountType: return QString::fromStdString(account.account_type);
     case Column::Email: return QString::fromStdString(account.email);
+    case Column::Parties: return item.partyCount > 0 ? QString::number(item.partyCount) : QString("-");
     case Column::Status: {
         auto status = calculateLoginStatus(item.loginInfo);
         switch (status) {
@@ -133,6 +135,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Username: return tr("Username");
         case Column::AccountType: return tr("Type");
         case Column::Email: return tr("Email");
+        case Column::Parties: return tr("Parties");
         case Column::Status: return tr("Status");
         case Column::Locked: return tr("Locked");
         case Column::Version: return tr("Version");
@@ -249,8 +252,24 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
                                               << comms::net::to_string(login_info_result.error());
                 }
 
+                // Fetch all account-party assignments for party count column
+                std::vector<iam::domain::account_party> account_parties;
+                iam::messaging::get_account_parties_request parties_request;
+                auto parties_result = self->clientManager_->
+                    process_authenticated_request(std::move(parties_request));
+
+                if (parties_result) {
+                    account_parties = std::move(parties_result->account_parties);
+                    BOOST_LOG_SEV(lg(), debug) << "Received " << account_parties.size()
+                                               << " account party records";
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to fetch account parties: "
+                                              << comms::net::to_string(parties_result.error());
+                }
+
                 return {.success = true, .accounts = std::move(accounts_result->accounts),
                         .loginInfos = std::move(login_infos),
+                        .accountParties = std::move(account_parties),
                         .total_available_count = accounts_result->total_available_count,
                         .error_message = {}, .error_details = {}};
             }, "accounts");
@@ -280,10 +299,16 @@ void ClientAccountModel::onAccountsLoaded() {
         login_info_map[boost::uuids::to_string(li.account_id)] = std::move(li);
     }
 
+    // Build party count map: account_id_string → count
+    std::unordered_map<std::string, int> party_count_map;
+    for (const auto& ap : result.accountParties) {
+        ++party_count_map[boost::uuids::to_string(ap.account_id)];
+    }
+
     const int new_count = static_cast<int>(result.accounts.size());
 
     if (new_count > 0) {
-        // Join accounts with login_info and sort by username
+        // Join accounts with login_info, party counts, and sort by username
         std::vector<AccountWithLoginInfo> new_items;
         new_items.reserve(new_count);
         for (auto& acct : result.accounts) {
@@ -293,6 +318,8 @@ void ClientAccountModel::onAccountsLoaded() {
             if (li_it != login_info_map.end()) {
                 item.loginInfo = std::move(li_it->second);
             }
+            auto pc_it = party_count_map.find(id_str);
+            item.partyCount = (pc_it != party_count_map.end()) ? pc_it->second : 0;
             item.account = std::move(acct);
             new_items.push_back(std::move(item));
         }

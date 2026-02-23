@@ -501,6 +501,11 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
+*** Alert for unsaved modified entities                                :code:
+
+If a user changes an entity but does not save it, we should alert the user.
+Also, we probably should add a cancel button to all detail dialogs.
+
 *** Polish business centre UI and data quality                         :code:
 
 Several data quality and UI issues with business centres.

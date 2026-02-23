@@ -29,6 +29,7 @@
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/account.hpp"
+#include "ores.iam/domain/account_party.hpp"
 #include "ores.iam/domain/login_info.hpp"
 
 namespace ores::qt {
@@ -57,6 +58,7 @@ enum class LoginStatus {
 struct AccountWithLoginInfo {
     iam::domain::account account;
     std::optional<iam::domain::login_info> loginInfo;
+    int partyCount = 0;
 };
 
 /**
@@ -92,6 +94,7 @@ public:
         Username,
         AccountType,
         Email,
+        Parties,    // Number of parties assigned to the account
         Status,     // Login status: Never, LongAgo, Recent, Online
         Locked,
         Version,
@@ -219,6 +222,7 @@ private:
         bool success;
         std::vector<iam::domain::account> accounts;
         std::vector<iam::domain::login_info> loginInfos;
+        std::vector<iam::domain::account_party> accountParties;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;

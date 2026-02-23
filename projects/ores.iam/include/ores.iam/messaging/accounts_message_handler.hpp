@@ -507,6 +507,16 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle get_account_parties_request message.
+     *
+     * Requires authentication. Returns all account-party assignments.
+     */
+    handler_result
+    handle_get_account_parties_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Handle get_account_parties_by_account_request message.
      *
      * Requires authentication. Returns all parties assigned to an account.

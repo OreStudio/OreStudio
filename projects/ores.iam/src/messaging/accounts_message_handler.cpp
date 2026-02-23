@@ -182,6 +182,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_session_samples_request(payload, remote_address);
     case message_type::select_party_request:
         co_return co_await handle_select_party_request(payload, remote_address);
+    case message_type::get_account_parties_request:
+        co_return co_await handle_get_account_parties_request(payload, remote_address);
     case message_type::get_account_parties_by_account_request:
         co_return co_await handle_get_account_parties_by_account_request(payload, remote_address);
     case message_type::save_account_party_request:
@@ -2374,6 +2376,39 @@ handle_select_party_request(std::span<const std::byte> payload,
 // =============================================================================
 // Account Party Handlers
 // =============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_parties_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_parties_request from "
+                               << remote_address;
+
+    auto request_result = get_account_parties_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize get_account_parties_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "get_account_parties_request denied: not authenticated "
+            << remote_address;
+        co_return std::unexpected(
+            ores::utility::serialization::error_code::authentication_failed);
+    }
+
+    auto ctx = make_request_context(*session);
+    repository::account_party_repository ap_repo(ctx);
+    const auto parties = ap_repo.read_latest();
+
+    BOOST_LOG_SEV(lg(), debug) << "Returning " << parties.size()
+                               << " account party records";
+
+    get_account_parties_response response{.account_parties = parties};
+    co_return response.serialize();
+}
 
 accounts_message_handler::handler_result accounts_message_handler::
 handle_get_account_parties_by_account_request(std::span<const std::byte> payload,

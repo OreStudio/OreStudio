@@ -29,8 +29,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -99,8 +99,16 @@ void AccountPartiesWidget::setAccountId(const boost::uuids::uuid& accountId) {
     accountId_ = accountId;
 }
 
+void AccountPartiesWidget::setAccountType(const std::string& accountType) {
+    accountType_ = accountType;
+}
+
 bool AccountPartiesWidget::hasPendingChanges() const {
     return !pendingAdds_.empty() || !pendingRemoves_.empty();
+}
+
+bool AccountPartiesWidget::hasAvailableParties() const {
+    return !allParties_.empty();
 }
 
 const std::vector<boost::uuids::uuid>& AccountPartiesWidget::pendingAdds() const {
@@ -202,6 +210,64 @@ void AccountPartiesWidget::loadParties() {
     watcher->setFuture(future);
 }
 
+void AccountPartiesWidget::loadAvailableParties() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load parties: not connected";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading available parties for new account";
+
+    QPointer<AccountPartiesWidget> self = this;
+
+    struct LoadResult {
+        bool success;
+        std::vector<refdata::domain::party> allParties;
+    };
+
+    auto* watcher = new QFutureWatcher<LoadResult>(this);
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
+        [self, watcher]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self) return;
+
+            if (result.success) {
+                self->assignedParties_.clear();
+                self->allParties_      = std::move(result.allParties);
+                self->pendingAdds_.clear();
+                self->pendingRemoves_.clear();
+                self->refreshView();
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Loaded " << self->allParties_.size()
+                    << " available parties";
+            } else {
+                emit self->errorMessage("Load Failed", "Failed to load available parties");
+            }
+        });
+
+    QFuture<LoadResult> future =
+        QtConcurrent::run([self]() -> LoadResult {
+            if (!self) return {false, {}};
+
+            refdata::messaging::get_parties_request request;
+            request.offset = 0;
+            request.limit  = 1000;
+            auto result = self->clientManager_->
+                process_authenticated_request(std::move(request));
+
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to fetch parties: "
+                    << comms::net::to_string(result.error());
+                return {false, {}};
+            }
+            return {true, std::move(result->parties)};
+        });
+
+    watcher->setFuture(future);
+}
+
 void AccountPartiesWidget::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     updateButtonStates();
@@ -209,6 +275,16 @@ void AccountPartiesWidget::setReadOnly(bool readOnly) {
 
 void AccountPartiesWidget::onAddPartyClicked() {
     if (partyCombo_->count() == 0) return;
+
+    // Warn if this is a tenant admin account — party assignment is unusual
+    if (accountType_ == "admin" || accountType_ == "tenant_admin") {
+        const auto reply = MessageBoxHelper::question(this,
+            "Administrator Account",
+            "This is an administrator account. Assigning parties to administrator "
+            "accounts is not typical and may not be appropriate.\n\nContinue?",
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply != QMessageBox::Yes) return;
+    }
 
     const auto partyIdStr = partyCombo_->currentData().toString().toStdString();
     if (partyIdStr.empty()) return;

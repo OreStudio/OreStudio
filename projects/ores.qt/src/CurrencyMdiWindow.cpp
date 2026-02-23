@@ -136,7 +136,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     toolBar_->addSeparator();
 
-    auto roundingTypesAction = new QAction("Rounding Types", this);
+    auto roundingTypesAction = new QAction("Rounding", this);
     roundingTypesAction->setIcon(IconUtils::createRecoloredIcon(
             Icon::Tag, IconUtils::DefaultIconColor));
     roundingTypesAction->setToolTip("Open Rounding Types list");

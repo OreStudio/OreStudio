@@ -111,7 +111,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     toolBar_->addSeparator();
 
     // Rounding Types navigation action
-    auto* roundingTypesAction = new QAction("Rounding Types...", this);
+    auto* roundingTypesAction = new QAction("Rounding", this);
     roundingTypesAction->setIcon(IconUtils::createRecoloredIcon(
             Icon::Tag, IconUtils::DefaultIconColor));
     roundingTypesAction->setToolTip("Open Rounding Types list");
@@ -218,6 +218,11 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->roundingTypeCombo, &QComboBox::currentTextChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->roundingTypeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int idx) {
+        const auto tip = ui_->roundingTypeCombo->itemData(idx, Qt::ToolTipRole).toString();
+        ui_->roundingTypeCombo->setToolTip(tip);
+    });
     connect(ui_->roundingPrecisionSpinBox, QOverload<int>::of(
             &QSpinBox::valueChanged), this,
         &CurrencyDetailDialog::onFieldChanged);
@@ -1181,6 +1186,15 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         }
 
         self->ui_->roundingTypeCombo->blockSignals(false);
+
+        // Sync the combo widget tooltip with the current selection
+        const int cur = self->ui_->roundingTypeCombo->currentIndex();
+        if (cur >= 0) {
+            const auto tip = self->ui_->roundingTypeCombo->itemData(
+                cur, Qt::ToolTipRole).toString();
+            self->ui_->roundingTypeCombo->setToolTip(tip);
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "Rounding type combo populated with "
                                    << result.types.size() << " entries";
     });

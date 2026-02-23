@@ -30,6 +30,7 @@
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
@@ -64,6 +65,7 @@ PublishBundleWizard::PublishBundleWizard(
 }
 
 void PublishBundleWizard::setupPages() {
+    WidgetUtils::setupComboBoxes(this);
     setPage(Page_BundleSummary, new BundleSummaryPage(this));
     setPage(Page_OptionalDatasets, new OptionalDatasetsPage(this));
     setPage(Page_LeiPartyConfig, new LeiPartyConfigPage(this));
@@ -88,6 +90,7 @@ BundleSummaryPage::BundleSummaryPage(PublishBundleWizard* wizard)
 }
 
 void BundleSummaryPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     // Bundle name header
@@ -235,6 +238,7 @@ OptionalDatasetsPage::OptionalDatasetsPage(PublishBundleWizard* wizard)
 }
 
 void OptionalDatasetsPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     auto* infoLabel = new QLabel(
@@ -319,6 +323,7 @@ LeiPartyConfigPage::LeiPartyConfigPage(PublishBundleWizard* wizard)
 }
 
 void LeiPartyConfigPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     // Instruction text
@@ -403,6 +408,7 @@ ConfirmPublishPage::ConfirmPublishPage(PublishBundleWizard* wizard)
 }
 
 void ConfirmPublishPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     // Summary label
@@ -682,6 +688,7 @@ PublishResultsPage::PublishResultsPage(PublishBundleWizard* wizard)
 }
 
 void PublishResultsPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     // Overall status

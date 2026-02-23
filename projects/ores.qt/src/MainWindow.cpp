@@ -94,6 +94,7 @@
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
 #include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/MasterPasswordDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include "ores.utility/version/version.hpp"
@@ -115,6 +116,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     mdiArea_ = new MdiAreaWithBackground(this);
 

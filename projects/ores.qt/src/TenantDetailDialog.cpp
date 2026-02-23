@@ -28,6 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -40,6 +41,7 @@ TenantDetailDialog::TenantDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }

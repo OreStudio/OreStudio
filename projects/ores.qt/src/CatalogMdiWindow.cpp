@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -51,6 +52,7 @@ CatalogMdiWindow::CatalogMdiWindow(ClientManager* clientManager,
 }
 
 void CatalogMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);

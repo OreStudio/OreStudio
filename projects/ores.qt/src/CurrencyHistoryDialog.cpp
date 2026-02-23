@@ -30,6 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -56,6 +57,7 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
                               << isoCode_.toStdString();
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     setupToolbar();
 

@@ -21,6 +21,7 @@
 
 #include "ui_ProvenanceWidget.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 namespace ores::qt {
 
@@ -28,6 +29,7 @@ ProvenanceWidget::ProvenanceWidget(QWidget* parent)
     : QWidget(parent),
       ui_(new Ui::ProvenanceWidget) {
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 }
 
 ProvenanceWidget::~ProvenanceWidget() {

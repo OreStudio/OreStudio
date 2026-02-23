@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/LeiEntityPicker.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -65,6 +66,7 @@ LeiEntityPicker::LeiEntityPicker(ClientManager* clientManager,
 }
 
 void LeiEntityPicker::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 

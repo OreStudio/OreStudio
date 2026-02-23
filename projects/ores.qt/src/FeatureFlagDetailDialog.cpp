@@ -30,6 +30,7 @@
 #include "ui_FeatureFlagDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +49,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
       nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     // Create toolbar
     toolBar_ = new QToolBar(this);

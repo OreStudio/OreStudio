@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/PublicationHistoryDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QDateTime>
 #include <QDialogButtonBox>
@@ -142,6 +143,7 @@ PublicationHistoryDialog::PublicationHistoryDialog(ClientManager* clientManager,
 PublicationHistoryDialog::~PublicationHistoryDialog() = default;
 
 void PublicationHistoryDialog::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     setWindowTitle(tr("Publication History"));
     setMinimumSize(900, 500);
 

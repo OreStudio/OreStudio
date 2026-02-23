@@ -31,6 +31,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/TelemetryLogDelegate.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
 
@@ -74,6 +75,7 @@ TelemetryMdiWindow::~TelemetryMdiWindow() {
 }
 
 void TelemetryMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 

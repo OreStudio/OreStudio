@@ -21,6 +21,7 @@
 #include "ores.qt/EventViewerDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -194,6 +195,7 @@ EventViewerWindow::~EventViewerWindow() {
 }
 
 void EventViewerWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     setMinimumSize(800, 500);
 
     auto* layout = new QVBoxLayout(this);

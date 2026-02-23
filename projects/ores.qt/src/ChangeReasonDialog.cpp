@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -60,6 +61,7 @@ ChangeReasonDialog::ChangeReasonDialog(
 }
 
 void ChangeReasonDialog::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     const QString title = (operation_ == OperationType::Amend)
         ? tr("Change Reason Required")
         : tr("Deletion Reason Required");

@@ -20,6 +20,7 @@
 #include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <cmath>
 #include <QVBoxLayout>
@@ -41,6 +42,7 @@ DatasetViewDialog::DatasetViewDialog(ClientManager* clientManager,
 DatasetViewDialog::~DatasetViewDialog() = default;
 
 void DatasetViewDialog::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     setWindowTitle(tr("Dataset Details"));
     setMinimumSize(800, 600);
     resize(950, 700);

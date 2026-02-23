@@ -28,6 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -53,6 +54,7 @@ ChangeReasonHistoryDialog::ChangeReasonHistoryDialog(QString code,
                               << code_.toStdString();
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     setupToolbar();
 

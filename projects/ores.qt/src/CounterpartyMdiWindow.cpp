@@ -30,6 +30,7 @@
 #include "ores.qt/BadgeColors.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -65,6 +66,7 @@ CounterpartyMdiWindow::CounterpartyMdiWindow(
 }
 
 void CounterpartyMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();

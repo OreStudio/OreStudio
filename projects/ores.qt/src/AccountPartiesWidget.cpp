@@ -30,6 +30,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -51,6 +52,7 @@ AccountPartiesWidget::AccountPartiesWidget(QWidget* parent)
 }
 
 void AccountPartiesWidget::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 

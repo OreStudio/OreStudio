@@ -29,6 +29,7 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -62,6 +63,7 @@ TenantMdiWindow::TenantMdiWindow(
 }
 
 void TenantMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();

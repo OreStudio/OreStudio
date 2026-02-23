@@ -28,6 +28,7 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/book_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -60,6 +61,7 @@ BookStatusMdiWindow::BookStatusMdiWindow(
 }
 
 void BookStatusMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();

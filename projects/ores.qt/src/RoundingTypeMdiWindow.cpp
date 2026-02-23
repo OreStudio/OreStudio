@@ -28,6 +28,7 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -60,6 +61,7 @@ RoundingTypeMdiWindow::RoundingTypeMdiWindow(
 }
 
 void RoundingTypeMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();

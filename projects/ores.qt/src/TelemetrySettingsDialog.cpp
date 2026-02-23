@@ -27,6 +27,7 @@
 #include <QStandardPaths>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 namespace ores::qt {
 
@@ -86,6 +87,7 @@ TelemetrySettingsDialog::~TelemetrySettingsDialog() {
 }
 
 void TelemetrySettingsDialog::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
 
     setWindowTitle("Telemetry Settings");

@@ -37,6 +37,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -54,6 +55,7 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
       rolesWidget_(nullptr), partiesWidget_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     // Create toolbar
     toolBar_ = new QToolBar(this);

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -59,6 +60,7 @@ FlagSelectorDialog::FlagSelectorDialog(ImageCache* imageCache,
 }
 
 void FlagSelectorDialog::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
 
     // Search box

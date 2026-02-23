@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 namespace ores::qt {
 
@@ -111,6 +112,7 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     // Connect page size combo signal
     connect(page_size_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &PaginationWidget::on_page_size_changed);
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void PaginationWidget::update_state(std::uint32_t loaded_count,

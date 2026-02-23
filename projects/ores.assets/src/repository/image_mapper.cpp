@@ -38,7 +38,8 @@ domain::image image_mapper::map(const image_entity& v) {
     r.key = v.key;
     r.description = v.description;
     r.svg_data = v.svg_data;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     if (!v.valid_from)
@@ -59,7 +60,8 @@ image_entity image_mapper::map(const domain::image& v) {
     r.key = v.key;
     r.description = v.description;
     r.svg_data = v.svg_data;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers

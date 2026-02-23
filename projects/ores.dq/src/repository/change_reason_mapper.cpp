@@ -41,7 +41,8 @@ change_reason_mapper::map(const change_reason_entity& v) {
     r.applies_to_delete = v.applies_to_delete;
     r.requires_commentary = v.requires_commentary;
     r.display_order = v.display_order;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -63,7 +64,8 @@ change_reason_mapper::map(const domain::change_reason& v) {
     r.applies_to_delete = v.applies_to_delete;
     r.requires_commentary = v.requires_commentary;
     r.display_order = v.display_order;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

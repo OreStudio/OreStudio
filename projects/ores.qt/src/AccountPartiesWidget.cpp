@@ -28,15 +28,12 @@
 #include <future>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
@@ -48,8 +45,7 @@ AccountPartiesWidget::AccountPartiesWidget(QWidget* parent)
       assignedList_(new QListWidget(this)),
       partyCombo_(new QComboBox(this)),
       addButton_(new QToolButton(this)),
-      removeButton_(new QToolButton(this)),
-      saveButton_(new QToolButton(this)) {
+      removeButton_(new QToolButton(this)) {
 
     setupUi();
     updateButtonStates();
@@ -73,30 +69,22 @@ void AccountPartiesWidget::setupUi() {
 
     addButton_->setIcon(IconUtils::createRecoloredIcon(
         Icon::Add, IconUtils::DefaultIconColor));
-    addButton_->setToolTip("Stage selected party for addition");
+    addButton_->setToolTip("Add selected party");
     addButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
     connect(addButton_, &QToolButton::clicked,
         this, &AccountPartiesWidget::onAddPartyClicked);
 
     removeButton_->setIcon(IconUtils::createRecoloredIcon(
         Icon::Delete, IconUtils::DefaultIconColor));
-    removeButton_->setToolTip("Stage selected party for removal");
+    removeButton_->setToolTip("Remove selected party");
     removeButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
     connect(removeButton_, &QToolButton::clicked,
         this, &AccountPartiesWidget::onRemovePartyClicked);
-
-    saveButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Save, IconUtils::DefaultIconColor));
-    saveButton_->setToolTip("Save pending party changes");
-    saveButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    connect(saveButton_, &QToolButton::clicked,
-        this, &AccountPartiesWidget::onSaveClicked);
 
     buttonsLayout->addWidget(partyCombo_);
     buttonsLayout->addWidget(addButton_);
     buttonsLayout->addWidget(removeButton_);
     buttonsLayout->addStretch();
-    buttonsLayout->addWidget(saveButton_);
 
     groupLayout->addLayout(buttonsLayout);
 
@@ -107,16 +95,20 @@ void AccountPartiesWidget::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
 
-void AccountPartiesWidget::setChangeReasonCache(ChangeReasonCache* cache) {
-    changeReasonCache_ = cache;
-}
-
 void AccountPartiesWidget::setAccountId(const boost::uuids::uuid& accountId) {
     accountId_ = accountId;
 }
 
 bool AccountPartiesWidget::hasPendingChanges() const {
     return !pendingAdds_.empty() || !pendingRemoves_.empty();
+}
+
+const std::vector<boost::uuids::uuid>& AccountPartiesWidget::pendingAdds() const {
+    return pendingAdds_;
+}
+
+const std::vector<boost::uuids::uuid>& AccountPartiesWidget::pendingRemoves() const {
+    return pendingRemoves_;
 }
 
 void AccountPartiesWidget::loadParties() {
@@ -233,6 +225,7 @@ void AccountPartiesWidget::onAddPartyClicked() {
 
     refreshView();
     updateButtonStates();
+    emit partyListChanged();
 }
 
 void AccountPartiesWidget::onRemovePartyClicked() {
@@ -255,115 +248,7 @@ void AccountPartiesWidget::onRemovePartyClicked() {
 
     refreshView();
     updateButtonStates();
-}
-
-void AccountPartiesWidget::onSaveClicked() {
-    if (!hasPendingChanges()) return;
-
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Not Connected",
-            "Cannot save party changes while disconnected.");
-        return;
-    }
-
-    // Show change reason dialog
-    namespace reason = dq::domain::change_reason_constants;
-    std::vector<dq::domain::change_reason> reasons;
-    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
-        reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-    }
-
-    ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
-        true, this);
-    if (dialog.exec() != QDialog::Accepted) return;
-
-    const auto changeReasonCode = dialog.selectedReasonCode();
-    const auto changeCommentary = dialog.commentary();
-
-    QPointer<AccountPartiesWidget> self = this;
-    const auto accountId = accountId_;
-    const auto adds = pendingAdds_;
-    const auto removes = pendingRemoves_;
-
-    struct SaveResult {
-        bool success;
-        std::string message;
-    };
-
-    auto* watcher = new QFutureWatcher<SaveResult>(this);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, this,
-        [self, watcher]() {
-            auto result = watcher->result();
-            watcher->deleteLater();
-            if (!self) return;
-
-            if (result.success) {
-                emit self->statusMessage("Party changes saved successfully");
-                self->loadParties();
-                emit self->partiesChanged();
-            } else {
-                emit self->errorMessage("Save Failed",
-                    QString::fromStdString(result.message));
-                MessageBoxHelper::critical(self, "Save Failed",
-                    QString::fromStdString(result.message));
-            }
-        });
-
-    QFuture<SaveResult> future =
-        QtConcurrent::run([self, accountId, adds, removes,
-                           changeReasonCode, changeCommentary]() -> SaveResult {
-            if (!self) return {false, "Widget destroyed"};
-
-            // Process adds
-            for (const auto& partyId : adds) {
-                iam::domain::account_party ap;
-                ap.account_id         = accountId;
-                ap.party_id           = partyId;
-                ap.change_reason_code = changeReasonCode;
-                ap.change_commentary  = changeCommentary;
-                ap.modified_by        = "";  // server overwrites from session
-
-                iam::messaging::save_account_party_request request;
-                request.account_party = ap;
-
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
-
-                if (!result) {
-                    return {false, comms::net::to_string(result.error())};
-                }
-                if (!result->success) {
-                    return {false, result->message};
-                }
-            }
-
-            // Process removes
-            for (const auto& partyId : removes) {
-                iam::messaging::delete_account_party_request request;
-                iam::messaging::account_party_key key;
-                key.account_id = accountId;
-                key.party_id   = partyId;
-                request.keys.push_back(key);
-
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
-
-                if (!result) {
-                    return {false, comms::net::to_string(result.error())};
-                }
-                if (result->results.empty() || !result->results.front().success) {
-                    const std::string msg = result->results.empty()
-                        ? "No result returned"
-                        : result->results.front().message;
-                    return {false, msg};
-                }
-            }
-
-            return {true, {}};
-        });
-
-    watcher->setFuture(future);
+    emit partyListChanged();
 }
 
 void AccountPartiesWidget::onAssignedSelectionChanged() {
@@ -406,8 +291,7 @@ void AccountPartiesWidget::refreshView() {
     // Staged additions
     for (const auto& partyId : pendingAdds_) {
         effectiveIds.push_back(partyId);
-        auto* item = new QListWidgetItem(
-            findPartyName(partyId) + tr(" [pending]"));
+        auto* item = new QListWidgetItem(findPartyName(partyId));
         item->setData(Qt::UserRole,
             QString::fromStdString(boost::uuids::to_string(partyId)));
         assignedList_->addItem(item);
@@ -428,12 +312,8 @@ void AccountPartiesWidget::refreshView() {
         }
     }
 
-    const int total = static_cast<int>(effectiveIds.size());
-    const int pending = static_cast<int>(pendingAdds_.size() + pendingRemoves_.size());
-    QString title = QString("Assigned Parties (%1)").arg(total);
-    if (pending > 0)
-        title += QString(" [%1 unsaved]").arg(pending);
-    partiesGroup_->setTitle(title);
+    partiesGroup_->setTitle(
+        QString("Assigned Parties (%1)").arg(static_cast<int>(effectiveIds.size())));
 
     updateButtonStates();
 }
@@ -445,7 +325,6 @@ void AccountPartiesWidget::updateButtonStates() {
 
     addButton_->setEnabled(!readOnly_ && isConnected && hasComboItem);
     removeButton_->setEnabled(!readOnly_ && isConnected && hasSelection);
-    saveButton_->setEnabled(!readOnly_ && isConnected && hasPendingChanges());
 }
 
 }

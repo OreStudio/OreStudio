@@ -184,7 +184,8 @@ private:
     QAction* deleteAction_;
     QAction* revertAction_;
 
-    ClientManager* clientManager_;
+    ClientManager*     clientManager_;
+    ChangeReasonCache* changeReasonCache_ = nullptr;
     iam::domain::account currentAccount_;
     std::optional<iam::domain::login_info> currentLoginInfo_;
     AccountRolesWidget*   rolesWidget_;

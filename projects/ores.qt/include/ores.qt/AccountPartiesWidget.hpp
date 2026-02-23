@@ -34,15 +34,16 @@
 
 namespace ores::qt {
 
-class ChangeReasonCache;
-
 /**
  * @brief Widget for managing parties assigned to an account.
  *
  * Displays the parties currently assigned to an account and allows
- * adding/removing party links via a combo box and toolbar buttons.
- * Changes are staged locally and only written to the database when
- * the Save button is clicked, after selecting a change reason.
+ * staging add/remove operations via a combo box and toolbar buttons.
+ * Changes are committed by the parent dialog's Save action, which
+ * handles the change reason dialog and calls loadParties() to reload.
+ *
+ * The widget emits partyListChanged() whenever the staged set changes,
+ * so the parent dialog can enable its Save button accordingly.
  */
 class AccountPartiesWidget : public QWidget {
     Q_OBJECT
@@ -62,22 +63,28 @@ public:
     ~AccountPartiesWidget() override = default;
 
     void setClientManager(ClientManager* clientManager);
-    void setChangeReasonCache(ChangeReasonCache* cache);
     void setAccountId(const boost::uuids::uuid& accountId);
     void loadParties();
     void setReadOnly(bool readOnly);
 
     [[nodiscard]] bool hasPendingChanges() const;
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingAdds() const;
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingRemoves() const;
 
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& title, const QString& message);
-    void partiesChanged();
+
+    /**
+     * @brief Emitted when the staged party list changes.
+     *
+     * The parent dialog connects to this signal to enable its Save button.
+     */
+    void partyListChanged();
 
 private slots:
     void onAddPartyClicked();
     void onRemovePartyClicked();
-    void onSaveClicked();
     void onAssignedSelectionChanged();
 
 private:
@@ -90,10 +97,8 @@ private:
     QComboBox*   partyCombo_;
     QToolButton* addButton_;
     QToolButton* removeButton_;
-    QToolButton* saveButton_;
 
     ClientManager*     clientManager_ = nullptr;
-    ChangeReasonCache* changeReasonCache_ = nullptr;
     boost::uuids::uuid accountId_;
     bool               readOnly_ = false;
 
@@ -101,7 +106,7 @@ private:
     std::vector<iam::domain::account_party>  assignedParties_;
     std::vector<refdata::domain::party>      allParties_;
 
-    // Pending local changes (not yet written to DB)
+    // Pending local changes (committed by the parent dialog's Save action)
     std::vector<boost::uuids::uuid> pendingAdds_;
     std::vector<boost::uuids::uuid> pendingRemoves_;
 };

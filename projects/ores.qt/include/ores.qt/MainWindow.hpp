@@ -82,6 +82,8 @@ class BookController;
 class BookStatusController;
 class PurposeTypeController;
 class RoundingTypeController;
+class CurrencyAssetClassController;
+class CurrencyMarketTierController;
 class TradeController;
 class ImageCache;
 class ChangeReasonCache;
@@ -604,6 +606,8 @@ private:
     std::unique_ptr<BookStatusController> bookStatusController_;
     std::unique_ptr<PurposeTypeController> purposeTypeController_;
     std::unique_ptr<RoundingTypeController> roundingTypeController_;
+    std::unique_ptr<CurrencyAssetClassController> currencyAssetClassController_;
+    std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
     std::unique_ptr<TradeController> tradeController_;
 
     /** @brief Event bus for decoupled event handling */

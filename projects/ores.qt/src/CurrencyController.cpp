@@ -151,6 +151,10 @@ void CurrencyController::showListWindow() {
             this, &CurrencyController::onShowCurrencyHistory);
     connect(currencyWidget, &CurrencyMdiWindow::showRoundingTypesRequested,
             this, &CurrencyController::showRoundingTypesRequested);
+    connect(currencyWidget, &CurrencyMdiWindow::showAssetClassesRequested,
+            this, &CurrencyController::showAssetClassesRequested);
+    connect(currencyWidget, &CurrencyMdiWindow::showMarketTiersRequested,
+            this, &CurrencyController::showMarketTiersRequested);
 
     currencyListWindow_ = new DetachableMdiSubWindow();
     currencyListWindow_->setAttribute(Qt::WA_DeleteOnClose);

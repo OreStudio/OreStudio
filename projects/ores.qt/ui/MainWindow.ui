@@ -52,6 +52,8 @@
       <string>A&amp;uxiliary Data</string>
      </property>
      <addaction name="ActionRoundingTypes"/>
+     <addaction name="ActionCurrencyAssetClasses"/>
+     <addaction name="ActionCurrencyMarketTiers"/>
      <addaction name="separator"/>
      <addaction name="ActionPartyTypes"/>
      <addaction name="ActionPartyStatuses"/>
@@ -600,6 +602,22 @@
    </property>
    <property name="toolTip">
     <string>Manage rounding type methods</string>
+   </property>
+  </action>
+  <action name="ActionCurrencyAssetClasses">
+   <property name="text">
+    <string>Currency &amp;Asset Classes</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage currency asset class values</string>
+   </property>
+  </action>
+  <action name="ActionCurrencyMarketTiers">
+   <property name="text">
+    <string>Currency &amp;Market Tiers</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage currency market tier values</string>
    </property>
   </action>
  </widget>

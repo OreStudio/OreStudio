@@ -20,33 +20,35 @@
 #ifndef ORES_QT_WIDGET_UTILS_HPP
 #define ORES_QT_WIDGET_UTILS_HPP
 
+#include <QApplication>
 #include <QComboBox>
 #include <QListView>
-#include <QSize>
+#include <QPointer>
+#include <QScreen>
 #include <QShowEvent>
+#include <QSize>
 #include <QTimer>
 #include <QWidget>
 
 namespace ores::qt {
 
 /**
- * @brief A QListView that caps the combo box popup height.
+ * @brief A QListView that caps the combo box popup height and repositions it.
  *
- * Qt's popup sizing on Linux can ignore setMaxVisibleItems when items carry
- * icons, because the popup container may be sized from sizeHintForRow() *
- * itemCount rather than from sizeHint(). Two complementary mechanisms are
- * used here:
+ * On Linux, Qt can compute the popup size from sizeHintForRow() * itemCount,
+ * ignoring setMaxVisibleItems(), and position the popup above the combo when
+ * it would overflow the screen. A deferred showEvent() resize then corrects
+ * both the height and the vertical position relative to the combo box.
  *
- *  1. sizeHint() – caps the natural hint for platforms that query it.
- *  2. showEvent() – posts a deferred resize of the popup frame that fires
- *     after QComboBox::showPopup() has fully completed its own sizing, so
- *     it is effective even when the hint is bypassed.
+ * sizeHint() is also overridden as a first-pass hint for platforms that do
+ * query it before positioning.
  */
 class BoundedListView : public QListView {
 public:
     static constexpr int max_popup_height = 250;
 
-    explicit BoundedListView(QWidget* parent = nullptr) : QListView(parent) {}
+    explicit BoundedListView(QComboBox* combo)
+        : QListView(combo), combo_(combo) {}
 
     QSize sizeHint() const override {
         const auto s = QListView::sizeHint();
@@ -56,15 +58,35 @@ public:
 protected:
     void showEvent(QShowEvent* event) override {
         QListView::showEvent(event);
-        // Post to the event queue so this runs after showPopup() completes.
-        // QTimer::singleShot cancels automatically if `this` is destroyed.
+        // Post so this runs after QComboBox::showPopup() finishes sizing and
+        // positioning. We then correct both if needed.
         QTimer::singleShot(0, this, [this]() {
-            if (QWidget* popup = parentWidget()) {
-                if (popup->height() > max_popup_height)
-                    popup->resize(popup->width(), max_popup_height);
-            }
+            QWidget* popup = parentWidget();
+            if (!popup || !combo_ || popup->height() <= max_popup_height)
+                return;
+
+            // Determine where the combo box is on screen.
+            const QPoint comboPos = combo_->mapToGlobal(QPoint(0, 0));
+            const QRect comboRect(comboPos, combo_->size());
+
+            // Get the available screen geometry.
+            const QScreen* screen = QApplication::screenAt(comboPos);
+            const QRect screenRect = screen
+                ? screen->availableGeometry()
+                : QRect(0, 0, 9999, 9999);
+
+            // Resize first, then reposition: prefer opening below the combo,
+            // fall back to above if there is not enough room.
+            popup->resize(popup->width(), max_popup_height);
+            int y = comboRect.bottom() + 1;
+            if (y + max_popup_height > screenRect.bottom())
+                y = comboRect.top() - max_popup_height;
+            popup->move(popup->x(), y);
         });
     }
+
+private:
+    QPointer<QComboBox> combo_;
 };
 
 /**
@@ -84,8 +106,6 @@ struct WidgetUtils {
     static void setupComboBoxes(QWidget* parent) {
         for (auto* combo : parent->findChildren<QComboBox*>()) {
             combo->setMaxVisibleItems(10);
-            // Replace the default popup view so both sizeHint capping and the
-            // deferred showEvent resize are active for this combo.
             combo->setView(new BoundedListView(combo));
         }
     }

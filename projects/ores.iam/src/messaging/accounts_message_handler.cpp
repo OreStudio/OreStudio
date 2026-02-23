@@ -1714,7 +1714,7 @@ handle_assign_role_request(std::span<const std::byte> payload,
 
     try {
         auth_service_->assign_role(request.account_id, request.role_id,
-            boost::uuids::to_string(session->account_id));
+            session->username);
 
         BOOST_LOG_SEV(lg(), info) << "Assigned role "
                                   << boost::uuids::to_string(request.role_id)
@@ -1987,7 +1987,7 @@ handle_assign_role_by_name_request(std::span<const std::byte> payload,
         }
 
         auth_service_->assign_role(target->account_id, target->role_id,
-            boost::uuids::to_string(session->account_id));
+            session->username);
 
         BOOST_LOG_SEV(lg(), info) << "Assigned role " << request.role_name
                                   << " to account " << request.principal;

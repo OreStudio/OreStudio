@@ -252,6 +252,7 @@ Highlights:
 
 At present we have very long dialogs for details. Make all of them tabbed.
 
+
 #+begin_quote
 This pull request introduces significant UI enhancements and refactoring across
 various detail dialogs and user-specific windows. The primary goal is to

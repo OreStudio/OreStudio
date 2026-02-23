@@ -219,6 +219,10 @@ void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
                     return imageCache_->getBusinessCentreFlagIcon(code);
                 });
         });
+        set_combo_flag_icons(ui_->businessCenterCombo,
+            [this](const std::string& code) {
+                return imageCache_->getBusinessCentreFlagIcon(code);
+            });
     }
 }
 

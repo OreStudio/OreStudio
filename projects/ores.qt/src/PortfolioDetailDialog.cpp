@@ -98,6 +98,10 @@ void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
                     return imageCache_->getCurrencyFlagIcon(code);
                 });
         });
+        set_combo_flag_icons(ui_->aggregationCcyCombo,
+            [this](const std::string& code) {
+                return imageCache_->getCurrencyFlagIcon(code);
+            });
     }
 }
 

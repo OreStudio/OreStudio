@@ -132,9 +132,13 @@ create or replace function ores_refdata_validate_currency_market_tier_fn(
     p_value text
 ) returns text as $$
 begin
-    -- Return default if null or empty
+    -- Return default if null or empty.
+    -- Uses 'emerging' as the fallback: most currencies are emerging-market and
+    -- it is a safer assumption than 'g10' for an unknown currency.
+    -- Keep in sync with the CLI default in:
+    --   projects/ores.cli/src/app/application.cpp (market_tier.value_or("emerging"))
     if p_value is null or p_value = '' then
-        return 'g10';
+        return 'emerging';
     end if;
 
     -- Allow pass-through during bootstrap (empty table)

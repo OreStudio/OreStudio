@@ -748,6 +748,9 @@ add_currency(const config::add_currency_options& cfg) const {
     currency.rounding_type = cfg.rounding_type.value_or("Closest");
     currency.rounding_precision = cfg.rounding_precision.value_or(2);
     currency.format = cfg.format.value_or("");
+    // Defaults: 'fiat' / 'emerging' — most currencies are fiat emerging-market.
+    // Keep in sync with the SQL fallback in:
+    //   projects/ores.sql/create/refdata/refdata_currency_market_tiers_create.sql
     currency.asset_class = cfg.asset_class.value_or("fiat");
     currency.market_tier = cfg.market_tier.value_or("emerging");
     currency.modified_by = cfg.modified_by;

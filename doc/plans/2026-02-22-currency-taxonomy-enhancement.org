@@ -58,14 +58,12 @@ Both entities share the same structure (versioned lookup table pattern):
 
 *** currency_asset_class seed values
 
-| Code      | Name              | Description                                      |
-|-----------+-------------------+--------------------------------------------------|
-| =major=   | Major             | Highly traded reserve currencies (USD, EUR, GBP) |
-| =minor=   | Minor             | Stable, moderately traded currencies             |
-| =exotic=  | Exotic            | Less liquid, higher spread currencies            |
-| =crypto=  | Cryptocurrency    | Digital/decentralised currencies                 |
-| =commodity= | Commodity       | Commodity-backed currencies (gold standard era)  |
-| =historical= | Historical     | Currencies no longer in active use               |
+| Code            | Name                  | Description                                             |
+|-----------------+-----------------------+---------------------------------------------------------|
+| =fiat=          | Fiat Currency         | Government-issued currency not backed by a commodity    |
+| =commodity=     | Commodity Currency    | Currency backed by or representing a physical commodity |
+| =synthetic=     | Synthetic Currency    | Artificially constructed currency or index              |
+| =supranational= | Supranational Currency| Currency issued by a multi-national authority (e.g. XDR)|
 
 *** currency_market_tier seed values
 
@@ -92,7 +90,7 @@ Protocol version 41.0 (breaking change). The currency wire format changes:
 *** SQL (=ores.sql=)
 
 New files:
-- =refdata_currency_asset_classes_create.sql= — table with =REFERENCES refdata_currencies_asset_classes=
+- =refdata_currency_asset_classes_create.sql= — standalone lookup table; currencies reference it via the =ores_refdata_validate_currency_asset_class_fn= validation function
 - =refdata_currency_asset_classes_notify_trigger_create.sql= — LISTEN/NOTIFY trigger
 - =refdata_currency_asset_classes_drop.sql=
 - =refdata_currency_asset_classes_notify_trigger_drop.sql=

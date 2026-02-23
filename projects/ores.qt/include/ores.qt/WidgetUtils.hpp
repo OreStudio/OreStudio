@@ -23,16 +23,24 @@
 #include <QComboBox>
 #include <QListView>
 #include <QSize>
+#include <QShowEvent>
+#include <QTimer>
 #include <QWidget>
 
 namespace ores::qt {
 
 /**
- * @brief A QListView that caps its sizeHint height.
+ * @brief A QListView that caps the combo box popup height.
  *
- * Qt's combo popup sizing queries view()->sizeHint() before calling resize()
- * on the popup container. Capping that hint here — rather than setMaximumHeight
- * — ensures the popup frame itself is sized correctly, not just the content area.
+ * Qt's popup sizing on Linux can ignore setMaxVisibleItems when items carry
+ * icons, because the popup container may be sized from sizeHintForRow() *
+ * itemCount rather than from sizeHint(). Two complementary mechanisms are
+ * used here:
+ *
+ *  1. sizeHint() – caps the natural hint for platforms that query it.
+ *  2. showEvent() – posts a deferred resize of the popup frame that fires
+ *     after QComboBox::showPopup() has fully completed its own sizing, so
+ *     it is effective even when the hint is bypassed.
  */
 class BoundedListView : public QListView {
 public:
@@ -43,6 +51,19 @@ public:
     QSize sizeHint() const override {
         const auto s = QListView::sizeHint();
         return { s.width(), std::min(s.height(), max_popup_height) };
+    }
+
+protected:
+    void showEvent(QShowEvent* event) override {
+        QListView::showEvent(event);
+        // Post to the event queue so this runs after showPopup() completes.
+        // QTimer::singleShot cancels automatically if `this` is destroyed.
+        QTimer::singleShot(0, this, [this]() {
+            if (QWidget* popup = parentWidget()) {
+                if (popup->height() > max_popup_height)
+                    popup->resize(popup->width(), max_popup_height);
+            }
+        });
     }
 };
 
@@ -63,10 +84,8 @@ struct WidgetUtils {
     static void setupComboBoxes(QWidget* parent) {
         for (auto* combo : parent->findChildren<QComboBox*>()) {
             combo->setMaxVisibleItems(10);
-            // Replace the default popup view with one that caps sizeHint().
-            // setMaxVisibleItems alone is ignored on Linux when items carry
-            // icons; the popup container is sized from the view's sizeHint(),
-            // so overriding that is the reliable cross-platform fix.
+            // Replace the default popup view so both sizeHint capping and the
+            // deferred showEvent resize are active for this combo.
             combo->setView(new BoundedListView(combo));
         }
     }

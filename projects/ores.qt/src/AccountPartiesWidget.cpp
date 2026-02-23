@@ -119,19 +119,19 @@ const std::vector<boost::uuids::uuid>& AccountPartiesWidget::pendingRemoves() co
     return pendingRemoves_;
 }
 
-void AccountPartiesWidget::loadParties() {
+void AccountPartiesWidget::load() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load parties: not connected";
         return;
     }
 
-    if (accountId_.is_nil()) {
-        BOOST_LOG_SEV(lg(), debug) << "No account ID set, not loading parties";
-        return;
+    const bool has_account = !accountId_.is_nil();
+    if (has_account) {
+        BOOST_LOG_SEV(lg(), debug) << "Loading parties for account: "
+                                   << boost::uuids::to_string(accountId_);
+    } else {
+        BOOST_LOG_SEV(lg(), debug) << "Loading available parties for new account";
     }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading parties for account: "
-                               << boost::uuids::to_string(accountId_);
 
     QPointer<AccountPartiesWidget> self = this;
     const auto accountId = accountId_;
@@ -147,7 +147,6 @@ void AccountPartiesWidget::loadParties() {
         [self, watcher]() {
             auto result = watcher->result();
             watcher->deleteLater();
-
             if (!self) return;
 
             if (result.success) {
@@ -158,98 +157,56 @@ void AccountPartiesWidget::loadParties() {
                 self->refreshView();
                 BOOST_LOG_SEV(lg(), debug)
                     << "Loaded " << self->assignedParties_.size()
-                    << " assigned parties";
+                    << " assigned, " << self->allParties_.size() << " total parties";
             } else {
                 emit self->errorMessage("Load Failed", "Failed to load parties");
             }
         });
 
     QFuture<LoadResult> future =
-        QtConcurrent::run([self, accountId]() -> LoadResult {
-            if (!self) return {false, {}, {}};
+        QtConcurrent::run([self, accountId, has_account]() -> LoadResult {
+            if (!self) return {.success = false};
 
-            auto assignedFuture = std::async(std::launch::async,
-                [&self, &accountId]() {
-                    iam::messaging::get_account_parties_by_account_request request;
-                    request.account_id = accountId;
-                    return self->clientManager_->
-                        process_authenticated_request(std::move(request));
-                });
+            std::vector<iam::domain::account_party> assigned;
+            if (has_account) {
+                auto assignedFuture = std::async(std::launch::async,
+                    [&self, &accountId]() {
+                        iam::messaging::get_account_parties_by_account_request request;
+                        request.account_id = accountId;
+                        return self->clientManager_->
+                            process_authenticated_request(std::move(request));
+                    });
 
-            auto allPartiesFuture = std::async(std::launch::async,
-                [&self]() {
-                    refdata::messaging::get_parties_request request;
-                    request.offset = 0;
-                    request.limit  = 1000;
-                    return self->clientManager_->
-                        process_authenticated_request(std::move(request));
-                });
+                auto allPartiesFuture = std::async(std::launch::async,
+                    [&self]() {
+                        refdata::messaging::get_parties_request request;
+                        request.offset = 0;
+                        request.limit  = 1000;
+                        return self->clientManager_->
+                            process_authenticated_request(std::move(request));
+                    });
 
-            auto assignedResult   = assignedFuture.get();
-            auto allPartiesResult = allPartiesFuture.get();
+                auto assignedResult   = assignedFuture.get();
+                auto allPartiesResult = allPartiesFuture.get();
 
-            if (!assignedResult) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch assigned parties: "
-                    << comms::net::to_string(assignedResult.error());
-                return {false, {}, {}};
+                if (!assignedResult) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch assigned parties: "
+                        << comms::net::to_string(assignedResult.error());
+                    return {.success = false};
+                }
+                if (!allPartiesResult) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch all parties: "
+                        << comms::net::to_string(allPartiesResult.error());
+                    return {.success = false};
+                }
+                return {.success = true,
+                    .assignedParties = std::move(assignedResult->account_parties),
+                    .allParties      = std::move(allPartiesResult->parties)};
             }
 
-            if (!allPartiesResult) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch all parties: "
-                    << comms::net::to_string(allPartiesResult.error());
-                return {false, {}, {}};
-            }
-
-            return {true,
-                std::move(assignedResult->account_parties),
-                std::move(allPartiesResult->parties)};
-        });
-
-    watcher->setFuture(future);
-}
-
-void AccountPartiesWidget::loadAvailableParties() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load parties: not connected";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading available parties for new account";
-
-    QPointer<AccountPartiesWidget> self = this;
-
-    struct LoadResult {
-        bool success;
-        std::vector<refdata::domain::party> allParties;
-    };
-
-    auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-        [self, watcher]() {
-            auto result = watcher->result();
-            watcher->deleteLater();
-            if (!self) return;
-
-            if (result.success) {
-                self->assignedParties_.clear();
-                self->allParties_      = std::move(result.allParties);
-                self->pendingAdds_.clear();
-                self->pendingRemoves_.clear();
-                self->refreshView();
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Loaded " << self->allParties_.size()
-                    << " available parties";
-            } else {
-                emit self->errorMessage("Load Failed", "Failed to load available parties");
-            }
-        });
-
-    QFuture<LoadResult> future =
-        QtConcurrent::run([self]() -> LoadResult {
-            if (!self) return {false, {}};
-
+            // Create mode: only fetch all parties
             refdata::messaging::get_parties_request request;
             request.offset = 0;
             request.limit  = 1000;
@@ -260,9 +217,9 @@ void AccountPartiesWidget::loadAvailableParties() {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to fetch parties: "
                     << comms::net::to_string(result.error());
-                return {false, {}};
+                return {.success = false};
             }
-            return {true, std::move(result->parties)};
+            return {.success = true, .allParties = std::move(result->parties)};
         });
 
     watcher->setFuture(future);

@@ -65,8 +65,11 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setAccountId(const boost::uuids::uuid& accountId);
     void setAccountType(const std::string& accountType);
-    void loadParties();
-    void loadAvailableParties();
+    /**
+     * @brief Load parties. If accountId is set, also fetches assigned parties.
+     * If accountId is nil (create mode), only available parties are loaded.
+     */
+    void load();
     void setReadOnly(bool readOnly);
 
     [[nodiscard]] bool hasPendingChanges() const;

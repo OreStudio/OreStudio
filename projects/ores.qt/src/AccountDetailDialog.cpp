@@ -42,6 +42,7 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
+#include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
@@ -137,6 +138,8 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
             this, &AccountDetailDialog::statusMessage);
     connect(rolesWidget_, &AccountRolesWidget::errorMessage,
             this, &AccountDetailDialog::errorMessage);
+    connect(rolesWidget_, &AccountRolesWidget::roleListChanged,
+            this, [this]() { updateSaveResetButtonState(); });
 
     // Create parties widget and add it to the Parties tab layout
     partiesWidget_ = new AccountPartiesWidget(this);
@@ -213,14 +216,15 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     // Set up roles widget for existing accounts
     if (rolesWidget_ && !isAddMode_) {
         rolesWidget_->setAccountId(account.id);
-        rolesWidget_->loadRoles();
+        rolesWidget_->load();
     }
+
 
     // Set up parties widget for existing accounts
     if (partiesWidget_ && !isAddMode_) {
         partiesWidget_->setAccountId(account.id);
         partiesWidget_->setAccountType(account.account_type);
-        partiesWidget_->loadParties();
+        partiesWidget_->load();
     }
 
     isDirty_ = false;
@@ -242,7 +246,7 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     const int partiesIdx = tw->indexOf(ui_->partiesTab);
     if (securityIdx >= 0) tw->setTabEnabled(securityIdx, createMode);
     if (loginStatusIdx >= 0) tw->setTabEnabled(loginStatusIdx, !createMode);
-    if (rolesIdx >= 0) tw->setTabEnabled(rolesIdx, !createMode);
+    if (rolesIdx >= 0) tw->setTabEnabled(rolesIdx, true);
     // Parties tab is enabled in both modes: in create mode the user can
     // pre-select parties to assign once the account is created.
     if (partiesIdx >= 0) tw->setTabEnabled(partiesIdx, true);
@@ -250,8 +254,10 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
 
     if (createMode && partiesWidget_) {
         partiesWidget_->setAccountType("user");
-        partiesWidget_->loadAvailableParties();
+        partiesWidget_->load();
     }
+    if (createMode && rolesWidget_)
+        rolesWidget_->load();
 }
 
 iam::domain::account AccountDetailDialog::getAccount() const {
@@ -413,10 +419,12 @@ void AccountDetailDialog::onSaveClicked() {
             }
         }
 
-        // Get change reason for party assignments if needed
+        const bool needsRoleSave  = rolesWidget_ && rolesWidget_->hasPendingChanges();
+
+        // Get change reason for party/role assignments if needed
         std::string changeReasonCode;
         std::string changeCommentary;
-        if (needsPartySave) {
+        if (needsPartySave || needsRoleSave) {
             namespace reason = dq::domain::change_reason_constants;
             std::vector<dq::domain::change_reason> reasons;
             if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
@@ -430,10 +438,13 @@ void AccountDetailDialog::onSaveClicked() {
             changeCommentary = dialog.commentary();
         }
 
-        // Capture pending party adds before going async
-        const auto pendingAdds =
+        // Capture pending adds before going async
+        const auto pendingPartyAdds =
             needsPartySave ? partiesWidget_->pendingAdds()
                            : std::vector<boost::uuids::uuid>{};
+        const auto pendingRoleAdds =
+            needsRoleSave ? rolesWidget_->pendingAdds()
+                          : std::vector<boost::uuids::uuid>{};
 
         QPointer<AccountDetailDialog> self = this;
         const std::string username = ui_->usernameEdit->text().toStdString();
@@ -442,7 +453,8 @@ void AccountDetailDialog::onSaveClicked() {
 
         QFuture<std::pair<bool, std::string>> future =
             QtConcurrent::run([self, username, password, email,
-                               pendingAdds, changeReasonCode, changeCommentary]()
+                               pendingPartyAdds, pendingRoleAdds,
+                               changeReasonCode, changeCommentary]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -481,7 +493,7 @@ void AccountDetailDialog::onSaveClicked() {
                 const boost::uuids::uuid account_id = response->account_id;
 
                 // Commit any staged party additions
-                for (const auto& partyId : pendingAdds) {
+                for (const auto& partyId : pendingPartyAdds) {
                     iam::domain::account_party ap;
                     ap.account_id         = account_id;
                     ap.party_id           = partyId;
@@ -500,6 +512,22 @@ void AccountDetailDialog::onSaveClicked() {
                     if (!result->success)
                         return {false, "Account created but party assignment failed: "
                                        + result->message};
+                }
+
+                // Commit any staged role additions
+                for (const auto& roleId : pendingRoleAdds) {
+                    iam::messaging::assign_role_request role_req;
+                    role_req.account_id = account_id;
+                    role_req.role_id    = roleId;
+
+                    auto result = self->clientManager_->
+                        process_authenticated_request(std::move(role_req));
+                    if (!result)
+                        return {false, "Account created but role assignment failed: "
+                                       + comms::net::to_string(result.error())};
+                    if (!result->success)
+                        return {false, "Account created but role assignment failed: "
+                                       + result->error_message};
                 }
 
                 return {true, boost::uuids::to_string(account_id)};
@@ -531,9 +559,11 @@ void AccountDetailDialog::onSaveClicked() {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to parse account ID";
                 }
 
-                // Clear staged party changes (they were committed or user said no)
+                // Clear staged changes (they were committed or user said no)
                 if (self->partiesWidget_)
-                    self->partiesWidget_->loadAvailableParties();
+                    self->partiesWidget_->load();
+                if (self->rolesWidget_)
+                    self->rolesWidget_->load();
 
                 self->notifySaveSuccess(tr("Account '%1' created")
                     .arg(QString::fromStdString(username)));
@@ -548,15 +578,15 @@ void AccountDetailDialog::onSaveClicked() {
 
         watcher->setFuture(future);
     } else {
-        // Edit mode - update account fields and/or party assignments
+        // Edit mode - update account fields and/or party/role assignments
 
-        // If there are pending party changes, collect change reason first
         const bool needsAccountSave = isDirty_;
         const bool needsPartySave   = partiesWidget_ && partiesWidget_->hasPendingChanges();
+        const bool needsRoleSave    = rolesWidget_   && rolesWidget_->hasPendingChanges();
 
         std::string changeReasonCode;
         std::string changeCommentary;
-        if (needsPartySave) {
+        if (needsPartySave || needsRoleSave) {
             namespace reason = dq::domain::change_reason_constants;
             std::vector<dq::domain::change_reason> reasons;
             if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
@@ -574,17 +604,24 @@ void AccountDetailDialog::onSaveClicked() {
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
 
-        // Capture pending party changes before going async
-        const auto pendingAdds =
+        // Capture pending changes before going async
+        const auto pendingPartyAdds =
             needsPartySave ? partiesWidget_->pendingAdds()
                            : std::vector<boost::uuids::uuid>{};
-        const auto pendingRemoves =
+        const auto pendingPartyRemoves =
             needsPartySave ? partiesWidget_->pendingRemoves()
                            : std::vector<boost::uuids::uuid>{};
+        const auto pendingRoleAdds =
+            needsRoleSave ? rolesWidget_->pendingAdds()
+                          : std::vector<boost::uuids::uuid>{};
+        const auto pendingRoleRemoves =
+            needsRoleSave ? rolesWidget_->pendingRemoves()
+                          : std::vector<boost::uuids::uuid>{};
 
         QFuture<FutureResult> future =
             QtConcurrent::run([self, account_id, email, needsAccountSave,
-                               pendingAdds, pendingRemoves,
+                               pendingPartyAdds, pendingPartyRemoves,
+                               pendingRoleAdds, pendingRoleRemoves,
                                changeReasonCode, changeCommentary]() -> FutureResult {
                 if (!self) return {false, ""};
 
@@ -617,7 +654,7 @@ void AccountDetailDialog::onSaveClicked() {
                 }
 
                 // Commit party additions
-                for (const auto& partyId : pendingAdds) {
+                for (const auto& partyId : pendingPartyAdds) {
                     iam::domain::account_party ap;
                     ap.account_id         = account_id;
                     ap.party_id           = partyId;
@@ -636,7 +673,7 @@ void AccountDetailDialog::onSaveClicked() {
                 }
 
                 // Commit party removals
-                for (const auto& partyId : pendingRemoves) {
+                for (const auto& partyId : pendingPartyRemoves) {
                     iam::messaging::delete_account_party_request request;
                     iam::messaging::account_party_key key;
                     key.account_id = account_id;
@@ -655,12 +692,38 @@ void AccountDetailDialog::onSaveClicked() {
                     }
                 }
 
+                // Commit role additions
+                for (const auto& roleId : pendingRoleAdds) {
+                    iam::messaging::assign_role_request request;
+                    request.account_id = account_id;
+                    request.role_id    = roleId;
+
+                    auto result = self->clientManager_->
+                        process_authenticated_request(std::move(request));
+                    if (!result)
+                        return {false, comms::net::to_string(result.error())};
+                    if (!result->success) return {false, result->error_message};
+                }
+
+                // Commit role removals
+                for (const auto& roleId : pendingRoleRemoves) {
+                    iam::messaging::revoke_role_request request;
+                    request.account_id = account_id;
+                    request.role_id    = roleId;
+
+                    auto result = self->clientManager_->
+                        process_authenticated_request(std::move(request));
+                    if (!result)
+                        return {false, comms::net::to_string(result.error())};
+                    if (!result->success) return {false, result->error_message};
+                }
+
                 return {true, {}};
             });
 
         auto* watcher = new QFutureWatcher<FutureResult>(self);
         connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-            [self, watcher, account_id, needsPartySave]() {
+            [self, watcher, account_id, needsPartySave, needsRoleSave]() {
             if (!self) return;
 
             auto [success, message] = watcher->result();
@@ -673,7 +736,9 @@ void AccountDetailDialog::onSaveClicked() {
                 emit self->isDirtyChanged(false);
 
                 if (needsPartySave && self->partiesWidget_)
-                    self->partiesWidget_->loadParties();
+                    self->partiesWidget_->load();
+                if (needsRoleSave && self->rolesWidget_)
+                    self->rolesWidget_->load();
 
                 self->updateSaveResetButtonState();
                 emit self->accountUpdated(account_id);
@@ -877,7 +942,8 @@ void AccountDetailDialog::updateSaveResetButtonState() {
     }
 
     const bool hasChanges = isDirty_ ||
-        (!isAddMode_ && partiesWidget_ && partiesWidget_->hasPendingChanges());
+        (partiesWidget_ && partiesWidget_->hasPendingChanges()) ||
+        (rolesWidget_   && rolesWidget_->hasPendingChanges());
     if (saveAction_)
         saveAction_->setEnabled(hasChanges);
 

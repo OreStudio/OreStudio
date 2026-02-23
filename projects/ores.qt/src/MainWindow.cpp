@@ -2027,8 +2027,8 @@ void MainWindow::updateWindowTitle() {
     if (clientManager_ && clientManager_->isConnected()) {
         if (!username_.empty()) {
             if (!party_name_.isEmpty()) {
-                // Show "username @ party_name" when party context is known
-                title += QString(" - %1 @ %2")
+                // Show "username / party_name" when party context is known
+                title += QString(" - %1 / %2")
                     .arg(QString::fromStdString(username_))
                     .arg(party_name_);
             } else {
@@ -2036,7 +2036,7 @@ void MainWindow::updateWindowTitle() {
                 QString connectionInfo = !activeConnectionName_.isEmpty()
                     ? activeConnectionName_
                     : QString::fromStdString(clientManager_->serverAddress());
-                title += QString(" - %1@%2")
+                title += QString(" - %1 / %2")
                     .arg(QString::fromStdString(username_))
                     .arg(connectionInfo);
             }

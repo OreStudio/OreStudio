@@ -94,8 +94,10 @@ struct get_currencies_response final {
      *   - 4 bytes: rounding_precision (int)
      *   - 2 bytes: format length
      *   - N bytes: format (UTF-8)
-     *   - 2 bytes: currency_type length
-     *   - N bytes: currency_type (UTF-8)
+     *   - 2 bytes: asset_class length
+     *   - N bytes: asset_class (UTF-8)
+     *   - 2 bytes: market_tier length
+     *   - N bytes: market_tier (UTF-8)
      *   - 2 bytes: recorded_at length
      *   - N bytes: recorded_at (UTF-8)
      */

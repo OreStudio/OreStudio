@@ -156,7 +156,8 @@ TEST_CASE("currency_version_table_with_faker_data", tags) {
         cv.data.rounding_type = "Closest";
         cv.data.rounding_precision = faker::number::integer(0, 5);
         cv.data.format = "%3% %1$.2f";
-        cv.data.currency_type = "Fiat";
+        cv.data.asset_class = "major";
+        cv.data.market_tier = "g10";
         cv.data.modified_by = std::string(faker::internet::username());
         cv.data.recorded_at = {};
         cv.version_number = i + 1;

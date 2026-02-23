@@ -408,10 +408,12 @@ private:
     QLabel* connectionStatusIconLabel_;
 
     /** @brief Status bar chip showing the active tenant (connection) name */
-    QLabel* tenantStatusLabel_;
+    QWidget* tenantStatusWidget_;
+    QLabel*  tenantStatusNameLabel_;
 
     /** @brief Status bar chip showing the active party name */
-    QLabel* partyStatusLabel_;
+    QWidget* partyStatusWidget_;
+    QLabel*  partyStatusNameLabel_;
 
     /**
      * @brief List of all detachable MDI windows for detach/reattach operations.

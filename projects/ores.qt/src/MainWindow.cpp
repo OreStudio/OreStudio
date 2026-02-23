@@ -113,7 +113,8 @@ MainWindow::MainWindow(QWidget* parent) :
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
     telemetryViewerWindow_(nullptr),
-    tenantStatusLabel_(nullptr), partyStatusLabel_(nullptr) {
+    tenantStatusWidget_(nullptr), tenantStatusNameLabel_(nullptr),
+    partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -123,19 +124,44 @@ MainWindow::MainWindow(QWidget* parent) :
 
     setWindowIcon(QIcon(":/images/modern-icon.png"));
 
-    const QString chipStyle =
-        "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
+    // Helper: build a status bar chip with a small icon and a name label.
+    // The outer widget carries the border/background; the tooltip is set at
+    // update time so it always reflects the current value.
+    auto makeStatusChip = [this](Icon icon) -> std::pair<QWidget*, QLabel*> {
+        auto* chip = new QWidget(this);
+        auto* layout = new QHBoxLayout(chip);
+        layout->setContentsMargins(6, 0, 8, 0);
+        layout->setSpacing(4);
+
+        auto* iconLbl = new QLabel(chip);
+        iconLbl->setPixmap(
+            IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor)
+                .pixmap(14, 14));
+        iconLbl->setFixedSize(14, 14);
+
+        auto* nameLbl = new QLabel(chip);
+        layout->addWidget(iconLbl);
+        layout->addWidget(nameLbl);
+        return {chip, nameLbl};
+    };
+
+    const QString normalChipStyle =
+        "QWidget { border-left: 1px solid palette(mid);"
         " background: palette(alternateBase); }";
 
-    tenantStatusLabel_ = new QLabel(this);
-    tenantStatusLabel_->setStyleSheet(chipStyle);
-    tenantStatusLabel_->setVisible(false);
-    ui_->statusbar->addPermanentWidget(tenantStatusLabel_);
+    auto [tWidget, tName] = makeStatusChip(Icon::BuildingSkyscraper);
+    tWidget->setStyleSheet(normalChipStyle);
+    tWidget->setVisible(false);
+    tenantStatusWidget_     = tWidget;
+    tenantStatusNameLabel_  = tName;
+    ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
 
-    partyStatusLabel_ = new QLabel(this);
-    partyStatusLabel_->setStyleSheet(chipStyle);
-    partyStatusLabel_->setVisible(false);
-    ui_->statusbar->addPermanentWidget(partyStatusLabel_);
+    auto [pWidget, pName] = makeStatusChip(Icon::Organization);
+    pWidget->setStyleSheet(normalChipStyle);
+    pWidget->setVisible(false);
+    partyStatusWidget_    = pWidget;
+    partyStatusNameLabel_ = pName;
+    ui_->statusbar->addPermanentWidget(partyStatusWidget_);
 
     connectionStatusIconLabel_ = new QLabel(this);
     connectionStatusIconLabel_->setFixedWidth(20);
@@ -2066,12 +2092,11 @@ void MainWindow::updateWindowTitle() {
 }
 
 void MainWindow::updateStatusBarFields() {
-    const QString chipStyle =
-        "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
+    const QString normalChipStyle =
+        "QWidget { border-left: 1px solid palette(mid);"
         " background: palette(alternateBase); }";
     const QString warningChipStyle =
-        "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
-        " background: #7a2000; color: #ffccaa; font-weight: bold; }";
+        "QWidget { border-left: 1px solid palette(mid); background: #7a2000; }";
 
     const bool connected = clientManager_ && clientManager_->isConnected();
 
@@ -2089,25 +2114,30 @@ void MainWindow::updateStatusBarFields() {
         tenantName = activeConnectionName_;
     }
 
-    if (!tenantName.isEmpty()) {
-        tenantStatusLabel_->setText("Tenant: " + tenantName);
-        tenantStatusLabel_->setStyleSheet(chipStyle);
-        tenantStatusLabel_->setVisible(true);
+    if (connected) {
+        tenantStatusNameLabel_->setText(tenantName.isEmpty() ? "Root" : tenantName);
+        tenantStatusWidget_->setToolTip("Tenant: " + tenantStatusNameLabel_->text());
+        tenantStatusWidget_->setStyleSheet(normalChipStyle);
+        tenantStatusWidget_->setVisible(true);
     } else {
-        tenantStatusLabel_->setVisible(false);
+        tenantStatusWidget_->setVisible(false);
     }
 
     if (connected) {
         if (!party_name_.isEmpty()) {
-            partyStatusLabel_->setText("Party: " + party_name_);
-            partyStatusLabel_->setStyleSheet(chipStyle);
+            partyStatusNameLabel_->setText(party_name_);
+            partyStatusNameLabel_->setStyleSheet("");
+            partyStatusWidget_->setToolTip("Party: " + party_name_);
+            partyStatusWidget_->setStyleSheet(normalChipStyle);
         } else {
-            partyStatusLabel_->setText("Party: [No Party]");
-            partyStatusLabel_->setStyleSheet(warningChipStyle);
+            partyStatusNameLabel_->setText("No Party");
+            partyStatusNameLabel_->setStyleSheet("color: #ffccaa; font-weight: bold;");
+            partyStatusWidget_->setToolTip("Party: No party assigned");
+            partyStatusWidget_->setStyleSheet(warningChipStyle);
         }
-        partyStatusLabel_->setVisible(true);
+        partyStatusWidget_->setVisible(true);
     } else {
-        partyStatusLabel_->setVisible(false);
+        partyStatusWidget_->setVisible(false);
     }
 }
 

@@ -78,12 +78,14 @@ void PartyPickerDialog::setupUi() {
     info_label->setWordWrap(true);
     info_label->setStyleSheet("QLabel { margin-bottom: 8px; }");
 
-    // Ensure list text is visible against both light and dark themes
+    // Ensure list text is visible against both light and dark themes.
+    // Use explicit white for selected text — palette(highlighted-text) does
+    // not resolve reliably in all Qt dark themes.
     listWidget_->setStyleSheet(
         "QListWidget { color: palette(text); background-color: palette(base); }"
         "QListWidget::item { color: palette(text); padding: 4px; }"
         "QListWidget::item:selected {"
-        "  color: palette(highlighted-text);"
+        "  color: white;"
         "  background-color: palette(highlight); }");
 
     // Populate list with party names

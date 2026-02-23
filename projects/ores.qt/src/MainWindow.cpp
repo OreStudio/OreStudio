@@ -1051,7 +1051,8 @@ void MainWindow::createControllers() {
 
     // Create account controller (admin only functionality)
     accountController_ = std::make_unique<AccountController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        changeReasonCache_, this);
 
     // Connect account controller signals to status bar and window lifecycle
     connect(accountController_.get(), &AccountController::statusMessage,

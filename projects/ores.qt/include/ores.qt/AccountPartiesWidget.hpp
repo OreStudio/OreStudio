@@ -34,11 +34,15 @@
 
 namespace ores::qt {
 
+class ChangeReasonCache;
+
 /**
  * @brief Widget for managing parties assigned to an account.
  *
  * Displays the parties currently assigned to an account and allows
  * adding/removing party links via a combo box and toolbar buttons.
+ * Changes are staged locally and only written to the database when
+ * the Save button is clicked, after selecting a change reason.
  */
 class AccountPartiesWidget : public QWidget {
     Q_OBJECT
@@ -57,25 +61,13 @@ public:
     explicit AccountPartiesWidget(QWidget* parent = nullptr);
     ~AccountPartiesWidget() override = default;
 
-    /**
-     * @brief Sets the client manager for making requests.
-     */
     void setClientManager(ClientManager* clientManager);
-
-    /**
-     * @brief Sets the account ID to manage parties for.
-     */
+    void setChangeReasonCache(ChangeReasonCache* cache);
     void setAccountId(const boost::uuids::uuid& accountId);
-
-    /**
-     * @brief Loads the parties for the current account.
-     */
     void loadParties();
-
-    /**
-     * @brief Sets the widget to read-only mode.
-     */
     void setReadOnly(bool readOnly);
+
+    [[nodiscard]] bool hasPendingChanges() const;
 
 signals:
     void statusMessage(const QString& message);
@@ -85,6 +77,7 @@ signals:
 private slots:
     void onAddPartyClicked();
     void onRemovePartyClicked();
+    void onSaveClicked();
     void onAssignedSelectionChanged();
 
 private:
@@ -97,13 +90,20 @@ private:
     QComboBox*   partyCombo_;
     QToolButton* addButton_;
     QToolButton* removeButton_;
+    QToolButton* saveButton_;
 
     ClientManager*     clientManager_ = nullptr;
+    ChangeReasonCache* changeReasonCache_ = nullptr;
     boost::uuids::uuid accountId_;
     bool               readOnly_ = false;
 
+    // DB state
     std::vector<iam::domain::account_party>  assignedParties_;
     std::vector<refdata::domain::party>      allParties_;
+
+    // Pending local changes (not yet written to DB)
+    std::vector<boost::uuids::uuid> pendingAdds_;
+    std::vector<boost::uuids::uuid> pendingRemoves_;
 };
 
 }

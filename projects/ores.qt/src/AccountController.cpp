@@ -26,6 +26,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/AccountMdiWindow.hpp"
 #include "ores.qt/AccountDetailDialog.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/AccountHistoryDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -53,9 +54,11 @@ AccountController::AccountController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    ChangeReasonCache* changeReasonCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
-      accountListWindow_(nullptr) {
+      accountListWindow_(nullptr),
+      changeReasonCache_(changeReasonCache) {
     BOOST_LOG_SEV(lg(), debug) << "Account controller created";
 
     // Connect to notification signal from ClientManager
@@ -340,6 +343,7 @@ void AccountController::showDetailWindow(
     auto* detailDialog = new AccountDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
 
     if (isCreateMode) {
         iam::domain::account empty_account;
@@ -411,6 +415,7 @@ void AccountController::onOpenAccountVersion(
     auto* detailDialog = new AccountDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
 
     connect(detailDialog, &AccountDetailDialog::statusMessage,
             this, [self = QPointer<AccountController>(this)](const QString& message) {

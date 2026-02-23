@@ -166,6 +166,12 @@ void AccountDetailDialog::setClientManager(ClientManager* clientManager) {
     }
 }
 
+void AccountDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
+    if (partiesWidget_) {
+        partiesWidget_->setChangeReasonCache(cache);
+    }
+}
+
 void AccountDetailDialog::setUsername(const std::string& username) {
     modifiedByUsername_ = username;
 }

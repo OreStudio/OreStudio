@@ -28,12 +28,15 @@
 #include <future>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
@@ -45,7 +48,8 @@ AccountPartiesWidget::AccountPartiesWidget(QWidget* parent)
       assignedList_(new QListWidget(this)),
       partyCombo_(new QComboBox(this)),
       addButton_(new QToolButton(this)),
-      removeButton_(new QToolButton(this)) {
+      removeButton_(new QToolButton(this)),
+      saveButton_(new QToolButton(this)) {
 
     setupUi();
     updateButtonStates();
@@ -69,21 +73,30 @@ void AccountPartiesWidget::setupUi() {
 
     addButton_->setIcon(IconUtils::createRecoloredIcon(
         Icon::Add, IconUtils::DefaultIconColor));
-    addButton_->setToolTip("Add selected party to this account");
+    addButton_->setToolTip("Stage selected party for addition");
     addButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
     connect(addButton_, &QToolButton::clicked,
         this, &AccountPartiesWidget::onAddPartyClicked);
 
     removeButton_->setIcon(IconUtils::createRecoloredIcon(
         Icon::Delete, IconUtils::DefaultIconColor));
-    removeButton_->setToolTip("Remove selected party from this account");
+    removeButton_->setToolTip("Stage selected party for removal");
     removeButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
     connect(removeButton_, &QToolButton::clicked,
         this, &AccountPartiesWidget::onRemovePartyClicked);
 
+    saveButton_->setIcon(IconUtils::createRecoloredIcon(
+        Icon::Save, IconUtils::DefaultIconColor));
+    saveButton_->setToolTip("Save pending party changes");
+    saveButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    connect(saveButton_, &QToolButton::clicked,
+        this, &AccountPartiesWidget::onSaveClicked);
+
     buttonsLayout->addWidget(partyCombo_);
     buttonsLayout->addWidget(addButton_);
     buttonsLayout->addWidget(removeButton_);
+    buttonsLayout->addStretch();
+    buttonsLayout->addWidget(saveButton_);
 
     groupLayout->addLayout(buttonsLayout);
 
@@ -94,8 +107,16 @@ void AccountPartiesWidget::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
 
+void AccountPartiesWidget::setChangeReasonCache(ChangeReasonCache* cache) {
+    changeReasonCache_ = cache;
+}
+
 void AccountPartiesWidget::setAccountId(const boost::uuids::uuid& accountId) {
     accountId_ = accountId;
+}
+
+bool AccountPartiesWidget::hasPendingChanges() const {
+    return !pendingAdds_.empty() || !pendingRemoves_.empty();
 }
 
 void AccountPartiesWidget::loadParties() {
@@ -132,6 +153,8 @@ void AccountPartiesWidget::loadParties() {
             if (result.success) {
                 self->assignedParties_ = std::move(result.assignedParties);
                 self->allParties_      = std::move(result.allParties);
+                self->pendingAdds_.clear();
+                self->pendingRemoves_.clear();
                 self->refreshView();
                 BOOST_LOG_SEV(lg(), debug)
                     << "Loaded " << self->assignedParties_.size()
@@ -193,147 +216,151 @@ void AccountPartiesWidget::setReadOnly(bool readOnly) {
 }
 
 void AccountPartiesWidget::onAddPartyClicked() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Not Connected",
-            "Cannot add party while disconnected.");
-        return;
+    if (partyCombo_->count() == 0) return;
+
+    const auto partyIdStr = partyCombo_->currentData().toString().toStdString();
+    if (partyIdStr.empty()) return;
+
+    const auto partyId = boost::lexical_cast<boost::uuids::uuid>(partyIdStr);
+
+    // If this party was staged for removal, just un-stage the removal
+    auto it = std::find(pendingRemoves_.begin(), pendingRemoves_.end(), partyId);
+    if (it != pendingRemoves_.end()) {
+        pendingRemoves_.erase(it);
+    } else {
+        pendingAdds_.push_back(partyId);
     }
 
-    if (partyCombo_->count() == 0) {
-        MessageBoxHelper::information(this, "No Parties Available",
-            "All available parties are already assigned to this account.");
-        return;
-    }
-
-    const auto partyId = boost::lexical_cast<boost::uuids::uuid>(
-        partyCombo_->currentData().toString().toStdString());
-    const auto accountId = accountId_;
-
-    BOOST_LOG_SEV(lg(), info) << "Adding party "
-                              << boost::uuids::to_string(partyId)
-                              << " to account "
-                              << boost::uuids::to_string(accountId_);
-
-    QPointer<AccountPartiesWidget> self = this;
-
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
-        this, [self, watcher]() {
-            auto [success, message] = watcher->result();
-            watcher->deleteLater();
-
-            if (!self) return;
-
-            if (success) {
-                emit self->statusMessage("Party added successfully");
-                self->loadParties();
-                emit self->partiesChanged();
-            } else {
-                emit self->errorMessage("Add Party Failed",
-                    QString::fromStdString(message));
-                MessageBoxHelper::critical(self, "Add Party Failed",
-                    QString::fromStdString(message));
-            }
-        });
-
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, accountId, partyId]()
-            -> std::pair<bool, std::string> {
-            if (!self) return {false, "Widget destroyed"};
-
-            iam::domain::account_party ap;
-            ap.account_id         = accountId;
-            ap.party_id           = partyId;
-            ap.change_reason_code = "account_management";
-            ap.modified_by        = "";  // server overwrites from session
-
-            iam::messaging::save_account_party_request request;
-            request.account_party = ap;
-
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!result) {
-                return {false, comms::net::to_string(result.error())};
-            }
-            return {result->success, result->message};
-        });
-
-    watcher->setFuture(future);
+    refreshView();
+    updateButtonStates();
 }
 
 void AccountPartiesWidget::onRemovePartyClicked() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Not Connected",
-            "Cannot remove party while disconnected.");
-        return;
-    }
-
     auto selected = assignedList_->selectedItems();
     if (selected.isEmpty()) return;
 
-    const int row = assignedList_->row(selected.first());
-    if (row < 0 || row >= static_cast<int>(assignedParties_.size())) return;
+    const auto partyIdStr =
+        selected.first()->data(Qt::UserRole).toString().toStdString();
+    if (partyIdStr.empty()) return;
 
-    const auto partyId  = assignedParties_[row].party_id;
-    const auto accountId = accountId_;
+    const auto partyId = boost::lexical_cast<boost::uuids::uuid>(partyIdStr);
 
-    auto reply = MessageBoxHelper::question(this, "Remove Party",
-        "Are you sure you want to remove this party from the account?",
-        QMessageBox::Yes | QMessageBox::No);
+    // If this party was staged for addition, just un-stage the addition
+    auto it = std::find(pendingAdds_.begin(), pendingAdds_.end(), partyId);
+    if (it != pendingAdds_.end()) {
+        pendingAdds_.erase(it);
+    } else {
+        pendingRemoves_.push_back(partyId);
+    }
 
-    if (reply != QMessageBox::Yes) return;
+    refreshView();
+    updateButtonStates();
+}
 
-    BOOST_LOG_SEV(lg(), info) << "Removing party "
-                              << boost::uuids::to_string(partyId)
-                              << " from account "
-                              << boost::uuids::to_string(accountId_);
+void AccountPartiesWidget::onSaveClicked() {
+    if (!hasPendingChanges()) return;
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Not Connected",
+            "Cannot save party changes while disconnected.");
+        return;
+    }
+
+    // Show change reason dialog
+    namespace reason = dq::domain::change_reason_constants;
+    std::vector<dq::domain::change_reason> reasons;
+    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+        reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+    }
+
+    ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
+        true, this);
+    if (dialog.exec() != QDialog::Accepted) return;
+
+    const auto changeReasonCode = dialog.selectedReasonCode();
+    const auto changeCommentary = dialog.commentary();
 
     QPointer<AccountPartiesWidget> self = this;
+    const auto accountId = accountId_;
+    const auto adds = pendingAdds_;
+    const auto removes = pendingRemoves_;
 
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
-        this, [self, watcher]() {
-            auto [success, message] = watcher->result();
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(this);
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, this,
+        [self, watcher]() {
+            auto result = watcher->result();
             watcher->deleteLater();
-
             if (!self) return;
 
-            if (success) {
-                emit self->statusMessage("Party removed successfully");
+            if (result.success) {
+                emit self->statusMessage("Party changes saved successfully");
                 self->loadParties();
                 emit self->partiesChanged();
             } else {
-                emit self->errorMessage("Remove Party Failed",
-                    QString::fromStdString(message));
-                MessageBoxHelper::critical(self, "Remove Party Failed",
-                    QString::fromStdString(message));
+                emit self->errorMessage("Save Failed",
+                    QString::fromStdString(result.message));
+                MessageBoxHelper::critical(self, "Save Failed",
+                    QString::fromStdString(result.message));
             }
         });
 
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, accountId, partyId]()
-            -> std::pair<bool, std::string> {
+    QFuture<SaveResult> future =
+        QtConcurrent::run([self, accountId, adds, removes,
+                           changeReasonCode, changeCommentary]() -> SaveResult {
             if (!self) return {false, "Widget destroyed"};
 
-            iam::messaging::delete_account_party_request request;
-            iam::messaging::account_party_key key;
-            key.account_id = accountId;
-            key.party_id   = partyId;
-            request.keys.push_back(key);
+            // Process adds
+            for (const auto& partyId : adds) {
+                iam::domain::account_party ap;
+                ap.account_id         = accountId;
+                ap.party_id           = partyId;
+                ap.change_reason_code = changeReasonCode;
+                ap.change_commentary  = changeCommentary;
+                ap.modified_by        = "";  // server overwrites from session
 
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
+                iam::messaging::save_account_party_request request;
+                request.account_party = ap;
 
-            if (!result) {
-                return {false, comms::net::to_string(result.error())};
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
+
+                if (!result) {
+                    return {false, comms::net::to_string(result.error())};
+                }
+                if (!result->success) {
+                    return {false, result->message};
+                }
             }
 
-            if (result->results.empty()) {
-                return {false, "No result returned from server"};
+            // Process removes
+            for (const auto& partyId : removes) {
+                iam::messaging::delete_account_party_request request;
+                iam::messaging::account_party_key key;
+                key.account_id = accountId;
+                key.party_id   = partyId;
+                request.keys.push_back(key);
+
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
+
+                if (!result) {
+                    return {false, comms::net::to_string(result.error())};
+                }
+                if (result->results.empty() || !result->results.front().success) {
+                    const std::string msg = result->results.empty()
+                        ? "No result returned"
+                        : result->results.front().message;
+                    return {false, msg};
+                }
             }
-            return {result->results.front().success,
-                    result->results.front().message};
+
+            return {true, {}};
         });
 
     watcher->setFuture(future);
@@ -344,32 +371,54 @@ void AccountPartiesWidget::onAssignedSelectionChanged() {
 }
 
 void AccountPartiesWidget::refreshView() {
-    // Populate the assigned list
     assignedList_->clear();
-    for (const auto& ap : assignedParties_) {
-        // Find party name from allParties_
-        auto it = std::ranges::find_if(allParties_,
-            [&ap](const auto& p) { return p.id == ap.party_id; });
 
-        QString label;
+    // Build the effective assigned set: DB parties minus removals, plus staged adds
+    auto isRemoved = [&](const boost::uuids::uuid& id) {
+        return std::find(pendingRemoves_.begin(), pendingRemoves_.end(), id)
+            != pendingRemoves_.end();
+    };
+
+    auto findPartyName = [&](const boost::uuids::uuid& id) -> QString {
+        auto it = std::ranges::find_if(allParties_,
+            [&id](const auto& p) { return p.id == id; });
         if (it != allParties_.end()) {
-            label = QString("%1 (%2)")
+            return QString("%1 (%2)")
                 .arg(QString::fromStdString(it->full_name))
                 .arg(QString::fromStdString(it->party_type));
-        } else {
-            label = QString::fromStdString(
-                boost::uuids::to_string(ap.party_id));
         }
-        assignedList_->addItem(new QListWidgetItem(label));
+        return QString::fromStdString(boost::uuids::to_string(id));
+    };
+
+    std::vector<boost::uuids::uuid> effectiveIds;
+
+    // Parties from DB that are not pending removal
+    for (const auto& ap : assignedParties_) {
+        if (!isRemoved(ap.party_id)) {
+            effectiveIds.push_back(ap.party_id);
+            auto* item = new QListWidgetItem(findPartyName(ap.party_id));
+            item->setData(Qt::UserRole,
+                QString::fromStdString(boost::uuids::to_string(ap.party_id)));
+            assignedList_->addItem(item);
+        }
     }
 
-    // Populate the combo with unassigned parties
+    // Staged additions
+    for (const auto& partyId : pendingAdds_) {
+        effectiveIds.push_back(partyId);
+        auto* item = new QListWidgetItem(
+            findPartyName(partyId) + tr(" [pending]"));
+        item->setData(Qt::UserRole,
+            QString::fromStdString(boost::uuids::to_string(partyId)));
+        assignedList_->addItem(item);
+    }
+
+    // Populate combo with parties not in effective set
     partyCombo_->clear();
     for (const auto& party : allParties_) {
-        bool alreadyAssigned = std::ranges::any_of(assignedParties_,
-            [&party](const auto& ap) { return ap.party_id == party.id; });
-
-        if (!alreadyAssigned) {
+        bool inEffective = std::ranges::any_of(effectiveIds,
+            [&party](const auto& id) { return id == party.id; });
+        if (!inEffective) {
             const QString label = QString("%1 (%2)")
                 .arg(QString::fromStdString(party.full_name))
                 .arg(QString::fromStdString(party.party_type));
@@ -379,8 +428,12 @@ void AccountPartiesWidget::refreshView() {
         }
     }
 
-    partiesGroup_->setTitle(
-        QString("Assigned Parties (%1)").arg(assignedParties_.size()));
+    const int total = static_cast<int>(effectiveIds.size());
+    const int pending = static_cast<int>(pendingAdds_.size() + pendingRemoves_.size());
+    QString title = QString("Assigned Parties (%1)").arg(total);
+    if (pending > 0)
+        title += QString(" [%1 unsaved]").arg(pending);
+    partiesGroup_->setTitle(title);
 
     updateButtonStates();
 }
@@ -392,6 +445,7 @@ void AccountPartiesWidget::updateButtonStates() {
 
     addButton_->setEnabled(!readOnly_ && isConnected && hasComboItem);
     removeButton_->setEnabled(!readOnly_ && isConnected && hasSelection);
+    saveButton_->setEnabled(!readOnly_ && isConnected && hasPendingChanges());
 }
 
 }

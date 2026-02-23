@@ -359,6 +359,14 @@ private:
     void updateMenuState();
 
     /**
+     * @brief Updates the tenant and party chip labels in the status bar.
+     *
+     * Shows tenant chip when a named connection is active; shows party chip
+     * when a party context is selected.
+     */
+    void updateStatusBarFields();
+
+    /**
      * @brief Builds a tooltip string for the connection status icon.
      *
      * Returns an empty string if never connected, a connected summary when
@@ -398,6 +406,12 @@ private:
 
     /** @brief Status bar label showing connection state icon */
     QLabel* connectionStatusIconLabel_;
+
+    /** @brief Status bar chip showing the active tenant (connection) name */
+    QLabel* tenantStatusLabel_;
+
+    /** @brief Status bar chip showing the active party name */
+    QLabel* partyStatusLabel_;
 
     /**
      * @brief List of all detachable MDI windows for detach/reattach operations.

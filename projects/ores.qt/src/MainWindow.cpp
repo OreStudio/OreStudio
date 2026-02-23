@@ -112,7 +112,8 @@ MainWindow::MainWindow(QWidget* parent) :
     changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
-    telemetryViewerWindow_(nullptr) {
+    telemetryViewerWindow_(nullptr),
+    tenantStatusLabel_(nullptr), partyStatusLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -121,6 +122,20 @@ MainWindow::MainWindow(QWidget* parent) :
     mdiArea_ = new MdiAreaWithBackground(this);
 
     setWindowIcon(QIcon(":/images/modern-icon.png"));
+
+    const QString chipStyle =
+        "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
+        " background: palette(alternateBase); }";
+
+    tenantStatusLabel_ = new QLabel(this);
+    tenantStatusLabel_->setStyleSheet(chipStyle);
+    tenantStatusLabel_->setVisible(false);
+    ui_->statusbar->addPermanentWidget(tenantStatusLabel_);
+
+    partyStatusLabel_ = new QLabel(this);
+    partyStatusLabel_->setStyleSheet(chipStyle);
+    partyStatusLabel_->setVisible(false);
+    ui_->statusbar->addPermanentWidget(partyStatusLabel_);
 
     connectionStatusIconLabel_ = new QLabel(this);
     connectionStatusIconLabel_->setFixedWidth(20);
@@ -2025,24 +2040,14 @@ void MainWindow::updateWindowTitle() {
 
     // Add connection info if connected
     if (clientManager_ && clientManager_->isConnected()) {
+        const QString server =
+            QString::fromStdString(clientManager_->serverAddress());
         if (!username_.empty()) {
-            if (!party_name_.isEmpty()) {
-                // Show "username / party_name" when party context is known
-                title += QString(" - %1 / %2")
-                    .arg(QString::fromStdString(username_))
-                    .arg(party_name_);
-            } else {
-                // Use active connection name if available, otherwise server address
-                QString connectionInfo = !activeConnectionName_.isEmpty()
-                    ? activeConnectionName_
-                    : QString::fromStdString(clientManager_->serverAddress());
-                title += QString(" - %1 / %2")
-                    .arg(QString::fromStdString(username_))
-                    .arg(connectionInfo);
-            }
+            title += QString(" - %1 @ %2")
+                .arg(QString::fromStdString(username_))
+                .arg(server);
         } else {
-            QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
-            title += QString(" - %1").arg(serverInfo);
+            title += QString(" - %1").arg(server);
         }
     }
 
@@ -2052,7 +2057,30 @@ void MainWindow::updateWindowTitle() {
     }
 
     setWindowTitle(title);
+    updateStatusBarFields();
     BOOST_LOG_SEV(lg(), debug) << "Window title updated: " << title.toStdString();
+}
+
+void MainWindow::updateStatusBarFields() {
+    const QString chipStyle =
+        "QLabel { padding: 0 8px; border-left: 1px solid palette(mid);"
+        " background: palette(alternateBase); }";
+
+    if (!activeConnectionName_.isEmpty()) {
+        tenantStatusLabel_->setText("Tenant: " + activeConnectionName_);
+        tenantStatusLabel_->setStyleSheet(chipStyle);
+        tenantStatusLabel_->setVisible(true);
+    } else {
+        tenantStatusLabel_->setVisible(false);
+    }
+
+    if (!party_name_.isEmpty()) {
+        partyStatusLabel_->setText("Party: " + party_name_);
+        partyStatusLabel_->setStyleSheet(chipStyle);
+        partyStatusLabel_->setVisible(true);
+    } else {
+        partyStatusLabel_->setVisible(false);
+    }
 }
 
 void MainWindow::onConnectionBrowserTriggered() {

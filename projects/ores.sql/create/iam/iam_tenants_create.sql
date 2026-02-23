@@ -136,7 +136,7 @@ begin
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = current_user;
+    new.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
 
     -- Validate change_reason_code (use system tenant for tenant records)
     new.change_reason_code := ores_dq_validate_change_reason_fn(ores_iam_system_tenant_id_fn(), new.change_reason_code);

@@ -314,7 +314,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         gen_random_uuid(), v_new_tenant_id,
-        p_name || ' (System Party)', p_code || '_system', 'System',
+        'System Party', p_code || '_system', 'System',
         'Internal', 'WRLD', null, 'Active',
         v_actor, v_actor, 'system.new_record',
         'System party created during tenant provisioning'

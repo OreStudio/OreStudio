@@ -2099,11 +2099,7 @@ void MainWindow::updateStatusBarFields() {
 
     if (connected) {
         if (!party_name_.isEmpty()) {
-            const bool isSystem = clientManager_->isSystemParty();
-            const QString label = isSystem
-                ? "Party: " + party_name_ + " [System]"
-                : "Party: " + party_name_;
-            partyStatusLabel_->setText(label);
+            partyStatusLabel_->setText("Party: " + party_name_);
             partyStatusLabel_->setStyleSheet(chipStyle);
         } else {
             partyStatusLabel_->setText("Party: [No Party]");

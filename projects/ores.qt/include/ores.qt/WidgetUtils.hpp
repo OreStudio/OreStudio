@@ -20,6 +20,7 @@
 #ifndef ORES_QT_WIDGET_UTILS_HPP
 #define ORES_QT_WIDGET_UTILS_HPP
 
+#include <QAbstractItemView>
 #include <QComboBox>
 #include <QWidget>
 
@@ -40,8 +41,12 @@ struct WidgetUtils {
      * @param parent The widget whose combo box children to configure.
      */
     static void setupComboBoxes(QWidget* parent) {
-        for (auto* combo : parent->findChildren<QComboBox*>())
+        for (auto* combo : parent->findChildren<QComboBox*>()) {
             combo->setMaxVisibleItems(10);
+            // setMaxVisibleItems is ignored on Linux when items carry icons;
+            // capping the popup view's height is the reliable cross-platform fix.
+            combo->view()->setMaximumHeight(250);
+        }
     }
 };
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/LoginDialog.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -422,13 +423,19 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 MessageBoxHelper::warning(this, "Password Change Required",
                     "You must change your password to continue. Please login again to retry.");
             }
-        } else if (!result.available_parties.empty()) {
-            BOOST_LOG_SEV(lg(), info) << "Multiple parties available - showing picker";
+        } else if (result.selected_party_id.is_nil() && !result.available_parties.empty()) {
+            BOOST_LOG_SEV(lg(), info) << "Party selection required: "
+                                      << result.available_parties.size()
+                                      << " parties available";
             statusLabel_->setText("Select party...");
 
             PartyPickerDialog partyDialog(result.available_parties, clientManager_, this);
             if (partyDialog.exec() == QDialog::Accepted) {
-                BOOST_LOG_SEV(lg(), info) << "Party selected successfully";
+                BOOST_LOG_SEV(lg(), info) << "Party selected: "
+                                          << clientManager_->currentPartyName().toStdString()
+                                          << " (category="
+                                          << clientManager_->currentPartyCategory().toStdString()
+                                          << ")";
                 statusLabel_->setText("Login successful!");
                 emit loginSucceeded(usernameEdit_->text().trimmed());
                 emit closeRequested();
@@ -448,6 +455,17 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             emit tenantBootstrapDetected();
             emit closeRequested();
         } else {
+            if (!result.selected_party_id.is_nil()) {
+                BOOST_LOG_SEV(lg(), info) << "Party auto-selected: "
+                                          << clientManager_->currentPartyName().toStdString()
+                                          << " (category="
+                                          << clientManager_->currentPartyCategory().toStdString()
+                                          << ", id="
+                                          << boost::uuids::to_string(result.selected_party_id)
+                                          << ")";
+            } else {
+                BOOST_LOG_SEV(lg(), info) << "No party context for this account";
+            }
             statusLabel_->setText("Login successful!");
             emit loginSucceeded(usernameEdit_->text().trimmed());
             emit closeRequested();

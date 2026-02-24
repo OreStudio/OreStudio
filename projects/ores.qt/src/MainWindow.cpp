@@ -662,7 +662,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         auto* subWindow = new DetachableMdiSubWindow(this);
         subWindow->setWidget(window);
-        subWindow->setWindowTitle(tr("Portfolio / Book Tree"));
+        subWindow->setWindowTitle(tr("Portfolio Explorer"));
         subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
             Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -673,7 +673,7 @@ MainWindow::MainWindow(QWidget* parent) :
         });
 
         mdiArea_->addSubWindow(subWindow);
-        subWindow->resize(1100, 600);
+        subWindow->resize(window->sizeHint());
         subWindow->show();
     });
 

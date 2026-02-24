@@ -105,7 +105,8 @@ void EntityListMdiWindow::initializeTableSettings(
     std::string_view settingsGroup,
     const QVector<int>& defaultHiddenColumns,
     const QSize& defaultSize,
-    int settingsVersion) {
+    int settingsVersion,
+    QSplitter* splitter) {
 
     settingsTableView_ = tableView;
     settingsModel_ = sourceModel;
@@ -113,9 +114,15 @@ void EntityListMdiWindow::initializeTableSettings(
     defaultHiddenColumns_ = defaultHiddenColumns;
     defaultSize_ = defaultSize;
     settingsVersion_ = settingsVersion;
+    settingsSplitter_ = splitter;
 
     auto* header = settingsTableView_->horizontalHeader();
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    if (settingsSplitter_) {
+        connect(settingsSplitter_, &QSplitter::splitterMoved,
+                this, &EntityListMdiWindow::saveSettings);
+    }
 
     setupColumnVisibility();
     restoreTableSettings();
@@ -134,6 +141,8 @@ void EntityListMdiWindow::saveSettings() {
     auto* header = settingsTableView_->horizontalHeader();
     UiPersistence::saveHeader(settingsGroup_, header, settingsVersion_);
     UiPersistence::saveSize(settingsGroup_, this);
+    if (settingsSplitter_)
+        UiPersistence::saveSplitter(settingsGroup_, settingsSplitter_);
 }
 
 void EntityListMdiWindow::restoreTableSettings() {
@@ -148,6 +157,8 @@ void EntityListMdiWindow::restoreTableSettings() {
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     savedWindowSize_ = UiPersistence::restoreSize(settingsGroup_, defaultSize_);
+    if (settingsSplitter_)
+        UiPersistence::restoreSplitter(settingsGroup_, settingsSplitter_);
 }
 
 void EntityListMdiWindow::setupColumnVisibility() {

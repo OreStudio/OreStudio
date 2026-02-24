@@ -161,6 +161,9 @@ void PortfolioExplorerMdiWindow::setupTradePanel() {
     splitter_->addWidget(right_panel);
     splitter_->setStretchFactor(0, 1);
     splitter_->setStretchFactor(1, 3);
+
+    initializeTableSettings(tradeTableView_, tradeModel_,
+        "PortfolioExplorer", {}, {1100, 600}, 1, splitter_);
 }
 
 void PortfolioExplorerMdiWindow::setupConnections() {

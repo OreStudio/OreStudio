@@ -56,7 +56,7 @@ enriches them with hardcoded metadata in fpml_parser.py:
 
 - Symbol and fraction symbol (e.g., ¥/分 for Yuan, £/p for Pound)
 - Fractions per unit (100), rounding type (standard), precision (2)
-- Currency type (fiat.offshore, fiat.emerging, fiat.historical)
+- Currency type (fiat.exotic, fiat.emerging, fiat.historical)
 - Flag key for linking to country flag images
 
 This enrichment is necessary because FPML only publishes currency codes,

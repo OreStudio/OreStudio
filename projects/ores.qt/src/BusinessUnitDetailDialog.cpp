@@ -86,21 +86,8 @@ void BusinessUnitDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void BusinessUnitDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
-            set_combo_flag_icons(ui_->businessCentreCombo,
-                [this](const std::string& code) {
-                    return imageCache_->getBusinessCentreFlagIcon(code);
-                });
-        });
-        connect(ui_->businessCentreCombo, &QComboBox::currentTextChanged,
-                this, [this]() {
-            update_combo_line_edit_icon(ui_->businessCentreCombo,
-                [this](const std::string& code) {
-                    return imageCache_->getBusinessCentreFlagIcon(code);
-                });
-        });
-    }
+    setup_flag_combo(this, ui_->businessCentreCombo, imageCache_,
+                     FlagSource::BusinessCentre);
 }
 
 void BusinessUnitDetailDialog::populateBusinessCentres() {
@@ -126,12 +113,8 @@ void BusinessUnitDetailDialog::populateBusinessCentres() {
                 QString::fromStdString(code));
         }
 
-        if (self->imageCache_) {
-            set_combo_flag_icons(self->ui_->businessCentreCombo,
-                [&self](const std::string& code) {
-                    return self->imageCache_->getBusinessCentreFlagIcon(code);
-                });
-        }
+        apply_flag_icons(self->ui_->businessCentreCombo, self->imageCache_,
+                         FlagSource::BusinessCentre);
 
         self->updateUiFromUnit();
     });

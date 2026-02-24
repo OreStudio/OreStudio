@@ -97,18 +97,7 @@ void PortfolioDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
-            set_combo_flag_icons(ui_->aggregationCcyCombo,
-                [this](const std::string& code) {
-                    return imageCache_->getCurrencyFlagIcon(code);
-                });
-        });
-        set_combo_flag_icons(ui_->aggregationCcyCombo,
-            [this](const std::string& code) {
-                return imageCache_->getCurrencyFlagIcon(code);
-            });
-    }
+    setup_flag_combo(this, ui_->aggregationCcyCombo, imageCache_, FlagSource::Currency);
 }
 
 void PortfolioDetailDialog::populateCurrencyCombo() {
@@ -134,12 +123,8 @@ void PortfolioDetailDialog::populateCurrencyCombo() {
                 QString::fromStdString(code));
         }
 
-        if (self->imageCache_) {
-            set_combo_flag_icons(self->ui_->aggregationCcyCombo,
-                [&self](const std::string& code) {
-                    return self->imageCache_->getCurrencyFlagIcon(code);
-                });
-        }
+        apply_flag_icons(self->ui_->aggregationCcyCombo, self->imageCache_,
+                         FlagSource::Currency);
 
         self->updateUiFromPortfolio();
     });

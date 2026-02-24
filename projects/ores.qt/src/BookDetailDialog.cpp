@@ -99,18 +99,7 @@ void BookDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void BookDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
-            set_combo_flag_icons(ui_->ledgerCcyCombo,
-                [this](const std::string& code) {
-                    return imageCache_->getCurrencyFlagIcon(code);
-                });
-        });
-        set_combo_flag_icons(ui_->ledgerCcyCombo,
-            [this](const std::string& code) {
-                return imageCache_->getCurrencyFlagIcon(code);
-            });
-    }
+    setup_flag_combo(this, ui_->ledgerCcyCombo, imageCache_, FlagSource::Currency);
 }
 
 void BookDetailDialog::populateCurrencyCombo() {
@@ -136,12 +125,8 @@ void BookDetailDialog::populateCurrencyCombo() {
                 QString::fromStdString(code));
         }
 
-        if (self->imageCache_) {
-            set_combo_flag_icons(self->ui_->ledgerCcyCombo,
-                [&self](const std::string& code) {
-                    return self->imageCache_->getCurrencyFlagIcon(code);
-                });
-        }
+        apply_flag_icons(self->ui_->ledgerCcyCombo, self->imageCache_,
+                         FlagSource::Currency);
 
         self->updateUiFromBook();
     });

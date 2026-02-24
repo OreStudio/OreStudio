@@ -23,8 +23,45 @@
 #include <QAction>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QObject>
 
 namespace ores::qt {
+
+class ImageCache;
+
+/**
+ * @brief The type of flag icons to apply to a combo box.
+ */
+enum class FlagSource { Currency, Country, BusinessCentre };
+
+/**
+ * @brief Apply flag icons to a combo box using the given image cache.
+ *
+ * Dispatches to the appropriate ImageCache getter based on @p source.
+ * For editable combos this updates the line-edit leading icon; for
+ * non-editable combos this sets the item icons.
+ *
+ * @param combo   The combo box to decorate
+ * @param cache   The image cache (may be null — no-op if so)
+ * @param source  Which flag type to use
+ */
+void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source);
+
+/**
+ * @brief Wire up a combo box for flag icons and keep them current.
+ *
+ * Calls apply_flag_icons() immediately, then arranges for icons to be
+ * refreshed whenever:
+ *  - ImageCache::allLoaded() fires (the full icon set has been loaded), and
+ *  - The user changes the selection in an editable combo box.
+ *
+ * @param context  The QObject whose lifetime governs the connections
+ * @param combo    The combo box to decorate
+ * @param cache    The image cache (may be null — no-op if so)
+ * @param source   Which flag type to use
+ */
+void setup_flag_combo(
+    QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source);
 
 /**
  * @brief Set a leading flag icon on a QLineEdit.

@@ -79,7 +79,7 @@ lookup_result fetch_party_lookups(ClientManager* cm) {
 
     {
         refdata::messaging::get_business_centres_request request;
-        request.limit = 1000;
+        request.limit = lookup_fetch_limit;
         auto response = cm->process_authenticated_request(std::move(request));
         if (response) {
             for (const auto& bc : response->business_centres) {
@@ -143,7 +143,7 @@ std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
     if (!cm) return codes;
 
     refdata::messaging::get_currencies_request request;
-    request.limit = 1000;
+    request.limit = lookup_fetch_limit;
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
         for (const auto& ccy : response->currencies) {
@@ -159,7 +159,7 @@ fetch_business_centre_image_map(ClientManager* cm) {
     if (!cm) return mapping;
 
     refdata::messaging::get_business_centres_request request;
-    request.limit = 1000;
+    request.limit = lookup_fetch_limit;
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
         for (const auto& bc : response->business_centres) {
@@ -177,7 +177,7 @@ std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm) {
     if (!cm) return entries;
 
     refdata::messaging::get_portfolios_request request;
-    request.limit = 1000;
+    request.limit = lookup_fetch_limit;
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
         for (const auto& pf : response->portfolios) {

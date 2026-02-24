@@ -30,6 +30,16 @@ namespace ores::qt {
 class ClientManager;
 
 /**
+ * @brief Maximum number of items fetched by each synchronous lookup call.
+ *
+ * All lookup fetchers (currencies, business centres, portfolios, etc.) use
+ * this single limit so the behaviour is consistent and easy to change.
+ * A server-side search/filter mechanism should replace bulk fetching if
+ * any entity class grows beyond this threshold.
+ */
+inline constexpr int lookup_fetch_limit = 1000;
+
+/**
  * @brief Fixed party category values (foundation data, not server-fetched).
  */
 namespace party_categories {

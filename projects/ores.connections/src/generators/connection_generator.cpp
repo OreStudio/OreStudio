@@ -17,29 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.connections/generators/server_environment_generator.hpp"
+#include "ores.connections/generators/connection_generator.hpp"
 
 #include <faker-cxx/word.h>
 #include <faker-cxx/internet.h>
 #include <faker-cxx/lorem.h>
 #include <faker-cxx/number.h>
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::connections::generators {
 
-using ores::utility::generation::generation_keys;
-
-domain::server_environment generate_synthetic_server_environment(
+domain::connection generate_synthetic_connection(
     utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
 
-    domain::server_environment r;
+    domain::connection r;
     r.id = ctx.generate_uuid();
     r.folder_id = std::nullopt;
-    r.name = std::string(faker::word::noun()) + " Server";
+    r.environment_id = std::nullopt;
+    r.name = std::string(faker::word::noun()) + " Conn";
     r.host = std::string(faker::internet::domainName());
     r.port = faker::number::integer(1024, 65535);
     r.username = std::string(faker::internet::username());
@@ -49,21 +43,20 @@ domain::server_environment generate_synthetic_server_environment(
     return r;
 }
 
-domain::server_environment generate_synthetic_server_environment(
+domain::connection generate_synthetic_connection(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& folder_id) {
-    auto r = generate_synthetic_server_environment(ctx);
+    auto r = generate_synthetic_connection(ctx);
     r.folder_id = folder_id;
     return r;
 }
 
-std::vector<domain::server_environment> generate_synthetic_server_environments(
+std::vector<domain::connection> generate_synthetic_connections(
     std::size_t n, utility::generation::generation_context& ctx) {
-    std::vector<domain::server_environment> r;
+    std::vector<domain::connection> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_server_environment(ctx));
-
+        r.push_back(generate_synthetic_connection(ctx));
     return r;
 }
 

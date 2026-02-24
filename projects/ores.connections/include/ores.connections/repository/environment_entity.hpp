@@ -17,22 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_DOMAIN_SERVER_ENVIRONMENT_TABLE_IO_HPP
-#define ORES_CONNECTIONS_DOMAIN_SERVER_ENVIRONMENT_TABLE_IO_HPP
+#ifndef ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_ENTITY_HPP
+#define ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_ENTITY_HPP
 
-#include <iosfwd>
-#include <vector>
-#include "ores.connections/domain/server_environment.hpp"
+#include <string>
+#include <optional>
+#include <sqlgen/sqlite.hpp>
 
-namespace ores::connections::domain {
+namespace ores::connections::repository {
 
 /**
- * @brief Dumps a collection of server_environment objects to a stream in table format.
- *
- * Note: The encrypted_password field is NOT shown in table output for security.
- * Only the presence of a password is indicated (Y/N).
+ * @brief SQLite entity for pure environment storage.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<server_environment>& v);
+struct environment_entity {
+    constexpr static const char* tablename = "environments";
+
+    sqlgen::PrimaryKey<std::string> id;
+    std::optional<std::string> folder_id;
+    std::string name;
+    std::string host;
+    int port{0};
+    std::string description;
+};
 
 }
 

@@ -87,10 +87,16 @@ signals:
     void errorOccurred(const QString& errorMessage);
 
     /**
-     * @brief Emitted when user requests to connect using a saved environment.
+     * @brief Emitted when user requests to connect using a saved connection.
      */
-    void connectRequested(const boost::uuids::uuid& environmentId,
+    void connectRequested(const boost::uuids::uuid& connectionId,
                           const QString& connectionName);
+
+    /**
+     * @brief Emitted when user requests to connect using a pure environment.
+     */
+    void environmentConnectRequested(const boost::uuids::uuid& environmentId,
+                                     const QString& environmentName);
 
     /**
      * @brief Emitted when user requests to change the master password.
@@ -106,6 +112,7 @@ public slots:
     void reload();
     void openAddDialog();
     void editSelected();
+    void duplicateSelected();
     void deleteSelected();
     void connectToSelected();
     void changeMasterPassword();
@@ -130,6 +137,7 @@ private:
 
     QAction* addAction_;
     QAction* editAction_;
+    QAction* duplicateAction_;
     QAction* deleteAction_;
     QAction* connectAction_;
     QAction* refreshAction_;

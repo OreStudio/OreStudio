@@ -17,31 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_REPOSITORY_SERVER_ENVIRONMENT_REPOSITORY_HPP
-#define ORES_CONNECTIONS_REPOSITORY_SERVER_ENVIRONMENT_REPOSITORY_HPP
+#ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_ENTITY_HPP
+#define ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_ENTITY_HPP
 
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.connections/domain/server_environment.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
+#include <string>
+#include <sqlgen/sqlite.hpp>
 
 namespace ores::connections::repository {
 
-class server_environment_repository final {
-public:
-    explicit server_environment_repository(sqlite_context& ctx);
+/**
+ * @brief SQLite entity for connection-tag associations.
+ */
+struct connection_tag_entity {
+    constexpr static const char* tablename = "connection_tags";
 
-    void write(const domain::server_environment& env);
-    void write(const std::vector<domain::server_environment>& envs);
-    std::vector<domain::server_environment> read_all();
-    std::optional<domain::server_environment> read_by_id(const boost::uuids::uuid& id);
-    std::vector<domain::server_environment> read_by_folder(
-        const std::optional<boost::uuids::uuid>& folder_id);
-    void remove(const boost::uuids::uuid& id);
-
-private:
-    sqlite_context& ctx_;
+    std::string connection_id;
+    std::string tag_id;
 };
 
 }

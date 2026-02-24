@@ -271,8 +271,16 @@ private slots:
      *
      * Opens the Login Dialog pre-filled with the selected connection's details.
      */
-    void onConnectionConnectRequested(const boost::uuids::uuid& environmentId,
+    void onConnectionConnectRequested(const boost::uuids::uuid& connectionId,
                                        const QString& connectionName);
+
+    /**
+     * @brief Handles a connect request from the Connection Browser for a pure environment.
+     *
+     * Opens the Login Dialog pre-filled with the environment's host and port.
+     */
+    void onEnvironmentConnectRequested(const boost::uuids::uuid& environmentId,
+                                       const QString& environmentName);
 
     void onModernLoginTriggered();
 

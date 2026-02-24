@@ -17,31 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_HPP
-#define ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_HPP
+#ifndef ORES_CONNECTIONS_GENERATORS_CONNECTION_GENERATOR_HPP
+#define ORES_CONNECTIONS_GENERATORS_CONNECTION_GENERATOR_HPP
 
+#include <vector>
 #include <boost/uuid/uuid.hpp>
+#include "ores.connections/domain/connection.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
-namespace ores::connections::domain {
+namespace ores::connections::generators {
 
 /**
- * @brief Junction type for the many-to-many relationship between environments and tags.
- *
- * This type represents the association between a pure environment and a tag.
- * An environment can have multiple tags, and a tag can be applied to multiple
- * environments.
+ * @brief Generates a synthetic connection with manual host/port (no environment link).
  */
-struct environment_tag final {
-    /**
-     * @brief The environment being tagged.
-     */
-    boost::uuids::uuid environment_id;
+domain::connection generate_synthetic_connection(
+    utility::generation::generation_context& ctx);
 
-    /**
-     * @brief The tag being applied.
-     */
-    boost::uuids::uuid tag_id;
-};
+/**
+ * @brief Generates a synthetic connection assigned to a specific folder.
+ */
+domain::connection generate_synthetic_connection(
+    utility::generation::generation_context& ctx,
+    const boost::uuids::uuid& folder_id);
+
+/**
+ * @brief Generates N synthetic connections.
+ */
+std::vector<domain::connection> generate_synthetic_connections(
+    std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

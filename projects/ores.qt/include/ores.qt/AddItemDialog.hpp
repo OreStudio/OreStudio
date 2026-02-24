@@ -32,7 +32,8 @@
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/server_environment.hpp"
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/domain/connection.hpp"
 #include "ores.connections/domain/tag.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ConnectionTypes.hpp"
@@ -52,13 +53,15 @@ namespace ores::qt {
  */
 enum class ItemType {
     Folder,
+    Environment,
     Connection
 };
 
 /**
- * @brief Combined modeless dialog for creating and editing folders and connections.
+ * @brief Combined modeless dialog for creating and editing folders,
+ * environments, and connections.
  *
- * This widget provides a unified form for both item types, with fields
+ * This widget provides a unified form for all item types, with fields
  * dynamically enabled/disabled based on the selected type.
  */
 class AddItemDialog : public QWidget {
@@ -90,13 +93,17 @@ public:
     connections::domain::folder getFolder() const;
     void setInitialParent(const std::optional<boost::uuids::uuid>& parentId);
 
+    // Environment operations (pure host+port)
+    void setEnvironment(const connections::domain::environment& env);
+    connections::domain::environment getEnvironment() const;
+
     // Connection operations
-    void setEnvironment(const connections::domain::server_environment& env);
-    connections::domain::server_environment getEnvironment() const;
+    void setConnection(const connections::domain::connection& conn);
+    connections::domain::connection getConnection() const;
     void setInitialFolder(const std::optional<boost::uuids::uuid>& folderId);
     std::optional<std::string> getPassword() const;
 
-    // Tags (connection only)
+    // Tags (environment and connection)
     void setTags(const std::vector<connections::domain::tag>& tags);
     std::vector<boost::uuids::uuid> getSelectedTagIds() const;
 
@@ -109,6 +116,7 @@ signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& message);
     void folderSaved(const boost::uuids::uuid& id, const QString& name);
+    void environmentSaved(const boost::uuids::uuid& id, const QString& name);
     void connectionSaved(const boost::uuids::uuid& id, const QString& name);
 
 private slots:
@@ -116,6 +124,7 @@ private slots:
     void onTestClicked();
     void onTypeChanged(int index);
     void onPasswordChanged();
+    void onEnvironmentComboChanged(int index);
     void togglePasswordVisibility();
     void updateSaveButtonState();
 
@@ -123,9 +132,11 @@ private:
     void setupUI();
     void setupToolbar();
     void populateFolderCombo();
+    void populateEnvironmentCombo();
     void updateFieldVisibility();
     bool validateInput();
     void saveFolder();
+    void saveEnvironment();
     void saveConnection();
 
     connections::service::connection_manager* manager_;
@@ -143,21 +154,27 @@ private:
     QComboBox* folderCombo_;
     QTextEdit* descriptionEdit_;
 
-    // Connection-only fields
+    // Connection-only: environment link
+    QLabel* environmentLabel_;
+    QComboBox* environmentCombo_;
+
+    // Environment and Connection fields
+    QLabel* hostLabel_;
     QLineEdit* hostEdit_;
+    QLabel* portLabel_;
     QSpinBox* portSpinBox_;
+
+    // Connection-only fields
+    QLabel* usernameLabel_;
     QLineEdit* usernameEdit_;
+    QLabel* passwordLabel_;
     QLineEdit* passwordEdit_;
     QCheckBox* showPasswordCheckbox_;
-    TagSelectorWidget* tagSelector_;
-
-    // Labels for showing/hiding
-    QLabel* hostLabel_;
-    QLabel* portLabel_;
-    QLabel* usernameLabel_;
-    QLabel* passwordLabel_;
-    QLabel* tagLabel_;
     QWidget* passwordWidget_;
+
+    // Tags (environment and connection)
+    QLabel* tagLabel_;
+    TagSelectorWidget* tagSelector_;
 
     // State
     ItemType itemType_{ItemType::Connection};
@@ -166,7 +183,11 @@ private:
 
     // IDs for edit mode
     boost::uuids::uuid folderId_;
-    boost::uuids::uuid environmentId_;
+    boost::uuids::uuid pureEnvironmentId_;   ///< Used when editing a pure environment
+    boost::uuids::uuid connectionId_;        ///< Used when editing a connection
+
+    // Linked environment for connections (selected from combo)
+    std::optional<boost::uuids::uuid> linkedEnvironmentId_;
 
     TestConnectionCallback testCallback_;
 };

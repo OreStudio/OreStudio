@@ -39,6 +39,9 @@ void sqlite_context::initialize_schema() {
 
     auto& conn = *conn_result;
 
+    // Enable foreign keys
+    conn->execute("PRAGMA foreign_keys = ON");
+
     // Create folders table
     const std::string create_folders = R"(
         CREATE TABLE IF NOT EXISTS folders (
@@ -58,28 +61,54 @@ void sqlite_context::initialize_schema() {
         )
     )";
 
-    // Create server_environments table
+    // Create environments table (pure host/port, no credentials)
     const std::string create_environments = R"(
-        CREATE TABLE IF NOT EXISTS server_environments (
+        CREATE TABLE IF NOT EXISTS environments (
             id TEXT PRIMARY KEY,
             folder_id TEXT,
             name TEXT NOT NULL,
             host TEXT NOT NULL,
             port INTEGER NOT NULL,
-            username TEXT NOT NULL,
-            encrypted_password TEXT,
             description TEXT,
             FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL
         )
     )";
 
-    // Create environment_tags junction table
+    // Create connections table (credentials, optional link to environment)
+    const std::string create_connections = R"(
+        CREATE TABLE IF NOT EXISTS connections (
+            id TEXT PRIMARY KEY,
+            folder_id TEXT,
+            environment_id TEXT,
+            name TEXT NOT NULL,
+            host TEXT,
+            port INTEGER,
+            username TEXT NOT NULL,
+            encrypted_password TEXT,
+            description TEXT,
+            FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL,
+            FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE SET NULL
+        )
+    )";
+
+    // Create environment_tags junction table (for pure environments)
     const std::string create_environment_tags = R"(
         CREATE TABLE IF NOT EXISTS environment_tags (
             environment_id TEXT NOT NULL,
             tag_id TEXT NOT NULL,
             PRIMARY KEY (environment_id, tag_id),
-            FOREIGN KEY (environment_id) REFERENCES server_environments(id) ON DELETE CASCADE,
+            FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE,
+            FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+        )
+    )";
+
+    // Create connection_tags junction table (for connections with credentials)
+    const std::string create_connection_tags = R"(
+        CREATE TABLE IF NOT EXISTS connection_tags (
+            connection_id TEXT NOT NULL,
+            tag_id TEXT NOT NULL,
+            PRIMARY KEY (connection_id, tag_id),
+            FOREIGN KEY (connection_id) REFERENCES connections(id) ON DELETE CASCADE,
             FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
         )
     )";
@@ -88,18 +117,78 @@ void sqlite_context::initialize_schema() {
     conn->execute(create_folders);
     conn->execute(create_tags);
     conn->execute(create_environments);
+    conn->execute(create_connections);
     conn->execute(create_environment_tags);
+    conn->execute(create_connection_tags);
 
     // Migration: Add description column to folders if it doesn't exist
-    // SQLite silently ignores duplicate column errors, but we catch anyway
     try {
         conn->execute("ALTER TABLE folders ADD COLUMN description TEXT");
     } catch (...) {
         // Column already exists, ignore
     }
 
-    // Enable foreign keys
-    conn->execute("PRAGMA foreign_keys = ON");
+    // Migration: migrate old server_environments → connections if old table exists
+    const std::string check_old_table = R"(
+        SELECT COUNT(*) FROM sqlite_master
+        WHERE type='table' AND name='server_environments'
+    )";
+
+    // We use a raw SQLite query to check table existence and migrate
+    try {
+        // Check if old server_environments table exists and has data
+        bool old_table_exists = false;
+        try {
+            conn->execute("SELECT COUNT(*) FROM server_environments LIMIT 1");
+            old_table_exists = true;
+        } catch (...) {
+            // Table doesn't exist, skip migration
+        }
+
+        if (old_table_exists) {
+            // Copy data from old table to new connections table
+            conn->execute(R"(
+                INSERT OR IGNORE INTO connections
+                    (id, folder_id, environment_id, name, host, port,
+                     username, encrypted_password, description)
+                SELECT id, folder_id, NULL, name, host, port,
+                       username, encrypted_password, description
+                FROM server_environments
+            )");
+
+            // Check if old environment_tags table exists and migrate
+            bool old_tags_exists = false;
+            try {
+                conn->execute("SELECT COUNT(*) FROM environment_tags WHERE environment_id IN "
+                              "(SELECT id FROM server_environments) LIMIT 1");
+                old_tags_exists = true;
+            } catch (...) {
+                // Doesn't exist or already migrated
+            }
+
+            if (old_tags_exists) {
+                conn->execute(R"(
+                    INSERT OR IGNORE INTO connection_tags (connection_id, tag_id)
+                    SELECT et.environment_id, et.tag_id
+                    FROM environment_tags et
+                    WHERE et.environment_id IN (SELECT id FROM server_environments)
+                )");
+            }
+
+            // Drop old tables
+            try {
+                conn->execute("DROP TABLE IF EXISTS environment_tags");
+            } catch (...) {}
+            try {
+                conn->execute("DROP TABLE IF EXISTS server_environments");
+            } catch (...) {}
+
+            // Recreate environment_tags for the new environments table
+            conn->execute(create_environment_tags);
+        }
+    } catch (...) {
+        // Migration errors are non-fatal - continue with new schema
+    }
 }
 
 void sqlite_context::purge_all_data() {
@@ -112,12 +201,14 @@ void sqlite_context::purge_all_data() {
     auto& conn = *conn_result;
 
     // Delete in order to respect foreign key constraints:
-    // 1. environment_tags (references both environments and tags)
-    // 2. server_environments (references folders)
-    // 3. folders (self-referential, but CASCADE handles children)
+    // 1. Junction tables first (reference both parent tables)
+    // 2. connections and environments (reference folders)
+    // 3. folders (self-referential, CASCADE handles children)
     // 4. tags (no dependencies)
+    conn->execute("DELETE FROM connection_tags");
     conn->execute("DELETE FROM environment_tags");
-    conn->execute("DELETE FROM server_environments");
+    conn->execute("DELETE FROM connections");
+    conn->execute("DELETE FROM environments");
     conn->execute("DELETE FROM folders");
     conn->execute("DELETE FROM tags");
 }

@@ -77,6 +77,17 @@ Create new items, add to lists, insert content.
 
 *Usage*: "New" buttons, add to list, create actions.
 
+*** Copy / Duplicate
+
+Duplicate an item, create a copy with the same content.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_copy_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_copy_20_filled.svg]]
+
+*Usage*: "Duplicate" toolbar buttons and context menu actions that create a
+copy of the selected item (e.g. folder, environment, connection). The copy
+gets the original name suffixed with " (copy)".
+
 *** Delete
 Remove items, clear content, destructive actions.
 
@@ -409,6 +420,16 @@ Change master password, manage encryption keys.
 *Usage*: Change master password actions, encryption key management, password
 vault operations.
 
+*** Keyboard
+Manual data entry, type input, user-typed values.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_keyboard_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_keyboard_20_filled.svg]]
+
+*Usage*: Manual entry options in combo boxes or dialogs where the user will
+type all values themselves (as opposed to selecting from a saved connection or
+environment). Conveys "I will type this myself".
+
 ** Connection Status
 
 Icons indicating connectivity and network state.
@@ -654,6 +675,7 @@ Text validation, spell check, language processing.
 | Concept              | Icon Name                        | Regular | Filled |
 |----------------------+----------------------------------+---------+--------|
 | Add/Create           | add_20                           | Default | Active |
+| Copy/Duplicate       | copy_20                          | Default | Active |
 | Delete/Remove        | delete_20                        | Default | Danger |
 | Purge/Clear All      | delete_dismiss_20                | Default | Danger |
 | Edit/Modify          | edit_20                          | Default | Active |
@@ -679,6 +701,7 @@ Text validation, spell check, language processing.
 | Locked               | lock_closed_20                   | Default | Active |
 | Unlocked             | lock_open_20                     | Default | Active |
 | Change Password      | key_multiple_20                  | Default | Active |
+| Manual Entry         | keyboard_20                      | Default | Active |
 | Connected            | plug_connected_20                | Default | Active |
 | Disconnected         | plug_disconnected_20             | Default | Alert  |
 | Verified Connection  | plug_connected_checkmark_20      | Default | Active |

@@ -26,9 +26,9 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/environment_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/generators/environment_tag_generator.hpp"
-#include "ores.connections/generators/server_environment_generator.hpp"
+#include "ores.connections/generators/environment_generator.hpp"
 #include "ores.connections/generators/tag_generator.hpp"
-#include "ores.connections/repository/server_environment_repository.hpp"
+#include "ores.connections/repository/environment_repository.hpp"
 #include "ores.connections/repository/tag_repository.hpp"
 
 namespace {
@@ -67,13 +67,13 @@ TEST_CASE("write_single_environment_tag", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
     // Create environment and tag first
-    auto env = generate_synthetic_server_environment(ctx);
+    auto env = generate_synthetic_environment(ctx);
     auto tag = generate_synthetic_tag(ctx);
     env_repo.write(env);
     tag_repo.write(tag);
@@ -88,18 +88,18 @@ TEST_CASE("write_multiple_environment_tags", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
-    auto env = generate_synthetic_server_environment(ctx);
-    auto tags = generate_unique_synthetic_tags(3, ctx);
+    auto env = generate_synthetic_environment(ctx);
+    auto tags_vec = generate_unique_synthetic_tags(3, ctx);
     env_repo.write(env);
-    tag_repo.write(tags);
+    tag_repo.write(tags_vec);
 
     std::vector<ores::connections::domain::environment_tag> env_tags;
-    for (const auto& tag : tags) {
+    for (const auto& tag : tags_vec) {
         env_tags.push_back(generate_synthetic_environment_tag(ctx, env.id, tag.id));
     }
 
@@ -112,18 +112,18 @@ TEST_CASE("read_environment_tags_by_environment", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
-    auto env = generate_synthetic_server_environment(ctx);
-    auto tags = generate_unique_synthetic_tags(3, ctx);
+    auto env = generate_synthetic_environment(ctx);
+    auto tags_vec = generate_unique_synthetic_tags(3, ctx);
     env_repo.write(env);
-    tag_repo.write(tags);
+    tag_repo.write(tags_vec);
 
     std::vector<ores::connections::domain::environment_tag> written;
-    for (const auto& tag : tags) {
+    for (const auto& tag : tags_vec) {
         written.push_back(generate_synthetic_environment_tag(ctx, env.id, tag.id));
     }
     repo.write(written);
@@ -138,20 +138,20 @@ TEST_CASE("read_tags_by_environment", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
-    auto env1 = generate_synthetic_server_environment(ctx);
-    auto env2 = generate_synthetic_server_environment(ctx);
-    auto tags = generate_unique_synthetic_tags(3, ctx);
-    auto tag1 = tags[0];
-    auto tag2 = tags[1];
-    auto tag3 = tags[2];
+    auto env1 = generate_synthetic_environment(ctx);
+    auto env2 = generate_synthetic_environment(ctx);
+    auto tags_vec = generate_unique_synthetic_tags(3, ctx);
+    auto tag1 = tags_vec[0];
+    auto tag2 = tags_vec[1];
+    auto tag3 = tags_vec[2];
 
     env_repo.write({env1, env2});
-    tag_repo.write(tags);
+    tag_repo.write(tags_vec);
 
     // env1 has tag1 and tag2
     repo.write(generate_synthetic_environment_tag(ctx, env1.id, tag1.id));
@@ -173,20 +173,20 @@ TEST_CASE("read_environments_by_tag", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
-    auto env1 = generate_synthetic_server_environment(ctx);
-    auto env2 = generate_synthetic_server_environment(ctx);
-    auto env3 = generate_synthetic_server_environment(ctx);
-    auto tags = generate_unique_synthetic_tags(2, ctx);
-    auto tag1 = tags[0];
-    auto tag2 = tags[1];
+    auto env1 = generate_synthetic_environment(ctx);
+    auto env2 = generate_synthetic_environment(ctx);
+    auto env3 = generate_synthetic_environment(ctx);
+    auto tags_vec = generate_unique_synthetic_tags(2, ctx);
+    auto tag1 = tags_vec[0];
+    auto tag2 = tags_vec[1];
 
     env_repo.write({env1, env2, env3});
-    tag_repo.write(tags);
+    tag_repo.write(tags_vec);
 
     // tag1 has env1 and env2
     repo.write(generate_synthetic_environment_tag(ctx, env1.id, tag1.id));
@@ -208,12 +208,12 @@ TEST_CASE("remove_environment_tag", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
-    auto env = generate_synthetic_server_environment(ctx);
+    auto env = generate_synthetic_environment(ctx);
     auto tag = generate_synthetic_tag(ctx);
     env_repo.write(env);
     tag_repo.write(tag);
@@ -232,17 +232,17 @@ TEST_CASE("remove_all_tags_from_environment", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_sqlite_context h;
-    server_environment_repository env_repo(h.context());
+    environment_repository env_repo(h.context());
     tag_repository tag_repo(h.context());
     environment_tag_repository repo(h.context());
     generation_context ctx;
 
-    auto env = generate_synthetic_server_environment(ctx);
-    auto tags = generate_unique_synthetic_tags(3, ctx);
+    auto env = generate_synthetic_environment(ctx);
+    auto tags_vec = generate_unique_synthetic_tags(3, ctx);
     env_repo.write(env);
-    tag_repo.write(tags);
+    tag_repo.write(tags_vec);
 
-    for (const auto& tag : tags) {
+    for (const auto& tag : tags_vec) {
         repo.write(generate_synthetic_environment_tag(ctx, env.id, tag.id));
     }
 

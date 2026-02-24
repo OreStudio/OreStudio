@@ -30,6 +30,7 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 namespace ores::qt {
 
@@ -77,7 +78,7 @@ void ConnectionBrowserMdiWindow::setupUI() {
     addAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
-    addAction_->setToolTip(tr("Add a new folder or connection"));
+    addAction_->setToolTip(tr("Add a new folder, environment, or connection"));
 
     toolBar_->addSeparator();
 
@@ -85,6 +86,11 @@ void ConnectionBrowserMdiWindow::setupUI() {
         IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected item"));
+
+    duplicateAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor),
+        tr("Duplicate"));
+    duplicateAction_->setToolTip(tr("Duplicate selected item with name \" (copy)\""));
 
     deleteAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
@@ -170,6 +176,8 @@ void ConnectionBrowserMdiWindow::setupUI() {
             this, &ConnectionBrowserMdiWindow::openAddDialog);
     connect(editAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::editSelected);
+    connect(duplicateAction_, &QAction::triggered,
+            this, &ConnectionBrowserMdiWindow::duplicateSelected);
     connect(deleteAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::deleteSelected);
     connect(connectAction_, &QAction::triggered,
@@ -210,11 +218,13 @@ void ConnectionBrowserMdiWindow::updateActionStates() {
     bool hasSelection = current.isValid();
 
     auto* node = model_->nodeFromIndex(current);
-    bool isEnvironment = node && node->type == ConnectionTreeNode::Type::Environment;
+    bool isConnectable = node && (node->type == ConnectionTreeNode::Type::Environment ||
+                                  node->type == ConnectionTreeNode::Type::Connection);
 
     editAction_->setEnabled(hasSelection);
+    duplicateAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
-    connectAction_->setEnabled(isEnvironment);
+    connectAction_->setEnabled(isConnectable);
     addAction_->setEnabled(true);
 }
 
@@ -235,7 +245,6 @@ void ConnectionBrowserMdiWindow::updateDetailPanel() {
     if (node->type == ConnectionTreeNode::Type::Folder) {
         auto folder = model_->getFolderFromIndex(current);
         if (folder) {
-            // Count items in this folder
             int itemCount = static_cast<int>(node->children.size());
             detailPanel_->showFolder(*folder, itemCount);
         } else {
@@ -245,6 +254,13 @@ void ConnectionBrowserMdiWindow::updateDetailPanel() {
         auto env = model_->getEnvironmentFromIndex(current);
         if (env) {
             detailPanel_->showEnvironment(*env);
+        } else {
+            detailPanel_->showEmptyState();
+        }
+    } else if (node->type == ConnectionTreeNode::Type::Connection) {
+        auto conn = model_->getConnectionFromIndex(current);
+        if (conn) {
+            detailPanel_->showConnection(*conn);
         } else {
             detailPanel_->showEmptyState();
         }
@@ -283,7 +299,7 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
         if (node) {
             if (node->type == ConnectionTreeNode::Type::Folder) {
                 folderId = node->id;
-            } else if (node->type == ConnectionTreeNode::Type::Environment && node->parent_id) {
+            } else if (node->parent_id) {
                 folderId = node->parent_id;
             }
         }
@@ -303,6 +319,11 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
         restoreExpansionState();
         emit statusChanged(tr("Folder created: %1").arg(name));
     });
+    connect(dialog, &AddItemDialog::environmentSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
+        model_->refresh();
+        restoreExpansionState();
+        emit statusChanged(tr("Environment created: %1").arg(name));
+    });
     connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
         model_->refresh();
         restoreExpansionState();
@@ -319,7 +340,7 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
         subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
             Icon::Add, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
-        subWindow->resize(450, 500);
+        subWindow->resize(450, 520);
 
         mdiArea_->addSubWindow(subWindow);
         subWindow->show();
@@ -337,7 +358,7 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
         dialog->setWindowFlag(Qt::Window);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setWindowTitle(tr("Add Item"));
-        dialog->resize(450, 500);
+        dialog->resize(450, 520);
         dialog->show();
         dialog->raise();
         dialog->activateWindow();
@@ -383,17 +404,14 @@ void ConnectionBrowserMdiWindow::editSelected() {
     } else if (node->type == ConnectionTreeNode::Type::Environment) {
         auto env = model_->getEnvironmentFromIndex(current);
         if (!env) {
-            emit errorOccurred(tr("Failed to load connection details"));
+            emit errorOccurred(tr("Failed to load environment details"));
             delete dialog;
             return;
         }
 
         dialog->setEnvironment(*env);
-        windowTitle = tr("Edit Connection: %1").arg(QString::fromStdString(env->name));
+        windowTitle = tr("Edit Environment: %1").arg(QString::fromStdString(env->name));
         iconType = Icon::Server;
-        if (testCallback_) {
-            dialog->setTestCallback(testCallback_);
-        }
 
         // Load existing tags
         try {
@@ -401,6 +419,34 @@ void ConnectionBrowserMdiWindow::editSelected() {
             dialog->setTags(tags);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to load tags for environment: " << e.what();
+        }
+
+        connect(dialog, &AddItemDialog::environmentSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
+            model_->refresh();
+            restoreExpansionState();
+            emit statusChanged(tr("Environment updated: %1").arg(name));
+        });
+    } else if (node->type == ConnectionTreeNode::Type::Connection) {
+        auto conn = model_->getConnectionFromIndex(current);
+        if (!conn) {
+            emit errorOccurred(tr("Failed to load connection details"));
+            delete dialog;
+            return;
+        }
+
+        dialog->setConnection(*conn);
+        windowTitle = tr("Edit Connection: %1").arg(QString::fromStdString(conn->name));
+        iconType = Icon::PlugConnected;
+        if (testCallback_) {
+            dialog->setTestCallback(testCallback_);
+        }
+
+        // Load existing tags
+        try {
+            auto tags = manager_->get_tags_for_connection(node->id);
+            dialog->setTags(tags);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to load tags for connection: " << e.what();
         }
 
         connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
@@ -423,7 +469,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
         subWindow->setWindowTitle(windowTitle);
         subWindow->setWindowIcon(IconUtils::createRecoloredIcon(iconType, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
-        subWindow->resize(450, 500);
+        subWindow->resize(450, 520);
 
         mdiArea_->addSubWindow(subWindow);
         subWindow->show();
@@ -441,13 +487,87 @@ void ConnectionBrowserMdiWindow::editSelected() {
         dialog->setWindowFlag(Qt::Window);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setWindowTitle(windowTitle);
-        dialog->resize(450, 500);
+        dialog->resize(450, 520);
         dialog->show();
         dialog->raise();
         dialog->activateWindow();
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Opened edit dialog";
+}
+
+void ConnectionBrowserMdiWindow::duplicateSelected() {
+    using namespace ores::logging;
+
+    QModelIndex current = treeView_->currentIndex();
+    if (!current.isValid())
+        return;
+
+    auto* node = model_->nodeFromIndex(current);
+    if (!node)
+        return;
+
+    try {
+        if (node->type == ConnectionTreeNode::Type::Folder) {
+            auto folder = model_->getFolderFromIndex(current);
+            if (!folder) return;
+
+            connections::domain::folder copy = *folder;
+            copy.id = boost::uuids::random_generator()();
+            copy.name = folder->name + " (copy)";
+            manager_->create_folder(copy);
+
+            BOOST_LOG_SEV(lg(), info) << "Duplicated folder: " << copy.name;
+            model_->refresh();
+            restoreExpansionState();
+            emit statusChanged(tr("Folder duplicated: %1").arg(QString::fromStdString(copy.name)));
+
+        } else if (node->type == ConnectionTreeNode::Type::Environment) {
+            auto env = model_->getEnvironmentFromIndex(current);
+            if (!env) return;
+
+            connections::domain::environment copy = *env;
+            copy.id = boost::uuids::random_generator()();
+            copy.name = env->name + " (copy)";
+
+            manager_->create_environment(copy);
+
+            // Copy tags
+            for (const auto& tag : manager_->get_tags_for_environment(env->id)) {
+                manager_->add_tag_to_environment(copy.id, tag.id);
+            }
+
+            BOOST_LOG_SEV(lg(), info) << "Duplicated environment: " << copy.name;
+            model_->refresh();
+            restoreExpansionState();
+            emit statusChanged(tr("Environment duplicated: %1").arg(QString::fromStdString(copy.name)));
+
+        } else if (node->type == ConnectionTreeNode::Type::Connection) {
+            auto conn = model_->getConnectionFromIndex(current);
+            if (!conn) return;
+
+            connections::domain::connection copy = *conn;
+            copy.id = boost::uuids::random_generator()();
+            copy.name = conn->name + " (copy)";
+            copy.encrypted_password = "";
+
+            const auto password = manager_->get_password(conn->id);
+            manager_->create_connection(copy, password);
+
+            // Copy tags
+            for (const auto& tag : manager_->get_tags_for_connection(conn->id)) {
+                manager_->add_tag_to_connection(copy.id, tag.id);
+            }
+
+            BOOST_LOG_SEV(lg(), info) << "Duplicated connection: " << copy.name;
+            model_->refresh();
+            restoreExpansionState();
+            emit statusChanged(tr("Connection duplicated: %1").arg(QString::fromStdString(copy.name)));
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to duplicate item: " << e.what();
+        emit errorOccurred(tr("Failed to duplicate: %1").arg(e.what()));
+    }
 }
 
 void ConnectionBrowserMdiWindow::deleteSelected() {
@@ -462,14 +582,21 @@ void ConnectionBrowserMdiWindow::deleteSelected() {
         return;
 
     QString itemName = node->name;
-    QString itemType = (node->type == ConnectionTreeNode::Type::Folder) ? tr("folder") : tr("connection");
-
+    QString itemType;
     QString message;
+
     if (node->type == ConnectionTreeNode::Type::Folder) {
+        itemType = tr("folder");
         message = tr("Are you sure you want to delete the folder '%1'?\n\n"
-                     "All connections in this folder will be moved to the root level.")
+                     "All items in this folder will be moved to the root level.")
+                      .arg(itemName);
+    } else if (node->type == ConnectionTreeNode::Type::Environment) {
+        itemType = tr("environment");
+        message = tr("Are you sure you want to delete the environment '%1'?\n\n"
+                     "Connections linked to this environment will lose their host/port settings.")
                       .arg(itemName);
     } else {
+        itemType = tr("connection");
         message = tr("Are you sure you want to delete the connection '%1'?")
                       .arg(itemName);
     }
@@ -487,8 +614,11 @@ void ConnectionBrowserMdiWindow::deleteSelected() {
         if (node->type == ConnectionTreeNode::Type::Folder) {
             manager_->delete_folder(node->id);
             BOOST_LOG_SEV(lg(), info) << "Deleted folder: " << node->name.toStdString();
-        } else {
+        } else if (node->type == ConnectionTreeNode::Type::Environment) {
             manager_->delete_environment(node->id);
+            BOOST_LOG_SEV(lg(), info) << "Deleted environment: " << node->name.toStdString();
+        } else {
+            manager_->delete_connection(node->id);
             BOOST_LOG_SEV(lg(), info) << "Deleted connection: " << node->name.toStdString();
         }
 
@@ -510,11 +640,16 @@ void ConnectionBrowserMdiWindow::connectToSelected() {
         return;
 
     auto* node = model_->nodeFromIndex(current);
-    if (!node || node->type != ConnectionTreeNode::Type::Environment)
+    if (!node)
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Connect requested for: " << node->name.toStdString();
-    emit connectRequested(node->id, node->name);
+
+    if (node->type == ConnectionTreeNode::Type::Connection) {
+        emit connectRequested(node->id, node->name);
+    } else if (node->type == ConnectionTreeNode::Type::Environment) {
+        emit environmentConnectRequested(node->id, node->name);
+    }
 }
 
 void ConnectionBrowserMdiWindow::onSelectionChanged() {
@@ -530,8 +665,9 @@ void ConnectionBrowserMdiWindow::onDoubleClicked(const QModelIndex& index) {
     if (!node)
         return;
 
-    if (node->type == ConnectionTreeNode::Type::Environment) {
-        // Double-click on environment triggers connect
+    if (node->type == ConnectionTreeNode::Type::Connection ||
+        node->type == ConnectionTreeNode::Type::Environment) {
+        // Double-click on connectable item triggers connect
         connectToSelected();
     } else if (node->type == ConnectionTreeNode::Type::Folder) {
         // Double-click on folder toggles expansion
@@ -553,10 +689,12 @@ void ConnectionBrowserMdiWindow::showContextMenu(const QPoint& pos) {
     if (index.isValid()) {
         menu.addSeparator();
         menu.addAction(editAction_);
+        menu.addAction(duplicateAction_);
         menu.addAction(deleteAction_);
 
         auto* node = model_->nodeFromIndex(index);
-        if (node && node->type == ConnectionTreeNode::Type::Environment) {
+        if (node && (node->type == ConnectionTreeNode::Type::Environment ||
+                     node->type == ConnectionTreeNode::Type::Connection)) {
             menu.addSeparator();
             menu.addAction(connectAction_);
         }
@@ -579,7 +717,7 @@ void ConnectionBrowserMdiWindow::purgeDatabase() {
 
     auto result = MessageBoxHelper::question(this,
         tr("Purge Database"),
-        tr("This will permanently delete ALL saved connections and folders.\n\n"
+        tr("This will permanently delete ALL saved connections, environments, and folders.\n\n"
            "This action cannot be undone. Are you sure?"),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -592,7 +730,7 @@ void ConnectionBrowserMdiWindow::purgeDatabase() {
     try {
         manager_->purge();
         model_->refresh();
-        emit statusChanged(tr("Database purged - all connections deleted"));
+        emit statusChanged(tr("Database purged - all data deleted"));
         emit databasePurged();
 
         BOOST_LOG_SEV(lg(), info) << "Database purged successfully";

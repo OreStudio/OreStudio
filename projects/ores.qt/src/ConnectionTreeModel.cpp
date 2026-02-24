@@ -45,13 +45,14 @@ ConnectionTreeModel::ConnectionTreeModel(
       manager_(manager),
       rootNode_(std::make_unique<ConnectionTreeNode>()) {
 
-    // Use bright icons for visibility in dark theme
     folderIcon_ = IconUtils::createRecoloredIcon(
         Icon::Folder, IconUtils::DefaultIconColor);
     folderOpenIcon_ = IconUtils::createRecoloredIcon(
         Icon::FolderOpen, IconUtils::DefaultIconColor);
     serverIcon_ = IconUtils::createRecoloredIcon(
         Icon::ServerLink, IconUtils::DefaultIconColor);
+    plugIcon_ = IconUtils::createRecoloredIcon(
+        Icon::PlugConnected, IconUtils::DefaultIconColor);
 
     rootNode_->type = ConnectionTreeNode::Type::Root;
     rootNode_->name = "Root";
@@ -121,15 +122,17 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
         case Name:
             return node->name;
         case Host:
-            if (node->type == ConnectionTreeNode::Type::Environment)
+            if (node->type == ConnectionTreeNode::Type::Environment ||
+                node->type == ConnectionTreeNode::Type::Connection)
                 return node->host;
             return QVariant();
         case Port:
-            if (node->type == ConnectionTreeNode::Type::Environment && node->port > 0)
+            if ((node->type == ConnectionTreeNode::Type::Environment ||
+                 node->type == ConnectionTreeNode::Type::Connection) && node->port > 0)
                 return node->port;
             return QVariant();
         case Username:
-            if (node->type == ConnectionTreeNode::Type::Environment)
+            if (node->type == ConnectionTreeNode::Type::Connection)
                 return node->username;
             return QVariant();
         default:
@@ -143,6 +146,8 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
                 return isExpanded ? folderOpenIcon_ : folderIcon_;
             } else if (node->type == ConnectionTreeNode::Type::Environment) {
                 return serverIcon_;
+            } else if (node->type == ConnectionTreeNode::Type::Connection) {
+                return plugIcon_;
             }
         }
         return QVariant();
@@ -153,6 +158,15 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
                 .arg(node->name)
                 .arg(node->host)
                 .arg(node->port);
+            if (!node->description.isEmpty())
+                tooltip += QString("\n\n%1").arg(node->description);
+            return tooltip;
+        } else if (node->type == ConnectionTreeNode::Type::Connection) {
+            QString tooltip = QString("%1\n%2:%3\n%4")
+                .arg(node->name)
+                .arg(node->host)
+                .arg(node->port)
+                .arg(node->username);
             if (!node->description.isEmpty())
                 tooltip += QString("\n\n%1").arg(node->description);
             return tooltip;
@@ -167,6 +181,9 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
 
     case IsEnvironmentRole:
         return node->type == ConnectionTreeNode::Type::Environment;
+
+    case IsConnectionRole:
+        return node->type == ConnectionTreeNode::Type::Connection;
 
     case IsFolderRole:
         return node->type == ConnectionTreeNode::Type::Folder;
@@ -183,6 +200,19 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
             } catch (const std::exception& e) {
                 using namespace ores::logging;
                 BOOST_LOG_SEV(lg(), error) << "Failed to get tags for environment: " << e.what();
+                return QStringList();
+            }
+        } else if (node->type == ConnectionTreeNode::Type::Connection) {
+            try {
+                auto tags = manager_->get_tags_for_connection(node->id);
+                QStringList tagNames;
+                for (const auto& tag : tags) {
+                    tagNames.append(QString::fromStdString(tag.name));
+                }
+                return tagNames;
+            } catch (const std::exception& e) {
+                using namespace ores::logging;
+                BOOST_LOG_SEV(lg(), error) << "Failed to get tags for connection: " << e.what();
                 return QStringList();
             }
         }
@@ -267,7 +297,15 @@ bool ConnectionTreeModel::setData(const QModelIndex& index, const QVariant& valu
             auto env = manager_->get_environment(node->id);
             if (env) {
                 env->name = newName.toStdString();
-                manager_->update_environment(*env, std::nullopt);
+                manager_->update_environment(*env);
+                node->name = newName;
+                BOOST_LOG_SEV(lg(), info) << "Renamed environment to: " << newName.toStdString();
+            }
+        } else if (node->type == ConnectionTreeNode::Type::Connection) {
+            auto conn = manager_->get_connection(node->id);
+            if (conn) {
+                conn->name = newName.toStdString();
+                manager_->update_connection(*conn, std::nullopt);
                 node->name = newName;
                 BOOST_LOG_SEV(lg(), info) << "Renamed connection to: " << newName.toStdString();
             }
@@ -302,8 +340,16 @@ QMimeData* ConnectionTreeModel::mimeData(const QModelIndexList& indexes) const {
         return nullptr;
 
     auto* mimeData = new QMimeData();
+    QString typeStr;
+    if (node->type == ConnectionTreeNode::Type::Folder)
+        typeStr = "folder";
+    else if (node->type == ConnectionTreeNode::Type::Environment)
+        typeStr = "env";
+    else
+        typeStr = "conn";
+
     QString data = QString("%1:%2")
-        .arg(node->type == ConnectionTreeNode::Type::Folder ? "folder" : "env")
+        .arg(typeStr)
         .arg(QString::fromStdString(boost::uuids::to_string(node->id)));
     mimeData->setData("application/x-ores-connection-item", data.toUtf8());
     return mimeData;
@@ -394,13 +440,22 @@ bool ConnectionTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction act
                     << folder->name << "' to "
                     << (targetFolderId ? boost::uuids::to_string(*targetFolderId) : "root");
             }
-        } else {
+        } else if (itemType == "env") {
             auto env = manager_->get_environment(itemId);
             if (env) {
                 env->folder_id = targetFolderId;
-                manager_->update_environment(*env, std::nullopt);
-                BOOST_LOG_SEV(lg(), info) << "Moved connection '"
+                manager_->update_environment(*env);
+                BOOST_LOG_SEV(lg(), info) << "Moved environment '"
                     << env->name << "' to "
+                    << (targetFolderId ? boost::uuids::to_string(*targetFolderId) : "root");
+            }
+        } else {
+            auto conn = manager_->get_connection(itemId);
+            if (conn) {
+                conn->folder_id = targetFolderId;
+                manager_->update_connection(*conn, std::nullopt);
+                BOOST_LOG_SEV(lg(), info) << "Moved connection '"
+                    << conn->name << "' to "
                     << (targetFolderId ? boost::uuids::to_string(*targetFolderId) : "root");
             }
         }
@@ -481,11 +536,14 @@ void ConnectionTreeModel::buildTree() {
     using namespace ores::logging;
 
     try {
-        // Build folders first (they can contain other folders and environments)
+        // Build folders first (they can contain other folders and items)
         buildFolderNodes(rootNode_.get(), std::nullopt);
 
         // Build root-level environments (no folder)
         buildEnvironmentNodes(rootNode_.get(), std::nullopt);
+
+        // Build root-level connections (no folder)
+        buildConnectionNodes(rootNode_.get(), std::nullopt);
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to build tree: " << e.what();
@@ -530,6 +588,9 @@ void ConnectionTreeModel::buildFolderNodes(ConnectionTreeNode* parentNode,
 
         // Build environments in this folder
         buildEnvironmentNodes(folderNode, folder.id);
+
+        // Build connections in this folder
+        buildConnectionNodes(folderNode, folder.id);
     }
 }
 
@@ -558,10 +619,58 @@ void ConnectionTreeModel::buildEnvironmentNodes(ConnectionTreeNode* parentNode,
         node->parent_id = env.folder_id;
         node->host = QString::fromStdString(env.host);
         node->port = env.port;
-        node->username = QString::fromStdString(env.username);
         node->description = QString::fromStdString(env.description);
         node->parent = parentNode;
 
+        parentNode->children.push_back(std::move(node));
+    }
+}
+
+void ConnectionTreeModel::buildConnectionNodes(ConnectionTreeNode* parentNode,
+    const std::optional<boost::uuids::uuid>& folderId) {
+
+    using namespace ores::logging;
+
+    auto connections = manager_->get_connections_in_folder(folderId);
+
+    // Sort connections alphabetically by name (case-insensitive)
+    std::sort(connections.begin(), connections.end(), [](const auto& a, const auto& b) {
+        return QString::fromStdString(a.name).compare(
+            QString::fromStdString(b.name), Qt::CaseInsensitive) < 0;
+    });
+
+    BOOST_LOG_SEV(lg(), debug) << "Building " << connections.size()
+                               << " connection nodes for folder: "
+                               << (folderId ? boost::uuids::to_string(*folderId) : "root");
+
+    for (const auto& conn : connections) {
+        auto node = std::make_unique<ConnectionTreeNode>();
+        node->type = ConnectionTreeNode::Type::Connection;
+        node->id = conn.id;
+        node->name = QString::fromStdString(conn.name);
+        node->parent_id = conn.folder_id;
+        node->environment_id = conn.environment_id;
+        node->username = QString::fromStdString(conn.username);
+        node->description = QString::fromStdString(conn.description);
+
+        // Resolve host/port from environment if linked
+        if (conn.environment_id) {
+            try {
+                auto env = manager_->get_environment(*conn.environment_id);
+                if (env) {
+                    node->host = QString::fromStdString(env->host);
+                    node->port = env->port;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to resolve environment for connection: "
+                                          << e.what();
+            }
+        } else {
+            node->host = QString::fromStdString(conn.host.value_or(""));
+            node->port = conn.port.value_or(0);
+        }
+
+        node->parent = parentNode;
         parentNode->children.push_back(std::move(node));
     }
 }
@@ -576,7 +685,7 @@ std::optional<connections::domain::folder> ConnectionTreeModel::getFolderFromInd
     return manager_->get_folder(node->id);
 }
 
-std::optional<connections::domain::server_environment> ConnectionTreeModel::getEnvironmentFromIndex(
+std::optional<connections::domain::environment> ConnectionTreeModel::getEnvironmentFromIndex(
     const QModelIndex& index) const {
 
     auto* node = nodeFromIndex(index);
@@ -584,6 +693,16 @@ std::optional<connections::domain::server_environment> ConnectionTreeModel::getE
         return std::nullopt;
 
     return manager_->get_environment(node->id);
+}
+
+std::optional<connections::domain::connection> ConnectionTreeModel::getConnectionFromIndex(
+    const QModelIndex& index) const {
+
+    auto* node = nodeFromIndex(index);
+    if (!node || node->type != ConnectionTreeNode::Type::Connection)
+        return std::nullopt;
+
+    return manager_->get_connection(node->id);
 }
 
 }

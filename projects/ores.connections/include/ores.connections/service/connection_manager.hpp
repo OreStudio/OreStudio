@@ -27,26 +27,47 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/domain/tag.hpp"
-#include "ores.connections/domain/server_environment.hpp"
+#include "ores.connections/domain/connection.hpp"
+#include "ores.connections/domain/connection_tag.hpp"
+#include "ores.connections/domain/environment.hpp"
 #include "ores.connections/domain/environment_tag.hpp"
 #include "ores.connections/repository/sqlite_context.hpp"
 #include "ores.connections/repository/folder_repository.hpp"
 #include "ores.connections/repository/tag_repository.hpp"
-#include "ores.connections/repository/server_environment_repository.hpp"
+#include "ores.connections/repository/connection_repository.hpp"
+#include "ores.connections/repository/connection_tag_repository.hpp"
+#include "ores.connections/repository/environment_repository.hpp"
 #include "ores.connections/repository/environment_tag_repository.hpp"
 
 namespace ores::connections::service {
 
 /**
- * @brief High-level service for managing server connections.
+ * @brief High-level service for managing server connections and environments.
  *
- * Provides a unified API for managing server environment bookmarks with:
- * - Folder organization
- * - Tag-based categorization
+ * Provides a unified API for managing:
+ * - Pure environments (host + port, no credentials)
+ * - Connections (credentials optionally linked to an environment)
+ * - Folder organization and tag-based categorization
  * - Encrypted password storage
  */
 class connection_manager final {
 public:
+    /**
+     * @brief Resolved connection details for opening a login dialog.
+     *
+     * When a connection is linked to an environment, host/port are resolved
+     * from the environment. The password is decrypted from storage.
+     */
+    struct resolved_connection {
+        std::string host;
+        int port{0};
+        std::string username;
+        std::string password;    ///< decrypted
+        std::string name;
+        std::optional<boost::uuids::uuid> environment_id;
+        std::optional<std::string> environment_name;
+    };
+
     /**
      * @brief Construct connection manager with database path and master password.
      * @param db_path Path to the SQLite database file.
@@ -72,28 +93,57 @@ public:
     std::optional<domain::tag> get_tag(const boost::uuids::uuid& id);
     std::optional<domain::tag> get_tag_by_name(const std::string& name);
 
-    // Server environment operations (passwords are encrypted/decrypted automatically)
-    void create_environment(domain::server_environment env, const std::string& password);
-    void update_environment(domain::server_environment env, const std::optional<std::string>& password);
+    // Environment operations (pure host/port, no credentials)
+    void create_environment(const domain::environment& env);
+    void update_environment(const domain::environment& env);
     void delete_environment(const boost::uuids::uuid& id);
-    std::vector<domain::server_environment> get_all_environments();
-    std::optional<domain::server_environment> get_environment(const boost::uuids::uuid& id);
-    std::vector<domain::server_environment> get_environments_in_folder(
+    std::vector<domain::environment> get_all_environments();
+    std::optional<domain::environment> get_environment(const boost::uuids::uuid& id);
+    std::vector<domain::environment> get_environments_in_folder(
         const std::optional<boost::uuids::uuid>& folder_id);
-
-    /**
-     * @brief Get decrypted password for an environment.
-     */
-    std::string get_password(const boost::uuids::uuid& environment_id);
 
     // Environment-tag operations
     void add_tag_to_environment(const boost::uuids::uuid& environment_id,
-                                 const boost::uuids::uuid& tag_id);
+                                const boost::uuids::uuid& tag_id);
     void remove_tag_from_environment(const boost::uuids::uuid& environment_id,
-                                      const boost::uuids::uuid& tag_id);
-    std::vector<domain::tag> get_tags_for_environment(const boost::uuids::uuid& environment_id);
-    std::vector<domain::server_environment> get_environments_with_tag(
+                                     const boost::uuids::uuid& tag_id);
+    std::vector<domain::tag> get_tags_for_environment(
+        const boost::uuids::uuid& environment_id);
+    std::vector<domain::environment> get_environments_with_tag(
         const boost::uuids::uuid& tag_id);
+
+    // Connection operations (credentials, optional link to environment)
+    void create_connection(domain::connection conn, const std::string& password);
+    void update_connection(domain::connection conn,
+                           const std::optional<std::string>& password);
+    void delete_connection(const boost::uuids::uuid& id);
+    std::vector<domain::connection> get_all_connections();
+    std::optional<domain::connection> get_connection(const boost::uuids::uuid& id);
+    std::vector<domain::connection> get_connections_in_folder(
+        const std::optional<boost::uuids::uuid>& folder_id);
+
+    /**
+     * @brief Get decrypted password for a connection.
+     */
+    std::string get_password(const boost::uuids::uuid& connection_id);
+
+    // Connection-tag operations
+    void add_tag_to_connection(const boost::uuids::uuid& connection_id,
+                               const boost::uuids::uuid& tag_id);
+    void remove_tag_from_connection(const boost::uuids::uuid& connection_id,
+                                    const boost::uuids::uuid& tag_id);
+    std::vector<domain::tag> get_tags_for_connection(
+        const boost::uuids::uuid& connection_id);
+    std::vector<domain::connection> get_connections_with_tag(
+        const boost::uuids::uuid& tag_id);
+
+    /**
+     * @brief Resolve a connection to its full details for opening a login dialog.
+     *
+     * If the connection has an environment_id, fetches host/port from the
+     * environment. Decrypts the password. Throws if connection not found.
+     */
+    resolved_connection resolve_connection(const boost::uuids::uuid& connection_id);
 
     /**
      * @brief Verify if the master password is correct.
@@ -106,14 +156,14 @@ public:
     /**
      * @brief Change the master password.
      *
-     * Re-encrypts all stored passwords with the new master password.
+     * Re-encrypts all stored connection passwords with the new master password.
      */
     void change_master_password(const std::string& new_password);
 
     /**
      * @brief Delete all data from the database.
      *
-     * Removes all environments, folders, and tags. This operation
+     * Removes all connections, environments, folders, and tags. This operation
      * cannot be undone.
      */
     void purge();
@@ -122,7 +172,9 @@ private:
     repository::sqlite_context ctx_;
     repository::folder_repository folder_repo_;
     repository::tag_repository tag_repo_;
-    repository::server_environment_repository env_repo_;
+    repository::connection_repository conn_repo_;
+    repository::connection_tag_repository conn_tag_repo_;
+    repository::environment_repository env_repo_;
     repository::environment_tag_repository env_tag_repo_;
     std::string master_password_;
 };

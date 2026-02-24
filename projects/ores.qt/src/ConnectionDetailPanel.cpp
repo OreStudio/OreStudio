@@ -59,10 +59,12 @@ ConnectionDetailPanel::ConnectionDetailPanel(
     setupEmptyPage();
     setupFolderPage();
     setupEnvironmentPage();
+    setupConnectionPage();
 
     stackedWidget_->addWidget(emptyPage_);
     stackedWidget_->addWidget(folderPage_);
     stackedWidget_->addWidget(environmentPage_);
+    stackedWidget_->addWidget(connectionPage_);
 
     mainLayout->addWidget(stackedWidget_);
 
@@ -101,14 +103,12 @@ void ConnectionDetailPanel::setupFolderPage() {
     auto labelStyle = QString("font-size: 11px; color: #707070; text-transform: uppercase;");
     auto valueStyle = QString("font-size: 13px; color: #c0c0c0;");
 
-    // Folder icon and name
     folderNameLabel_ = new QLabel(folderPage_);
     folderNameLabel_->setStyleSheet("font-size: 18px; font-weight: bold; color: #e0e0e0;");
     layout->addWidget(folderNameLabel_);
 
     layout->addSpacing(16);
 
-    // Item count
     auto* countLabel = new QLabel(tr("Contents"), folderPage_);
     countLabel->setStyleSheet(labelStyle);
     layout->addWidget(countLabel);
@@ -119,7 +119,6 @@ void ConnectionDetailPanel::setupFolderPage() {
 
     layout->addSpacing(16);
 
-    // Description
     auto* descHeaderLabel = new QLabel(tr("Description"), folderPage_);
     descHeaderLabel->setStyleSheet(labelStyle);
     layout->addWidget(descHeaderLabel);
@@ -137,14 +136,15 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
     auto* layout = new QVBoxLayout(environmentPage_);
     layout->setContentsMargins(24, 24, 24, 24);
 
-    // Connection name
+    auto labelStyle = QString("font-size: 11px; color: #707070; text-transform: uppercase;");
+    auto valueStyle = QString("font-size: 13px; color: #c0c0c0;");
+
     envNameLabel_ = new QLabel(environmentPage_);
     envNameLabel_->setStyleSheet("font-size: 18px; font-weight: bold; color: #e0e0e0;");
     layout->addWidget(envNameLabel_);
 
     layout->addSpacing(16);
 
-    // Tags container
     envTagsContainer_ = new QWidget(environmentPage_);
     envTagsContainer_->setLayout(new QHBoxLayout());
     envTagsContainer_->layout()->setContentsMargins(0, 0, 0, 0);
@@ -153,13 +153,9 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
 
     layout->addSpacing(16);
 
-    // Connection details form
     auto* formLayout = new QFormLayout();
     formLayout->setLabelAlignment(Qt::AlignRight);
     formLayout->setSpacing(8);
-
-    auto labelStyle = QString("font-size: 11px; color: #707070; text-transform: uppercase;");
-    auto valueStyle = QString("font-size: 13px; color: #c0c0c0;");
 
     auto* hostLabel = new QLabel(tr("Host"), environmentPage_);
     hostLabel->setStyleSheet(labelStyle);
@@ -173,17 +169,10 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
     envPortLabel_->setStyleSheet(valueStyle);
     formLayout->addRow(portLabel, envPortLabel_);
 
-    auto* usernameLabel = new QLabel(tr("Username"), environmentPage_);
-    usernameLabel->setStyleSheet(labelStyle);
-    envUsernameLabel_ = new QLabel(environmentPage_);
-    envUsernameLabel_->setStyleSheet(valueStyle);
-    formLayout->addRow(usernameLabel, envUsernameLabel_);
-
     layout->addLayout(formLayout);
 
     layout->addSpacing(16);
 
-    // Description
     auto* descHeaderLabel = new QLabel(tr("Description"), environmentPage_);
     descHeaderLabel->setStyleSheet(labelStyle);
     layout->addWidget(descHeaderLabel);
@@ -192,6 +181,66 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
     envDescriptionLabel_->setStyleSheet(valueStyle);
     envDescriptionLabel_->setWordWrap(true);
     layout->addWidget(envDescriptionLabel_);
+
+    layout->addStretch();
+}
+
+void ConnectionDetailPanel::setupConnectionPage() {
+    connectionPage_ = new QWidget(this);
+    auto* layout = new QVBoxLayout(connectionPage_);
+    layout->setContentsMargins(24, 24, 24, 24);
+
+    auto labelStyle = QString("font-size: 11px; color: #707070; text-transform: uppercase;");
+    auto valueStyle = QString("font-size: 13px; color: #c0c0c0;");
+
+    connNameLabel_ = new QLabel(connectionPage_);
+    connNameLabel_->setStyleSheet("font-size: 18px; font-weight: bold; color: #e0e0e0;");
+    layout->addWidget(connNameLabel_);
+
+    layout->addSpacing(16);
+
+    connTagsContainer_ = new QWidget(connectionPage_);
+    connTagsContainer_->setLayout(new QHBoxLayout());
+    connTagsContainer_->layout()->setContentsMargins(0, 0, 0, 0);
+    connTagsContainer_->layout()->setSpacing(6);
+    layout->addWidget(connTagsContainer_);
+
+    layout->addSpacing(16);
+
+    auto* formLayout = new QFormLayout();
+    formLayout->setLabelAlignment(Qt::AlignRight);
+    formLayout->setSpacing(8);
+
+    auto* hostLabel = new QLabel(tr("Host"), connectionPage_);
+    hostLabel->setStyleSheet(labelStyle);
+    connHostLabel_ = new QLabel(connectionPage_);
+    connHostLabel_->setStyleSheet(valueStyle);
+    formLayout->addRow(hostLabel, connHostLabel_);
+
+    auto* portLabel = new QLabel(tr("Port"), connectionPage_);
+    portLabel->setStyleSheet(labelStyle);
+    connPortLabel_ = new QLabel(connectionPage_);
+    connPortLabel_->setStyleSheet(valueStyle);
+    formLayout->addRow(portLabel, connPortLabel_);
+
+    auto* usernameLabel = new QLabel(tr("Username"), connectionPage_);
+    usernameLabel->setStyleSheet(labelStyle);
+    connUsernameLabel_ = new QLabel(connectionPage_);
+    connUsernameLabel_->setStyleSheet(valueStyle);
+    formLayout->addRow(usernameLabel, connUsernameLabel_);
+
+    layout->addLayout(formLayout);
+
+    layout->addSpacing(16);
+
+    auto* descHeaderLabel = new QLabel(tr("Description"), connectionPage_);
+    descHeaderLabel->setStyleSheet(labelStyle);
+    layout->addWidget(descHeaderLabel);
+
+    connDescriptionLabel_ = new QLabel(connectionPage_);
+    connDescriptionLabel_->setStyleSheet(valueStyle);
+    connDescriptionLabel_->setWordWrap(true);
+    layout->addWidget(connDescriptionLabel_);
 
     layout->addStretch();
 }
@@ -222,11 +271,10 @@ void ConnectionDetailPanel::showFolder(const connections::domain::folder& folder
     stackedWidget_->setCurrentWidget(folderPage_);
 }
 
-void ConnectionDetailPanel::showEnvironment(const connections::domain::server_environment& env) {
+void ConnectionDetailPanel::showEnvironment(const connections::domain::environment& env) {
     envNameLabel_->setText(QString::fromStdString(env.name));
     envHostLabel_->setText(QString::fromStdString(env.host));
     envPortLabel_->setText(QString::number(env.port));
-    envUsernameLabel_->setText(QString::fromStdString(env.username));
 
     if (env.description.empty()) {
         envDescriptionLabel_->setText(tr("No description"));
@@ -236,14 +284,74 @@ void ConnectionDetailPanel::showEnvironment(const connections::domain::server_en
         envDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
     }
 
-    // Update tags
-    updateTagBadges(env.id);
+    updateEnvironmentTagBadges(env.id);
 
     stackedWidget_->setCurrentWidget(environmentPage_);
 }
 
-void ConnectionDetailPanel::updateTagBadges(const boost::uuids::uuid& envId) {
-    // Clear existing badges
+void ConnectionDetailPanel::showConnection(const connections::domain::connection& conn) {
+    connNameLabel_->setText(QString::fromStdString(conn.name));
+
+    static const auto inheritedStyle =
+        QString("font-size: 13px; color: #606060; font-style: italic;");
+    static const auto normalStyle =
+        QString("font-size: 13px; color: #c0c0c0;");
+
+    // Resolve linked environment once if host/port are inherited
+    std::optional<connections::domain::environment> resolvedEnv;
+    QString envTooltip;
+    if (conn.environment_id && (!conn.host || !conn.port)) {
+        resolvedEnv = manager_->get_environment(*conn.environment_id);
+        if (resolvedEnv) {
+            envTooltip = tr("Inherited from environment: %1")
+                .arg(QString::fromStdString(resolvedEnv->name));
+        }
+    }
+
+    if (conn.host) {
+        connHostLabel_->setText(QString::fromStdString(*conn.host));
+        connHostLabel_->setStyleSheet(normalStyle);
+        connHostLabel_->setToolTip({});
+    } else if (resolvedEnv) {
+        connHostLabel_->setText(QString::fromStdString(resolvedEnv->host));
+        connHostLabel_->setStyleSheet(inheritedStyle);
+        connHostLabel_->setToolTip(envTooltip);
+    } else {
+        connHostLabel_->setText({});
+        connHostLabel_->setStyleSheet(normalStyle);
+        connHostLabel_->setToolTip({});
+    }
+
+    if (conn.port) {
+        connPortLabel_->setText(QString::number(*conn.port));
+        connPortLabel_->setStyleSheet(normalStyle);
+        connPortLabel_->setToolTip({});
+    } else if (resolvedEnv) {
+        connPortLabel_->setText(QString::number(resolvedEnv->port));
+        connPortLabel_->setStyleSheet(inheritedStyle);
+        connPortLabel_->setToolTip(envTooltip);
+    } else {
+        connPortLabel_->setText({});
+        connPortLabel_->setStyleSheet(normalStyle);
+        connPortLabel_->setToolTip({});
+    }
+
+    connUsernameLabel_->setText(QString::fromStdString(conn.username));
+
+    if (conn.description.empty()) {
+        connDescriptionLabel_->setText(tr("No description"));
+        connDescriptionLabel_->setStyleSheet("font-size: 13px; color: #606060; font-style: italic;");
+    } else {
+        connDescriptionLabel_->setText(QString::fromStdString(conn.description));
+        connDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
+    }
+
+    updateConnectionTagBadges(conn.id);
+
+    stackedWidget_->setCurrentWidget(connectionPage_);
+}
+
+void ConnectionDetailPanel::updateEnvironmentTagBadges(const boost::uuids::uuid& envId) {
     QLayoutItem* item;
     while ((item = envTagsContainer_->layout()->takeAt(0)) != nullptr) {
         delete item->widget();
@@ -257,14 +365,35 @@ void ConnectionDetailPanel::updateTagBadges(const boost::uuids::uuid& envId) {
             envTagsContainer_->layout()->addWidget(badge);
         }
 
-        // Add stretch at end
         static_cast<QHBoxLayout*>(envTagsContainer_->layout())->addStretch();
-
         envTagsContainer_->setVisible(!tags.empty());
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), error) << "Failed to load tags: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to load environment tags: " << e.what();
         envTagsContainer_->setVisible(false);
+    }
+}
+
+void ConnectionDetailPanel::updateConnectionTagBadges(const boost::uuids::uuid& connId) {
+    QLayoutItem* item;
+    while ((item = connTagsContainer_->layout()->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
+
+    try {
+        auto tags = manager_->get_tags_for_connection(connId);
+        for (const auto& tag : tags) {
+            auto* badge = createTagBadge(QString::fromStdString(tag.name), connTagsContainer_);
+            connTagsContainer_->layout()->addWidget(badge);
+        }
+
+        static_cast<QHBoxLayout*>(connTagsContainer_->layout())->addStretch();
+        connTagsContainer_->setVisible(!tags.empty());
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), error) << "Failed to load connection tags: " << e.what();
+        connTagsContainer_->setVisible(false);
     }
 }
 

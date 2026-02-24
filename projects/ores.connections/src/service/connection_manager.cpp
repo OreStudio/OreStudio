@@ -31,6 +31,8 @@ connection_manager::connection_manager(const std::filesystem::path& db_path,
     : ctx_(db_path),
       folder_repo_(ctx_),
       tag_repo_(ctx_),
+      conn_repo_(ctx_),
+      conn_tag_repo_(ctx_),
       env_repo_(ctx_),
       env_tag_repo_(ctx_),
       master_password_(master_password) {
@@ -93,32 +95,12 @@ std::optional<domain::tag> connection_manager::get_tag_by_name(const std::string
     return tag_repo_.read_by_name(name);
 }
 
-// Server environment operations
-void connection_manager::create_environment(domain::server_environment env,
-                                             const std::string& password) {
-    if (!password.empty()) {
-        env.encrypted_password = encryption::encrypt(password, master_password_);
-    }
+// Environment operations (pure host/port, no credentials)
+void connection_manager::create_environment(const domain::environment& env) {
     env_repo_.write(env);
 }
 
-void connection_manager::update_environment(domain::server_environment env,
-                                             const std::optional<std::string>& password) {
-    if (password) {
-        if (password->empty()) {
-            env.encrypted_password = "";
-        } else {
-            env.encrypted_password = encryption::encrypt(*password, master_password_);
-        }
-    } else {
-        // Preserve existing encrypted password from database
-        auto existing = env_repo_.read_by_id(env.id);
-        if (existing) {
-            env.encrypted_password = existing->encrypted_password;
-        } else {
-            throw std::runtime_error("Cannot update non-existent environment");
-        }
-    }
+void connection_manager::update_environment(const domain::environment& env) {
     env_repo_.write(env);
 }
 
@@ -126,36 +108,24 @@ void connection_manager::delete_environment(const boost::uuids::uuid& id) {
     env_repo_.remove(id);
 }
 
-std::vector<domain::server_environment> connection_manager::get_all_environments() {
+std::vector<domain::environment> connection_manager::get_all_environments() {
     return env_repo_.read_all();
 }
 
-std::optional<domain::server_environment> connection_manager::get_environment(
+std::optional<domain::environment> connection_manager::get_environment(
     const boost::uuids::uuid& id) {
     return env_repo_.read_by_id(id);
 }
 
-std::vector<domain::server_environment> connection_manager::get_environments_in_folder(
+std::vector<domain::environment> connection_manager::get_environments_in_folder(
     const std::optional<boost::uuids::uuid>& folder_id) {
     return env_repo_.read_by_folder(folder_id);
 }
 
-std::string connection_manager::get_password(const boost::uuids::uuid& environment_id) {
-    auto env = env_repo_.read_by_id(environment_id);
-    if (!env) {
-        throw std::runtime_error("Environment not found");
-    }
-
-    if (env->encrypted_password.empty()) {
-        return "";
-    }
-
-    return encryption::decrypt(env->encrypted_password, master_password_);
-}
-
 // Environment-tag operations
-void connection_manager::add_tag_to_environment(const boost::uuids::uuid& environment_id,
-                                                 const boost::uuids::uuid& tag_id) {
+void connection_manager::add_tag_to_environment(
+    const boost::uuids::uuid& environment_id,
+    const boost::uuids::uuid& tag_id) {
     domain::environment_tag et;
     et.environment_id = environment_id;
     et.tag_id = tag_id;
@@ -184,10 +154,10 @@ std::vector<domain::tag> connection_manager::get_tags_for_environment(
     return tags;
 }
 
-std::vector<domain::server_environment> connection_manager::get_environments_with_tag(
+std::vector<domain::environment> connection_manager::get_environments_with_tag(
     const boost::uuids::uuid& tag_id) {
     auto associations = env_tag_repo_.read_by_tag(tag_id);
-    std::vector<domain::server_environment> envs;
+    std::vector<domain::environment> envs;
     envs.reserve(associations.size());
 
     for (const auto& assoc : associations) {
@@ -200,27 +170,169 @@ std::vector<domain::server_environment> connection_manager::get_environments_wit
     return envs;
 }
 
+// Connection operations (credentials, optional link to environment)
+void connection_manager::create_connection(domain::connection conn,
+                                            const std::string& password) {
+    if (!password.empty()) {
+        conn.encrypted_password = encryption::encrypt(password, master_password_);
+    }
+    conn_repo_.write(conn);
+}
+
+void connection_manager::update_connection(domain::connection conn,
+                                            const std::optional<std::string>& password) {
+    if (password) {
+        if (password->empty()) {
+            conn.encrypted_password = "";
+        } else {
+            conn.encrypted_password = encryption::encrypt(*password, master_password_);
+        }
+    } else {
+        // Preserve existing encrypted password from database
+        auto existing = conn_repo_.read_by_id(conn.id);
+        if (existing) {
+            conn.encrypted_password = existing->encrypted_password;
+        } else {
+            throw std::runtime_error("Cannot update non-existent connection");
+        }
+    }
+    conn_repo_.write(conn);
+}
+
+void connection_manager::delete_connection(const boost::uuids::uuid& id) {
+    conn_repo_.remove(id);
+}
+
+std::vector<domain::connection> connection_manager::get_all_connections() {
+    return conn_repo_.read_all();
+}
+
+std::optional<domain::connection> connection_manager::get_connection(
+    const boost::uuids::uuid& id) {
+    return conn_repo_.read_by_id(id);
+}
+
+std::vector<domain::connection> connection_manager::get_connections_in_folder(
+    const std::optional<boost::uuids::uuid>& folder_id) {
+    return conn_repo_.read_by_folder(folder_id);
+}
+
+std::string connection_manager::get_password(const boost::uuids::uuid& connection_id) {
+    auto conn = conn_repo_.read_by_id(connection_id);
+    if (!conn) {
+        throw std::runtime_error("Connection not found");
+    }
+
+    if (conn->encrypted_password.empty()) {
+        return "";
+    }
+
+    return encryption::decrypt(conn->encrypted_password, master_password_);
+}
+
+// Connection-tag operations
+void connection_manager::add_tag_to_connection(
+    const boost::uuids::uuid& connection_id,
+    const boost::uuids::uuid& tag_id) {
+    domain::connection_tag ct;
+    ct.connection_id = connection_id;
+    ct.tag_id = tag_id;
+    conn_tag_repo_.write(ct);
+}
+
+void connection_manager::remove_tag_from_connection(
+    const boost::uuids::uuid& connection_id,
+    const boost::uuids::uuid& tag_id) {
+    conn_tag_repo_.remove(connection_id, tag_id);
+}
+
+std::vector<domain::tag> connection_manager::get_tags_for_connection(
+    const boost::uuids::uuid& connection_id) {
+    auto associations = conn_tag_repo_.read_by_connection(connection_id);
+    std::vector<domain::tag> tags;
+    tags.reserve(associations.size());
+
+    for (const auto& assoc : associations) {
+        auto tag = tag_repo_.read_by_id(assoc.tag_id);
+        if (tag) {
+            tags.push_back(*tag);
+        }
+    }
+
+    return tags;
+}
+
+std::vector<domain::connection> connection_manager::get_connections_with_tag(
+    const boost::uuids::uuid& tag_id) {
+    auto associations = conn_tag_repo_.read_by_tag(tag_id);
+    std::vector<domain::connection> conns;
+    conns.reserve(associations.size());
+
+    for (const auto& assoc : associations) {
+        auto conn = conn_repo_.read_by_id(assoc.connection_id);
+        if (conn) {
+            conns.push_back(*conn);
+        }
+    }
+
+    return conns;
+}
+
+connection_manager::resolved_connection connection_manager::resolve_connection(
+    const boost::uuids::uuid& connection_id) {
+    auto conn = conn_repo_.read_by_id(connection_id);
+    if (!conn) {
+        throw std::runtime_error("Connection not found");
+    }
+
+    resolved_connection result;
+    result.name = conn->name;
+    result.username = conn->username;
+    result.environment_id = conn->environment_id;
+
+    if (conn->environment_id) {
+        // Resolve host/port from linked environment
+        auto env = env_repo_.read_by_id(*conn->environment_id);
+        if (!env) {
+            throw std::runtime_error("Linked environment not found");
+        }
+        result.host = env->host;
+        result.port = env->port;
+        result.environment_name = env->name;
+    } else {
+        // Use host/port stored directly on the connection
+        result.host = conn->host.value_or("");
+        result.port = conn->port.value_or(0);
+    }
+
+    if (!conn->encrypted_password.empty()) {
+        result.password = encryption::decrypt(conn->encrypted_password, master_password_);
+    }
+
+    return result;
+}
+
 bool connection_manager::verify_master_password() {
-    auto envs = env_repo_.read_all();
-    for (const auto& env : envs) {
-        if (!env.encrypted_password.empty()) {
-            return encryption::verify_password(env.encrypted_password,
-                                                        master_password_);
+    auto conns = conn_repo_.read_all();
+    for (const auto& conn : conns) {
+        if (!conn.encrypted_password.empty()) {
+            return encryption::verify_password(conn.encrypted_password,
+                                               master_password_);
         }
     }
     return true;  // No passwords to verify
 }
 
 void connection_manager::change_master_password(const std::string& new_password) {
-    auto envs = env_repo_.read_all();
+    auto conns = conn_repo_.read_all();
 
-    for (auto& env : envs) {
-        if (!env.encrypted_password.empty()) {
+    for (auto& conn : conns) {
+        if (!conn.encrypted_password.empty()) {
             // Decrypt with old password, encrypt with new
             std::string plaintext = encryption::decrypt(
-                env.encrypted_password, master_password_);
-            env.encrypted_password = encryption::encrypt(plaintext, new_password);
-            env_repo_.write(env);
+                conn.encrypted_password, master_password_);
+            conn.encrypted_password = encryption::encrypt(plaintext, new_password);
+            conn_repo_.write(conn);
         }
     }
 

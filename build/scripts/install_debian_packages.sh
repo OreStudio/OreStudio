@@ -18,32 +18,27 @@
 # Installs system packages required to build OreStudio on Debian/Ubuntu.
 #
 # Usage:
-#   ./install_debian_packages.sh [--with-valgrind] [--full-install]
+#   ./install_debian_packages.sh [--full-install]
 #
 # Options:
-#   --with-valgrind   Also install Valgrind (used by nightly builds).
 #   --full-install    Full developer environment setup. Installs compilers
-#                     (GCC, Clang 19), Ninja, CMake 3.28+, PostgreSQL 18,
-#                     and Qt6 from the distro. Use this on a fresh Debian/Ubuntu box.
+#                     (GCC, Clang), Ninja, CMake, PostgreSQL, Qt6, Valgrind,
+#                     and all other build tools from the distro.
+#                     Use this on a fresh Debian/Ubuntu box.
 #
 set -e
 
-with_valgrind=0
 full_install=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --with-valgrind)
-            with_valgrind=1
-            shift
-            ;;
         --full-install)
             full_install=1
             shift
             ;;
         *)
             echo "Unknown argument: $1"
-            echo "Usage: $0 [--with-valgrind] [--full-install]"
+            echo "Usage: $0 [--full-install]"
             exit 1
             ;;
     esac
@@ -77,19 +72,18 @@ packages=(
     xorg-dev
 )
 
-if [[ $with_valgrind -eq 1 ]]; then
-    packages+=(valgrind)
-fi
-
-# Full install adds essential build tools needed on a clean machine.
-# (GitHub runners already have these pre-installed.)
+# Full install adds everything needed on a clean developer machine.
+# (GitHub runners already have most of these pre-installed.)
 if [[ $full_install -eq 1 ]]; then
     packages+=(
         # Core build toolchain
         build-essential
         gcc
         g++
+        clang
+        lld
         # Build system
+        cmake
         ninja-build
         # Version control + download tools
         git
@@ -103,25 +97,26 @@ if [[ $full_install -eq 1 ]]; then
         # Additional tools used by vcpkg ports
         gperf
         nasm
-        # Python (used by validate_schemas.sh and aqtinstall)
+        # Python (used by validate_schemas.sh)
         python3
         python3-pip
         python3-venv
         # OpenSSL (library headers + CLI for password generation)
         openssl
         libssl-dev
-        # lsb-release needed to detect distro codename
-        lsb-release
-        gnupg
-        software-properties-common
-        # Qt6 from the distro (may be older than the aqtinstall version but
-        # provides system-wide tools and IDE integration)
+        # PostgreSQL (server + client library)
+        postgresql
+        postgresql-client
+        libpq-dev
+        # Qt6 from the distro
         qt6-base-dev
         qt6-tools-dev
         qt6-l10n-tools
         libqt6charts6-dev
         libqt6svg6-dev
         libqt6concurrent6t64
+        # Memory analysis
+        valgrind
     )
 fi
 
@@ -153,70 +148,9 @@ done
 sudo apt-get clean
 sudo apt-get autoremove -y
 
-# ---------------------------------------------------------------------------
-# Full install: compilers, CMake, PostgreSQL, Qt
-# These steps are only run when --full-install is specified.
-# ---------------------------------------------------------------------------
 if [[ $full_install -eq 0 ]]; then
     exit 0
 fi
-
-distro_codename=$(lsb_release -cs)
-echo ""
-echo "=== Full install mode: distro codename is '${distro_codename}' ==="
-
-# ---------------------------------------------------------------------------
-# CMake 3.28+ via Kitware APT
-# Ubuntu 24.04 ships 3.28.3 which satisfies our minimum; still prefer the
-# Kitware repo so developers get the latest patch release automatically.
-# ---------------------------------------------------------------------------
-echo ""
-echo "=== Installing CMake from Kitware APT ==="
-wget -qO /tmp/kitware-keyring.asc https://apt.kitware.com/keys/kitware-archive-latest.asc
-gpg --dearmor < /tmp/kitware-keyring.asc \
-    | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] \
-https://apt.kitware.com/ubuntu/ ${distro_codename} main" \
-    | sudo tee /etc/apt/sources.list.d/kitware.list > /dev/null
-sudo apt-get update -o Acquire::Retries=3
-sudo apt-get install -y cmake
-
-# ---------------------------------------------------------------------------
-# Clang 19 via LLVM APT
-# Matches the version used in CI (KyleMayes/install-llvm-action@v2 "19").
-# ---------------------------------------------------------------------------
-echo ""
-echo "=== Installing Clang 19 from LLVM APT ==="
-wget -qO /tmp/llvm-archive-keyring.asc https://apt.llvm.org/llvm-snapshot.gpg.key
-gpg --dearmor < /tmp/llvm-archive-keyring.asc \
-    | sudo tee /usr/share/keyrings/llvm-archive-keyring.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] \
-http://apt.llvm.org/${distro_codename}/ llvm-toolchain-${distro_codename}-19 main" \
-    | sudo tee /etc/apt/sources.list.d/llvm-19.list > /dev/null
-sudo apt-get update -o Acquire::Retries=3
-sudo apt-get install -y clang-19 clang++-19 lld-19 llvm-19
-
-# Register Clang 19 with update-alternatives so it can be selected as the
-# default clang/clang++ without hardcoding paths in CMake.
-sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 100
-sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 100
-
-# ---------------------------------------------------------------------------
-# PostgreSQL 18 via PGDG APT
-# Matches the version used in CI (ikalnytskyi/action-setup-postgres@v8 "18").
-# This only installs the server and client library; database initialisation
-# (users, schemas, etc.) is done separately by recreate_database.sh.
-# ---------------------------------------------------------------------------
-echo ""
-echo "=== Installing PostgreSQL 18 from PGDG APT ==="
-sudo install -d /usr/share/postgresql-common/pgdg
-sudo curl -fsSLo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
-    https://www.postgresql.org/media/keys/ACCC4CF8.asc
-echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
-https://apt.postgresql.org/pub/repos/apt ${distro_codename}-pgdg main" \
-    | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
-sudo apt-get update -o Acquire::Retries=3
-sudo apt-get install -y postgresql-18 postgresql-client-18 libpq-dev
 
 # ---------------------------------------------------------------------------
 # Post-install summary
@@ -228,13 +162,14 @@ echo "======================================================================="
 echo ""
 echo "  Installed components:"
 echo "    CMake   : $(cmake --version | head -1)"
-echo "    Clang   : $(clang-19 --version | head -1)"
+echo "    Clang   : $(clang --version | head -1)"
 echo "    GCC     : $(gcc --version | head -1)"
 echo "    Ninja   : $(ninja --version)"
 echo "    Postgres: $(psql --version)"
 echo "    Qt6     : $(qmake6 --version 2>/dev/null | head -1 || echo 'see qt6-base-dev')"
+echo "    Valgrind: $(valgrind --version)"
 echo ""
-echo "  Then configure the project with:"
+echo "  Configure the project with:"
 echo ""
 echo "    cmake --preset linux-clang-debug"
 echo "    cmake --build --preset linux-clang-debug"

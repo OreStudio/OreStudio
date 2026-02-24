@@ -121,6 +121,14 @@ if [[ $full_install -eq 1 ]]; then
         lsb-release
         gnupg
         software-properties-common
+        # Qt6 from the distro (may be older than the aqtinstall version but
+        # provides system-wide tools and IDE integration)
+        qt6-base-dev
+        qt6-tools-dev
+        qt6-l10n-tools
+        libqt6charts6-dev
+        libqt6svg6-dev
+        libqt6concurrent6t64
     )
 fi
 

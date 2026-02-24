@@ -22,7 +22,6 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ui_PortfolioDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -169,6 +168,8 @@ void PortfolioDetailDialog::setCreateMode(bool createMode) {
     if (createMode) {
         boost::uuids::random_generator gen;
         portfolio_.id = gen();
+        if (clientManager_)
+            portfolio_.party_id = clientManager_->currentPartyId();
     }
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
@@ -194,7 +195,7 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
 void PortfolioDetailDialog::updateUiFromPortfolio() {
     ui_->nameEdit->setText(QString::fromStdString(portfolio_.name));
     ui_->partyIdLabel->setText(
-        QString::fromStdString(boost::uuids::to_string(portfolio_.party_id)));
+        clientManager_ ? clientManager_->currentPartyName() : QString());
     ui_->descriptionEdit->setPlainText(QString::fromStdString(portfolio_.description));
     ui_->aggregationCcyCombo->setCurrentText(QString::fromStdString(portfolio_.aggregation_ccy));
     ui_->purposeTypeCombo->setCurrentText(QString::fromStdString(portfolio_.purpose_type));

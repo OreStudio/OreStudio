@@ -18,21 +18,18 @@
 # Installs system packages required to build OreStudio on Debian/Ubuntu.
 #
 # Usage:
-#   ./install_debian_packages.sh [--with-valgrind] [--full-install] [--qt-dir DIR]
+#   ./install_debian_packages.sh [--with-valgrind] [--full-install]
 #
 # Options:
 #   --with-valgrind   Also install Valgrind (used by nightly builds).
 #   --full-install    Full developer environment setup. Installs compilers
 #                     (GCC, Clang 19), Ninja, CMake 3.28+, PostgreSQL 18,
-#                     and Qt 6.8.3. Use this on a fresh Debian/Ubuntu box.
-#   --qt-dir DIR      Qt installation directory (default: /opt/Qt).
-#                     Only used with --full-install.
+#                     and Qt6 from the distro. Use this on a fresh Debian/Ubuntu box.
 #
 set -e
 
 with_valgrind=0
 full_install=0
-qt_dir="/opt/Qt"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -44,13 +41,9 @@ while [[ $# -gt 0 ]]; do
             full_install=1
             shift
             ;;
-        --qt-dir)
-            qt_dir="$2"
-            shift 2
-            ;;
         *)
             echo "Unknown argument: $1"
-            echo "Usage: $0 [--with-valgrind] [--full-install] [--qt-dir DIR]"
+            echo "Usage: $0 [--with-valgrind] [--full-install]"
             exit 1
             ;;
     esac
@@ -226,22 +219,6 @@ sudo apt-get update -o Acquire::Retries=3
 sudo apt-get install -y postgresql-18 postgresql-client-18 libpq-dev
 
 # ---------------------------------------------------------------------------
-# Qt 6.8.3 via aqtinstall
-# Matches the version and modules used in CI (jurplel/install-qt-action@v4).
-# Installs to ${qt_dir}/6.8.3/gcc_64.
-# ---------------------------------------------------------------------------
-echo ""
-echo "=== Installing Qt 6.8.3 to ${qt_dir} ==="
-pip3 install --break-system-packages --quiet aqtinstall
-sudo mkdir -p "${qt_dir}"
-sudo chmod a+w "${qt_dir}"
-python3 -m aqt install-qt linux desktop 6.8.3 gcc_64 \
-    --outputdir "${qt_dir}" \
-    -m qtcharts
-
-qt_prefix="${qt_dir}/6.8.3/gcc_64"
-
-# ---------------------------------------------------------------------------
 # Post-install summary
 # ---------------------------------------------------------------------------
 echo ""
@@ -255,13 +232,7 @@ echo "    Clang   : $(clang-19 --version | head -1)"
 echo "    GCC     : $(gcc --version | head -1)"
 echo "    Ninja   : $(ninja --version)"
 echo "    Postgres: $(psql --version)"
-echo "    Qt      : ${qt_prefix}"
-echo ""
-echo "  To use Qt with CMake, add the following to your shell profile"
-echo "  (e.g. ~/.bashrc or ~/.zshrc):"
-echo ""
-echo "    export Qt6_DIR=${qt_prefix}/lib/cmake/Qt6"
-echo "    export PATH=\${PATH}:${qt_prefix}/bin"
+echo "    Qt6     : $(qmake6 --version 2>/dev/null | head -1 || echo 'see qt6-base-dev')"
 echo ""
 echo "  Then configure the project with:"
 echo ""

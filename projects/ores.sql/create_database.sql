@@ -66,6 +66,11 @@ create database :db_name;
 grant all privileges on database :db_name to ores_owner;
 grant connect, temp on database :db_name to ores_rw, ores_ro;
 
+-- Allow the DDL user to bypass row-level security so that SECURITY DEFINER
+-- trigger functions (owned by ores_ddl_user) can perform FK validation SELECTs
+-- on party-isolated tables independently of the calling session's party context.
+alter role ores_ddl_user bypassrls;
+
 -- Connect to new database
 \c :db_name
 

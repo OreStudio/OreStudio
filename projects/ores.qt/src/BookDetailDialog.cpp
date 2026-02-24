@@ -22,6 +22,9 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include "ui_BookDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -83,28 +86,20 @@ void BookDetailDialog::setupConnections() {
             &BookDetailDialog::onFieldChanged);
     connect(ui_->bookTypeCombo, &QComboBox::currentTextChanged, this,
             &BookDetailDialog::onFieldChanged);
+    connect(ui_->parentPortfolioCombo, &QComboBox::currentTextChanged, this,
+            &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateCurrencyCombo();
     populateBookStatusCombo();
+    populateParentPortfolioCombo();
 }
 
 void BookDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
-            set_combo_flag_icons(ui_->ledgerCcyCombo,
-                [this](const std::string& code) {
-                    return imageCache_->getCurrencyFlagIcon(code);
-                });
-        });
-        set_combo_flag_icons(ui_->ledgerCcyCombo,
-            [this](const std::string& code) {
-                return imageCache_->getCurrencyFlagIcon(code);
-            });
-    }
+    setup_flag_combo(this, ui_->ledgerCcyCombo, imageCache_, FlagSource::Currency);
 }
 
 void BookDetailDialog::populateCurrencyCombo() {
@@ -130,12 +125,8 @@ void BookDetailDialog::populateCurrencyCombo() {
                 QString::fromStdString(code));
         }
 
-        if (self->imageCache_) {
-            set_combo_flag_icons(self->ui_->ledgerCcyCombo,
-                [&self](const std::string& code) {
-                    return self->imageCache_->getCurrencyFlagIcon(code);
-                });
-        }
+        apply_flag_icons(self->ui_->ledgerCcyCombo, self->imageCache_,
+                         FlagSource::Currency);
 
         self->updateUiFromBook();
     });
@@ -154,6 +145,36 @@ void BookDetailDialog::populateBookStatusCombo() {
     }
 }
 
+void BookDetailDialog::populateParentPortfolioCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<BookDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<portfolio_entry> {
+        return fetch_portfolio_entries(cm);
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<portfolio_entry>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<portfolio_entry>>::finished,
+            self, [self, watcher]() {
+        auto entries = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->portfolioEntries_ = entries;
+        self->ui_->parentPortfolioCombo->clear();
+        for (const auto& e : entries) {
+            self->ui_->parentPortfolioCombo->addItem(
+                QString::fromStdString(e.name));
+        }
+        self->updateUiFromBook();
+    });
+
+    QFuture<std::vector<portfolio_entry>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
 void BookDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -166,6 +187,10 @@ void BookDetailDialog::setBook(
 
 void BookDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    if (createMode) {
+        boost::uuids::random_generator gen;
+        book_.id = gen();
+    }
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
@@ -184,6 +209,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->costCenterEdit->setReadOnly(readOnly);
     ui_->bookStatusCombo->setEnabled(!readOnly);
     ui_->bookTypeCombo->setEnabled(!readOnly);
+    ui_->parentPortfolioCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -196,6 +222,18 @@ void BookDetailDialog::updateUiFromBook() {
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
     ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
     ui_->bookTypeCombo->setCurrentIndex(book_.is_trading_book != 0 ? 1 : 0);
+
+    // Select the parent portfolio by matching the stored UUID to a loaded entry
+    const auto parent_id_str =
+        boost::uuids::to_string(book_.parent_portfolio_id);
+    ui_->parentPortfolioCombo->setCurrentIndex(0);
+    for (const auto& e : portfolioEntries_) {
+        if (e.id == parent_id_str) {
+            ui_->parentPortfolioCombo->setCurrentText(
+                QString::fromStdString(e.name));
+            break;
+        }
+    }
 
     populateProvenance(book_.version, book_.modified_by, book_.performed_by,
                        book_.recorded_at, book_.change_reason_code,
@@ -214,6 +252,17 @@ void BookDetailDialog::updateBookFromUi() {
     book_.is_trading_book = (ui_->bookTypeCombo->currentIndex() == 1) ? 1 : 0;
     book_.modified_by = username_;
     book_.performed_by = username_;
+
+    // Resolve parent portfolio name back to UUID
+    const auto parent_name =
+        ui_->parentPortfolioCombo->currentText().trimmed().toStdString();
+    for (const auto& e : portfolioEntries_) {
+        if (e.name == parent_name) {
+            book_.parent_portfolio_id =
+                boost::lexical_cast<boost::uuids::uuid>(e.id);
+            break;
+        }
+    }
 }
 
 void BookDetailDialog::onCodeChanged(const QString& /* text */) {

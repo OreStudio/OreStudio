@@ -309,8 +309,15 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 41.1 adds currency asset class and currency market tier CRUD and
 // history: new message types 0x1099-0x10A8
 // (get/save/delete/history for currency_asset_class and currency_market_tier).
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 41;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+//
+// Version 42.0 adds party_id to portfolio and trade domain types and wire
+// format. Portfolios are now fully party-scoped: party_id is set server-side
+// from the authenticated session on save. Trade party_id is auto-populated by
+// the DB trigger from book_id. Strict RLS policies (no null pass-through) now
+// enforce party isolation for books, portfolios, and trades: no party context
+// means no rows visible.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 42;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

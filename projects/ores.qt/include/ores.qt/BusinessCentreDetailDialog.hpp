@@ -85,7 +85,6 @@ private:
     void updateUiFromBusinessCentre();
     void updateBusinessCentreFromUi();
     void updateSaveButtonState();
-    void updateCountryFlagIcons();
     bool validateInput();
 
     Ui::BusinessCentreDetailDialog* ui_;

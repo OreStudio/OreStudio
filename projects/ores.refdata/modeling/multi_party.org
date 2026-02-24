@@ -270,12 +270,20 @@ system party, this query returns all parties in the tenant.
 
 ** RLS Policy Pattern
 
-Party-scoped tables use a single RLS policy:
+Party-scoped tables use a *restrictive* RLS policy (ANDed with the permissive
+tenant policy). The policy is strict: when no party context is set,
+=ores_iam_visible_party_ids_fn()= returns =NULL=, so =x = ANY(NULL)= evaluates
+to NULL (falsy) and *no rows are visible*. There is no null pass-through. Users
+must have a party assigned.
 
 #+begin_src sql
-CREATE POLICY party_isolation ON ores_refdata_counterparty_relationships_tbl
-  USING (
-    party_id = ANY(current_setting('app.visible_party_ids')::uuid[])
+CREATE POLICY party_isolation ON ores_refdata_books_tbl
+  AS RESTRICTIVE
+  FOR ALL USING (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+  )
+  WITH CHECK (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
   );
 #+end_src
 
@@ -487,15 +495,17 @@ database::context make_request_context(
 The active party context is displayed as a styled chip label in the application
 status bar so the user always knows their active party. Rules:
 
-| State                     | Display                        | Style          |
-|---------------------------+--------------------------------+----------------|
-| System party active       | =Party: <name> [System]=       | Normal chip    |
-| Operational party active  | =Party: <name>=                | Normal chip    |
-| No party (misconfigured)  | =Party: [No Party]=            | Warning chip   |
+| State                     | Display                        | Style          | Data visible?       |
+|---------------------------+--------------------------------+----------------+---------------------|
+| System party active       | =Party: <name> [System]=       | Normal chip    | All party data      |
+| Operational party active  | =Party: <name>=                | Normal chip    | Party-scoped data   |
+| No party (misconfigured)  | =Party: [No Party]=            | Warning chip   | *Nothing* (RLS)     |
 
 The party chip is always visible when connected. A red-background warning chip
 is shown when no party context is available; a =QMessageBox::warning= is also
-shown at login to alert the user to the misconfiguration.
+shown at login to alert the user to the misconfiguration. With strict RLS
+enforcement, a missing party context means all books, portfolios, and trades
+are hidden — not just a cosmetic warning.
 
 The current party category is supplied by the server in the =party_summary=
 struct (see =party_summary::party_category= below). The Qt client uses

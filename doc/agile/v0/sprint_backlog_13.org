@@ -490,6 +490,40 @@ Highlights:
   At' column width was fixed, and the country selection combo box in the detail
   dialog was made non-editable, while also displaying the derived city name.
 #+end_quote
+*** STARTED Enhance currency taxonomy                                  :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 00:35]--[2026-02-24 Tue 02:08] =>  1:33
+    CLOCK: [2026-02-24 Tue 00:01]--[2026-02-24 Tue 00:34] =>  0:33
+    :END:
+
+This pull request significantly enhances the currency classification system by
+moving from a monolithic free-text field to a more structured and governed
+approach. The change introduces distinct categories for a currency's asset class
+and its market tier, allowing for better data integrity, extensibility, and
+auditability. This refactoring impacts all layers of the application, from the
+database schema and domain models to the messaging protocols and user
+interfaces, providing a robust foundation for future currency management.
+
+Highlights:
+
+- Currency Taxonomy Restructuring: Replaced the single 'currency_type' free-text
+  field with two structured lookup fields: 'asset_class' (fiat, crypto,
+  commodity, synthetic, supranational) and 'market_tier' (g10, emerging, exotic,
+  frontier, historical) to provide a more granular and accurate classification
+  of currencies.
+- New Reference Data Entities: Introduced two new reference-data entities,
+  'currency_asset_class' and 'currency_market_tier', complete with full stack
+  coverage including SQL tables, domain types, repositories, services, messaging
+  (CRUD + history), Qt UI, Wt UI, and CLI support.
+- Protocol Version Update: Updated the binary protocol to version 41.0, which is
+  a breaking change due to the replacement of the 'currency_type' wire field
+  with the new 'asset_class' and 'market_tier' fields, and the addition of new
+  message types for the new lookup entities.
+- Comprehensive Codebase Updates: Addressed and fixed all build failures across
+  test files, wire-format comments, and application code that previously
+  referenced the now-removed 'currency_type' field, ensuring full integration of
+  the new taxonomy.
+
 *** STARTED Analyse caching at dialog level                            :code:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more
@@ -716,9 +750,32 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
-*** Books, portfolios and trades are not party specific                :code:
+*** STARTED Books, portfolios and trades are not party specific        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 09:01]--[2026-02-24 Tue 12:00] =>  2:59
+    :END:
 
 At present I can see these entities from any party in a tenant.
+
+*** Add concept of "named environments" to connection manager          :code:
+
+It would be nice if we could do "local2! instead of "localhost@51004". For this
+we need to have the notion of "named environments". This could be another entry
+in the connection manager. Maybe a separate tree widget.
+
+Users could then choose an environment and it would automatically populate host
+and port. These would also show up in drop down box. If using an environment,
+title bar would show that as well as host and port.
+
+*** Rename currency asset classes                                      :code:
+
+We should avoid the term "asset classes" unless it is used in the usual asset
+class context. Many of the values are not really what one things of asset
+classes.
+
+*** Single tenant setup creates tenant                                 :code:
+
+In single tenant scenario we should just use the system tenant.
 
 *** Error with new tenant                                              :code:
 
@@ -751,6 +808,12 @@ Notes:
 - log full version including timestamp.
 - add info command which is the same as CLI.
 - move paging commands into a paging menu, e.g. =page next= instead of =next=?
+
+*** Problems with session charts                                       :code:
+
+- session duration is not updating even on refresh.
+- no sample data even after 10 mins.
+- sessions do not seem to take tenant into account.
 
 *** Add auxiliary types to their entities                              :code:
 

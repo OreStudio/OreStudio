@@ -32,7 +32,7 @@
  * @param p_dataset_id       The DQ dataset containing portfolio artefacts
  * @param p_target_tenant_id The tenant to publish data to
  * @param p_mode             Population mode (only 'upsert' supported)
- * @param p_params           Reserved for future use
+ * @param p_params           Optional: {"party_id": "<uuid>"} to override root party
  */
 
 -- =============================================================================
@@ -50,6 +50,7 @@ returns table (
     record_count bigint
 ) as $$
 declare
+    v_root_party_id uuid;
     v_bu_dataset_id uuid;
     v_inserted bigint := 0;
     v_current_depth int;
@@ -63,6 +64,22 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return query select 'skipped'::text, 0::bigint;
+        return;
+    end if;
+
+    -- Resolve root party: explicit param or query tenant's operational root
+    v_root_party_id := coalesce(
+        (p_params ->> 'party_id')::uuid,
+        (select id from ores_refdata_parties_tbl
+         where tenant_id = p_target_tenant_id
+           and parent_party_id is null
+           and party_category <> 'System'
+           and valid_to = ores_utility_infinity_timestamp_fn()
+         limit 1)
+    );
+
+    if v_root_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
         return;
     end if;
 
@@ -138,13 +155,13 @@ begin
     -- Insert level by level so the trigger can validate parent references
     for v_current_depth in 0..coalesce(v_max_depth, 0) loop
         insert into ores_refdata_portfolios_tbl (
-            tenant_id, id, version, name, parent_portfolio_id,
+            tenant_id, id, version, party_id, name, parent_portfolio_id,
             owner_unit_id, purpose_type, aggregation_ccy, is_virtual,
             modified_by, performed_by, change_reason_code, change_commentary
         )
         select
             p_target_tenant_id,
-            m.new_id, 0, m.name,
+            m.new_id, 0, v_root_party_id, m.name,
             parent_m.new_id,
             bu_map.published_id,
             m.purpose_type, m.aggregation_ccy, m.is_virtual,

@@ -23,18 +23,78 @@
 #include <QAction>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QObject>
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
- * @brief Set a leading flag icon on a QLineEdit.
+ * @brief The type of flag icons to apply to a combo box.
+ */
+enum class FlagSource { Currency, Country, BusinessCentre };
+
+/**
+ * @brief Apply flag icons to a combo box using the given image cache.
  *
- * Manages the QAction lifecycle: removes any previous action stored in
- * @p action_ptr before inserting the new one.
+ * Sets the icon for every item in @p combo by dispatching to the
+ * appropriate ImageCache getter based on @p source. The Qt style then
+ * renders the selected item's icon automatically in both the closed-
+ * state display and the open dropdown, for editable and non-editable
+ * combo boxes alike.
  *
- * @param edit      The line edit to decorate
- * @param icon      The icon to display (empty icon removes the action)
- * @param action_ptr Reference to the owning QAction pointer (managed externally)
+ * @param combo   The combo box to decorate (no-op if null)
+ * @param cache   The image cache (no-op if null)
+ * @param source  Which flag type to use
+ */
+void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source);
+
+/**
+ * @brief Wire up a combo box for flag icons and keep them current.
+ *
+ * Calls apply_flag_icons() immediately, then reconnects on
+ * ImageCache::allLoaded() so that icons are refreshed once the full
+ * set has been downloaded.
+ *
+ * @param context  The QObject whose lifetime governs the connections
+ * @param combo    The combo box to decorate (no-op if null)
+ * @param cache    The image cache (no-op if null)
+ * @param source   Which flag type to use
+ */
+void setup_flag_combo(
+    QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source);
+
+/**
+ * @brief Set flag icons on every item in a QComboBox.
+ *
+ * Iterates each item, resolves its flag icon via @p resolver, and calls
+ * setItemIcon(). The Qt style renders the selected item's icon in the
+ * combo's closed-state display and in the open dropdown automatically.
+ *
+ * @tparam Resolver  Callable with signature QIcon(const std::string&)
+ * @param combo      The combo box to decorate
+ * @param resolver   Maps an item's text to a flag icon
+ */
+template<typename Resolver>
+void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
+    for (int i = 0; i < combo->count(); ++i) {
+        const std::string code = combo->itemText(i).toStdString();
+        combo->setItemIcon(i, resolver(code));
+    }
+    combo->update();
+}
+
+/**
+ * @brief Set a leading flag icon on a standalone QLineEdit.
+ *
+ * Used for plain text-entry fields (e.g. the ISO code field in
+ * CurrencyDetailDialog) where the field itself is not a combo box.
+ * Manages the QAction lifecycle via @p action_ptr: the previous action
+ * is removed and deleted before the new one is inserted.
+ *
+ * @param edit        The line edit to decorate
+ * @param icon        The icon to display (empty icon removes the action)
+ * @param action_ptr  Reference to the caller-owned QAction pointer
  */
 inline void set_line_edit_flag_icon(
     QLineEdit* edit, const QIcon& icon, QAction*& action_ptr) {
@@ -45,71 +105,6 @@ inline void set_line_edit_flag_icon(
     }
     if (!icon.isNull()) {
         action_ptr = edit->addAction(icon, QLineEdit::LeadingPosition);
-    }
-}
-
-/**
- * @brief Set flag icons on every item in a QComboBox.
- *
- * Iterates each item, passes its text to @p resolver to obtain a QIcon,
- * and calls setItemIcon() with the result.
- *
- * @tparam Resolver  Callable with signature QIcon(const std::string&)
- * @param combo      The combo box to decorate
- * @param resolver   Callable that maps an item's text to an icon
- */
-template<typename Resolver>
-void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
-    // For editable combos the style also renders the selected item's icon in
-    // the line-edit area, which would produce two flag images.  Only set item
-    // icons for non-editable combos; editable combos use the line-edit action
-    // exclusively via update_combo_line_edit_icon().
-    if (!combo->isEditable()) {
-        for (int i = 0; i < combo->count(); ++i) {
-            const std::string code = combo->itemText(i).toStdString();
-            QIcon icon = resolver(code);
-            combo->setItemIcon(i, icon);
-        }
-    }
-    // For editable combos, update the leading icon on the line edit.
-    if (combo->isEditable() && combo->lineEdit()) {
-        update_combo_line_edit_icon(combo, resolver);
-    }
-    combo->update();
-}
-
-/**
- * @brief Update the leading icon on an editable QComboBox's line edit.
- *
- * Editable combo boxes don't show the current item's icon in the closed
- * display. This sets a QAction on the internal QLineEdit to show the
- * flag for the current selection.
- *
- * @tparam Resolver  Callable with signature QIcon(const std::string&)
- * @param combo      The editable combo box
- * @param resolver   Callable that maps text to an icon
- */
-template<typename Resolver>
-void update_combo_line_edit_icon(QComboBox* combo, Resolver&& resolver) {
-    auto* lineEdit = combo->lineEdit();
-    if (!lineEdit) return;
-
-    // Remove any existing leading actions we added
-    const auto actions = lineEdit->actions();
-    for (auto* action : actions) {
-        if (action->property("flag_icon").toBool()) {
-            lineEdit->removeAction(action);
-            delete action;
-        }
-    }
-
-    const std::string code = combo->currentText().toStdString();
-    if (!code.empty()) {
-        QIcon icon = resolver(code);
-        if (!icon.isNull()) {
-            auto* action = lineEdit->addAction(icon, QLineEdit::LeadingPosition);
-            action->setProperty("flag_icon", true);
-        }
     }
 }
 

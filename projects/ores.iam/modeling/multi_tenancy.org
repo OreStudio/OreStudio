@@ -298,16 +298,16 @@ This architecture provides:
 
 ** Session Data
 
-Each authenticated session stores the tenant ID resolved at login:
+Each authenticated session stores the tenant ID resolved at login, along with
+party context set after the user selects a party:
 
 #+begin_src cpp
-struct session_data {
-    boost::uuids::uuid id;
+struct session_info {
     boost::uuids::uuid account_id;
     utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid party_id;
+    std::vector<boost::uuids::uuid> visible_party_ids;
     std::string username;
-    std::chrono::system_clock::time_point created_at;
-    std::chrono::system_clock::time_point last_activity;
 };
 #+end_src
 
@@ -316,6 +316,12 @@ The tenant ID is:
 - Resolved once at login time
 - Immutable for the session lifetime
 - Used for all subsequent requests in that session
+
+The =party_id= and =visible_party_ids= fields are:
+
+- Set via =update_session_party()= after the user selects a party
+- Used by =make_request_context()= to set =app.visible_party_ids= in the DB
+  session, enabling party-level RLS enforcement
 
 ** Session-Tenant Binding
 
@@ -360,12 +366,15 @@ protected:
 ** Per-Request Context Creation
 
 The =make_request_context()= method creates a context bound to the session's
-tenant:
+tenant and, when a party is set, also configures party context:
 
 #+begin_src cpp
 database::context make_request_context(
-    const comms::service::session_data& session) {
-    return ctx_.with_tenant(session.tenant_id);
+    const comms::service::session_info& auth) {
+    auto ctx = ctx_.with_tenant(auth.tenant_id);
+    if (!boost::uuids::uuid_is_nil(auth.party_id))
+        ctx = ctx.with_party(auth.party_id, auth.visible_party_ids);
+    return ctx;
 }
 #+end_src
 
@@ -374,6 +383,7 @@ This ensures:
 - Each request operates in the correct tenant context
 - The underlying connection pool is shared (lightweight)
 - Tenant context is immutable for the request lifetime
+- Party context sets =app.visible_party_ids= in the DB session for RLS
 
 * Request Processing Flow
 

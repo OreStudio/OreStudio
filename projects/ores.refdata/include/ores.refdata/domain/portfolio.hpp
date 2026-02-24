@@ -53,6 +53,13 @@ struct portfolio final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Party that owns this portfolio.
+     *
+     * Set server-side from the authenticated session. Enforced by RLS.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Human-readable name for the portfolio.
      *
      * e.g., 'Global Rates', 'APAC Credit'.

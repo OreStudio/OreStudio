@@ -212,18 +212,8 @@ void EntityDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
-            set_combo_flag_icons(ui_->businessCenterCombo,
-                [this](const std::string& code) {
-                    return imageCache_->getBusinessCentreFlagIcon(code);
-                });
-        });
-        set_combo_flag_icons(ui_->businessCenterCombo,
-            [this](const std::string& code) {
-                return imageCache_->getBusinessCentreFlagIcon(code);
-            });
-    }
+    setup_flag_combo(this, ui_->businessCenterCombo, imageCache_,
+                     FlagSource::BusinessCentre);
 }
 
 void EntityDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
@@ -272,12 +262,8 @@ void EntityDetailDialog::populateLookups() {
                 QString::fromStdString(code));
         }
 
-        if (self->imageCache_) {
-            set_combo_flag_icons(self->ui_->businessCenterCombo,
-                [&self](const std::string& code) {
-                    return self->imageCache_->getBusinessCentreFlagIcon(code);
-                });
-        }
+        apply_flag_icons(self->ui_->businessCenterCombo, self->imageCache_,
+                         FlagSource::BusinessCentre);
 
         self->updateUiFromEntity();
 

@@ -123,7 +123,8 @@ void BusinessCentreDetailDialog::populateCountries() {
         }
         self->ui_->countryAlpha2Combo->blockSignals(false);
 
-        self->updateCountryFlagIcons();
+        apply_flag_icons(self->ui_->countryAlpha2Combo, self->imageCache_,
+                         FlagSource::Country);
         self->updateUiFromBusinessCentre();
 
         // Apply the pending country selection now that the combo is populated.
@@ -139,19 +140,7 @@ void BusinessCentreDetailDialog::populateCountries() {
 
 void BusinessCentreDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this,
-                &BusinessCentreDetailDialog::updateCountryFlagIcons);
-        updateCountryFlagIcons();
-    }
-}
-
-void BusinessCentreDetailDialog::updateCountryFlagIcons() {
-    if (!imageCache_) return;
-    set_combo_flag_icons(ui_->countryAlpha2Combo,
-        [this](const std::string& code) {
-            return imageCache_->getCountryFlagIcon(code);
-        });
+    setup_flag_combo(this, ui_->countryAlpha2Combo, imageCache_, FlagSource::Country);
 }
 
 void BusinessCentreDetailDialog::setUsername(const std::string& username) {

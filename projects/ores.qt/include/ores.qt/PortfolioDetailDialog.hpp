@@ -23,6 +23,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/portfolio.hpp"
 
@@ -86,6 +87,7 @@ private:
     void updateSaveButtonState();
     void populateCurrencyCombo();
     void populatePurposeTypeCombo();
+    void populateParentPortfolioCombo();
     bool validateInput();
 
     Ui::PortfolioDetailDialog* ui_;
@@ -93,6 +95,7 @@ private:
     ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::portfolio portfolio_;
+    std::vector<portfolio_entry> portfolioEntries_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

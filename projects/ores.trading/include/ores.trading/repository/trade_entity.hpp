@@ -38,6 +38,7 @@ struct trade_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::optional<std::string> external_id;
     std::string book_id;
     std::string portfolio_id;

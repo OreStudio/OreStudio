@@ -37,6 +37,7 @@ trade_mapper::map(const trade_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.external_id = v.external_id.value_or("");
     r.book_id = boost::lexical_cast<boost::uuids::uuid>(v.book_id);
     r.portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.portfolio_id);
@@ -69,6 +70,7 @@ trade_mapper::map(const domain::trade& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.external_id = v.external_id.empty() ? std::nullopt : std::optional(v.external_id);
     r.book_id = boost::uuids::to_string(v.book_id);
     r.portfolio_id = boost::uuids::to_string(v.portfolio_id);

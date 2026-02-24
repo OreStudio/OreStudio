@@ -30,6 +30,16 @@ namespace ores::qt {
 class ClientManager;
 
 /**
+ * @brief Maximum number of items fetched by each synchronous lookup call.
+ *
+ * All lookup fetchers (currencies, business centres, portfolios, etc.) use
+ * this single limit so the behaviour is consistent and easy to change.
+ * A server-side search/filter mechanism should replace bulk fetching if
+ * any entity class grows beyond this threshold.
+ */
+inline constexpr int lookup_fetch_limit = 1000;
+
+/**
  * @brief Fixed party category values (foundation data, not server-fetched).
  */
 namespace party_categories {
@@ -84,6 +94,22 @@ std::vector<std::string> fetch_currency_codes(ClientManager* cm);
  */
 std::unordered_map<std::string, std::string>
 fetch_business_centre_image_map(ClientManager* cm);
+
+/**
+ * @brief A name/id pair for a portfolio, used to populate parent combos.
+ */
+struct portfolio_entry {
+    std::string id;   // UUID as string
+    std::string name;
+};
+
+/**
+ * @brief Fetches all portfolio name/id pairs from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Returns empty vector on failure.
+ */
+std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm);
 
 }
 

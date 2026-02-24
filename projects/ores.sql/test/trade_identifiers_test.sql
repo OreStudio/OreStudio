@@ -51,11 +51,12 @@ insert into ores_refdata_books_tbl (
 );
 
 insert into ores_refdata_portfolios_tbl (
-    id, tenant_id, version, name, description,
+    id, tenant_id, version, party_id, name, description,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'd0000000-0000-0000-0000-000000000002'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
+    'd0000000-0000-0000-0000-000000000010'::uuid,
     'IDENT-TEST-PORTFOLIO', 'Test portfolio for identifier tests',
     current_user, current_user, 'system.test', 'Test portfolio'
 );

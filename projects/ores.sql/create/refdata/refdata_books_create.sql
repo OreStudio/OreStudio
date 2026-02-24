@@ -148,7 +148,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 create or replace trigger ores_refdata_books_insert_trg
 before insert on "ores_refdata_books_tbl"

@@ -86,9 +86,14 @@ struct currency final {
     std::string format;
 
     /**
-     * @brief Type classification (e.g., fiat, crypto, major, minor, etc.).
+     * @brief Asset class classification (e.g., fiat, commodity, synthetic, supranational).
      */
-    std::string currency_type;
+    std::string asset_class;
+
+    /**
+     * @brief Market tier classification (e.g., g10, emerging, exotic, frontier, historical).
+     */
+    std::string market_tier;
 
     /**
      * @brief Optional reference to a flag image in the images table.

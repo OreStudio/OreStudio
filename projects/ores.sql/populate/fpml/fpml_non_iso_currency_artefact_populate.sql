@@ -87,7 +87,7 @@ begin
     -- Insert FpML non-ISO currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -102,11 +102,12 @@ begin
         c.rounding_type,
         c.rounding_precision,
         c.format,
-        c.currency_type,
+        split_part(c.currency_type, '.', 1),
+        split_part(c.currency_type, '.', 2),
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
-        ('CNH', 'Offshore Chinese Yuan (Hong Kong)', '', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.offshore', 'hk'),
-        ('CNT', 'Offshore Chinese Yuan (Taiwan)', '', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.offshore', 'tw'),
+        ('CNH', 'Offshore Chinese Yuan (Hong Kong)', '', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.exotic', 'hk'),
+        ('CNT', 'Offshore Chinese Yuan (Taiwan)', '', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.exotic', 'tw'),
         ('GGP', 'Guernsey Pound', '', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'gg'),
         ('IMP', 'Isle of Man Pound', '', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'im'),
         ('JEP', 'Jersey Pound', '', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'je'),
@@ -138,23 +139,23 @@ join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
 union all
-select 'Offshore (fiat.offshore)', count(*)
+select 'Exotic (fiat.exotic)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.offshore'
+  and c.asset_class = 'fiat' and c.market_tier = 'exotic'
 union all
 select 'Emerging (fiat.emerging)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.emerging'
+  and c.asset_class = 'fiat' and c.market_tier = 'emerging'
 union all
 select 'Historical (fiat.historical)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.historical';
+  and c.asset_class = 'fiat' and c.market_tier = 'historical';

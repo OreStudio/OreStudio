@@ -27,12 +27,14 @@
     <file>icons/fluentui/filled/ic_fluent_building_bank_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_building_skyscraper_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_checkmark_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_classification_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clipboard_number_123_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clock_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_code_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_column_triple_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_contact_card_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_currency_dollar_euro_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_data_bar_vertical_ascending_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_database_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_delete_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_delete_dismiss_20_filled.svg</file>
@@ -98,12 +100,14 @@
     <file>icons/fluentui/regular/ic_fluent_building_bank_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_building_skyscraper_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_checkmark_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_classification_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clipboard_number_123_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clock_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_code_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_column_triple_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_contact_card_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_currency_dollar_euro_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_data_bar_vertical_ascending_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_database_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_delete_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_delete_dismiss_20_regular.svg</file>
@@ -160,6 +164,7 @@
     <file>icons/solarized/Bold/buildings-2.svg</file>
     <file>icons/solarized/Bold/buildings-3.svg</file>
     <file>icons/solarized/Bold/case-round.svg</file>
+    <file>icons/solarized/Bold/chart-2.svg</file>
     <file>icons/solarized/Bold/chart-square.svg</file>
     <file>icons/solarized/Bold/chat-round.svg</file>
     <file>icons/solarized/Bold/check-circle.svg</file>
@@ -184,6 +189,7 @@
     <file>icons/solarized/Bold/info-circle.svg</file>
     <file>icons/solarized/Bold/key-minimalistic-square.svg</file>
     <file>icons/solarized/Bold/link-broken.svg</file>
+    <file>icons/solarized/Bold/layers.svg</file>
     <file>icons/solarized/Bold/lock-password.svg</file>
     <file>icons/solarized/Bold/lock-password-unlocked.svg</file>
     <file>icons/solarized/Bold/lock-unlocked.svg</file>
@@ -222,6 +228,7 @@
     <file>icons/solarized/Linear/buildings-2.svg</file>
     <file>icons/solarized/Linear/buildings-3.svg</file>
     <file>icons/solarized/Linear/case-round.svg</file>
+    <file>icons/solarized/Linear/chart-2.svg</file>
     <file>icons/solarized/Linear/chart-square.svg</file>
     <file>icons/solarized/Linear/chat-round.svg</file>
     <file>icons/solarized/Linear/check-circle.svg</file>
@@ -246,6 +253,7 @@
     <file>icons/solarized/Linear/info-circle.svg</file>
     <file>icons/solarized/Linear/key-minimalistic-square.svg</file>
     <file>icons/solarized/Linear/link-broken.svg</file>
+    <file>icons/solarized/Linear/layers.svg</file>
     <file>icons/solarized/Linear/lock-password.svg</file>
     <file>icons/solarized/Linear/lock-password-unlocked.svg</file>
     <file>icons/solarized/Linear/lock-unlocked.svg</file>

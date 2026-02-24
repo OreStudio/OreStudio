@@ -46,11 +46,11 @@ select plan(5);
 insert into ores_refdata_currencies_tbl (
     tenant_id, iso_code, version, name, numeric_code, symbol,
     fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
-    format, currency_type, modified_by, change_reason_code, change_commentary
+    format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     ores_iam_system_tenant_id_fn(), 'TST', 0, 'Test Currency', '999', 'T',
     'c', 100, NULL, 2,
-    'T#,##0.00', 'fiat.test', current_user, 'system.test', 'Test insert'
+    'T#,##0.00', 'fiat', 'test', current_user, current_user, 'system.test', 'Test insert'
 );
 
 select is(
@@ -64,11 +64,11 @@ select is(
 insert into ores_refdata_currencies_tbl (
     tenant_id, iso_code, version, name, numeric_code, symbol,
     fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
-    format, currency_type, modified_by, change_reason_code, change_commentary
+    format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     ores_iam_system_tenant_id_fn(), 'TS2', 0, 'Test Currency 2', '998', 'T',
     'c', 100, 'Up', 2,
-    'T#,##0.00', 'fiat.test', current_user, NULL, 'Test insert'
+    'T#,##0.00', 'fiat', 'test', current_user, current_user, NULL, 'Test insert'
 );
 
 select is(
@@ -95,11 +95,11 @@ select throws_ok(
     $$insert into ores_refdata_currencies_tbl (
         tenant_id, iso_code, version, name, numeric_code, symbol,
         fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
-        format, currency_type, modified_by, change_reason_code, change_commentary
+        format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         ores_iam_system_tenant_id_fn(), 'BAD', 0, 'Bad Currency', '997', 'B',
         'c', 100, 'INVALID_ROUNDING', 2,
-        'B#,##0.00', 'fiat.test', current_user, 'system.test', 'Test'
+        'B#,##0.00', 'fiat', 'test', current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
     NULL,
@@ -111,11 +111,11 @@ select throws_ok(
     $$insert into ores_refdata_currencies_tbl (
         tenant_id, iso_code, version, name, numeric_code, symbol,
         fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
-        format, currency_type, modified_by, change_reason_code, change_commentary
+        format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         ores_iam_system_tenant_id_fn(), 'BD2', 0, 'Bad Currency 2', '996', 'B',
         'c', 100, 'Closest', 2,
-        'B#,##0.00', 'fiat.test', current_user, 'INVALID_REASON', 'Test'
+        'B#,##0.00', 'fiat', 'test', current_user, current_user, 'INVALID_REASON', 'Test'
     )$$,
     '23503',
     NULL,

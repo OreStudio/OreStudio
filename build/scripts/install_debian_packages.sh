@@ -15,24 +15,39 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# Installs system packages required to build OreStudio on Debian/Ubuntu.
+#
+# Usage:
+#   ./install_debian_packages.sh [--full-install]
+#
+# Options:
+#   --full-install    Full developer environment setup. Installs compilers
+#                     (GCC, Clang), Ninja, CMake, PostgreSQL, Qt6, Valgrind,
+#                     and all other build tools from the distro.
+#                     Use this on a fresh Debian/Ubuntu box.
+#
 set -e
 
-with_valgrind=0
+full_install=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --with-valgrind)
-            with_valgrind=1
+        --full-install)
+            full_install=1
             shift
             ;;
         *)
             echo "Unknown argument: $1"
-            echo "Usage: $0 [--with-valgrind]"
+            echo "Usage: $0 [--full-install]"
             exit 1
             ;;
     esac
 done
 
+# ---------------------------------------------------------------------------
+# Baseline packages (required by CI and local builds alike)
+# These are X11/GL development headers needed to build Qt applications.
+# ---------------------------------------------------------------------------
 packages=(
     autoconf
     autoconf-archive
@@ -57,8 +72,52 @@ packages=(
     xorg-dev
 )
 
-if [[ $with_valgrind -eq 1 ]]; then
-    packages+=(valgrind)
+# Full install adds everything needed on a clean developer machine.
+# (GitHub runners already have most of these pre-installed.)
+if [[ $full_install -eq 1 ]]; then
+    packages+=(
+        # Core build toolchain
+        build-essential
+        gcc
+        g++
+        clang
+        lld
+        # Build system
+        cmake
+        ninja-build
+        # Version control + download tools
+        git
+        curl
+        wget
+        ca-certificates
+        # Archive tools (required by vcpkg)
+        unzip
+        zip
+        tar
+        # Additional tools used by vcpkg ports
+        gperf
+        nasm
+        # Python (used by validate_schemas.sh)
+        python3
+        python3-pip
+        python3-venv
+        # OpenSSL (library headers + CLI for password generation)
+        openssl
+        libssl-dev
+        # PostgreSQL (server + client library)
+        postgresql
+        postgresql-client
+        libpq-dev
+        # Qt6 from the distro
+        qt6-base-dev
+        qt6-tools-dev
+        qt6-l10n-tools
+        libqt6charts6-dev
+        libqt6svg6-dev
+        libqt6concurrent6t64
+        # Memory analysis
+        valgrind
+    )
 fi
 
 install_packages() {
@@ -88,3 +147,32 @@ done
 
 sudo apt-get clean
 sudo apt-get autoremove -y
+
+if [[ $full_install -eq 0 ]]; then
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Post-install summary
+# ---------------------------------------------------------------------------
+echo ""
+echo "======================================================================="
+echo "  OreStudio developer environment installed successfully."
+echo "======================================================================="
+echo ""
+echo "  Installed components:"
+echo "    CMake   : $(cmake --version | head -1)"
+echo "    Clang   : $(clang --version | head -1)"
+echo "    GCC     : $(gcc --version | head -1)"
+echo "    Ninja   : $(ninja --version)"
+echo "    Postgres: $(psql --version)"
+echo "    Qt6     : $(qmake6 --version 2>/dev/null | head -1 || echo 'see qt6-base-dev')"
+echo "    Valgrind: $(valgrind --version)"
+echo ""
+echo "  Configure the project with:"
+echo ""
+echo "    cmake --preset linux-clang-debug"
+echo "    cmake --build --preset linux-clang-debug"
+echo ""
+echo "  See projects/ores.sql/recreate_database.sh to set up the database."
+echo "======================================================================="

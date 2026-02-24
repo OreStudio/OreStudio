@@ -58,7 +58,13 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.rounding_type = to_string(v.RoundingType);
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
     r.format = "";  // Not in XSD
-    r.currency_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    r.asset_class = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    // ORE XML's CurrencyType attribute captures the economic nature of the
+    // currency (e.g. "Fiat", "Crypto"), which maps to asset_class.  The ORE
+    // XML schema has no concept of market tier, so market_tier is left empty
+    // on import and is not written on export.  This is a known limitation:
+    // market_tier must be set separately after import if it is needed.
+    r.market_tier = "";
     r.modified_by = "ores";
     r.change_reason_code = "system.external_data_import";
     r.change_commentary = "Imported from ORE XML";
@@ -85,9 +91,9 @@ currencyDefinition currency_mapper::map(const refdata::domain::currency& v) {
     r.FractionsPerUnit = v.fractions_per_unit;
     r.RoundingType = parse_rounding_type(v.rounding_type);
     r.RoundingPrecision = v.rounding_precision;
-    if (!v.currency_type.empty()) {
+    if (!v.asset_class.empty()) {
         currencyDefinition_CurrencyType_t ct;
-        static_cast<xsd::string&>(ct) = v.currency_type;
+        static_cast<xsd::string&>(ct) = v.asset_class;
         r.CurrencyType = ct;
     }
 

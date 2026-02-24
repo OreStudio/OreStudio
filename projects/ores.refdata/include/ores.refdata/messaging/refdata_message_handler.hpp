@@ -50,6 +50,8 @@ namespace ores::refdata::messaging {
  * - Book status CRUD + history
  * - Purpose type CRUD + history
  * - Rounding type CRUD + history
+ * - Currency asset class CRUD + history
+ * - Currency market tier CRUD + history
  */
 class refdata_message_handler final : public comms::messaging::tenant_aware_handler {
 private:
@@ -384,6 +386,34 @@ private:
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_rounding_type_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Currency asset class handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_currency_asset_classes_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_currency_asset_class_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_currency_asset_class_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_currency_asset_class_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Currency market tier handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_currency_market_tiers_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_currency_market_tier_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_currency_market_tier_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_currency_market_tier_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     std::shared_ptr<variability::service::system_flags_service> system_flags_;

@@ -80,6 +80,8 @@
 #include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
+#include "ores.qt/CurrencyAssetClassController.hpp"
+#include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -219,6 +221,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionPurposeTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionRoundingTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionCurrencyAssetClasses->setIcon(IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
+    ui_->ActionCurrencyMarketTiers->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -649,6 +653,18 @@ MainWindow::MainWindow(QWidget* parent) :
             roundingTypeController_->showListWindow();
     });
 
+    // Connect Currency Asset Classes action to controller
+    connect(ui_->ActionCurrencyAssetClasses, &QAction::triggered, this, [this]() {
+        if (currencyAssetClassController_)
+            currencyAssetClassController_->showListWindow();
+    });
+
+    // Connect Currency Market Tiers action to controller
+    connect(ui_->ActionCurrencyMarketTiers, &QAction::triggered, this, [this]() {
+        if (currencyMarketTierController_)
+            currencyMarketTierController_->showListWindow();
+    });
+
     // Connect Data Librarian action
     connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
         if (dataLibrarianWindow_) {
@@ -1019,6 +1035,8 @@ void MainWindow::updateMenuState() {
     ui_->ActionBookStatuses->setEnabled(isLoggedIn);
     ui_->ActionPurposeTypes->setEnabled(isLoggedIn);
     ui_->ActionRoundingTypes->setEnabled(isLoggedIn);
+    ui_->ActionCurrencyAssetClasses->setEnabled(isLoggedIn);
+    ui_->ActionCurrencyMarketTiers->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
@@ -1628,6 +1646,54 @@ void MainWindow::createControllers() {
             this, [this]() {
         if (roundingTypeController_)
             roundingTypeController_->showListWindow();
+    });
+
+    // Create currency asset class controller
+    currencyAssetClassController_ = std::make_unique<CurrencyAssetClassController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Connect currency controller relay to asset class controller
+    connect(currencyController_.get(), &CurrencyController::showAssetClassesRequested,
+            this, [this]() {
+        if (currencyAssetClassController_)
+            currencyAssetClassController_->showListWindow();
+    });
+
+    // Create currency market tier controller
+    currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(currencyMarketTierController_.get(), &CurrencyMarketTierController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(currencyMarketTierController_.get(), &CurrencyMarketTierController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(currencyMarketTierController_.get(), &CurrencyMarketTierController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(currencyMarketTierController_.get(), &CurrencyMarketTierController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Connect currency controller relay to market tier controller
+    connect(currencyController_.get(), &CurrencyController::showMarketTiersRequested,
+            this, [this]() {
+        if (currencyMarketTierController_)
+            currencyMarketTierController_->showListWindow();
     });
 
     // Create trade controller
@@ -2398,6 +2464,12 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (roundingTypeController_) {
         roundingTypeController_->setUsername(username);
+    }
+    if (currencyAssetClassController_) {
+        currencyAssetClassController_->setUsername(username);
+    }
+    if (currencyMarketTierController_) {
+        currencyMarketTierController_->setUsername(username);
     }
 
     updateWindowTitle();

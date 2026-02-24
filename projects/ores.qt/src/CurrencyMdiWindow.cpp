@@ -144,6 +144,22 @@ CurrencyMdiWindow(ClientManager* clientManager,
         [this]() { emit showRoundingTypesRequested(); });
     toolBar_->addAction(roundingTypesAction);
 
+    auto assetClassesAction = new QAction("Asset Classes", this);
+    assetClassesAction->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Classification, IconUtils::DefaultIconColor));
+    assetClassesAction->setToolTip("Open Currency Asset Classes list");
+    connect(assetClassesAction, &QAction::triggered, this,
+        [this]() { emit showAssetClassesRequested(); });
+    toolBar_->addAction(assetClassesAction);
+
+    auto marketTiersAction = new QAction("Market Tiers", this);
+    marketTiersAction->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Chart, IconUtils::DefaultIconColor));
+    marketTiersAction->setToolTip("Open Currency Market Tiers list");
+    connect(marketTiersAction, &QAction::triggered, this,
+        [this]() { emit showMarketTiersRequested(); });
+    toolBar_->addAction(marketTiersAction);
+
     toolBar_->addSeparator();
 
     auto importXMLAction = new QAction("Import", this);

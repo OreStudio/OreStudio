@@ -64,10 +64,12 @@ void currency_list_widget::setup_table() {
     table_->elementAt(0, 3)->addWidget(
         std::make_unique<Wt::WText>("Numeric Code"));
     table_->elementAt(0, 4)->addWidget(
-        std::make_unique<Wt::WText>("Type"));
+        std::make_unique<Wt::WText>("Asset Class"));
     table_->elementAt(0, 5)->addWidget(
-        std::make_unique<Wt::WText>("Version"));
+        std::make_unique<Wt::WText>("Market Tier"));
     table_->elementAt(0, 6)->addWidget(
+        std::make_unique<Wt::WText>("Version"));
+    table_->elementAt(0, 7)->addWidget(
         std::make_unique<Wt::WText>("Actions"));
 }
 
@@ -100,11 +102,13 @@ void currency_list_widget::populate_table() {
         table_->elementAt(row, 3)->addWidget(
             std::make_unique<Wt::WText>(c.numeric_code));
         table_->elementAt(row, 4)->addWidget(
-            std::make_unique<Wt::WText>(c.currency_type));
+            std::make_unique<Wt::WText>(c.asset_class));
         table_->elementAt(row, 5)->addWidget(
+            std::make_unique<Wt::WText>(c.market_tier));
+        table_->elementAt(row, 6)->addWidget(
             std::make_unique<Wt::WText>(std::to_string(c.version)));
 
-        auto actions = table_->elementAt(row, 6)->addWidget(
+        auto actions = table_->elementAt(row, 7)->addWidget(
             std::make_unique<Wt::WContainerWidget>());
 
         auto edit_btn = actions->addWidget(

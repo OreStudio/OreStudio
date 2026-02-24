@@ -68,6 +68,10 @@
 \ir ./refdata_currencies_drop.sql
 
 -- Lookup tables (must drop after tables that reference them)
+\ir ./refdata_currency_market_tiers_notify_trigger_drop.sql
+\ir ./refdata_currency_market_tiers_drop.sql
+\ir ./refdata_currency_asset_classes_notify_trigger_drop.sql
+\ir ./refdata_currency_asset_classes_drop.sql
 \ir ./refdata_rounding_types_drop.sql
 
 -- Countries

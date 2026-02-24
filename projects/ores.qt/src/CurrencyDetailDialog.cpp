@@ -49,6 +49,8 @@
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata/messaging/currency_asset_class_protocol.hpp"
+#include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -120,6 +122,22 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     connect(roundingTypesAction, &QAction::triggered, this,
         [this]() { emit showRoundingTypesRequested(); });
     toolBar_->addAction(roundingTypesAction);
+
+    auto* assetClassesAction = new QAction("Asset Classes", this);
+    assetClassesAction->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Classification, IconUtils::DefaultIconColor));
+    assetClassesAction->setToolTip("Open Currency Asset Classes list");
+    connect(assetClassesAction, &QAction::triggered, this,
+        [this]() { emit showAssetClassesRequested(); });
+    toolBar_->addAction(assetClassesAction);
+
+    auto* marketTiersAction = new QAction("Market Tiers", this);
+    marketTiersAction->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Chart, IconUtils::DefaultIconColor));
+    marketTiersAction->setToolTip("Open Currency Market Tiers list");
+    connect(marketTiersAction, &QAction::triggered, this,
+        [this]() { emit showMarketTiersRequested(); });
+    toolBar_->addAction(marketTiersAction);
 
     toolBar_->addSeparator();
 
@@ -230,8 +248,20 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->formatEdit, &QLineEdit::textChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->currencyTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->assetClassCombo, &QComboBox::currentTextChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->assetClassCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int idx) {
+        const auto tip = ui_->assetClassCombo->itemData(idx, Qt::ToolTipRole).toString();
+        ui_->assetClassCombo->setToolTip(tip);
+    });
+    connect(ui_->marketTierCombo, &QComboBox::currentTextChanged, this,
+        &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->marketTierCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int idx) {
+        const auto tip = ui_->marketTierCombo->itemData(idx, Qt::ToolTipRole).toString();
+        ui_->marketTierCombo->setToolTip(tip);
+    });
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -256,12 +286,18 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
             onConnectionEstablished();
         }
 
-        // Populate rounding type combo if already connected
+        // Populate lookup combos if already connected
         if (clientManager_->isConnected()) {
             populateRoundingTypeCombo();
+            populateAssetClassCombo();
+            populateMarketTierCombo();
         } else {
             connect(clientManager_, &ClientManager::loggedIn,
                     this, &CurrencyDetailDialog::populateRoundingTypeCombo);
+            connect(clientManager_, &ClientManager::loggedIn,
+                    this, &CurrencyDetailDialog::populateAssetClassCombo);
+            connect(clientManager_, &ClientManager::loggedIn,
+                    this, &CurrencyDetailDialog::populateMarketTierCombo);
         }
     }
 }
@@ -330,7 +366,8 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
     ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
-    ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
+    ui_->assetClassCombo->setCurrentText(QString::fromStdString(currency.asset_class));
+    ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency.market_tier));
     populateProvenance(currency.version, currency.modified_by, currency.performed_by,
         currency.recorded_at, currency.change_reason_code, currency.change_commentary);
 
@@ -352,7 +389,8 @@ refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.rounding_type = ui_->roundingTypeCombo->currentText().toStdString();
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
-    currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
+    currency.asset_class = ui_->assetClassCombo->currentText().toStdString();
+    currency.market_tier = ui_->marketTierCombo->currentText().toStdString();
     currency.modified_by = username_.empty() ? "qt_user" : username_;
 
     if (!pendingImageId_.isEmpty()) {
@@ -373,7 +411,8 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->roundingTypeCombo->setCurrentIndex(-1);
     ui_->roundingPrecisionSpinBox->clear();
     ui_->formatEdit->clear();
-    ui_->currencyTypeEdit->clear();
+    ui_->assetClassCombo->setCurrentIndex(-1);
+    ui_->marketTierCombo->setCurrentIndex(-1);
     clearProvenance();
     pendingImageId_.clear();
 
@@ -686,7 +725,8 @@ void CurrencyDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->roundingTypeCombo->setEnabled(!readOnly);
     ui_->roundingPrecisionSpinBox->setReadOnly(readOnly);
     ui_->formatEdit->setReadOnly(readOnly);
-    ui_->currencyTypeEdit->setReadOnly(readOnly);
+    ui_->assetClassCombo->setEnabled(!readOnly);
+    ui_->marketTierCombo->setEnabled(!readOnly);
 }
 
 void CurrencyDetailDialog::updateSaveResetButtonState() {
@@ -1055,7 +1095,8 @@ void CurrencyDetailDialog::onGenerateClicked() {
         ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
         ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
         ui_->formatEdit->setText(QString::fromStdString(currency.format));
-        ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
+        ui_->assetClassCombo->setCurrentText(QString::fromStdString(currency.asset_class));
+        ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency.market_tier));
 
         // Mark as dirty
         isDirty_ = true;
@@ -1198,6 +1239,206 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Rounding type combo populated with "
+                                   << result.types.size() << " entries";
+    });
+
+    watcher->setFuture(future);
+}
+
+void CurrencyDetailDialog::populateAssetClassCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Populating asset class combo";
+
+    QPointer<CurrencyDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<refdata::domain::currency_asset_class> types;
+    };
+
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        if (!self || !self->clientManager_) {
+            return {false, {}};
+        }
+
+        refdata::messaging::get_currency_asset_classes_request request;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_currency_asset_classes_request,
+            0, std::move(payload));
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+        if (!response_result) {
+            return {false, {}};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, {}};
+        }
+
+        auto response = refdata::messaging::get_currency_asset_classes_response::
+            deserialize(*payload_result);
+        if (!response) {
+            return {false, {}};
+        }
+
+        return {true, std::move(response->types)};
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency asset classes for combo box.";
+            emit self->errorMessage(tr("Could not load currency asset classes."));
+            return;
+        }
+
+        QString current = self->ui_->assetClassCombo->currentText();
+
+        self->ui_->assetClassCombo->blockSignals(true);
+        self->ui_->assetClassCombo->clear();
+
+        auto& types = result.types;
+        std::sort(types.begin(), types.end(),
+            [](const auto& a, const auto& b) {
+                return a.display_order < b.display_order;
+            });
+
+        for (const auto& type : types) {
+            QString code = QString::fromStdString(type.code);
+            self->ui_->assetClassCombo->addItem(code);
+            int idx = self->ui_->assetClassCombo->count() - 1;
+            self->ui_->assetClassCombo->setItemData(
+                idx, QString::fromStdString(type.description),
+                Qt::ToolTipRole);
+        }
+
+        if (!current.isEmpty()) {
+            self->ui_->assetClassCombo->setCurrentText(current);
+        }
+
+        self->ui_->assetClassCombo->blockSignals(false);
+
+        const int cur = self->ui_->assetClassCombo->currentIndex();
+        if (cur >= 0) {
+            const auto tip = self->ui_->assetClassCombo->itemData(
+                cur, Qt::ToolTipRole).toString();
+            self->ui_->assetClassCombo->setToolTip(tip);
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Asset class combo populated with "
+                                   << result.types.size() << " entries";
+    });
+
+    watcher->setFuture(future);
+}
+
+void CurrencyDetailDialog::populateMarketTierCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Populating market tier combo";
+
+    QPointer<CurrencyDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<refdata::domain::currency_market_tier> types;
+    };
+
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        if (!self || !self->clientManager_) {
+            return {false, {}};
+        }
+
+        refdata::messaging::get_currency_market_tiers_request request;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_currency_market_tiers_request,
+            0, std::move(payload));
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+        if (!response_result) {
+            return {false, {}};
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            return {false, {}};
+        }
+
+        auto response = refdata::messaging::get_currency_market_tiers_response::
+            deserialize(*payload_result);
+        if (!response) {
+            return {false, {}};
+        }
+
+        return {true, std::move(response->types)};
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency market tiers for combo box.";
+            emit self->errorMessage(tr("Could not load currency market tiers."));
+            return;
+        }
+
+        QString current = self->ui_->marketTierCombo->currentText();
+
+        self->ui_->marketTierCombo->blockSignals(true);
+        self->ui_->marketTierCombo->clear();
+
+        auto& types = result.types;
+        std::sort(types.begin(), types.end(),
+            [](const auto& a, const auto& b) {
+                return a.display_order < b.display_order;
+            });
+
+        for (const auto& type : types) {
+            QString code = QString::fromStdString(type.code);
+            self->ui_->marketTierCombo->addItem(code);
+            int idx = self->ui_->marketTierCombo->count() - 1;
+            self->ui_->marketTierCombo->setItemData(
+                idx, QString::fromStdString(type.description),
+                Qt::ToolTipRole);
+        }
+
+        if (!current.isEmpty()) {
+            self->ui_->marketTierCombo->setCurrentText(current);
+        }
+
+        self->ui_->marketTierCombo->blockSignals(false);
+
+        const int cur = self->ui_->marketTierCombo->currentIndex();
+        if (cur >= 0) {
+            const auto tip = self->ui_->marketTierCombo->itemData(
+                cur, Qt::ToolTipRole).toString();
+            self->ui_->marketTierCombo->setToolTip(tip);
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Market tier combo populated with "
                                    << result.types.size() << " entries";
     });
 

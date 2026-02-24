@@ -38,7 +38,8 @@ create table if not exists "ores_refdata_currencies_tbl" (
     "rounding_type" text not null,
     "rounding_precision" integer not null,
     "format" text not null,
-    "currency_type" text not null,
+    "asset_class" text not null,
+    "market_tier" text not null,
     "coding_scheme_code" text,
     "image_id" uuid,
     "modified_by" text not null,
@@ -86,6 +87,12 @@ begin
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
     end if;
+
+    -- Validate asset_class
+    new.asset_class := ores_refdata_validate_currency_asset_class_fn(new.tenant_id, new.asset_class);
+
+    -- Validate market_tier
+    new.market_tier := ores_refdata_validate_currency_market_tier_fn(new.tenant_id, new.market_tier);
 
     -- Validate rounding_type
     new.rounding_type := ores_refdata_validate_rounding_type_fn(new.tenant_id, new.rounding_type);

@@ -247,8 +247,33 @@ by using [[https://github.com/Microsoft/vcpkg][vcpkg]], which is what this docum
 "[[https://stackoverflow.com/questions/73967245/why-is-vcpkg-recommended-as-a-git-submodule][sub-module setup]]", whereby vcpkg is a git submodule of ORE Studio. All of the
 dependencies are declared in the [[https://github.com/OreStudio/OreStudio/blob/main/vcpkg.json][vcpkg.json]] file. Unfortunately, some of these
 packages also have dependencies --- particularly on Linux. If you are on Debian
-or Ubuntu, please run the script [[https://github.com/OreStudio/OreStudio/blob/main/build/scripts/install_debian_packages.sh][=build\scripts\install_debian_packages.sh=]]
-prior to building.
+or Ubuntu, please run the script [[https://github.com/OreStudio/OreStudio/blob/main/build/scripts/install_debian_packages.sh][=build/scripts/install_debian_packages.sh=]]
+prior to building. See the next section for details.
+
+** Ubuntu, Debian and WSL
+
+On a fresh [[https://ubuntu.com/][Ubuntu]] or [[https://www.debian.org/][Debian]] installation --- including [[https://learn.microsoft.com/en-us/windows/wsl/install][Windows Subsystem for
+Linux (WSL)]] --- run the following to install all required tools and system
+libraries in one step:
+
+#+begin_src sh
+./build/scripts/install_debian_packages.sh --full-install
+#+end_src
+
+This installs from the distro repositories: GCC, Clang, CMake, Ninja,
+PostgreSQL (server and =libpq-dev=), Qt6 development packages
+(=qt6-base-dev=, =libqt6charts6-dev=, etc.), Valgrind, and the X11/GL
+headers needed to build Qt applications. Nothing is downloaded from
+third-party APT repositories.
+
+Once the script completes, initialise the database and proceed with the
+normal build steps described below:
+
+#+begin_src sh
+./projects/ores.sql/recreate_database.sh
+cmake --preset linux-clang-debug
+cmake --build --preset linux-clang-debug
+#+end_src
 
 Our build makes use of [[https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html][CMake Presets]]. To know what these are you can either have
 a look at the presets file [[https://github.com/OreStudio/OreStudio/blob/main/CMakePresets.json][CMakePresets.json]] or, better still, ask CMake:

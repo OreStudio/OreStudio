@@ -128,7 +128,8 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     case Column::RoundingType: return QString::fromStdString(currency.rounding_type);
     case Column::RoundingPrecision: return currency.rounding_precision;
     case Column::Format: return QString::fromStdString(currency.format);
-    case Column::CurrencyType: return QString::fromStdString(currency.currency_type);
+    case Column::AssetClass: return QString::fromStdString(currency.asset_class);
+    case Column::MarketTier: return QString::fromStdString(currency.market_tier);
     case Column::ModifiedBy: return QString::fromStdString(currency.modified_by);
     case Column::RecordedAt: return relative_time_helper::format(currency.recorded_at);
     default: return {};
@@ -152,7 +153,8 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::RoundingType: return tr("Rounding type");
         case Column::RoundingPrecision: return tr("Rounding precision");
         case Column::Format: return tr("Format");
-        case Column::CurrencyType: return tr("Currency Type");
+        case Column::AssetClass: return tr("Asset Class");
+        case Column::MarketTier: return tr("Market Tier");
         case Column::ModifiedBy: return tr("Modified By");
         case Column::RecordedAt: return tr("Recorded At");
         default: return {};

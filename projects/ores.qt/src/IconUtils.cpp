@@ -52,7 +52,9 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Building: return {"ic_fluent_building_20", "buildings.svg"};
         case Icon::BuildingBank: return {"ic_fluent_building_bank_20", "buildings-3.svg"};
         case Icon::BuildingSkyscraper: return {"ic_fluent_building_skyscraper_20", "buildings.svg"};
+        case Icon::Chart: return {"ic_fluent_data_bar_vertical_ascending_20", "chart-2.svg"};
         case Icon::Checkmark: return {"ic_fluent_checkmark_20", "check-circle.svg"};
+        case Icon::Classification: return {"ic_fluent_classification_20", "layers.svg"};
         case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
         case Icon::Code: return {"ic_fluent_code_20", "code-file.svg"};
         case Icon::ContactCard: return {"ic_fluent_contact_card_20", "chat-round.svg"};

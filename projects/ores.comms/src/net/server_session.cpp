@@ -80,9 +80,13 @@ bool server_session::queue_notification(const std::string& event_type,
         pending_notifications_.push({event_type, timestamp, entity_ids, tenant_id});
     }
 
-    // Signal the notification writer by cancelling the timer
-    // This will wake up the waiting coroutine immediately
-    notification_signal_.cancel();
+    // Signal the notification writer. Using expires_after(0) rather than
+    // cancel() so the signal is "sticky": if there is a pending async_wait,
+    // it is cancelled (same as cancel()); if there is NO pending async_wait
+    // (i.e., the call lands between the inner drain-loop break and the next
+    // outer co_await), the expiry is left in the past so the next async_wait
+    // returns immediately instead of sleeping until max().
+    notification_signal_.expires_after(std::chrono::seconds(0));
 
     BOOST_LOG_SEV(lg(), debug)
         << "Queued notification for event type '" << event_type
@@ -104,8 +108,8 @@ bool server_session::queue_database_status(bool available, const std::string& er
         pending_database_status_.push({available, error_message, timestamp});
     }
 
-    // Signal the notification writer by cancelling the timer
-    notification_signal_.cancel();
+    // Same sticky-signal pattern as queue_notification.
+    notification_signal_.expires_after(std::chrono::seconds(0));
 
     BOOST_LOG_SEV(lg(), debug)
         << "Queued database status notification (available=" << available << ")";
@@ -353,35 +357,39 @@ boost::asio::awaitable<void> server_session::run_notification_writer() {
 
     try {
         while (active_) {
-            // Wait for notification signal (timer cancellation)
+            // Wait for the notification signal.
+            // queue_notification/queue_database_status use expires_after(0),
+            // not cancel(), so the wakeup may come as:
+            //   - ec == operation_aborted  (timer cancelled while async_wait was pending)
+            //   - ec == success            (timer already expired when async_wait started,
+            //                              because expires_after(0) was called before us)
+            // In both cases we should drain. We only exit on !active_.
             boost::system::error_code ec;
             co_await notification_signal_.async_wait(
                 boost::asio::redirect_error(boost::asio::use_awaitable, ec));
 
-            // Check if we should exit
             if (!active_) {
                 break;
             }
 
-            // Timer was cancelled (signalled) or expired - send pending notifications
-            if (ec == boost::asio::error::operation_aborted) {
-                // Reset timer for next wait
-                notification_signal_.expires_at(
-                    std::chrono::steady_clock::time_point::max());
+            // Reset the timer to "never expire" BEFORE draining. Any concurrent
+            // queue_notification() calls during the drain will set expires_after(0)
+            // again, which is visible on the next outer-loop async_wait and won't
+            // be missed.
+            notification_signal_.expires_at(
+                std::chrono::steady_clock::time_point::max());
 
-                // Drain queues in a loop: cancel() calls that arrive while
-                // send_pending_notifications() is co_awaiting are no-ops (no
-                // pending async_wait at that point). Re-check after each flush
-                // to catch notifications enqueued during the send.
-                while (active_) {
-                    co_await send_pending_notifications();
-                    co_await send_pending_database_status();
+            // Drain queues in a loop: notifications may arrive while
+            // send_pending_notifications() is co_awaiting. Re-check after
+            // each flush to catch any enqueued during the send.
+            while (active_) {
+                co_await send_pending_notifications();
+                co_await send_pending_database_status();
 
-                    std::lock_guard lock(notification_mutex_);
-                    if (pending_notifications_.empty() &&
-                        pending_database_status_.empty()) {
-                        break;
-                    }
+                std::lock_guard lock(notification_mutex_);
+                if (pending_notifications_.empty() &&
+                    pending_database_status_.empty()) {
+                    break;
                 }
             }
         }

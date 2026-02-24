@@ -33,6 +33,7 @@ create table if not exists "ores_trading_trades_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "external_id" text null,
     "book_id" uuid not null,
     "portfolio_id" uuid not null,
@@ -114,6 +115,13 @@ begin
         raise exception 'Invalid book_id: %. Book must exist for tenant.', NEW.book_id
             using errcode = '23503';
     end if;
+
+    -- Denormalise party_id from book for clean RLS enforcement (no JOIN in policy)
+    select party_id into NEW.party_id
+    from ores_refdata_books_tbl
+    where id = NEW.book_id
+      and tenant_id = NEW.tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- Validate portfolio_id (soft FK to ores_refdata_portfolios_tbl)
     if not exists (

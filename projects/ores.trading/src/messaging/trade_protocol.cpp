@@ -43,6 +43,7 @@ void write_trade(std::vector<std::byte>& buffer,
     const domain::trade& tr) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(tr.version));
     writer::write_uuid(buffer, tr.id);
+    writer::write_uuid(buffer, tr.party_id);
     writer::write_string(buffer, tr.external_id);
     writer::write_uuid(buffer, tr.book_id);
     writer::write_uuid(buffer, tr.portfolio_id);
@@ -80,6 +81,10 @@ read_trade(std::span<const std::byte>& data) {
     auto id_result = reader::read_uuid(data);
     if (!id_result) return std::unexpected(id_result.error());
     tr.id = *id_result;
+
+    auto party_id_result = reader::read_uuid(data);
+    if (!party_id_result) return std::unexpected(party_id_result.error());
+    tr.party_id = *party_id_result;
 
     auto external_id_result = reader::read_string(data);
     if (!external_id_result) return std::unexpected(external_id_result.error());

@@ -43,6 +43,7 @@ void write_portfolio(std::vector<std::byte>& buffer,
     const domain::portfolio& pf) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(pf.version));
     writer::write_uuid(buffer, pf.id);
+    writer::write_uuid(buffer, pf.party_id);
     writer::write_string(buffer, pf.name);
     writer::write_string(buffer, pf.description);
     writer::write_bool(buffer, pf.parent_portfolio_id.has_value());
@@ -76,6 +77,10 @@ read_portfolio(std::span<const std::byte>& data) {
     auto id_result = reader::read_uuid(data);
     if (!id_result) return std::unexpected(id_result.error());
     pf.id = *id_result;
+
+    auto party_id_result = reader::read_uuid(data);
+    if (!party_id_result) return std::unexpected(party_id_result.error());
+    pf.party_id = *party_id_result;
 
     auto name_result = reader::read_string(data);
     if (!name_result) return std::unexpected(name_result.error());

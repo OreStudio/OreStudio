@@ -2239,6 +2239,7 @@ handle_save_portfolio_request(std::span<const std::byte> payload,
 
     request.portfolio.modified_by = auth->username;
     request.portfolio.performed_by.clear();
+    request.portfolio.party_id = auth->party_id;
 
     save_portfolio_response response;
     try {

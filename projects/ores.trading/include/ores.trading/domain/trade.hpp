@@ -54,6 +54,13 @@ struct trade final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Party that owns this trade.
+     *
+     * Denormalised from book_id by the DB trigger. Enforced by RLS.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Optional external trade identifier.
      *
      * e.g., UTI prefix or legacy system ID.

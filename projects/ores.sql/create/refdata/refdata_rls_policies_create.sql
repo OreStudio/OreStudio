@@ -377,6 +377,18 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- x = ANY(NULL) evaluates to NULL (falsy) when no party context is set.
+create policy ores_refdata_portfolios_party_isolation_policy
+on ores_refdata_portfolios_tbl
+as restrictive
+for all using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Books
 -- -----------------------------------------------------------------------------
@@ -388,6 +400,17 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+create policy ores_refdata_books_party_isolation_policy
+on ores_refdata_books_tbl
+as restrictive
+for all using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------

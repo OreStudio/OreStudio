@@ -33,6 +33,7 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "name" text not null,
     "description" text not null default '',
     "parent_portfolio_id" uuid null,
@@ -57,9 +58,9 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
--- Unique name for active records
+-- Unique name for active records (scoped to party)
 create unique index if not exists ores_refdata_portfolios_name_uniq_idx
-on "ores_refdata_portfolios_tbl" (tenant_id, name)
+on "ores_refdata_portfolios_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -82,6 +83,17 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate party_id (mandatory soft FK to parties)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.',
+            NEW.party_id
+            using errcode = '23503';
+    end if;
 
     -- Validate parent_portfolio_id (nullable self-referencing FK)
     if NEW.parent_portfolio_id is not null then

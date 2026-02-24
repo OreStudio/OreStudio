@@ -48,6 +48,12 @@ namespace {
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository][party_country]");
 
+// Total number of test cases that write party_country records.
+// Each test uses a different slice of the fictional countries list
+// to avoid interfering with records written by other tests in the
+// same shared tenant database.
+constexpr std::size_t total_slots = 10;
+
 boost::uuids::uuid find_system_party_id(
     party_repository& repo, const std::string& tid) {
     auto parties = repo.read_latest();
@@ -85,9 +91,9 @@ TEST_CASE("write_single_party_country", tags) {
     const auto party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
     auto gctx = ores::testing::make_generation_context(h);
-    auto test_countries = generate_fictional_countries(1, gctx);
-    cty_repo.write(h.context(), test_countries);
-    const auto& alpha2_code = test_countries.front().alpha2_code;
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[0]});
+    const auto& alpha2_code = all[0].alpha2_code;
 
     auto pc = make_party_country(h, party_id, alpha2_code);
     BOOST_LOG_SEV(lg, debug) << "Party country: " << pc;
@@ -107,7 +113,8 @@ TEST_CASE("write_multiple_party_countries", tags) {
         party_repo, h.tenant_id().to_string());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto test_countries = generate_fictional_countries(2, gctx);
+    auto all = generate_fictional_countries(total_slots, gctx);
+    std::vector<ores::refdata::domain::country> test_countries = {all[1], all[2]};
     cty_repo.write(h.context(), test_countries);
 
     std::vector<party_country> pcs;
@@ -131,9 +138,9 @@ TEST_CASE("read_latest_party_countries_by_party", tags) {
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
     auto gctx = ores::testing::make_generation_context(h);
-    auto test_countries = generate_fictional_countries(1, gctx);
-    cty_repo.write(h.context(), test_countries);
-    const auto& alpha2_code = test_countries.front().alpha2_code;
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[3]});
+    const auto& alpha2_code = all[3].alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);
@@ -164,9 +171,9 @@ TEST_CASE("read_latest_party_countries_by_country", tags) {
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
     auto gctx = ores::testing::make_generation_context(h);
-    auto test_countries = generate_fictional_countries(1, gctx);
-    cty_repo.write(h.context(), test_countries);
-    const auto& alpha2_code = test_countries.front().alpha2_code;
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[4]});
+    const auto& alpha2_code = all[4].alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);
@@ -190,9 +197,9 @@ TEST_CASE("remove_party_country", tags) {
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
     auto gctx = ores::testing::make_generation_context(h);
-    auto test_countries = generate_fictional_countries(1, gctx);
-    cty_repo.write(h.context(), test_countries);
-    const auto& alpha2_code = test_countries.front().alpha2_code;
+    auto all = generate_fictional_countries(total_slots, gctx);
+    cty_repo.write(h.context(), {all[5]});
+    const auto& alpha2_code = all[5].alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);

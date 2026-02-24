@@ -17,33 +17,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-24 Tue 00:00], for Tuesday, February 24, 2026.
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2026-02-24 Tue 16:39], for Tuesday, February 24, 2026.
+|      | <75>                                                |        |      |      |       |
+| Tags | Headline                                            | Time   |      |      |     % |
+|------+-----------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                        | *6:22* |      |      | 100.0 |
+|------+-----------------------------------------------------+--------+------+------+-------|
+|      | Stories                                             | 6:22   |      |      | 100.0 |
+|      | Active                                              |        | 6:22 |      | 100.0 |
+| code | Enhance currency taxonomy                           |        |      | 2:06 |  33.0 |
+| code | Books, portfolios and trades are not party specific |        |      | 2:59 |  46.9 |
+| code | Minor improvements to connection browser            |        |      | 1:17 |  20.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-24 Tue 00:01]
+#+CAPTION: Clock summary at [2026-02-24 Tue 16:39]
 |       | <75>                                                  |         |       |       |       |
 | Tags  | Headline                                              | Time    |       |       |     % |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                          | *26:02* |       |       | 100.0 |
+|       | *Total time*                                          | *32:24* |       |       | 100.0 |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                               | 26:02   |       |       | 100.0 |
-|       | Active                                                |         | 26:02 |       | 100.0 |
-| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.7 |
-| infra | Generate release notes for previous sprint            |         |       |  1:16 |   4.9 |
-| code  | Merge FSM into DQ                                     |         |       |  0:34 |   2.2 |
-| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   9.3 |
-| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |  12.6 |
-| code  | Add plotting of session data                          |         |       |  1:19 |   5.1 |
-| code  | Add account-party management and login support        |         |       | 13:43 |  52.7 |
-| code  | Add rounding type entity                              |         |       |  1:40 |   6.4 |
-| code  | Polish business centre UI and data quality            |         |       |  0:58 |   3.7 |
-| code  | Add portfolio book tree widget                        |         |       |  0:23 |   1.5 |
+|       | Stories                                               | 32:24   |       |       | 100.0 |
+|       | Active                                                |         | 32:24 |       | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.3 |
+| infra | Generate release notes for previous sprint            |         |       |  1:16 |   3.9 |
+| code  | Merge FSM into DQ                                     |         |       |  0:34 |   1.7 |
+| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   7.5 |
+| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |  10.1 |
+| code  | Add plotting of session data                          |         |       |  1:19 |   4.1 |
+| code  | Add account-party management and login support        |         |       | 13:43 |  42.3 |
+| code  | Add rounding type entity                              |         |       |  1:40 |   5.1 |
+| code  | Polish business centre UI and data quality            |         |       |  0:58 |   3.0 |
+| code  | Enhance currency taxonomy                             |         |       |  2:06 |   6.5 |
+| code  | Books, portfolios and trades are not party specific   |         |       |  2:59 |   9.2 |
+| code  | Minor improvements to connection browser              |         |       |  1:17 |   4.0 |
+| code  | Add portfolio book tree widget                        |         |       |  0:23 |   1.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -490,7 +499,7 @@ Highlights:
   At' column width was fixed, and the country selection combo box in the detail
   dialog was made non-editable, while also displaying the derived city name.
 #+end_quote
-*** STARTED Enhance currency taxonomy                                  :code:
+*** COMPLETED Enhance currency taxonomy                                :code:
     :LOGBOOK:
     CLOCK: [2026-02-24 Tue 00:35]--[2026-02-24 Tue 02:08] =>  1:33
     CLOCK: [2026-02-24 Tue 00:01]--[2026-02-24 Tue 00:34] =>  0:33
@@ -523,6 +532,43 @@ Highlights:
   test files, wire-format comments, and application code that previously
   referenced the now-removed 'currency_type' field, ensuring full integration of
   the new taxonomy.
+
+*** COMPLETED Books, portfolios and trades are not party specific      :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 09:01]--[2026-02-24 Tue 12:00] =>  2:59
+    :END:
+
+At present I can see these entities from any party in a tenant.
+
+#+begin_quote
+This pull request introduces party isolation for key entities like books,
+portfolios, and trades, enhancing data security and access control. It also
+improves the user interface by adding party context and parent portfolio
+selection features, while centralizing flag icon handling for better code
+maintainability and consistency.
+
+Highlights:
+
+- Party Isolation: Enforced party isolation for books, portfolios, and trades
+  using strict RLS policies, ensuring data visibility is limited to the
+  appropriate party context.
+- Session Management: Enhanced session data to include party context, enabling
+  party-level RLS enforcement via update_session_party() and
+  make_request_context().
+- UI Updates: Improved UI by displaying party name in the portfolio detail
+  dialog, pre-populating party_id in create mode, and adding parent portfolio
+  selectors to both portfolio and book detail dialogs.
+- Flag Icon Handling: Centralized flag icon setup in FlagIconHelper, replacing
+  scattered per-dialog lambdas with a more maintainable and consistent approach.
+#+end_quote
+
+*** STARTED Minor improvements to connection browser                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 15:20]--[2026-02-24 Tue 16:37] =>  1:17
+    :END:
+
+Quality of life improvements to connection browser so that we don't have to
+spend so much time entering data manually.
 
 *** STARTED Analyse caching at dialog level                            :code:
 
@@ -749,13 +795,6 @@ PortfolioBookTreeMdiWindow
 │       └── PaginationWidget
 └── Status QLabel
 #+end_example
-
-*** STARTED Books, portfolios and trades are not party specific        :code:
-    :LOGBOOK:
-    CLOCK: [2026-02-24 Tue 09:01]--[2026-02-24 Tue 12:00] =>  2:59
-    :END:
-
-At present I can see these entities from any party in a tenant.
 
 *** Add concept of "named environments" to connection manager          :code:
 

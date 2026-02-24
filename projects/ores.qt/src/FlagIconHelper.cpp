@@ -46,16 +46,10 @@ void setup_flag_combo(
 
     apply_flag_icons(combo, cache, source);
 
+    // Re-apply when the full image set arrives from the server.
     QObject::connect(cache, &ImageCache::allLoaded, context, [combo, cache, source]() {
         apply_flag_icons(combo, cache, source);
     });
-
-    if (combo->isEditable()) {
-        QObject::connect(combo, &QComboBox::currentTextChanged,
-                         context, [combo, cache, source]() {
-            apply_flag_icons(combo, cache, source);
-        });
-    }
 }
 
 }

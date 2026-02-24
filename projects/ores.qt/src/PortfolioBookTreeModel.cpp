@@ -36,16 +36,12 @@ void PortfolioBookTreeModel::load(
     beginResetModel();
     roots_.clear();
 
-    // Filter out virtual portfolios
-    std::vector<refdata::domain::portfolio> real_portfolios;
-    real_portfolios.reserve(portfolios.size());
-    for (auto& p : portfolios) {
-        if (p.is_virtual == 0)
-            real_portfolios.push_back(std::move(p));
-    }
-
-    // Build tree starting from root portfolios (no parent)
-    build_subtree(nullptr, real_portfolios, books, std::nullopt);
+    // Build tree starting from root portfolios (no parent).
+    // Virtual portfolios are included as structural parent nodes; they are
+    // distinguished visually by the Briefcase (outline) icon vs BriefcaseFilled
+    // for real portfolios. Selecting a virtual portfolio in the tree triggers
+    // the recursive-CTE trade filter which traverses the full subtree.
+    build_subtree(nullptr, portfolios, books, std::nullopt);
 
     endResetModel();
     BOOST_LOG_SEV(lg(), debug) << "Tree loaded: " << roots_.size()
@@ -177,8 +173,10 @@ QVariant PortfolioBookTreeModel::data(
 
     if (role == Qt::DecorationRole) {
         if (node->kind == PortfolioTreeNode::Kind::Portfolio) {
-            return IconUtils::createRecoloredIcon(
-                Icon::BriefcaseFilled, IconUtils::DefaultIconColor);
+            // Virtual portfolios use outline icon; real portfolios use filled icon
+            const auto icon = node->portfolio.is_virtual == 1
+                ? Icon::Briefcase : Icon::BriefcaseFilled;
+            return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
         }
         // Book
         if (node->book.is_trading_book == 1) {

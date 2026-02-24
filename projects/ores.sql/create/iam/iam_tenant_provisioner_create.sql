@@ -34,6 +34,8 @@
 --   - party_categories, party_types, party_statuses: Party classification
 --   - contact_types, party_id_schemes: Contact and identifier lookups
 --   - book_statuses, purpose_types: Book and purpose lookups
+--   - rounding_types: Rounding method definitions
+--   - currency_asset_classes, currency_market_tiers: Currency classification
 --
 -- Transactional reference data (currencies, countries, parties, etc.)
 -- is NOT copied during provisioning. Tenants populate that data via the
@@ -284,6 +286,54 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % purpose types', v_copied_count;
+
+    -- Rounding types (e.g. Up, Down, Closest, Floor, Ceiling)
+    insert into ores_refdata_rounding_types_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_rounding_types_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % rounding types', v_copied_count;
+
+    -- Currency asset classes (e.g. fiat, commodity, synthetic, supranational)
+    insert into ores_refdata_currency_asset_classes_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_currency_asset_classes_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % currency asset classes', v_copied_count;
+
+    -- Currency market tiers (e.g. g10, emerging, exotic, frontier, historical)
+    insert into ores_refdata_currency_market_tiers_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_new_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_currency_market_tiers_tbl
+    where tenant_id = v_system_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % currency market tiers', v_copied_count;
 
     -- =========================================================================
     -- Create the system party for the new tenant

@@ -23,6 +23,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QToolButton>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
@@ -31,6 +32,7 @@
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.refdata/domain/counterparty.hpp"
+#include "ores.trading/messaging/trade_protocol.hpp"
 
 namespace ores::qt {
 
@@ -132,9 +134,11 @@ void PortfolioBookTreeMdiWindow::setupTradePanel() {
     right_layout->setContentsMargins(0, 0, 0, 0);
     right_layout->setSpacing(2);
 
-    breadcrumbLabel_ = new QLabel(tr("Trades"), right_panel);
-    breadcrumbLabel_->setStyleSheet("font-weight: bold; padding: 2px;");
-    right_layout->addWidget(breadcrumbLabel_);
+    breadcrumbBar_ = new QWidget(right_panel);
+    auto* bl = new QHBoxLayout(breadcrumbBar_);
+    bl->setContentsMargins(0, 0, 0, 0);
+    bl->setSpacing(2);
+    right_layout->addWidget(breadcrumbBar_);
 
     tradeModel_ = new PortfolioBookTradeModel(clientManager_, this);
     tradeProxyModel_ = new QSortFilterProxyModel(this);
@@ -300,7 +304,7 @@ void PortfolioBookTreeMdiWindow::reload() {
                                 .error_message = "Model destroyed"};
 
                     refdata::messaging::get_counterparties_request req;
-                    req.limit = 5000;
+                    req.limit = 100'000;
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));
                     if (!result)
@@ -370,11 +374,85 @@ void PortfolioBookTreeMdiWindow::onCounterpartiesLoaded() {
         std::unordered_map<std::string, CounterpartyInfo>(result.cpty_map));
 }
 
+void PortfolioBookTreeMdiWindow::collectBookUuids(
+    const QModelIndex& parent, QList<boost::uuids::uuid>& uuids) {
+    for (int r = 0; r < treeModel_->rowCount(parent); ++r) {
+        auto idx = treeModel_->index(r, 0, parent);
+        const auto* node = treeModel_->node_from_index(idx);
+        if (!node)
+            continue;
+        if (node->kind == PortfolioTreeNode::Kind::Book)
+            uuids.append(node->book.id);
+        else
+            collectBookUuids(idx, uuids);
+    }
+}
+
 void PortfolioBookTreeMdiWindow::rebuildTree() {
     BOOST_LOG_SEV(lg(), debug) << "Rebuilding portfolio/book tree.";
-    treeModel_->load(portfolios_, books_);
+
+    // Disconnect and discard any pending count watchers from a prior reload
+    for (auto* w : countWatchers_) {
+        w->disconnect();
+        w->deleteLater();
+    }
+    countWatchers_.clear();
+
+    const QString party_name = clientManager_
+        ? clientManager_->currentPartyName() : tr("Party");
+    treeModel_->load(party_name, portfolios_, books_);
     treeView_->expandAll();
-    breadcrumbLabel_->setText(tr("Trades"));
+    updateBreadcrumb(nullptr);
+
+    // Fetch trade counts for each book in the background
+    QList<boost::uuids::uuid> book_ids;
+    collectBookUuids({}, book_ids);
+
+    QPointer<PortfolioBookTreeMdiWindow> self = this;
+    for (const auto& book_id : book_ids) {
+        auto* watcher = new QFutureWatcher<CountResult>(this);
+        countWatchers_.append(watcher);
+
+        connect(watcher, &QFutureWatcher<CountResult>::finished, this,
+            [this, watcher]() {
+                countWatchers_.removeOne(watcher);
+                const auto result = watcher->result();
+                if (result.success)
+                    treeModel_->set_trade_count(result.book_id, result.count);
+                watcher->deleteLater();
+            });
+
+        const auto bid = book_id;
+        watcher->setFuture(QtConcurrent::run([self, bid]() -> CountResult {
+            return exception_helper::wrap_async_fetch<CountResult>(
+                [&]() -> CountResult {
+                    if (!self || !self->clientManager_)
+                        return {.book_id = bid, .count = 0,
+                                .success = false,
+                                .error_message = "Destroyed",
+                                .error_details = {}};
+
+                    trading::messaging::get_trades_request req;
+                    req.book_id = bid;
+                    req.limit = 0;
+                    req.offset = 0;
+
+                    auto result = self->clientManager_->
+                        process_authenticated_request(std::move(req));
+                    if (!result)
+                        return {.book_id = bid, .count = 0,
+                                .success = false,
+                                .error_message = "Failed to get count",
+                                .error_details = {}};
+
+                    return {.book_id = bid,
+                            .count = result->total_available_count,
+                            .success = true,
+                            .error_message = {},
+                            .error_details = {}};
+                }, "book trade count");
+        }));
+    }
 }
 
 void PortfolioBookTreeMdiWindow::onTreeSelectionChanged(
@@ -382,7 +460,7 @@ void PortfolioBookTreeMdiWindow::onTreeSelectionChanged(
 
     if (selected.isEmpty()) {
         tradeModel_->set_filter(std::nullopt, std::nullopt);
-        breadcrumbLabel_->setText(tr("Trades"));
+        updateBreadcrumb(nullptr);
         tradeModel_->refresh();
         return;
     }
@@ -398,24 +476,84 @@ void PortfolioBookTreeMdiWindow::onTreeSelectionChanged(
 
 void PortfolioBookTreeMdiWindow::updateBreadcrumb(
     const PortfolioTreeNode* node) {
+    // Clear all existing breadcrumb widgets
+    QLayout* layout = breadcrumbBar_->layout();
+    while (QLayoutItem* item = layout->takeAt(0)) {
+        if (QWidget* w = item->widget())
+            w->deleteLater();
+        delete item;
+    }
+
+    auto* bl = static_cast<QHBoxLayout*>(layout);
+
+    auto add_button = [&](const QString& label, bool bold,
+                          auto on_click) {
+        auto* btn = new QToolButton(breadcrumbBar_);
+        btn->setText(label);
+        btn->setAutoRaise(true);
+        btn->setCursor(Qt::PointingHandCursor);
+        if (bold)
+            btn->setStyleSheet("font-weight: bold; border: none; background: none;");
+        else
+            btn->setStyleSheet("border: none; background: none;");
+        connect(btn, &QToolButton::clicked, on_click);
+        bl->addWidget(btn);
+    };
+
+    auto add_separator = [&]() {
+        auto* sep = new QLabel(QStringLiteral("›"), breadcrumbBar_);
+        bl->addWidget(sep);
+    };
+
     if (!node) {
-        breadcrumbLabel_->setText(tr("Trades"));
+        // No selection: just a bold "Trades" label
+        add_button(tr("Trades"), true,
+            [this]() { treeView_->clearSelection(); });
+        bl->addStretch();
         return;
     }
 
-    // Build path from root to this node
-    QStringList path;
+    // Collect nodes from selected node up to root, then reverse
+    QList<const PortfolioTreeNode*> path;
     const auto* current = node;
     while (current) {
-        QString name;
-        if (current->kind == PortfolioTreeNode::Kind::Portfolio)
-            name = QString::fromStdString(current->portfolio.name);
-        else
-            name = QString::fromStdString(current->book.name);
-        path.prepend(name);
+        path.prepend(current);
         current = current->parent;
     }
-    breadcrumbLabel_->setText(tr("Trades") + " › " + path.join(" › "));
+
+    // Build QModelIndex for each path node top-down
+    QList<QModelIndex> indices;
+    QModelIndex parent_idx;
+    for (const auto* n : path) {
+        QModelIndex idx = treeModel_->index(n->row_in_parent, 0, parent_idx);
+        indices.append(idx);
+        parent_idx = idx;
+    }
+
+    // "Trades" root — always clears selection
+    add_button(tr("Trades"), false,
+        [this]() { treeView_->clearSelection(); });
+
+    for (int i = 0; i < path.size(); ++i) {
+        add_separator();
+
+        const auto* n = path[i];
+        const bool is_last = (i == path.size() - 1);
+
+        QString name;
+        if (n->kind == PortfolioTreeNode::Kind::Party)
+            name = n->party_name;
+        else if (n->kind == PortfolioTreeNode::Kind::Portfolio)
+            name = QString::fromStdString(n->portfolio.name);
+        else
+            name = QString::fromStdString(n->book.name);
+
+        const QModelIndex idx = indices[i];
+        add_button(name, is_last,
+            [this, idx]() { treeView_->setCurrentIndex(idx); });
+    }
+
+    bl->addStretch();
 }
 
 void PortfolioBookTreeMdiWindow::onNotificationReceived(

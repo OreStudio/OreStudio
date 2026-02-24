@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PortfolioBookTreeModel.hpp"
 
+#include <functional>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 
@@ -30,22 +31,26 @@ PortfolioBookTreeModel::PortfolioBookTreeModel(QObject* parent)
     : QAbstractItemModel(parent) {}
 
 void PortfolioBookTreeModel::load(
+    const QString& party_name,
     std::vector<refdata::domain::portfolio> portfolios,
     std::vector<refdata::domain::book> books) {
 
     beginResetModel();
-    roots_.clear();
+    trade_counts_.clear();
 
-    // Build tree starting from root portfolios (no parent).
-    // Virtual portfolios are included as structural parent nodes; they are
-    // distinguished visually by the Briefcase (outline) icon vs BriefcaseFilled
-    // for real portfolios. Selecting a virtual portfolio in the tree triggers
-    // the recursive-CTE trade filter which traverses the full subtree.
-    build_subtree(nullptr, portfolios, books, std::nullopt);
+    root_ = std::make_unique<PortfolioTreeNode>();
+    root_->kind = PortfolioTreeNode::Kind::Party;
+    root_->party_name = party_name;
+    root_->parent = nullptr;
+    root_->row_in_parent = 0;
+
+    build_subtree(root_.get(), portfolios, books, std::nullopt);
 
     endResetModel();
-    BOOST_LOG_SEV(lg(), debug) << "Tree loaded: " << roots_.size()
-                               << " root nodes.";
+    BOOST_LOG_SEV(lg(), debug) << "Tree loaded with party root: "
+                               << party_name.toStdString()
+                               << ", " << root_->children.size()
+                               << " top-level portfolio nodes.";
 }
 
 void PortfolioBookTreeModel::build_subtree(
@@ -54,7 +59,10 @@ void PortfolioBookTreeModel::build_subtree(
     const std::vector<refdata::domain::book>& books,
     const std::optional<boost::uuids::uuid>& parent_id) {
 
-    auto& container = parent_node ? parent_node->children : roots_;
+    if (!parent_node)
+        return;
+
+    auto& container = parent_node->children;
     int row = 0;
 
     for (const auto& p : portfolios) {
@@ -101,10 +109,42 @@ PortfolioBookTreeModel::selected_filter(const QModelIndex& index) const {
     if (!node)
         return {};
 
+    if (node->kind == PortfolioTreeNode::Kind::Party)
+        return {.book_id = std::nullopt, .portfolio_id = std::nullopt};
+
     if (node->kind == PortfolioTreeNode::Kind::Book)
         return {.book_id = node->book.id, .portfolio_id = std::nullopt};
 
     return {.book_id = std::nullopt, .portfolio_id = node->portfolio.id};
+}
+
+void PortfolioBookTreeModel::set_trade_count(
+    const boost::uuids::uuid& book_id, std::uint32_t count) {
+    trade_counts_[boost::uuids::to_string(book_id)] = count;
+    const auto idx = find_book_index(book_id);
+    if (idx.isValid())
+        emit dataChanged(idx, idx, {Qt::DisplayRole});
+}
+
+QModelIndex PortfolioBookTreeModel::find_book_index(
+    const boost::uuids::uuid& id) const {
+    std::function<QModelIndex(const QModelIndex&)> search =
+        [&](const QModelIndex& parent) -> QModelIndex {
+        for (int r = 0; r < rowCount(parent); ++r) {
+            auto idx = index(r, 0, parent);
+            const auto* node = node_from_index(idx);
+            if (node && node->kind == PortfolioTreeNode::Kind::Book
+                    && node->book.id == id)
+                return idx;
+            if (node && !node->children.empty()) {
+                auto found = search(idx);
+                if (found.isValid())
+                    return found;
+            }
+        }
+        return {};
+    };
+    return search({});
 }
 
 PortfolioTreeNode*
@@ -120,9 +160,10 @@ QModelIndex PortfolioBookTreeModel::index(
         return {};
 
     if (!parent.isValid()) {
-        if (row >= static_cast<int>(roots_.size()))
+        // Top-level: only the party root node
+        if (!root_ || row != 0)
             return {};
-        return createIndex(row, col, roots_[row].get());
+        return createIndex(0, 0, root_.get());
     }
 
     const auto* parent_node = node_from_index(parent);
@@ -137,17 +178,12 @@ QModelIndex PortfolioBookTreeModel::parent(const QModelIndex& index) const {
     if (!node || !node->parent)
         return {};
 
-    const auto* grandparent = node->parent->parent;
-    if (!grandparent) {
-        // parent is a root node
-        return createIndex(node->parent->row_in_parent, 0, node->parent);
-    }
     return createIndex(node->parent->row_in_parent, 0, node->parent);
 }
 
 int PortfolioBookTreeModel::rowCount(const QModelIndex& parent) const {
     if (!parent.isValid())
-        return static_cast<int>(roots_.size());
+        return root_ ? 1 : 0;
 
     const auto* node = node_from_index(parent);
     if (!node)
@@ -166,12 +202,23 @@ QVariant PortfolioBookTreeModel::data(
         return {};
 
     if (role == Qt::DisplayRole) {
+        if (node->kind == PortfolioTreeNode::Kind::Party)
+            return node->party_name;
         if (node->kind == PortfolioTreeNode::Kind::Portfolio)
             return QString::fromStdString(node->portfolio.name);
-        return QString::fromStdString(node->book.name);
+        // Book: append trade count if known and non-zero
+        auto name = QString::fromStdString(node->book.name);
+        const auto it = trade_counts_.find(
+            boost::uuids::to_string(node->book.id));
+        if (it != trade_counts_.end() && it->second > 0)
+            name += QStringLiteral(" (%1)").arg(it->second);
+        return name;
     }
 
     if (role == Qt::DecorationRole) {
+        if (node->kind == PortfolioTreeNode::Kind::Party)
+            return IconUtils::createRecoloredIcon(
+                Icon::Organization, IconUtils::DefaultIconColor);
         if (node->kind == PortfolioTreeNode::Kind::Portfolio) {
             // Virtual portfolios use outline icon; real portfolios use filled icon
             const auto icon = node->portfolio.is_virtual == 1
@@ -192,6 +239,8 @@ QVariant PortfolioBookTreeModel::data(
     }
 
     if (role == Qt::UserRole + 1) {
+        if (node->kind == PortfolioTreeNode::Kind::Party)
+            return node->party_name;
         if (node->kind == PortfolioTreeNode::Kind::Portfolio)
             return QString::fromStdString(boost::uuids::to_string(node->portfolio.id));
         return QString::fromStdString(boost::uuids::to_string(node->book.id));

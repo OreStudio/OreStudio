@@ -22,15 +22,18 @@
 
 #include <vector>
 #include <QLabel>
+#include <QList>
 #include <QAction>
 #include <QToolBar>
 #include <QSplitter>
 #include <QTreeView>
+#include <QWidget>
 #include <QTableView>
 #include <QDateTime>
 #include <QFutureWatcher>
 #include <QItemSelection>
 #include <QSortFilterProxyModel>
+#include <QToolButton>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
@@ -110,6 +113,8 @@ private:
     void setupEventSubscriptions();
     void rebuildTree();
     void updateBreadcrumb(const PortfolioTreeNode* node);
+    void collectBookUuids(const QModelIndex& parent,
+                          QList<boost::uuids::uuid>& uuids);
 
     // Fetch result types
     struct PortfolioFetchResult {
@@ -133,6 +138,14 @@ private:
         QString error_details;
     };
 
+    struct CountResult {
+        boost::uuids::uuid book_id;
+        std::uint32_t count{0};
+        bool success{false};
+        QString error_message;
+        QString error_details;
+    };
+
     ClientManager* clientManager_;
     QString username_;
 
@@ -146,7 +159,7 @@ private:
     PortfolioBookTreeModel* treeModel_{nullptr};
 
     // Right: trade panel
-    QLabel* breadcrumbLabel_{nullptr};
+    QWidget* breadcrumbBar_{nullptr};
     QTableView* tradeTableView_{nullptr};
     PortfolioBookTradeModel* tradeModel_{nullptr};
     QSortFilterProxyModel* tradeProxyModel_{nullptr};
@@ -156,6 +169,7 @@ private:
     QFutureWatcher<PortfolioFetchResult>* portfolioWatcher_{nullptr};
     QFutureWatcher<BookFetchResult>* bookWatcher_{nullptr};
     QFutureWatcher<CounterpartyFetchResult>* counterpartyWatcher_{nullptr};
+    QList<QFutureWatcher<CountResult>*> countWatchers_;
 
     // Data
     std::vector<refdata::domain::portfolio> portfolios_;

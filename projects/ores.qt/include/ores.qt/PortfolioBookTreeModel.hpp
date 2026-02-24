@@ -23,6 +23,8 @@
 #include <memory>
 #include <vector>
 #include <optional>
+#include <unordered_map>
+#include <QString>
 #include <QAbstractItemModel>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -38,11 +40,12 @@ namespace ores::qt {
  * QModelIndex::internalPointer().
  */
 struct PortfolioTreeNode {
-    enum class Kind { Portfolio, Book };
+    enum class Kind { Party, Portfolio, Book };
 
     Kind kind;
-    refdata::domain::portfolio portfolio;  // valid when kind == Portfolio
-    refdata::domain::book book;            // valid when kind == Book
+    QString party_name;                        // valid when kind == Party
+    refdata::domain::portfolio portfolio;      // valid when kind == Portfolio
+    refdata::domain::book book;                // valid when kind == Book
     PortfolioTreeNode* parent = nullptr;
     std::vector<std::unique_ptr<PortfolioTreeNode>> children;
     int row_in_parent = 0;
@@ -59,9 +62,9 @@ struct TreeNodeFilter {
 /**
  * @brief Tree model for the portfolio/book hierarchy.
  *
- * Displays real portfolios as inner nodes and books as leaves. Virtual
- * portfolios (is_virtual == 1) are filtered out. Books are placed under
- * their parent_portfolio_id.
+ * The top-level item is always the owning party node. Real portfolios are
+ * inner nodes and books are leaves. Virtual portfolios (is_virtual == 1) are
+ * included as structural parents distinguished by the outline Briefcase icon.
  */
 class PortfolioBookTreeModel final : public QAbstractItemModel {
     Q_OBJECT
@@ -83,10 +86,12 @@ public:
     /**
      * @brief Rebuild the tree from raw portfolio and book data.
      *
-     * Filters out virtual portfolios (is_virtual == 1).
-     * Books are placed as leaves under their parent_portfolio_id.
+     * Creates a single party root node named party_name, then adds portfolios
+     * and books beneath it. Books are placed as leaves under their
+     * parent_portfolio_id.
      */
-    void load(std::vector<refdata::domain::portfolio> portfolios,
+    void load(const QString& party_name,
+              std::vector<refdata::domain::portfolio> portfolios,
               std::vector<refdata::domain::book> books);
 
     /**
@@ -94,9 +99,18 @@ public:
      *
      * For a book node: sets book_id.
      * For a portfolio node: sets portfolio_id.
+     * For a party node: returns nullopt pair (show all trades).
      * Returns nullopt pair if index is invalid.
      */
     TreeNodeFilter selected_filter(const QModelIndex& index) const;
+
+    /**
+     * @brief Update the trade count for a book and refresh its display.
+     *
+     * Called after background count fetches complete. Stores the count and
+     * emits dataChanged so the book label updates to show "(N)".
+     */
+    void set_trade_count(const boost::uuids::uuid& book_id, std::uint32_t count);
 
     // QAbstractItemModel interface
     QModelIndex index(int row, int col,
@@ -117,7 +131,10 @@ private:
         const std::vector<refdata::domain::book>& books,
         const std::optional<boost::uuids::uuid>& parent_id);
 
-    std::vector<std::unique_ptr<PortfolioTreeNode>> roots_;
+    QModelIndex find_book_index(const boost::uuids::uuid& id) const;
+
+    std::unique_ptr<PortfolioTreeNode> root_;
+    std::unordered_map<std::string, std::uint32_t> trade_counts_;
 };
 
 }

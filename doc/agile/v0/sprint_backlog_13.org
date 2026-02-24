@@ -17,38 +17,38 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 23:48], for Friday, February 20, 2026.
-|       | <75>                                       |        |      |      |       |
-| Tags  | Headline                                   | Time   |      |      |     % |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *4:24* |      |      | 100.0 |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 4:24   |      |      | 100.0 |
-|       | Active                                     |        | 4:24 |      | 100.0 |
-| agile | Sprint and product backlog refinement      |        |      | 0:08 |   3.0 |
-| infra | Generate release notes for previous sprint |        |      | 1:16 |  28.8 |
-| code  | Merge FSM into DQ                          |        |      | 0:34 |  12.9 |
-| code  | Make all details dialogs tabbed            |        |      | 2:26 |  55.3 |
+#+CAPTION: Clock summary at [2026-02-24 Tue 00:00], for Tuesday, February 24, 2026.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-20 Fri 23:48]
-|       | <75>                                       |        |      |      |       |
-| Tags  | Headline                                   | Time   |      |      |     % |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *4:24* |      |      | 100.0 |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 4:24   |      |      | 100.0 |
-|       | Active                                     |        | 4:24 |      | 100.0 |
-| agile | Sprint and product backlog refinement      |        |      | 0:08 |   3.0 |
-| infra | Generate release notes for previous sprint |        |      | 1:16 |  28.8 |
-| code  | Merge FSM into DQ                          |        |      | 0:34 |  12.9 |
-| code  | Make all details dialogs tabbed            |        |      | 2:26 |  55.3 |
+#+CAPTION: Clock summary at [2026-02-24 Tue 00:01]
+|       | <75>                                                  |         |       |       |       |
+| Tags  | Headline                                              | Time    |       |       |     % |
+|-------+-------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                          | *26:02* |       |       | 100.0 |
+|-------+-------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                               | 26:02   |       |       | 100.0 |
+|       | Active                                                |         | 26:02 |       | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.7 |
+| infra | Generate release notes for previous sprint            |         |       |  1:16 |   4.9 |
+| code  | Merge FSM into DQ                                     |         |       |  0:34 |   2.2 |
+| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   9.3 |
+| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |  12.6 |
+| code  | Add plotting of session data                          |         |       |  1:19 |   5.1 |
+| code  | Add account-party management and login support        |         |       | 13:43 |  52.7 |
+| code  | Add rounding type entity                              |         |       |  1:40 |   6.4 |
+| code  | Polish business centre UI and data quality            |         |       |  0:58 |   3.7 |
+| code  | Add portfolio book tree widget                        |         |       |  0:23 |   1.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-02-23 Mon 23:42]--[2026-02-24 Tue 00:00] =>  0:18
     CLOCK: [2026-02-20 Fri 15:10]--[2026-02-20 Fri 15:18] =>  0:08
     :END:
 
@@ -243,7 +243,7 @@ Highlights:
   been updated from ores.fsm.* to ores.dq.fsm.*.
 #+end_quote
 
-*** STARTED Make all details dialogs tabbed                            :code:
+*** COMPLETED Make all details dialogs tabbed                          :code:
     :LOGBOOK:
     CLOCK: [2026-02-20 Fri 22:48]--[2026-02-20 Fri 23:48] =>  1:00
     CLOCK: [2026-02-20 Fri 22:10]--[2026-02-20 Fri 22:24] =>  0:14
@@ -264,17 +264,232 @@ to MDI subwindows, aligning with a more integrated application feel.
 
 Highlights:
 
-Country Detail Dialog: Moved the flag display from a separate tab into the General tab as a group box, resulting in a dialog with two tabs: General and Provenance.
-Currency Detail Dialog: Relocated the icon button from a floating position between the toolbar and tabs into the General tab within an Icon group box.
-Main Window Menus: Added a top-level '&Trading' menu between Data and System, moving the 'Trades' action into it and adding 'Trades' to the toolbar.
-Data Governance Submenu: Introduced a '&Dimensions' submenu within 'Data Governance', containing 'Origin', 'Nature', and 'Treatment Dimension' actions.
-Change Commentary Field Removal: Removed the editable 'Change Commentary' field from the General tab in eight specific detail dialogs (Methodology, TreatmentDimension, DataDomain, CodingSchemeAuthorityType, CodingScheme, SubjectArea, Catalog, Dataset), while retaining a read-only version in the Provenance tab.
-Methodology Detail Dialog: Enlarged the 'Implementation' text area by increasing its minimum height from 100 to 300.
-My Sessions Window: Converted 'My Sessions' from a floating QDialog to an MDI subwindow, allowing re-triggering to bring it to the front.
-My Account Window: Converted 'My Account' from a modal QDialog to a QWidget MDI subwindow, featuring a toolbar with a 'Save Email' action and three tabs: General (account info), Security (change password), and Sessions (session count + 'View History' button). The 'View History' button now emits a signal to open 'My Sessions' in the main window.
-Entity Detail Dialog: Implemented a 32x24 country flag label next to the 'Business Centre' combo box, which updates dynamically upon selection changes via the image cache.
+- Country Detail Dialog: Moved the flag display from a separate tab into the
+  General tab as a group box, resulting in a dialog with two tabs: General and
+  Provenance.
+- Currency Detail Dialog: Relocated the icon button from a floating position
+  between the toolbar and tabs into the General tab within an Icon group box.
+- Main Window Menus: Added a top-level '&Trading' menu between Data and System,
+  moving the 'Trades' action into it and adding 'Trades' to the toolbar.
+- Data Governance Submenu: Introduced a '&Dimensions' submenu within 'Data
+  Governance', containing 'Origin', 'Nature', and 'Treatment Dimension' actions.
+- Change Commentary Field Removal: Removed the editable 'Change Commentary'
+  field from the General tab in eight specific detail dialogs (Methodology,
+  TreatmentDimension, DataDomain, CodingSchemeAuthorityType, CodingScheme,
+  SubjectArea, Catalog, Dataset), while retaining a read-only version in the
+  Provenance tab.
+- Methodology Detail Dialog: Enlarged the 'Implementation' text area by
+  increasing its minimum height from 100 to 300.
+- My Sessions Window: Converted 'My Sessions' from a floating QDialog to an MDI
+  subwindow, allowing re-triggering to bring it to the front.
+- My Account Window: Converted 'My Account' from a modal QDialog to a QWidget
+  MDI subwindow, featuring a toolbar with a 'Save Email' action and three tabs:
+  General (account info), Security (change password), and Sessions (session
+  count + 'View History' button). The 'View History' button now emits a signal
+  to open 'My Sessions' in the main window.
+- Entity Detail Dialog: Implemented a 32x24 country flag label next to the
+  'Business Centre' combo box, which updates dynamically upon selection changes
+  via the image cache.
 #+end_quote
 
+*** COMPLETED Provenance: Fix performed by and modified by stamping    :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-21 Sat 21:01]--[2026-02-21 Sat 22:15] =>  1:14
+    CLOCK: [2026-02-21 Sat 18:30]--[2026-02-21 Sat 19:00] =>  0:30
+    CLOCK: [2026-02-21 Sat 11:28]--[2026-02-21 Sat 13:01] =>  1:33
+    :END:
+
+#+begin_quote
+This pull request enhances the system's provenance tracking and account
+validation mechanisms. It ensures that actions performed within the database,
+particularly during tenant provisioning and asset assignments, accurately record
+the initiating user rather than generic system accounts. By refining account
+validation logic and optimizing the database initialization sequence, the
+changes improve data integrity and auditability.
+
+Highlights:
+
+- Account Validation: Removed an escape hatch from
+  ores_iam_validate_account_username_fn that previously allowed any DB session
+  user to bypass accounts-table validation by matching current_user.
+- Database Population Order: Reordered foundation_populate.sql to ensure IAM
+  service accounts are populated before Data Quality Framework and Reference
+  Data sections, allowing validate_account_username_fn to find service accounts
+  when triggers fire.
+- Provenance Tracking: Introduced ores_iam_current_actor_fn() to read the
+  app.current_actor GUC and used this resolved actor (falling back to
+  current_user) in all inserts within ores_iam_provision_tenant_fn to correctly
+  record modified_by/performed_by.
+- Assigned By Validation: Replaced silent current_user defaults for assigned_by
+  in ores_assets_image_tags_insert_fn and ores_iam_account_roles_insert_fn with
+  calls to ores_iam_validate_account_username_fn() for proper bootstrap-aware
+  validation.
+#+end_quote
+
+*** COMPLETED Add plotting of session data                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-22 Sun 02:01]--[2026-02-22 Sun 03:20] =>  1:19
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the client's ability to monitor and
+visualize network session data, while improving the server's data collection and
+persistence mechanisms. It introduces real-time RTT sampling, ensures accurate
+byte counter reporting, and provides a new API and UI components for displaying
+historical session performance metrics. The changes also include robust database
+schema and documentation for handling time-series data efficiently.
+
+Highlights:
+
+- Session Byte Counters Fixed: The bytes_sent and bytes_received counters are
+  now synchronized from the live connection before logout, resolving an issue
+  where 'My Sessions' displayed '0 B'.
+- RTT Sampling and Persistence: Client pings now carry the previous heartbeat
+  RTT (latency_ms). The server records session_sample data (bytes + latency) at
+  each heartbeat tick and persists these batches to the
+  ores_iam_session_samples_tbl TimescaleDB hypertable upon logout.
+- New Protocol for Session Samples: A new protocol pair,
+  get_session_samples_request (0x2072) and get_session_samples_response
+  (0x2073), has been introduced to allow clients to fetch ordered time-series
+  session samples, with server-side authorization checks.
+- Enhanced Connection Tooltip: The status-bar plug icon now provides a dynamic
+  tooltip displaying live server address, bytes sent/received, and RTT when
+  connected, or a 'Disconnected for N s' message during reconnection attempts.
+- Interactive Session Chart: Selecting a session in 'My Sessions' now fetches
+  and plots bytes_sent and bytes_received over time using a new
+  QChartView/QLineSeries panel, requiring the qt6-charts vcpkg dependency.
+- TimescaleDB Documentation: The SQL skill documentation has been updated with a
+  dedicated section on TimescaleDB time-series tables, covering hypertables,
+  chunk intervals, compression, retention, and a canonical example.
+#+end_quote
+
+*** COMPLETED Add account-party management and login support           :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-23 Mon 21:10]--[2026-02-23 Mon 23:41] =>  2:31
+    CLOCK: [2026-02-23 Mon 09:15]--[2026-02-23 Mon 12:17] =>  3:02
+    CLOCK: [2026-02-22 Sun 20:00]--[2026-02-23 Mon 00:50] =>  4:50
+    CLOCK: [2026-02-22 Sun 11:10]--[2026-02-22 Sun 13:40] =>  2:30
+    CLOCK: [2026-02-22 Sun 07:20]--[2026-02-22 Sun 08:10] =>  0:50
+    :END:
+
+#+begin_quote
+This pull request introduces comprehensive multi-party support across the
+system, enabling greater flexibility in how user accounts are associated with
+organizational entities. It refines the authentication process to incorporate
+party selection, provides administrative tools for managing these associations,
+and updates the underlying communication protocols and database schema to
+support the new functionality. The changes aim to enhance user management and
+data isolation capabilities.
+
+Highlights:
+
+- Multi-Party Login Flow: Implemented a multi-party login mechanism where user
+  accounts can be linked to multiple organizational parties. The server now
+  returns a list of available parties, allowing the client to present a picker
+  for selection, or auto-selecting if only one party is assigned. This includes
+  new wire protocol messages (select_party_request, select_party_response) and
+  extensions to the login_response to carry party information.
+- Account-Party Management UI and API: Added a new 'Parties' tab to the
+  AccountDetailDialog in the Qt client, featuring an AccountPartiesWidget. This
+  widget allows administrators to add or remove party assignments for an account
+  via new server-side API handlers (get_account_parties_by_account,
+  save_account_party, delete_account_party).
+- Protocol Version Bump: The messaging protocol major version was incremented
+  from 37 to 38 due to breaking changes in the login_response wire format,
+  accommodating the new party selection fields.
+- System Party Auto-Assignment: Modified the bootstrap process to automatically
+  assign the system party to the initial admin account, ensuring successful
+  login for newly provisioned tenants. A new PostgreSQL function,
+  ores_iam_account_parties_system_party_id_fn(), was introduced to look up the
+  system party ID.
+- Documentation Updates: New documentation (multi_party.org) was added detailing
+  the multi-party login flow, account-party rules, and wire protocol changes.
+  Existing documentation was updated to reference this new content.
+#+end_quote
+
+*** COMPLETED Add rounding type entity                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-23 Mon 16:20]--[2026-02-23 Mon 18:00] =>  1:40
+    :END:
+
+#+begin_quote
+This pull request introduces a new rounding_type entity, integrating it fully
+across the application's data, service, and user interface layers. The primary
+goal is to provide a robust and user-friendly mechanism for defining and
+managing various financial rounding methods, which can then be referenced by
+other entities like currencies. This enhancement improves data consistency and
+user experience by offering a structured way to handle rounding configurations,
+along with a more organized main menu for data management.
+
+Highlights:
+
+- New Entity: Rounding Type: Introduced a new rounding_type domain entity,
+  complete with its JSON model definition, repository, messaging protocol, and
+  service layer declarations for full CRUD (Create, Read, Update, Delete) and
+  history operations.
+- Full Qt Stack for Rounding Types: Implemented a comprehensive Qt user
+  interface for managing rounding types, including a ClientRoundingTypeModel for
+  data display, RoundingTypeMdiWindow for listing, RoundingTypeDetailDialog for
+  viewing/editing, and RoundingTypeHistoryDialog for version tracking.
+- Currency Detail Dialog Enhancement: Replaced the free-text roundingTypeEdit
+  field in CurrencyDetailDialog with a roundingTypeCombo QComboBox. This combo
+  box is populated asynchronously from the server, sorted by display order, and
+  provides tooltips from the description field.
+- Navigation Restructure: Restructured the main application's 'Data' menu. Core
+  entities like Currencies and Countries are now top-level, while auxiliary
+  types, including the new Rounding Types, are consolidated under a new
+  'Auxiliary Data' submenu for better organization.
+- Integration with Currency Workflow: Added 'Rounding Types' toolbar buttons to
+  both the CurrencyDetailDialog and CurrencyMdiWindow, providing quick access to
+  the rounding types management interface and wiring the CurrencyController to
+  relay requests to the new RoundingTypeController.
+- SQL Data Enrichment: Enriched the descriptions of existing rounding types in
+  the SQL population script with 2-decimal place numeric examples for 'Up',
+  'Down', 'Closest', 'Floor', and 'Ceiling' methods.
+#+end_quote
+
+*** COMPLETED Polish business centre UI and data quality               :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-22 Sun 01:02]--[2026-02-22 Sun 02:00] =>  0:58
+    :END:
+
+Several data quality and UI issues with business centres.
+
+- WRLD should have UN flag and source = Internal.
+- Hard-code NY* centres (NYFD, NYSE, USNY) during population to US country.
+- Add a city name field parsed from descriptions (regex for parenthesised text).
+- Do not display description column by default.
+- Country should be a combo box.
+- Fix missing country flags.
+- Do not display coding scheme column by default.
+- Move country column next to code.
+- Reduce recorded_at column width.
+
+#+begin_quote
+This pull request focuses on enhancing the data quality and user interface for
+business centres. It introduces a new 'city_name' field, derived from existing
+descriptions, and integrates it across the database, C++ domain models, and the
+Qt UI. Additionally, it includes specific data fixes for certain business centre
+codes and refines the display of business centre information in the UI.
+
+Highlights:
+
+- SQL Data Enhancements: Added a 'city_name' column to the business centres
+  reference data table and implemented logic to automatically derive city names
+  from existing descriptions during data population.
+- Data Quality Fixes: Hard-coded the country for specific business centre codes
+  (NYFD, NYSE) to 'US' and ensured the correct US flag is displayed in the FpML
+  artefact. The 'WRLD' system business centre was also updated with
+  'source=Internal' and assigned a UN flag.
+- C++ Model Updates: Incorporated the new 'city_name' field into the
+  'business_centre' domain struct, its entity representation, mapper, and the
+  binary messaging protocol, leading to a major protocol version bump to v38.0.
+- Qt UI Improvements: Reordered columns in the business centre list view to
+  prioritize 'Code', 'Country', and 'City', added a dedicated 'City' column, and
+  set 'Description' and 'Coding Scheme' to be hidden by default. The 'Recorded
+  At' column width was fixed, and the country selection combo box in the detail
+  dialog was made non-editable, while also displaying the derived city name.
+#+end_quote
 *** STARTED Analyse caching at dialog level                            :code:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more
@@ -501,50 +716,61 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
+*** Books, portfolios and trades are not party specific                :code:
+
+At present I can see these entities from any party in a tenant.
+
+*** Error with new tenant                                              :code:
+
+When trying to setup a new tenant, with an already existing tenant we get:
+
+#+begin_quote
+Publishing catalogue 'Crypto'...
+ERROR: Query execution failed: ERROR:  Atomic bundle publication failed at dataset assets.crypto_icons: duplicate key value violates unique constraint "ores_assets_images_tbl_pkey"
+CONTEXT:  PL/pgSQL function ores_dq_bundles_publish_fn(text,uuid,text,text,boolean,jsonb) line 239 at RAISE
+#+end_quote
+
+Logs:
+
+#+begin_src logview
+2026-02-23 23:55:42.970715 [DEBUG] [ores.dq.service.publication_service] publication_service initialized
+2026-02-23 23:55:42.970747 [INFO] [ores.dq.service.publication_service] Publishing bundle: crypto with mode: upsert, atomic: true, published_by: tenant_admin, params_json: (empty)
+2026-02-23 23:55:42.970813 [DEBUG] [ores.dq.service.publication_service] Publishing bundle crypto. SQL: SELECT * FROM ores_dq_bundles_publish_fn('crypto', 'c5d8e5f6-7e67-4c18-94ba-55e8829a9d57'::uuid, 'upsert', 'tenant_admin', true, '{}'::jsonb)
+2026-02-23 23:55:42.986027 [DEBUG] [ores.dq.service.publication_service] Set tenant context to: c5d8e5f6-7e67-4c18-94ba-55e8829a9d57
+2026-02-23 23:55:43.030557 [ERROR] [ores.dq.service.publication_service] Query failed: ERROR:  Atomic bundle publication failed at dataset assets.crypto_icons: duplicate key value violates unique constraint "ores_assets_images_tbl_pkey"
+CONTEXT:  PL/pgSQL function ores_dq_bundles_publish_fn(text,uuid,text,text,boolean,jsonb) line 239 at RAISE
+2026-02-23 23:55:43.070217 [ERROR] [ores.dq.service.publication_service] Bundle publication failed: Query execution failed: ERROR:  Atomic bundle publication failed at dataset assets.crypto_icons: duplicate key value violates unique constraint "ores_assets_images_tbl_pkey"
+#+end_src
+
+*** Add sub-menus for shell                                            :code:
+
+We did the plan for this work.
+
+Notes:
+
+- log full version including timestamp.
+- add info command which is the same as CLI.
+- move paging commands into a paging menu, e.g. =page next= instead of =next=?
+
+*** Add auxiliary types to their entities                              :code:
+
+The toolbars of each entity should have icons for the auxiliary types they use.
+Also we may need to make the menu options a bit more obvious (e.g. "Purpose
+Types"?).
+
+*** Improvements to detail  dialogs                                    :code:
+
+For most dialogs, pressing escape should be the same as closing it.
+
+We should also add a "cancel" button to dialogs, makes it a bit more "normal".
+
+New dialogs use toolbars instead of buttons at the bottom.
+
 *** Alert for unsaved modified entities                                :code:
 
 If a user changes an entity but does not save it, we should alert the user.
 Also, we probably should add a cancel button to all detail dialogs.
 
-*** Polish business centre UI and data quality                         :code:
-
-Several data quality and UI issues with business centres.
-
-- WRLD should have UN flag and source = Internal.
-- Hard-code NY* centres (NYFD, NYSE, USNY) during population to US country.
-- Add a city name field parsed from descriptions (regex for parenthesised text).
-- Do not display description column by default.
-- Country should be a combo box.
-- Fix missing country flags.
-- Do not display coding scheme column by default.
-- Move country column next to code.
-- Reduce recorded_at column width.
-
-#+begin_quote
-This pull request focuses on enhancing the data quality and user interface for
-business centres. It introduces a new 'city_name' field, derived from existing
-descriptions, and integrates it across the database, C++ domain models, and the
-Qt UI. Additionally, it includes specific data fixes for certain business centre
-codes and refines the display of business centre information in the UI.
-
-Highlights:
-
-- SQL Data Enhancements: Added a 'city_name' column to the business centres
-  reference data table and implemented logic to automatically derive city names
-  from existing descriptions during data population.
-- Data Quality Fixes: Hard-coded the country for specific business centre codes
-  (NYFD, NYSE) to 'US' and ensured the correct US flag is displayed in the FpML
-  artefact. The 'WRLD' system business centre was also updated with
-  'source=Internal' and assigned a UN flag.
-- C++ Model Updates: Incorporated the new 'city_name' field into the
-  'business_centre' domain struct, its entity representation, mapper, and the
-  binary messaging protocol, leading to a major protocol version bump to v38.0.
-- Qt UI Improvements: Reordered columns in the business centre list view to
-  prioritize 'Code', 'Country', and 'City', added a dedicated 'City' column, and
-  set 'Description' and 'Coding Scheme' to be hidden by default. The 'Recorded
-  At' column width was fixed, and the country selection combo box in the detail
-  dialog was made non-editable, while also displaying the derived city name.
-#+end_quote
 *** Add high-watermark support                                         :code:
 
 Whenever we request entities, we should also return the watermark for that

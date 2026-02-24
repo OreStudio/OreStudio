@@ -201,37 +201,15 @@ trade_repository::read_latest_filtered(context ctx,
             lg(), "Reading trades filtered by book_id");
     }
 
-    // portfolio_id case: recursive CTE to include full subtree
+    // portfolio_id case: delegate to SQL function with recursive CTE
     const auto pid = boost::uuids::to_string(*portfolio_id);
-    const auto max_ts = std::string{MAX_TIMESTAMP};
-
-    const std::string sql =
-        "WITH RECURSIVE pt(id) AS ("
-        "    SELECT id FROM ores_refdata_portfolios_tbl"
-        "    WHERE id = '" + pid + "'::uuid AND valid_to = '" + max_ts + "'"
-        "    UNION ALL"
-        "    SELECT p.id FROM ores_refdata_portfolios_tbl p"
-        "    INNER JOIN pt ON p.parent_portfolio_id = pt.id"
-        "    WHERE p.valid_to = '" + max_ts + "'"
-        "),"
-        "pb(id) AS ("
-        "    SELECT b.id FROM ores_refdata_books_tbl b"
-        "    WHERE b.parent_portfolio_id IN (SELECT id FROM pt)"
-        "    AND b.valid_to = '" + max_ts + "'"
-        ")"
-        "SELECT id, tenant_id, version, party_id, external_id, book_id,"
-        "       portfolio_id, successor_trade_id, counterparty_id, trade_type,"
-        "       netting_set_id, lifecycle_event, trade_date, execution_timestamp,"
-        "       effective_date, termination_date, modified_by, performed_by,"
-        "       change_reason_code, change_commentary, valid_from"
-        " FROM ores_trading_trades_tbl"
-        " WHERE tenant_id = '" + tid + "'::uuid AND valid_to = '" + max_ts + "'"
-        " AND book_id IN (SELECT id FROM pb)"
-        " ORDER BY id OFFSET " + std::to_string(offset) +
-        " LIMIT " + std::to_string(limit);
-
     BOOST_LOG_SEV(lg(), debug)
         << "Reading trades filtered by portfolio subtree: " << pid;
+
+    const std::string sql =
+        "SELECT * FROM ores_trading_read_trades_by_portfolio_fn('"
+        + tid + "'::uuid, '" + pid + "'::uuid, "
+        + std::to_string(offset) + ", " + std::to_string(limit) + ")";
 
     const auto rows = execute_raw_multi_column_query(
         ctx, sql, lg(), "Reading trades for portfolio subtree");
@@ -270,30 +248,14 @@ trade_repository::count_latest_filtered(context ctx,
         return static_cast<std::uint32_t>(r->count);
     }
 
-    // portfolio_id case: recursive CTE COUNT
+    // portfolio_id case: delegate to SQL function with recursive CTE
     const auto pid = boost::uuids::to_string(*portfolio_id);
-    const auto max_ts = std::string{MAX_TIMESTAMP};
-
-    const std::string sql =
-        "WITH RECURSIVE pt(id) AS ("
-        "    SELECT id FROM ores_refdata_portfolios_tbl"
-        "    WHERE id = '" + pid + "'::uuid AND valid_to = '" + max_ts + "'"
-        "    UNION ALL"
-        "    SELECT p.id FROM ores_refdata_portfolios_tbl p"
-        "    INNER JOIN pt ON p.parent_portfolio_id = pt.id"
-        "    WHERE p.valid_to = '" + max_ts + "'"
-        "),"
-        "pb(id) AS ("
-        "    SELECT b.id FROM ores_refdata_books_tbl b"
-        "    WHERE b.parent_portfolio_id IN (SELECT id FROM pt)"
-        "    AND b.valid_to = '" + max_ts + "'"
-        ")"
-        "SELECT COUNT(*) FROM ores_trading_trades_tbl"
-        " WHERE tenant_id = '" + tid + "'::uuid AND valid_to = '" + max_ts + "'"
-        " AND book_id IN (SELECT id FROM pb)";
-
     BOOST_LOG_SEV(lg(), debug)
         << "Counting trades for portfolio subtree: " << pid;
+
+    const std::string sql =
+        "SELECT ores_trading_count_trades_by_portfolio_fn('"
+        + tid + "'::uuid, '" + pid + "'::uuid)";
 
     const auto rows = execute_raw_multi_column_query(
         ctx, sql, lg(), "Counting trades for portfolio subtree");

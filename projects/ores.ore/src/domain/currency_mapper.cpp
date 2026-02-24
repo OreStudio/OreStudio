@@ -60,7 +60,7 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.format = "";  // Not in XSD
     r.monetary_nature = v.CurrencyType ? std::string(*v.CurrencyType) : "";
     // ORE XML's CurrencyType attribute captures the economic nature of the
-    // currency (e.g. "Fiat", "Crypto"), which maps to asset_class.  The ORE
+    // currency (e.g. "Fiat", "Crypto"), which maps to monetary_nature.  The ORE
     // XML schema has no concept of market tier, so market_tier is left empty
     // on import and is not written on export.  This is a known limitation:
     // market_tier must be set separately after import if it is needed.

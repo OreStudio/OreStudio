@@ -151,7 +151,7 @@ public:
         },
         {
             .column = MonetaryNature,
-            .header = std::string_view("Asset Class"),
+            .header = std::string_view("Monetary Nature"),
             .style = column_style::text_left,
             .hidden_by_default = true,
             .default_width = kColumnWidthAuto

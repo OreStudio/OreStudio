@@ -112,7 +112,7 @@ void currency_dialog::setup_form() {
         std::make_unique<Wt::WContainerWidget>());
     monetary_nature_row->setStyleClass("mb-3");
     auto monetary_nature_lbl = monetary_nature_row->addWidget(
-        std::make_unique<Wt::WLabel>("Asset Class"));
+        std::make_unique<Wt::WLabel>("Monetary Nature"));
     monetary_nature_lbl->setStyleClass("form-label");
     monetary_nature_combo_ = monetary_nature_row->addWidget(
         std::make_unique<Wt::WComboBox>());

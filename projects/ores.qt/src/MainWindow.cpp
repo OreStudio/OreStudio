@@ -1673,8 +1673,8 @@ void MainWindow::createControllers() {
     connect(monetaryNatureController_.get(), &MonetaryNatureController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    // Connect currency controller relay to asset class controller
-    connect(currencyController_.get(), &CurrencyController::showAssetClassesRequested,
+    // Connect currency controller relay to monetary nature controller
+    connect(currencyController_.get(), &CurrencyController::showMonetaryNaturesRequested,
             this, [this]() {
         if (monetaryNatureController_)
             monetaryNatureController_->showListWindow();

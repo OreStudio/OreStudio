@@ -3798,7 +3798,7 @@ handle_get_monetary_natures_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_monetary_natures_request.";
 
-    auto auth = require_authentication(remote_address, "Get currency asset classes");
+    auto auth = require_authentication(remote_address, "Get monetary natures");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
@@ -3813,7 +3813,7 @@ handle_get_monetary_natures_request(std::span<const std::byte> payload,
     }
 
     auto types = svc.list_types();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << types.size() << " currency asset classes";
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << types.size() << " monetary natures";
 
     get_monetary_natures_response response{
         .types = std::move(types)
@@ -3828,7 +3828,7 @@ handle_save_monetary_nature_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_monetary_nature_request.";
 
-    auto auth = require_authentication(remote_address, "Save currency asset class");
+    auto auth = require_authentication(remote_address, "Save monetary nature");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
@@ -3847,12 +3847,12 @@ handle_save_monetary_nature_request(std::span<const std::byte> payload,
     try {
         svc.save_type(request.type);
         response.success = true;
-        response.message = "Currency asset class saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved currency asset class: " << request.type.code;
+        response.message = "Monetary nature saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved monetary nature: " << request.type.code;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save currency asset class: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving currency asset class: " << e.what();
+        response.message = std::string("Failed to save monetary nature: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving monetary nature: " << e.what();
     }
 
     co_return response.serialize();
@@ -3865,7 +3865,7 @@ handle_delete_monetary_nature_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_monetary_nature_request.";
 
-    auto auth = require_authentication(remote_address, "Delete currency asset class");
+    auto auth = require_authentication(remote_address, "Delete monetary nature");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
@@ -3880,7 +3880,7 @@ handle_delete_monetary_nature_request(std::span<const std::byte> payload,
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " currency asset class(es)";
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " monetary nature(s)";
 
     delete_monetary_nature_response response;
     for (const auto& code : request.codes) {
@@ -3890,12 +3890,12 @@ handle_delete_monetary_nature_request(std::span<const std::byte> payload,
         try {
             svc.remove_type(code);
             result.success = true;
-            result.message = "Currency asset class deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency asset class: " << code;
+            result.message = "Monetary nature deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted monetary nature: " << code;
         } catch (const std::exception& e) {
             result.success = false;
-            result.message = std::string("Failed to delete currency asset class: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting currency asset class "
+            result.message = std::string("Failed to delete monetary nature: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting monetary nature "
                                        << code << ": " << e.what();
         }
 
@@ -3912,7 +3912,7 @@ handle_get_monetary_nature_history_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_monetary_nature_history_request.";
 
-    auto auth = require_authentication(remote_address, "Get currency asset class history");
+    auto auth = require_authentication(remote_address, "Get monetary nature history");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
@@ -3927,7 +3927,7 @@ handle_get_monetary_nature_history_request(std::span<const std::byte> payload,
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Retrieving history for currency asset class: " << request.code;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for monetary nature: " << request.code;
 
     get_monetary_nature_history_response response;
     try {
@@ -3935,8 +3935,8 @@ handle_get_monetary_nature_history_request(std::span<const std::byte> payload,
 
         if (history.empty()) {
             response.success = false;
-            response.message = "Currency asset class not found: " + request.code;
-            BOOST_LOG_SEV(lg(), warn) << "No history found for currency asset class: " << request.code;
+            response.message = "Monetary nature not found: " + request.code;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for monetary nature: " << request.code;
             co_return response.serialize();
         }
 
@@ -3945,11 +3945,11 @@ handle_get_monetary_nature_history_request(std::span<const std::byte> payload,
         response.versions = std::move(history);
 
         BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
-                                  << " versions for currency asset class: " << request.code;
+                                  << " versions for monetary nature: " << request.code;
     } catch (const std::exception& e) {
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for currency asset class "
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for monetary nature "
                                    << request.code << ": " << e.what();
     }
 

@@ -116,7 +116,7 @@ public:
 
 signals:
     void showRoundingTypesRequested();
-    void showAssetClassesRequested();
+    void showMonetaryNaturesRequested();
     void showMarketTiersRequested();
 
 private slots:

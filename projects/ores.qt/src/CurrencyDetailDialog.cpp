@@ -128,7 +128,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
             Icon::Classification, IconUtils::DefaultIconColor));
     monetaryNaturesAction->setToolTip("Open Monetary Natures list");
     connect(monetaryNaturesAction, &QAction::triggered, this,
-        [this]() { emit showAssetClassesRequested(); });
+        [this]() { emit showMonetaryNaturesRequested(); });
     toolBar_->addAction(monetaryNaturesAction);
 
     auto* marketTiersAction = new QAction("Market Tiers", this);

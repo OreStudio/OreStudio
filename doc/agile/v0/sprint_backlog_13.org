@@ -750,6 +750,13 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
+*** STARTED Books, portfolios and trades are not party specific        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 09:01]--[2026-02-24 Tue 12:00] =>  2:59
+    :END:
+
+At present I can see these entities from any party in a tenant.
+
 *** Add concept of "named environments" to connection manager          :code:
 
 It would be nice if we could do "local2! instead of "localhost@51004". For this
@@ -759,10 +766,6 @@ in the connection manager. Maybe a separate tree widget.
 Users could then choose an environment and it would automatically populate host
 and port. These would also show up in drop down box. If using an environment,
 title bar would show that as well as host and port.
-
-*** Books, portfolios and trades are not party specific                :code:
-
-At present I can see these entities from any party in a tenant.
 
 *** Rename currency asset classes                                      :code:
 

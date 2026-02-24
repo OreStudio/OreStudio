@@ -132,6 +132,7 @@ private:
         const std::optional<boost::uuids::uuid>& parent_id);
 
     QModelIndex find_book_index(const boost::uuids::uuid& id) const;
+    std::uint32_t subtree_count(const PortfolioTreeNode* node) const;
 
     std::unique_ptr<PortfolioTreeNode> root_;
     std::unordered_map<std::string, std::uint32_t> trade_counts_;

@@ -118,12 +118,32 @@ PortfolioExplorerTreeModel::selected_filter(const QModelIndex& index) const {
     return {.book_id = std::nullopt, .portfolio_id = node->portfolio.id};
 }
 
+std::uint32_t PortfolioExplorerTreeModel::subtree_count(
+    const PortfolioTreeNode* node) const {
+    if (!node)
+        return 0;
+    if (node->kind == PortfolioTreeNode::Kind::Book) {
+        const auto it = trade_counts_.find(
+            boost::uuids::to_string(node->book.id));
+        return it != trade_counts_.end() ? it->second : 0;
+    }
+    std::uint32_t total = 0;
+    for (const auto& child : node->children)
+        total += subtree_count(child.get());
+    return total;
+}
+
 void PortfolioExplorerTreeModel::set_trade_count(
     const boost::uuids::uuid& book_id, std::uint32_t count) {
     trade_counts_[boost::uuids::to_string(book_id)] = count;
-    const auto idx = find_book_index(book_id);
-    if (idx.isValid())
+    auto idx = find_book_index(book_id);
+    if (!idx.isValid())
+        return;
+    // Notify the book itself and every ancestor up to (and including) the root
+    while (idx.isValid()) {
         emit dataChanged(idx, idx, {Qt::DisplayRole});
+        idx = idx.parent();
+    }
 }
 
 QModelIndex PortfolioExplorerTreeModel::find_book_index(
@@ -202,17 +222,22 @@ QVariant PortfolioExplorerTreeModel::data(
         return {};
 
     if (role == Qt::DisplayRole) {
+        auto append_count = [](QString name, std::uint32_t n) -> QString {
+            if (n > 0)
+                name += QStringLiteral(" (%1)").arg(n);
+            return name;
+        };
         if (node->kind == PortfolioTreeNode::Kind::Party)
-            return node->party_name;
+            return append_count(node->party_name, subtree_count(node));
         if (node->kind == PortfolioTreeNode::Kind::Portfolio)
-            return QString::fromStdString(node->portfolio.name);
-        // Book: append trade count if known and non-zero
-        auto name = QString::fromStdString(node->book.name);
+            return append_count(
+                QString::fromStdString(node->portfolio.name),
+                subtree_count(node));
+        // Book: look up count directly
         const auto it = trade_counts_.find(
             boost::uuids::to_string(node->book.id));
-        if (it != trade_counts_.end() && it->second > 0)
-            name += QStringLiteral(" (%1)").arg(it->second);
-        return name;
+        const auto n = it != trade_counts_.end() ? it->second : 0;
+        return append_count(QString::fromStdString(node->book.name), n);
     }
 
     if (role == Qt::DecorationRole) {

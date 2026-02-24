@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/PortfolioBookTradeModel.hpp"
+#include "ores.qt/PortfolioExplorerTradeModel.hpp"
 
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
@@ -30,29 +30,29 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-PortfolioBookTradeModel::PortfolioBookTradeModel(
+PortfolioExplorerTradeModel::PortfolioExplorerTradeModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &PortfolioBookTradeModel::onTradesLoaded);
+            this, &PortfolioExplorerTradeModel::onTradesLoaded);
 }
 
-int PortfolioBookTradeModel::rowCount(const QModelIndex& parent) const {
+int PortfolioExplorerTradeModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return static_cast<int>(trades_.size());
 }
 
-int PortfolioBookTradeModel::columnCount(const QModelIndex& parent) const {
+int PortfolioExplorerTradeModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return ColumnCount;
 }
 
-QVariant PortfolioBookTradeModel::data(
+QVariant PortfolioExplorerTradeModel::data(
     const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
@@ -109,7 +109,7 @@ QVariant PortfolioBookTradeModel::data(
     return {};
 }
 
-QVariant PortfolioBookTradeModel::headerData(
+QVariant PortfolioExplorerTradeModel::headerData(
     int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
@@ -130,14 +130,14 @@ QVariant PortfolioBookTradeModel::headerData(
     }
 }
 
-void PortfolioBookTradeModel::set_filter(
+void PortfolioExplorerTradeModel::set_filter(
     std::optional<boost::uuids::uuid> book_id,
     std::optional<boost::uuids::uuid> portfolio_id) {
     filter_book_id_ = book_id;
     filter_portfolio_id_ = portfolio_id;
 }
 
-void PortfolioBookTradeModel::set_counterparty_map(
+void PortfolioExplorerTradeModel::set_counterparty_map(
     std::unordered_map<std::string, CounterpartyInfo> cpty_map) {
     cpty_map_ = std::move(cpty_map);
     if (!trades_.empty()) {
@@ -147,7 +147,7 @@ void PortfolioBookTradeModel::set_counterparty_map(
     }
 }
 
-void PortfolioBookTradeModel::refresh() {
+void PortfolioExplorerTradeModel::refresh() {
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch in progress, ignoring refresh.";
         return;
@@ -169,7 +169,7 @@ void PortfolioBookTradeModel::refresh() {
     fetch_trades(0, 100);
 }
 
-void PortfolioBookTradeModel::load_page(
+void PortfolioExplorerTradeModel::load_page(
     std::uint32_t offset, std::uint32_t limit) {
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch in progress, ignoring load_page.";
@@ -190,10 +190,10 @@ void PortfolioBookTradeModel::load_page(
     fetch_trades(offset, limit);
 }
 
-void PortfolioBookTradeModel::fetch_trades(
+void PortfolioExplorerTradeModel::fetch_trades(
     std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
-    QPointer<PortfolioBookTradeModel> self = this;
+    QPointer<PortfolioExplorerTradeModel> self = this;
 
     const auto book_id = filter_book_id_;
     const auto portfolio_id = filter_portfolio_id_;
@@ -236,7 +236,7 @@ void PortfolioBookTradeModel::fetch_trades(
     watcher_->setFuture(future);
 }
 
-void PortfolioBookTradeModel::onTradesLoaded() {
+void PortfolioExplorerTradeModel::onTradesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
@@ -260,7 +260,7 @@ void PortfolioBookTradeModel::onTradesLoaded() {
 }
 
 const trading::domain::trade*
-PortfolioBookTradeModel::get_trade(int row) const {
+PortfolioExplorerTradeModel::get_trade(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= trades_.size())
         return nullptr;

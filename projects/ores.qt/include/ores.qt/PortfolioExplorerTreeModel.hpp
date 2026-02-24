@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_PORTFOLIO_BOOK_TREE_MODEL_HPP
-#define ORES_QT_PORTFOLIO_BOOK_TREE_MODEL_HPP
+#ifndef ORES_QT_PORTFOLIO_EXPLORER_TREE_MODEL_HPP
+#define ORES_QT_PORTFOLIO_EXPLORER_TREE_MODEL_HPP
 
 #include <memory>
 #include <vector>
@@ -66,12 +66,12 @@ struct TreeNodeFilter {
  * inner nodes and books are leaves. Virtual portfolios (is_virtual == 1) are
  * included as structural parents distinguished by the outline Briefcase icon.
  */
-class PortfolioBookTreeModel final : public QAbstractItemModel {
+class PortfolioExplorerTreeModel final : public QAbstractItemModel {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.portfolio_book_tree_model";
+        "ores.qt.portfolio_explorer_tree_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -80,8 +80,8 @@ private:
     }
 
 public:
-    explicit PortfolioBookTreeModel(QObject* parent = nullptr);
-    ~PortfolioBookTreeModel() override = default;
+    explicit PortfolioExplorerTreeModel(QObject* parent = nullptr);
+    ~PortfolioExplorerTreeModel() override = default;
 
     /**
      * @brief Rebuild the tree from raw portfolio and book data.

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_PORTFOLIO_BOOK_TREE_MDI_WINDOW_HPP
-#define ORES_QT_PORTFOLIO_BOOK_TREE_MDI_WINDOW_HPP
+#ifndef ORES_QT_PORTFOLIO_EXPLORER_MDI_WINDOW_HPP
+#define ORES_QT_PORTFOLIO_EXPLORER_MDI_WINDOW_HPP
 
 #include <vector>
 #include <QLabel>
@@ -38,8 +38,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.qt/PortfolioBookTreeModel.hpp"
-#include "ores.qt/PortfolioBookTradeModel.hpp"
+#include "ores.qt/PortfolioExplorerTreeModel.hpp"
+#include "ores.qt/PortfolioExplorerTradeModel.hpp"
 #include "ores.refdata/domain/portfolio.hpp"
 #include "ores.refdata/domain/book.hpp"
 
@@ -52,12 +52,12 @@ namespace ores::qt {
  * Selecting any node scopes the trade table on the right to that subtree.
  * The stale indicator pulses when book, portfolio, or trade changes arrive.
  */
-class PortfolioBookTreeMdiWindow final : public EntityListMdiWindow {
+class PortfolioExplorerMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.portfolio_book_tree_mdi_window";
+        "ores.qt.portfolio_explorer_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -71,11 +71,11 @@ private:
     static constexpr const char* trade_event = "ores.trading.trade_changed";
 
 public:
-    explicit PortfolioBookTreeMdiWindow(
+    explicit PortfolioExplorerMdiWindow(
         ClientManager* clientManager,
         const QString& username,
         QWidget* parent = nullptr);
-    ~PortfolioBookTreeMdiWindow() override = default;
+    ~PortfolioExplorerMdiWindow() override = default;
 
 public slots:
     /**
@@ -156,12 +156,12 @@ private:
 
     // Left: tree
     QTreeView* treeView_{nullptr};
-    PortfolioBookTreeModel* treeModel_{nullptr};
+    PortfolioExplorerTreeModel* treeModel_{nullptr};
 
     // Right: trade panel
     QWidget* breadcrumbBar_{nullptr};
     QTableView* tradeTableView_{nullptr};
-    PortfolioBookTradeModel* tradeModel_{nullptr};
+    PortfolioExplorerTradeModel* tradeModel_{nullptr};
     QSortFilterProxyModel* tradeProxyModel_{nullptr};
     PaginationWidget* paginationWidget_{nullptr};
 

@@ -85,7 +85,7 @@ class RoundingTypeController;
 class MonetaryNatureController;
 class CurrencyMarketTierController;
 class TradeController;
-class PortfolioBookTreeMdiWindow;
+class PortfolioExplorerMdiWindow;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -677,7 +677,7 @@ private:
 
     /** @brief Data Librarian MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* dataLibrarianWindow_{nullptr};
-    DetachableMdiSubWindow* portfolioBookTreeSubWindow_{nullptr};
+    DetachableMdiSubWindow* portfolioExplorerSubWindow_{nullptr};
 
     /** @brief Shell MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* shellWindow_{nullptr};

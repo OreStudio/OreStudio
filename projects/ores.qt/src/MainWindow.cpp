@@ -83,7 +83,7 @@
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
-#include "ores.qt/PortfolioBookTreeMdiWindow.hpp"
+#include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -225,7 +225,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
-    ui_->ActionPortfolioBookTree->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
+    ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
@@ -646,16 +646,16 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Connect Portfolio/Book Tree action
-    connect(ui_->ActionPortfolioBookTree, &QAction::triggered, this, [this]() {
-        if (portfolioBookTreeSubWindow_) {
-            mdiArea_->setActiveSubWindow(portfolioBookTreeSubWindow_);
+    connect(ui_->ActionPortfolioExplorer, &QAction::triggered, this, [this]() {
+        if (portfolioExplorerSubWindow_) {
+            mdiArea_->setActiveSubWindow(portfolioExplorerSubWindow_);
             return;
         }
 
-        auto* window = new PortfolioBookTreeMdiWindow(
+        auto* window = new PortfolioExplorerMdiWindow(
             clientManager_, QString::fromStdString(username_), this);
 
-        connect(window, &PortfolioBookTreeMdiWindow::statusChanged,
+        connect(window, &PortfolioExplorerMdiWindow::statusChanged,
                 this, [this](const QString& msg) {
                     ui_->statusbar->showMessage(msg, 5000);
                 });
@@ -667,9 +667,9 @@ MainWindow::MainWindow(QWidget* parent) :
             Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
-        portfolioBookTreeSubWindow_ = subWindow;
+        portfolioExplorerSubWindow_ = subWindow;
         connect(subWindow, &QObject::destroyed, this, [this]() {
-            portfolioBookTreeSubWindow_ = nullptr;
+            portfolioExplorerSubWindow_ = nullptr;
         });
 
         mdiArea_->addSubWindow(subWindow);
@@ -1080,7 +1080,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionMonetaryNatures->setEnabled(isLoggedIn);
     ui_->ActionCurrencyMarketTiers->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
-    ui_->ActionPortfolioBookTree->setEnabled(isLoggedIn);
+    ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);

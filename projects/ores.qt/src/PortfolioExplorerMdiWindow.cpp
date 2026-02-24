@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/PortfolioBookTreeMdiWindow.hpp"
+#include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 
 #include <QtConcurrent>
 #include <QVBoxLayout>
@@ -38,7 +38,7 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-PortfolioBookTreeMdiWindow::PortfolioBookTreeMdiWindow(
+PortfolioExplorerMdiWindow::PortfolioExplorerMdiWindow(
     ClientManager* clientManager,
     const QString& username,
     QWidget* parent)
@@ -53,7 +53,7 @@ PortfolioBookTreeMdiWindow::PortfolioBookTreeMdiWindow(
     reload();
 }
 
-void PortfolioBookTreeMdiWindow::setupUi() {
+void PortfolioExplorerMdiWindow::setupUi() {
     WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(4, 4, 4, 4);
@@ -70,7 +70,7 @@ void PortfolioBookTreeMdiWindow::setupUi() {
     layout->addWidget(splitter_, 1);
 }
 
-void PortfolioBookTreeMdiWindow::setupToolbar() {
+void PortfolioExplorerMdiWindow::setupToolbar() {
     toolbar_ = new QToolBar(this);
     toolbar_->setMovable(false);
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -82,7 +82,7 @@ void PortfolioBookTreeMdiWindow::setupToolbar() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh portfolio/book tree"));
     connect(reloadAction_, &QAction::triggered, this,
-            &PortfolioBookTreeMdiWindow::reload);
+            &PortfolioExplorerMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_,
         IconUtils::iconPath(Icon::ArrowClockwise));
@@ -114,8 +114,8 @@ void PortfolioBookTreeMdiWindow::setupToolbar() {
     historyAction->setEnabled(false);
 }
 
-void PortfolioBookTreeMdiWindow::setupTree() {
-    treeModel_ = new PortfolioBookTreeModel(this);
+void PortfolioExplorerMdiWindow::setupTree() {
+    treeModel_ = new PortfolioExplorerTreeModel(this);
 
     treeView_ = new QTreeView(splitter_);
     treeView_->setModel(treeModel_);
@@ -128,7 +128,7 @@ void PortfolioBookTreeMdiWindow::setupTree() {
     splitter_->addWidget(treeView_);
 }
 
-void PortfolioBookTreeMdiWindow::setupTradePanel() {
+void PortfolioExplorerMdiWindow::setupTradePanel() {
     auto* right_panel = new QWidget(splitter_);
     auto* right_layout = new QVBoxLayout(right_panel);
     right_layout->setContentsMargins(0, 0, 0, 0);
@@ -140,7 +140,7 @@ void PortfolioBookTreeMdiWindow::setupTradePanel() {
     bl->setSpacing(2);
     right_layout->addWidget(breadcrumbBar_);
 
-    tradeModel_ = new PortfolioBookTradeModel(clientManager_, this);
+    tradeModel_ = new PortfolioExplorerTradeModel(clientManager_, this);
     tradeProxyModel_ = new QSortFilterProxyModel(this);
     tradeProxyModel_->setSourceModel(tradeModel_);
     tradeProxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -163,13 +163,13 @@ void PortfolioBookTreeMdiWindow::setupTradePanel() {
     splitter_->setStretchFactor(1, 3);
 }
 
-void PortfolioBookTreeMdiWindow::setupConnections() {
+void PortfolioExplorerMdiWindow::setupConnections() {
     // Tree selection
     connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &PortfolioBookTreeMdiWindow::onTreeSelectionChanged);
+            this, &PortfolioExplorerMdiWindow::onTreeSelectionChanged);
 
     // Trade model signals
-    connect(tradeModel_, &PortfolioBookTradeModel::dataLoaded,
+    connect(tradeModel_, &PortfolioExplorerTradeModel::dataLoaded,
             this, [this]() {
         paginationWidget_->update_state(
             static_cast<std::uint32_t>(tradeModel_->rowCount()),
@@ -197,24 +197,24 @@ void PortfolioBookTreeMdiWindow::setupConnections() {
     // Async watchers
     portfolioWatcher_ = new QFutureWatcher<PortfolioFetchResult>(this);
     connect(portfolioWatcher_, &QFutureWatcher<PortfolioFetchResult>::finished,
-            this, &PortfolioBookTreeMdiWindow::onPortfoliosLoaded);
+            this, &PortfolioExplorerMdiWindow::onPortfoliosLoaded);
 
     bookWatcher_ = new QFutureWatcher<BookFetchResult>(this);
     connect(bookWatcher_, &QFutureWatcher<BookFetchResult>::finished,
-            this, &PortfolioBookTreeMdiWindow::onBooksLoaded);
+            this, &PortfolioExplorerMdiWindow::onBooksLoaded);
 
     counterpartyWatcher_ = new QFutureWatcher<CounterpartyFetchResult>(this);
     connect(counterpartyWatcher_,
             &QFutureWatcher<CounterpartyFetchResult>::finished,
-            this, &PortfolioBookTreeMdiWindow::onCounterpartiesLoaded);
+            this, &PortfolioExplorerMdiWindow::onCounterpartiesLoaded);
 }
 
-void PortfolioBookTreeMdiWindow::setupEventSubscriptions() {
+void PortfolioExplorerMdiWindow::setupEventSubscriptions() {
     if (!clientManager_)
         return;
 
     connect(clientManager_, &ClientManager::notificationReceived,
-            this, &PortfolioBookTreeMdiWindow::onNotificationReceived);
+            this, &PortfolioExplorerMdiWindow::onNotificationReceived);
 
     auto subscribe_all = [this]() {
         clientManager_->subscribeToEvent(std::string{book_event});
@@ -232,7 +232,7 @@ void PortfolioBookTreeMdiWindow::setupEventSubscriptions() {
         subscribe_all();
 }
 
-void PortfolioBookTreeMdiWindow::reload() {
+void PortfolioExplorerMdiWindow::reload() {
     clearStaleIndicator();
 
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -244,7 +244,7 @@ void PortfolioBookTreeMdiWindow::reload() {
     books_loaded_ = false;
 
     // Fetch portfolios
-    QPointer<PortfolioBookTreeMdiWindow> self = this;
+    QPointer<PortfolioExplorerMdiWindow> self = this;
     portfolioWatcher_->setFuture(
         QtConcurrent::run([self]() -> PortfolioFetchResult {
             return exception_helper::wrap_async_fetch<PortfolioFetchResult>(
@@ -326,7 +326,7 @@ void PortfolioBookTreeMdiWindow::reload() {
         }));
 }
 
-void PortfolioBookTreeMdiWindow::onPortfoliosLoaded() {
+void PortfolioExplorerMdiWindow::onPortfoliosLoaded() {
     const auto result = portfolioWatcher_->result();
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load portfolios: "
@@ -343,7 +343,7 @@ void PortfolioBookTreeMdiWindow::onPortfoliosLoaded() {
         rebuildTree();
 }
 
-void PortfolioBookTreeMdiWindow::onBooksLoaded() {
+void PortfolioExplorerMdiWindow::onBooksLoaded() {
     const auto result = bookWatcher_->result();
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load books: "
@@ -359,7 +359,7 @@ void PortfolioBookTreeMdiWindow::onBooksLoaded() {
         rebuildTree();
 }
 
-void PortfolioBookTreeMdiWindow::onCounterpartiesLoaded() {
+void PortfolioExplorerMdiWindow::onCounterpartiesLoaded() {
     const auto result = counterpartyWatcher_->result();
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load counterparties: "
@@ -374,7 +374,7 @@ void PortfolioBookTreeMdiWindow::onCounterpartiesLoaded() {
         std::unordered_map<std::string, CounterpartyInfo>(result.cpty_map));
 }
 
-void PortfolioBookTreeMdiWindow::collectBookUuids(
+void PortfolioExplorerMdiWindow::collectBookUuids(
     const QModelIndex& parent, QList<boost::uuids::uuid>& uuids) {
     for (int r = 0; r < treeModel_->rowCount(parent); ++r) {
         auto idx = treeModel_->index(r, 0, parent);
@@ -388,7 +388,7 @@ void PortfolioBookTreeMdiWindow::collectBookUuids(
     }
 }
 
-void PortfolioBookTreeMdiWindow::rebuildTree() {
+void PortfolioExplorerMdiWindow::rebuildTree() {
     BOOST_LOG_SEV(lg(), debug) << "Rebuilding portfolio/book tree.";
 
     // Disconnect and discard any pending count watchers from a prior reload
@@ -408,7 +408,7 @@ void PortfolioBookTreeMdiWindow::rebuildTree() {
     QList<boost::uuids::uuid> book_ids;
     collectBookUuids({}, book_ids);
 
-    QPointer<PortfolioBookTreeMdiWindow> self = this;
+    QPointer<PortfolioExplorerMdiWindow> self = this;
     for (const auto& book_id : book_ids) {
         auto* watcher = new QFutureWatcher<CountResult>(this);
         countWatchers_.append(watcher);
@@ -455,7 +455,7 @@ void PortfolioBookTreeMdiWindow::rebuildTree() {
     }
 }
 
-void PortfolioBookTreeMdiWindow::onTreeSelectionChanged(
+void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
     const QItemSelection& selected, const QItemSelection& /*deselected*/) {
 
     if (selected.isEmpty()) {
@@ -474,7 +474,7 @@ void PortfolioBookTreeMdiWindow::onTreeSelectionChanged(
     tradeModel_->refresh();
 }
 
-void PortfolioBookTreeMdiWindow::updateBreadcrumb(
+void PortfolioExplorerMdiWindow::updateBreadcrumb(
     const PortfolioTreeNode* node) {
     // Clear all existing breadcrumb widgets
     QLayout* layout = breadcrumbBar_->layout();
@@ -556,7 +556,7 @@ void PortfolioBookTreeMdiWindow::updateBreadcrumb(
     bl->addStretch();
 }
 
-void PortfolioBookTreeMdiWindow::onNotificationReceived(
+void PortfolioExplorerMdiWindow::onNotificationReceived(
     const QString& eventType,
     const QDateTime& /*timestamp*/,
     const QStringList& /*entityIds*/,

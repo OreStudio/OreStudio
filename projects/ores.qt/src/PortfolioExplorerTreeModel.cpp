@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/PortfolioBookTreeModel.hpp"
+#include "ores.qt/PortfolioExplorerTreeModel.hpp"
 
 #include <functional>
 #include <boost/uuid/uuid_io.hpp>
@@ -27,10 +27,10 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-PortfolioBookTreeModel::PortfolioBookTreeModel(QObject* parent)
+PortfolioExplorerTreeModel::PortfolioExplorerTreeModel(QObject* parent)
     : QAbstractItemModel(parent) {}
 
-void PortfolioBookTreeModel::load(
+void PortfolioExplorerTreeModel::load(
     const QString& party_name,
     std::vector<refdata::domain::portfolio> portfolios,
     std::vector<refdata::domain::book> books) {
@@ -53,7 +53,7 @@ void PortfolioBookTreeModel::load(
                                << " top-level portfolio nodes.";
 }
 
-void PortfolioBookTreeModel::build_subtree(
+void PortfolioExplorerTreeModel::build_subtree(
     PortfolioTreeNode* parent_node,
     const std::vector<refdata::domain::portfolio>& portfolios,
     const std::vector<refdata::domain::book>& books,
@@ -104,7 +104,7 @@ void PortfolioBookTreeModel::build_subtree(
 }
 
 TreeNodeFilter
-PortfolioBookTreeModel::selected_filter(const QModelIndex& index) const {
+PortfolioExplorerTreeModel::selected_filter(const QModelIndex& index) const {
     const auto* node = node_from_index(index);
     if (!node)
         return {};
@@ -118,7 +118,7 @@ PortfolioBookTreeModel::selected_filter(const QModelIndex& index) const {
     return {.book_id = std::nullopt, .portfolio_id = node->portfolio.id};
 }
 
-void PortfolioBookTreeModel::set_trade_count(
+void PortfolioExplorerTreeModel::set_trade_count(
     const boost::uuids::uuid& book_id, std::uint32_t count) {
     trade_counts_[boost::uuids::to_string(book_id)] = count;
     const auto idx = find_book_index(book_id);
@@ -126,7 +126,7 @@ void PortfolioBookTreeModel::set_trade_count(
         emit dataChanged(idx, idx, {Qt::DisplayRole});
 }
 
-QModelIndex PortfolioBookTreeModel::find_book_index(
+QModelIndex PortfolioExplorerTreeModel::find_book_index(
     const boost::uuids::uuid& id) const {
     std::function<QModelIndex(const QModelIndex&)> search =
         [&](const QModelIndex& parent) -> QModelIndex {
@@ -148,13 +148,13 @@ QModelIndex PortfolioBookTreeModel::find_book_index(
 }
 
 PortfolioTreeNode*
-PortfolioBookTreeModel::node_from_index(const QModelIndex& index) const {
+PortfolioExplorerTreeModel::node_from_index(const QModelIndex& index) const {
     if (!index.isValid())
         return nullptr;
     return static_cast<PortfolioTreeNode*>(index.internalPointer());
 }
 
-QModelIndex PortfolioBookTreeModel::index(
+QModelIndex PortfolioExplorerTreeModel::index(
     int row, int col, const QModelIndex& parent) const {
     if (row < 0 || col != 0)
         return {};
@@ -173,7 +173,7 @@ QModelIndex PortfolioBookTreeModel::index(
     return createIndex(row, col, parent_node->children[row].get());
 }
 
-QModelIndex PortfolioBookTreeModel::parent(const QModelIndex& index) const {
+QModelIndex PortfolioExplorerTreeModel::parent(const QModelIndex& index) const {
     const auto* node = node_from_index(index);
     if (!node || !node->parent)
         return {};
@@ -181,7 +181,7 @@ QModelIndex PortfolioBookTreeModel::parent(const QModelIndex& index) const {
     return createIndex(node->parent->row_in_parent, 0, node->parent);
 }
 
-int PortfolioBookTreeModel::rowCount(const QModelIndex& parent) const {
+int PortfolioExplorerTreeModel::rowCount(const QModelIndex& parent) const {
     if (!parent.isValid())
         return root_ ? 1 : 0;
 
@@ -191,11 +191,11 @@ int PortfolioBookTreeModel::rowCount(const QModelIndex& parent) const {
     return static_cast<int>(node->children.size());
 }
 
-int PortfolioBookTreeModel::columnCount(const QModelIndex& /*parent*/) const {
+int PortfolioExplorerTreeModel::columnCount(const QModelIndex& /*parent*/) const {
     return 1;
 }
 
-QVariant PortfolioBookTreeModel::data(
+QVariant PortfolioExplorerTreeModel::data(
     const QModelIndex& index, int role) const {
     const auto* node = node_from_index(index);
     if (!node)

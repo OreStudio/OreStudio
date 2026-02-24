@@ -126,7 +126,7 @@
     <property name="title">
      <string>&amp;Trading</string>
     </property>
-    <addaction name="ActionPortfolioBookTree"/>
+    <addaction name="ActionPortfolioExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
    </widget>
@@ -221,7 +221,7 @@
    <addaction name="ActionBusinessUnits"/>
    <addaction name="ActionPortfolios"/>
    <addaction name="ActionBooks"/>
-   <addaction name="ActionPortfolioBookTree"/>
+   <addaction name="ActionPortfolioExplorer"/>
    <addaction name="ActionAccounts"/>
    <addaction name="ActionTenants"/>
    <addaction name="ActionFeatureFlags"/>
@@ -559,12 +559,12 @@
     <string>Manage business units</string>
    </property>
   </action>
-  <action name="ActionPortfolioBookTree">
+  <action name="ActionPortfolioExplorer">
    <property name="text">
-    <string>&amp;Portfolio/Book Tree</string>
+    <string>&amp;Portfolio Explorer</string>
    </property>
    <property name="toolTip">
-    <string>Open portfolio/book tree with trade filter</string>
+    <string>Open Portfolio Explorer</string>
    </property>
   </action>
   <action name="ActionTrades">

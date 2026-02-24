@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_PORTFOLIO_BOOK_TRADE_MODEL_HPP
-#define ORES_QT_PORTFOLIO_BOOK_TRADE_MODEL_HPP
+#ifndef ORES_QT_PORTFOLIO_EXPLORER_TRADE_MODEL_HPP
+#define ORES_QT_PORTFOLIO_EXPLORER_TRADE_MODEL_HPP
 
 #include <string>
 #include <vector>
@@ -47,12 +47,12 @@ struct CounterpartyInfo {
  * Mirrors ClientTradeModel but adds counterparty display columns and
  * optional book_id / portfolio_id filter fields.
  */
-class PortfolioBookTradeModel final : public QAbstractTableModel {
+class PortfolioExplorerTradeModel final : public QAbstractTableModel {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.portfolio_book_trade_model";
+        "ores.qt.portfolio_explorer_trade_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,9 +76,9 @@ public:
         ColumnCount
     };
 
-    explicit PortfolioBookTradeModel(ClientManager* clientManager,
+    explicit PortfolioExplorerTradeModel(ClientManager* clientManager,
                                      QObject* parent = nullptr);
-    ~PortfolioBookTradeModel() override = default;
+    ~PortfolioExplorerTradeModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

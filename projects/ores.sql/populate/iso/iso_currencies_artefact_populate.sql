@@ -99,8 +99,8 @@ begin
         coalesce(i.image_id, v_placeholder_image_id)
     from (values
         -- Americas
-        ('USD', 'US Dollar', '840', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.major', 'us'),
-        ('CAD', 'Canadian Dollar', '124', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.major', 'ca'),
+        ('USD', 'US Dollar', '840', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'us'),
+        ('CAD', 'Canadian Dollar', '124', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'ca'),
         ('MXN', 'Mexican Peso', '484', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'mx'),
         ('BRL', 'Brazilian Real', '986', 'R$', '¢', 100, 'Closest', 2, 'R$#,##0.00', 'fiat.emerging', 'br'),
         ('ARS', 'Argentine Peso', '032', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'ar'),
@@ -133,12 +133,12 @@ begin
         ('BMD', 'Bermudian Dollar', '060', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'bm'),
         ('FKP', 'Falkland Islands Pound', '238', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'fk'),
         -- Europe
-        ('EUR', 'Euro', '978', '€', 'c', 100, 'Closest', 2, '€#,##0.00', 'fiat.major', 'eu'),
-        ('GBP', 'British Pound Sterling', '826', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.major', 'gb'),
-        ('CHF', 'Swiss Franc', '756', 'CHF', 'c', 100, 'Closest', 2, 'CHF #,##0.00', 'fiat.major', 'ch'),
-        ('NOK', 'Norwegian Krone', '578', 'kr', 'ø', 100, 'Closest', 2, 'kr #,##0.00', 'fiat.major', 'no'),
-        ('SEK', 'Swedish Krona', '752', 'kr', 'ö', 100, 'Closest', 2, '#,##0.00 kr', 'fiat.major', 'se'),
-        ('DKK', 'Danish Krone', '208', 'kr', 'ø', 100, 'Closest', 2, 'kr #,##0.00', 'fiat.major', 'dk'),
+        ('EUR', 'Euro', '978', '€', 'c', 100, 'Closest', 2, '€#,##0.00', 'fiat.g10', 'eu'),
+        ('GBP', 'British Pound Sterling', '826', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.g10', 'gb'),
+        ('CHF', 'Swiss Franc', '756', 'CHF', 'c', 100, 'Closest', 2, 'CHF #,##0.00', 'fiat.g10', 'ch'),
+        ('NOK', 'Norwegian Krone', '578', 'kr', 'ø', 100, 'Closest', 2, 'kr #,##0.00', 'fiat.g10', 'no'),
+        ('SEK', 'Swedish Krona', '752', 'kr', 'ö', 100, 'Closest', 2, '#,##0.00 kr', 'fiat.g10', 'se'),
+        ('DKK', 'Danish Krone', '208', 'kr', 'ø', 100, 'Closest', 2, 'kr #,##0.00', 'fiat.g10', 'dk'),
         ('ISK', 'Icelandic Krona', '352', 'kr', '', 0, 'Closest', 0, '#,##0 kr', 'fiat.emerging', 'is'),
         ('PLN', 'Polish Zloty', '985', 'zł', 'gr', 100, 'Closest', 2, '#,##0.00 zł', 'fiat.emerging', 'pl'),
         ('CZK', 'Czech Koruna', '203', 'Kč', 'h', 100, 'Closest', 2, '#,##0.00 Kč', 'fiat.emerging', 'cz'),
@@ -160,7 +160,7 @@ begin
         ('TRY', 'Turkish Lira', '949', '₺', 'kr', 100, 'Closest', 2, '₺#,##0.00', 'fiat.emerging', 'tr'),
         ('GIP', 'Gibraltar Pound', '292', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'gi'),
         -- Asia-Pacific
-        ('JPY', 'Japanese Yen', '392', '¥', '', 0, 'Closest', 0, '¥#,##0', 'fiat.major', 'jp'),
+        ('JPY', 'Japanese Yen', '392', '¥', '', 0, 'Closest', 0, '¥#,##0', 'fiat.g10', 'jp'),
         ('CNY', 'Chinese Yuan', '156', '¥', '分', 100, 'Closest', 2, '¥#,##0.00', 'fiat.emerging', 'cn'),
         ('HKD', 'Hong Kong Dollar', '344', 'HK$', '¢', 100, 'Closest', 2, 'HK$#,##0.00', 'fiat.emerging', 'hk'),
         ('TWD', 'New Taiwan Dollar', '901', 'NT$', '¢', 100, 'Closest', 2, 'NT$#,##0.00', 'fiat.emerging', 'tw'),
@@ -187,8 +187,8 @@ begin
         ('TJS', 'Tajikistani Somoni', '972', 'ЅМ', 'д', 100, 'Closest', 2, '#,##0.00 ЅМ', 'fiat.emerging', 'tj'),
         ('TMT', 'Turkmenistani Manat', '934', 'm', 't', 100, 'Closest', 2, '#,##0.00 m', 'fiat.emerging', 'tm'),
         ('AFN', 'Afghan Afghani', '971', '؋', 'پ', 100, 'Closest', 2, '؋#,##0.00', 'fiat.emerging', 'af'),
-        ('AUD', 'Australian Dollar', '036', 'A$', '¢', 100, 'Closest', 2, 'A$#,##0.00', 'fiat.major', 'au'),
-        ('NZD', 'New Zealand Dollar', '554', 'NZ$', '¢', 100, 'Closest', 2, 'NZ$#,##0.00', 'fiat.major', 'nz'),
+        ('AUD', 'Australian Dollar', '036', 'A$', '¢', 100, 'Closest', 2, 'A$#,##0.00', 'fiat.g10', 'au'),
+        ('NZD', 'New Zealand Dollar', '554', 'NZ$', '¢', 100, 'Closest', 2, 'NZ$#,##0.00', 'fiat.g10', 'nz'),
         ('FJD', 'Fijian Dollar', '242', 'FJ$', '¢', 100, 'Closest', 2, 'FJ$#,##0.00', 'fiat.emerging', 'fj'),
         ('PGK', 'Papua New Guinean Kina', '598', 'K', 't', 100, 'Closest', 2, 'K#,##0.00', 'fiat.emerging', 'pg'),
         ('SBD', 'Solomon Islands Dollar', '090', 'SI$', '¢', 100, 'Closest', 2, 'SI$#,##0.00', 'fiat.emerging', 'sb'),
@@ -290,9 +290,9 @@ end $$;
 select 'Total DQ Currencies' as metric, count(*) as count
 from ores_dq_currencies_artefact_tbl
 union all
-select 'Major Fiat Currencies (fiat.major)', count(*)
+select 'G10 Fiat Currencies (fiat.g10)', count(*)
 from ores_dq_currencies_artefact_tbl
-where asset_class = 'fiat' and market_tier = 'major'
+where asset_class = 'fiat' and market_tier = 'g10'
 union all
 select 'Emerging Fiat Currencies (fiat.emerging)', count(*)
 from ores_dq_currencies_artefact_tbl

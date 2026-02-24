@@ -40,6 +40,18 @@ architecture.
 - Minimum C++ version: 23
 - External dependencies managed through vcpkg
 
+## Environment Setup (Ubuntu / Debian / WSL)
+
+On a fresh install — including WSL — run once to get all required packages:
+
+```sh
+./build/scripts/install_debian_packages.sh --full-install
+```
+
+Installs from distro repos: GCC, Clang, CMake, Ninja, PostgreSQL, Qt6, Valgrind,
+and X11/GL headers. Then set up the database with
+`./projects/ores.sql/recreate_database.sh` before the first build.
+
 ## Pull Requests
 
 - do not add "Test plan" section to PRs.

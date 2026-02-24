@@ -44,7 +44,9 @@ enum class Icon {
     ArrowSync,
     Book,
     BookOpen,
+    BookOpenFilled,   // filled variant: trading books (active state)
     Briefcase,
+    BriefcaseFilled,  // filled variant: real portfolios (active state)
     Building,
     BuildingBank,
     BuildingSkyscraper,

@@ -562,13 +562,67 @@ Highlights:
   scattered per-dialog lambdas with a more maintainable and consistent approach.
 #+end_quote
 
-*** STARTED Minor improvements to connection browser                   :code:
+*** COMPLETED Minor improvements to connection browser                 :code:
     :LOGBOOK:
     CLOCK: [2026-02-24 Tue 15:20]--[2026-02-24 Tue 16:37] =>  1:17
     :END:
 
 Quality of life improvements to connection browser so that we don't have to
 spend so much time entering data manually.
+
+#+begin_quote
+This pull request introduces a significant refactoring of how server
+environments and connections are managed, separating host/port configurations
+from credential storage. It enhances the user interface with a unified
+connection browser, new duplication capabilities, and an improved login
+experience. The underlying database schema has been updated to support these
+changes, including an automatic migration process for existing data.
+
+Highlights:
+
+- Environment and Connection Separation: Refactored the server_environment type
+  into two distinct domain types: environment (host + port, no credentials) and
+  connection (credentials, optionally linked to an environment). When a
+  connection is linked to an environment, its host/port are resolved live from
+  the environment.
+- SQLite Database Migration: Introduced new SQLite tables for environments,
+  connections, and connection_tags. Existing server_environments data is
+  automatically migrated to the new connections table on the first launch,
+  ensuring backward compatibility.
+- Unified Connection Browser Tree: The connection browser now displays folders,
+  environments, and connections in a single, unified tree structure with
+  distinct icons. Drag-and-drop functionality between folders has been improved
+  to correctly restore expansion states.
+- Duplicate Action: Added a new 'Duplicate' action accessible via the toolbar
+  and context menus. This allows users to create a copy of any selected node
+  (folder, environment, or connection), appending ' (copy)' to its name.
+- Inherited Tags and Detail Panel Enhancements: Connections linked to an
+  environment now display the environment's tags as outlined badges in the
+  detail panel, distinguishing them from the connection's own filled badges. The
+  detail panel also shows resolved host/port for environment-linked connections
+  in a grayed, italic style with a tooltip indicating the source environment.
+- Login Dialog Quick-Connect Combo: The login dialog's separate environment
+  combo and saved-connections button have been replaced with a single, unified
+  quick-connect combo box. This combo categorizes entries with 'Manual',
+  'Environments', and 'Connections' headers. Selecting an environment pre-fills
+  and locks host/port fields, while selecting a connection pre-fills all four
+  login fields.
+- New Icons: New 'Keyboard' (for manual entry) and 'Copy' (for duplication)
+  icons have been added to the icon system, with Fluent UI and Solarized
+  variants.
+#+end_quote
+
+*** COMPLETED Add concept of "named environments" to connection manager :code:
+
+*Rationale*: implemented as part of improvements to connection browser.
+
+It would be nice if we could do "local2! instead of "localhost@51004". For this
+we need to have the notion of "named environments". This could be another entry
+in the connection manager. Maybe a separate tree widget.
+
+Users could then choose an environment and it would automatically populate host
+and port. These would also show up in drop down box. If using an environment,
+title bar would show that as well as host and port.
 
 *** STARTED Analyse caching at dialog level                            :code:
 
@@ -701,6 +755,9 @@ a UI concept but not a code concept.
 
 *** STARTED Add portfolio book tree widget                             :code:
     :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 18:37]
+    CLOCK: [2026-02-24 Tue 18:10]--[2026-02-24 Tue 18:36] =>  0:26
+    CLOCK: [2026-02-24 Tue 16:38]--[2026-02-24 Tue 18:36] =>  1:58
     CLOCK: [2026-02-21 Sat 13:01]--[2026-02-21 Sat 13:24] =>  0:23
     :END:
 
@@ -796,15 +853,24 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
-*** Add concept of "named environments" to connection manager          :code:
+*** Add virtual portfolio tree support                                 :code:
 
-It would be nice if we could do "local2! instead of "localhost@51004". For this
-we need to have the notion of "named environments". This could be another entry
-in the connection manager. Maybe a separate tree widget.
+A virtual portfolio is a reporting overlay that aggregates trades from real
+portfolios and books without owning them directly. Because a book has a single
+=parent_portfolio_id=, virtual portfolio membership requires a separate junction
+table. This story adds the full stack for virtual portfolios:
 
-Users could then choose an environment and it would automatically populate host
-and port. These would also show up in drop down box. If using an environment,
-title bar would show that as well as host and port.
+**** Acceptance Criteria
+
+- New junction table =ores_refdata_virtual_portfolio_books= mapping virtual
+  portfolios to books, with the full SQL machinery (triggers, RLS, notify).
+- Domain type, repository, service, and protocol messages for the junction.
+- Virtual portfolios (=is_virtual = 1=) are shown in the
+  =PortfolioBookTreeMdiWindow= as a separate tree section below the real tree,
+  using =briefcase_20_regular= icons.
+- Selecting a virtual portfolio node or any of its book leaves filters the trade
+  table using the junction membership list.
+- Stale indicator responds to changes on the virtual portfolio membership.
 
 *** Rename currency asset classes                                      :code:
 

@@ -316,10 +316,16 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // the DB trigger from book_id. Strict RLS policies (no null pass-through) now
 // enforce party isolation for books, portfolios, and trades: no party context
 // means no rows visible.
+//
 // Version 43.0 renames monetary_nature across all layers.
 // Breaking change: field asset_class on domain::currency renamed to monetary_nature;
 // message type enum values 0x1099-0x10A0 renamed accordingly.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 43;
+//
+// Version 44.0 adds book_id and portfolio_id optional filters to
+// get_trades_request for server-side trade scoping. book_id selects trades for
+// a single book; portfolio_id triggers a recursive CTE to include trades from
+// the full portfolio subtree. Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 44;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

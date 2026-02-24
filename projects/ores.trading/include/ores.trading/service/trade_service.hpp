@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading/domain/trade.hpp"
@@ -54,7 +55,16 @@ public:
     std::vector<domain::trade>
     list_trades(std::uint32_t offset, std::uint32_t limit);
 
+    std::vector<domain::trade>
+    list_trades_filtered(std::uint32_t offset, std::uint32_t limit,
+        std::optional<boost::uuids::uuid> book_id,
+        std::optional<boost::uuids::uuid> portfolio_id);
+
     std::uint32_t count_trades();
+
+    std::uint32_t count_trades_filtered(
+        std::optional<boost::uuids::uuid> book_id,
+        std::optional<boost::uuids::uuid> portfolio_id);
 
     std::optional<domain::trade>
     find_trade(const std::string& id);

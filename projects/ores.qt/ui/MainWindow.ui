@@ -126,6 +126,8 @@
     <property name="title">
      <string>&amp;Trading</string>
     </property>
+    <addaction name="ActionPortfolioBookTree"/>
+    <addaction name="separator"/>
     <addaction name="ActionTrades"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
@@ -219,6 +221,7 @@
    <addaction name="ActionBusinessUnits"/>
    <addaction name="ActionPortfolios"/>
    <addaction name="ActionBooks"/>
+   <addaction name="ActionPortfolioBookTree"/>
    <addaction name="ActionAccounts"/>
    <addaction name="ActionTenants"/>
    <addaction name="ActionFeatureFlags"/>
@@ -554,6 +557,14 @@
    </property>
    <property name="toolTip">
     <string>Manage business units</string>
+   </property>
+  </action>
+  <action name="ActionPortfolioBookTree">
+   <property name="text">
+    <string>&amp;Portfolio/Book Tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Open portfolio/book tree with trade filter</string>
    </property>
   </action>
   <action name="ActionTrades">

@@ -48,7 +48,9 @@ static IconDef getIconDef(Icon icon) {
         case Icon::ArrowSync: return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
         case Icon::Book: return {"ic_fluent_book_20", "notes-minimalistic.svg"};
         case Icon::BookOpen: return {"ic_fluent_book_open_20", "book-2.svg"};
+        case Icon::BookOpenFilled:  return {"ic_fluent_book_open_20", "book-2.svg", true};
         case Icon::Briefcase: return {"ic_fluent_briefcase_20", "case-round.svg"};
+        case Icon::BriefcaseFilled: return {"ic_fluent_briefcase_20", "case-round.svg", true};
         case Icon::Building: return {"ic_fluent_building_20", "buildings.svg"};
         case Icon::BuildingBank: return {"ic_fluent_building_bank_20", "buildings-3.svg"};
         case Icon::BuildingSkyscraper: return {"ic_fluent_building_skyscraper_20", "buildings.svg"};

@@ -22,7 +22,9 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading/domain/trade.hpp"
@@ -60,6 +62,17 @@ public:
     read_all(context ctx, const std::string& id);
 
     std::uint32_t count_latest(context ctx);
+
+    std::vector<domain::trade> read_latest_filtered(
+        context ctx,
+        std::uint32_t offset, std::uint32_t limit,
+        std::optional<boost::uuids::uuid> book_id,
+        std::optional<boost::uuids::uuid> portfolio_id);
+
+    std::uint32_t count_latest_filtered(
+        context ctx,
+        std::optional<boost::uuids::uuid> book_id,
+        std::optional<boost::uuids::uuid> portfolio_id);
 
     void remove(context ctx, const std::string& id);
 };

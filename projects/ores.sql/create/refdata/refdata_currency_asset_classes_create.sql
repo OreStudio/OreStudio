@@ -125,7 +125,7 @@ do instead
 -- Validation function for currency_asset_class
 -- Validates that a code exists in the currency_asset_classes table.
 -- Returns the validated value, or default if null/empty.
--- Uses system tenant data (shared reference data).
+-- Uses the currency's own tenant data (each tenant has its own copy of the lookup).
 -- =============================================================================
 create or replace function ores_refdata_validate_currency_asset_class_fn(
     p_tenant_id uuid,
@@ -137,22 +137,23 @@ begin
         return 'fiat';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_currency_asset_classes_tbl limit 1) then
+    -- Allow pass-through during bootstrap (empty table for this tenant)
+    if not exists (select 1 from ores_refdata_currency_asset_classes_tbl
+                   where tenant_id = p_tenant_id limit 1) then
         return p_value;
     end if;
 
-    -- Validate against reference data
+    -- Validate against reference data for this tenant
     if not exists (
         select 1 from ores_refdata_currency_asset_classes_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = p_tenant_id
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid currency_asset_class: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_currency_asset_classes_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = p_tenant_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

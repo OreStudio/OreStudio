@@ -30,6 +30,7 @@
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.refdata/repository/country_repository.hpp"
 #include "ores.refdata/generators/party_generator.hpp"
+#include "ores.refdata/generators/country_generator.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 
@@ -54,14 +55,6 @@ boost::uuids::uuid find_system_party_id(
         if (p.tenant_id == tid)
             return p.id;
     throw std::runtime_error("No system party for tenant: " + tid);
-}
-
-std::string find_first_country_alpha2_code(
-    country_repository& repo, scoped_database_helper& h) {
-    auto countries = repo.read_latest(h.context());
-    if (countries.empty())
-        throw std::runtime_error("No countries found in database");
-    return countries.front().alpha2_code;
 }
 
 party_country make_party_country(scoped_database_helper& h,
@@ -91,7 +84,10 @@ TEST_CASE("write_single_party_country", tags) {
 
     const auto party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
-    const auto alpha2_code = find_first_country_alpha2_code(cty_repo, h);
+    auto gctx = ores::testing::make_generation_context(h);
+    auto test_countries = generate_fictional_countries(1, gctx);
+    cty_repo.write(h.context(), test_countries);
+    const auto& alpha2_code = test_countries.front().alpha2_code;
 
     auto pc = make_party_country(h, party_id, alpha2_code);
     BOOST_LOG_SEV(lg, debug) << "Party country: " << pc;
@@ -110,13 +106,13 @@ TEST_CASE("write_multiple_party_countries", tags) {
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
 
-    auto all_countries = cty_repo.read_latest(h.context());
-    REQUIRE(all_countries.size() >= 2);
+    auto gctx = ores::testing::make_generation_context(h);
+    auto test_countries = generate_fictional_countries(2, gctx);
+    cty_repo.write(h.context(), test_countries);
 
     std::vector<party_country> pcs;
-    for (std::size_t i = 0; i < 2; ++i) {
-        pcs.push_back(make_party_country(
-            h, system_party_id, all_countries[i].alpha2_code));
+    for (const auto& c : test_countries) {
+        pcs.push_back(make_party_country(h, system_party_id, c.alpha2_code));
     }
 
     BOOST_LOG_SEV(lg, debug) << "Party countries: " << pcs;
@@ -134,7 +130,10 @@ TEST_CASE("read_latest_party_countries_by_party", tags) {
 
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
-    const auto alpha2_code = find_first_country_alpha2_code(cty_repo, h);
+    auto gctx = ores::testing::make_generation_context(h);
+    auto test_countries = generate_fictional_countries(1, gctx);
+    cty_repo.write(h.context(), test_countries);
+    const auto& alpha2_code = test_countries.front().alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);
@@ -164,7 +163,10 @@ TEST_CASE("read_latest_party_countries_by_country", tags) {
 
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
-    const auto alpha2_code = find_first_country_alpha2_code(cty_repo, h);
+    auto gctx = ores::testing::make_generation_context(h);
+    auto test_countries = generate_fictional_countries(1, gctx);
+    cty_repo.write(h.context(), test_countries);
+    const auto& alpha2_code = test_countries.front().alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);
@@ -187,7 +189,10 @@ TEST_CASE("remove_party_country", tags) {
 
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
-    const auto alpha2_code = find_first_country_alpha2_code(cty_repo, h);
+    auto gctx = ores::testing::make_generation_context(h);
+    auto test_countries = generate_fictional_countries(1, gctx);
+    cty_repo.write(h.context(), test_countries);
+    const auto& alpha2_code = test_countries.front().alpha2_code;
 
     auto pc = make_party_country(h, system_party_id, alpha2_code);
     repo.write(pc);

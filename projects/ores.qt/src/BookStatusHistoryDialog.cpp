@@ -26,6 +26,7 @@
 #include "ui_BookStatusHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/book_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +47,7 @@ BookStatusHistoryDialog::BookStatusHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();

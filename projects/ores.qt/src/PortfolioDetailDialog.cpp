@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,6 +41,7 @@ PortfolioDetailDialog::PortfolioDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -96,6 +98,10 @@ void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
                     return imageCache_->getCurrencyFlagIcon(code);
                 });
         });
+        set_combo_flag_icons(ui_->aggregationCcyCombo,
+            [this](const std::string& code) {
+                return imageCache_->getCurrencyFlagIcon(code);
+            });
     }
 }
 

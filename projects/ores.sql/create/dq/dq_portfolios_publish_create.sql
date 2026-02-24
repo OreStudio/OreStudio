@@ -148,7 +148,7 @@ begin
             parent_m.new_id,
             bu_map.published_id,
             m.purpose_type, m.aggregation_ccy, m.is_virtual,
-            current_user, current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
             'Published from organisation dataset'
         from portfolio_publish_map m
         left join portfolio_publish_map parent_m

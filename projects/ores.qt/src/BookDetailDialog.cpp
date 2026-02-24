@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,6 +41,7 @@ BookDetailDialog::BookDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -98,6 +100,10 @@ void BookDetailDialog::setImageCache(ImageCache* imageCache) {
                     return imageCache_->getCurrencyFlagIcon(code);
                 });
         });
+        set_combo_flag_icons(ui_->ledgerCcyCombo,
+            [this](const std::string& code) {
+                return imageCache_->getCurrencyFlagIcon(code);
+            });
     }
 }
 

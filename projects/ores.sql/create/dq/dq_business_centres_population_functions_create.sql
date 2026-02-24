@@ -189,7 +189,7 @@ begin
             p_target_tenant_id,
             r.code, 0, r.coding_scheme_code, v_country_alpha2,
             r.source, r.description, v_city_name, r.image_id,
-            current_user, current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

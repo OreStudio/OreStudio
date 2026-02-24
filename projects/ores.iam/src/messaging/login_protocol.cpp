@@ -77,6 +77,7 @@ std::vector<std::byte> login_response::serialize() const {
     for (const auto& p : available_parties) {
         writer::write_uuid(buffer, p.id);
         writer::write_string(buffer, p.name);
+        writer::write_string(buffer, p.party_category);
     }
     return buffer;
 }
@@ -143,6 +144,10 @@ login_response::deserialize(std::span<const std::byte> data) {
         auto name_result = reader::read_string(data);
         if (!name_result) return std::unexpected(name_result.error());
         ps.name = *name_result;
+
+        auto category_result = reader::read_string(data);
+        if (!category_result) return std::unexpected(category_result.error());
+        ps.party_category = *category_result;
 
         response.available_parties.push_back(std::move(ps));
     }

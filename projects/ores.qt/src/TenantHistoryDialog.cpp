@@ -26,6 +26,7 @@
 #include "ui_TenantHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +49,7 @@ TenantHistoryDialog::TenantHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();

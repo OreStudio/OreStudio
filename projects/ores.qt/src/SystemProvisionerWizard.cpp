@@ -33,6 +33,7 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
@@ -66,6 +67,7 @@ SystemProvisionerWizard::SystemProvisionerWizard(
 }
 
 void SystemProvisionerWizard::setupPages() {
+    WidgetUtils::setupComboBoxes(this);
     setPage(Page_Welcome, new WelcomePage(this));
     setPage(Page_AdminAccount, new AdminAccountPage(this));
     setPage(Page_SetupMode, new SetupModePage(this));
@@ -97,6 +99,7 @@ WelcomePage::WelcomePage(SystemProvisionerWizard* wizard)
 }
 
 void WelcomePage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(20);
 
@@ -172,6 +175,7 @@ AdminAccountPage::AdminAccountPage(SystemProvisionerWizard* wizard)
 }
 
 void AdminAccountPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     // Form for account details
@@ -407,6 +411,7 @@ SetupModePage::SetupModePage(SystemProvisionerWizard* wizard)
 }
 
 void SetupModePage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(20);
 
@@ -477,6 +482,7 @@ ProvisionerTenantDetailsPage::ProvisionerTenantDetailsPage(
 }
 
 void ProvisionerTenantDetailsPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     auto* formLayout = new QFormLayout();
@@ -638,6 +644,7 @@ ProvisionerTenantAdminPage::ProvisionerTenantAdminPage(
 }
 
 void ProvisionerTenantAdminPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     auto* formLayout = new QFormLayout();
@@ -937,6 +944,7 @@ ProvisionerCompletePage::ProvisionerCompletePage(SystemProvisionerWizard* wizard
 }
 
 void ProvisionerCompletePage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(20);
 

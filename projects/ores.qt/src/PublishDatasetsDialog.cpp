@@ -31,6 +31,7 @@
 #include <QTextEdit>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
 
 namespace ores::qt {
@@ -62,6 +63,7 @@ PublishDatasetsDialog::PublishDatasetsDialog(
 }
 
 void PublishDatasetsDialog::setupPages() {
+    WidgetUtils::setupComboBoxes(this);
     setPage(Page_Selection, new SelectionPage(this));
     setPage(Page_Options, new OptionsPage(this));
     setPage(Page_Review, new ReviewPage(this));

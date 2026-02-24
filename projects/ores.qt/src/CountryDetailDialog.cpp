@@ -36,6 +36,7 @@
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -58,6 +59,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
       nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     // Create toolbar
     toolBar_ = new QToolBar(this);

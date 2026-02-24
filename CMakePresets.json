@@ -435,8 +435,12 @@
             "packageVersion": "0.0.2",
             "displayName": "Distribute Release",
             "configurePreset": "linux-gcc-release",
-            "generators": [ "DEB" ],
-            "configurations": [ "Release" ]
+            "generators": [
+                "DEB"
+            ],
+            "configurations": [
+                "Release"
+            ]
         },
         {
             "name": "linux-clang-release",
@@ -444,8 +448,12 @@
             "packageVersion": "0.0.2",
             "displayName": "Distribute Release",
             "configurePreset": "linux-clang-release",
-            "generators": [ "DEB" ],
-            "configurations": [ "Release" ]
+            "generators": [
+                "DEB"
+            ],
+            "configurations": [
+                "Release"
+            ]
         }
     ],
     "workflowPresets": [

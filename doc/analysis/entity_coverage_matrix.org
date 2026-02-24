@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C
+:END:
+#+title: Entity Coverage Matrix
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: overview
+
+This document provides a coverage matrix for all domain entities in ORE Studio,
+showing which presentation and access layers have been implemented for each
+entity. It is intended to help identify gaps and plan future development work.
+
+* Legend
+
+The following abbreviations are used in the coverage columns:
+
+- =Y= - Implemented
+- =N= - Not implemented
+
+Coverage layers:
+
+| Column   | Description                                         |
+|----------+-----------------------------------------------------|
+| SQL      | PostgreSQL table definition exists                  |
+| Domain   | C++ domain type in the component's domain directory |
+| Tbl IO   | Table I/O (database serialisation)                  |
+| JSON IO  | JSON serialisation support                          |
+| Qt       | Qt desktop UI (list window, detail dialog, history) |
+| HTTP     | REST API endpoint in =ores.http.server=             |
+| CLI      | Command-line interface support in =ores.cli=        |
+| Shell    | REPL shell command in =ores.comms.shell=            |
+| Wt       | Web UI component in =ores.wt=                       |
+
+* ores.refdata
+
+Reference data entities representing the ORE domain model.
+
+| Entity                          | SQL | Domain | Tbl IO | JSON IO | Qt | HTTP | CLI | Shell | Wt |
+|---------------------------------+-----+--------+--------+---------+----+------+-----+-------+----|
+| account_type                    | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| book                            | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| book_status                     | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| business_centre                 | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| business_unit                   | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| contact_type                    | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| counterparty                    | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| counterparty_contact_information| Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| counterparty_identifier         | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| country                         | Y   | Y      | Y      | Y       | Y  | N    | Y   | Y     | Y  |
+| currency                        | Y   | Y      | Y      | Y       | Y  | Y    | Y   | Y     | Y  |
+| party                           | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| party_contact_information       | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| party_counterparty              | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| party_id_scheme                 | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| party_identifier                | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| party_status                    | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| party_type                      | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| portfolio                       | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| purpose_type                    | N   | Y      | N      | Y       | Y  | N    | N   | N     | N  |
+| rounding_type                   | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+
+Entities with domain types but no SQL table (lookup/enum types): =asset_class=,
+=asset_measure=, =benchmark_rate=, =business_process=, =cashflow_type=,
+=entity_classification=, =local_jurisdiction=, =party_category=,
+=party_relationship=, =party_role=, =person_role=, =regulatory_corporate_sector=,
+=reporting_regime=, =supervisory_body=.
+
+* ores.iam
+
+Identity and access management entities.
+
+| Entity              | SQL | Domain | Tbl IO | JSON IO | Qt | HTTP | CLI | Shell | Wt |
+|---------------------+-----+--------+--------+---------+----+------+-----+-------+----|
+| account             | Y   | Y      | Y      | Y       | Y  | Y    | Y   | Y     | Y  |
+| account_party       | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| login_info          | Y   | Y      | Y      | Y       | N  | Y    | Y   | N     | N  |
+| permission          | Y   | Y      | Y      | Y       | N  | Y    | Y   | Y     | N  |
+| role                | Y   | Y      | Y      | Y       | Y  | Y    | Y   | Y     | N  |
+| session             | Y   | Y      | N      | Y       | N  | Y    | N   | N     | N  |
+| tenant              | Y   | Y      | Y      | Y       | Y  | N    | N   | Y     | N  |
+| tenant_status       | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| tenant_type         | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+
+* ores.dq
+
+Data quality and governance entities.
+
+| Entity                       | SQL | Domain | Tbl IO | JSON IO | Qt | HTTP | CLI | Shell | Wt |
+|------------------------------+-----+--------+--------+---------+----+------+-----+-------+----|
+| artefact_type                | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| catalog                      | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| change_reason                | Y   | Y      | Y      | Y       | Y  | N    | Y   | Y     | N  |
+| change_reason_category       | Y   | Y      | Y      | Y       | Y  | N    | Y   | Y     | N  |
+| coding_scheme                | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| coding_scheme_authority_type | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| data_domain                  | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| dataset                      | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| dataset_bundle               | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| dataset_bundle_member        | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| dataset_dependency           | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| methodology                  | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| nature_dimension             | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| origin_dimension             | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| subject_area                 | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| treatment_dimension          | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+
+* ores.trading
+
+Trading and trade lifecycle management entities.
+
+| Entity            | SQL | Domain | Tbl IO | JSON IO | Qt | HTTP | CLI | Shell | Wt |
+|-------------------+-----+--------+--------+---------+----+------+-----+-------+----|
+| lifecycle_event   | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| party_role_type   | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| trade             | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| trade_id_type     | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| trade_identifier  | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| trade_party_role  | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+| trade_type        | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
+
+* ores.variability
+
+Feature flag and runtime configuration entities.
+
+| Entity        | SQL | Domain | Tbl IO | JSON IO | Qt | HTTP | CLI | Shell | Wt |
+|---------------+-----+--------+--------+---------+----+------+-----+-------+----|
+| feature_flags | Y   | Y      | Y      | Y       | Y  | Y    | Y   | Y     | N  |
+
+* ores.assets
+
+Asset management entities for images and visual resources.
+
+| Entity    | SQL | Domain | Tbl IO | JSON IO | Qt | HTTP | CLI | Shell | Wt |
+|-----------+-----+--------+--------+---------+----+------+-----+-------+----|
+| image     | Y   | Y      | N      | Y       | N  | Y    | N   | N     | N  |
+| image_tag | Y   | Y      | N      | Y       | N  | N    | N   | N     | N  |
+| tag       | Y   | Y      | N      | Y       | N  | N    | N   | N     | N  |
+
+* Coverage Gaps Summary
+
+The following tables identify entities that are missing coverage in specific
+layers, to guide future sprint planning.
+
+** Missing Qt UI
+
+Entities that have full domain/persistence support but no Qt desktop UI:
+
+- =ores.refdata=: =account_type=, =counterparty_contact_information=,
+  =counterparty_identifier=, =party_contact_information=,
+  =party_counterparty=, =party_identifier=
+- =ores.iam=: =account_party=, =login_info=, =permission=, =session=,
+  =tenant_status=
+- =ores.dq=: =artefact_type=, =dataset_bundle_member=, =dataset_dependency=
+- =ores.trading=: =lifecycle_event=, =party_role_type=, =trade_id_type=,
+  =trade_identifier=, =trade_party_role=, =trade_type=
+- =ores.assets=: =image=, =image_tag=, =tag=
+
+** Missing HTTP Endpoints
+
+Entities that have domain/persistence support but no REST API endpoint:
+
+- =ores.refdata=: all except =currency=
+- =ores.iam=: =tenant=, =tenant_status=, =tenant_type=
+- =ores.dq=: all entities
+- =ores.trading=: all entities
+- =ores.assets=: =image_tag=, =tag=
+
+** Missing CLI Support
+
+Entities that have domain/persistence support but no CLI command:
+
+- =ores.refdata=: all except =country= and =currency=
+- =ores.iam=: =account_party=, =session=, =tenant=, =tenant_status=,
+  =tenant_type=
+- =ores.dq=: all except =change_reason= and =change_reason_category=
+- =ores.trading=: all entities
+- =ores.variability=: none (=feature_flags= covered)
+- =ores.assets=: all entities
+
+** Missing Shell Commands
+
+Entities that have domain/persistence support but no REPL shell command:
+
+- =ores.refdata=: all except =country= and =currency=
+- =ores.iam=: =account_party=, =login_info=, =session=, =tenant_status=,
+  =tenant_type=
+- =ores.dq=: all except =change_reason= and =change_reason_category=
+- =ores.trading=: all entities
+- =ores.variability=: none (=feature_flags= covered)
+- =ores.assets=: all entities
+
+** Missing Wt Web UI
+
+Entities that have domain/persistence support but no Wt web UI component:
+
+- All entities except =ores.iam/account=, =ores.refdata/country=, and
+  =ores.refdata/currency=. Wt coverage is minimal and concentrated on
+  the most frequently accessed reference data types.

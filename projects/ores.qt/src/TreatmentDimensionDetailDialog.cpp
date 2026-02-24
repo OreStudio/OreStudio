@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_TreatmentDimensionDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -39,6 +40,7 @@ TreatmentDimensionDetailDialog::TreatmentDimensionDetailDialog(QWidget* parent)
       isReadOnly_(false) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupConnections();
 }
 

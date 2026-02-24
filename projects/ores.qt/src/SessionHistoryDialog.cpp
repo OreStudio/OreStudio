@@ -36,6 +36,7 @@
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 namespace ores::qt {
 
@@ -214,6 +215,7 @@ SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager,
 SessionHistoryDialog::~SessionHistoryDialog() = default;
 
 void SessionHistoryDialog::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     setWindowTitle(tr("Session History"));
     setMinimumSize(900, 600);
 

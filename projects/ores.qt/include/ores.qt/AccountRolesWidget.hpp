@@ -21,11 +21,11 @@
 #define ORES_QT_ACCOUNT_ROLES_WIDGET_HPP
 
 #include <QWidget>
+#include <QComboBox>
 #include <QListWidget>
 #include <QToolButton>
 #include <QGroupBox>
 #include <vector>
-#include <functional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -36,8 +36,7 @@ namespace ores::qt {
 /**
  * @brief Widget for managing roles assigned to an account.
  *
- * This widget displays the roles currently assigned to an account
- * and allows assigning/revoking roles via buttons.
+ * Changes are staged locally and only committed when the parent dialog saves.
  */
 class AccountRolesWidget : public QWidget {
     Q_OBJECT
@@ -56,35 +55,25 @@ public:
     explicit AccountRolesWidget(QWidget* parent = nullptr);
     ~AccountRolesWidget() override = default;
 
-    /**
-     * @brief Sets the client manager for making requests.
-     */
     void setClientManager(ClientManager* clientManager);
-
-    /**
-     * @brief Sets the account ID to manage roles for.
-     */
     void setAccountId(const boost::uuids::uuid& accountId);
 
     /**
-     * @brief Loads the roles for the current account.
+     * @brief Load roles. If accountId is set, also fetches assigned roles.
+     * If accountId is nil (create mode), only available roles are loaded.
      */
-    void loadRoles();
+    void load();
 
-    /**
-     * @brief Sets the widget to read-only mode.
-     */
     void setReadOnly(bool readOnly);
 
-    /**
-     * @brief Gets the currently assigned role IDs.
-     */
-    std::vector<boost::uuids::uuid> getAssignedRoleIds() const;
+    [[nodiscard]] bool hasPendingChanges() const;
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingAdds() const;
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingRemoves() const;
 
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& message);
-    void rolesChanged();
+    void roleListChanged();
 
 private slots:
     void onAssignRoleClicked();
@@ -92,34 +81,24 @@ private slots:
     void onRoleSelectionChanged();
 
 private:
+    void setupUi();
     void updateButtonStates();
     void refreshRolesList();
 
-    /**
-     * @brief Executes an async role operation with common success/error handling.
-     *
-     * @param requestFunc Function that performs the actual request
-     * @param roleName Name of the role for status messages
-     * @param successMessage Message format for success (role name appended)
-     * @param errorTitle Title for error dialog
-     */
-    void executeRoleOperation(
-        std::function<std::pair<bool, std::string>()> requestFunc,
-        const std::string& roleName,
-        const QString& successMessage,
-        const QString& errorTitle);
-
-private:
-    QGroupBox* groupBox_;
+    QGroupBox*   groupBox_;
     QListWidget* rolesList_;
+    QComboBox*   roleCombo_;
     QToolButton* assignButton_;
     QToolButton* revokeButton_;
 
-    ClientManager* clientManager_;
+    ClientManager*     clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
+    bool               isReadOnly_{false};
+
     std::vector<iam::domain::role> assignedRoles_;
     std::vector<iam::domain::role> allRoles_;
-    bool isReadOnly_{false};
+    std::vector<boost::uuids::uuid> pendingAdds_;
+    std::vector<boost::uuids::uuid> pendingRemoves_;
 };
 
 }

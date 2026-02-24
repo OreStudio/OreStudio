@@ -136,7 +136,7 @@ begin
             p_target_tenant_id,
             m.new_id, 0, v_root_party_id, m.unit_name,
             parent_m.new_id, m.unit_code, m.business_centre_code,
-            current_user, current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
             'Published from organisation dataset'
         from bu_publish_map m
         left join bu_publish_map parent_m

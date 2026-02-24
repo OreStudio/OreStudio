@@ -73,6 +73,26 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Get the display name and category of a specific party.
+-- Used during login to include party context in the login response without
+-- requiring inline SQL in C++ code.
+create or replace function ores_refdata_get_party_info_fn(
+    p_party_id uuid,
+    p_tenant_id uuid
+) returns table (
+    full_name text,
+    party_category text
+) as $$
+begin
+    return query
+    select p.full_name, p.party_category
+    from ores_refdata_parties_tbl p
+    where p.id = p_party_id
+      and p.tenant_id = p_tenant_id
+      and p.valid_to = ores_utility_infinity_timestamp_fn();
+end;
+$$ language plpgsql stable security definer;
+
 -- Compute the visible party set for a given party within a tenant.
 -- Returns an array of UUIDs containing the given party and all its descendants
 -- in the party hierarchy. Used to populate app.visible_party_ids session

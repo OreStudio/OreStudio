@@ -1,0 +1,417 @@
+:PROPERTIES:
+:ID: B7D4E2A1-3C9F-4E8B-A5D2-1F6B8C0E3A94
+:END:
+#+title: CLI Domain Sub-menus Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+The =ores.cli= component currently exposes all entity commands at a single flat
+level:
+
+#+begin_example
+ores.cli currencies list
+ores.cli accounts add --username foo
+ores.cli change-reasons list
+#+end_example
+
+With 9 entities today and the [[file:../analysis/entity_coverage_matrix.org][entity coverage matrix]] showing dozens more to be
+added across =ORES.REFDATA=, =ORES.IAM=, =ORES.DQ=, =ORES.TRADING=, and
+=ORES.VARIABILITY=, the flat layout will become unwieldy. This plan introduces a
+domain sub-menu layer, mirroring the same grouping approach planned for
+=ores.comms.shell=.
+
+** Problem
+
+- All 9 entity commands are at the root of the CLI, with no logical grouping.
+- The =validate_command_name()= function will need to grow with every new entity,
+  making it a maintenance burden.
+- Help output lists all entities in a single undifferentiated block, making
+  discovery difficult.
+- The flat structure does not map to the underlying schema domains
+  (=ORES.REFDATA=, =ORES.IAM=, =ORES.DQ=, =ORES.TRADING=, =ORES.VARIABILITY=),
+  making the CLI inconsistent with the rest of the system.
+
+** Goals
+
+- Introduce a domain layer between the top-level =ores.cli= invocation and the
+  entity commands, yielding a three-level syntax:
+  =ores.cli <domain> <entity> <operation> [options]=.
+- Group existing entities under their correct domain.
+- Update help output to show commands grouped by domain.
+- Update all parser tests.
+- Preserve all existing entity parser logic without modification.
+
+** Non-Goals
+
+- Backward-compatible aliases for the old flat commands. The project is in an
+  early stage and a clean break is the correct choice.
+- Adding new entity commands (out of scope; this plan only restructures existing
+  ones).
+- Changing entity option structs or application dispatch logic.
+
+* Target Command Syntax
+
+#+begin_example
+ores.cli refdata currencies list
+ores.cli refdata currencies add --iso-code USD --name "US Dollar" --modified-by system
+ores.cli refdata currencies export --format json
+
+ores.cli iam accounts list
+ores.cli iam accounts add --username alice --email alice@example.com --password s3cr3t --modified-by system
+ores.cli iam roles list
+ores.cli iam permissions list
+ores.cli iam login-info list
+ores.cli iam tenants list
+
+ores.cli dq change-reasons list
+ores.cli dq change-reason-categories list
+
+ores.cli variability feature-flags list
+#+end_example
+
+Top-level help (=ores.cli --help=) shows the domain groups and a brief summary
+of each. Domain-level help (=ores.cli refdata --help=) lists the entities in
+that domain. Entity/operation help (=ores.cli refdata currencies list --help=)
+is unchanged from today.
+
+* Domain Groupings
+
+| Domain      | Entities                                                                          |
+|-------------+-----------------------------------------------------------------------------------|
+| =refdata=   | =currencies=, =countries=                                                         |
+| =iam=       | =accounts=, =roles=, =permissions=, =login-info=                                  |
+| =dq=        | =change-reasons=, =change-reason-categories=                                      |
+| =variability= | =feature-flags=                                                                 |
+
+* Phase 1: Add =domain= Enum
+
+Add a new header =projects/ores.cli/include/ores.cli/config/domain.hpp= to
+enumerate the four domains.
+
+#+begin_src cpp
+namespace ores::cli::config {
+
+/**
+ * @brief Top-level domain sub-menus exposed by the CLI.
+ */
+enum class domain {
+    refdata,
+    iam,
+    dq,
+    variability
+};
+
+}
+#+end_src
+
+Files:
+- =projects/ores.cli/include/ores.cli/config/domain.hpp= (new)
+- =projects/ores.cli/include/ores.cli/config/ores.cli.config.hpp= (add include)
+
+* Phase 2: Add Domain-Level Parser Helpers
+
+Add =projects/ores.cli/include/ores.cli/config/domain_parsers/= and the
+corresponding =src= directory, with one header + source per domain. Each domain
+parser follows the same pattern as the existing entity parsers in
+=entity_parsers/=: it receives the remaining arguments, identifies the entity
+sub-command, and delegates to the appropriate entity parser.
+
+** Domain parser interface (example: refdata)
+
+#+begin_src cpp
+// include/ores.cli/config/domain_parsers/refdata_parser.hpp
+namespace ores::cli::config::domain_parsers {
+
+std::optional<options>
+handle_refdata_command(bool has_help,
+    const boost::program_options::parsed_options& po,
+    std::ostream& info,
+    boost::program_options::variables_map& vm);
+
+} // namespace ores::cli::config::domain_parsers
+#+end_src
+
+** refdata_parser
+
+Dispatches to =currencies_parser= and =countries_parser=.
+
+Files:
+- =include/ores.cli/config/domain_parsers/refdata_parser.hpp=
+- =src/config/domain_parsers/refdata_parser.cpp=
+
+** iam_parser
+
+Dispatches to =accounts_parser=, =roles_parser=, =permissions_parser=, and
+=login_info_parser=.
+
+Files:
+- =include/ores.cli/config/domain_parsers/iam_parser.hpp=
+- =src/config/domain_parsers/iam_parser.cpp=
+
+** dq_parser
+
+Dispatches to =change_reasons_parser= and
+=change_reason_categories_parser=.
+
+Files:
+- =include/ores.cli/config/domain_parsers/dq_parser.hpp=
+- =src/config/domain_parsers/dq_parser.cpp=
+
+** variability_parser
+
+Dispatches to =feature_flags_parser=.
+
+Files:
+- =include/ores.cli/config/domain_parsers/variability_parser.hpp=
+- =src/config/domain_parsers/variability_parser.cpp=
+
+* Phase 3: Update =parser.cpp=
+
+=parser.cpp= is the only file that changes at the top level. The following
+functions require modification.
+
+** 3.1 Positional arguments
+
+The positional options currently accept =command= (1 token) then =args= (-1).
+Update to accept =domain= (1 token), =command= (1 token), then =args= (-1):
+
+#+begin_src cpp
+positional_options_description make_positional_options() {
+    positional_options_description r;
+    r.add("domain", 1).add("command", 1).add("args", -1);
+    return r;
+}
+#+end_src
+
+Also update =make_top_level_hidden_options_description()= to add:
+
+#+begin_src cpp
+("domain", value<std::string>(), "Domain sub-menu.")
+#+end_src
+
+** 3.2 Replace =validate_command_name()= with =validate_domain_name()=
+
+#+begin_src cpp
+void validate_domain_name(const std::string& domain_name) {
+    const bool is_valid(
+        domain_name == refdata_domain_name ||
+        domain_name == iam_domain_name     ||
+        domain_name == dq_domain_name      ||
+        domain_name == variability_domain_name);
+
+    if (!is_valid)
+        BOOST_THROW_EXCEPTION(parser_exception(
+            std::format("Invalid or unsupported domain: {}. "
+                "Available domains: refdata, iam, dq, variability",
+                domain_name)));
+}
+#+end_src
+
+** 3.3 Update =handle_command()= to two-level dispatch
+
+Rename the existing =handle_command()= to =handle_domain_command()= and route
+by domain, not entity:
+
+#+begin_src cpp
+std::optional<options>
+handle_domain_command(const std::string& domain_name, const bool has_help,
+    const parsed_options& po, std::ostream& info, variables_map& vm) {
+
+    if (domain_name == refdata_domain_name)
+        return domain_parsers::handle_refdata_command(has_help, po, info, vm);
+    if (domain_name == iam_domain_name)
+        return domain_parsers::handle_iam_command(has_help, po, info, vm);
+    if (domain_name == dq_domain_name)
+        return domain_parsers::handle_dq_command(has_help, po, info, vm);
+    if (domain_name == variability_domain_name)
+        return domain_parsers::handle_variability_command(has_help, po, info, vm);
+
+    return {}; // unreachable
+}
+#+end_src
+
+** 3.4 Update =print_help()=
+
+Group entities by domain in help output. Top-level =--help= shows:
+
+#+begin_example
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+
+ores.cli uses a domain-based interface: <domain> <entity> <operation> <options>.
+See below for a list of valid domains and their entities.
+
+Global options:
+  ...
+
+Domains:
+
+  refdata    Reference data: currencies, countries.
+  iam        Identity and access management: accounts, roles, permissions, login-info.
+  dq         Data quality: change-reasons, change-reason-categories.
+  variability  Feature flags and variability: feature-flags.
+
+For entity and operation specific options, use:
+  <domain> <entity> <operation> --help
+#+end_example
+
+** 3.5 Add domain-level =print_help()= variants
+
+Each domain parser prints its own entity list when invoked with =--help= but no
+entity. Example for =refdata=:
+
+#+begin_example
+refdata: Reference data management.
+
+  currencies   Manage currencies (import, export, list, delete, add).
+  countries    Manage countries (list, delete, add).
+
+Use: ores.cli refdata <entity> <operation> --help for details.
+#+end_example
+
+** 3.6 New domain name constants in =parser.cpp=
+
+#+begin_src cpp
+const std::string refdata_domain_name("refdata");
+const std::string refdata_domain_desc("Reference data: currencies, countries.");
+
+const std::string iam_domain_name("iam");
+const std::string iam_domain_desc("Identity and access management: accounts, roles, permissions, login-info.");
+
+const std::string dq_domain_name("dq");
+const std::string dq_domain_desc("Data quality: change-reasons, change-reason-categories.");
+
+const std::string variability_domain_name("variability");
+const std::string variability_domain_desc("Feature flags and variability: feature-flags.");
+#+end_src
+
+The existing entity name constants (=currencies_command_name=, etc.) move from
+=parser.cpp= into the respective domain parsers.
+
+* Phase 4: Update =entity.hpp=
+
+The =entity= enum is currently used in =options.hpp= and dispatched from
+=application.cpp=. It does not change --- the entity values remain the same.
+However, the enum may gain a comment grouping to make the mapping explicit:
+
+#+begin_src cpp
+enum class entity {
+    // refdata
+    currencies,
+    countries,
+    // iam
+    accounts,
+    roles,
+    permissions,
+    login_info,
+    // dq
+    change_reasons,
+    change_reason_categories,
+    // variability
+    feature_flags
+};
+#+end_src
+
+* Phase 5: Update CMakeLists
+
+Add the new =domain_parsers/= source files to the =ores.cli= target in
+=projects/ores.cli/CMakeLists.txt=.
+
+Files:
+- =projects/ores.cli/CMakeLists.txt= (add 4 new =.cpp= sources)
+
+* Phase 6: Update Tests
+
+** 6.1 =parser_tests.cpp=
+
+All test cases that use the old flat syntax must be updated to the new three-token
+syntax. For example:
+
+| Before                                   | After                                           |
+|------------------------------------------+-------------------------------------------------|
+| ={"-h"}=                                 | ={"-h"}= (unchanged)                            |
+| ={"currencies", "list"}=                 | ={"refdata", "currencies", "list"}=             |
+| ={"currencies", "add", "--iso-code",...}= | ={"refdata", "currencies", "add", "--iso-code",...}= |
+| ={"accounts", "list"}=                   | ={"iam", "accounts", "list"}=                   |
+| ={"roles", "list"}=                      | ={"iam", "roles", "list"}=                      |
+| ={"permissions", "list"}=                | ={"iam", "permissions", "list"}=                |
+| ={"login-info", "list"}=                 | ={"iam", "login-info", "list"}=                 |
+| ={"change-reasons", "list"}=             | ={"dq", "change-reasons", "list"}=              |
+| ={"change-reason-categories", "list"}=   | ={"dq", "change-reason-categories", "list"}=    |
+| ={"feature-flags", "list"}=              | ={"variability", "feature-flags", "list"}=      |
+
+Add new negative test cases:
+- Invalid domain name → =parser_exception= with helpful message.
+- Valid domain, invalid entity → =parser_exception= with helpful message.
+- Domain-only with =--help= → prints domain help without exception.
+
+Files:
+- =projects/ores.cli/tests/parser_tests.cpp=
+
+* Phase 7: Update CLI Recipes
+
+Update =doc/recipes/cli_recipes.org= to reflect the new three-token syntax for
+all examples.
+
+Files:
+- =doc/recipes/cli_recipes.org=
+
+* Scope Summary
+
+| Phase | Description                   | New Files | Modified Files |
+|-------+-------------------------------+-----------+----------------|
+|     1 | Add =domain= enum             |         1 |              1 |
+|     2 | Domain parser headers + sources |       8 |              0 |
+|     3 | Update =parser.cpp=           |         0 |              1 |
+|     4 | Group =entity.hpp= comments   |         0 |              1 |
+|     5 | Update CMakeLists             |         0 |              1 |
+|     6 | Update tests                  |         0 |              1 |
+|     7 | Update CLI recipes            |         0 |              1 |
+| Total |                               |         9 |              6 |
+
+* Build and Verify
+
+#+begin_example
+cmake --build --preset linux-clang-debug
+cmake --build --preset linux-clang-debug --target rat
+#+end_example
+
+Manually smoke-test the new syntax:
+
+#+begin_example
+./ores.cli --help
+./ores.cli refdata --help
+./ores.cli refdata currencies --help
+./ores.cli refdata currencies list
+./ores.cli iam accounts list
+./ores.cli dq change-reasons list
+./ores.cli variability feature-flags list
+#+end_example
+
+Verify that an unknown domain prints the expected error:
+
+#+begin_example
+./ores.cli trading --help
+# Expected: Usage error: Invalid or unsupported domain: trading. ...
+#+end_example
+
+* Dependencies
+
+- No external dependencies. All changes are internal to =ores.cli=.
+- =application.cpp= and the entity parser files (=entity_parsers/=) are
+  untouched; only =parser.cpp= and new domain parser files change.
+- Requires the entity coverage matrix (=doc/analysis/entity_coverage_matrix.org=)
+  to be up to date, which it now is.
+
+* Open Questions
+
+- Should =trading= be included as a domain now (empty, no entities yet) or only
+  added when the first trading CLI entity is implemented? Recommendation: add it
+  only when needed to avoid empty help groups.
+- Should domain parsers live in a subdirectory of =entity_parsers/= or in a
+  sibling =domain_parsers/= directory? Recommendation: sibling directory
+  =domain_parsers/= at the same level as =entity_parsers/= for clear
+  separation of concerns.

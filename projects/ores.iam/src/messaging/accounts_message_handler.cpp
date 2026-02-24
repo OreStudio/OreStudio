@@ -182,6 +182,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_session_samples_request(payload, remote_address);
     case message_type::select_party_request:
         co_return co_await handle_select_party_request(payload, remote_address);
+    case message_type::get_account_parties_request:
+        co_return co_await handle_get_account_parties_request(payload, remote_address);
     case message_type::get_account_parties_by_account_request:
         co_return co_await handle_get_account_parties_by_account_request(payload, remote_address);
     case message_type::save_account_party_request:
@@ -276,7 +278,7 @@ handle_save_account_request(std::span<const std::byte> payload,
         try {
             // Create a fresh context for this request to avoid race conditions
             // with concurrent requests from different tenants.
-            // Note: uses hostname if provided, otherwise uses handler's configured tenant.
+            // Note: uses hostname if provided, otherwise uses the session's tenant.
             database::context operation_ctx = [&]() {
                 if (!hostname.empty()) {
                     BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
@@ -284,9 +286,9 @@ handle_save_account_request(std::span<const std::byte> payload,
                         database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
                     return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
                 } else {
-                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
-                                               << ctx_.tenant_id().to_string();
-                    return ctx_.with_tenant(ctx_.tenant_id());
+                    BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using session tenant: "
+                                               << auth_result->tenant_id.to_string();
+                    return make_request_context(*auth_result);
                 }
             }();
 
@@ -543,9 +545,30 @@ handle_login_request(std::span<const std::byte> payload,
                         boost::lexical_cast<boost::uuids::uuid>(s));
                 }
 
+                // Fetch party info so the client can display the party name
+                // and detect the system party.  Populate available_parties
+                // even for a single party so the client always receives name
+                // and category (consistent with the multi-party path).
+                auto party_info = database::repository::execute_parameterized_string_query(
+                    login_ctx,
+                    "SELECT full_name, party_category "
+                    "FROM ores_refdata_get_party_info_fn($1::uuid, $2::uuid)",
+                    {boost::uuids::to_string(sess->party_id),
+                     tenant_id.to_string()},
+                    lg(), "Fetching single-party info");
+                const std::string single_party_name =
+                    party_info.empty() ? "" : party_info.front();
+                const std::string single_party_category =
+                    party_info.size() < 2 ? "" : party_info[1];
+                response_available_parties.push_back(
+                    party_summary{.id = sess->party_id,
+                                  .name = single_party_name,
+                                  .party_category = single_party_category});
+
                 response_selected_party_id = sess->party_id;
                 BOOST_LOG_SEV(lg(), info) << "Party context resolved: party_id="
                                           << sess->party_id
+                                          << " (" << single_party_name << ")"
                                           << ", visible_parties="
                                           << sess->visible_party_ids.size();
             } else {
@@ -554,16 +577,21 @@ handle_login_request(std::span<const std::byte> payload,
                                           << account.id << ": " << parties.size()
                                           << " parties, deferring selection to client";
                 for (const auto& ap : parties) {
-                    auto names = database::repository::execute_parameterized_string_query(
+                    auto party_info = database::repository::execute_parameterized_string_query(
                         login_ctx,
-                        "SELECT full_name FROM ores_refdata_parties_tbl "
-                        "WHERE id=$1::uuid AND valid_to='infinity' AND tenant_id=$2::uuid",
+                        "SELECT full_name, party_category "
+                        "FROM ores_refdata_get_party_info_fn($1::uuid, $2::uuid)",
                         {boost::uuids::to_string(ap.party_id),
                          tenant_id.to_string()},
-                        lg(), "Fetching party name");
-                    const std::string party_name = names.empty() ? "" : names.front();
+                        lg(), "Fetching party info");
+                    const std::string party_name =
+                        party_info.empty() ? "" : party_info.front();
+                    const std::string party_category =
+                        party_info.size() < 2 ? "" : party_info[1];
                     response_available_parties.push_back(
-                        party_summary{.id = ap.party_id, .name = party_name});
+                        party_summary{.id = ap.party_id,
+                                      .name = party_name,
+                                      .party_category = party_category});
                 }
             }
         } catch (const std::exception& e) {
@@ -1686,7 +1714,7 @@ handle_assign_role_request(std::span<const std::byte> payload,
 
     try {
         auth_service_->assign_role(request.account_id, request.role_id,
-            boost::uuids::to_string(session->account_id));
+            session->username);
 
         BOOST_LOG_SEV(lg(), info) << "Assigned role "
                                   << boost::uuids::to_string(request.role_id)
@@ -1959,7 +1987,7 @@ handle_assign_role_by_name_request(std::span<const std::byte> payload,
         }
 
         auth_service_->assign_role(target->account_id, target->role_id,
-            boost::uuids::to_string(session->account_id));
+            session->username);
 
         BOOST_LOG_SEV(lg(), info) << "Assigned role " << request.role_name
                                   << " to account " << request.principal;
@@ -2374,6 +2402,39 @@ handle_select_party_request(std::span<const std::byte> payload,
 // =============================================================================
 // Account Party Handlers
 // =============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_parties_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_parties_request from "
+                               << remote_address;
+
+    auto request_result = get_account_parties_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize get_account_parties_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "get_account_parties_request denied: not authenticated "
+            << remote_address;
+        co_return std::unexpected(
+            ores::utility::serialization::error_code::authentication_failed);
+    }
+
+    auto ctx = make_request_context(*session);
+    repository::account_party_repository ap_repo(ctx);
+    const auto parties = ap_repo.read_latest();
+
+    BOOST_LOG_SEV(lg(), debug) << "Returning " << parties.size()
+                               << " account party records";
+
+    get_account_parties_response response{.account_parties = parties};
+    co_return response.serialize();
+}
 
 accounts_message_handler::handler_result accounts_message_handler::
 handle_get_account_parties_by_account_request(std::span<const std::byte> payload,
@@ -3140,9 +3201,10 @@ handle_provision_tenant_request(std::span<const std::byte> payload,
     };
 
     const auto sql = std::format(
-        "SELECT ores_iam_provision_tenant_fn('{}', '{}', '{}', '{}', '{}')",
+        "SELECT ores_iam_provision_tenant_fn('{}', '{}', '{}', '{}', '{}', '{}')",
         escape(request.type), escape(request.code), escape(request.name),
-        escape(request.hostname), escape(request.description));
+        escape(request.hostname), escape(request.description),
+        escape(auth_result->username));
 
     try {
         auto rows = database::repository::execute_raw_multi_column_query(

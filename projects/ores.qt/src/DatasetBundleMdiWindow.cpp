@@ -29,6 +29,7 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -61,6 +62,7 @@ DatasetBundleMdiWindow::DatasetBundleMdiWindow(
 }
 
 void DatasetBundleMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();

@@ -321,6 +321,18 @@ public:
     QString currentPartyName() const { return current_party_name_; }
 
     /**
+     * @brief Get the category of the currently selected party.
+     *
+     * @return "System", "Operational", or empty string if no party selected.
+     */
+    QString currentPartyCategory() const { return current_party_category_; }
+
+    /**
+     * @brief Returns true if the currently selected party is the system party.
+     */
+    bool isSystemParty() const { return current_party_category_ == "System"; }
+
+    /**
      * @brief Select a party for the current session.
      *
      * Sends select_party_request to the server. On success, updates the
@@ -710,6 +722,7 @@ private:
     // Currently selected party context
     boost::uuids::uuid current_party_id_;
     QString current_party_name_;
+    QString current_party_category_;
 };
 
 }

@@ -20,6 +20,7 @@
 #include "ores.qt/AddItemDialog.hpp"
 #include "ores.qt/TagSelectorWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include <QVBoxLayout>
@@ -54,6 +55,7 @@ AddItemDialog::~AddItemDialog() {
 }
 
 void AddItemDialog::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);

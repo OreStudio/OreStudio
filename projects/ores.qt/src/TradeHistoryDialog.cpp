@@ -26,6 +26,7 @@
 #include "ui_TradeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +49,7 @@ TradeHistoryDialog::TradeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();

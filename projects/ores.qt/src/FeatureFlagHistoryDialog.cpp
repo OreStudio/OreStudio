@@ -29,6 +29,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -55,6 +56,7 @@ FeatureFlagHistoryDialog::FeatureFlagHistoryDialog(QString name,
                               << flagName_.toStdString();
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     setupToolbar();
 

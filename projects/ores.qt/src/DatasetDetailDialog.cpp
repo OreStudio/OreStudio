@@ -27,6 +27,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "ui_DatasetDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
@@ -45,6 +46,7 @@ DatasetDetailDialog::DatasetDetailDialog(QWidget* parent)
       isReadOnly_(false) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     ui_->asOfDateEdit->setDate(QDate::currentDate());
     setupConnections();
 }

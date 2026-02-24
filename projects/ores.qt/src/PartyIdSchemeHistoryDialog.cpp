@@ -26,6 +26,7 @@
 #include "ui_PartyIdSchemeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +47,7 @@ PartyIdSchemeHistoryDialog::PartyIdSchemeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();

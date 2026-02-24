@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/RoleDetailDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QListWidgetItem>
 #include <algorithm>
@@ -32,6 +33,7 @@ RoleDetailDialog::RoleDetailDialog(QWidget* parent)
       ui_(std::make_unique<Ui::RoleDetailDialog>()) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     BOOST_LOG_SEV(lg(), debug) << "RoleDetailDialog created";
 }
 

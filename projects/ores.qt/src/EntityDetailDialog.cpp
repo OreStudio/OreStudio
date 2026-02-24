@@ -45,6 +45,7 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
@@ -67,6 +68,7 @@ EntityDetailDialog::EntityDetailDialog(
       hierarchyTree_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupIdentifierTable();
     setupContactTable();
@@ -217,6 +219,10 @@ void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
                     return imageCache_->getBusinessCentreFlagIcon(code);
                 });
         });
+        set_combo_flag_icons(ui_->businessCenterCombo,
+            [this](const std::string& code) {
+                return imageCache_->getBusinessCentreFlagIcon(code);
+            });
     }
 }
 

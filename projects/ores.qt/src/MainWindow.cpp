@@ -94,6 +94,7 @@
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
 #include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/MasterPasswordDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include "ores.utility/version/version.hpp"
@@ -111,14 +112,56 @@ MainWindow::MainWindow(QWidget* parent) :
     changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
-    telemetryViewerWindow_(nullptr) {
+    telemetryViewerWindow_(nullptr),
+    tenantStatusWidget_(nullptr), tenantStatusNameLabel_(nullptr),
+    partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     mdiArea_ = new MdiAreaWithBackground(this);
 
     setWindowIcon(QIcon(":/images/modern-icon.png"));
+
+    // Helper: build a status bar chip with a small icon and a name label.
+    // The outer widget carries the border/background; the tooltip is set at
+    // update time so it always reflects the current value.
+    auto makeStatusChip = [this](Icon icon) -> std::pair<QWidget*, QLabel*> {
+        auto* chip = new QWidget(this);
+        auto* layout = new QHBoxLayout(chip);
+        layout->setContentsMargins(6, 0, 8, 0);
+        layout->setSpacing(4);
+
+        auto* iconLbl = new QLabel(chip);
+        iconLbl->setPixmap(
+            IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor)
+                .pixmap(14, 14));
+        iconLbl->setFixedSize(14, 14);
+
+        auto* nameLbl = new QLabel(chip);
+        layout->addWidget(iconLbl);
+        layout->addWidget(nameLbl);
+        return {chip, nameLbl};
+    };
+
+    const QString normalChipStyle =
+        "QWidget { border-left: 1px solid palette(mid);"
+        " background: palette(alternateBase); }";
+
+    auto [tWidget, tName] = makeStatusChip(Icon::BuildingSkyscraper);
+    tWidget->setStyleSheet(normalChipStyle);
+    tWidget->setVisible(false);
+    tenantStatusWidget_     = tWidget;
+    tenantStatusNameLabel_  = tName;
+    ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
+
+    auto [pWidget, pName] = makeStatusChip(Icon::Organization);
+    pWidget->setStyleSheet(normalChipStyle);
+    pWidget->setVisible(false);
+    partyStatusWidget_    = pWidget;
+    partyStatusNameLabel_ = pName;
+    ui_->statusbar->addPermanentWidget(partyStatusWidget_);
 
     connectionStatusIconLabel_ = new QLabel(this);
     connectionStatusIconLabel_->setFixedWidth(20);
@@ -1049,7 +1092,8 @@ void MainWindow::createControllers() {
 
     // Create account controller (admin only functionality)
     accountController_ = std::make_unique<AccountController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        changeReasonCache_, this);
 
     // Connect account controller signals to status bar and window lifecycle
     connect(accountController_.get(), &AccountController::statusMessage,
@@ -2020,26 +2064,20 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
 void MainWindow::updateWindowTitle() {
     QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
 
-    // Add connection info if connected
+    // Add connection info if connected.
+    // username_ is in "user@tenant" format from IAM — strip the tenant suffix
+    // for the title bar; the tenant appears in the status bar chip instead.
     if (clientManager_ && clientManager_->isConnected()) {
+        const QString server =
+            QString::fromStdString(clientManager_->serverAddress());
         if (!username_.empty()) {
-            if (!party_name_.isEmpty()) {
-                // Show "username @ party_name" when party context is known
-                title += QString(" - %1 @ %2")
-                    .arg(QString::fromStdString(username_))
-                    .arg(party_name_);
-            } else {
-                // Use active connection name if available, otherwise server address
-                QString connectionInfo = !activeConnectionName_.isEmpty()
-                    ? activeConnectionName_
-                    : QString::fromStdString(clientManager_->serverAddress());
-                title += QString(" - %1@%2")
-                    .arg(QString::fromStdString(username_))
-                    .arg(connectionInfo);
-            }
+            const QString fullUser = QString::fromStdString(username_);
+            const int atIdx = fullUser.indexOf('@');
+            const QString displayUser =
+                (atIdx >= 0) ? fullUser.left(atIdx) : fullUser;
+            title += QString(" - %1 @ %2").arg(displayUser).arg(server);
         } else {
-            QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
-            title += QString(" - %1").arg(serverInfo);
+            title += QString(" - %1").arg(server);
         }
     }
 
@@ -2049,7 +2087,58 @@ void MainWindow::updateWindowTitle() {
     }
 
     setWindowTitle(title);
+    updateStatusBarFields();
     BOOST_LOG_SEV(lg(), debug) << "Window title updated: " << title.toStdString();
+}
+
+void MainWindow::updateStatusBarFields() {
+    const QString normalChipStyle =
+        "QWidget { border-left: 1px solid palette(mid);"
+        " background: palette(alternateBase); }";
+    const QString warningChipStyle =
+        "QWidget { border-left: 1px solid palette(mid); background: #7a2000; }";
+
+    const bool connected = clientManager_ && clientManager_->isConnected();
+
+    // Derive tenant name from the @tenant suffix in username_, falling back to
+    // the saved connection name when the username carries no tenant suffix.
+    QString tenantName;
+    if (!username_.empty()) {
+        const QString fullUser = QString::fromStdString(username_);
+        const int atIdx = fullUser.indexOf('@');
+        if (atIdx >= 0) {
+            tenantName = fullUser.mid(atIdx + 1);
+        }
+    }
+    if (tenantName.isEmpty()) {
+        tenantName = activeConnectionName_;
+    }
+
+    if (connected) {
+        tenantStatusNameLabel_->setText(tenantName.isEmpty() ? "Root" : tenantName);
+        tenantStatusWidget_->setToolTip("Tenant: " + tenantStatusNameLabel_->text());
+        tenantStatusWidget_->setStyleSheet(normalChipStyle);
+        tenantStatusWidget_->setVisible(true);
+    } else {
+        tenantStatusWidget_->setVisible(false);
+    }
+
+    if (connected) {
+        if (!party_name_.isEmpty()) {
+            partyStatusNameLabel_->setText(party_name_);
+            partyStatusNameLabel_->setStyleSheet("");
+            partyStatusWidget_->setToolTip("Party: " + party_name_);
+            partyStatusWidget_->setStyleSheet(normalChipStyle);
+        } else {
+            partyStatusNameLabel_->setText("No Party");
+            partyStatusNameLabel_->setStyleSheet("color: #ffccaa; font-weight: bold;");
+            partyStatusWidget_->setToolTip("Party: No party assigned");
+            partyStatusWidget_->setStyleSheet(warningChipStyle);
+        }
+        partyStatusWidget_->setVisible(true);
+    } else {
+        partyStatusWidget_->setVisible(false);
+    }
 }
 
 void MainWindow::onConnectionBrowserTriggered() {
@@ -2313,6 +2402,17 @@ void MainWindow::onLoginSuccess(const QString& username) {
 
     updateWindowTitle();
     updateMenuState();
+
+    // Warn if no party context — the account is misconfigured.
+    // Under normal circumstances the server rejects logins with no party, so
+    // this is a last-resort defensive check.
+    if (clientManager_ && clientManager_->isConnected() &&
+        party_name_.isEmpty()) {
+        MessageBoxHelper::warning(this, "No Party Assigned",
+            "Your account has no party context.\n\n"
+            "This is a configuration error — please contact your tenant "
+            "administrator to assign your account to a party before continuing.");
+    }
 }
 
 void MainWindow::showSignUpDialog(const QString& host, int port) {

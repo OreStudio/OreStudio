@@ -25,6 +25,7 @@
 #include "ui_CodingSchemeAuthorityTypeDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,6 +41,7 @@ CodingSchemeAuthorityTypeDetailDialog::CodingSchemeAuthorityTypeDetailDialog(QWi
       isReadOnly_(false) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupConnections();
 }
 

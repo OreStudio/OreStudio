@@ -26,6 +26,7 @@
 #include "ui_BusinessUnitHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +49,7 @@ BusinessUnitHistoryDialog::BusinessUnitHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();

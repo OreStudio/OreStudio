@@ -26,6 +26,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include "ui_MethodologyDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -41,6 +42,7 @@ MethodologyDetailDialog::MethodologyDetailDialog(QWidget* parent)
       isReadOnly_(false) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupConnections();
 }
 

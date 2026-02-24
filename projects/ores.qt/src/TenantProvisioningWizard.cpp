@@ -22,6 +22,7 @@
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -69,6 +70,7 @@ TenantProvisioningWizard::TenantProvisioningWizard(
 }
 
 void TenantProvisioningWizard::setupPages() {
+    WidgetUtils::setupComboBoxes(this);
     setPage(Page_Welcome, new ProvisioningWelcomePage(this));
     setPage(Page_BundleSelection, new BundleSelectionPage(this));
     setPage(Page_BundleInstall, new BundleInstallPage(this));
@@ -117,6 +119,7 @@ ProvisioningWelcomePage::ProvisioningWelcomePage(
 }
 
 void ProvisioningWelcomePage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(20);
 
@@ -184,6 +187,7 @@ BundleSelectionPage::BundleSelectionPage(TenantProvisioningWizard* wizard)
 }
 
 void BundleSelectionPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     bundleModel_ = new ClientDatasetBundleModel(
@@ -436,6 +440,7 @@ DataSourceSelectionPage::DataSourceSelectionPage(
 }
 
 void DataSourceSelectionPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(12);
 
@@ -569,6 +574,7 @@ PartySetupPage::PartySetupPage(TenantProvisioningWizard* wizard)
 }
 
 void PartySetupPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     instructionLabel_ = new QLabel(this);
@@ -630,6 +636,7 @@ CounterpartySetupPage::CounterpartySetupPage(
 }
 
 void CounterpartySetupPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(20);
 
@@ -980,6 +987,7 @@ ApplyAndSummaryPage::ApplyAndSummaryPage(TenantProvisioningWizard* wizard)
 }
 
 void ApplyAndSummaryPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(20);
 

@@ -370,18 +370,21 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         const bool password_reset_required = response->password_reset_required;
         const bool tenant_bootstrap = response->tenant_bootstrap_mode;
 
-        // Populate party context from login response
+        // Populate party context from login response.
+        // available_parties always contains the auto-selected party (single or
+        // multi), so we can reliably read name and category from there.
         if (!response->selected_party_id.is_nil()) {
-            // Auto-selected (single party)
             current_party_id_ = response->selected_party_id;
-            // Look up name from available_parties (may be empty for single-party auto-select)
             if (!response->available_parties.empty()) {
                 current_party_name_ = QString::fromStdString(
                     response->available_parties.front().name);
+                current_party_category_ = QString::fromStdString(
+                    response->available_parties.front().party_category);
             }
         } else {
             current_party_id_ = boost::uuids::uuid{};
             current_party_name_.clear();
+            current_party_category_.clear();
         }
 
         // Store credentials for re-authentication after reconnection

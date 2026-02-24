@@ -41,7 +41,8 @@ methodology_mapper::map(const methodology_entity& v) {
     r.description = v.description;
     r.logic_reference = v.logic_reference;
     r.implementation_details = v.implementation_details;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -61,7 +62,8 @@ methodology_mapper::map(const domain::methodology& v) {
     r.description = v.description;
     r.logic_reference = v.logic_reference;
     r.implementation_details = v.implementation_details;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

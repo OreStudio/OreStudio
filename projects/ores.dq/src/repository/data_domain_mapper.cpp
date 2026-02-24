@@ -36,7 +36,8 @@ data_domain_mapper::map(const data_domain_entity& v) {
     r.tenant_id = v.tenant_id;
     r.name = v.name.value();
     r.description = v.description;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
@@ -53,7 +54,8 @@ data_domain_mapper::map(const domain::data_domain& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

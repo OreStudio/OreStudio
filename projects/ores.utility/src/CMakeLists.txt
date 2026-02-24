@@ -24,15 +24,46 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# Generate version.hpp to build directory to avoid polluting source tree
+# Generate version.hpp to build directory to avoid polluting source tree.
+# The file is stamped on EVERY build so the timestamp is always current.
+# copy_if_different inside the script keeps the mtime stable when nothing
+# has changed, so only a new timestamp triggers recompilation of consumers.
 set(generated_include_dir "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(generated_version_dir "${generated_include_dir}/ores.utility/version")
-configure_file(
-    "${CMAKE_SOURCE_DIR}/projects/ores.utility/include/ores.utility/version/version.hpp.in"
-    "${generated_version_dir}/version.hpp")
+set(version_hpp_in  "${CMAKE_SOURCE_DIR}/projects/ores.utility/include/ores.utility/version/version.hpp.in")
+set(version_hpp_out "${generated_version_dir}/version.hpp")
+
+# Bootstrap: generate once at configure time so the file exists before the
+# first build runs the custom target.
+if(NOT EXISTS "${version_hpp_out}")
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}"
+            "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}"
+            "-DOreStudio_VERSION_MAJOR=${OreStudio_VERSION_MAJOR}"
+            "-DOreStudio_VERSION_MINOR=${OreStudio_VERSION_MINOR}"
+            "-DOreStudio_VERSION_PATCH=${OreStudio_VERSION_PATCH}"
+            "-DINPUT_FILE=${version_hpp_in}"
+            "-DOUTPUT_FILE=${version_hpp_out}"
+            -P "${CMAKE_SOURCE_DIR}/cmake/generate_version.cmake"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+endif()
+
+# Always re-stamp at build time.
+add_custom_target(ores.utility.version ALL
+    COMMAND "${CMAKE_COMMAND}"
+        "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}"
+        "-DOreStudio_VERSION_MAJOR=${OreStudio_VERSION_MAJOR}"
+        "-DOreStudio_VERSION_MINOR=${OreStudio_VERSION_MINOR}"
+        "-DOreStudio_VERSION_PATCH=${OreStudio_VERSION_PATCH}"
+        "-DINPUT_FILE=${version_hpp_in}"
+        "-DOUTPUT_FILE=${version_hpp_out}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/generate_version.cmake"
+    COMMENT "Stamping version.hpp"
+    VERBATIM)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
+add_dependencies(${lib_target_name} ores.utility.version)
 
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})

@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,6 +41,7 @@ BusinessUnitDetailDialog::BusinessUnitDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }

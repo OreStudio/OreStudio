@@ -36,6 +36,26 @@ set(CMAKE_TOOLCHAIN_FILE
 # Log CMake version. Useful for debugging CMake problems.
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
+#
+# Parallel build configuration check.
+# CMAKE_BUILD_PARALLEL_LEVEL controls cmake --build concurrency.
+# CTEST_PARALLEL_LEVEL controls ctest concurrency.
+# Set them in ~/.bashrc for per-machine configuration (see cmake-runner skill).
+#
+cmake_host_system_information(RESULT ORES_CPU_CORES QUERY NUMBER_OF_LOGICAL_CORES)
+message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL: $ENV{CMAKE_BUILD_PARALLEL_LEVEL} (logical cores: ${ORES_CPU_CORES})")
+message(STATUS "CTEST_PARALLEL_LEVEL: $ENV{CTEST_PARALLEL_LEVEL}")
+if(ORES_CPU_CORES GREATER 1)
+    if("$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "1")
+        message(WARNING "CMAKE_BUILD_PARALLEL_LEVEL is not set (or set to 1) but ${ORES_CPU_CORES} logical cores are available. "
+            "Set it in ~/.bashrc for faster builds: export CMAKE_BUILD_PARALLEL_LEVEL=${ORES_CPU_CORES}")
+    endif()
+    if("$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "1")
+        message(WARNING "CTEST_PARALLEL_LEVEL is not set (or set to 1) but ${ORES_CPU_CORES} logical cores are available. "
+            "Set it in ~/.bashrc for faster tests: export CTEST_PARALLEL_LEVEL=${ORES_CPU_CORES}")
+    endif()
+endif()
+
 # ctest support
 enable_testing()
 configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)
@@ -211,66 +231,11 @@ site_name(VORE_SITE)
 #
 # Handle build information
 #
-# CI builds set environment variables: ORES_BUILD_PROVIDER, ORES_BUILD_COMMIT,
-# ORES_BUILD_NUMBER, ORES_BUILD_TIMESTAMP. Local builds auto-detect from git.
+# version.hpp is now stamped on every build by cmake/generate_version.cmake
+# (via add_custom_target in ores.utility/src/CMakeLists.txt). The top-level
+# CMakeLists.txt no longer needs to compute ORES_BUILD_INFO at configure time.
 #
-set(WITH_BUILD_INFO ON)
-set(ORES_BUILD_INFO "")
-
-if (DEFINED ENV{ORES_BUILD_PROVIDER} AND
-    DEFINED ENV{ORES_BUILD_COMMIT} AND
-    DEFINED ENV{ORES_BUILD_NUMBER} AND
-    DEFINED ENV{ORES_BUILD_TIMESTAMP})
-    # CI build - use environment variables
-    set(ORES_BUILD_INFO "Build: Provider = '$ENV{ORES_BUILD_PROVIDER}'")
-    set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Number = '$ENV{ORES_BUILD_NUMBER}'")
-    set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Commit = '$ENV{ORES_BUILD_COMMIT}'")
-    set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '$ENV{ORES_BUILD_TIMESTAMP}'")
-    message(STATUS "CI build detected - using environment variables for build info")
-else()
-    # Local build - auto-detect from git
-    find_package(Git QUIET)
-    if (GIT_FOUND)
-        # Get short commit hash with dirty flag (no tag reference)
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_COMMIT_SHORT
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-            RESULT_VARIABLE GIT_COMMIT_RESULT
-        )
-
-        # Check if working directory is dirty
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} status --porcelain
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_STATUS
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-        )
-
-        # Get current timestamp
-        string(TIMESTAMP LOCAL_BUILD_TIMESTAMP "%Y/%m/%d %H:%M:%S")
-
-        if (GIT_COMMIT_RESULT EQUAL 0 AND NOT "${GIT_COMMIT_SHORT}" STREQUAL "")
-            # Add dirty suffix if there are uncommitted changes
-            if (NOT "${GIT_STATUS}" STREQUAL "")
-                set(GIT_COMMIT_SHORT "${GIT_COMMIT_SHORT}-dirty")
-            endif()
-            set(ORES_BUILD_INFO "local ${GIT_COMMIT_SHORT} ${LOCAL_BUILD_TIMESTAMP}")
-            message(STATUS "Local build - commit: ${GIT_COMMIT_SHORT}")
-        else()
-            set(ORES_BUILD_INFO "local ${LOCAL_BUILD_TIMESTAMP}")
-            message(STATUS "Local build - git info not available")
-        endif()
-    else()
-        string(TIMESTAMP LOCAL_BUILD_TIMESTAMP "%Y/%m/%d %H:%M:%S")
-        set(ORES_BUILD_INFO "local ${LOCAL_BUILD_TIMESTAMP}")
-        message(STATUS "Local build - git not found")
-    endif()
-endif()
-message(STATUS "${ORES_BUILD_INFO}")
+message(STATUS "Build info: stamped at build time via cmake/generate_version.cmake")
 
 #
 # Build type

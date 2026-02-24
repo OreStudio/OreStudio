@@ -38,7 +38,8 @@ dataset_bundle_member_mapper::map(const dataset_bundle_member_entity& v) {
     r.dataset_code = v.dataset_code;
     r.display_order = v.display_order;
     r.optional = v.optional;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -58,7 +59,8 @@ dataset_bundle_member_mapper::map(const domain::dataset_bundle_member& v) {
     r.version = v.version;
     r.display_order = v.display_order;
     r.optional = v.optional;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 

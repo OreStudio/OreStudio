@@ -22,13 +22,14 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QListWidgetItem>
-#include <QInputDialog>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <algorithm>
 #include <future>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -41,47 +42,52 @@ AccountRolesWidget::AccountRolesWidget(QWidget* parent)
     : QWidget(parent),
       groupBox_(new QGroupBox("Assigned Roles", this)),
       rolesList_(new QListWidget(this)),
+      roleCombo_(new QComboBox(this)),
       assignButton_(new QToolButton(this)),
-      revokeButton_(new QToolButton(this)),
-      clientManager_(nullptr) {
+      revokeButton_(new QToolButton(this)) {
 
+    setupUi();
+    updateButtonStates();
+}
+
+void AccountRolesWidget::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     auto* groupLayout = new QVBoxLayout(groupBox_);
-
-    // Buttons layout
-    auto* buttonsLayout = new QHBoxLayout();
-
-    assignButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Add, IconUtils::DefaultIconColor));
-    assignButton_->setToolTip("Assign a role to this account");
-    assignButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    connect(assignButton_, &QToolButton::clicked, this,
-        &AccountRolesWidget::onAssignRoleClicked);
-
-    revokeButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Delete, IconUtils::DefaultIconColor));
-    revokeButton_->setToolTip("Revoke selected role from this account");
-    revokeButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    connect(revokeButton_, &QToolButton::clicked, this,
-        &AccountRolesWidget::onRevokeRoleClicked);
-
-    buttonsLayout->addWidget(assignButton_);
-    buttonsLayout->addWidget(revokeButton_);
-    buttonsLayout->addStretch();
 
     rolesList_->setAlternatingRowColors(true);
     rolesList_->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(rolesList_, &QListWidget::itemSelectionChanged,
         this, &AccountRolesWidget::onRoleSelectionChanged);
 
-    groupLayout->addLayout(buttonsLayout);
     groupLayout->addWidget(rolesList_);
 
-    mainLayout->addWidget(groupBox_);
+    auto* buttonsLayout = new QHBoxLayout();
 
-    updateButtonStates();
+    assignButton_->setIcon(IconUtils::createRecoloredIcon(
+        Icon::Add, IconUtils::DefaultIconColor));
+    assignButton_->setToolTip("Assign selected role");
+    assignButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    connect(assignButton_, &QToolButton::clicked,
+        this, &AccountRolesWidget::onAssignRoleClicked);
+
+    revokeButton_->setIcon(IconUtils::createRecoloredIcon(
+        Icon::Delete, IconUtils::DefaultIconColor));
+    revokeButton_->setToolTip("Revoke selected role");
+    revokeButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    connect(revokeButton_, &QToolButton::clicked,
+        this, &AccountRolesWidget::onRevokeRoleClicked);
+
+    buttonsLayout->addWidget(roleCombo_);
+    buttonsLayout->addWidget(assignButton_);
+    buttonsLayout->addWidget(revokeButton_);
+    buttonsLayout->addStretch();
+
+    groupLayout->addLayout(buttonsLayout);
+
+    mainLayout->addWidget(groupBox_);
 }
 
 void AccountRolesWidget::setClientManager(ClientManager* clientManager) {
@@ -92,19 +98,31 @@ void AccountRolesWidget::setAccountId(const boost::uuids::uuid& accountId) {
     accountId_ = accountId;
 }
 
-void AccountRolesWidget::loadRoles() {
+bool AccountRolesWidget::hasPendingChanges() const {
+    return !pendingAdds_.empty() || !pendingRemoves_.empty();
+}
+
+const std::vector<boost::uuids::uuid>& AccountRolesWidget::pendingAdds() const {
+    return pendingAdds_;
+}
+
+const std::vector<boost::uuids::uuid>& AccountRolesWidget::pendingRemoves() const {
+    return pendingRemoves_;
+}
+
+void AccountRolesWidget::load() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load roles: not connected";
         return;
     }
 
-    if (accountId_.is_nil()) {
-        BOOST_LOG_SEV(lg(), debug) << "No account ID set, not loading roles";
-        return;
+    const bool has_account = !accountId_.is_nil();
+    if (has_account) {
+        BOOST_LOG_SEV(lg(), debug) << "Loading roles for account: "
+                                   << boost::uuids::to_string(accountId_);
+    } else {
+        BOOST_LOG_SEV(lg(), debug) << "Loading available roles for new account";
     }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading roles for account: "
-                               << boost::uuids::to_string(accountId_);
 
     QPointer<AccountRolesWidget> self = this;
     const auto accountId = accountId_;
@@ -120,58 +138,73 @@ void AccountRolesWidget::loadRoles() {
         [self, watcher]() {
             auto result = watcher->result();
             watcher->deleteLater();
-
             if (!self) return;
 
             if (result.success) {
                 self->assignedRoles_ = std::move(result.assignedRoles);
-                self->allRoles_ = std::move(result.allRoles);
+                self->allRoles_      = std::move(result.allRoles);
+                self->pendingAdds_.clear();
+                self->pendingRemoves_.clear();
                 self->refreshRolesList();
                 BOOST_LOG_SEV(lg(), debug) << "Loaded " << self->assignedRoles_.size()
-                                           << " assigned roles";
+                                           << " assigned, " << self->allRoles_.size()
+                                           << " total roles";
             } else {
                 emit self->errorMessage("Failed to load roles");
             }
         });
 
-    QFuture<LoadResult> future = QtConcurrent::run([self, accountId]() -> LoadResult {
-        if (!self) return {false, {}, {}};
+    QFuture<LoadResult> future =
+        QtConcurrent::run([self, accountId, has_account]() -> LoadResult {
+            if (!self) return {.success = false};
 
-        // Execute both requests in parallel using std::async
-        auto accountRolesFuture = std::async(std::launch::async,
-            [&self, &accountId]() {
-                iam::messaging::get_account_roles_request request;
-                request.account_id = accountId;
-                return self->clientManager_->
-                    process_authenticated_request(std::move(request));
-            });
+            if (has_account) {
+                auto accountRolesFuture = std::async(std::launch::async,
+                    [&self, &accountId]() {
+                        iam::messaging::get_account_roles_request request;
+                        request.account_id = accountId;
+                        return self->clientManager_->
+                            process_authenticated_request(std::move(request));
+                    });
 
-        auto allRolesFuture = std::async(std::launch::async,
-            [&self]() {
-                iam::messaging::list_roles_request request;
-                return self->clientManager_->
-                    process_authenticated_request(std::move(request));
-            });
+                auto allRolesFuture = std::async(std::launch::async,
+                    [&self]() {
+                        iam::messaging::list_roles_request request;
+                        return self->clientManager_->
+                            process_authenticated_request(std::move(request));
+                    });
 
-        // Wait for both requests to complete
-        auto accountRolesResult = accountRolesFuture.get();
-        auto allRolesResult = allRolesFuture.get();
+                auto accountRolesResult = accountRolesFuture.get();
+                auto allRolesResult     = allRolesFuture.get();
 
-        if (!accountRolesResult) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch account roles: "
-                                       << comms::net::to_string(accountRolesResult.error());
-            return {false, {}, {}};
-        }
+                if (!accountRolesResult) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch account roles: "
+                                               << comms::net::to_string(accountRolesResult.error());
+                    return {.success = false};
+                }
+                if (!allRolesResult) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch all roles: "
+                                               << comms::net::to_string(allRolesResult.error());
+                    return {.success = false};
+                }
+                return {.success = true,
+                    .assignedRoles = std::move(accountRolesResult->roles),
+                    .allRoles      = std::move(allRolesResult->roles)};
+            }
 
-        if (!allRolesResult) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch all roles: "
-                                       << comms::net::to_string(allRolesResult.error());
-            return {false, {}, {}};
-        }
+            // Create mode: only fetch all roles
+            iam::messaging::list_roles_request request;
+            auto result = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
-        return {true, std::move(accountRolesResult->roles),
-                std::move(allRolesResult->roles)};
-    });
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to fetch roles: "
+                    << comms::net::to_string(result.error());
+                return {.success = false};
+            }
+            return {.success = true, .allRoles = std::move(result->roles)};
+        });
 
     watcher->setFuture(future);
 }
@@ -181,209 +214,127 @@ void AccountRolesWidget::setReadOnly(bool readOnly) {
     updateButtonStates();
 }
 
-std::vector<boost::uuids::uuid> AccountRolesWidget::getAssignedRoleIds() const {
-    std::vector<boost::uuids::uuid> ids;
-    ids.reserve(assignedRoles_.size());
-    for (const auto& role : assignedRoles_) {
-        ids.push_back(role.id);
-    }
-    return ids;
-}
-
 void AccountRolesWidget::onAssignRoleClicked() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Not Connected",
-            "Cannot assign role while disconnected.");
-        return;
+    if (roleCombo_->count() == 0) return;
+
+    const auto roleIdStr = roleCombo_->currentData().toString().toStdString();
+    if (roleIdStr.empty()) return;
+
+    const auto roleId = boost::lexical_cast<boost::uuids::uuid>(roleIdStr);
+
+    // If staged for removal, un-stage the removal instead
+    auto it = std::find(pendingRemoves_.begin(), pendingRemoves_.end(), roleId);
+    if (it != pendingRemoves_.end()) {
+        pendingRemoves_.erase(it);
+    } else {
+        pendingAdds_.push_back(roleId);
     }
 
-    // Build list of available roles (not already assigned)
-    QStringList availableRoleNames;
-    std::vector<iam::domain::role> availableRoles;
-
-    for (const auto& role : allRoles_) {
-        bool alreadyAssigned = std::ranges::any_of(assignedRoles_,
-            [&role](const auto& ar) { return ar.id == role.id; });
-
-        if (!alreadyAssigned) {
-            availableRoleNames << QString::fromStdString(role.name);
-            availableRoles.push_back(role);
-        }
-    }
-
-    if (availableRoleNames.isEmpty()) {
-        MessageBoxHelper::information(this, "No Roles Available",
-            "All available roles are already assigned to this account.");
-        return;
-    }
-
-    bool ok;
-    QString selectedName = QInputDialog::getItem(this, "Assign Role",
-        "Select a role to assign:", availableRoleNames, 0, false, &ok);
-
-    if (!ok || selectedName.isEmpty()) {
-        return;
-    }
-
-    // Find the selected role
-    auto it = std::ranges::find_if(availableRoles,
-        [&selectedName](const auto& r) {
-            return QString::fromStdString(r.name) == selectedName;
-        });
-
-    if (it == availableRoles.end()) {
-        return;
-    }
-
-    const auto roleId = it->id;
-    const auto roleName = it->name;
-    const auto accountId = accountId_;
-
-    BOOST_LOG_SEV(lg(), info) << "Assigning role " << roleName
-                              << " to account " << boost::uuids::to_string(accountId_);
-
-    executeRoleOperation(
-        [this, accountId, roleId]() -> std::pair<bool, std::string> {
-            iam::messaging::assign_role_request request;
-            request.account_id = accountId;
-            request.role_id = roleId;
-
-            auto result = clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!result) {
-                return {false, comms::net::to_string(result.error())};
-            }
-            return {result->success, result->error_message};
-        },
-        roleName,
-        "Role '%1' assigned successfully",
-        "Assign Role Failed");
+    refreshRolesList();
+    updateButtonStates();
+    emit roleListChanged();
 }
 
 void AccountRolesWidget::onRevokeRoleClicked() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Not Connected",
-            "Cannot revoke role while disconnected.");
-        return;
-    }
-
     auto selected = rolesList_->selectedItems();
-    if (selected.isEmpty()) {
-        return;
+    if (selected.isEmpty()) return;
+
+    const auto roleIdStr =
+        selected.first()->data(Qt::UserRole).toString().toStdString();
+    if (roleIdStr.empty()) return;
+
+    const auto roleId = boost::lexical_cast<boost::uuids::uuid>(roleIdStr);
+
+    // If staged for addition, un-stage the addition instead
+    auto it = std::find(pendingAdds_.begin(), pendingAdds_.end(), roleId);
+    if (it != pendingAdds_.end()) {
+        pendingAdds_.erase(it);
+    } else {
+        pendingRemoves_.push_back(roleId);
     }
 
-    const int row = rolesList_->row(selected.first());
-    if (row < 0 || row >= static_cast<int>(assignedRoles_.size())) {
-        return;
-    }
-
-    const auto& role = assignedRoles_[row];
-    const auto roleId = role.id;
-    const auto roleName = role.name;
-    const auto accountId = accountId_;
-
-    auto reply = MessageBoxHelper::question(this, "Revoke Role",
-        QString("Are you sure you want to revoke role '%1' from this account?")
-            .arg(QString::fromStdString(roleName)),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (reply != QMessageBox::Yes) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Revoking role " << roleName
-                              << " from account " << boost::uuids::to_string(accountId_);
-
-    executeRoleOperation(
-        [this, accountId, roleId]() -> std::pair<bool, std::string> {
-            iam::messaging::revoke_role_request request;
-            request.account_id = accountId;
-            request.role_id = roleId;
-
-            auto result = clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!result) {
-                return {false, comms::net::to_string(result.error())};
-            }
-            return {result->success, result->error_message};
-        },
-        roleName,
-        "Role '%1' revoked successfully",
-        "Revoke Role Failed");
+    refreshRolesList();
+    updateButtonStates();
+    emit roleListChanged();
 }
 
 void AccountRolesWidget::onRoleSelectionChanged() {
     updateButtonStates();
 }
 
-void AccountRolesWidget::updateButtonStates() {
-    const bool hasSelection = !rolesList_->selectedItems().isEmpty();
-    const bool isConnected = clientManager_ && clientManager_->isConnected();
-
-    assignButton_->setEnabled(!isReadOnly_ && isConnected);
-    revokeButton_->setEnabled(!isReadOnly_ && isConnected && hasSelection);
-}
-
 void AccountRolesWidget::refreshRolesList() {
     rolesList_->clear();
 
-    // Sort roles by name
-    std::vector<iam::domain::role> sortedRoles = assignedRoles_;
-    std::ranges::sort(sortedRoles, [](const auto& a, const auto& b) {
-        return a.name < b.name;
-    });
+    auto isRemoved = [&](const boost::uuids::uuid& id) {
+        return std::find(pendingRemoves_.begin(), pendingRemoves_.end(), id)
+            != pendingRemoves_.end();
+    };
 
-    for (const auto& role : sortedRoles) {
-        auto* item = new QListWidgetItem(QString::fromStdString(role.name));
-        item->setToolTip(QString::fromStdString(role.description));
+    auto findRoleName = [&](const boost::uuids::uuid& id) -> QString {
+        auto it = std::ranges::find_if(allRoles_,
+            [&id](const auto& r) { return r.id == id; });
+        if (it != allRoles_.end())
+            return QString::fromStdString(it->name);
+        return QString::fromStdString(boost::uuids::to_string(id));
+    };
+
+    auto findRoleDescription = [&](const boost::uuids::uuid& id) -> QString {
+        auto it = std::ranges::find_if(allRoles_,
+            [&id](const auto& r) { return r.id == id; });
+        if (it != allRoles_.end())
+            return QString::fromStdString(it->description);
+        return {};
+    };
+
+    std::vector<boost::uuids::uuid> effectiveIds;
+
+    // Assigned roles not pending removal
+    for (const auto& role : assignedRoles_) {
+        if (!isRemoved(role.id)) {
+            effectiveIds.push_back(role.id);
+            auto* item = new QListWidgetItem(findRoleName(role.id));
+            item->setData(Qt::UserRole,
+                QString::fromStdString(boost::uuids::to_string(role.id)));
+            item->setToolTip(findRoleDescription(role.id));
+            rolesList_->addItem(item);
+        }
+    }
+
+    // Staged additions
+    for (const auto& roleId : pendingAdds_) {
+        effectiveIds.push_back(roleId);
+        auto* item = new QListWidgetItem(findRoleName(roleId));
+        item->setData(Qt::UserRole,
+            QString::fromStdString(boost::uuids::to_string(roleId)));
+        item->setToolTip(findRoleDescription(roleId));
         rolesList_->addItem(item);
     }
 
-    // Update group box title with count
-    groupBox_->setTitle(QString("Assigned Roles (%1)").arg(assignedRoles_.size()));
+    // Populate combo with roles not in effective set
+    roleCombo_->clear();
+    for (const auto& role : allRoles_) {
+        bool inEffective = std::ranges::any_of(effectiveIds,
+            [&role](const auto& id) { return id == role.id; });
+        if (!inEffective) {
+            roleCombo_->addItem(QString::fromStdString(role.name),
+                QVariant(QString::fromStdString(
+                    boost::uuids::to_string(role.id))));
+        }
+    }
+
+    groupBox_->setTitle(
+        QString("Assigned Roles (%1)").arg(static_cast<int>(effectiveIds.size())));
 
     updateButtonStates();
 }
 
-void AccountRolesWidget::executeRoleOperation(
-    std::function<std::pair<bool, std::string>()> requestFunc,
-    const std::string& roleName,
-    const QString& successMessage,
-    const QString& errorTitle) {
+void AccountRolesWidget::updateButtonStates() {
+    const bool hasSelection = !rolesList_->selectedItems().isEmpty();
+    const bool isConnected  = clientManager_ && clientManager_->isConnected();
+    const bool hasComboItem = roleCombo_->count() > 0;
 
-    QPointer<AccountRolesWidget> self = this;
-    const auto roleNameCopy = roleName;
-
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, this,
-        [self, watcher, roleNameCopy, successMessage, errorTitle]() {
-            auto [success, message] = watcher->result();
-            watcher->deleteLater();
-
-            if (!self) return;
-
-            if (success) {
-                emit self->statusMessage(successMessage
-                    .arg(QString::fromStdString(roleNameCopy)));
-                self->loadRoles();
-                emit self->rolesChanged();
-            } else {
-                emit self->errorMessage(QString("Failed: %1")
-                    .arg(QString::fromStdString(message)));
-                MessageBoxHelper::critical(self, errorTitle,
-                    QString::fromStdString(message));
-            }
-        });
-
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, requestFunc]() -> std::pair<bool, std::string> {
-            if (!self) return {false, "Widget destroyed"};
-            return requestFunc();
-        });
-
-    watcher->setFuture(future);
+    assignButton_->setEnabled(!isReadOnly_ && isConnected && hasComboItem);
+    revokeButton_->setEnabled(!isReadOnly_ && isConnected && hasSelection);
 }
 
 }

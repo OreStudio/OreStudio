@@ -26,6 +26,7 @@
 #include "ui_PartyStatusHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,6 +47,7 @@ PartyStatusHistoryDialog::PartyStatusHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();

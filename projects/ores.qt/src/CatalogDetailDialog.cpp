@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_CatalogDetailDialog.h"
 #include "ores.qt/ProvenanceWidget.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -39,6 +40,7 @@ CatalogDetailDialog::CatalogDetailDialog(QWidget* parent)
       readOnly_(false) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
 
     connect(ui_->saveButton, &QPushButton::clicked,
             this, &CatalogDetailDialog::onSaveClicked);

@@ -38,7 +38,12 @@ namespace ores::qt {
  * @brief Widget for managing parties assigned to an account.
  *
  * Displays the parties currently assigned to an account and allows
- * adding/removing party links via a combo box and toolbar buttons.
+ * staging add/remove operations via a combo box and toolbar buttons.
+ * Changes are committed by the parent dialog's Save action, which
+ * handles the change reason dialog and calls loadParties() to reload.
+ *
+ * The widget emits partyListChanged() whenever the staged set changes,
+ * so the parent dialog can enable its Save button accordingly.
  */
 class AccountPartiesWidget : public QWidget {
     Q_OBJECT
@@ -57,30 +62,31 @@ public:
     explicit AccountPartiesWidget(QWidget* parent = nullptr);
     ~AccountPartiesWidget() override = default;
 
-    /**
-     * @brief Sets the client manager for making requests.
-     */
     void setClientManager(ClientManager* clientManager);
-
-    /**
-     * @brief Sets the account ID to manage parties for.
-     */
     void setAccountId(const boost::uuids::uuid& accountId);
-
+    void setAccountType(const std::string& accountType);
     /**
-     * @brief Loads the parties for the current account.
+     * @brief Load parties. If accountId is set, also fetches assigned parties.
+     * If accountId is nil (create mode), only available parties are loaded.
      */
-    void loadParties();
-
-    /**
-     * @brief Sets the widget to read-only mode.
-     */
+    void load();
     void setReadOnly(bool readOnly);
+
+    [[nodiscard]] bool hasPendingChanges() const;
+    [[nodiscard]] bool hasAvailableParties() const;
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingAdds() const;
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingRemoves() const;
 
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& title, const QString& message);
-    void partiesChanged();
+
+    /**
+     * @brief Emitted when the staged party list changes.
+     *
+     * The parent dialog connects to this signal to enable its Save button.
+     */
+    void partyListChanged();
 
 private slots:
     void onAddPartyClicked();
@@ -100,10 +106,16 @@ private:
 
     ClientManager*     clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
+    std::string        accountType_;
     bool               readOnly_ = false;
 
+    // DB state
     std::vector<iam::domain::account_party>  assignedParties_;
     std::vector<refdata::domain::party>      allParties_;
+
+    // Pending local changes (committed by the parent dialog's Save action)
+    std::vector<boost::uuids::uuid> pendingAdds_;
+    std::vector<boost::uuids::uuid> pendingRemoves_;
 };
 
 }

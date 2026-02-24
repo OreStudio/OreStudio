@@ -31,6 +31,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/LeiEntityPicker.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 
 namespace ores::qt {
@@ -59,6 +60,7 @@ TenantOnboardingWizard::TenantOnboardingWizard(
 }
 
 void TenantOnboardingWizard::setupPages() {
+    WidgetUtils::setupComboBoxes(this);
     setPage(Page_ModeAndLei, new ModeAndLeiPage(this));
     setPage(Page_TenantDetails, new TenantDetailsPage(this));
     setPage(Page_AdminAccount, new OnboardingAdminAccountPage(this));
@@ -81,6 +83,7 @@ ModeAndLeiPage::ModeAndLeiPage(TenantOnboardingWizard* wizard)
 }
 
 void ModeAndLeiPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(6);
 
@@ -209,6 +212,7 @@ TenantDetailsPage::TenantDetailsPage(TenantOnboardingWizard* wizard)
 }
 
 void TenantDetailsPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     auto* formLayout = new QFormLayout();
@@ -372,6 +376,7 @@ OnboardingAdminAccountPage::OnboardingAdminAccountPage(
 }
 
 void OnboardingAdminAccountPage::setupUI() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     auto* formLayout = new QFormLayout();

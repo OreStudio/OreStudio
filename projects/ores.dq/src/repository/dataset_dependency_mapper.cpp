@@ -36,7 +36,7 @@ dataset_dependency_mapper::map(const dataset_dependency_entity& v) {
     r.dataset_code = v.dataset_code.value();
     r.dependency_code = v.dependency_code;
     r.role = v.role;
-    r.modified_by = v.modified_by;
+r.modified_by = v.modified_by;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;

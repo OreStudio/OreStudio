@@ -36,6 +36,7 @@
 #include "ores.qt/PublishDatasetsDialog.hpp"
 #include "ores.qt/PublishBundleWizard.hpp"
 #include "ores.qt/PublicationHistoryDialog.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
 namespace ores::qt {
@@ -158,6 +159,7 @@ DataLibrarianWindow::DataLibrarianWindow(
 }
 
 void DataLibrarianWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);

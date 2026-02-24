@@ -138,7 +138,7 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addAction(historyAction_);
 
     sessionsAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Clock, IconUtils::DefaultIconColor));
+            Icon::History, IconUtils::DefaultIconColor));
     sessionsAction_->setToolTip("View session history");
     connect(sessionsAction_, &QAction::triggered, this,
         &AccountMdiWindow::viewSessionsSelected);

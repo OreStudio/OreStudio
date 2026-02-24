@@ -27,6 +27,7 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -55,6 +56,7 @@ CodingSchemeAuthorityTypeMdiWindow::CodingSchemeAuthorityTypeMdiWindow(
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 

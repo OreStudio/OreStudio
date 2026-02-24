@@ -23,6 +23,7 @@
 #include <QHBoxLayout>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 
 namespace ores::qt {
 
@@ -64,6 +65,7 @@ QString PartyPickerDialog::selectedPartyName() const {
 }
 
 void PartyPickerDialog::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     setWindowTitle("Select Party");
     setModal(true);
     setMinimumWidth(360);

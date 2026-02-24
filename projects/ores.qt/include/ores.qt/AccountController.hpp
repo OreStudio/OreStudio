@@ -29,6 +29,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/account.hpp"
 
+namespace ores::qt { class ChangeReasonCache; }
+
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
@@ -78,6 +80,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        ChangeReasonCache* changeReasonCache = nullptr,
         QObject* parent = nullptr);
 
     /**
@@ -213,6 +216,7 @@ private:
      * creating a new one if it was closed.
      */
     QPointer<DetachableMdiSubWindow> accountListWindow_;
+    ChangeReasonCache* changeReasonCache_ = nullptr;
 };
 
 }

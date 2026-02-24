@@ -484,8 +484,39 @@ database::context make_request_context(
 
 ** Party Context Display
 
-The current party is displayed in the application window (e.g. status bar or
-window title) so the user always knows their active party context.
+The active party context is displayed as a styled chip label in the application
+status bar so the user always knows their active party. Rules:
+
+| State                     | Display                        | Style          |
+|---------------------------+--------------------------------+----------------|
+| System party active       | =Party: <name> [System]=       | Normal chip    |
+| Operational party active  | =Party: <name>=                | Normal chip    |
+| No party (misconfigured)  | =Party: [No Party]=            | Warning chip   |
+
+The party chip is always visible when connected. A red-background warning chip
+is shown when no party context is available; a =QMessageBox::warning= is also
+shown at login to alert the user to the misconfiguration.
+
+The current party category is supplied by the server in the =party_summary=
+struct (see =party_summary::party_category= below). The Qt client uses
+=ClientManager::isSystemParty()= to check if the active party is the system
+party.
+
+** Login Response and Party Name
+
+The =login_response= always includes the selected party in =available_parties=
+regardless of whether there is one party or many:
+
+- *Single party*: =selected_party_id= is set; =available_parties= contains
+  the one party with its name and category. The client reads the name from
+  =available_parties.front()=.
+- *Multiple parties*: =selected_party_id= is nil; =available_parties= lists
+  all parties. The client shows a picker; after selection the server binds
+  the session via =select_party_request=.
+- *Zero parties*: login is rejected server-side.
+
+Party info is fetched using =ores_refdata_get_party_info_fn= to avoid inline
+SQL in C++ handler code.
 
 ** Multi-Party Table Views
 

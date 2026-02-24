@@ -117,7 +117,7 @@ begin
         gen_random_uuid(), 0, v_root_party_id, a.name,
         pmap.published_id, a.ledger_ccy, a.gl_account_ref, a.cost_center,
         a.book_status, a.is_trading_book,
-        current_user, current_user, 'system.external_data_import',
+        coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
         'Published from organisation dataset'
     from ores_dq_books_artefact_tbl a
     join portfolio_ref_map pmap on pmap.artefact_id = a.parent_portfolio_id

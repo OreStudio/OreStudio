@@ -2237,6 +2237,7 @@ handle_save_portfolio_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving portfolio: " << request.portfolio.id;
 
+    request.portfolio.tenant_id = auth->tenant_id.to_string();
     request.portfolio.modified_by = auth->username;
     request.portfolio.performed_by.clear();
     request.portfolio.party_id = auth->party_id;
@@ -2418,6 +2419,7 @@ handle_save_book_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving book: " << request.book.id;
 
+    request.book.tenant_id = auth->tenant_id.to_string();
     request.book.modified_by = auth->username;
     request.book.performed_by.clear();
 

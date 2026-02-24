@@ -184,6 +184,7 @@ private:
     // Saved connections
     QToolButton* savedConnectionsButton_;
     QMenu* savedConnectionsMenu_;
+    QComboBox* environmentCombo_{nullptr};
 
     // Dependencies
     ClientManager* clientManager_{nullptr};

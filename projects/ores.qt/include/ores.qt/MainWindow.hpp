@@ -409,6 +409,14 @@ private:
     /** @brief Status bar label showing connection state icon */
     QLabel* connectionStatusIconLabel_;
 
+    /** @brief Status bar chip showing the logged-in username */
+    QWidget* userStatusWidget_;
+    QLabel*  userStatusNameLabel_;
+
+    /** @brief Status bar chip showing the server host or named environment */
+    QWidget* serverStatusWidget_;
+    QLabel*  serverStatusNameLabel_;
+
     /** @brief Status bar chip showing the active tenant (connection) name */
     QWidget* tenantStatusWidget_;
     QLabel*  tenantStatusNameLabel_;

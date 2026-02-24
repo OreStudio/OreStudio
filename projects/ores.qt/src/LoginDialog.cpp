@@ -76,6 +76,7 @@ void LoginDialog::setSavedConnections(const QStringList& connectionNames) {
 
     if (connectionNames.isEmpty()) {
         savedConnectionsButton_->setVisible(false);
+        environmentCombo_->setVisible(false);
         return;
     }
 
@@ -91,6 +92,13 @@ void LoginDialog::setSavedConnections(const QStringList& connectionNames) {
             emit savedConnectionSelected(name);
         });
     }
+
+    // Also populate the environment combo box
+    environmentCombo_->setVisible(true);
+    environmentCombo_->clear();
+    environmentCombo_->addItem(tr("— connect manually —"));
+    for (const QString& name : sortedNames)
+        environmentCombo_->addItem(name);
 }
 
 void LoginDialog::setServer(const QString& server) {
@@ -226,6 +234,25 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
 }
 
 void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
+    // Environment combo (populated via setSavedConnections)
+    auto* envLabel = new QLabel(tr("ENVIRONMENT"), parent);
+    envLabel->setStyleSheet(dialog_styles::field_label);
+    layout->addWidget(envLabel);
+    layout->addSpacing(4);
+
+    environmentCombo_ = new QComboBox(parent);
+    environmentCombo_->addItem(tr("— connect manually —"));
+    environmentCombo_->setVisible(false);  // hidden until setSavedConnections() is called
+    layout->addWidget(environmentCombo_);
+
+    connect(environmentCombo_, &QComboBox::currentIndexChanged, this, [this](int idx) {
+        if (idx > 0)
+            emit savedConnectionSelected(environmentCombo_->itemText(idx));
+        // idx == 0 means "connect manually" — leave fields as-is
+    });
+
+    layout->addSpacing(12);
+
     // Server label row with saved connections button
     auto* serverLabelRow = new QHBoxLayout();
     serverLabelRow->setSpacing(4);

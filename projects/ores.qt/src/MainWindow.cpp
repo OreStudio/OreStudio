@@ -115,6 +115,8 @@ MainWindow::MainWindow(QWidget* parent) :
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
     telemetryViewerWindow_(nullptr),
+    userStatusWidget_(nullptr), userStatusNameLabel_(nullptr),
+    serverStatusWidget_(nullptr), serverStatusNameLabel_(nullptr),
     tenantStatusWidget_(nullptr), tenantStatusNameLabel_(nullptr),
     partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr) {
 
@@ -151,18 +153,24 @@ MainWindow::MainWindow(QWidget* parent) :
         "QWidget { border-left: 1px solid palette(mid);"
         " background: palette(alternateBase); }";
 
+    auto [uWidget, uName] = makeStatusChip(Icon::PersonAccounts);
+    auto [sWidget, sName] = makeStatusChip(Icon::Server);
     auto [tWidget, tName] = makeStatusChip(Icon::BuildingSkyscraper);
-    tWidget->setStyleSheet(normalChipStyle);
-    tWidget->setVisible(false);
-    tenantStatusWidget_     = tWidget;
-    tenantStatusNameLabel_  = tName;
-    ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
-
     auto [pWidget, pName] = makeStatusChip(Icon::Organization);
-    pWidget->setStyleSheet(normalChipStyle);
-    pWidget->setVisible(false);
-    partyStatusWidget_    = pWidget;
-    partyStatusNameLabel_ = pName;
+
+    userStatusWidget_       = uWidget;  userStatusNameLabel_   = uName;
+    serverStatusWidget_     = sWidget;  serverStatusNameLabel_ = sName;
+    tenantStatusWidget_     = tWidget;  tenantStatusNameLabel_ = tName;
+    partyStatusWidget_      = pWidget;  partyStatusNameLabel_  = pName;
+
+    for (auto* w : {uWidget, sWidget, tWidget, pWidget}) {
+        w->setStyleSheet(normalChipStyle);
+        w->setVisible(false);
+    }
+
+    ui_->statusbar->addPermanentWidget(userStatusWidget_);
+    ui_->statusbar->addPermanentWidget(serverStatusWidget_);
+    ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
     ui_->statusbar->addPermanentWidget(partyStatusWidget_);
 
     connectionStatusIconLabel_ = new QLabel(this);
@@ -2130,27 +2138,8 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
 void MainWindow::updateWindowTitle() {
     QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
 
-    // Add connection info if connected.
-    // username_ is in "user@tenant" format from IAM — strip the tenant suffix
-    // for the title bar; the tenant appears in the status bar chip instead.
-    if (clientManager_ && clientManager_->isConnected()) {
-        const QString server =
-            QString::fromStdString(clientManager_->serverAddress());
-        if (!username_.empty()) {
-            const QString fullUser = QString::fromStdString(username_);
-            const int atIdx = fullUser.indexOf('@');
-            const QString displayUser =
-                (atIdx >= 0) ? fullUser.left(atIdx) : fullUser;
-            title += QString(" - %1 @ %2").arg(displayUser).arg(server);
-        } else {
-            title += QString(" - %1").arg(server);
-        }
-    }
-
-    // Add instance name if set
-    if (!instanceName_.isEmpty()) {
+    if (!instanceName_.isEmpty())
         title += QString(" [%1]").arg(instanceName_);
-    }
 
     setWindowTitle(title);
     updateStatusBarFields();
@@ -2165,6 +2154,40 @@ void MainWindow::updateStatusBarFields() {
         "QWidget { border-left: 1px solid palette(mid); background: #7a2000; }";
 
     const bool connected = clientManager_ && clientManager_->isConnected();
+
+    // Derive display username (strip @tenant suffix) once for all chips.
+    QString displayUser;
+    if (!username_.empty()) {
+        const QString fullUser = QString::fromStdString(username_);
+        const int atIdx = fullUser.indexOf('@');
+        displayUser = (atIdx >= 0) ? fullUser.left(atIdx) : fullUser;
+    }
+
+    // User chip
+    if (connected) {
+        userStatusNameLabel_->setText(displayUser.isEmpty() ? "—" : displayUser);
+        userStatusWidget_->setToolTip("User: " + userStatusNameLabel_->text());
+        userStatusWidget_->setStyleSheet(normalChipStyle);
+        userStatusWidget_->setVisible(true);
+    } else {
+        userStatusWidget_->setVisible(false);
+    }
+
+    // Server/Environment chip
+    if (connected) {
+        const auto host = QString::fromStdString(clientManager_->connectedHost());
+        const auto port = clientManager_->connectedPort();
+        const QString label = activeConnectionName_.isEmpty()
+            ? QString("%1:%2").arg(host).arg(port)
+            : activeConnectionName_;
+        serverStatusNameLabel_->setText(label);
+        serverStatusWidget_->setToolTip(
+            QString("Server: %1\nPort: %2\nUser: %3").arg(host).arg(port).arg(displayUser));
+        serverStatusWidget_->setStyleSheet(normalChipStyle);
+        serverStatusWidget_->setVisible(true);
+    } else {
+        serverStatusWidget_->setVisible(false);
+    }
 
     // Derive tenant name from the @tenant suffix in username_, falling back to
     // the saved connection name when the username carries no tenant suffix.

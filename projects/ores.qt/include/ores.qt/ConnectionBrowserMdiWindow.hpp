@@ -29,6 +29,8 @@
 #include <QMdiArea>
 #include <QMainWindow>
 #include <QList>
+#include <QSize>
+#include <QCloseEvent>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -123,6 +125,9 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
     void showContextMenu(const QPoint& pos);
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
 private:
     void setupUI();
     void updateActionStates();
@@ -151,6 +156,10 @@ private:
     QMdiArea* mdiArea_;
     QMainWindow* mainWindow_;
     QList<DetachableMdiSubWindow*>* allDetachableWindows_;
+
+    QSize savedWindowSize_;
+
+    inline static const QString settings_group_ = "ConnectionBrowserWindow";
 };
 
 }

@@ -26,6 +26,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include <QHeaderView>
 #include <QMenu>
@@ -44,13 +45,23 @@ ConnectionBrowserMdiWindow::ConnectionBrowserMdiWindow(
       allDetachableWindows_(nullptr) {
 
     setupUI();
+    savedWindowSize_ = UiPersistence::restoreSize(settings_group_, {800, 500});
+    UiPersistence::restoreSplitter(settings_group_, splitter_);
     updateActionStates();
 }
 
 ConnectionBrowserMdiWindow::~ConnectionBrowserMdiWindow() = default;
 
 QSize ConnectionBrowserMdiWindow::sizeHint() const {
+    if (savedWindowSize_.isValid())
+        return savedWindowSize_;
     return {800, 500};
+}
+
+void ConnectionBrowserMdiWindow::closeEvent(QCloseEvent* event) {
+    UiPersistence::saveSize(settings_group_, this);
+    UiPersistence::saveSplitter(settings_group_, splitter_);
+    QWidget::closeEvent(event);
 }
 
 void ConnectionBrowserMdiWindow::setTestCallback(TestConnectionCallback callback) {

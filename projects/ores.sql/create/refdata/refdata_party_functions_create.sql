@@ -94,36 +94,14 @@ end;
 $$ language plpgsql stable security definer;
 
 -- Compute the visible party set for a given party within a tenant.
--- For the System party (party_category = 'System'), returns all parties in the
--- tenant — the system party is the administrative root and can see everything.
--- For operational parties, returns the given party and all its descendants in
--- the party hierarchy. Used to populate app.visible_party_ids session variable
--- for party-level RLS.
+-- Returns an array of UUIDs containing the given party and all its descendants
+-- in the party hierarchy. Used to populate app.visible_party_ids session
+-- variable for party-level RLS.
 create or replace function ores_refdata_visible_party_ids_fn(
     p_tenant_id uuid,
     p_party_id uuid
 ) returns uuid[] as $$
-declare
-    v_party_category text;
 begin
-    -- Check the party category to determine visibility scope
-    select party_category into v_party_category
-    from ores_refdata_parties_tbl
-    where id = p_party_id
-      and tenant_id = p_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
-
-    -- System party can see all parties in the tenant
-    if v_party_category = 'System' then
-        return (
-            select array_agg(id)
-            from ores_refdata_parties_tbl
-            where tenant_id = p_tenant_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        );
-    end if;
-
-    -- Operational parties can see themselves and all descendants
     return (
         WITH RECURSIVE party_tree AS (
             SELECT id FROM ores_refdata_parties_tbl

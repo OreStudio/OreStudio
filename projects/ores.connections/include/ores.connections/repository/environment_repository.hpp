@@ -17,30 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_HPP
-#define ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_HPP
+#ifndef ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_REPOSITORY_HPP
+#define ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_REPOSITORY_HPP
 
+#include <vector>
+#include <optional>
 #include <boost/uuid/uuid.hpp>
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
 
-namespace ores::connections::domain {
+namespace ores::connections::repository {
 
-/**
- * @brief Junction type for the many-to-many relationship between environments and tags.
- *
- * This type represents the association between a pure environment and a tag.
- * An environment can have multiple tags, and a tag can be applied to multiple
- * environments.
- */
-struct environment_tag final {
-    /**
-     * @brief The environment being tagged.
-     */
-    boost::uuids::uuid environment_id;
+class environment_repository final {
+public:
+    explicit environment_repository(sqlite_context& ctx);
 
-    /**
-     * @brief The tag being applied.
-     */
-    boost::uuids::uuid tag_id;
+    void write(const domain::environment& env);
+    void write(const std::vector<domain::environment>& envs);
+    std::vector<domain::environment> read_all();
+    std::optional<domain::environment> read_by_id(const boost::uuids::uuid& id);
+    std::vector<domain::environment> read_by_folder(
+        const std::optional<boost::uuids::uuid>& folder_id);
+    void remove(const boost::uuids::uuid& id);
+
+private:
+    sqlite_context& ctx_;
 };
 
 }

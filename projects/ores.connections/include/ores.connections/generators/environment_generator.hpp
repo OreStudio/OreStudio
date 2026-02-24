@@ -17,33 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_GENERATORS_SERVER_ENVIRONMENT_GENERATOR_HPP
-#define ORES_CONNECTIONS_GENERATORS_SERVER_ENVIRONMENT_GENERATOR_HPP
+#ifndef ORES_CONNECTIONS_GENERATORS_ENVIRONMENT_GENERATOR_HPP
+#define ORES_CONNECTIONS_GENERATORS_ENVIRONMENT_GENERATOR_HPP
 
 #include <vector>
 #include <boost/uuid/uuid.hpp>
-#include "ores.connections/domain/server_environment.hpp"
+#include "ores.connections/domain/environment.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::connections::generators {
 
 /**
- * @brief Generates a synthetic server environment (no folder).
+ * @brief Generates a synthetic pure environment (no credentials).
  */
-domain::server_environment generate_synthetic_server_environment(
+domain::environment generate_synthetic_environment(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates a synthetic server environment with a specific folder.
+ * @brief Generates a synthetic environment assigned to a specific folder.
  */
-domain::server_environment generate_synthetic_server_environment(
+domain::environment generate_synthetic_environment(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& folder_id);
 
 /**
- * @brief Generates N synthetic server environments.
+ * @brief Generates N synthetic environments.
  */
-std::vector<domain::server_environment> generate_synthetic_server_environments(
+std::vector<domain::environment> generate_synthetic_environments(
     std::size_t n, utility::generation::generation_context& ctx);
 
 }

@@ -17,30 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_HPP
-#define ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_HPP
+#ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_ENTITY_HPP
+#define ORES_CONNECTIONS_REPOSITORY_CONNECTION_ENTITY_HPP
 
-#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <optional>
+#include <sqlgen/sqlite.hpp>
 
-namespace ores::connections::domain {
+namespace ores::connections::repository {
 
 /**
- * @brief Junction type for the many-to-many relationship between environments and tags.
- *
- * This type represents the association between a pure environment and a tag.
- * An environment can have multiple tags, and a tag can be applied to multiple
- * environments.
+ * @brief SQLite entity for connection storage.
  */
-struct environment_tag final {
-    /**
-     * @brief The environment being tagged.
-     */
-    boost::uuids::uuid environment_id;
+struct connection_entity {
+    constexpr static const char* tablename = "connections";
 
-    /**
-     * @brief The tag being applied.
-     */
-    boost::uuids::uuid tag_id;
+    sqlgen::PrimaryKey<std::string> id;
+    std::optional<std::string> folder_id;
+    std::optional<std::string> environment_id;
+    std::string name;
+    std::optional<std::string> host;
+    std::optional<int> port;
+    std::string username;
+    std::string encrypted_password;
+    std::string description;
 };
 
 }

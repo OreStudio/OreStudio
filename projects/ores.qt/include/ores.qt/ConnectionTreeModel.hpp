@@ -29,7 +29,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_hash.hpp>
 #include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/server_environment.hpp"
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/domain/connection.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::connections::service {
@@ -39,21 +40,22 @@ class connection_manager;
 namespace ores::qt {
 
 /**
- * @brief Tree node representing either a folder or server environment.
+ * @brief Tree node representing a folder, pure environment, or connection.
  */
 struct ConnectionTreeNode {
-    enum class Type { Root, Folder, Environment };
+    enum class Type { Root, Folder, Environment, Connection };
 
     Type type{Type::Root};
     boost::uuids::uuid id{};
     QString name;
     std::optional<boost::uuids::uuid> parent_id;
 
-    // Environment-specific data
+    // Environment / Connection-specific data
     QString host;
     int port{0};
-    QString username;
+    QString username;        ///< Connection only
     QString description;
+    std::optional<boost::uuids::uuid> environment_id;  ///< Connection only
 
     // Tree structure
     ConnectionTreeNode* parent{nullptr};
@@ -71,12 +73,12 @@ struct ConnectionTreeNode {
 };
 
 /**
- * @brief Tree model for displaying folders and server environments.
+ * @brief Tree model for displaying folders, environments, and connections.
  *
- * Provides a hierarchical view of connection folders and environments:
- * - Root folders at top level
- * - Child folders nested under parents
- * - Server environments within folders or at root
+ * Provides a hierarchical view of:
+ * - Folders (with sub-folders and items)
+ * - Environments (pure host + port, no credentials)
+ * - Connections (credentials, optionally linked to an environment)
  */
 class ConnectionTreeModel : public QAbstractItemModel {
     Q_OBJECT
@@ -104,6 +106,7 @@ public:
         NodeTypeRole = Qt::UserRole + 1,
         UuidRole,
         IsEnvironmentRole,
+        IsConnectionRole,
         IsFolderRole,
         TagsRole
     };
@@ -149,7 +152,9 @@ public:
     // Get domain objects from selection
     std::optional<connections::domain::folder> getFolderFromIndex(
         const QModelIndex& index) const;
-    std::optional<connections::domain::server_environment> getEnvironmentFromIndex(
+    std::optional<connections::domain::environment> getEnvironmentFromIndex(
+        const QModelIndex& index) const;
+    std::optional<connections::domain::connection> getConnectionFromIndex(
         const QModelIndex& index) const;
 
 signals:
@@ -162,6 +167,8 @@ private:
         const std::optional<boost::uuids::uuid>& parentId);
     void buildEnvironmentNodes(ConnectionTreeNode* parentNode,
         const std::optional<boost::uuids::uuid>& folderId);
+    void buildConnectionNodes(ConnectionTreeNode* parentNode,
+        const std::optional<boost::uuids::uuid>& folderId);
     QModelIndex indexFromNode(ConnectionTreeNode* node, int column = 0) const;
     QModelIndex findNodeIndex(ConnectionTreeNode* searchNode,
         const boost::uuids::uuid& id) const;
@@ -171,6 +178,7 @@ private:
     QIcon folderIcon_;
     QIcon folderOpenIcon_;
     QIcon serverIcon_;
+    QIcon plugIcon_;
     std::unordered_set<boost::uuids::uuid> expandedFolders_;
 };
 

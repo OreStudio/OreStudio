@@ -21,9 +21,9 @@
 
 #include <QHeaderView>
 #include <QMenu>
-#include <QSettings>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/UiPersistence.hpp"
 
 namespace ores::qt {
 
@@ -131,40 +131,23 @@ void EntityListMdiWindow::saveSettings() {
     if (!settingsTableView_)
         return;
 
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup(settingsGroup_);
-
     auto* header = settingsTableView_->horizontalHeader();
-    settings.setValue("headerState", header->saveState());
-    settings.setValue("windowSize", size());
-
-    settings.endGroup();
+    UiPersistence::saveHeader(settingsGroup_, header, settingsVersion_);
+    UiPersistence::saveSize(settingsGroup_, this);
 }
 
 void EntityListMdiWindow::restoreTableSettings() {
-    QSettings settings("OreStudio", "OreStudio");
-    settings.beginGroup(settingsGroup_);
-
     auto* header = settingsTableView_->horizontalHeader();
 
-    const int saved = settings.value("settingsVersion", 0).toInt();
-    if (saved == settingsVersion_ && settings.contains("headerState")) {
-        header->restoreState(settings.value("headerState").toByteArray());
-    } else {
-        settings.remove("headerState");
-        settings.setValue("settingsVersion", settingsVersion_);
-        for (int col : defaultHiddenColumns_) {
+    if (!UiPersistence::restoreHeader(settingsGroup_, header, settingsVersion_)) {
+        for (int col : defaultHiddenColumns_)
             header->setSectionHidden(col, true);
-        }
     }
 
     // Always enforce ResizeToContents (guards against stale saved state)
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    if (settings.contains("windowSize"))
-        savedWindowSize_ = settings.value("windowSize").toSize();
-
-    settings.endGroup();
+    savedWindowSize_ = UiPersistence::restoreSize(settingsGroup_, defaultSize_);
 }
 
 void EntityListMdiWindow::setupColumnVisibility() {

@@ -271,8 +271,16 @@ private slots:
      *
      * Opens the Login Dialog pre-filled with the selected connection's details.
      */
-    void onConnectionConnectRequested(const boost::uuids::uuid& environmentId,
+    void onConnectionConnectRequested(const boost::uuids::uuid& connectionId,
                                        const QString& connectionName);
+
+    /**
+     * @brief Handles a connect request from the Connection Browser for a pure environment.
+     *
+     * Opens the Login Dialog pre-filled with the environment's host and port.
+     */
+    void onEnvironmentConnectRequested(const boost::uuids::uuid& environmentId,
+                                       const QString& environmentName);
 
     void onModernLoginTriggered();
 
@@ -408,6 +416,14 @@ private:
 
     /** @brief Status bar label showing connection state icon */
     QLabel* connectionStatusIconLabel_;
+
+    /** @brief Status bar chip showing the logged-in username */
+    QWidget* userStatusWidget_;
+    QLabel*  userStatusNameLabel_;
+
+    /** @brief Status bar chip showing the server host or named environment */
+    QWidget* serverStatusWidget_;
+    QLabel*  serverStatusNameLabel_;
 
     /** @brief Status bar chip showing the active tenant (connection) name */
     QWidget* tenantStatusWidget_;

@@ -191,6 +191,57 @@ struct dialog_styles {
         }
     )";
 
+    static inline const QString input_field_locked = R"(
+        QLineEdit {
+            background-color: #222222;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #707070;
+        }
+    )";
+
+    static inline const QString spin_box_locked = R"(
+        QSpinBox {
+            background-color: #222222;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #707070;
+        }
+        QSpinBox::up-button, QSpinBox::down-button {
+            width: 0px;
+        }
+    )";
+
+    static inline const QString combo_box = R"(
+        QComboBox {
+            background-color: #2d2d2d;
+            border: 1px solid #3d3d3d;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #ffffff;
+        }
+        QComboBox:focus {
+            border-color: #5a5a5a;
+            background-color: #333333;
+        }
+        QComboBox::drop-down {
+            border: none;
+            width: 20px;
+        }
+        QComboBox QAbstractItemView {
+            background-color: #252525;
+            border: 1px solid #3d3d3d;
+            selection-background-color: #3a3a3a;
+            color: #ffffff;
+            outline: none;
+        }
+    )";
+
     static inline const QString saved_connections_button = R"(
         QToolButton {
             background: transparent;

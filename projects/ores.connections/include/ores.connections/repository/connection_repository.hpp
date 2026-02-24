@@ -17,29 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_REPOSITORY_SERVER_ENVIRONMENT_ENTITY_HPP
-#define ORES_CONNECTIONS_REPOSITORY_SERVER_ENVIRONMENT_ENTITY_HPP
+#ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_REPOSITORY_HPP
+#define ORES_CONNECTIONS_REPOSITORY_CONNECTION_REPOSITORY_HPP
 
-#include <string>
+#include <vector>
 #include <optional>
-#include <sqlgen/sqlite.hpp>
+#include <boost/uuid/uuid.hpp>
+#include "ores.connections/domain/connection.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
 
 namespace ores::connections::repository {
 
-/**
- * @brief SQLite entity for server environment storage.
- */
-struct server_environment_entity {
-    constexpr static const char* tablename = "server_environments";
+class connection_repository final {
+public:
+    explicit connection_repository(sqlite_context& ctx);
 
-    sqlgen::PrimaryKey<std::string> id;
-    std::optional<std::string> folder_id;
-    std::string name;
-    std::string host;
-    int port = 0;
-    std::string username;
-    std::string encrypted_password;
-    std::string description;
+    void write(const domain::connection& conn);
+    void write(const std::vector<domain::connection>& conns);
+    std::vector<domain::connection> read_all();
+    std::optional<domain::connection> read_by_id(const boost::uuids::uuid& id);
+    std::vector<domain::connection> read_by_folder(
+        const std::optional<boost::uuids::uuid>& folder_id);
+    void remove(const boost::uuids::uuid& id);
+
+private:
+    sqlite_context& ctx_;
 };
 
 }

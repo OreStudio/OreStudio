@@ -17,22 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_DOMAIN_SERVER_ENVIRONMENT_JSON_IO_HPP
-#define ORES_CONNECTIONS_DOMAIN_SERVER_ENVIRONMENT_JSON_IO_HPP
+#ifndef ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_MAPPER_HPP
+#define ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_MAPPER_HPP
 
-#include <iosfwd>
-#include "ores.connections/domain/server_environment.hpp"
+#include <vector>
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/repository/environment_entity.hpp"
 
-namespace ores::connections::domain {
+namespace ores::connections::repository {
 
-/**
- * @brief Dumps the server_environment object to a stream in JSON format.
- *
- * Note: The encrypted_password field is included in the output. Callers should
- * be aware that while the password is encrypted, the ciphertext will be visible
- * in the JSON output.
- */
-std::ostream& operator<<(std::ostream& s, const server_environment& v);
+class environment_mapper final {
+public:
+    static environment_entity to_entity(const domain::environment& env);
+    static domain::environment to_domain(const environment_entity& e);
+    static std::vector<environment_entity> to_entities(
+        const std::vector<domain::environment>& envs);
+    static std::vector<domain::environment> to_domain(
+        const std::vector<environment_entity>& entities);
+};
 
 }
 

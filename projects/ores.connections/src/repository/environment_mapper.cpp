@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.connections/repository/server_environment_mapper.hpp"
+#include "ores.connections/repository/environment_mapper.hpp"
 
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::connections::repository {
 
-server_environment_entity server_environment_mapper::to_entity(
-    const domain::server_environment& env) {
-    server_environment_entity e;
+environment_entity environment_mapper::to_entity(const domain::environment& env) {
+    environment_entity e;
     e.id = boost::uuids::to_string(env.id);
     if (env.folder_id) {
         e.folder_id = boost::uuids::to_string(*env.folder_id);
@@ -34,16 +33,13 @@ server_environment_entity server_environment_mapper::to_entity(
     e.name = env.name;
     e.host = env.host;
     e.port = env.port;
-    e.username = env.username;
-    e.encrypted_password = env.encrypted_password;
     e.description = env.description;
     return e;
 }
 
-domain::server_environment server_environment_mapper::to_domain(
-    const server_environment_entity& e) {
+domain::environment environment_mapper::to_domain(const environment_entity& e) {
     boost::uuids::string_generator gen;
-    domain::server_environment env;
+    domain::environment env;
     env.id = gen(e.id.value());
     if (e.folder_id) {
         env.folder_id = gen(*e.folder_id);
@@ -51,15 +47,13 @@ domain::server_environment server_environment_mapper::to_domain(
     env.name = e.name;
     env.host = e.host;
     env.port = e.port;
-    env.username = e.username;
-    env.encrypted_password = e.encrypted_password;
     env.description = e.description;
     return env;
 }
 
-std::vector<server_environment_entity> server_environment_mapper::to_entities(
-    const std::vector<domain::server_environment>& envs) {
-    std::vector<server_environment_entity> entities;
+std::vector<environment_entity> environment_mapper::to_entities(
+    const std::vector<domain::environment>& envs) {
+    std::vector<environment_entity> entities;
     entities.reserve(envs.size());
     for (const auto& env : envs) {
         entities.push_back(to_entity(env));
@@ -67,9 +61,9 @@ std::vector<server_environment_entity> server_environment_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::server_environment> server_environment_mapper::to_domain(
-    const std::vector<server_environment_entity>& entities) {
-    std::vector<domain::server_environment> envs;
+std::vector<domain::environment> environment_mapper::to_domain(
+    const std::vector<environment_entity>& entities) {
+    std::vector<domain::environment> envs;
     envs.reserve(entities.size());
     for (const auto& e : entities) {
         envs.push_back(to_domain(e));

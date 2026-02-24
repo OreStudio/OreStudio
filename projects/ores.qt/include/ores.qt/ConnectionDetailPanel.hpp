@@ -27,7 +27,8 @@
 #include <QFormLayout>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/server_environment.hpp"
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/domain/connection.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::connections::service {
@@ -42,7 +43,8 @@ namespace ores::qt {
  * Displays contextual information based on current selection:
  * - Empty state: Welcome message with quick actions
  * - Folder: Name and item count
- * - Environment: Connection details and tags (read-only)
+ * - Environment: Host, port, description and tags (read-only)
+ * - Connection: Host, port, username, description and tags (read-only)
  */
 class ConnectionDetailPanel : public QWidget {
     Q_OBJECT
@@ -65,13 +67,17 @@ public:
 
     void showEmptyState();
     void showFolder(const connections::domain::folder& folder, int itemCount);
-    void showEnvironment(const connections::domain::server_environment& env);
+    void showEnvironment(const connections::domain::environment& env);
+    void showConnection(const connections::domain::connection& conn);
 
 private:
     void setupEmptyPage();
     void setupFolderPage();
     void setupEnvironmentPage();
-    void updateTagBadges(const boost::uuids::uuid& envId);
+    void setupConnectionPage();
+    void updateEnvironmentTagBadges(const boost::uuids::uuid& envId);
+    void updateConnectionTagBadges(const boost::uuids::uuid& connId,
+        const std::optional<boost::uuids::uuid>& envId);
 
     connections::service::connection_manager* manager_;
 
@@ -86,14 +92,22 @@ private:
     QLabel* folderItemCountLabel_;
     QLabel* folderDescriptionLabel_;
 
-    // Environment page
+    // Environment page (pure host+port, no credentials)
     QWidget* environmentPage_;
     QLabel* envNameLabel_;
     QLabel* envHostLabel_;
     QLabel* envPortLabel_;
-    QLabel* envUsernameLabel_;
     QLabel* envDescriptionLabel_;
     QWidget* envTagsContainer_;
+
+    // Connection page (credentials, optionally linked to environment)
+    QWidget* connectionPage_;
+    QLabel* connNameLabel_;
+    QLabel* connHostLabel_;
+    QLabel* connPortLabel_;
+    QLabel* connUsernameLabel_;
+    QLabel* connDescriptionLabel_;
+    QWidget* connTagsContainer_;
 };
 
 }

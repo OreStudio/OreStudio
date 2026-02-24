@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_DOMAIN_SERVER_ENVIRONMENT_HPP
-#define ORES_CONNECTIONS_DOMAIN_SERVER_ENVIRONMENT_HPP
+#ifndef ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_HPP
+#define ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_HPP
 
 #include <string>
 #include <optional>
@@ -27,16 +27,16 @@
 namespace ores::connections::domain {
 
 /**
- * @brief Represents a server connection/environment configuration.
+ * @brief Represents a pure server environment (host + port only, no credentials).
  *
- * A server environment stores all the details needed to connect to a remote
- * server instance. Environments are organized into folders and can be tagged
- * for flexible categorization.
+ * An environment captures where to connect — host and port — without any
+ * credential information. Connections may be linked to an environment so that
+ * host/port are resolved live rather than stored redundantly.
  *
- * The password field stores the encrypted form of the password. Use the
- * connection_manager service to encrypt/decrypt passwords.
+ * Environments are organized into folders and can be tagged for flexible
+ * categorization.
  */
-struct server_environment final {
+struct environment final {
     /**
      * @brief Unique identifier for this environment.
      */
@@ -62,20 +62,7 @@ struct server_environment final {
     /**
      * @brief Port number the server is listening on.
      */
-    int port = 0;
-
-    /**
-     * @brief Username for authentication.
-     */
-    std::string username;
-
-    /**
-     * @brief Encrypted password for authentication.
-     *
-     * This field stores the AES-encrypted password. Use the connection_manager
-     * service to encrypt passwords before storing and decrypt when connecting.
-     */
-    std::string encrypted_password;
+    int port{0};
 
     /**
      * @brief Optional description or notes about this environment.

@@ -29,6 +29,8 @@
 #include <QMdiArea>
 #include <QMainWindow>
 #include <QList>
+#include <QSize>
+#include <QCloseEvent>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -87,10 +89,16 @@ signals:
     void errorOccurred(const QString& errorMessage);
 
     /**
-     * @brief Emitted when user requests to connect using a saved environment.
+     * @brief Emitted when user requests to connect using a saved connection.
      */
-    void connectRequested(const boost::uuids::uuid& environmentId,
+    void connectRequested(const boost::uuids::uuid& connectionId,
                           const QString& connectionName);
+
+    /**
+     * @brief Emitted when user requests to connect using a pure environment.
+     */
+    void environmentConnectRequested(const boost::uuids::uuid& environmentId,
+                                     const QString& environmentName);
 
     /**
      * @brief Emitted when user requests to change the master password.
@@ -106,6 +114,7 @@ public slots:
     void reload();
     void openAddDialog();
     void editSelected();
+    void copySelected();
     void deleteSelected();
     void connectToSelected();
     void changeMasterPassword();
@@ -115,6 +124,9 @@ private slots:
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
     void showContextMenu(const QPoint& pos);
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 private:
     void setupUI();
@@ -130,6 +142,7 @@ private:
 
     QAction* addAction_;
     QAction* editAction_;
+    QAction* copyAction_;
     QAction* deleteAction_;
     QAction* connectAction_;
     QAction* refreshAction_;
@@ -143,6 +156,10 @@ private:
     QMdiArea* mdiArea_;
     QMainWindow* mainWindow_;
     QList<DetachableMdiSubWindow*>* allDetachableWindows_;
+
+    QSize savedWindowSize_;
+
+    inline static const QString settings_group_ = "ConnectionBrowserWindow";
 };
 
 }

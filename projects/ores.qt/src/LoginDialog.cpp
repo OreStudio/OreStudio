@@ -19,6 +19,7 @@
  */
 #include "ores.qt/LoginDialog.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <QStandardItemModel>
 #include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -47,6 +48,13 @@ const QString titleStyle = R"(
     }
 )";
 
+// UserRole: item type as int (0 = Environment, 1 = Connection)
+// UserRole+1: item name as QString
+constexpr int ItemTypeRole = Qt::UserRole;
+constexpr int ItemNameRole = Qt::UserRole + 1;
+constexpr int TypeEnvironment = static_cast<int>(LoginDialog::QuickConnectItem::Type::Environment);
+constexpr int TypeConnection  = static_cast<int>(LoginDialog::QuickConnectItem::Type::Connection);
+
 }
 
 LoginDialog::LoginDialog(QWidget* parent)
@@ -71,26 +79,74 @@ void LoginDialog::keyPressEvent(QKeyEvent* event) {
     }
 }
 
-void LoginDialog::setSavedConnections(const QStringList& connectionNames) {
-    savedConnectionsMenu_->clear();
-
-    if (connectionNames.isEmpty()) {
-        savedConnectionsButton_->setVisible(false);
+void LoginDialog::setQuickConnectItems(const QList<QuickConnectItem>& items) {
+    if (items.isEmpty()) {
+        quickConnectLabel_->setVisible(false);
+        quickConnectCombo_->setVisible(false);
         return;
     }
 
-    savedConnectionsButton_->setVisible(true);
+    auto* model = new QStandardItemModel(quickConnectCombo_);
 
-    // Sort connections alphabetically (case-insensitive)
-    QStringList sortedNames = connectionNames;
-    sortedNames.sort(Qt::CaseInsensitive);
+    auto makeHeader = [](const QString& text) -> QStandardItem* {
+        auto* h = new QStandardItem(text);
+        h->setFlags(Qt::NoItemFlags);
+        h->setData(QColor("#666666"), Qt::ForegroundRole);
+        QFont f;
+        f.setPointSize(9);
+        f.setItalic(true);
+        h->setData(f, Qt::FontRole);
+        return h;
+    };
 
-    for (const QString& name : sortedNames) {
-        auto* action = savedConnectionsMenu_->addAction(name);
-        connect(action, &QAction::triggered, this, [this, name]() {
-            emit savedConnectionSelected(name);
-        });
+    // Manual section (always first) — keyboard icon, type = -1
+    model->appendRow(makeHeader(tr("  Manual")));
+    auto manualIcon = IconUtils::createRecoloredIcon(Icon::Keyboard, QColor("#808080"));
+    auto* manualItem = new QStandardItem(manualIcon, tr("  Enter details manually"));
+    manualItem->setData(static_cast<int>(-1), ItemTypeRole);
+    model->appendRow(manualItem);
+
+    // Collect by type
+    QList<const QuickConnectItem*> envs, conns;
+    for (const auto& it : items) {
+        if (it.type == QuickConnectItem::Type::Environment)
+            envs.append(&it);
+        else
+            conns.append(&it);
     }
+
+    if (!envs.isEmpty()) {
+        model->appendRow(makeHeader(tr("  Environments")));
+        auto icon = IconUtils::createRecoloredIcon(Icon::Server, QColor("#9090b0"));
+        for (const auto* it : envs) {
+            const QString text = it->subtitle.isEmpty()
+                ? it->name
+                : it->name + "   " + it->subtitle;
+            auto* row = new QStandardItem(icon, text);
+            row->setData(TypeEnvironment, ItemTypeRole);
+            row->setData(it->name, ItemNameRole);
+            model->appendRow(row);
+        }
+    }
+
+    if (!conns.isEmpty()) {
+        model->appendRow(makeHeader(tr("  Connections")));
+        auto icon = IconUtils::createRecoloredIcon(Icon::PlugConnected, QColor("#90b090"));
+        for (const auto* it : conns) {
+            const QString text = it->subtitle.isEmpty()
+                ? it->name
+                : it->name + "   [" + it->subtitle + "]";
+            auto* row = new QStandardItem(icon, text);
+            row->setData(TypeConnection, ItemTypeRole);
+            row->setData(it->name, ItemNameRole);
+            model->appendRow(row);
+        }
+    }
+
+    quickConnectCombo_->setModel(model);
+    quickConnectCombo_->setCurrentIndex(1); // default to "Enter details manually"
+    quickConnectLabel_->setVisible(true);
+    quickConnectCombo_->setVisible(true);
 }
 
 void LoginDialog::setServer(const QString& server) {
@@ -129,14 +185,46 @@ int LoginDialog::getPort() const {
     return portSpinBox_->value();
 }
 
+void LoginDialog::lockServerFields(bool locked) {
+    serverFieldsLocked_ = locked;
+    hostEdit_->setReadOnly(locked);
+    portSpinBox_->setReadOnly(locked);
+    hostEdit_->setStyleSheet(
+        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
+    portSpinBox_->setStyleSheet(
+        locked ? dialog_styles::spin_box_locked : dialog_styles::spin_box);
+}
+
+void LoginDialog::lockCredentialFields(bool locked) {
+    credentialFieldsLocked_ = locked;
+    usernameEdit_->setReadOnly(locked);
+    passwordEdit_->setReadOnly(locked);
+    usernameEdit_->setStyleSheet(
+        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
+    passwordEdit_->setStyleSheet(
+        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
+}
+
 void LoginDialog::enableForm(bool enabled) {
-    usernameEdit_->setEnabled(enabled);
-    passwordEdit_->setEnabled(enabled);
-    hostEdit_->setEnabled(enabled);
-    portSpinBox_->setEnabled(enabled);
     loginButton_->setEnabled(enabled);
     signUpButton_->setEnabled(enabled);
-    savedConnectionsButton_->setEnabled(enabled);
+    quickConnectCombo_->setEnabled(enabled);
+
+    if (enabled) {
+        // Restore the lock state that was active before the login attempt
+        hostEdit_->setEnabled(true);
+        portSpinBox_->setEnabled(true);
+        usernameEdit_->setEnabled(true);
+        passwordEdit_->setEnabled(true);
+        lockServerFields(serverFieldsLocked_);
+        lockCredentialFields(credentialFieldsLocked_);
+    } else {
+        // Disable everything while waiting for the server response
+        hostEdit_->setEnabled(false);
+        portSpinBox_->setEnabled(false);
+        usernameEdit_->setEnabled(false);
+        passwordEdit_->setEnabled(false);
+    }
 }
 
 void LoginDialog::setupUI() {
@@ -144,7 +232,6 @@ void LoginDialog::setupUI() {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // Main panel
     auto* mainPanel = new QWidget(this);
     mainPanel->setObjectName("mainPanel");
     mainPanel->setStyleSheet(dialog_styles::panel);
@@ -179,7 +266,6 @@ void LoginDialog::setupHeader(QVBoxLayout* layout, QWidget* parent) {
 }
 
 void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
-    // Username field
     auto* usernameLabel = new QLabel("USERNAME", parent);
     usernameLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(usernameLabel);
@@ -193,7 +279,6 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
 
     layout->addSpacing(12);
 
-    // Password field
     auto* passwordLabel = new QLabel("PASSWORD", parent);
     passwordLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(passwordLabel);
@@ -206,8 +291,8 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     passwordEdit_->setFixedHeight(36);
     layout->addWidget(passwordEdit_);
 
-    // Options row
     layout->addSpacing(8);
+
     auto* optionsRow = new QHBoxLayout();
     showPasswordCheck_ = new QCheckBox("Show password", parent);
     showPasswordCheck_->setStyleSheet(dialog_styles::checkbox);
@@ -226,31 +311,28 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
 }
 
 void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
-    // Server label row with saved connections button
-    auto* serverLabelRow = new QHBoxLayout();
-    serverLabelRow->setSpacing(4);
+    // Quick-connect combo: environments (fills host+port) and connections
+    // (fills all fields). Hidden until setQuickConnectItems() is called.
+    quickConnectLabel_ = new QLabel(tr("QUICK CONNECT"), parent);
+    quickConnectLabel_->setStyleSheet(dialog_styles::field_label);
+    quickConnectLabel_->setVisible(false);
+    layout->addWidget(quickConnectLabel_);
+    layout->addSpacing(4);
+
+    quickConnectCombo_ = new QComboBox(parent);
+    quickConnectCombo_->addItem(tr("— connect manually —"));
+    quickConnectCombo_->setStyleSheet(dialog_styles::combo_box);
+    quickConnectCombo_->setVisible(false);
+    layout->addWidget(quickConnectCombo_);
+
+    connect(quickConnectCombo_, &QComboBox::currentIndexChanged,
+            this, &LoginDialog::onQuickConnectChanged);
+
+    layout->addSpacing(12);
 
     auto* hostLabel = new QLabel("SERVER", parent);
     hostLabel->setStyleSheet(dialog_styles::field_label);
-    serverLabelRow->addWidget(hostLabel);
-
-    // Saved connections button (icon only)
-    savedConnectionsButton_ = new QToolButton(parent);
-    savedConnectionsButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ServerLinkFilled, IconUtils::DefaultIconColor));
-    savedConnectionsButton_->setIconSize(QSize(14, 14));
-    savedConnectionsButton_->setStyleSheet(dialog_styles::saved_connections_button);
-    savedConnectionsButton_->setToolTip(tr("Saved connections"));
-    savedConnectionsButton_->setCursor(Qt::PointingHandCursor);
-    savedConnectionsButton_->setPopupMode(QToolButton::InstantPopup);
-    savedConnectionsButton_->setVisible(false); // Hidden until connections are set
-
-    savedConnectionsMenu_ = new QMenu(savedConnectionsButton_);
-    savedConnectionsButton_->setMenu(savedConnectionsMenu_);
-
-    serverLabelRow->addWidget(savedConnectionsButton_);
-    serverLabelRow->addStretch();
-    layout->addLayout(serverLabelRow);
+    layout->addWidget(hostLabel);
     layout->addSpacing(4);
 
     hostEdit_ = new QLineEdit(parent);
@@ -278,7 +360,6 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
 }
 
 void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
-    // Status label
     statusLabel_ = new QLabel(parent);
     statusLabel_->setStyleSheet(dialog_styles::status);
     statusLabel_->setAlignment(Qt::AlignCenter);
@@ -286,7 +367,6 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
 
     layout->addSpacing(4);
 
-    // Login button
     loginButton_ = new QPushButton("Login", parent);
     loginButton_->setStyleSheet(dialog_styles::primary_button);
     loginButton_->setFixedHeight(40);
@@ -297,11 +377,11 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
 
     layout->addSpacing(12);
 
-    // Sign up row
     auto* signUpRow = new QHBoxLayout();
     signUpRow->setAlignment(Qt::AlignCenter);
     signUpLabel_ = new QLabel("Don't have an account?", parent);
-    signUpLabel_->setStyleSheet("QLabel { background: transparent; color: #707070; font-size: 12px; }");
+    signUpLabel_->setStyleSheet(
+        "QLabel { background: transparent; color: #707070; font-size: 12px; }");
 
     signUpButton_ = new QPushButton("Register", parent);
     signUpButton_->setStyleSheet(dialog_styles::link_button);
@@ -331,6 +411,39 @@ void LoginDialog::setupFooter(QVBoxLayout* layout, QWidget* parent) {
     layout->addSpacing(8);
 }
 
+void LoginDialog::onQuickConnectChanged(int idx) {
+    auto* model = qobject_cast<QStandardItemModel*>(quickConnectCombo_->model());
+    if (!model) return;
+
+    auto* item = model->item(idx);
+    if (!item || !item->isEnabled()) return; // section header — skip
+
+    const int type = item->data(ItemTypeRole).toInt();
+
+    if (type < 0) {
+        // Manual entry — unlock all fields
+        lockServerFields(false);
+        lockCredentialFields(false);
+        return;
+    }
+
+    const QString name = item->data(ItemNameRole).toString();
+
+    if (type == TypeEnvironment) {
+        // Environment: lock server fields, leave credentials editable
+        lockServerFields(true);
+        lockCredentialFields(false);
+        usernameEdit_->clear();
+        passwordEdit_->clear();
+        emit environmentSelected(name);
+    } else {
+        // Connection: lock all fields
+        lockServerFields(true);
+        lockCredentialFields(true);
+        emit connectionSelected(name);
+    }
+}
+
 void LoginDialog::onLoginClicked() {
     BOOST_LOG_SEV(lg(), trace) << "Login button clicked";
 
@@ -344,7 +457,6 @@ void LoginDialog::onLoginClicked() {
     const auto host = hostEdit_->text().trimmed();
     const auto port = static_cast<std::uint16_t>(portSpinBox_->value());
 
-    // Validate input
     if (username.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter a username.");
         usernameEdit_->setFocus();
@@ -363,12 +475,10 @@ void LoginDialog::onLoginClicked() {
         return;
     }
 
-    // Disable form during connection
     enableForm(false);
     statusLabel_->setText("Connecting to server...");
     statusLabel_->setStyleSheet(dialog_styles::status);
 
-    // Perform login asynchronously via ClientManager
     auto* watcher = new QFutureWatcher<LoginResult>(this);
     connect(watcher, &QFutureWatcher<LoginResult>::finished,
             [this, watcher]() {
@@ -390,7 +500,6 @@ void LoginDialog::onLoginClicked() {
 void LoginDialog::onLoginResult(const LoginResult& result) {
     BOOST_LOG_SEV(lg(), debug) << "Login result received";
 
-    // Check for bootstrap mode first - this is not a failure, just needs provisioning
     if (result.bootstrap_mode) {
         BOOST_LOG_SEV(lg(), info) << "System is in bootstrap mode - provisioning required";
         statusLabel_->setText("System requires provisioning...");
@@ -402,12 +511,10 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
     if (result.success) {
         BOOST_LOG_SEV(lg(), debug) << "Login was successful";
 
-        // Check if password reset is required
         if (result.password_reset_required) {
             BOOST_LOG_SEV(lg(), info) << "Password reset required";
             statusLabel_->setText("Password change required...");
 
-            // Show change password dialog
             ChangePasswordDialog changeDialog(clientManager_, this);
             if (changeDialog.exec() == QDialog::Accepted) {
                 BOOST_LOG_SEV(lg(), info) << "Password changed successfully";
@@ -416,7 +523,6 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 emit closeRequested();
             } else {
                 BOOST_LOG_SEV(lg(), warn) << "Password change canceled";
-                // Disconnect since user canceled password change
                 clientManager_->disconnect();
                 enableForm(true);
                 statusLabel_->setText("");

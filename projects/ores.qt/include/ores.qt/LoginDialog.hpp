@@ -24,12 +24,11 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QToolButton>
 #include <QLabel>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QSpinBox>
-#include <QMenu>
+#include <QList>
 #include <QVBoxLayout>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -40,7 +39,8 @@ namespace ores::qt {
  * @brief Login dialog with dark theme.
  *
  * Provides a clean login form with username, password, and server fields.
- * Supports saved connections via a dropdown menu.
+ * Supports a unified quick-connect combo showing both environments (fills
+ * host+port only) and full connections (fills all fields including credentials).
  */
 class LoginDialog : public QWidget {
     Q_OBJECT
@@ -55,15 +55,32 @@ private:
     }
 
 public:
+    /**
+     * @brief An item for the unified quick-connect combo.
+     *
+     * Environments fill host+port only; connections fill all fields.
+     */
+    struct QuickConnectItem {
+        enum class Type { Environment, Connection };
+        Type type;
+        QString name;
+        QString subtitle; // "host:port" for environments, username for connections
+    };
+
+public:
     explicit LoginDialog(QWidget* parent = nullptr);
     ~LoginDialog() override;
 
     QSize sizeHint() const override;
 
     /**
-     * @brief Set the list of saved connection names for the dropdown.
+     * @brief Populate the quick-connect combo with environments and connections.
+     *
+     * Environments are shown under an "Environments" header and fill host+port
+     * when selected. Connections are shown under a "Connections" header and fill
+     * all fields including credentials. The combo is hidden when items is empty.
      */
-    void setSavedConnections(const QStringList& connectionNames);
+    void setQuickConnectItems(const QList<QuickConnectItem>& items);
 
     /**
      * @brief Set the server/host field value.
@@ -128,23 +145,24 @@ signals:
     void closeRequested();
 
     /**
-     * @brief Emitted when user selects a saved connection from the dropdown.
+     * @brief Emitted when an environment is selected from the quick-connect combo.
+     * MainWindow handles this by filling host+port. Credentials remain editable.
      */
-    void savedConnectionSelected(const QString& connectionName);
+    void environmentSelected(const QString& environmentName);
+
+    /**
+     * @brief Emitted when a full connection is selected from the quick-connect combo.
+     * MainWindow handles this by filling all fields including credentials.
+     */
+    void connectionSelected(const QString& connectionName);
 
     /**
      * @brief Emitted when the server is in bootstrap mode.
-     *
-     * This signal indicates that the system has no administrator account yet
-     * and the SystemProvisionerWizard should be shown instead of the login form.
      */
     void bootstrapModeDetected();
 
     /**
      * @brief Emitted when the tenant is in bootstrap mode.
-     *
-     * This signal indicates that the authenticated tenant needs initial setup
-     * and the TenantProvisioningWizard should be shown after login.
      */
     void tenantBootstrapDetected();
 
@@ -154,6 +172,7 @@ private slots:
     void onGetStartedClicked();
     void onShowPasswordToggled(bool checked);
     void onLoginResult(const LoginResult& result);
+    void onQuickConnectChanged(int idx);
 
 private:
     void setupUI();
@@ -165,6 +184,8 @@ private:
     void setupActions(QVBoxLayout* layout, QWidget* parent);
     void setupFooter(QVBoxLayout* layout, QWidget* parent);
     void enableForm(bool enabled);
+    void lockServerFields(bool locked);
+    void lockCredentialFields(bool locked);
 
     // UI elements
     QLabel* loginTitleLabel_;
@@ -181,9 +202,13 @@ private:
     QLineEdit* hostEdit_;
     QSpinBox* portSpinBox_;
 
-    // Saved connections
-    QToolButton* savedConnectionsButton_;
-    QMenu* savedConnectionsMenu_;
+    // Quick-connect combo (environments + connections, hidden when empty)
+    QLabel* quickConnectLabel_{nullptr};
+    QComboBox* quickConnectCombo_{nullptr};
+
+    // Lock state (set when a saved item is selected)
+    bool serverFieldsLocked_{false};
+    bool credentialFieldsLocked_{false};
 
     // Dependencies
     ClientManager* clientManager_{nullptr};

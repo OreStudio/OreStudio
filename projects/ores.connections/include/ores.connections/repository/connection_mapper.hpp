@@ -17,18 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.connections/domain/server_environment_json_io.hpp"
+#ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_MAPPER_HPP
+#define ORES_CONNECTIONS_REPOSITORY_CONNECTION_MAPPER_HPP
 
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
+#include <vector>
+#include "ores.connections/domain/connection.hpp"
+#include "ores.connections/repository/connection_entity.hpp"
 
-namespace ores::connections::domain {
+namespace ores::connections::repository {
 
-std::ostream& operator<<(std::ostream& s, const server_environment& v) {
-    s << rfl::json::write(v);
-    return s;
+class connection_mapper final {
+public:
+    static connection_entity to_entity(const domain::connection& conn);
+    static domain::connection to_domain(const connection_entity& e);
+    static std::vector<connection_entity> to_entities(
+        const std::vector<domain::connection>& conns);
+    static std::vector<domain::connection> to_domain(
+        const std::vector<connection_entity>& entities);
+};
+
 }
 
-}
+#endif

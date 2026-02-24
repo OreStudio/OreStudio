@@ -115,6 +115,8 @@ MainWindow::MainWindow(QWidget* parent) :
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
     telemetryViewerWindow_(nullptr),
+    userStatusWidget_(nullptr), userStatusNameLabel_(nullptr),
+    serverStatusWidget_(nullptr), serverStatusNameLabel_(nullptr),
     tenantStatusWidget_(nullptr), tenantStatusNameLabel_(nullptr),
     partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr) {
 
@@ -151,18 +153,24 @@ MainWindow::MainWindow(QWidget* parent) :
         "QWidget { border-left: 1px solid palette(mid);"
         " background: palette(alternateBase); }";
 
+    auto [uWidget, uName] = makeStatusChip(Icon::PersonAccounts);
+    auto [sWidget, sName] = makeStatusChip(Icon::Server);
     auto [tWidget, tName] = makeStatusChip(Icon::BuildingSkyscraper);
-    tWidget->setStyleSheet(normalChipStyle);
-    tWidget->setVisible(false);
-    tenantStatusWidget_     = tWidget;
-    tenantStatusNameLabel_  = tName;
-    ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
-
     auto [pWidget, pName] = makeStatusChip(Icon::Organization);
-    pWidget->setStyleSheet(normalChipStyle);
-    pWidget->setVisible(false);
-    partyStatusWidget_    = pWidget;
-    partyStatusNameLabel_ = pName;
+
+    userStatusWidget_       = uWidget;  userStatusNameLabel_   = uName;
+    serverStatusWidget_     = sWidget;  serverStatusNameLabel_ = sName;
+    tenantStatusWidget_     = tWidget;  tenantStatusNameLabel_ = tName;
+    partyStatusWidget_      = pWidget;  partyStatusNameLabel_  = pName;
+
+    for (auto* w : {uWidget, sWidget, tWidget, pWidget}) {
+        w->setStyleSheet(normalChipStyle);
+        w->setVisible(false);
+    }
+
+    ui_->statusbar->addPermanentWidget(userStatusWidget_);
+    ui_->statusbar->addPermanentWidget(serverStatusWidget_);
+    ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
     ui_->statusbar->addPermanentWidget(partyStatusWidget_);
 
     connectionStatusIconLabel_ = new QLabel(this);
@@ -2130,27 +2138,8 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
 void MainWindow::updateWindowTitle() {
     QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
 
-    // Add connection info if connected.
-    // username_ is in "user@tenant" format from IAM — strip the tenant suffix
-    // for the title bar; the tenant appears in the status bar chip instead.
-    if (clientManager_ && clientManager_->isConnected()) {
-        const QString server =
-            QString::fromStdString(clientManager_->serverAddress());
-        if (!username_.empty()) {
-            const QString fullUser = QString::fromStdString(username_);
-            const int atIdx = fullUser.indexOf('@');
-            const QString displayUser =
-                (atIdx >= 0) ? fullUser.left(atIdx) : fullUser;
-            title += QString(" - %1 @ %2").arg(displayUser).arg(server);
-        } else {
-            title += QString(" - %1").arg(server);
-        }
-    }
-
-    // Add instance name if set
-    if (!instanceName_.isEmpty()) {
+    if (!instanceName_.isEmpty())
         title += QString(" [%1]").arg(instanceName_);
-    }
 
     setWindowTitle(title);
     updateStatusBarFields();
@@ -2165,6 +2154,40 @@ void MainWindow::updateStatusBarFields() {
         "QWidget { border-left: 1px solid palette(mid); background: #7a2000; }";
 
     const bool connected = clientManager_ && clientManager_->isConnected();
+
+    // Derive display username (strip @tenant suffix) once for all chips.
+    QString displayUser;
+    if (!username_.empty()) {
+        const QString fullUser = QString::fromStdString(username_);
+        const int atIdx = fullUser.indexOf('@');
+        displayUser = (atIdx >= 0) ? fullUser.left(atIdx) : fullUser;
+    }
+
+    // User chip
+    if (connected) {
+        userStatusNameLabel_->setText(displayUser.isEmpty() ? "—" : displayUser);
+        userStatusWidget_->setToolTip("User: " + userStatusNameLabel_->text());
+        userStatusWidget_->setStyleSheet(normalChipStyle);
+        userStatusWidget_->setVisible(true);
+    } else {
+        userStatusWidget_->setVisible(false);
+    }
+
+    // Server/Environment chip
+    if (connected) {
+        const auto host = QString::fromStdString(clientManager_->connectedHost());
+        const auto port = clientManager_->connectedPort();
+        const QString label = activeConnectionName_.isEmpty()
+            ? QString("%1:%2").arg(host).arg(port)
+            : activeConnectionName_;
+        serverStatusNameLabel_->setText(label);
+        serverStatusWidget_->setToolTip(
+            QString("Server: %1\nPort: %2\nUser: %3").arg(host).arg(port).arg(displayUser));
+        serverStatusWidget_->setStyleSheet(normalChipStyle);
+        serverStatusWidget_->setVisible(true);
+    } else {
+        serverStatusWidget_->setVisible(false);
+    }
 
     // Derive tenant name from the @tenant suffix in username_, falling back to
     // the saved connection name when the username carries no tenant suffix.
@@ -2262,6 +2285,8 @@ void MainWindow::onConnectionBrowserTriggered() {
     });
     connect(browserWidget, &ConnectionBrowserMdiWindow::connectRequested,
             this, &MainWindow::onConnectionConnectRequested);
+    connect(browserWidget, &ConnectionBrowserMdiWindow::environmentConnectRequested,
+            this, &MainWindow::onEnvironmentConnectRequested);
     connect(browserWidget, &ConnectionBrowserMdiWindow::databasePurged,
             this, [this]() {
         // Reset master password configuration when database is purged
@@ -2338,11 +2363,11 @@ void MainWindow::onConnectionBrowserTriggered() {
     BOOST_LOG_SEV(lg(), info) << "Connection Browser window opened";
 }
 
-void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environmentId,
+void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connectionId,
                                                const QString& connectionName) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Connect requested for environment: "
-                               << boost::uuids::to_string(environmentId)
+    BOOST_LOG_SEV(lg(), debug) << "Connect requested for connection: "
+                               << boost::uuids::to_string(connectionId)
                                << ", name: " << connectionName.toStdString();
 
     // If already connected, ask user to disconnect first
@@ -2365,21 +2390,15 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
         return;
     }
 
-    // Get the environment details
-    auto env = connectionManager_->get_environment(environmentId);
-    if (!env) {
+    // Resolve the connection (host/port from environment if linked, decrypt password)
+    connections::service::connection_manager::resolved_connection resolved;
+    try {
+        resolved = connectionManager_->resolve_connection(connectionId);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to resolve connection: " << e.what();
         MessageBoxHelper::critical(this, tr("Error"),
             tr("Could not find the selected connection."));
         return;
-    }
-
-    // Get the decrypted password
-    std::string password;
-    try {
-        password = connectionManager_->get_password(environmentId);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get password: " << e.what();
-        // Password might be empty or decryption failed - user will need to enter it
     }
 
     // Store the connection name for the window title
@@ -2387,15 +2406,65 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
 
     // Show login dialog pre-filled with connection details
     LoginDialogOptions options;
-    options.host = QString::fromStdString(env->host);
-    options.port = env->port;
-    options.username = QString::fromStdString(env->username);
-    if (!password.empty()) {
-        options.password = QString::fromStdString(password);
+    options.host = QString::fromStdString(resolved.host);
+    options.port = resolved.port;
+    options.username = QString::fromStdString(resolved.username);
+    if (!resolved.password.empty()) {
+        options.password = QString::fromStdString(resolved.password);
     }
     options.connectionName = connectionName;
     options.showSavedConnections = false;  // Already selected a connection
     options.showSignUpButton = false;      // Connecting to known server
+
+    showLoginDialog(options);
+}
+
+void MainWindow::onEnvironmentConnectRequested(const boost::uuids::uuid& environmentId,
+                                               const QString& environmentName) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Connect requested for environment: "
+                               << boost::uuids::to_string(environmentId)
+                               << ", name: " << environmentName.toStdString();
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect via '%1'?")
+                .arg(environmentName),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
+    if (!connectionManager_) {
+        BOOST_LOG_SEV(lg(), error) << "Connection manager not initialized";
+        return;
+    }
+
+    // Look up the environment to get host/port
+    auto env = connectionManager_->get_environment(environmentId);
+    if (!env) {
+        BOOST_LOG_SEV(lg(), error) << "Environment not found: "
+                                   << boost::uuids::to_string(environmentId);
+        MessageBoxHelper::critical(this, tr("Error"),
+            tr("Could not find the selected environment."));
+        return;
+    }
+
+    activeConnectionName_ = environmentName;
+
+    // Show login dialog pre-filled with environment host/port; user enters credentials
+    LoginDialogOptions options;
+    options.host = QString::fromStdString(env->host);
+    options.port = env->port;
+    options.connectionName = environmentName;
+    options.showSavedConnections = false;
+    options.showSignUpButton = false;
 
     showLoginDialog(options);
 }
@@ -2689,35 +2758,73 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
         });
     }
 
-    // Populate saved connections if enabled
+    // Populate quick-connect combo with environments (fills host+port) and
+    // full connections (fills all fields including credentials).
     if (options.showSavedConnections && initializeConnectionManager() && connectionManager_) {
-        auto environments = connectionManager_->get_all_environments();
-        QStringList connectionNames;
-        for (const auto& env : environments) {
-            connectionNames << QString::fromStdString(env.name);
+        QList<LoginDialog::QuickConnectItem> items;
+
+        // Environments: selecting fills host+port only; user types credentials
+        for (const auto& env : connectionManager_->get_all_environments()) {
+            LoginDialog::QuickConnectItem it;
+            it.type = LoginDialog::QuickConnectItem::Type::Environment;
+            it.name = QString::fromStdString(env.name);
+            it.subtitle = QString("%1:%2")
+                .arg(QString::fromStdString(env.host))
+                .arg(env.port);
+            items.append(it);
         }
-        loginWidget->setSavedConnections(connectionNames);
 
-        // Connect saved connection selection
-        connect(loginWidget, &LoginDialog::savedConnectionSelected,
-                this, [this, loginWidget](const QString& name) {
-            if (!connectionManager_) return;
+        // Connections: selecting fills all fields via resolve_connection()
+        for (const auto& conn : connectionManager_->get_all_connections()) {
+            LoginDialog::QuickConnectItem it;
+            it.type = LoginDialog::QuickConnectItem::Type::Connection;
+            it.name = QString::fromStdString(conn.name);
+            it.subtitle = QString::fromStdString(conn.username);
+            items.append(it);
+        }
 
-            auto environments = connectionManager_->get_all_environments();
-            for (const auto& env : environments) {
-                if (QString::fromStdString(env.name) == name) {
-                    loginWidget->setServer(QString::fromStdString(env.host));
-                    loginWidget->setPort(env.port);
-                    loginWidget->setUsername(QString::fromStdString(env.username));
+        if (!items.isEmpty()) {
+            loginWidget->setQuickConnectItems(items);
 
-                    auto password = connectionManager_->get_password(env.id);
-                    if (!password.empty()) {
-                        loginWidget->setPassword(QString::fromStdString(password));
+            // Environment selected: fill host+port, credentials stay editable
+            connect(loginWidget, &LoginDialog::environmentSelected,
+                    this, [this, loginWidget](const QString& name) {
+                if (!connectionManager_) return;
+                for (const auto& env : connectionManager_->get_all_environments()) {
+                    if (QString::fromStdString(env.name) == name) {
+                        loginWidget->setServer(QString::fromStdString(env.host));
+                        loginWidget->setPort(env.port);
+                        break;
                     }
-                    break;
                 }
-            }
-        });
+            });
+
+            // Connection selected: resolve and fill all fields
+            connect(loginWidget, &LoginDialog::connectionSelected,
+                    this, [this, loginWidget](const QString& name) {
+                if (!connectionManager_) return;
+                for (const auto& conn : connectionManager_->get_all_connections()) {
+                    if (QString::fromStdString(conn.name) == name) {
+                        try {
+                            auto resolved = connectionManager_->resolve_connection(conn.id);
+                            loginWidget->setServer(QString::fromStdString(resolved.host));
+                            loginWidget->setPort(resolved.port);
+                            loginWidget->setUsername(
+                                QString::fromStdString(resolved.username));
+                            if (!resolved.password.empty()) {
+                                loginWidget->setPassword(
+                                    QString::fromStdString(resolved.password));
+                            }
+                        } catch (const std::exception& e) {
+                            using namespace ores::logging;
+                            BOOST_LOG_SEV(lg(), error)
+                                << "Failed to resolve connection: " << e.what();
+                        }
+                        break;
+                    }
+                }
+            });
+        }
     }
 
     // Track window

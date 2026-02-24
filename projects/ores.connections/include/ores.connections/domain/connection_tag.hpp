@@ -17,23 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_REPOSITORY_SERVER_ENVIRONMENT_MAPPER_HPP
-#define ORES_CONNECTIONS_REPOSITORY_SERVER_ENVIRONMENT_MAPPER_HPP
+#ifndef ORES_CONNECTIONS_DOMAIN_CONNECTION_TAG_HPP
+#define ORES_CONNECTIONS_DOMAIN_CONNECTION_TAG_HPP
 
-#include <vector>
-#include "ores.connections/domain/server_environment.hpp"
-#include "ores.connections/repository/server_environment_entity.hpp"
+#include <boost/uuid/uuid.hpp>
 
-namespace ores::connections::repository {
+namespace ores::connections::domain {
 
-class server_environment_mapper final {
-public:
-    static server_environment_entity to_entity(const domain::server_environment& env);
-    static domain::server_environment to_domain(const server_environment_entity& e);
-    static std::vector<server_environment_entity> to_entities(
-        const std::vector<domain::server_environment>& envs);
-    static std::vector<domain::server_environment> to_domain(
-        const std::vector<server_environment_entity>& entities);
+/**
+ * @brief Junction type for the many-to-many relationship between connections and tags.
+ *
+ * This type represents the association between a connection and a tag.
+ * A connection can have multiple tags, and a tag can be applied to multiple
+ * connections.
+ */
+struct connection_tag final {
+    /**
+     * @brief The connection being tagged.
+     */
+    boost::uuids::uuid connection_id;
+
+    /**
+     * @brief The tag being applied.
+     */
+    boost::uuids::uuid tag_id;
 };
 
 }

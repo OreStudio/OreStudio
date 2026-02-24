@@ -270,7 +270,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     original_ccy.rounding_type = "Closest";
     original_ccy.rounding_precision = 8;
     original_ccy.format = "%3% %1$.8f";
-    original_ccy.asset_class = "crypto";
+    original_ccy.asset_class = "synthetic";
     original_ccy.market_tier = "emerging";
     original_ccy.modified_by = "system";
     original_ccy.change_reason_code = "system.test";

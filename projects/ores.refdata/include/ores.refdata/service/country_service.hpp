@@ -22,10 +22,13 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <optional>
+#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata/domain/country.hpp"
 #include "ores.refdata/repository/country_repository.hpp"
+#include "ores.refdata/repository/party_country_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::refdata::service {
@@ -106,9 +109,33 @@ public:
      */
     std::vector<domain::country> get_country_history(const std::string& alpha2_code);
 
+    /**
+     * @brief Lists countries visible to a specific party, with pagination.
+     *
+     * Uses the party_countries junction to filter the full country list
+     * to only those the given party is permitted to see.
+     *
+     * @param party_id The UUID of the party.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of visible countries for the requested page.
+     */
+    std::vector<domain::country> list_countries_for_party(
+        const boost::uuids::uuid& party_id,
+        std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of countries visible to a specific party.
+     *
+     * @param party_id The UUID of the party.
+     * @return Number of countries the party is permitted to see.
+     */
+    std::uint32_t count_countries_for_party(const boost::uuids::uuid& party_id);
+
 private:
     context ctx_;
     repository::country_repository repo_;
+    repository::party_country_repository junction_repo_;
 };
 
 }

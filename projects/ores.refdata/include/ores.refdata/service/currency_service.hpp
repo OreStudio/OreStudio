@@ -22,11 +22,14 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <optional>
+#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata/domain/currency.hpp"
 #include "ores.refdata/domain/currency_version_history.hpp"
 #include "ores.refdata/repository/currency_repository.hpp"
+#include "ores.refdata/repository/party_currency_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::refdata::service {
@@ -120,9 +123,33 @@ public:
     std::optional<domain::currency_version_history>
     get_currency_version_history(const std::string& iso_code);
 
+    /**
+     * @brief Lists currencies visible to a specific party, with pagination.
+     *
+     * Uses the party_currencies junction to filter the full currency list
+     * to only those the given party is permitted to see.
+     *
+     * @param party_id The UUID of the party.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of visible currencies for the requested page.
+     */
+    std::vector<domain::currency> list_currencies_for_party(
+        const boost::uuids::uuid& party_id,
+        std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of currencies visible to a specific party.
+     *
+     * @param party_id The UUID of the party.
+     * @return Number of currencies the party is permitted to see.
+     */
+    std::uint32_t count_currencies_for_party(const boost::uuids::uuid& party_id);
+
 private:
     context ctx_;
     repository::currency_repository repo_;
+    repository::party_currency_repository junction_repo_;
 };
 
 }

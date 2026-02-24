@@ -1,0 +1,66 @@
+{
+  "junction": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "has_tenant_id": true,
+    "name": "party_currencies",
+    "name_singular": "party_currency",
+    "name_title": "Party Currency",
+    "name_singular_words": "party currency assignment",
+    "brief": "Links a party to a currency it can see.",
+    "description": "Junction table controlling which currencies are visible to which parties.\nCurrency definitions are shared at tenant level; this junction controls\nparty-level visibility.",
+
+    "left": {
+      "column": "party_id",
+      "column_short": "party",
+      "column_title": "Party",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "index_comment": "Index for looking up currencies visible to a party",
+      "description": "ID of the party.",
+      "detail": "References ores_refdata_parties_tbl.id (soft FK).",
+      "generator_expr": "ctx.generate_uuid()"
+    },
+
+    "right": {
+      "column": "currency_iso_code",
+      "column_short": "currency",
+      "column_title": "Currency",
+      "type": "text",
+      "cpp_type": "std::string",
+      "index_comment": "Index for finding parties that can see a currency",
+      "description": "ISO 4217 code of the currency visible to this party.",
+      "detail": "References ores_refdata_currencies_tbl.iso_code (soft FK).",
+      "generator_expr": "std::string(\"USD\")"
+    },
+
+    "columns": [],
+
+    "sql": {
+      "tablename": "ores_refdata_party_currencies_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "party_currency",
+      "name_short": "party_currencies",
+      "name_singular_words": "party currency",
+      "name_words": "party currencies",
+      "order_column": "currency_iso_code"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pc",
+      "table_display": [
+        {"column": "party_id", "header": "Party"},
+        {"column": "currency_iso_code", "header": "Currency"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

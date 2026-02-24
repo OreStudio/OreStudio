@@ -305,8 +305,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 41.0 replaces currency_type field with asset_class and market_tier
 // fields in currency messages. Breaking change as existing currency payloads
 // are incompatible.
+//
+// Version 41.1 adds currency asset class and currency market tier CRUD and
+// history: new message types 0x1099-0x10A8
+// (get/save/delete/history for currency_asset_class and currency_market_tier).
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 41;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

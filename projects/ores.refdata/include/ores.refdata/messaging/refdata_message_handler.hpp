@@ -390,16 +390,16 @@ private:
 
     // Currency asset class handlers
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_currency_asset_classes_request(std::span<const std::byte> payload,
+    handle_get_monetary_natures_request(std::span<const std::byte> payload,
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_save_currency_asset_class_request(std::span<const std::byte> payload,
+    handle_save_monetary_nature_request(std::span<const std::byte> payload,
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_delete_currency_asset_class_request(std::span<const std::byte> payload,
+    handle_delete_monetary_nature_request(std::span<const std::byte> payload,
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_get_currency_asset_class_history_request(std::span<const std::byte> payload,
+    handle_get_monetary_nature_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     // Currency market tier handlers

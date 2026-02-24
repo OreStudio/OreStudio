@@ -30,7 +30,7 @@ create table if not exists "ores_dq_currencies_artefact_tbl" (
     "rounding_type" text not null,
     "rounding_precision" integer not null,
     "format" text not null,
-    "asset_class" text not null,
+    "monetary_nature" text not null,
     "market_tier" text not null,
     "image_id" uuid
 );
@@ -47,8 +47,8 @@ on "ores_dq_currencies_artefact_tbl" (iso_code);
 create index if not exists ores_dq_currencies_artefact_numeric_code_idx
 on "ores_dq_currencies_artefact_tbl" (numeric_code);
 
-create index if not exists ores_dq_currencies_artefact_asset_class_idx
-on "ores_dq_currencies_artefact_tbl" (asset_class);
+create index if not exists ores_dq_currencies_artefact_monetary_nature_idx
+on "ores_dq_currencies_artefact_tbl" (monetary_nature);
 
 create index if not exists ores_dq_currencies_artefact_market_tier_idx
 on "ores_dq_currencies_artefact_tbl" (market_tier);

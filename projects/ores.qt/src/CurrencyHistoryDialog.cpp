@@ -378,7 +378,7 @@ calculateDiff(const refdata::domain::currency_version& current,
     checkDiffString("Fraction Symbol", current.data.fraction_symbol, previous.data.fraction_symbol);
     checkDiffString("Rounding Type", current.data.rounding_type, previous.data.rounding_type);
     checkDiffString("Format", current.data.format, previous.data.format);
-    checkDiffString("Asset Class", current.data.asset_class, previous.data.asset_class);
+    checkDiffString("Monetary Nature", current.data.monetary_nature, previous.data.monetary_nature);
     checkDiffString("Market Tier", current.data.market_tier, previous.data.market_tier);
 
     // Compare integer fields

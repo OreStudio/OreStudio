@@ -52,7 +52,7 @@
       <string>A&amp;uxiliary Data</string>
      </property>
      <addaction name="ActionRoundingTypes"/>
-     <addaction name="ActionCurrencyAssetClasses"/>
+     <addaction name="ActionMonetaryNatures"/>
      <addaction name="ActionCurrencyMarketTiers"/>
      <addaction name="separator"/>
      <addaction name="ActionPartyTypes"/>
@@ -604,9 +604,9 @@
     <string>Manage rounding type methods</string>
    </property>
   </action>
-  <action name="ActionCurrencyAssetClasses">
+  <action name="ActionMonetaryNatures">
    <property name="text">
-    <string>Currency &amp;Asset Classes</string>
+    <string>Monetary &amp;Natures</string>
    </property>
    <property name="toolTip">
     <string>Manage currency asset class values</string>

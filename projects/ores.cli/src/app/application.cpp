@@ -751,7 +751,7 @@ add_currency(const config::add_currency_options& cfg) const {
     // Defaults: 'fiat' / 'emerging' — most currencies are fiat emerging-market.
     // Keep in sync with the SQL fallback in:
     //   projects/ores.sql/create/refdata/refdata_currency_market_tiers_create.sql
-    currency.asset_class = cfg.asset_class.value_or("fiat");
+    currency.monetary_nature = cfg.monetary_nature.value_or("fiat");
     currency.market_tier = cfg.market_tier.value_or("emerging");
     currency.modified_by = cfg.modified_by;
     currency.performed_by = cfg.modified_by;

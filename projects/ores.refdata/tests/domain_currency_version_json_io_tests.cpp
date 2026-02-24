@@ -54,7 +54,7 @@ TEST_CASE("currency_version_serialization_to_json", tags) {
     cv.data.rounding_type = "Closest";
     cv.data.rounding_precision = 2;
     cv.data.format = "%3% %1$.2f";
-    cv.data.asset_class = "fiat";
+    cv.data.monetary_nature = "fiat";
     cv.data.market_tier = "g10";
     cv.data.modified_by = "admin";
     cv.data.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -90,7 +90,7 @@ TEST_CASE("currency_version_json_with_all_fields", tags) {
     cv.data.rounding_type = "Closest";
     cv.data.rounding_precision = 2;
     cv.data.format = "%3% %1$.2f";
-    cv.data.asset_class = "fiat";
+    cv.data.monetary_nature = "fiat";
     cv.data.market_tier = "g10";
     cv.data.modified_by = "admin";
     cv.data.recorded_at = datetime::make_timepoint(2025, 2, 1);
@@ -127,7 +127,7 @@ TEST_CASE("currency_version_json_with_faker_data", tags) {
     cv.data.rounding_type = "Closest";
     cv.data.rounding_precision = faker::number::integer(0, 4);
     cv.data.format = "%3% %1$.2f";
-    cv.data.asset_class = "fiat";
+    cv.data.monetary_nature = "fiat";
     cv.data.market_tier = "g10";
     cv.data.modified_by = std::string(faker::internet::username());
     cv.data.recorded_at = std::chrono::system_clock::now();
@@ -163,7 +163,7 @@ TEST_CASE("currency_version_history_serialization_to_json", tags) {
     v1.data.rounding_type = "Closest";
     v1.data.rounding_precision = 2;
     v1.data.format = "%3% %1$.2f";
-    v1.data.asset_class = "fiat";
+    v1.data.monetary_nature = "fiat";
     v1.data.market_tier = "g10";
     v1.data.modified_by = "admin";
     v1.data.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -183,7 +183,7 @@ TEST_CASE("currency_version_history_serialization_to_json", tags) {
     v2.data.rounding_type = "Closest";
     v2.data.rounding_precision = 2;
     v2.data.format = "%3% %1$.2f";
-    v2.data.asset_class = "fiat";
+    v2.data.monetary_nature = "fiat";
     v2.data.market_tier = "g10";
     v2.data.modified_by = "editor";
     v2.data.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -243,7 +243,7 @@ TEST_CASE("currency_version_history_json_with_faker_data", tags) {
         cv.data.rounding_type = "Closest";
         cv.data.rounding_precision = faker::number::integer(0, 4);
         cv.data.format = "%3% %1$.2f";
-        cv.data.asset_class = "fiat";
+        cv.data.monetary_nature = "fiat";
         cv.data.market_tier = "g10";
         cv.data.modified_by = std::string(faker::internet::username());
         cv.data.recorded_at = std::chrono::system_clock::now();
@@ -281,7 +281,7 @@ TEST_CASE("multiple_currency_versions_json_output", tags) {
         cv.data.rounding_type = "Closest";
         cv.data.rounding_precision = 2;
         cv.data.format = "%3% %1$.2f";
-        cv.data.asset_class = "fiat";
+        cv.data.monetary_nature = "fiat";
         cv.data.market_tier = "g10";
         cv.data.modified_by = "user" + std::to_string(i);
         cv.data.recorded_at = std::chrono::system_clock::now();

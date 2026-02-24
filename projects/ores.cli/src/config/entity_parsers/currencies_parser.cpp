@@ -115,9 +115,9 @@ options_description make_add_currency_options_description() {
         ("format",
             value<std::string>()->default_value(""),
             "Display format")
-        ("asset-class",
+        ("monetary-nature",
             value<std::string>()->default_value(""),
-            "Asset class")
+            "Monetary nature")
         ("market-tier",
             value<std::string>()->default_value(""),
             "Market tier")
@@ -190,8 +190,8 @@ read_add_currency_options(const variables_map& vm) {
         r.rounding_precision = vm["rounding-precision"].as<int>();
     if (vm.count("format") != 0)
         r.format = vm["format"].as<std::string>();
-    if (vm.count("asset-class") != 0)
-        r.asset_class = vm["asset-class"].as<std::string>();
+    if (vm.count("monetary-nature") != 0)
+        r.monetary_nature = vm["monetary-nature"].as<std::string>();
     if (vm.count("market-tier") != 0)
         r.market_tier = vm["market-tier"].as<std::string>();
 

@@ -79,7 +79,7 @@ begin
     -- Special cases: EUR -> 'eu', XAU -> 'xau', XDR -> 'xdr', etc.
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier, image_id
     )
     select
         v_currencies_dataset_id,
@@ -292,19 +292,19 @@ from ores_dq_currencies_artefact_tbl
 union all
 select 'G10 Fiat Currencies (fiat.g10)', count(*)
 from ores_dq_currencies_artefact_tbl
-where asset_class = 'fiat' and market_tier = 'g10'
+where monetary_nature = 'fiat' and market_tier = 'g10'
 union all
 select 'Emerging Fiat Currencies (fiat.emerging)', count(*)
 from ores_dq_currencies_artefact_tbl
-where asset_class = 'fiat' and market_tier = 'emerging'
+where monetary_nature = 'fiat' and market_tier = 'emerging'
 union all
 select 'Commodity Currencies (commodity)', count(*)
 from ores_dq_currencies_artefact_tbl
-where asset_class = 'commodity'
+where monetary_nature = 'commodity'
 union all
 select 'Supranational Currencies (supranational)', count(*)
 from ores_dq_currencies_artefact_tbl
-where asset_class = 'supranational'
+where monetary_nature = 'supranational'
 union all
 select 'Currencies with Placeholder Flag', count(*)
 from ores_dq_currencies_artefact_tbl c

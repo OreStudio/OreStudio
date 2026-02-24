@@ -212,7 +212,7 @@ TEST_CASE("get_currencies_response_with_empty_fields", tags) {
     ccy.rounding_type = "";
     ccy.rounding_precision = 0;
     ccy.format = "";
-    ccy.asset_class = "";
+    ccy.monetary_nature = "";
     ccy.market_tier = "";
     ccy.modified_by = "";
     ccy.recorded_at = {};
@@ -231,7 +231,7 @@ TEST_CASE("get_currencies_response_with_empty_fields", tags) {
 
     CHECK(deserialized.currencies[0].iso_code == "XXX");
     CHECK(deserialized.currencies[0].symbol.empty());
-    CHECK(deserialized.currencies[0].asset_class.empty());
+    CHECK(deserialized.currencies[0].monetary_nature.empty());
     CHECK(deserialized.currencies[0].market_tier.empty());
 }
 
@@ -258,7 +258,7 @@ TEST_CASE("get_currency_history_response_serialize_deserialize", tags) {
         ver.data.rounding_type = "Nearest";
         ver.data.rounding_precision = 2;
         ver.data.format = "#,##0.00";
-        ver.data.asset_class = "major";
+        ver.data.monetary_nature = "major";
         ver.data.market_tier = "g10";
         ver.data.modified_by = "admin";
         ver.data.recorded_at = ores::platform::time::datetime::parse_time_point(

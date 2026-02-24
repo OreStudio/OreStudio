@@ -86,9 +86,9 @@ struct currency final {
     std::string format;
 
     /**
-     * @brief Asset class classification (e.g., fiat, commodity, synthetic, supranational).
+     * @brief Monetary nature (e.g., fiat, commodity, synthetic, supranational).
      */
-    std::string asset_class;
+    std::string monetary_nature;
 
     /**
      * @brief Market tier classification (e.g., g10, emerging, exotic, frontier, historical).

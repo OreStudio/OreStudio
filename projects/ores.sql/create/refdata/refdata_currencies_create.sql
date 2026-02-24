@@ -38,7 +38,7 @@ create table if not exists "ores_refdata_currencies_tbl" (
     "rounding_type" text not null,
     "rounding_precision" integer not null,
     "format" text not null,
-    "asset_class" text not null,
+    "monetary_nature" text not null,
     "market_tier" text not null,
     "coding_scheme_code" text,
     "image_id" uuid,
@@ -88,8 +88,8 @@ begin
         using errcode = '23503';
     end if;
 
-    -- Validate asset_class
-    new.asset_class := ores_refdata_validate_currency_asset_class_fn(new.tenant_id, new.asset_class);
+    -- Validate monetary_nature
+    new.monetary_nature := ores_refdata_validate_monetary_nature_fn(new.tenant_id, new.monetary_nature);
 
     -- Validate market_tier
     new.market_tier := ores_refdata_validate_currency_market_tier_fn(new.tenant_id, new.market_tier);

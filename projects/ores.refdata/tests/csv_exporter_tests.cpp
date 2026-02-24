@@ -70,7 +70,7 @@ TEST_CASE("export_single_currency_produces_valid_csv", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "major";
+    ccy.monetary_nature = "major";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -104,7 +104,7 @@ TEST_CASE("export_multiple_currencies_produces_multiple_rows", tags) {
     usd.rounding_type = "Closest";
     usd.rounding_precision = 2;
     usd.format = "%3% %1$.2f";
-    usd.asset_class = "major";
+    usd.monetary_nature = "major";
     usd.market_tier = "g10";
     usd.modified_by = "admin";
     usd.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -120,7 +120,7 @@ TEST_CASE("export_multiple_currencies_produces_multiple_rows", tags) {
     eur.rounding_type = "Closest";
     eur.rounding_precision = 2;
     eur.format = "%3% %1$.2f";
-    eur.asset_class = "major";
+    eur.monetary_nature = "major";
     eur.market_tier = "g10";
     eur.modified_by = "admin";
     eur.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -136,7 +136,7 @@ TEST_CASE("export_multiple_currencies_produces_multiple_rows", tags) {
     jpy.rounding_type = "Closest";
     jpy.rounding_precision = 0;
     jpy.format = "%3% %1$.0f";
-    jpy.asset_class = "major";
+    jpy.monetary_nature = "major";
     jpy.market_tier = "g10";
     jpy.modified_by = "admin";
     jpy.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -167,7 +167,7 @@ TEST_CASE("export_currency_with_comma_in_name_is_escaped", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "major";
+    ccy.monetary_nature = "major";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -194,7 +194,7 @@ TEST_CASE("export_currency_with_quotes_in_name_is_escaped", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "major";
+    ccy.monetary_nature = "major";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -221,7 +221,7 @@ TEST_CASE("export_currency_with_newline_in_description_is_escaped", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "major";
+    ccy.monetary_nature = "major";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -253,7 +253,7 @@ TEST_CASE("export_currency_with_faker_data", tags) {
         ccy.rounding_type = "Closest";
         ccy.rounding_precision = faker::number::integer(0, 5);
         ccy.format = "%3% %1$.2f";
-        ccy.asset_class = "major";
+        ccy.monetary_nature = "major";
     ccy.market_tier = "g10";
         ccy.modified_by = std::string(faker::internet::username());
         ccy.recorded_at = std::chrono::system_clock::now();
@@ -292,7 +292,7 @@ TEST_CASE("csv_header_contains_all_expected_columns", tags) {
     CHECK(header.find("rounding_type") != std::string::npos);
     CHECK(header.find("rounding_precision") != std::string::npos);
     CHECK(header.find("format") != std::string::npos);
-    CHECK(header.find("asset_class") != std::string::npos);
+    CHECK(header.find("monetary_nature") != std::string::npos);
     CHECK(header.find("market_tier") != std::string::npos);
     CHECK(header.find("modified_by") != std::string::npos);
     CHECK(header.find("recorded_at") != std::string::npos);
@@ -311,7 +311,7 @@ TEST_CASE("csv_output_ends_with_newline", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "major";
+    ccy.monetary_nature = "major";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
@@ -338,7 +338,7 @@ TEST_CASE("export_currency_with_empty_fields", tags) {
     ccy.rounding_type = "";
     ccy.rounding_precision = 0;
     ccy.format = "";
-    ccy.asset_class = "";
+    ccy.monetary_nature = "";
     ccy.market_tier = "";
     ccy.modified_by = "";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);

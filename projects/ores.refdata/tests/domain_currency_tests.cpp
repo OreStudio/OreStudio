@@ -52,7 +52,7 @@ TEST_CASE("create_currency_with_valid_fields", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "fiat";
+    ccy.monetary_nature = "fiat";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -82,7 +82,7 @@ TEST_CASE("create_currency_with_faker", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = faker::number::integer(0, 5);
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "";
+    ccy.monetary_nature = "";
     ccy.market_tier = "";
     ccy.modified_by = std::string(faker::internet::username());
     ccy.recorded_at = {};
@@ -114,7 +114,7 @@ TEST_CASE("create_multiple_random_currencies", tags) {
         ccy.rounding_type = "Closest";
         ccy.rounding_precision = faker::number::integer(0, 5);
         ccy.format = "%3% %1$.2f";
-        ccy.asset_class = "";
+        ccy.monetary_nature = "";
         ccy.market_tier = "";
         ccy.modified_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
@@ -141,7 +141,7 @@ TEST_CASE("create_currency_with_high_precision", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 8;
     ccy.format = "%3% %1$.8f";
-    ccy.asset_class = "commodity";
+    ccy.monetary_nature = "commodity";
     ccy.market_tier = "exotic";
     ccy.modified_by = "system";
     ccy.recorded_at = {};
@@ -166,7 +166,7 @@ TEST_CASE("create_currency_with_no_fractions", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 0;
     ccy.format = "%3% %1$.0f";
-    ccy.asset_class = "fiat";
+    ccy.monetary_nature = "fiat";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = {};
@@ -191,7 +191,7 @@ TEST_CASE("create_currency_with_three_decimal_places", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 3;
     ccy.format = "%3% %1$.3f";
-    ccy.asset_class = "fiat";
+    ccy.monetary_nature = "fiat";
     ccy.market_tier = "emerging";
     ccy.modified_by = "admin";
     ccy.recorded_at = {};
@@ -229,7 +229,7 @@ TEST_CASE("create_currencies_with_different_symbols", tags) {
         ccy.rounding_type = "Closest";
         ccy.rounding_precision = 2;
         ccy.format = "%3% %1$.2f";
-        ccy.asset_class = "fiat";
+        ccy.monetary_nature = "fiat";
         ccy.market_tier = "g10";
         ccy.modified_by = "system";
         ccy.recorded_at = {};
@@ -254,7 +254,7 @@ TEST_CASE("currency_convert_single_to_table", tags) {
     ccy.rounding_type = "Closest";
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
-    ccy.asset_class = "fiat";
+    ccy.monetary_nature = "fiat";
     ccy.market_tier = "g10";
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -283,7 +283,7 @@ TEST_CASE("currency_convert_multiple_to_table", tags) {
         ccy.rounding_type = "Closest";
         ccy.rounding_precision = 2;
         ccy.format = "%3% %1$.2f";
-        ccy.asset_class = "synthetic";
+        ccy.monetary_nature = "synthetic";
         ccy.market_tier = "exotic";
         ccy.modified_by = "system";
         ccy.recorded_at = {};
@@ -317,7 +317,7 @@ TEST_CASE("currency_table_with_faker_data", tags) {
         ccy.rounding_type = "Closest";
         ccy.rounding_precision = faker::number::integer(0, 5);
         ccy.format = "%3% %1$.2f";
-        ccy.asset_class = "fiat";
+        ccy.monetary_nature = "fiat";
         ccy.market_tier = "g10";
         ccy.modified_by = std::string(faker::internet::username());
         ccy.recorded_at = {};

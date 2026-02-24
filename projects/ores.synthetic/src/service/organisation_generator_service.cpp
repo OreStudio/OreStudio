@@ -635,18 +635,18 @@ void generate_portfolios(
     generation_context& ctx,
     domain::generated_organisation& result) {
 
+    if (result.parties.empty()) return;
+
     const auto [tenant_id, modified_by] = get_audit(ctx);
+    const auto root_party_id = result.parties[0].id;
     const auto root_ccy = options.country == "US" ? "USD" : "GBP";
 
     // Extract the root party's first word to make portfolio names unique
     // across different generation runs within the same tenant.
-    std::string org_prefix;
-    if (!result.parties.empty()) {
-        const auto& root_name = result.parties[0].full_name;
-        auto sp = root_name.find(' ');
-        org_prefix = (sp != std::string::npos)
-            ? root_name.substr(0, sp) : root_name;
-    }
+    const auto& root_name = result.parties[0].full_name;
+    auto sp = root_name.find(' ');
+    const std::string org_prefix = (sp != std::string::npos)
+        ? root_name.substr(0, sp) : root_name;
 
     const auto region_count = options.portfolio_leaf_count >= 8 ? 3u
         : options.portfolio_leaf_count >= 4 ? 2u : 1u;
@@ -664,6 +664,7 @@ void generate_portfolios(
         refdata::domain::portfolio p;
         p.version = 1;
         p.tenant_id = tenant_id;
+        p.party_id = root_party_id;
         p.id = ctx.generate_uuid();
         p.name = name;
         p.parent_portfolio_id = parent_id;

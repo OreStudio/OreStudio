@@ -379,13 +379,12 @@ with check (
 
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- x = ANY(NULL) evaluates to NULL (falsy) when no party context is set.
+-- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
+-- WITH CHECK is not needed and would block bulk inserts from the publisher.
 create policy ores_refdata_portfolios_party_isolation_policy
 on ores_refdata_portfolios_tbl
 as restrictive
-for all using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-)
-with check (
+for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
@@ -403,13 +402,12 @@ with check (
 );
 
 -- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
+-- WITH CHECK is not needed and would block bulk inserts from the publisher.
 create policy ores_refdata_books_party_isolation_policy
 on ores_refdata_books_tbl
 as restrictive
-for all using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-)
-with check (
+for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 

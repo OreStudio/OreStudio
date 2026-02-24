@@ -201,7 +201,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 create or replace trigger ores_trading_trades_insert_trg
 before insert on "ores_trading_trades_tbl"

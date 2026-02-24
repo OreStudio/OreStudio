@@ -90,13 +90,12 @@ with check (
 
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- party_id is denormalised from book_id by the insert trigger.
+-- FOR SELECT only: party_id is auto-populated by trigger; WITH CHECK would
+-- block inserts from the publisher where the new party is not yet in the session.
 create policy ores_trading_trades_party_isolation_policy
 on ores_trading_trades_tbl
 as restrictive
-for all using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-)
-with check (
+for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 

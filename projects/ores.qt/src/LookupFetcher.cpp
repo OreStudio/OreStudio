@@ -24,6 +24,7 @@
 #include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
+#include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -169,6 +170,21 @@ fetch_business_centre_image_map(ClientManager* cm) {
         }
     }
     return mapping;
+}
+
+std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm) {
+    std::vector<portfolio_entry> entries;
+    if (!cm) return entries;
+
+    refdata::messaging::get_portfolios_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& pf : response->portfolios) {
+            entries.push_back({boost::uuids::to_string(pf.id), pf.name});
+        }
+    }
+    return entries;
 }
 
 }

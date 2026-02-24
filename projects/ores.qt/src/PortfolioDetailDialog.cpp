@@ -22,6 +22,8 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ui_PortfolioDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -82,12 +84,15 @@ void PortfolioDetailDialog::setupConnections() {
             &PortfolioDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &PortfolioDetailDialog::onFieldChanged);
+    connect(ui_->parentPortfolioCombo, &QComboBox::currentTextChanged, this,
+            &PortfolioDetailDialog::onFieldChanged);
 }
 
 void PortfolioDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateCurrencyCombo();
     populatePurposeTypeCombo();
+    populateParentPortfolioCombo();
 }
 
 void PortfolioDetailDialog::setImageCache(ImageCache* imageCache) {
@@ -153,6 +158,37 @@ void PortfolioDetailDialog::populatePurposeTypeCombo() {
     }
 }
 
+void PortfolioDetailDialog::populateParentPortfolioCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<PortfolioDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<portfolio_entry> {
+        return fetch_portfolio_entries(cm);
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<portfolio_entry>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<portfolio_entry>>::finished,
+            self, [self, watcher]() {
+        auto entries = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->portfolioEntries_ = entries;
+        self->ui_->parentPortfolioCombo->clear();
+        self->ui_->parentPortfolioCombo->addItem(QString());  // "(none)" sentinel
+        for (const auto& e : entries) {
+            self->ui_->parentPortfolioCombo->addItem(
+                QString::fromStdString(e.name));
+        }
+        self->updateUiFromPortfolio();
+    });
+
+    QFuture<std::vector<portfolio_entry>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
 void PortfolioDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -188,6 +224,7 @@ void PortfolioDetailDialog::setReadOnly(bool readOnly) {
     ui_->purposeTypeCombo->setEnabled(!readOnly);
     ui_->portfolioTypeCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
+    ui_->parentPortfolioCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -201,6 +238,20 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
     ui_->purposeTypeCombo->setCurrentText(QString::fromStdString(portfolio_.purpose_type));
     ui_->portfolioTypeCombo->setCurrentIndex(portfolio_.is_virtual != 0 ? 1 : 0);
     ui_->statusCombo->setCurrentText(QString::fromStdString(portfolio_.status));
+
+    // Select the parent portfolio by matching the stored UUID to a loaded entry
+    ui_->parentPortfolioCombo->setCurrentIndex(0);  // default: "(none)"
+    if (portfolio_.parent_portfolio_id.has_value()) {
+        const auto parent_id_str =
+            boost::uuids::to_string(*portfolio_.parent_portfolio_id);
+        for (const auto& e : portfolioEntries_) {
+            if (e.id == parent_id_str) {
+                ui_->parentPortfolioCombo->setCurrentText(
+                    QString::fromStdString(e.name));
+                break;
+            }
+        }
+    }
 
     populateProvenance(portfolio_.version, portfolio_.modified_by,
         portfolio_.performed_by, portfolio_.recorded_at,
@@ -218,6 +269,20 @@ void PortfolioDetailDialog::updatePortfolioFromUi() {
     portfolio_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     portfolio_.modified_by = username_;
     portfolio_.performed_by = username_;
+
+    // Resolve parent portfolio name back to UUID
+    const auto parent_name =
+        ui_->parentPortfolioCombo->currentText().trimmed().toStdString();
+    portfolio_.parent_portfolio_id = std::nullopt;
+    if (!parent_name.empty()) {
+        for (const auto& e : portfolioEntries_) {
+            if (e.name == parent_name) {
+                portfolio_.parent_portfolio_id =
+                    boost::lexical_cast<boost::uuids::uuid>(e.id);
+                break;
+            }
+        }
+    }
 }
 
 void PortfolioDetailDialog::onCodeChanged(const QString& /* text */) {

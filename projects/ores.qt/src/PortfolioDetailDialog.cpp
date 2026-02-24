@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include "ui_PortfolioDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -165,6 +166,10 @@ void PortfolioDetailDialog::setPortfolio(
 
 void PortfolioDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    if (createMode) {
+        boost::uuids::random_generator gen;
+        portfolio_.id = gen();
+    }
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 

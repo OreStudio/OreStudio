@@ -29,6 +29,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -166,6 +167,10 @@ void BookDetailDialog::setBook(
 
 void BookDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    if (createMode) {
+        boost::uuids::random_generator gen;
+        book_.id = gen();
+    }
     ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 

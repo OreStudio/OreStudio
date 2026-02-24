@@ -77,14 +77,14 @@ Create new items, add to lists, insert content.
 
 *Usage*: "New" buttons, add to list, create actions.
 
-*** Copy / Duplicate
+*** Copy
 
-Duplicate an item, create a copy with the same content.
+Copy an item, creating a duplicate with the same content.
 
 - Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_copy_20_regular.svg]]
 - Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_copy_20_filled.svg]]
 
-*Usage*: "Duplicate" toolbar buttons and context menu actions that create a
+*Usage*: "Copy" toolbar buttons and context menu actions that create a
 copy of the selected item (e.g. folder, environment, connection). The copy
 gets the original name suffixed with " (copy)".
 
@@ -675,7 +675,7 @@ Text validation, spell check, language processing.
 | Concept              | Icon Name                        | Regular | Filled |
 |----------------------+----------------------------------+---------+--------|
 | Add/Create           | add_20                           | Default | Active |
-| Copy/Duplicate       | copy_20                          | Default | Active |
+| Copy       | copy_20                          | Default | Active |
 | Delete/Remove        | delete_20                        | Default | Danger |
 | Purge/Clear All      | delete_dismiss_20                | Default | Danger |
 | Edit/Modify          | edit_20                          | Default | Active |

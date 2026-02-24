@@ -87,10 +87,10 @@ void ConnectionBrowserMdiWindow::setupUI() {
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected item"));
 
-    duplicateAction_ = toolBar_->addAction(
+    copyAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor),
-        tr("Duplicate"));
-    duplicateAction_->setToolTip(tr("Duplicate selected item with name \" (copy)\""));
+        tr("Copy"));
+    copyAction_->setToolTip(tr("Copy selected item (appends \" (copy)\" to the name)"));
 
     deleteAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
@@ -176,8 +176,8 @@ void ConnectionBrowserMdiWindow::setupUI() {
             this, &ConnectionBrowserMdiWindow::openAddDialog);
     connect(editAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::editSelected);
-    connect(duplicateAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::duplicateSelected);
+    connect(copyAction_, &QAction::triggered,
+            this, &ConnectionBrowserMdiWindow::copySelected);
     connect(deleteAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::deleteSelected);
     connect(connectAction_, &QAction::triggered,
@@ -224,7 +224,7 @@ void ConnectionBrowserMdiWindow::updateActionStates() {
                                   node->type == ConnectionTreeNode::Type::Connection);
 
     editAction_->setEnabled(hasSelection);
-    duplicateAction_->setEnabled(hasSelection);
+    copyAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     connectAction_->setEnabled(isConnectable);
     addAction_->setEnabled(true);
@@ -498,7 +498,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
     BOOST_LOG_SEV(lg(), debug) << "Opened edit dialog";
 }
 
-void ConnectionBrowserMdiWindow::duplicateSelected() {
+void ConnectionBrowserMdiWindow::copySelected() {
     using namespace ores::logging;
 
     QModelIndex current = treeView_->currentIndex();
@@ -519,10 +519,10 @@ void ConnectionBrowserMdiWindow::duplicateSelected() {
             copy.name = folder->name + " (copy)";
             manager_->create_folder(copy);
 
-            BOOST_LOG_SEV(lg(), info) << "Duplicated folder: " << copy.name;
+            BOOST_LOG_SEV(lg(), info) << "Copied folder: " << copy.name;
             model_->refresh();
             restoreExpansionState();
-            emit statusChanged(tr("Folder duplicated: %1").arg(QString::fromStdString(copy.name)));
+            emit statusChanged(tr("Folder copied: %1").arg(QString::fromStdString(copy.name)));
 
         } else if (node->type == ConnectionTreeNode::Type::Environment) {
             auto env = model_->getEnvironmentFromIndex(current);
@@ -539,10 +539,10 @@ void ConnectionBrowserMdiWindow::duplicateSelected() {
                 manager_->add_tag_to_environment(copy.id, tag.id);
             }
 
-            BOOST_LOG_SEV(lg(), info) << "Duplicated environment: " << copy.name;
+            BOOST_LOG_SEV(lg(), info) << "Copied environment: " << copy.name;
             model_->refresh();
             restoreExpansionState();
-            emit statusChanged(tr("Environment duplicated: %1").arg(QString::fromStdString(copy.name)));
+            emit statusChanged(tr("Environment copied: %1").arg(QString::fromStdString(copy.name)));
 
         } else if (node->type == ConnectionTreeNode::Type::Connection) {
             auto conn = model_->getConnectionFromIndex(current);
@@ -561,14 +561,14 @@ void ConnectionBrowserMdiWindow::duplicateSelected() {
                 manager_->add_tag_to_connection(copy.id, tag.id);
             }
 
-            BOOST_LOG_SEV(lg(), info) << "Duplicated connection: " << copy.name;
+            BOOST_LOG_SEV(lg(), info) << "Copied connection: " << copy.name;
             model_->refresh();
             restoreExpansionState();
-            emit statusChanged(tr("Connection duplicated: %1").arg(QString::fromStdString(copy.name)));
+            emit statusChanged(tr("Connection copied: %1").arg(QString::fromStdString(copy.name)));
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to duplicate item: " << e.what();
-        emit errorOccurred(tr("Failed to duplicate: %1").arg(e.what()));
+        BOOST_LOG_SEV(lg(), error) << "Failed to copy item: " << e.what();
+        emit errorOccurred(tr("Failed to copy: %1").arg(e.what()));
     }
 }
 
@@ -691,7 +691,7 @@ void ConnectionBrowserMdiWindow::showContextMenu(const QPoint& pos) {
     if (index.isValid()) {
         menu.addSeparator();
         menu.addAction(editAction_);
-        menu.addAction(duplicateAction_);
+        menu.addAction(copyAction_);
         menu.addAction(deleteAction_);
 
         auto* node = model_->nodeFromIndex(index);

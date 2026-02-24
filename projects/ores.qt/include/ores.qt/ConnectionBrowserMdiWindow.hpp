@@ -112,7 +112,7 @@ public slots:
     void reload();
     void openAddDialog();
     void editSelected();
-    void duplicateSelected();
+    void copySelected();
     void deleteSelected();
     void connectToSelected();
     void changeMasterPassword();
@@ -137,7 +137,7 @@ private:
 
     QAction* addAction_;
     QAction* editAction_;
-    QAction* duplicateAction_;
+    QAction* copyAction_;
     QAction* deleteAction_;
     QAction* connectAction_;
     QAction* refreshAction_;

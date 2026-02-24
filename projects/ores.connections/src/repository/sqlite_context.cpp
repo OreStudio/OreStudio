@@ -128,66 +128,35 @@ void sqlite_context::initialize_schema() {
         // Column already exists, ignore
     }
 
-    // Migration: migrate old server_environments → connections if old table exists
-    const std::string check_old_table = R"(
-        SELECT COUNT(*) FROM sqlite_master
-        WHERE type='table' AND name='server_environments'
-    )";
+    // Migration: migrate old server_environments → connections if old table exists.
+    // We probe the table directly: execute() returns an error Result when the
+    // table is absent, so checking the Result avoids exception-based control flow.
+    if (conn->execute("SELECT 1 FROM server_environments LIMIT 0")) {
+        // Copy rows from the old table into the new connections table.
+        conn->execute(R"(
+            INSERT OR IGNORE INTO connections
+                (id, folder_id, environment_id, name, host, port,
+                 username, encrypted_password, description)
+            SELECT id, folder_id, NULL, name, host, port,
+                   username, encrypted_password, description
+            FROM server_environments
+        )");
 
-    // We use a raw SQLite query to check table existence and migrate
-    try {
-        // Check if old server_environments table exists and has data
-        bool old_table_exists = false;
-        try {
-            conn->execute("SELECT COUNT(*) FROM server_environments LIMIT 1");
-            old_table_exists = true;
-        } catch (...) {
-            // Table doesn't exist, skip migration
-        }
+        // Migrate any tags. environment_tags is guaranteed to exist (created
+        // above), so this INSERT is always safe; it simply inserts no rows if
+        // there were no matching tags.
+        conn->execute(R"(
+            INSERT OR IGNORE INTO connection_tags (connection_id, tag_id)
+            SELECT et.environment_id, et.tag_id
+            FROM environment_tags et
+            WHERE et.environment_id IN (SELECT id FROM server_environments)
+        )");
 
-        if (old_table_exists) {
-            // Copy data from old table to new connections table
-            conn->execute(R"(
-                INSERT OR IGNORE INTO connections
-                    (id, folder_id, environment_id, name, host, port,
-                     username, encrypted_password, description)
-                SELECT id, folder_id, NULL, name, host, port,
-                       username, encrypted_password, description
-                FROM server_environments
-            )");
-
-            // Check if old environment_tags table exists and migrate
-            bool old_tags_exists = false;
-            try {
-                conn->execute("SELECT COUNT(*) FROM environment_tags WHERE environment_id IN "
-                              "(SELECT id FROM server_environments) LIMIT 1");
-                old_tags_exists = true;
-            } catch (...) {
-                // Doesn't exist or already migrated
-            }
-
-            if (old_tags_exists) {
-                conn->execute(R"(
-                    INSERT OR IGNORE INTO connection_tags (connection_id, tag_id)
-                    SELECT et.environment_id, et.tag_id
-                    FROM environment_tags et
-                    WHERE et.environment_id IN (SELECT id FROM server_environments)
-                )");
-            }
-
-            // Drop old tables
-            try {
-                conn->execute("DROP TABLE IF EXISTS environment_tags");
-            } catch (...) {}
-            try {
-                conn->execute("DROP TABLE IF EXISTS server_environments");
-            } catch (...) {}
-
-            // Recreate environment_tags for the new environments table
-            conn->execute(create_environment_tags);
-        }
-    } catch (...) {
-        // Migration errors are non-fatal - continue with new schema
+        // Drop old tables and recreate environment_tags with the new schema
+        // (referencing environments instead of server_environments).
+        conn->execute("DROP TABLE IF EXISTS environment_tags");
+        conn->execute("DROP TABLE IF EXISTS server_environments");
+        conn->execute(create_environment_tags);
     }
 }
 

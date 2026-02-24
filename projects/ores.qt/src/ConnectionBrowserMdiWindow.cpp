@@ -206,6 +206,8 @@ void ConnectionBrowserMdiWindow::setupUI() {
 
     connect(model_.get(), &ConnectionTreeModel::errorOccurred,
             this, &ConnectionBrowserMdiWindow::errorOccurred);
+    connect(model_.get(), &ConnectionTreeModel::dataRefreshed,
+            this, &ConnectionBrowserMdiWindow::restoreExpansionState);
 
     // Start with tree expanded
     treeView_->expandAll();

@@ -97,18 +97,15 @@ inline void set_line_edit_flag_icon(
  */
 template<typename Resolver>
 void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
-    // For editable combos the style also renders the selected item's icon in
-    // the line-edit area, which would produce two flag images.  Only set item
-    // icons for non-editable combos; editable combos use the line-edit action
-    // exclusively via update_combo_line_edit_icon().
-    if (!combo->isEditable()) {
-        for (int i = 0; i < combo->count(); ++i) {
-            const std::string code = combo->itemText(i).toStdString();
-            QIcon icon = resolver(code);
-            combo->setItemIcon(i, icon);
-        }
+    // Always set item icons so flags appear in the dropdown list for all
+    // combo boxes (editable and non-editable alike).
+    for (int i = 0; i < combo->count(); ++i) {
+        const std::string code = combo->itemText(i).toStdString();
+        combo->setItemIcon(i, resolver(code));
     }
-    // For editable combos, update the leading icon on the line edit.
+    // For editable combos the closed state shows the QLineEdit, not the
+    // selected item widget, so the item icon is not visible.  Use a leading
+    // QAction on the line edit to display the flag when the combo is closed.
     if (combo->isEditable() && combo->lineEdit()) {
         update_combo_line_edit_icon(combo, resolver);
     }

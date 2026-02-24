@@ -346,7 +346,7 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
         connDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
     }
 
-    updateConnectionTagBadges(conn.id);
+    updateConnectionTagBadges(conn.id, conn.environment_id);
 
     stackedWidget_->setCurrentWidget(connectionPage_);
 }
@@ -374,7 +374,9 @@ void ConnectionDetailPanel::updateEnvironmentTagBadges(const boost::uuids::uuid&
     }
 }
 
-void ConnectionDetailPanel::updateConnectionTagBadges(const boost::uuids::uuid& connId) {
+void ConnectionDetailPanel::updateConnectionTagBadges(const boost::uuids::uuid& connId,
+    const std::optional<boost::uuids::uuid>& envId) {
+
     QLayoutItem* item;
     while ((item = connTagsContainer_->layout()->takeAt(0)) != nullptr) {
         delete item->widget();
@@ -382,14 +384,39 @@ void ConnectionDetailPanel::updateConnectionTagBadges(const boost::uuids::uuid& 
     }
 
     try {
-        auto tags = manager_->get_tags_for_connection(connId);
-        for (const auto& tag : tags) {
+        auto ownTags = manager_->get_tags_for_connection(connId);
+        for (const auto& tag : ownTags) {
             auto* badge = createTagBadge(QString::fromStdString(tag.name), connTagsContainer_);
             connTagsContainer_->layout()->addWidget(badge);
         }
 
+        // Show inherited environment tags as outlined badges
+        bool hasAny = !ownTags.empty();
+        if (envId) {
+            auto envTags = manager_->get_tags_for_environment(*envId);
+            for (const auto& tag : envTags) {
+                QString name = QString::fromStdString(tag.name);
+                QColor c = colorForTag(name);
+                auto* badge = new QLabel(name, connTagsContainer_);
+                badge->setStyleSheet(QString(
+                    "QLabel {"
+                    "  background-color: transparent;"
+                    "  color: %1;"
+                    "  border-radius: 8px;"
+                    "  padding: 1px 7px;"
+                    "  font-size: 11px;"
+                    "  font-weight: bold;"
+                    "  border: 1px solid %1;"
+                    "}"
+                ).arg(c.name()));
+                badge->setToolTip(tr("Inherited from environment"));
+                connTagsContainer_->layout()->addWidget(badge);
+                hasAny = true;
+            }
+        }
+
         static_cast<QHBoxLayout*>(connTagsContainer_->layout())->addStretch();
-        connTagsContainer_->setVisible(!tags.empty());
+        connTagsContainer_->setVisible(hasAny);
     } catch (const std::exception& e) {
         using namespace ores::logging;
         BOOST_LOG_SEV(lg(), error) << "Failed to load connection tags: " << e.what();

@@ -76,7 +76,8 @@ private:
     void setupEnvironmentPage();
     void setupConnectionPage();
     void updateEnvironmentTagBadges(const boost::uuids::uuid& envId);
-    void updateConnectionTagBadges(const boost::uuids::uuid& connId);
+    void updateConnectionTagBadges(const boost::uuids::uuid& connId,
+        const std::optional<boost::uuids::uuid>& envId);
 
     connections::service::connection_manager* manager_;
 

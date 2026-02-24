@@ -204,10 +204,19 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
             }
         } else if (node->type == ConnectionTreeNode::Type::Connection) {
             try {
-                auto tags = manager_->get_tags_for_connection(node->id);
                 QStringList tagNames;
-                for (const auto& tag : tags) {
+                auto ownTags = manager_->get_tags_for_connection(node->id);
+                for (const auto& tag : ownTags)
                     tagNames.append(QString::fromStdString(tag.name));
+
+                // Merge inherited environment tags (deduplicated)
+                if (node->environment_id) {
+                    auto envTags = manager_->get_tags_for_environment(*node->environment_id);
+                    for (const auto& tag : envTags) {
+                        QString name = QString::fromStdString(tag.name);
+                        if (!tagNames.contains(name))
+                            tagNames.append(name);
+                    }
                 }
                 return tagNames;
             } catch (const std::exception& e) {

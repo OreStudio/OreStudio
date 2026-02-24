@@ -2420,6 +2420,7 @@ handle_save_book_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving book: " << request.book.id;
 
     request.book.tenant_id = auth->tenant_id.to_string();
+    request.book.party_id = auth->party_id;
     request.book.modified_by = auth->username;
     request.book.performed_by.clear();
 

@@ -67,65 +67,79 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_ledgerCcyCombo">
+           <widget class="QLabel" name="label_ownerUnitCombo">
             <property name="text">
-             <string>Currency:</string>
+             <string>Owner Unit:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="ledgerCcyCombo">
+           <widget class="QComboBox" name="ownerUnitCombo">
             <property name="editable">
              <bool>true</bool>
             </property>
            </widget>
           </item>
           <item row="3" column="0">
+           <widget class="QLabel" name="label_ledgerCcyCombo">
+            <property name="text">
+             <string>Currency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="ledgerCcyCombo">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
            <widget class="QLabel" name="label_glAccountRefEdit">
             <property name="text">
              <string>GL Account Ref:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="glAccountRefEdit">
             <property name="placeholderText">
              <string>Enter GL account reference</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="label_costCentreEdit">
             <property name="text">
              <string>Cost Centre:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="costCenterEdit">
             <property name="placeholderText">
              <string>Enter cost centre</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="label_bookStatusCombo">
             <property name="text">
              <string>Status:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QComboBox" name="bookStatusCombo"/>
           </item>
-          <item row="6" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="label_bookTypeCombo">
             <property name="text">
              <string>Book Type:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="7" column="1">
            <widget class="QComboBox" name="bookTypeCombo">
             <item>
              <property name="text">
@@ -139,14 +153,14 @@
             </item>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="label_descriptionEdit">
             <property name="text">
              <string>Description:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size>

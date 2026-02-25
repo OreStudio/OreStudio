@@ -17,47 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-24 Tue 22:55], for Tuesday, February 24, 2026.
-|      | <75>                                                |         |       |      |       |
-| Tags | Headline                                            | Time    |       |      |     % |
-|------+-----------------------------------------------------+---------+-------+------+-------|
-|      | *Total time*                                        | *12:03* |       |      | 100.0 |
-|------+-----------------------------------------------------+---------+-------+------+-------|
-|      | Stories                                             | 12:03   |       |      | 100.0 |
-|      | Active                                              |         | 12:03 |      | 100.0 |
-| code | Enhance currency taxonomy                           |         |       | 2:06 |  17.4 |
-| code | Books, portfolios and trades are not party specific |         |       | 2:59 |  24.8 |
-| code | Minor improvements to connection browser            |         |       | 1:17 |  10.7 |
-| code | Add portfolio explorer                              |         |       | 3:50 |  31.8 |
-| code | Add party level currency and country restrictions   |         |       | 0:46 |   6.4 |
-| code | Rename currency asset classes                       |         |       | 1:05 |   9.0 |
+#+CAPTION: Clock summary at [2026-02-25 Wed 15:07], for Wednesday, February 25, 2026.
+|      | <75>                                |        |      |      |       |
+| Tags | Headline                            | Time   |      |      |     % |
+|------+-------------------------------------+--------+------+------+-------|
+|      | *Total time*                        | *4:21* |      |      | 100.0 |
+|------+-------------------------------------+--------+------+------+-------|
+|      | Stories                             | 4:21   |      |      | 100.0 |
+|      | Active                              |        | 4:21 |      | 100.0 |
+| code | Remove toolbars from detail dialogs |        |      | 4:21 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-24 Tue 22:55]
+#+CAPTION: Clock summary at [2026-02-25 Wed 15:07]
 |       | <75>                                                  |         |       |       |       |
 | Tags  | Headline                                              | Time    |       |       |     % |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                          | *38:05* |       |       | 100.0 |
+|       | *Total time*                                          | *44:27* |       |       | 100.0 |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                               | 38:05   |       |       | 100.0 |
-|       | Active                                                |         | 38:05 |       | 100.0 |
-| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.1 |
-| infra | Generate release notes for previous sprint            |         |       |  1:16 |   3.3 |
-| code  | Merge FSM into DQ                                     |         |       |  0:34 |   1.5 |
-| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   6.4 |
-| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |   8.6 |
-| code  | Add plotting of session data                          |         |       |  1:19 |   3.5 |
-| code  | Add account-party management and login support        |         |       | 13:43 |  36.0 |
-| code  | Add rounding type entity                              |         |       |  1:40 |   4.4 |
-| code  | Polish business centre UI and data quality            |         |       |  0:58 |   2.5 |
-| code  | Enhance currency taxonomy                             |         |       |  2:06 |   5.5 |
-| code  | Books, portfolios and trades are not party specific   |         |       |  2:59 |   7.8 |
-| code  | Minor improvements to connection browser              |         |       |  1:17 |   3.4 |
-| code  | Add portfolio explorer                                |         |       |  4:13 |  11.1 |
-| code  | Add party level currency and country restrictions     |         |       |  0:46 |   2.0 |
-| code  | Rename currency asset classes                         |         |       |  1:05 |   2.8 |
+|       | Stories                                               | 44:27   |       |       | 100.0 |
+|       | Active                                                |         | 44:27 |       | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.0 |
+| infra | Generate release notes for previous sprint            |         |       |  1:16 |   2.8 |
+| code  | Merge FSM into DQ                                     |         |       |  0:34 |   1.3 |
+| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   5.5 |
+| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |   7.4 |
+| code  | Add plotting of session data                          |         |       |  1:19 |   3.0 |
+| code  | Add account-party management and login support        |         |       | 13:43 |  30.9 |
+| code  | Add rounding type entity                              |         |       |  1:40 |   3.7 |
+| code  | Polish business centre UI and data quality            |         |       |  0:58 |   2.2 |
+| code  | Enhance currency taxonomy                             |         |       |  2:06 |   4.7 |
+| code  | Books, portfolios and trades are not party specific   |         |       |  2:59 |   6.7 |
+| code  | Minor improvements to connection browser              |         |       |  1:17 |   2.9 |
+| code  | Rename currency asset classes                         |         |       |  1:05 |   2.4 |
+| code  | Add portfolio explorer                                |         |       |  4:38 |  10.4 |
+| code  | Add party level currency and country restrictions     |         |       |  0:46 |   1.7 |
+| code  | Remove toolbars from detail dialogs                   |         |       |  5:57 |  13.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -629,6 +625,15 @@ Users could then choose an environment and it would automatically populate host
 and port. These would also show up in drop down box. If using an environment,
 title bar would show that as well as host and port.
 
+*** COMPLETED Rename currency asset classes                            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 20:18]--[2026-02-24 Tue 21:23] =>  1:05
+    :END:
+
+We should avoid the term "asset classes" unless it is used in the usual asset
+class context. Many of the values are not really what one things of asset
+classes.
+
 *** STARTED Analyse caching at dialog level                            :code:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more
@@ -760,8 +765,9 @@ a UI concept but not a code concept.
 
 *** STARTED Add portfolio explorer                                     :code:
     :LOGBOOK:
+    CLOCK: [2026-02-25 Wed 15:04]--[2026-02-25 Wed 15:45] =>  0:41
     CLOCK: [2026-02-24 Tue 22:22]--[2026-02-24 Tue 22:55] =>  0:33
-    CLOCK: [2026-02-24 Tue 18:37]--[2026-02-24 Tue 19:30] =>  0:53
+    CLOCK: [2026-02-24 Tue 18:37]--[2026-02-24 Tue 19:55] =>  1:18
     CLOCK: [2026-02-24 Tue 18:10]--[2026-02-24 Tue 18:36] =>  0:26
     CLOCK: [2026-02-24 Tue 16:38]--[2026-02-24 Tue 18:36] =>  1:58
     CLOCK: [2026-02-21 Sat 13:01]--[2026-02-21 Sat 13:24] =>  0:23
@@ -774,6 +780,48 @@ trade table on the right to show only trades within that branch.
 
 Depends on: "Extend login flow with party selection" (party must be bound to
 session before the tree can scope correctly).
+
+#+begin_quote
+This pull request delivers a significant new feature: the Portfolio Explorer.
+This interactive MDI window provides a hierarchical view of portfolios and
+books, allowing users to intuitively navigate their financial structures. By
+integrating dynamic trade filtering, persistent UI settings, and real-time data
+updates, it greatly enhances the user's ability to monitor and analyze trades
+within specific segments of their portfolio. The changes also include necessary
+backend modifications to support this advanced filtering and UI state
+management.
+
+Highlights:
+
+- New Portfolio Explorer Widget: Introduced a new MDI window that displays a
+  full portfolio/book hierarchy for the session party on the left, with a
+  filtered trade table on the right. This allows users to navigate their
+  portfolio structure and view associated trades.
+- Dynamic Trade Filtering and Navigation: Implemented dynamic trade filtering
+  where selecting any node in the portfolio/book tree scopes the trade table to
+  that specific subtree. A breadcrumb bar provides clickable navigation for the
+  current path.
+- Trade Count Aggregation: Added functionality to fetch and display trade counts
+  per-book, with these counts aggregating up through portfolio and party nodes
+  in the tree view.
+- UI Persistence and Stale Indicators: Ensured window size, splitter position,
+  and trade table column states are persisted across sessions. A stale indicator
+  pulses on book, portfolio, or trade change notifications, alerting users to
+  updated data.
+- Enhanced Trade Protocol and Backend Filtering: Updated the trade protocol
+  (PROTOCOL_VERSION_MAJOR bumped to 43) to support optional book_id and
+  portfolio_id filters in trade requests, enabling server-side filtering for the
+  new widget. Corresponding repository and service methods were added to handle
+  this filtering, including recursive CTEs for portfolio subtrees.
+- Generic UI Component Improvement: Extended
+  EntityListMdiWindow::initializeTableSettings() to accept an optional
+  QSplitter* parameter, allowing splitter state to be saved and restored
+  alongside window size and column headers for any MDI window using this base
+  class.
+- New Eventing for Books and Portfolios: Added book_changed_event and
+  portfolio_changed_event to the eventing system, allowing the UI to react to
+  real-time changes in these entities.
+#+end_quote
 
 **** Acceptance Criteria
 
@@ -895,19 +943,37 @@ Highlights:
   rules.
 #+end_quote
 
-*** STARTED Rename currency asset classes                              :code:
+*** STARTED Remove toolbars from detail dialogs                        :code:
     :LOGBOOK:
-    CLOCK: [2026-02-24 Tue 20:18]--[2026-02-24 Tue 21:23] =>  1:05
+    CLOCK: [2026-02-25 Wed 14:03]--[2026-02-25 Wed 15:03] =>  1:00
+    CLOCK: [2026-02-25 Wed 11:05]--[2026-02-25 Wed 13:05] =>  2:00
+    CLOCK: [2026-02-24 Tue 22:24]--[2026-02-25 Wed 01:21] =>  2:57
     :END:
-
-We should avoid the term "asset classes" unless it is used in the usual asset
-class context. Many of the values are not really what one things of asset
-classes.
-
-*** Remove toolbars from detail dialogs                                :code:
 
 At present we have toolbars in detail dialogs. These should just have buttons.
 Actions: delete, cancel, save.
+
+*** Create named profiles                                              :code:
+
+Users should be able to move windows around the screen and get them in the right
+positions and shapes (including detached windows etc) and then save them to the
+database as a named profile. Then, after login:
+
+- if there is only one named profile against the user, just load it.
+- if there is more than one, give the user a selector.
+
+Note that the profile may be created against a specific party. Needs some
+thinking.
+
+*** Portfolio types                                                    :code:
+
+At present a portfolio can be virtual or not. We should really generalise this
+into a portfolio type.
+
+*** Check change reasons on delete                                     :code:
+
+Seems like we do not have change reasons on entity deletes. We need to update
+all entities.
 
 *** Add missing history dialogs                                        :code:
 

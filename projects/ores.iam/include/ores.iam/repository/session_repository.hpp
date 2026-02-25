@@ -154,6 +154,19 @@ public:
     std::uint32_t count_all_active();
 
     /**
+     * @brief Closes all sessions that have no end_time set.
+     *
+     * Called on server startup to mark sessions from a previous server run
+     * (which were never properly closed) as ended. Without this, sessions
+     * appear as "Active" indefinitely after a crash or restart, and their
+     * chart data shows "no data yet" because in-memory samples are lost.
+     *
+     * @param closed_at Timestamp to use as the end_time for orphaned sessions.
+     */
+    void close_orphaned_sessions(
+        const std::chrono::system_clock::time_point& closed_at);
+
+    /**
      * @brief Reads daily session statistics for an account.
      *
      * Uses the pre-computed continuous aggregate for fast queries.

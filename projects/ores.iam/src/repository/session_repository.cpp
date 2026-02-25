@@ -415,6 +415,31 @@ session_repository::read_samples(const boost::uuids::uuid& session_id) {
     return result;
 }
 
+void session_repository::close_orphaned_sessions(
+    const std::chrono::system_clock::time_point& closed_at) {
+
+    BOOST_LOG_SEV(lg(), info) << "Closing orphaned active sessions from previous server run";
+
+    const auto active = read_all_active();
+    if (active.empty()) {
+        BOOST_LOG_SEV(lg(), info) << "No orphaned sessions found.";
+        return;
+    }
+
+    for (const auto& s : active) {
+        BOOST_LOG_SEV(lg(), info) << "Closing orphaned session: "
+                                  << boost::uuids::to_string(s.id);
+        try {
+            end_session(s.id, s.start_time, closed_at, s.bytes_sent, s.bytes_received);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to close orphaned session "
+                                      << boost::uuids::to_string(s.id) << ": " << e.what();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Closed " << active.size() << " orphaned session(s).";
+}
+
 void session_repository::remove_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing sessions for account: "
                                << boost::uuids::to_string(account_id);

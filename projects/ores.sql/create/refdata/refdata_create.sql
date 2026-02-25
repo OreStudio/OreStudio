@@ -107,6 +107,10 @@
 \ir ./refdata_counterparty_contact_informations_create.sql
 \ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql
 
+-- Business unit types (must precede business units)
+\ir ./refdata_business_unit_types_create.sql
+\ir ./refdata_business_unit_types_notify_trigger_create.sql
+
 -- Business units, portfolios, and books
 \ir ./refdata_business_units_create.sql
 \ir ./refdata_business_units_notify_trigger_create.sql

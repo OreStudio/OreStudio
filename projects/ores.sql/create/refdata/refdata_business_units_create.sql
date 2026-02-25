@@ -36,6 +36,7 @@ create table if not exists "ores_refdata_business_units_tbl" (
     "party_id" uuid not null,
     "unit_name" text not null,
     "parent_business_unit_id" uuid null,
+    "unit_type_id" uuid null,
     "unit_code" text null,
     "business_centre_code" text null,
     "status" text not null default 'Active',
@@ -102,6 +103,48 @@ begin
             raise exception 'Invalid parent_business_unit_id: %. No active business unit found with this id.',
                 NEW.parent_business_unit_id
                 using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate unit_type_id (nullable FK)
+    if NEW.unit_type_id is not null then
+        NEW.unit_type_id := ores_refdata_validate_business_unit_type_fn(
+            NEW.tenant_id, NEW.unit_type_id);
+
+        -- Level constraint: when both parent and child have a type, child level > parent level
+        if NEW.parent_business_unit_id is not null then
+            declare
+                v_parent_type_id uuid;
+                v_parent_level integer;
+                v_child_level integer;
+            begin
+                select unit_type_id into v_parent_type_id
+                from ores_refdata_business_units_tbl
+                where tenant_id = NEW.tenant_id
+                  and id = NEW.parent_business_unit_id
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+
+                if v_parent_type_id is not null then
+                    select level into v_parent_level
+                    from ores_refdata_business_unit_types_tbl
+                    where tenant_id = NEW.tenant_id
+                      and id = v_parent_type_id
+                      and valid_to = ores_utility_infinity_timestamp_fn();
+
+                    select level into v_child_level
+                    from ores_refdata_business_unit_types_tbl
+                    where tenant_id = NEW.tenant_id
+                      and id = NEW.unit_type_id
+                      and valid_to = ores_utility_infinity_timestamp_fn();
+
+                    if v_child_level <= v_parent_level then
+                        raise exception
+                            'Business unit type level % cannot be contained by a unit of the same or higher level %. Parent level must be strictly less than child level.',
+                            v_child_level, v_parent_level
+                            using errcode = '23514';
+                    end if;
+                end if;
+            end;
         end if;
     end if;
 

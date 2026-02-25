@@ -21,6 +21,7 @@
 #define ORES_QT_BADGE_COLORS_HPP
 
 #include <QString>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 
 namespace ores::qt {
@@ -42,6 +43,36 @@ inline badge_color_pair resolve_status_badge_color(const QString& value) {
     if (upper == "PENDING")
         return {QColor(0x3B, 0x82, 0xF6), Qt::white};   // Blue
     return {QColor(0x6B, 0x72, 0x80), Qt::white};        // Default gray
+}
+
+/**
+ * @brief Badge colour resolver for portfolio list views.
+ *
+ * Handles Virtual/Physical type badges (purple/blue) in addition to
+ * the standard status values.
+ */
+inline badge_color_pair resolve_portfolio_badge_color(const QString& value) {
+    const auto upper = value.toUpper();
+    if (upper == "VIRTUAL")
+        return {badge_colors::type_virtual, badge_colors::text};
+    if (upper == "PHYSICAL")
+        return {badge_colors::type_physical, badge_colors::text};
+    return resolve_status_badge_color(value);
+}
+
+/**
+ * @brief Badge colour resolver for book list views.
+ *
+ * Handles Trading/Banking type badges (purple/blue) in addition to
+ * the standard status values.
+ */
+inline badge_color_pair resolve_book_badge_color(const QString& value) {
+    const auto upper = value.toUpper();
+    if (upper == "TRADING")
+        return {badge_colors::type_virtual, badge_colors::text};
+    if (upper == "BANKING")
+        return {badge_colors::type_physical, badge_colors::text};
+    return resolve_status_badge_color(value);
 }
 
 }

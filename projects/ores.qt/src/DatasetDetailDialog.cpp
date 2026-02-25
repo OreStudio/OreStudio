@@ -26,6 +26,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ui_DatasetDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -64,6 +65,10 @@ void DatasetDetailDialog::setupConnections() {
             this, &DatasetDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &DatasetDetailDialog::onDeleteClicked);
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &DatasetDetailDialog::onCloseClicked);
 }
 
 void DatasetDetailDialog::loadLookupData() {

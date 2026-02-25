@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CodingSchemeDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -59,6 +60,10 @@ void CodingSchemeDetailDialog::setupConnections() {
             this, &CodingSchemeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &CodingSchemeDetailDialog::onDeleteClicked);
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &CodingSchemeDetailDialog::onCloseClicked);
 }
 
 void CodingSchemeDetailDialog::loadLookupData() {

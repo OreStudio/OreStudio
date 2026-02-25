@@ -58,6 +58,9 @@ BusinessCentreHistoryDialog::~BusinessCentreHistoryDialog() {
 }
 
 void BusinessCentreHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -108,6 +111,8 @@ void BusinessCentreHistoryDialog::setupConnections() {
             this, &BusinessCentreHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &BusinessCentreHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void BusinessCentreHistoryDialog::loadHistory() {

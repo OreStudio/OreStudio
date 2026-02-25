@@ -61,6 +61,9 @@ void OriginDimensionDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void OriginDimensionDetailDialog::setupConnections() {
@@ -68,6 +71,8 @@ void OriginDimensionDetailDialog::setupConnections() {
             &OriginDimensionDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &OriginDimensionDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &OriginDimensionDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &OriginDimensionDetailDialog::onCodeChanged);
@@ -119,6 +124,8 @@ void OriginDimensionDetailDialog::updateUiFromDimension() {
     populateProvenance(dimension_.version, dimension_.modified_by,
                        dimension_.performed_by, dimension_.recorded_at,
                        "", dimension_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void OriginDimensionDetailDialog::updateDimensionFromUi() {
@@ -221,6 +228,8 @@ void OriginDimensionDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Origin dimension saved successfully";
             QString code = QString::fromStdString(self->dimension_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->dimensionSaved(code);
             self->notifySaveSuccess(tr("Origin dimension '%1' saved").arg(code));
         } else {

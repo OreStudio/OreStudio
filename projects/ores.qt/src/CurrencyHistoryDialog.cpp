@@ -86,6 +86,11 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     ui_->changesTableWidget->setColumnWidth(0, 200);
     ui_->changesTableWidget->setColumnWidth(1, 200);
 
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
+
     updateButtonStates();
 }
 

@@ -61,6 +61,9 @@ void BusinessCentreDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void BusinessCentreDetailDialog::setupConnections() {
@@ -68,6 +71,8 @@ void BusinessCentreDetailDialog::setupConnections() {
             &BusinessCentreDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &BusinessCentreDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &BusinessCentreDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &BusinessCentreDetailDialog::onCodeChanged);
@@ -193,6 +198,8 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
                        business_centre_.performed_by, business_centre_.recorded_at,
                        business_centre_.change_reason_code,
                        business_centre_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
@@ -296,6 +303,8 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Business centre saved successfully";
             QString code = QString::fromStdString(self->business_centre_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->businessCentreSaved(code);
             self->notifySaveSuccess(tr("Business centre '%1' saved").arg(code));
         } else {

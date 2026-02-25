@@ -18,10 +18,12 @@
  *
  */
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 
 #include <iomanip>
 #include <sstream>
 
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QContextMenuEvent>
 #include <QMenu>
@@ -135,6 +137,20 @@ void DetachableMdiSubWindow::contextMenuEvent(QContextMenuEvent* event) {
 void DetachableMdiSubWindow::closeEvent(QCloseEvent* event) {
     BOOST_LOG_SEV(lg(), info) << "Closing window: " << windowTitle().toStdString()
                              << " (detached=" << isDetached_ << ")";
+
+    if (auto* dialog = qobject_cast<DetailDialogBase*>(widget())) {
+        if (dialog->hasUnsavedChanges()) {
+            auto reply = QMessageBox::question(
+                this, tr("Unsaved Changes"),
+                tr("You have unsaved changes. Close anyway?"),
+                QMessageBox::Yes | QMessageBox::No);
+            if (reply != QMessageBox::Yes) {
+                event->ignore();
+                return;
+            }
+        }
+    }
+
     QMdiSubWindow::closeEvent(event);
 }
 

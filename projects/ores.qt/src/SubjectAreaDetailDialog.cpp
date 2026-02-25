@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_SubjectAreaDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
@@ -57,6 +58,10 @@ void SubjectAreaDetailDialog::setupConnections() {
             this, &SubjectAreaDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &SubjectAreaDetailDialog::onDeleteClicked);
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &SubjectAreaDetailDialog::onCloseClicked);
 }
 
 void SubjectAreaDetailDialog::setCreateMode(bool create) {

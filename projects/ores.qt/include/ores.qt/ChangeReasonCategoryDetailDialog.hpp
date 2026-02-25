@@ -84,6 +84,7 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
+    bool hasUnsavedChanges() const override { return isDirty_; }
 
 private slots:
     void onSaveClicked();
@@ -106,8 +107,6 @@ private:
 private:
     Ui::ChangeReasonCategoryDetailDialog* ui_;
     QToolBar* toolBar_;
-    QAction* saveAction_;
-    QAction* deleteAction_;
     QAction* revertAction_;
 
     dq::domain::change_reason_category currentCategory_;

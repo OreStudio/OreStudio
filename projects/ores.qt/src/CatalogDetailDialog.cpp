@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CatalogDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
@@ -46,6 +47,11 @@ CatalogDetailDialog::CatalogDetailDialog(QWidget* parent)
             this, &CatalogDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &CatalogDetailDialog::onDeleteClicked);
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &CatalogDetailDialog::onCloseClicked);
 }
 
 CatalogDetailDialog::~CatalogDetailDialog() {

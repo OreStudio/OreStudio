@@ -26,7 +26,6 @@
 #include "ui_PartyIdSchemeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,7 +46,6 @@ PartyIdSchemeHistoryDialog::PartyIdSchemeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -58,6 +56,9 @@ PartyIdSchemeHistoryDialog::~PartyIdSchemeHistoryDialog() {
 }
 
 void PartyIdSchemeHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -108,6 +109,8 @@ void PartyIdSchemeHistoryDialog::setupConnections() {
             this, &PartyIdSchemeHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &PartyIdSchemeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void PartyIdSchemeHistoryDialog::loadHistory() {
@@ -281,6 +284,7 @@ void PartyIdSchemeHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(previous.description),
                   QString::fromStdString(current.description));
     }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);

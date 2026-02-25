@@ -150,7 +150,7 @@
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
-                <widget class="QLabel" name="codeValueLabel">
+                <widget class="QLabel" name="typeLabel">
                  <property name="text">
                   <string>Type:</string>
                  </property>
@@ -164,7 +164,7 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="nameValueLabel">
+                <widget class="QLabel" name="nameLabel">
                  <property name="text">
                   <string>Name:</string>
                  </property>
@@ -178,7 +178,7 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="descriptionValueLabel">
+                <widget class="QLabel" name="descriptionLabel">
                  <property name="text">
                   <string>Description:</string>
                  </property>
@@ -264,6 +264,27 @@
       </layout>
      </widget>
     </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size><width>40</width><height>20</height></size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

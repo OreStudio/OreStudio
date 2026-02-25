@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DetailDialogBase.hpp"
 
+#include <QMessageBox>
 #include <QTabWidget>
 #include "ores.qt/ProvenanceWidget.hpp"
 
@@ -57,6 +58,18 @@ void DetailDialogBase::clearProvenance() {
     auto* pw = provenanceWidget();
     if (!pw) return;
     pw->clear();
+}
+
+void DetailDialogBase::onCloseClicked() {
+    if (hasUnsavedChanges()) {
+        auto reply = QMessageBox::question(
+            this, tr("Unsaved Changes"),
+            tr("You have unsaved changes. Close anyway?"),
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply != QMessageBox::Yes)
+            return;
+    }
+    requestClose();
 }
 
 }

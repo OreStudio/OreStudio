@@ -64,6 +64,9 @@ void PortfolioDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PortfolioDetailDialog::setupConnections() {
@@ -71,6 +74,8 @@ void PortfolioDetailDialog::setupConnections() {
             &PortfolioDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PortfolioDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PortfolioDetailDialog::onCloseClicked);
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PortfolioDetailDialog::onCodeChanged);
@@ -241,6 +246,8 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
     populateProvenance(portfolio_.version, portfolio_.modified_by,
         portfolio_.performed_by, portfolio_.recorded_at,
         portfolio_.change_reason_code, portfolio_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PortfolioDetailDialog::updatePortfolioFromUi() {
@@ -360,6 +367,8 @@ void PortfolioDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Portfolio saved successfully";
             QString code = QString::fromStdString(self->portfolio_.name);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->portfolioSaved(code);
             self->notifySaveSuccess(tr("Portfolio '%1' saved").arg(code));
         } else {

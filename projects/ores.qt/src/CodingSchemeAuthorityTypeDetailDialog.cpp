@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CodingSchemeAuthorityTypeDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -58,6 +59,10 @@ void CodingSchemeAuthorityTypeDetailDialog::setupConnections() {
             this, &CodingSchemeAuthorityTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked);
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &CodingSchemeAuthorityTypeDetailDialog::onCloseClicked);
 }
 
 void CodingSchemeAuthorityTypeDetailDialog::setCreateMode(bool create) {

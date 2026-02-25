@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_TreatmentDimensionDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
@@ -57,6 +58,10 @@ void TreatmentDimensionDetailDialog::setupConnections() {
             this, &TreatmentDimensionDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &TreatmentDimensionDetailDialog::onDeleteClicked);
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &TreatmentDimensionDetailDialog::onCloseClicked);
 }
 
 void TreatmentDimensionDetailDialog::setCreateMode(bool create) {

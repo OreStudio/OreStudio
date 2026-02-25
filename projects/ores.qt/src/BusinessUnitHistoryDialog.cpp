@@ -26,7 +26,6 @@
 #include "ui_BusinessUnitHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -49,7 +48,6 @@ BusinessUnitHistoryDialog::BusinessUnitHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -60,6 +58,9 @@ BusinessUnitHistoryDialog::~BusinessUnitHistoryDialog() {
 }
 
 void BusinessUnitHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -110,6 +111,8 @@ void BusinessUnitHistoryDialog::setupConnections() {
             this, &BusinessUnitHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &BusinessUnitHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void BusinessUnitHistoryDialog::loadHistory() {
@@ -202,9 +205,9 @@ void BusinessUnitHistoryDialog::updateVersionList() {
             relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* recordedByItem = new QTableWidgetItem(
+        auto* modifiedByItem = new QTableWidgetItem(
             QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, recordedByItem);
+        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
         auto* performedByItem = new QTableWidgetItem(
             QString::fromStdString(version.performed_by));

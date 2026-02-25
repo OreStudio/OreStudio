@@ -57,6 +57,9 @@ TreatmentDimensionHistoryDialog::~TreatmentDimensionHistoryDialog() {
 }
 
 void TreatmentDimensionHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
@@ -94,6 +97,8 @@ void TreatmentDimensionHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &TreatmentDimensionHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered, this, &TreatmentDimensionHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered, this, &TreatmentDimensionHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void TreatmentDimensionHistoryDialog::loadHistory() {

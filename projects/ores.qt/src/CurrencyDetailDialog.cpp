@@ -91,29 +91,6 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    // Define icon color (light gray for dark theme)
-    const QColor iconColor(220, 220, 220);
-
-    // Create Save action
-    saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Save,
-            IconUtils::DefaultIconColor));
-    saveAction_->setToolTip("Save changes");
-    connect(saveAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onSaveClicked);
-    toolBar_->addAction(saveAction_);
-
-    // Create Delete action
-    deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete currency");
-    connect(deleteAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onDeleteClicked);
-    toolBar_->addAction(deleteAction_);
-
-    toolBar_->addSeparator();
-
     // Rounding Types navigation action
     auto* roundingTypesAction = new QAction("Rounding", this);
     roundingTypesAction->setIcon(IconUtils::createRecoloredIcon(
@@ -194,7 +171,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     setupGenerateAction();
 
     // Add toolbar to the dialog's layout
-    // Get the main layout from the UI
+    // Currency keeps toolbar always visible for Rounding/Asset/Market/Generate actions
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
@@ -221,6 +198,21 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
         ui_->iconGroup->layout()->addWidget(flagContainer);
     }
+
+    // Setup bottom buttons
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->saveButton, &QPushButton::clicked, this,
+        &CurrencyDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
+        &CurrencyDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+        &CurrencyDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
     connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this,
@@ -695,12 +687,8 @@ void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 
     setFieldsReadOnly(readOnly);
 
-    // Update toolbar visibility
-    if (saveAction_)
-        saveAction_->setVisible(!readOnly);
-
-    if (deleteAction_)
-        deleteAction_->setVisible(!readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
 
     if (flagButton_)
         flagButton_->setEnabled(!readOnly);
@@ -731,10 +719,8 @@ void CurrencyDetailDialog::setFieldsReadOnly(bool readOnly) {
 
 void CurrencyDetailDialog::updateSaveResetButtonState() {
     if (isReadOnly_) {
-        if (saveAction_)
-            saveAction_->setEnabled(false);
-        if (deleteAction_)
-            deleteAction_->setEnabled(false);
+        ui_->saveButton->setEnabled(false);
+        ui_->deleteButton->setEnabled(false);
         if (revertAction_)
             revertAction_->setEnabled(true);
         return;
@@ -742,11 +728,8 @@ void CurrencyDetailDialog::updateSaveResetButtonState() {
 
     // In add mode, only enable save when dirty
     // In edit mode, always enable save (for "touch" operations that update timestamp)
-    if (saveAction_)
-        saveAction_->setEnabled(isAddMode_ ? isDirty_ : true);
-
-    if (deleteAction_)
-        deleteAction_->setEnabled(!isAddMode_);
+    ui_->saveButton->setEnabled(isAddMode_ ? isDirty_ : true);
+    ui_->deleteButton->setEnabled(!isAddMode_);
 }
 
 void CurrencyDetailDialog::markAsStale() {

@@ -26,7 +26,6 @@
 #include "ui_DatasetBundleHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -49,7 +48,6 @@ DatasetBundleHistoryDialog::DatasetBundleHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -60,12 +58,15 @@ DatasetBundleHistoryDialog::~DatasetBundleHistoryDialog() {
 }
 
 void DatasetBundleHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
-    ui_->versionListWidget->setColumnCount(4);
+    ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Commentary"});
+        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -110,6 +111,8 @@ void DatasetBundleHistoryDialog::setupConnections() {
             this, &DatasetBundleHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &DatasetBundleHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void DatasetBundleHistoryDialog::loadHistory() {
@@ -206,9 +209,13 @@ void DatasetBundleHistoryDialog::updateVersionList() {
             QString::fromStdString(version.modified_by));
         ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
+        auto* performedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.performed_by));
+        ui_->versionListWidget->setItem(row, 3, performedByItem);
+
         auto* commentaryItem = new QTableWidgetItem(
             QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 3, commentaryItem);
+        ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
     // Select the first (most recent) version
@@ -279,6 +286,7 @@ void DatasetBundleHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(previous.description),
                   QString::fromStdString(current.description));
     }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);

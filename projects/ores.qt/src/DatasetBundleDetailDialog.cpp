@@ -19,15 +19,14 @@
  */
 #include "ores.qt/DatasetBundleDetailDialog.hpp"
 
-#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
+#include <boost/uuid/random_generator.hpp>
 #include "ui_DatasetBundleDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -41,7 +40,6 @@ DatasetBundleDetailDialog::DatasetBundleDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -50,9 +48,17 @@ DatasetBundleDetailDialog::~DatasetBundleDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* DatasetBundleDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* DatasetBundleDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* DatasetBundleDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* DatasetBundleDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* DatasetBundleDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* DatasetBundleDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void DatasetBundleDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -61,6 +67,9 @@ void DatasetBundleDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void DatasetBundleDetailDialog::setupConnections() {
@@ -68,6 +77,8 @@ void DatasetBundleDetailDialog::setupConnections() {
             &DatasetBundleDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &DatasetBundleDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &DatasetBundleDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &DatasetBundleDetailDialog::onCodeChanged);
@@ -96,6 +107,9 @@ void DatasetBundleDetailDialog::setCreateMode(bool createMode) {
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
+    if (createMode) {
+        bundle_.id = boost::uuids::random_generator()();
+    }
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -114,9 +128,14 @@ void DatasetBundleDetailDialog::updateUiFromBundle() {
     ui_->nameEdit->setText(QString::fromStdString(bundle_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(bundle_.description));
 
-    populateProvenance(bundle_.version, bundle_.modified_by, bundle_.performed_by,
-                       bundle_.recorded_at, bundle_.change_reason_code,
+    populateProvenance(bundle_.version,
+                       bundle_.modified_by,
+                       bundle_.performed_by,
+                       bundle_.recorded_at,
+                       bundle_.change_reason_code,
                        bundle_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void DatasetBundleDetailDialog::updateBundleFromUi() {
@@ -126,6 +145,7 @@ void DatasetBundleDetailDialog::updateBundleFromUi() {
     bundle_.name = ui_->nameEdit->text().trimmed().toStdString();
     bundle_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     bundle_.modified_by = username_;
+    bundle_.performed_by = username_;
 }
 
 void DatasetBundleDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -144,10 +164,10 @@ void DatasetBundleDetailDialog::updateSaveButtonState() {
 }
 
 bool DatasetBundleDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void DatasetBundleDetailDialog::onSaveClicked() {
@@ -158,16 +178,8 @@ void DatasetBundleDetailDialog::onSaveClicked() {
     }
 
     if (!validateInput()) {
-        QStringList missingFields;
-        if (ui_->codeEdit->text().trimmed().isEmpty()) {
-            missingFields << "Code";
-        }
-        if (ui_->nameEdit->text().trimmed().isEmpty()) {
-            missingFields << "Name";
-        }
         MessageBoxHelper::warning(this, "Invalid Input",
-            QString("Please fill in the following required field(s): %1.")
-                .arg(missingFields.join(", ")));
+            "Please fill in all required fields.");
         return;
     }
 
@@ -227,6 +239,8 @@ void DatasetBundleDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Dataset Bundle saved successfully";
             QString code = QString::fromStdString(self->bundle_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->bundleSaved(code);
             self->notifySaveSuccess(tr("Dataset Bundle '%1' saved").arg(code));
         } else {

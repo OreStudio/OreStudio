@@ -56,6 +56,9 @@ CurrencyMarketTierHistoryDialog::~CurrencyMarketTierHistoryDialog() {
 }
 
 void CurrencyMarketTierHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -106,6 +109,8 @@ void CurrencyMarketTierHistoryDialog::setupConnections() {
             this, &CurrencyMarketTierHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &CurrencyMarketTierHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void CurrencyMarketTierHistoryDialog::loadHistory() {
@@ -198,9 +203,9 @@ void CurrencyMarketTierHistoryDialog::updateVersionList() {
             relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* recordedByItem = new QTableWidgetItem(
+        auto* modifiedByItem = new QTableWidgetItem(
             QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, recordedByItem);
+        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
         auto* performedByItem = new QTableWidgetItem(
             QString::fromStdString(version.performed_by));

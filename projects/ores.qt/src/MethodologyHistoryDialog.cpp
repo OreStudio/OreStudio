@@ -58,6 +58,9 @@ MethodologyHistoryDialog::~MethodologyHistoryDialog() {
 }
 
 void MethodologyHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("Methodology History"));
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
@@ -95,6 +98,8 @@ void MethodologyHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &MethodologyHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered, this, &MethodologyHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered, this, &MethodologyHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void MethodologyHistoryDialog::loadHistory() {

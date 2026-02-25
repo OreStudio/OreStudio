@@ -61,6 +61,9 @@ void TenantDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void TenantDetailDialog::setupConnections() {
@@ -68,6 +71,8 @@ void TenantDetailDialog::setupConnections() {
             &TenantDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &TenantDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &TenantDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &TenantDetailDialog::onCodeChanged);
@@ -167,6 +172,8 @@ void TenantDetailDialog::updateUiFromTenant() {
     populateProvenance(tenant_.version, tenant_.modified_by,
         tenant_.performed_by, tenant_.recorded_at,
         tenant_.change_reason_code, tenant_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void TenantDetailDialog::updateTenantFromUi() {
@@ -272,6 +279,8 @@ void TenantDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Tenant saved successfully";
             QString code = QString::fromStdString(self->tenant_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->tenantSaved(code);
             self->notifySaveSuccess(tr("Tenant '%1' saved").arg(code));
         } else {

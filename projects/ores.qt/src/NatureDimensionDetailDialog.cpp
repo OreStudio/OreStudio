@@ -61,11 +61,16 @@ void NatureDimensionDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void NatureDimensionDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &NatureDimensionDetailDialog::onCloseClicked);
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
@@ -108,6 +113,8 @@ void NatureDimensionDetailDialog::updateUiFromDimension() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension_.description));
     populateProvenance(dimension_.version, dimension_.modified_by, dimension_.performed_by,
                        dimension_.recorded_at, "", dimension_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void NatureDimensionDetailDialog::updateDimensionFromUi() {
@@ -181,6 +188,8 @@ void NatureDimensionDetailDialog::onSaveClicked() {
 
         if (result.success) {
             QString code = QString::fromStdString(self->dimension_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->dimensionSaved(code);
             self->notifySaveSuccess(tr("Nature dimension '%1' saved").arg(code));
         } else {

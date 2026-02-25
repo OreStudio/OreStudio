@@ -57,6 +57,9 @@ NatureDimensionHistoryDialog::~NatureDimensionHistoryDialog() {
 }
 
 void NatureDimensionHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
@@ -94,6 +97,8 @@ void NatureDimensionHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &NatureDimensionHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered, this, &NatureDimensionHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered, this, &NatureDimensionHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void NatureDimensionHistoryDialog::loadHistory() {

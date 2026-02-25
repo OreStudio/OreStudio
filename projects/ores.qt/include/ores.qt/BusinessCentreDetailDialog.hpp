@@ -78,6 +78,8 @@ protected:
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
 
+    bool hasUnsavedChanges() const override { return hasChanges_; }
+
 private:
     void setupUi();
     void setupConnections();

@@ -60,6 +60,9 @@ void TenantTypeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void TenantTypeDetailDialog::setupConnections() {
@@ -67,6 +70,8 @@ void TenantTypeDetailDialog::setupConnections() {
             &TenantTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &TenantTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &TenantTypeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &TenantTypeDetailDialog::onCodeChanged);
@@ -118,6 +123,8 @@ void TenantTypeDetailDialog::updateUiFromType() {
     populateProvenance(tenant_type_.version, tenant_type_.modified_by,
         tenant_type_.performed_by, tenant_type_.recorded_at,
         tenant_type_.change_reason_code, tenant_type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void TenantTypeDetailDialog::updateTypeFromUi() {
@@ -221,6 +228,8 @@ void TenantTypeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Tenant Type saved successfully";
             QString code = QString::fromStdString(self->tenant_type_.type);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->tenant_typeSaved(code);
             self->notifySaveSuccess(tr("Tenant Type '%1' saved").arg(code));
         } else {

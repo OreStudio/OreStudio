@@ -64,6 +64,9 @@ void BookDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void BookDetailDialog::setupConnections() {
@@ -71,6 +74,8 @@ void BookDetailDialog::setupConnections() {
             &BookDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &BookDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &BookDetailDialog::onCloseClicked);
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &BookDetailDialog::onCodeChanged);
@@ -238,6 +243,8 @@ void BookDetailDialog::updateUiFromBook() {
     populateProvenance(book_.version, book_.modified_by, book_.performed_by,
                        book_.recorded_at, book_.change_reason_code,
                        book_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BookDetailDialog::updateBookFromUi() {
@@ -355,6 +362,8 @@ void BookDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Book saved successfully";
             QString code = QString::fromStdString(self->book_.name);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->bookSaved(code);
             self->notifySaveSuccess(tr("Book '%1' saved").arg(code));
         } else {

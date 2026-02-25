@@ -62,6 +62,9 @@ using namespace ores::logging;
 }
 
 void {{domain_entity.entity_pascal}}HistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -112,6 +115,8 @@ void {{domain_entity.entity_pascal}}HistoryDialog::setupConnections() {
             this, &{{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &{{domain_entity.entity_pascal}}HistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
@@ -148,7 +153,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
         }
 
         {{domain_entity.qt.history_request_class}} request;
-        request.code = code;
+        request.{{domain_entity.primary_key.column}} = code;
         auto payload = request.serialize();
 {{/domain_entity.qt.has_uuid_primary_key}}
 
@@ -216,9 +221,9 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
             relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* recordedByItem = new QTableWidgetItem(
+        auto* modifiedByItem = new QTableWidgetItem(
             QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, recordedByItem);
+        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
         auto* performedByItem = new QTableWidgetItem(
             QString::fromStdString(version.performed_by));

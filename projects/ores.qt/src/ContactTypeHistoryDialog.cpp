@@ -26,7 +26,6 @@
 #include "ui_ContactTypeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/contact_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,7 +46,6 @@ ContactTypeHistoryDialog::ContactTypeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -58,6 +56,9 @@ ContactTypeHistoryDialog::~ContactTypeHistoryDialog() {
 }
 
 void ContactTypeHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -108,6 +109,8 @@ void ContactTypeHistoryDialog::setupConnections() {
             this, &ContactTypeHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &ContactTypeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void ContactTypeHistoryDialog::loadHistory() {
@@ -281,6 +284,7 @@ void ContactTypeHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(previous.description),
                   QString::fromStdString(current.description));
     }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);

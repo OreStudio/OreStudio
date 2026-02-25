@@ -65,6 +65,9 @@ void TradeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void TradeDetailDialog::setupConnections() {
@@ -72,6 +75,8 @@ void TradeDetailDialog::setupConnections() {
             &TradeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &TradeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &TradeDetailDialog::onCloseClicked);
 
     connect(ui_->bookCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &TradeDetailDialog::onFieldChanged);
@@ -318,6 +323,8 @@ void TradeDetailDialog::updateUiFromTrade() {
     populateProvenance(trade_.version, trade_.modified_by, trade_.performed_by,
                        trade_.recorded_at, trade_.change_reason_code,
                        trade_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void TradeDetailDialog::updateTradeFromUi() {
@@ -449,6 +456,8 @@ void TradeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Trade saved successfully";
             QString code = QString::fromStdString(self->trade_.external_id);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->tradeSaved(code);
             self->notifySaveSuccess(tr("Trade '%1' saved").arg(code));
         } else {

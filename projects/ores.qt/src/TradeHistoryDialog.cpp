@@ -26,7 +26,6 @@
 #include "ui_TradeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -49,7 +48,6 @@ TradeHistoryDialog::TradeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -60,6 +58,9 @@ TradeHistoryDialog::~TradeHistoryDialog() {
 }
 
 void TradeHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -110,6 +111,8 @@ void TradeHistoryDialog::setupConnections() {
             this, &TradeHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &TradeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void TradeHistoryDialog::loadHistory() {
@@ -202,9 +205,9 @@ void TradeHistoryDialog::updateVersionList() {
             relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* recordedByItem = new QTableWidgetItem(
+        auto* modifiedByItem = new QTableWidgetItem(
             QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, recordedByItem);
+        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
         auto* performedByItem = new QTableWidgetItem(
             QString::fromStdString(version.performed_by));

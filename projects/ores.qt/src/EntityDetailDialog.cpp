@@ -92,6 +92,9 @@ void EntityDetailDialog::setupUi() {
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
 
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     // Show/hide party_category based on entity type
     if (ops_->has_party_category()) {
         ui_->partyCategoryCombo->addItem(
@@ -183,6 +186,8 @@ void EntityDetailDialog::setupConnections() {
             &EntityDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &EntityDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &EntityDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &EntityDetailDialog::onCodeChanged);
@@ -415,6 +420,9 @@ void EntityDetailDialog::populateParentCombo() {
     } else {
         ui_->parentEntityCombo->setCurrentIndex(0);
     }
+
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void EntityDetailDialog::buildHierarchyTree() {
@@ -573,6 +581,8 @@ void EntityDetailDialog::updateUiFromEntity() {
     populateProvenance(entity_.version, entity_.modified_by, entity_.performed_by,
                        entity_.recorded_at, entity_.change_reason_code,
                        entity_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void EntityDetailDialog::updateEntityFromUi() {
@@ -1196,6 +1206,8 @@ void EntityDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " saved successfully";
             QString code = QString::fromStdString(self->entity_.short_code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->entitySaved(code);
             self->notifySaveSuccess(
                 tr("%1 '%2' saved").arg(qTypeName).arg(code));

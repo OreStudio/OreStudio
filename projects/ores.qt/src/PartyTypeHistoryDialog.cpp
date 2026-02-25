@@ -26,7 +26,6 @@
 #include "ui_PartyTypeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,7 +46,6 @@ PartyTypeHistoryDialog::PartyTypeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -58,6 +56,9 @@ PartyTypeHistoryDialog::~PartyTypeHistoryDialog() {
 }
 
 void PartyTypeHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -108,6 +109,8 @@ void PartyTypeHistoryDialog::setupConnections() {
             this, &PartyTypeHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &PartyTypeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void PartyTypeHistoryDialog::loadHistory() {

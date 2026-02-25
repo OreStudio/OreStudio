@@ -161,7 +161,7 @@ void PortfolioMdiWindow::setupTable() {
         cs::text_left,      // ModifiedBy
         cs::mono_left       // RecordedAt
     }, tableView_);
-    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    delegate->set_badge_color_resolver(resolve_portfolio_badge_color);
     tableView_->setItemDelegate(delegate);
 }
 

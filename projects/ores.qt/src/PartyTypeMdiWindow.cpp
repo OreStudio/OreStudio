@@ -25,10 +25,8 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,6 +45,7 @@ PartyTypeMdiWindow::PartyTypeMdiWindow(
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
+      paginationWidget_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
       editAction_(nullptr),
@@ -61,7 +60,6 @@ PartyTypeMdiWindow::PartyTypeMdiWindow(
 }
 
 void PartyTypeMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -69,6 +67,9 @@ void PartyTypeMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void PartyTypeMdiWindow::setupToolbar() {
@@ -135,15 +136,13 @@ void PartyTypeMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientPartyTypeModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_,
-        ClientPartyTypeModel::kSettingsGroup,
-        ClientPartyTypeModel::defaultHiddenColumns(),
-        ClientPartyTypeModel::kDefaultWindowSize, 1);
+        "PartyTypeListWindow",
+        {ClientPartyTypeModel::Description},
+        {900, 400}, 1);
 }
 
 void PartyTypeMdiWindow::setupConnections() {
@@ -156,6 +155,26 @@ void PartyTypeMdiWindow::setupConnections() {
             this, &PartyTypeMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked,
             this, &PartyTypeMdiWindow::onDoubleClicked);
+
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
 }
 
 void PartyTypeMdiWindow::reload() {
@@ -166,7 +185,13 @@ void PartyTypeMdiWindow::reload() {
 }
 
 void PartyTypeMdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 party types").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 party types").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
 }
 
 void PartyTypeMdiWindow::onLoadError(const QString& error_message,

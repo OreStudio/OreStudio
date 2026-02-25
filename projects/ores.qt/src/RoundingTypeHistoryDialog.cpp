@@ -26,7 +26,6 @@
 #include "ui_RoundingTypeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,7 +46,6 @@ RoundingTypeHistoryDialog::RoundingTypeHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -58,6 +56,9 @@ RoundingTypeHistoryDialog::~RoundingTypeHistoryDialog() {
 }
 
 void RoundingTypeHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -108,6 +109,8 @@ void RoundingTypeHistoryDialog::setupConnections() {
             this, &RoundingTypeHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &RoundingTypeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void RoundingTypeHistoryDialog::loadHistory() {
@@ -116,8 +119,7 @@ void RoundingTypeHistoryDialog::loadHistory() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for rounding type: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for rounding type: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     QPointer<RoundingTypeHistoryDialog> self = this;
@@ -277,17 +279,12 @@ void RoundingTypeHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.name));
     }
 
-    if (current.display_order != previous.display_order) {
-        addChange("Display Order",
-                  QString::number(previous.display_order),
-                  QString::number(current.display_order));
-    }
-
     if (current.description != previous.description) {
         addChange("Description",
                   QString::fromStdString(previous.description),
                   QString::fromStdString(current.description));
     }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -308,7 +305,6 @@ void RoundingTypeHistoryDialog::updateFullDetails(int versionIndex) {
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
     ui_->nameValue->setText(QString::fromStdString(version.name));
-    ui_->displayOrderValue->setText(QString::number(version.display_order));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));

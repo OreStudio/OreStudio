@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include "ui_CurrencyMarketTierDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -65,6 +66,9 @@ void CurrencyMarketTierDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void CurrencyMarketTierDetailDialog::setupConnections() {
@@ -72,12 +76,14 @@ void CurrencyMarketTierDetailDialog::setupConnections() {
             &CurrencyMarketTierDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &CurrencyMarketTierDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &CurrencyMarketTierDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &CurrencyMarketTierDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &CurrencyMarketTierDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &CurrencyMarketTierDetailDialog::onFieldChanged);
 }
 
@@ -99,12 +105,7 @@ void CurrencyMarketTierDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
-    if (createMode) {
-    }
-
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -129,6 +130,8 @@ void CurrencyMarketTierDetailDialog::updateUiFromTier() {
                        type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void CurrencyMarketTierDetailDialog::updateTierFromUi() {
@@ -232,6 +235,8 @@ void CurrencyMarketTierDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Currency Market Tier saved successfully";
             QString code = QString::fromStdString(self->type_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->typeSaved(code);
             self->notifySaveSuccess(tr("Currency Market Tier '%1' saved").arg(code));
         } else {

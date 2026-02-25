@@ -19,14 +19,13 @@
  */
 #include "ores.qt/PartyTypeDetailDialog.hpp"
 
-#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include "ui_PartyTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,7 +39,6 @@ PartyTypeDetailDialog::PartyTypeDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -49,9 +47,17 @@ PartyTypeDetailDialog::~PartyTypeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* PartyTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* PartyTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* PartyTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* PartyTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* PartyTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* PartyTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void PartyTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -60,6 +66,9 @@ void PartyTypeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PartyTypeDetailDialog::setupConnections() {
@@ -67,6 +76,8 @@ void PartyTypeDetailDialog::setupConnections() {
             &PartyTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PartyTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PartyTypeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &PartyTypeDetailDialog::onCodeChanged);
@@ -94,9 +105,7 @@ void PartyTypeDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -115,9 +124,14 @@ void PartyTypeDetailDialog::updateUiFromType() {
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
 
-    populateProvenance(type_.version, type_.modified_by,
-                       type_.performed_by, type_.recorded_at,
-                       type_.change_reason_code, type_.change_commentary);
+    populateProvenance(type_.version,
+                       type_.modified_by,
+                       type_.performed_by,
+                       type_.recorded_at,
+                       type_.change_reason_code,
+                       type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PartyTypeDetailDialog::updateTypeFromUi() {
@@ -221,6 +235,8 @@ void PartyTypeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Party Type saved successfully";
             QString code = QString::fromStdString(self->type_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->typeSaved(code);
             self->notifySaveSuccess(tr("Party Type '%1' saved").arg(code));
         } else {

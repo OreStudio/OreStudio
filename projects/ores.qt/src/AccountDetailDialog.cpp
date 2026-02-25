@@ -63,32 +63,12 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
-    // Create toolbar
+    // Create toolbar (for historical navigation only, hidden by default)
     toolBar_ = new QToolBar(this);
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    const QColor iconColor(220, 220, 220);
-
-    // Create Save action
-    saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Save, IconUtils::DefaultIconColor));
-    saveAction_->setToolTip("Save changes");
-    connect(saveAction_, &QAction::triggered, this,
-        &AccountDetailDialog::onSaveClicked);
-    toolBar_->addAction(saveAction_);
-
-    // Create Delete action
-    deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete account");
-    connect(deleteAction_, &QAction::triggered, this,
-        &AccountDetailDialog::onDeleteClicked);
-    toolBar_->addAction(deleteAction_);
-
-    // Create Revert action (initially hidden)
+    // Create Revert action
     revertAction_ = new QAction("Revert to this version", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowClockwise, IconUtils::DefaultIconColor));
@@ -96,12 +76,27 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     connect(revertAction_, &QAction::triggered, this,
         &AccountDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
-    revertAction_->setVisible(false);
 
-    // Add toolbar to the dialog's layout
+    // Add toolbar to the dialog's layout (hidden until historical mode)
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
+    toolBar_->setVisible(false);
+
+    // Setup bottom buttons
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->saveButton, &QPushButton::clicked, this,
+        &AccountDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
+        &AccountDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+        &AccountDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
     connect(ui_->usernameEdit, &QLineEdit::textChanged, this,
@@ -893,15 +888,10 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 
     setFieldsReadOnly(readOnly);
 
-    // Update toolbar visibility
-    if (saveAction_)
-        saveAction_->setVisible(!readOnly);
-
-    if (deleteAction_)
-        deleteAction_->setVisible(!readOnly);
-
-    if (revertAction_)
-        revertAction_->setVisible(readOnly);
+    // Update button/toolbar visibility
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+    toolBar_->setVisible(readOnly);
 
     // Disable Security tab in read-only mode (password changes not supported)
     auto* tw = ui_->tabWidget;
@@ -932,10 +922,8 @@ void AccountDetailDialog::setFieldsReadOnly(bool readOnly) {
 
 void AccountDetailDialog::updateSaveResetButtonState() {
     if (isReadOnly_) {
-        if (saveAction_)
-            saveAction_->setEnabled(false);
-        if (deleteAction_)
-            deleteAction_->setEnabled(false);
+        ui_->saveButton->setEnabled(false);
+        ui_->deleteButton->setEnabled(false);
         if (revertAction_)
             revertAction_->setEnabled(true);
         return;
@@ -944,11 +932,8 @@ void AccountDetailDialog::updateSaveResetButtonState() {
     const bool hasChanges = isDirty_ ||
         (partiesWidget_ && partiesWidget_->hasPendingChanges()) ||
         (rolesWidget_   && rolesWidget_->hasPendingChanges());
-    if (saveAction_)
-        saveAction_->setEnabled(hasChanges);
-
-    if (deleteAction_)
-        deleteAction_->setEnabled(!isAddMode_);
+    ui_->saveButton->setEnabled(hasChanges);
+    ui_->deleteButton->setEnabled(!isAddMode_);
 }
 
 void AccountDetailDialog::markAsStale() {

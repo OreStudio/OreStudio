@@ -60,6 +60,9 @@ void PurposeTypeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PurposeTypeDetailDialog::setupConnections() {
@@ -67,6 +70,8 @@ void PurposeTypeDetailDialog::setupConnections() {
             &PurposeTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PurposeTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PurposeTypeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &PurposeTypeDetailDialog::onCodeChanged);
@@ -118,6 +123,8 @@ void PurposeTypeDetailDialog::updateUiFromType() {
     populateProvenance(type_.version, type_.modified_by,
         type_.performed_by, type_.recorded_at,
         type_.change_reason_code, type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PurposeTypeDetailDialog::updateTypeFromUi() {
@@ -221,6 +228,8 @@ void PurposeTypeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Purpose Type saved successfully";
             QString code = QString::fromStdString(self->type_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->typeSaved(code);
             self->notifySaveSuccess(tr("Purpose Type '%1' saved").arg(code));
         } else {

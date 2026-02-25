@@ -74,6 +74,9 @@ public:
     using QWidget::QWidget;
     ~DetailDialogBase() override;
 
+    /** Returns true if the dialog has unsaved changes. Subclasses override. */
+    virtual bool hasUnsavedChanges() const { return false; }
+
 signals:
     /**
      * @brief Emitted when the dialog wants to close its container window.
@@ -94,6 +97,14 @@ signals:
      * @brief Emitted when an error occurs that should be shown to the user.
      */
     void errorMessage(const QString& message);
+
+protected slots:
+    /**
+     * @brief Called when the Close button is clicked.
+     *
+     * Warns the user if there are unsaved changes, then calls requestClose().
+     */
+    void onCloseClicked();
 
 protected:
     /**

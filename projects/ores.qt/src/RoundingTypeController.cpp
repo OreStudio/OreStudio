@@ -87,8 +87,7 @@ void RoundingTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed,
-            this, [self = QPointer<RoundingTypeController>(this), key]() {
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<RoundingTypeController>(this), key]() {
         if (!self) return;
         self->untrack_window(key);
         self->listWindow_ = nullptr;
@@ -234,6 +233,7 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
 
     const QString windowKey = build_window_key("history", code);
 
+    // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
                                   << code.toStdString();
@@ -243,8 +243,7 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << code.toStdString();
 
-    auto* historyDialog = new RoundingTypeHistoryDialog(
-        code, clientManager_, mainWindow_);
+    auto* historyDialog = new RoundingTypeHistoryDialog(code, clientManager_, mainWindow_);
 
     connect(historyDialog, &RoundingTypeHistoryDialog::statusChanged,
             this, [self = QPointer<RoundingTypeController>(this)](const QString& message) {
@@ -267,8 +266,7 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
     auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
-    historyWindow->setWindowTitle(
-        QString("Rounding Type History: %1").arg(code));
+    historyWindow->setWindowTitle(QString("Rounding Type History: %1").arg(code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::History, IconUtils::DefaultIconColor));
 
@@ -296,6 +294,7 @@ void RoundingTypeController::onOpenVersion(
     const QString windowKey = build_window_key("version", QString("%1_v%2")
         .arg(code).arg(versionNumber));
 
+    // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
         return;
@@ -321,8 +320,8 @@ void RoundingTypeController::onOpenVersion(
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Rounding Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowTitle(QString("Rounding Type: %1 (Version %2)")
+        .arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::History, IconUtils::DefaultIconColor));
 
@@ -346,6 +345,7 @@ void RoundingTypeController::onRevertVersion(
     BOOST_LOG_SEV(lg(), info) << "Reverting rounding type to version: "
                               << type.version;
 
+    // Open detail dialog with the old version data for editing
     auto* detailDialog = new RoundingTypeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -360,17 +360,15 @@ void RoundingTypeController::onRevertVersion(
             this, [self = QPointer<RoundingTypeController>(this)](const QString& code) {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Rounding Type reverted: " << code.toStdString();
-        emit self->statusMessage(
-            QString("Rounding Type '%1' reverted successfully").arg(code));
+        emit self->statusMessage(QString("Rounding Type '%1' reverted successfully").arg(code));
         self->handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Revert Rounding Type: %1")
-            .arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowTitle(QString("Revert Rounding Type: %1")
+        .arg(QString::fromStdString(type.code)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 

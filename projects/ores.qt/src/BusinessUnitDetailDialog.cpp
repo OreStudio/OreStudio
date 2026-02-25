@@ -61,6 +61,9 @@ void BusinessUnitDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void BusinessUnitDetailDialog::setupConnections() {
@@ -68,6 +71,8 @@ void BusinessUnitDetailDialog::setupConnections() {
             &BusinessUnitDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &BusinessUnitDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &BusinessUnitDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &BusinessUnitDetailDialog::onCodeChanged);
@@ -164,6 +169,8 @@ void BusinessUnitDetailDialog::updateUiFromUnit() {
                        business_unit_.performed_by, business_unit_.recorded_at,
                        business_unit_.change_reason_code,
                        business_unit_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BusinessUnitDetailDialog::updateUnitFromUi() {
@@ -267,6 +274,8 @@ void BusinessUnitDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Business Unit saved successfully";
             QString code = QString::fromStdString(self->business_unit_.unit_code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->business_unitSaved(code);
             self->notifySaveSuccess(tr("Business Unit '%1' saved").arg(code));
         } else {

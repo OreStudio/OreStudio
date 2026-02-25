@@ -106,6 +106,33 @@
             </item>
            </widget>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_unitTypeCombo">
+            <property name="text">
+             <string>Unit Type:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="unitTypeCombo"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_unitTypeLevelEdit">
+            <property name="text">
+             <string>Type Level:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="unitTypeLevelEdit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

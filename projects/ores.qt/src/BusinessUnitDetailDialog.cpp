@@ -19,9 +19,12 @@
  */
 #include "ores.qt/BusinessUnitDetailDialog.hpp"
 
+#include <algorithm>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_BusinessUnitDetailDialog.h"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -29,6 +32,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
+#include "ores.refdata/messaging/business_unit_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -82,11 +86,24 @@ void BusinessUnitDetailDialog::setupConnections() {
             &BusinessUnitDetailDialog::onFieldChanged);
     connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
             &BusinessUnitDetailDialog::onFieldChanged);
+    connect(ui_->unitTypeCombo, &QComboBox::currentIndexChanged, this,
+            [this](int index) {
+        // Update the read-only level field whenever the type selection changes.
+        // Index 0 is the "(none)" sentinel.
+        if (index <= 0 || index > static_cast<int>(unit_type_entries_.size())) {
+            ui_->unitTypeLevelEdit->clear();
+        } else {
+            const auto& entry = unit_type_entries_[static_cast<std::size_t>(index) - 1];
+            ui_->unitTypeLevelEdit->setText(QString::number(entry.level));
+        }
+        onFieldChanged();
+    });
 }
 
 void BusinessUnitDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateBusinessCentres();
+    populateUnitTypes();
 }
 
 void BusinessUnitDetailDialog::setImageCache(ImageCache* imageCache) {
@@ -128,6 +145,65 @@ void BusinessUnitDetailDialog::populateBusinessCentres() {
     watcher->setFuture(future);
 }
 
+void BusinessUnitDetailDialog::populateUnitTypes() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<BusinessUnitDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<unit_type_entry> {
+        refdata::messaging::get_business_unit_types_request request;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_business_unit_types_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = cm->sendRequest(std::move(request_frame));
+        if (!response_result) return {};
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) return {};
+
+        auto response = refdata::messaging::get_business_unit_types_response::
+            deserialize(*payload_result);
+        if (!response) return {};
+
+        std::vector<unit_type_entry> entries;
+        entries.reserve(response->types.size());
+        for (const auto& t : response->types) {
+            entries.push_back({t.id, t.name, t.level});
+        }
+        std::sort(entries.begin(), entries.end(),
+            [](const unit_type_entry& a, const unit_type_entry& b) {
+                if (a.level != b.level) return a.level < b.level;
+                return a.name < b.name;
+            });
+        return entries;
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<unit_type_entry>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<unit_type_entry>>::finished,
+            self, [self, watcher]() {
+        auto entries = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->unit_type_entries_ = entries;
+        self->ui_->unitTypeCombo->clear();
+        self->ui_->unitTypeCombo->addItem(QString("(none)"));
+        for (const auto& e : entries) {
+            self->ui_->unitTypeCombo->addItem(
+                QString::fromStdString(e.name));
+        }
+        self->updateUiFromUnit();
+    });
+
+    QFuture<std::vector<unit_type_entry>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
 void BusinessUnitDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -155,6 +231,7 @@ void BusinessUnitDetailDialog::setReadOnly(bool readOnly) {
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->businessCentreCombo->setEnabled(!readOnly);
     ui_->statusCombo->setEnabled(!readOnly);
+    ui_->unitTypeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -164,6 +241,21 @@ void BusinessUnitDetailDialog::updateUiFromUnit() {
     ui_->nameEdit->setText(QString::fromStdString(business_unit_.unit_name));
     ui_->businessCentreCombo->setCurrentText(QString::fromStdString(business_unit_.business_centre_code));
     ui_->statusCombo->setCurrentText(QString::fromStdString(business_unit_.status));
+
+    // Select the unit type combo entry that matches the stored unit_type_id.
+    ui_->unitTypeCombo->setCurrentIndex(0);
+    ui_->unitTypeLevelEdit->clear();
+    if (business_unit_.unit_type_id) {
+        for (std::size_t i = 0; i < unit_type_entries_.size(); ++i) {
+            if (unit_type_entries_[i].id == *business_unit_.unit_type_id) {
+                const int combo_index = static_cast<int>(i) + 1; // +1 for "(none)"
+                ui_->unitTypeCombo->setCurrentIndex(combo_index);
+                ui_->unitTypeLevelEdit->setText(
+                    QString::number(unit_type_entries_[i].level));
+                break;
+            }
+        }
+    }
 
     populateProvenance(business_unit_.version, business_unit_.modified_by,
                        business_unit_.performed_by, business_unit_.recorded_at,
@@ -182,6 +274,15 @@ void BusinessUnitDetailDialog::updateUnitFromUi() {
     business_unit_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     business_unit_.modified_by = username_;
     business_unit_.performed_by = username_;
+
+    // Resolve unit type combo selection back to an optional UUID.
+    const int type_index = ui_->unitTypeCombo->currentIndex();
+    if (type_index <= 0 || type_index > static_cast<int>(unit_type_entries_.size())) {
+        business_unit_.unit_type_id = std::nullopt;
+    } else {
+        business_unit_.unit_type_id =
+            unit_type_entries_[static_cast<std::size_t>(type_index) - 1].id;
+    }
 }
 
 void BusinessUnitDetailDialog::onCodeChanged(const QString& /* text */) {

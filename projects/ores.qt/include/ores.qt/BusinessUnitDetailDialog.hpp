@@ -20,6 +20,9 @@
 #ifndef ORES_QT_BUSINESS_UNIT_DETAIL_DIALOG_HPP
 #define ORES_QT_BUSINESS_UNIT_DETAIL_DIALOG_HPP
 
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
@@ -31,6 +34,16 @@ class BusinessUnitDetailDialog;
 }
 
 namespace ores::qt {
+
+/**
+ * @brief Lightweight entry for a business unit type, used to populate
+ *        the unit type combo box.
+ */
+struct unit_type_entry {
+    boost::uuids::uuid id;
+    std::string name;
+    int level = 0;
+};
 
 /**
  * @brief Detail dialog for viewing and editing business unit records.
@@ -86,6 +99,7 @@ private:
     void updateUnitFromUi();
     void updateSaveButtonState();
     void populateBusinessCentres();
+    void populateUnitTypes();
     bool validateInput();
 
     Ui::BusinessUnitDetailDialog* ui_;
@@ -93,6 +107,7 @@ private:
     ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::business_unit business_unit_;
+    std::vector<unit_type_entry> unit_type_entries_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

@@ -38,6 +38,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+badge_color_pair resolve_portfolio_badge_color(const QString& value) {
+    const auto upper = value.toUpper();
+    if (upper == "VIRTUAL")
+        return {QColor(0x7C, 0x3A, 0xED), Qt::white};   // Purple
+    if (upper == "PHYSICAL")
+        return {QColor(0x0D, 0x94, 0x88), Qt::white};   // Teal
+    if (upper == "ACTIVE")
+        return {QColor(0x22, 0xC5, 0x5E), Qt::white};   // Green
+    if (upper == "INACTIVE" || upper == "CLOSED")
+        return {QColor(0x6B, 0x72, 0x80), Qt::white};   // Gray
+    if (upper == "FROZEN")
+        return {QColor(0xEA, 0xB3, 0x08), Qt::white};   // Amber
+    if (upper == "PENDING")
+        return {QColor(0x3B, 0x82, 0xF6), Qt::white};   // Blue
+    return {QColor(0x6B, 0x72, 0x80), Qt::white};        // Default gray
+}
+
+} // namespace
+
 PortfolioMdiWindow::PortfolioMdiWindow(
     ClientManager* clientManager,
     ImageCache* imageCache,
@@ -161,7 +182,7 @@ void PortfolioMdiWindow::setupTable() {
         cs::text_left,      // ModifiedBy
         cs::mono_left       // RecordedAt
     }, tableView_);
-    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    delegate->set_badge_color_resolver(resolve_portfolio_badge_color);
     tableView_->setItemDelegate(delegate);
 }
 

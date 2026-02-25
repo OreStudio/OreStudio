@@ -111,7 +111,7 @@ QVariant ClientPortfolioModel::data(
         case PurposeType:
             return QString::fromStdString(portfolio.purpose_type);
         case IsVirtual:
-            return portfolio.is_virtual != 0 ? tr("Virtual") : QString{};
+            return portfolio.is_virtual != 0 ? tr("Virtual") : tr("Physical");
         case Status:
             return QString::fromStdString(portfolio.status);
         case Version:

@@ -92,6 +92,9 @@ void EntityDetailDialog::setupUi() {
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
 
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     // Show/hide party_category based on entity type
     if (ops_->has_party_category()) {
         ui_->partyCategoryCombo->addItem(
@@ -183,6 +186,8 @@ void EntityDetailDialog::setupConnections() {
             &EntityDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &EntityDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &EntityDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &EntityDetailDialog::onCodeChanged);

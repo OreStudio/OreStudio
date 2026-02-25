@@ -61,35 +61,12 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
-    // Create toolbar
+    // Create toolbar (for historical navigation only, hidden by default)
     toolBar_ = new QToolBar(this);
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    // Define icon color (light gray for dark theme)
-    const QColor iconColor(220, 220, 220);
-
-    // Create Save action
-    saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Save, IconUtils::DefaultIconColor));
-    saveAction_->setToolTip("Save changes");
-    connect(saveAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onSaveClicked);
-    toolBar_->addAction(saveAction_);
-
-    // Create Delete action
-    deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete country");
-    connect(deleteAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onDeleteClicked);
-    toolBar_->addAction(deleteAction_);
-
-    toolBar_->addSeparator();
-
-    // Create Revert action (initially hidden)
+    // Create Revert action
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
@@ -97,7 +74,6 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     connect(revertAction_, &QAction::triggered, this,
         &CountryDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
-    revertAction_->setVisible(false);
 
     // Version navigation actions (initially hidden)
     toolBar_->addSeparator();
@@ -138,10 +114,12 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
 
-    // Add toolbar to the dialog's layout
+    // Add toolbar to the dialog's layout (hidden by default, shown in historical mode)
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
-    if (mainLayout)
+    if (mainLayout) {
         mainLayout->insertWidget(0, toolBar_);
+        toolBar_->setVisible(false);
+    }
 
     // Add clickable flag button into the flagTab
     {
@@ -166,6 +144,21 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
 
         ui_->flagGroup->layout()->addWidget(flagContainer);
     }
+
+    // Setup bottom buttons
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->saveButton, &QPushButton::clicked, this,
+        &CountryDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
+        &CountryDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+        &CountryDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
     connect(ui_->alpha2CodeEdit, &QLineEdit::textChanged, this,
@@ -552,17 +545,12 @@ void CountryDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 
     setFieldsReadOnly(readOnly);
 
-    if (saveAction_)
-        saveAction_->setVisible(!readOnly);
-
-    if (deleteAction_)
-        deleteAction_->setVisible(!readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+    toolBar_->setVisible(readOnly);
 
     if (flagButton_)
         flagButton_->setEnabled(!readOnly);
-
-    if (revertAction_)
-        revertAction_->setVisible(readOnly);
 
     updateSaveResetButtonState();
 }
@@ -577,10 +565,8 @@ void CountryDetailDialog::setFieldsReadOnly(bool readOnly) {
 
 void CountryDetailDialog::updateSaveResetButtonState() {
     if (isReadOnly_) {
-        if (saveAction_)
-            saveAction_->setEnabled(false);
-        if (deleteAction_)
-            deleteAction_->setEnabled(false);
+        ui_->saveButton->setEnabled(false);
+        ui_->deleteButton->setEnabled(false);
         if (revertAction_)
             revertAction_->setEnabled(true);
         return;
@@ -588,11 +574,8 @@ void CountryDetailDialog::updateSaveResetButtonState() {
 
     // In add mode, only enable save when dirty
     // In edit mode, always enable save (for "touch" operations that update timestamp)
-    if (saveAction_)
-        saveAction_->setEnabled(isAddMode_ ? isDirty_ : true);
-
-    if (deleteAction_)
-        deleteAction_->setEnabled(!isAddMode_);
+    ui_->saveButton->setEnabled(isAddMode_ ? isDirty_ : true);
+    ui_->deleteButton->setEnabled(!isAddMode_);
 }
 
 void CountryDetailDialog::markAsStale() {

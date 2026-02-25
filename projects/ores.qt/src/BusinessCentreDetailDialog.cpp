@@ -61,6 +61,9 @@ void BusinessCentreDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void BusinessCentreDetailDialog::setupConnections() {
@@ -68,6 +71,8 @@ void BusinessCentreDetailDialog::setupConnections() {
             &BusinessCentreDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &BusinessCentreDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &BusinessCentreDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &BusinessCentreDetailDialog::onCodeChanged);

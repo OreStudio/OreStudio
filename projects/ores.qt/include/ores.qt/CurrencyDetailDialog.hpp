@@ -115,6 +115,7 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
+    bool hasUnsavedChanges() const override { return isDirty_; }
 
 signals:
     void currencyUpdated(const QString& iso_code);
@@ -174,8 +175,6 @@ private:
     int historicalVersion_;
     std::string username_;
     QToolBar* toolBar_;
-    QAction* saveAction_;
-    QAction* deleteAction_;
     QAction* revertAction_;
     QAction* generateAction_;
     QPushButton* flagButton_;

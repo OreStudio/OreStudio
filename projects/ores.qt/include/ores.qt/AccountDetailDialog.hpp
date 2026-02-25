@@ -157,6 +157,7 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
+    bool hasUnsavedChanges() const override { return isDirty_; }
 
 private slots:
     void onSaveClicked();
@@ -180,8 +181,6 @@ private:
     int historicalVersion_;
     std::string modifiedByUsername_;
     QToolBar* toolBar_;
-    QAction* saveAction_;
-    QAction* deleteAction_;
     QAction* revertAction_;
 
     ClientManager*     clientManager_;

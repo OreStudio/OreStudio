@@ -23,6 +23,7 @@
 #include <QListWidgetItem>
 #include <algorithm>
 #include "ui_RoleDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 
 namespace ores::qt {
 
@@ -34,6 +35,12 @@ RoleDetailDialog::RoleDetailDialog(QWidget* parent)
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &RoleDetailDialog::onCloseClicked);
+
     BOOST_LOG_SEV(lg(), debug) << "RoleDetailDialog created";
 }
 

@@ -57,6 +57,9 @@ DataDomainHistoryDialog::~DataDomainHistoryDialog() {
 }
 
 void DataDomainHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(name_));
     ui_->versionListWidget->setColumnCount(4);
     ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
@@ -94,6 +97,8 @@ void DataDomainHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &DataDomainHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered, this, &DataDomainHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered, this, &DataDomainHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void DataDomainHistoryDialog::loadHistory() {

@@ -60,6 +60,9 @@ void TenantTypeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void TenantTypeDetailDialog::setupConnections() {
@@ -67,6 +70,8 @@ void TenantTypeDetailDialog::setupConnections() {
             &TenantTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &TenantTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &TenantTypeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &TenantTypeDetailDialog::onCodeChanged);

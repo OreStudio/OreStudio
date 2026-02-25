@@ -87,7 +87,7 @@ void DatasetBundleController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [key, self = QPointer<DatasetBundleController>(this)]() {
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<DatasetBundleController>(this), key]() {
         if (!self) return;
         self->untrack_window(key);
         self->listWindow_ = nullptr;
@@ -198,7 +198,7 @@ void DatasetBundleController::showDetailWindow(
         self->handleEntitySaved();
     });
     connect(detailDialog, &DatasetBundleDetailDialog::bundleDeleted,
-            this, [key, self = QPointer<DatasetBundleController>(this)](const QString& code) {
+            this, [self = QPointer<DatasetBundleController>(this), key](const QString& code) {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Dataset Bundle deleted: " << code.toStdString();
         self->handleEntityDeleted();

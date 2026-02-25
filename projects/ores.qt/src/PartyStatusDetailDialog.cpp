@@ -19,14 +19,13 @@
  */
 #include "ores.qt/PartyStatusDetailDialog.hpp"
 
-#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include "ui_PartyStatusDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,7 +39,6 @@ PartyStatusDetailDialog::PartyStatusDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -49,9 +47,17 @@ PartyStatusDetailDialog::~PartyStatusDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* PartyStatusDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* PartyStatusDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* PartyStatusDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* PartyStatusDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* PartyStatusDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* PartyStatusDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void PartyStatusDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -60,6 +66,9 @@ void PartyStatusDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PartyStatusDetailDialog::setupConnections() {
@@ -67,6 +76,8 @@ void PartyStatusDetailDialog::setupConnections() {
             &PartyStatusDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PartyStatusDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PartyStatusDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &PartyStatusDetailDialog::onCodeChanged);
@@ -94,9 +105,7 @@ void PartyStatusDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -115,9 +124,12 @@ void PartyStatusDetailDialog::updateUiFromStatus() {
     ui_->nameEdit->setText(QString::fromStdString(status_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(status_.description));
 
-    populateProvenance(status_.version, status_.modified_by,
-                       status_.performed_by, status_.recorded_at,
-                       status_.change_reason_code, status_.change_commentary);
+    populateProvenance(status_.version,
+                       status_.modified_by,
+                       status_.performed_by,
+                       status_.recorded_at,
+                       status_.change_reason_code,
+                       status_.change_commentary);
 }
 
 void PartyStatusDetailDialog::updateStatusFromUi() {
@@ -146,10 +158,10 @@ void PartyStatusDetailDialog::updateSaveButtonState() {
 }
 
 bool PartyStatusDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void PartyStatusDetailDialog::onSaveClicked() {
@@ -161,7 +173,7 @@ void PartyStatusDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+            "Please fill in all required fields.");
         return;
     }
 

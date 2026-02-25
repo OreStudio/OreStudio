@@ -150,7 +150,7 @@
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
-                <widget class="QLabel" name="externalIdValueLabel">
+                <widget class="QLabel" name="external_idLabel">
                  <property name="text">
                   <string>External ID:</string>
                  </property>
@@ -164,7 +164,7 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="tradeTypeValueLabel">
+                <widget class="QLabel" name="trade_typeLabel">
                  <property name="text">
                   <string>Trade Type:</string>
                  </property>
@@ -178,7 +178,7 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="lifecycleEventValueLabel">
+                <widget class="QLabel" name="lifecycle_eventLabel">
                  <property name="text">
                   <string>Lifecycle Event:</string>
                  </property>
@@ -192,7 +192,7 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="nettingSetIdValueLabel">
+                <widget class="QLabel" name="netting_set_idLabel">
                  <property name="text">
                   <string>Netting Set:</string>
                  </property>
@@ -206,7 +206,7 @@
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="tradeDateValueLabel">
+                <widget class="QLabel" name="trade_dateLabel">
                  <property name="text">
                   <string>Trade Date:</string>
                  </property>
@@ -220,7 +220,7 @@
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="effectiveDateValueLabel">
+                <widget class="QLabel" name="effective_dateLabel">
                  <property name="text">
                   <string>Effective Date:</string>
                  </property>
@@ -234,7 +234,7 @@
                 </widget>
                </item>
                <item row="6" column="0">
-                <widget class="QLabel" name="terminationDateValueLabel">
+                <widget class="QLabel" name="termination_dateLabel">
                  <property name="text">
                   <string>Termination Date:</string>
                  </property>
@@ -248,7 +248,7 @@
                 </widget>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="executionTimestampValueLabel">
+                <widget class="QLabel" name="execution_timestampLabel">
                  <property name="text">
                   <string>Execution Timestamp:</string>
                  </property>
@@ -331,6 +331,27 @@
       </layout>
      </widget>
     </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size><width>40</width><height>20</height></size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

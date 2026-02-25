@@ -26,10 +26,8 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -48,6 +46,7 @@ DatasetBundleMdiWindow::DatasetBundleMdiWindow(
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
+      paginationWidget_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
       editAction_(nullptr),
@@ -62,7 +61,6 @@ DatasetBundleMdiWindow::DatasetBundleMdiWindow(
 }
 
 void DatasetBundleMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -70,6 +68,9 @@ void DatasetBundleMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void DatasetBundleMdiWindow::setupToolbar() {
@@ -136,15 +137,13 @@ void DatasetBundleMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientDatasetBundleModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_,
-        ClientDatasetBundleModel::kSettingsGroup,
-        ClientDatasetBundleModel::defaultHiddenColumns(),
-        ClientDatasetBundleModel::kDefaultWindowSize, 1);
+        "DatasetBundleListWindow",
+        {ClientDatasetBundleModel::Description},
+        {900, 400}, 1);
 }
 
 void DatasetBundleMdiWindow::setupConnections() {
@@ -157,6 +156,26 @@ void DatasetBundleMdiWindow::setupConnections() {
             this, &DatasetBundleMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked,
             this, &DatasetBundleMdiWindow::onDoubleClicked);
+
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
 }
 
 void DatasetBundleMdiWindow::reload() {
@@ -167,7 +186,13 @@ void DatasetBundleMdiWindow::reload() {
 }
 
 void DatasetBundleMdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 dataset bundles").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 dataset bundles").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
 }
 
 void DatasetBundleMdiWindow::onLoadError(const QString& error_message,
@@ -348,7 +373,6 @@ void DatasetBundleMdiWindow::deleteSelected() {
         int success_count = 0;
         int failure_count = 0;
         QString first_error;
-        QStringList failed_codes;
 
         for (const auto& [id, code, success, message] : results) {
             if (success) {
@@ -359,7 +383,6 @@ void DatasetBundleMdiWindow::deleteSelected() {
                 BOOST_LOG_SEV(lg(), error) << "Dataset Bundle deletion failed: "
                                            << code << " - " << message;
                 failure_count++;
-                failed_codes << QString::fromStdString(code);
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
                 }
@@ -374,25 +397,18 @@ void DatasetBundleMdiWindow::deleteSelected() {
                 : QString("Successfully deleted %1 dataset bundles").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
-            QString summary = QString("Failed to delete %1 %2")
+            QString msg = QString("Failed to delete %1 %2: %3")
                 .arg(failure_count)
-                .arg(failure_count == 1 ? "dataset bundle" : "dataset bundles");
-            QString details = QString("Failed bundles: %1\n\nReason: %2")
-                .arg(failed_codes.join(", "))
+                .arg(failure_count == 1 ? "dataset bundle" : "dataset bundles")
                 .arg(first_error);
-            emit self->errorOccurred(summary);
-            MessageBoxHelper::critical(self, "Delete Failed", details);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString summary = QString("Deleted %1 %2, failed to delete %3")
+            QString msg = QString("Deleted %1, failed to delete %2")
                 .arg(success_count)
-                .arg(success_count == 1 ? "bundle" : "bundles")
                 .arg(failure_count);
-            QString details = QString("%1\n\nFailed: %2\nReason: %3")
-                .arg(summary)
-                .arg(failed_codes.join(", "))
-                .arg(first_error);
-            emit self->statusChanged(summary);
-            MessageBoxHelper::warning(self, "Partial Success", details);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 

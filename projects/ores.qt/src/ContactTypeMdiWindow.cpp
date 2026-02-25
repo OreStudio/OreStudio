@@ -25,10 +25,8 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/contact_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -47,6 +45,7 @@ ContactTypeMdiWindow::ContactTypeMdiWindow(
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
+      paginationWidget_(nullptr),
       reloadAction_(nullptr),
       addAction_(nullptr),
       editAction_(nullptr),
@@ -61,7 +60,6 @@ ContactTypeMdiWindow::ContactTypeMdiWindow(
 }
 
 void ContactTypeMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -69,6 +67,9 @@ void ContactTypeMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void ContactTypeMdiWindow::setupToolbar() {
@@ -135,15 +136,13 @@ void ContactTypeMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientContactTypeModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
     initializeTableSettings(tableView_, model_,
-        ClientContactTypeModel::kSettingsGroup,
-        ClientContactTypeModel::defaultHiddenColumns(),
-        ClientContactTypeModel::kDefaultWindowSize, 1);
+        "ContactTypeListWindow",
+        {ClientContactTypeModel::Description},
+        {900, 400}, 1);
 }
 
 void ContactTypeMdiWindow::setupConnections() {
@@ -156,6 +155,26 @@ void ContactTypeMdiWindow::setupConnections() {
             this, &ContactTypeMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked,
             this, &ContactTypeMdiWindow::onDoubleClicked);
+
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
 }
 
 void ContactTypeMdiWindow::reload() {
@@ -166,7 +185,13 @@ void ContactTypeMdiWindow::reload() {
 }
 
 void ContactTypeMdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 contact types").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 contact types").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
 }
 
 void ContactTypeMdiWindow::onLoadError(const QString& error_message,

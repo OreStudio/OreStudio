@@ -59,6 +59,9 @@ CatalogHistoryDialog::~CatalogHistoryDialog() {
 }
 
 void CatalogHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(name_));
 
     ui_->versionListWidget->setColumnCount(4);
@@ -108,6 +111,8 @@ void CatalogHistoryDialog::setupConnections() {
             this, &CatalogHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &CatalogHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void CatalogHistoryDialog::loadHistory() {

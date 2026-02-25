@@ -26,6 +26,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientContactTypeModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/contact_type.hpp"
 
@@ -99,6 +100,7 @@ private:
     QTableView* tableView_;
     ClientContactTypeModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

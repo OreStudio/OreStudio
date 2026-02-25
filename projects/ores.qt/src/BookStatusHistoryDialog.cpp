@@ -58,6 +58,9 @@ BookStatusHistoryDialog::~BookStatusHistoryDialog() {
 }
 
 void BookStatusHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -108,6 +111,8 @@ void BookStatusHistoryDialog::setupConnections() {
             this, &BookStatusHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &BookStatusHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void BookStatusHistoryDialog::loadHistory() {

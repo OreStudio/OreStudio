@@ -59,6 +59,9 @@ SubjectAreaHistoryDialog::~SubjectAreaHistoryDialog() {
 }
 
 void SubjectAreaHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(
         QString("History for: %1 (Domain: %2)").arg(name_, domain_name_));
     ui_->versionListWidget->setColumnCount(4);
@@ -105,6 +108,8 @@ void SubjectAreaHistoryDialog::setupConnections() {
             this, &SubjectAreaHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &SubjectAreaHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void SubjectAreaHistoryDialog::loadHistory() {

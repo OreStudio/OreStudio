@@ -26,7 +26,6 @@
 #include "ui_PortfolioHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -49,7 +48,6 @@ PortfolioHistoryDialog::PortfolioHistoryDialog(
       revertAction_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupToolbar();
     setupConnections();
@@ -60,6 +58,9 @@ PortfolioHistoryDialog::~PortfolioHistoryDialog() {
 }
 
 void PortfolioHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -110,6 +111,8 @@ void PortfolioHistoryDialog::setupConnections() {
             this, &PortfolioHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &PortfolioHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void PortfolioHistoryDialog::loadHistory() {

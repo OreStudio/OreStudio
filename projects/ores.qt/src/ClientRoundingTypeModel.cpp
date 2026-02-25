@@ -23,14 +23,12 @@
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string rounding_type_key_extractor(const refdata::domain::rounding_type& e) {
@@ -132,78 +130,98 @@ QVariant ClientRoundingTypeModel::headerData(
 }
 
 void ClientRoundingTypeModel::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+
     if (is_fetching_) {
-        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh rounding type model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting rounding type fetch";
-    is_fetching_ = true;
+    if (!types_.empty()) {
+        beginResetModel();
+        types_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
+    }
 
+    fetch_types(0, page_size_);
+}
+
+void ClientRoundingTypeModel::load_page(std::uint32_t offset,
+                                          std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    if (!types_.empty()) {
+        beginResetModel();
+        types_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
+    }
+
+    fetch_types(offset, limit);
+}
+
+void ClientRoundingTypeModel::fetch_types(
+    std::uint32_t offset, std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<ClientRoundingTypeModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .types = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+    QFuture<FetchResult> future =
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making rounding types request with offset="
+                                           << offset << ", limit=" << limit;
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .types = {},
+                            .total_available_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            refdata::messaging::get_rounding_types_request request;
-            auto payload = request.serialize();
+                refdata::messaging::get_rounding_types_request request;
 
-            frame request_frame(
-                message_type::get_rounding_types_request,
-                0, std::move(payload)
-            );
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .types = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch rounding types: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .types = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch rounding types: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .types = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .types = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response = refdata::messaging::get_rounding_types_response::
-                deserialize(*payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .types = {},
-                        .error_message = "Failed to deserialize response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->types.size()
-                                       << " rounding types";
-            return {.success = true, .types = std::move(response->types),
-                    .error_message = {}, .error_details = {}};
-        }, "rounding types");
-    });
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                                           << " rounding types";
+                const std::uint32_t count =
+                    static_cast<std::uint32_t>(result->types.size());
+                return {.success = true,
+                        .types = std::move(result->types),
+                        .total_available_count = count,
+                        .error_message = {}, .error_details = {}};
+            }, "rounding types");
+        });
 
     watcher_->setFuture(future);
 }
@@ -220,19 +238,38 @@ void ClientRoundingTypeModel::onTypesLoaded() {
         return;
     }
 
-    beginResetModel();
-    types_ = std::move(result.types);
-    endResetModel();
+    total_available_count_ = result.total_available_count;
 
-    const bool has_recent = recencyTracker_.update(types_);
-    if (has_recent && !pulseManager_->is_pulsing()) {
-        pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " rounding types newer than last reload";
+    const int new_count = static_cast<int>(result.types.size());
+
+    if (new_count > 0) {
+        beginResetModel();
+        types_ = std::move(result.types);
+        endResetModel();
+
+        const bool has_recent = recencyTracker_.update(types_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " rounding types newer than last reload";
+        }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << types_.size() << " rounding types";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " rounding types."
+                              << " Total available: " << total_available_count_;
+
     emit dataLoaded();
+}
+
+void ClientRoundingTypeModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 const refdata::domain::rounding_type*

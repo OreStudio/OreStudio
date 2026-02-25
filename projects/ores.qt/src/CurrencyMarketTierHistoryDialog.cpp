@@ -56,6 +56,9 @@ CurrencyMarketTierHistoryDialog::~CurrencyMarketTierHistoryDialog() {
 }
 
 void CurrencyMarketTierHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
     // Setup version list table
@@ -106,6 +109,8 @@ void CurrencyMarketTierHistoryDialog::setupConnections() {
             this, &CurrencyMarketTierHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
             this, &CurrencyMarketTierHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
 }
 
 void CurrencyMarketTierHistoryDialog::loadHistory() {

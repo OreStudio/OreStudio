@@ -22,11 +22,10 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include "ui_RoundingTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,7 +39,6 @@ RoundingTypeDetailDialog::RoundingTypeDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -49,9 +47,17 @@ RoundingTypeDetailDialog::~RoundingTypeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* RoundingTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* RoundingTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* RoundingTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* RoundingTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* RoundingTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* RoundingTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void RoundingTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -60,6 +66,9 @@ void RoundingTypeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void RoundingTypeDetailDialog::setupConnections() {
@@ -67,13 +76,13 @@ void RoundingTypeDetailDialog::setupConnections() {
             &RoundingTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &RoundingTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &RoundingTypeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &RoundingTypeDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &RoundingTypeDetailDialog::onFieldChanged);
-    connect(ui_->displayOrderEdit, QOverload<int>::of(&QSpinBox::valueChanged),
-            this, &RoundingTypeDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &RoundingTypeDetailDialog::onFieldChanged);
 }
@@ -105,7 +114,6 @@ void RoundingTypeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->displayOrderEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -114,11 +122,13 @@ void RoundingTypeDetailDialog::setReadOnly(bool readOnly) {
 void RoundingTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
-    ui_->displayOrderEdit->setValue(type_.display_order);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
 
-    populateProvenance(type_.version, type_.modified_by, type_.performed_by,
-                       type_.recorded_at, type_.change_reason_code,
+    populateProvenance(type_.version,
+                       type_.modified_by,
+                       type_.performed_by,
+                       type_.recorded_at,
+                       type_.change_reason_code,
                        type_.change_commentary);
 }
 
@@ -127,7 +137,6 @@ void RoundingTypeDetailDialog::updateTypeFromUi() {
         type_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     type_.name = ui_->nameEdit->text().trimmed().toStdString();
-    type_.display_order = ui_->displayOrderEdit->value();
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     type_.modified_by = username_;
     type_.performed_by = username_;
@@ -149,10 +158,10 @@ void RoundingTypeDetailDialog::updateSaveButtonState() {
 }
 
 bool RoundingTypeDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void RoundingTypeDetailDialog::onSaveClicked() {
@@ -164,7 +173,7 @@ void RoundingTypeDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+            "Please fill in all required fields.");
         return;
     }
 

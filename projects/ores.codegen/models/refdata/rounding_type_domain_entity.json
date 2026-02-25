@@ -106,7 +106,7 @@
 
       "settings_group": "RoundingTypeListWindow",
       "window_title": "Rounding Types",
-      "icon": "NumberSymbol"
+      "icon": "Tag"
     }
   }
 }

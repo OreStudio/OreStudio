@@ -26,6 +26,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientPartyStatusModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/party_status.hpp"
 
@@ -99,6 +100,7 @@ private:
     QTableView* tableView_;
     ClientPartyStatusModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

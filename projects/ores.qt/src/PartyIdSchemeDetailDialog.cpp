@@ -19,14 +19,13 @@
  */
 #include "ores.qt/PartyIdSchemeDetailDialog.hpp"
 
-#include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include "ui_PartyIdSchemeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -40,7 +39,6 @@ PartyIdSchemeDetailDialog::PartyIdSchemeDetailDialog(QWidget* parent)
       clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -49,9 +47,17 @@ PartyIdSchemeDetailDialog::~PartyIdSchemeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* PartyIdSchemeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* PartyIdSchemeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* PartyIdSchemeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* PartyIdSchemeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* PartyIdSchemeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* PartyIdSchemeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void PartyIdSchemeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -60,6 +66,9 @@ void PartyIdSchemeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PartyIdSchemeDetailDialog::setupConnections() {
@@ -67,6 +76,8 @@ void PartyIdSchemeDetailDialog::setupConnections() {
             &PartyIdSchemeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PartyIdSchemeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PartyIdSchemeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &PartyIdSchemeDetailDialog::onCodeChanged);
@@ -94,9 +105,7 @@ void PartyIdSchemeDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -115,9 +124,12 @@ void PartyIdSchemeDetailDialog::updateUiFromScheme() {
     ui_->nameEdit->setText(QString::fromStdString(scheme_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(scheme_.description));
 
-    populateProvenance(scheme_.version, scheme_.modified_by,
-                       scheme_.performed_by, scheme_.recorded_at,
-                       scheme_.change_reason_code, scheme_.change_commentary);
+    populateProvenance(scheme_.version,
+                       scheme_.modified_by,
+                       scheme_.performed_by,
+                       scheme_.recorded_at,
+                       scheme_.change_reason_code,
+                       scheme_.change_commentary);
 }
 
 void PartyIdSchemeDetailDialog::updateSchemeFromUi() {
@@ -146,10 +158,10 @@ void PartyIdSchemeDetailDialog::updateSaveButtonState() {
 }
 
 bool PartyIdSchemeDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void PartyIdSchemeDetailDialog::onSaveClicked() {
@@ -161,7 +173,7 @@ void PartyIdSchemeDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+            "Please fill in all required fields.");
         return;
     }
 

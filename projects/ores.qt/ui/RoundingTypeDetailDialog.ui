@@ -67,30 +67,13 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelDisplayOrder">
-            <property name="text">
-             <string>Display Order:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="displayOrderEdit">
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
            <widget class="QLabel" name="labelDescription">
             <property name="text">
              <string>Description:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size>
@@ -101,7 +84,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>120</height>
+              <height>150</height>
              </size>
             </property>
             <property name="placeholderText">
@@ -156,6 +139,13 @@
       <widget class="QPushButton" name="deleteButton">
        <property name="text">
         <string>Delete</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
        </property>
       </widget>
      </item>

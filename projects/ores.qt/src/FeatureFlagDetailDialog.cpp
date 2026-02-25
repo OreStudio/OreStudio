@@ -51,34 +51,12 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
-    // Create toolbar
+    // Create toolbar (for historical navigation only, hidden by default)
     toolBar_ = new QToolBar(this);
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    const QColor iconColor(220, 220, 220);
-
-    // Create Save action
-    saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Save, IconUtils::DefaultIconColor));
-    saveAction_->setToolTip("Save changes");
-    connect(saveAction_, &QAction::triggered, this,
-        &FeatureFlagDetailDialog::onSaveClicked);
-    toolBar_->addAction(saveAction_);
-
-    // Create Delete action
-    deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete feature flag");
-    connect(deleteAction_, &QAction::triggered, this,
-        &FeatureFlagDetailDialog::onDeleteClicked);
-    toolBar_->addAction(deleteAction_);
-
-    toolBar_->addSeparator();
-
-    // Create Revert action (initially hidden)
+    // Create Revert action
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
@@ -125,10 +103,27 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
 
-    // Add toolbar to the dialog's layout
+    // Add toolbar to the dialog's layout (hidden by default, shown in historical mode)
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
-    if (mainLayout)
+    if (mainLayout) {
         mainLayout->insertWidget(0, toolBar_);
+        toolBar_->setVisible(false);
+    }
+
+    // Setup bottom buttons
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->saveButton, &QPushButton::clicked, this,
+        &FeatureFlagDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
+        &FeatureFlagDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+        &FeatureFlagDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
@@ -402,11 +397,8 @@ void FeatureFlagDetailDialog::onFieldChanged() {
 }
 
 void FeatureFlagDetailDialog::updateSaveButtonState() {
-    if (saveAction_)
-        saveAction_->setEnabled(isDirty_);
-
-    if (deleteAction_)
-        deleteAction_->setEnabled(!isAddMode_);
+    ui_->saveButton->setEnabled(isDirty_);
+    ui_->deleteButton->setEnabled(!isAddMode_);
 }
 
 QString FeatureFlagDetailDialog::featureFlagName() const {
@@ -421,13 +413,9 @@ void FeatureFlagDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->enabledComboBox->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
 
-    // Hide toolbar actions in read-only mode
-    if (saveAction_)
-        saveAction_->setVisible(!readOnly);
-    if (deleteAction_)
-        deleteAction_->setVisible(!readOnly);
-    if (revertAction_)
-        revertAction_->setVisible(readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+    toolBar_->setVisible(readOnly);
 
     if (readOnly && versionNumber > 0) {
         BOOST_LOG_SEV(lg(), debug) << "Set to read-only mode, viewing version "

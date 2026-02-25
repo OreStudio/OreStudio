@@ -1251,6 +1251,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # Derive value_widget for history dialog (e.g. codeEdit -> codeValue)
                 widget = f.get('widget', f['field'] + 'Edit')
                 f['value_widget'] = widget.replace('Edit', 'Value')
+                # Derive label_widget for detail dialog form labels (e.g. code -> labelCode)
+                f['label_widget'] = 'label' + snake_to_pascal(f.get('field', ''))
                 if f.get('is_required'):
                     required_fields.append({
                         'field': f['field'],

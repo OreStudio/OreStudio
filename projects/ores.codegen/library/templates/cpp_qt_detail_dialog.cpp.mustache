@@ -5,6 +5,9 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+{{#domain_entity.qt.has_text_edit_fields}}
+#include <QPlainTextEdit>
+{{/domain_entity.qt.has_text_edit_fields}}
 {{#domain_entity.qt.has_uuid_primary_key}}
 #include <boost/uuid/random_generator.hpp>
 {{/domain_entity.qt.has_uuid_primary_key}}
@@ -51,6 +54,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
@@ -58,6 +64,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
             &{{domain_entity.entity_pascal}}DetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onCloseClicked);
 
 {{#domain_entity.qt.detail_fields}}
 {{#is_key}}
@@ -72,7 +80,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
 {{/is_line_edit}}
 {{#is_text_edit}}
-    connect(ui_->{{widget}}, &QTextEdit::textChanged, this,
+    connect(ui_->{{widget}}, &QPlainTextEdit::textChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
 {{/is_text_edit}}
 {{/is_key}}
@@ -97,15 +105,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
     createMode_ = createMode;
     ui_->{{domain_entity.qt.key_widget}}->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
-    if (createMode) {
 {{#domain_entity.qt.has_uuid_primary_key}}
+    if (createMode) {
         {{domain_entity.qt.item_var}}_.id = boost::uuids::random_generator()();
-{{/domain_entity.qt.has_uuid_primary_key}}
     }
-
+{{/domain_entity.qt.has_uuid_primary_key}}
     hasChanges_ = false;
     updateSaveButtonState();
 }

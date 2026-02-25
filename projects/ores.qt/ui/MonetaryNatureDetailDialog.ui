@@ -28,10 +28,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex"><number>0</number></property>
      <widget class="QWidget" name="generalTab">
-      <attribute name="title">
-       <string>General</string>
-      </attribute>
+      <attribute name="title"><string>General</string></attribute>
       <layout class="QVBoxLayout" name="generalLayout">
        <item>
         <widget class="QGroupBox" name="basicInfoGroup">
@@ -40,7 +39,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_codeEdit">
+           <widget class="QLabel" name="labelCode">
             <property name="text">
              <string>Code:</string>
             </property>
@@ -54,7 +53,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_nameEdit">
+           <widget class="QLabel" name="labelName">
             <property name="text">
              <string>Name:</string>
             </property>
@@ -68,14 +67,14 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_descriptionEdit">
+           <widget class="QLabel" name="labelDescription">
             <property name="text">
              <string>Description:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QTextEdit" name="descriptionEdit">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -85,7 +84,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>120</height>
+              <height>150</height>
              </size>
             </property>
             <property name="placeholderText">
@@ -112,9 +111,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="provenanceTab">
-      <attribute name="title">
-       <string>Provenance</string>
-      </attribute>
+      <attribute name="title"><string>Provenance</string></attribute>
       <layout class="QVBoxLayout" name="provenanceTabLayout">
        <item>
         <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
@@ -146,6 +143,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="saveButton">
        <property name="text">
         <string>Save</string>
@@ -164,7 +168,6 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
-   <container>0</container>
   </customwidget>
  </customwidgets>
  <resources/>

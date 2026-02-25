@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QPlainTextEdit>
 #include "ui_MonetaryNatureDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -65,6 +66,9 @@ void MonetaryNatureDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void MonetaryNatureDetailDialog::setupConnections() {
@@ -72,12 +76,14 @@ void MonetaryNatureDetailDialog::setupConnections() {
             &MonetaryNatureDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &MonetaryNatureDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &MonetaryNatureDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &MonetaryNatureDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &MonetaryNatureDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &MonetaryNatureDetailDialog::onFieldChanged);
 }
 
@@ -99,12 +105,7 @@ void MonetaryNatureDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
-    if (createMode) {
-    }
-
     hasChanges_ = false;
     updateSaveButtonState();
 }

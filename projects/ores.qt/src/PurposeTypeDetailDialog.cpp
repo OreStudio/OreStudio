@@ -60,6 +60,9 @@ void PurposeTypeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PurposeTypeDetailDialog::setupConnections() {
@@ -67,6 +70,8 @@ void PurposeTypeDetailDialog::setupConnections() {
             &PurposeTypeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PurposeTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PurposeTypeDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &PurposeTypeDetailDialog::onCodeChanged);

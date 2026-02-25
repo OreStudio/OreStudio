@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ui_MethodologyDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -59,6 +60,10 @@ void MethodologyDetailDialog::setupConnections() {
             this, &MethodologyDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked,
             this, &MethodologyDetailDialog::onDeleteClicked);
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &MethodologyDetailDialog::onCloseClicked);
 }
 
 void MethodologyDetailDialog::setCreateMode(bool create) {

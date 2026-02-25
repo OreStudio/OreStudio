@@ -26,6 +26,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientDatasetBundleModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset_bundle.hpp"
 
@@ -99,6 +100,7 @@ private:
     QTableView* tableView_;
     ClientDatasetBundleModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

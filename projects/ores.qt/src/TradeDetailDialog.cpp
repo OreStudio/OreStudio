@@ -65,6 +65,9 @@ void TradeDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void TradeDetailDialog::setupConnections() {
@@ -72,6 +75,8 @@ void TradeDetailDialog::setupConnections() {
             &TradeDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &TradeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &TradeDetailDialog::onCloseClicked);
 
     connect(ui_->bookCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &TradeDetailDialog::onFieldChanged);

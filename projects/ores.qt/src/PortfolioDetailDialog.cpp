@@ -64,6 +64,9 @@ void PortfolioDetailDialog::setupUi() {
 
     ui_->deleteButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
 void PortfolioDetailDialog::setupConnections() {
@@ -71,6 +74,8 @@ void PortfolioDetailDialog::setupConnections() {
             &PortfolioDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
             &PortfolioDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this,
+            &PortfolioDetailDialog::onCloseClicked);
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &PortfolioDetailDialog::onCodeChanged);

@@ -20,6 +20,14 @@
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 
 #include <QtConcurrent>
+#include <QApplication>
+#include <QDialog>
+#include <QDrag>
+#include <QLabel>
+#include <QMenu>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -28,6 +36,9 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/BookController.hpp"
+#include "ores.qt/PortfolioController.hpp"
+#include "ores.qt/TradeController.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
@@ -40,11 +51,17 @@ using namespace ores::logging;
 
 PortfolioExplorerMdiWindow::PortfolioExplorerMdiWindow(
     ClientManager* clientManager,
+    BookController* bookController,
+    PortfolioController* portfolioController,
+    TradeController* tradeController,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
-      username_(username) {
+      username_(username),
+      bookController_(bookController),
+      portfolioController_(portfolioController),
+      tradeController_(tradeController) {
 
     setupUi();
     setupConnections();
@@ -89,29 +106,38 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
 
     toolbar_->addSeparator();
 
-    toolbar_->addAction(
+    addAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("+ Portfolio"));
-    toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor),
-        tr("+ Book"));
+        tr("Add"));
+    addAction_->setToolTip(tr("Add new portfolio or book"));
+    connect(addAction_, &QAction::triggered,
+            this, &PortfolioExplorerMdiWindow::onAddRequested);
 
     toolbar_->addSeparator();
 
-    auto* editAction = toolbar_->addAction(
+    editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
-    editAction->setEnabled(false);
+    editAction_->setToolTip(tr("Edit selected item"));
+    editAction_->setEnabled(false);
+    connect(editAction_, &QAction::triggered,
+            this, &PortfolioExplorerMdiWindow::onEditSelected);
 
-    auto* deleteAction = toolbar_->addAction(
+    deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
-    deleteAction->setEnabled(false);
+    deleteAction_->setToolTip(tr("Delete selected item"));
+    deleteAction_->setEnabled(false);
+    connect(deleteAction_, &QAction::triggered,
+            this, &PortfolioExplorerMdiWindow::onDeleteSelected);
 
-    auto* historyAction = toolbar_->addAction(
+    historyAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
         tr("History"));
-    historyAction->setEnabled(false);
+    historyAction_->setToolTip(tr("View history of selected item"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered,
+            this, &PortfolioExplorerMdiWindow::onHistorySelected);
 }
 
 void PortfolioExplorerMdiWindow::setupTree() {
@@ -124,6 +150,9 @@ void PortfolioExplorerMdiWindow::setupTree() {
     treeView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     treeView_->setAnimated(true);
     treeView_->setMinimumWidth(200);
+    treeView_->setContextMenuPolicy(Qt::CustomContextMenu);
+    treeView_->setAcceptDrops(true);
+    treeView_->viewport()->installEventFilter(this);
 
     splitter_->addWidget(treeView_);
 }
@@ -167,9 +196,15 @@ void PortfolioExplorerMdiWindow::setupTradePanel() {
 }
 
 void PortfolioExplorerMdiWindow::setupConnections() {
-    // Tree selection
+    // Tree selection and context menu
     connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &PortfolioExplorerMdiWindow::onTreeSelectionChanged);
+    connect(treeView_, &QTreeView::customContextMenuRequested,
+            this, &PortfolioExplorerMdiWindow::onShowContextMenu);
+
+    // Trade double-click opens detail
+    connect(tradeTableView_, &QTableView::doubleClicked,
+            this, &PortfolioExplorerMdiWindow::onTradeDoubleClicked);
 
     // Trade model signals
     connect(tradeModel_, &PortfolioExplorerTradeModel::dataLoaded,
@@ -465,6 +500,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
         tradeModel_->set_filter(std::nullopt, std::nullopt);
         updateBreadcrumb(nullptr);
         tradeModel_->refresh();
+        updateActionStates();
         return;
     }
 
@@ -475,6 +511,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
     tradeModel_->set_filter(filter.book_id, filter.portfolio_id);
     updateBreadcrumb(node);
     tradeModel_->refresh();
+    updateActionStates();
 }
 
 void PortfolioExplorerMdiWindow::updateBreadcrumb(
@@ -569,6 +606,218 @@ void PortfolioExplorerMdiWindow::onNotificationReceived(
         eventType == QLatin1String(portfolio_event) ||
         eventType == QLatin1String(trade_event)) {
         markAsStale();
+    }
+}
+
+void PortfolioExplorerMdiWindow::updateActionStates() {
+    const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+    const bool editable = node &&
+        (node->kind == PortfolioTreeNode::Kind::Portfolio ||
+         node->kind == PortfolioTreeNode::Kind::Book);
+
+    editAction_->setEnabled(editable);
+    historyAction_->setEnabled(editable);
+    deleteAction_->setEnabled(editable);
+}
+
+void PortfolioExplorerMdiWindow::onAddRequested() {
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Add New"));
+    auto* layout = new QVBoxLayout(&dlg);
+    layout->addWidget(new QLabel(tr("What would you like to add?"), &dlg));
+    auto* row = new QHBoxLayout;
+    auto* btnPortfolio = new QPushButton(
+        IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor),
+        tr("Portfolio"), &dlg);
+    auto* btnBook = new QPushButton(
+        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor),
+        tr("Book"), &dlg);
+    auto* btnCancel = new QPushButton(tr("Cancel"), &dlg);
+    row->addWidget(btnPortfolio);
+    row->addWidget(btnBook);
+    row->addStretch();
+    row->addWidget(btnCancel);
+    layout->addLayout(row);
+
+    connect(btnPortfolio, &QPushButton::clicked, &dlg, [&dlg]{ dlg.done(1); });
+    connect(btnBook,      &QPushButton::clicked, &dlg, [&dlg]{ dlg.done(2); });
+    connect(btnCancel,    &QPushButton::clicked, &dlg, &QDialog::reject);
+
+    const int r = dlg.exec();
+    if (r != 1 && r != 2) return;
+
+    // Derive context portfolio from current tree selection
+    const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+    boost::uuids::uuid context_portfolio_id;
+    if (node) {
+        if (node->kind == PortfolioTreeNode::Kind::Portfolio)
+            context_portfolio_id = node->portfolio.id;
+        else if (node->kind == PortfolioTreeNode::Kind::Book)
+            context_portfolio_id = node->book.parent_portfolio_id;
+    }
+
+    if (r == 1 && portfolioController_) {
+        if (!context_portfolio_id.is_nil())
+            portfolioController_->openAddWithParent(context_portfolio_id);
+        else
+            portfolioController_->openAdd();
+    } else if (r == 2 && bookController_) {
+        if (!context_portfolio_id.is_nil())
+            bookController_->openAddWithParent(context_portfolio_id);
+        else
+            bookController_->openAdd();
+    }
+}
+
+void PortfolioExplorerMdiWindow::onEditSelected() {
+    const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+    if (!node) return;
+    if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_)
+        portfolioController_->openEdit(node->portfolio);
+    else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_)
+        bookController_->openEdit(node->book);
+}
+
+void PortfolioExplorerMdiWindow::onDeleteSelected() {
+    const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+    if (!node) return;
+    if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_)
+        portfolioController_->openEdit(node->portfolio);
+    else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_)
+        bookController_->openEdit(node->book);
+}
+
+void PortfolioExplorerMdiWindow::onHistorySelected() {
+    const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+    if (!node) return;
+    if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_)
+        portfolioController_->openHistory(node->portfolio);
+    else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_)
+        bookController_->openHistory(node->book);
+}
+
+void PortfolioExplorerMdiWindow::onShowContextMenu(const QPoint& pos) {
+    const auto idx   = treeView_->indexAt(pos);
+    const auto* node = treeModel_->node_from_index(idx);
+
+    const bool is_portfolio = node &&
+        node->kind == PortfolioTreeNode::Kind::Portfolio;
+    const bool is_book = node &&
+        node->kind == PortfolioTreeNode::Kind::Book;
+
+    QMenu menu(this);
+    menu.addAction(addAction_);
+
+    if (is_portfolio || is_book) {
+        menu.addSeparator();
+        menu.addAction(editAction_);
+        menu.addAction(historyAction_);
+        menu.addSeparator();
+        menu.addAction(deleteAction_);
+    }
+
+    menu.exec(treeView_->viewport()->mapToGlobal(pos));
+}
+
+void PortfolioExplorerMdiWindow::onTradeDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid() || !tradeController_)
+        return;
+
+    const auto sourceIndex = tradeProxyModel_->mapToSource(index);
+    const auto* trade = tradeModel_->get_trade(sourceIndex.row());
+    if (!trade)
+        return;
+
+    tradeController_->openEdit(*trade);
+}
+
+bool PortfolioExplorerMdiWindow::eventFilter(QObject* obj, QEvent* event) {
+    if (obj != treeView_->viewport())
+        return QObject::eventFilter(obj, event);
+
+    switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+        auto* me = static_cast<QMouseEvent*>(event);
+        if (me->button() == Qt::LeftButton)
+            dragStartPos_ = me->pos();
+        break;
+    }
+    case QEvent::MouseMove: {
+        auto* me = static_cast<QMouseEvent*>(event);
+        if (!(me->buttons() & Qt::LeftButton))
+            break;
+        if ((me->pos() - dragStartPos_).manhattanLength() <
+                QApplication::startDragDistance())
+            break;
+
+        const auto source_idx = treeView_->indexAt(dragStartPos_);
+        const auto* source = treeModel_->node_from_index(source_idx);
+        if (!source || source->kind == PortfolioTreeNode::Kind::Party)
+            break;
+
+        dragSourceIndex_ = source_idx;
+        auto* drag = new QDrag(treeView_);
+        auto* mime = new QMimeData;
+        mime->setText(QStringLiteral("ores_tree_drag"));
+        drag->setMimeData(mime);
+        drag->exec(Qt::MoveAction);
+        return true;
+    }
+    case QEvent::DragEnter: {
+        auto* de = static_cast<QDragEnterEvent*>(event);
+        if (de->mimeData()->hasText() &&
+                de->mimeData()->text() == QLatin1String("ores_tree_drag"))
+            de->acceptProposedAction();
+        else
+            de->ignore();
+        return true;
+    }
+    case QEvent::DragMove: {
+        auto* dm = static_cast<QDragMoveEvent*>(event);
+        if (!dm->mimeData()->hasText() ||
+                dm->mimeData()->text() != QLatin1String("ores_tree_drag")) {
+            dm->ignore();
+            return true;
+        }
+        const auto target_idx = treeView_->indexAt(dm->position().toPoint());
+        const auto* target = treeModel_->node_from_index(target_idx);
+        if (target && target->kind == PortfolioTreeNode::Kind::Portfolio &&
+                target_idx != dragSourceIndex_)
+            dm->acceptProposedAction();
+        else
+            dm->ignore();
+        return true;
+    }
+    case QEvent::Drop: {
+        auto* de = static_cast<QDropEvent*>(event);
+        de->acceptProposedAction();
+        const auto target_idx = treeView_->indexAt(de->position().toPoint());
+        const auto* target = treeModel_->node_from_index(target_idx);
+        const auto* source = treeModel_->node_from_index(dragSourceIndex_);
+        if (source && target &&
+                target->kind == PortfolioTreeNode::Kind::Portfolio &&
+                target_idx != dragSourceIndex_)
+            onReparentRequested(source, target->portfolio.id);
+        dragSourceIndex_ = {};
+        return true;
+    }
+    default:
+        break;
+    }
+    return QObject::eventFilter(obj, event);
+}
+
+void PortfolioExplorerMdiWindow::onReparentRequested(
+    const PortfolioTreeNode* node, const boost::uuids::uuid& newParentId) {
+
+    if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_) {
+        auto portfolio = node->portfolio;
+        portfolio.parent_portfolio_id = newParentId;
+        portfolioController_->openEdit(portfolio);
+    } else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_) {
+        auto book = node->book;
+        book.parent_portfolio_id = newParentId;
+        bookController_->openEdit(book);
     }
 }
 

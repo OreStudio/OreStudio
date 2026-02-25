@@ -33,6 +33,8 @@ class PortfolioDetailDialog;
 
 namespace ores::qt {
 
+class ChangeReasonCache;
+
 /**
  * @brief Detail dialog for viewing and editing portfolio records.
  *
@@ -60,6 +62,7 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
+    void setChangeReasonCache(ChangeReasonCache* cache);
     void setPortfolio(const refdata::domain::portfolio& portfolio);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
@@ -94,6 +97,7 @@ private:
     Ui::PortfolioDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     refdata::domain::portfolio portfolio_;
     std::vector<portfolio_entry> portfolioEntries_;

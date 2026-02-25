@@ -31,12 +31,16 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+namespace reason = dq::domain::change_reason_constants;
 
 BookDetailDialog::BookDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
@@ -125,6 +129,7 @@ void BookDetailDialog::populateCurrencyCombo() {
         if (!self) return;
 
         self->ui_->ledgerCcyCombo->clear();
+        self->ui_->ledgerCcyCombo->addItem(QString());  // "(select)" sentinel
         for (const auto& code : codes) {
             self->ui_->ledgerCcyCombo->addItem(
                 QString::fromStdString(code));
@@ -184,6 +189,10 @@ void BookDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+void BookDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
+    changeReasonCache_ = cache;
+}
+
 void BookDetailDialog::setBook(
     const refdata::domain::book& book) {
     book_ = book;
@@ -196,7 +205,6 @@ void BookDetailDialog::setCreateMode(bool createMode) {
         boost::uuids::random_generator gen;
         book_.id = gen();
     }
-    ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
     setProvenanceEnabled(!createMode);
@@ -248,9 +256,7 @@ void BookDetailDialog::updateUiFromBook() {
 }
 
 void BookDetailDialog::updateBookFromUi() {
-    if (createMode_) {
-        book_.name = ui_->nameEdit->text().trimmed().toStdString();
-    }
+    book_.name = ui_->nameEdit->text().trimmed().toStdString();
     book_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     book_.ledger_ccy = ui_->ledgerCcyCombo->currentText().trimmed().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
@@ -289,8 +295,9 @@ void BookDetailDialog::updateSaveButtonState() {
 
 bool BookDetailDialog::validateInput() {
     const QString name_val = ui_->nameEdit->text().trimmed();
+    const QString ccy_val = ui_->ledgerCcyCombo->currentText().trimmed();
 
-    return !name_val.isEmpty();
+    return !name_val.isEmpty() && !ccy_val.isEmpty();
 }
 
 void BookDetailDialog::onSaveClicked() {
@@ -302,8 +309,27 @@ void BookDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+            "Please fill in all required fields (name and currency are required).");
         return;
+    }
+
+    if (!createMode_) {
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            emit errorMessage("Change reasons not loaded. Please try again.");
+            return;
+        }
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            emit errorMessage("No change reasons available. Please contact administrator.");
+            return;
+        }
+        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
+                               hasChanges_, this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        book_.change_reason_code = dlg.selectedReasonCode();
+        book_.change_commentary  = dlg.commentary();
     }
 
     updateBookFromUi();
@@ -392,6 +418,20 @@ void BookDetailDialog::onDeleteClicked() {
 
     if (reply != QMessageBox::Yes) {
         return;
+    }
+
+    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (!reasons.empty()) {
+            ChangeReasonDialog dlg(reasons,
+                ChangeReasonDialog::OperationType::Delete, true, this);
+            if (dlg.exec() != QDialog::Accepted)
+                return;
+            BOOST_LOG_SEV(lg(), info) << "Delete reason: "
+                << dlg.selectedReasonCode() << " — "
+                << dlg.commentary();
+        }
     }
 
     BOOST_LOG_SEV(lg(), info) << "Deleting book: " << book_.name;

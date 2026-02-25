@@ -33,6 +33,8 @@ class BookDetailDialog;
 
 namespace ores::qt {
 
+class ChangeReasonCache;
+
 /**
  * @brief Detail dialog for viewing and editing book records.
  *
@@ -60,6 +62,7 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
+    void setChangeReasonCache(ChangeReasonCache* cache);
     void setBook(const refdata::domain::book& book);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
@@ -94,6 +97,7 @@ private:
     Ui::BookDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     refdata::domain::book book_;
     std::vector<portfolio_entry> portfolioEntries_;

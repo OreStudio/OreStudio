@@ -22,6 +22,8 @@
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <boost/uuid/uuid.hpp>
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PortfolioMdiWindow.hpp"
 #include "ores.qt/PortfolioDetailDialog.hpp"
@@ -37,11 +39,13 @@ PortfolioController::PortfolioController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -121,6 +125,11 @@ void PortfolioController::reloadListWindow() {
     }
 }
 
+void PortfolioController::openAdd()                                             { showAddWindow(); }
+void PortfolioController::openAddWithParent(boost::uuids::uuid parent_id)       { showAddWindow(parent_id); }
+void PortfolioController::openEdit(const refdata::domain::portfolio& p)         { showDetailWindow(p); }
+void PortfolioController::openHistory(const refdata::domain::portfolio& p)      { showHistoryWindow(p); }
+
 void PortfolioController::onShowDetails(
     const refdata::domain::portfolio& portfolio) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << portfolio.name;
@@ -138,13 +147,21 @@ void PortfolioController::onShowHistory(
     showHistoryWindow(portfolio);
 }
 
-void PortfolioController::showAddWindow() {
+void PortfolioController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new portfolio";
 
     auto* detailDialog = new PortfolioDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
+
+    if (!parentPortfolioId.is_nil()) {
+        refdata::domain::portfolio prefilled;
+        prefilled.parent_portfolio_id = parentPortfolioId;
+        detailDialog->setPortfolio(prefilled);
+    }
+
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &PortfolioDetailDialog::statusMessage,
@@ -188,6 +205,7 @@ void PortfolioController::showDetailWindow(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(false);
     detailDialog->setPortfolio(portfolio);
 
@@ -311,6 +329,7 @@ void PortfolioController::onOpenVersion(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setPortfolio(portfolio);
     detailDialog->setReadOnly(true);
 
@@ -358,6 +377,7 @@ void PortfolioController::onRevertVersion(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setPortfolio(portfolio);
     detailDialog->setCreateMode(false);
 

@@ -653,7 +653,12 @@ MainWindow::MainWindow(QWidget* parent) :
         }
 
         auto* window = new PortfolioExplorerMdiWindow(
-            clientManager_, QString::fromStdString(username_), this);
+            clientManager_,
+            bookController_.get(),
+            portfolioController_.get(),
+            tradeController_.get(),
+            QString::fromStdString(username_),
+            this);
 
         connect(window, &PortfolioExplorerMdiWindow::statusChanged,
                 this, [this](const QString& msg) {
@@ -1601,7 +1606,8 @@ void MainWindow::createControllers() {
 
     // Create portfolio controller
     portfolioController_ = std::make_unique<PortfolioController>(
-        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(portfolioController_.get(), &PortfolioController::statusMessage,
             this, [this](const QString& message) {
@@ -1618,7 +1624,8 @@ void MainWindow::createControllers() {
 
     // Create book controller
     bookController_ = std::make_unique<BookController>(
-        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(bookController_.get(), &BookController::statusMessage,
             this, [this](const QString& message) {

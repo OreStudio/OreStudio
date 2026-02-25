@@ -64,6 +64,8 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+    void openEdit(const trading::domain::trade& trade);
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);

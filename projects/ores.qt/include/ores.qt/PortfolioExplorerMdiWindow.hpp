@@ -45,6 +45,10 @@
 
 namespace ores::qt {
 
+class BookController;
+class PortfolioController;
+class TradeController;
+
 /**
  * @brief MDI window showing the portfolio/book hierarchy with a filtered trade table.
  *
@@ -73,6 +77,9 @@ private:
 public:
     explicit PortfolioExplorerMdiWindow(
         ClientManager* clientManager,
+        BookController* bookController,
+        PortfolioController* portfolioController,
+        TradeController* tradeController,
         const QString& username,
         QWidget* parent = nullptr);
     ~PortfolioExplorerMdiWindow() override = default;
@@ -103,8 +110,16 @@ private slots:
     void onPortfoliosLoaded();
     void onBooksLoaded();
     void onCounterpartiesLoaded();
+    void onAddRequested();
+    void onEditSelected();
+    void onDeleteSelected();
+    void onHistorySelected();
+    void onShowContextMenu(const QPoint& pos);
+    void onTradeDoubleClicked(const QModelIndex& index);
+    void updateActionStates();
 
 private:
+    bool eventFilter(QObject* obj, QEvent* event) override;
     void setupUi();
     void setupToolbar();
     void setupTree();
@@ -115,6 +130,8 @@ private:
     void updateBreadcrumb(const PortfolioTreeNode* node);
     void collectBookUuids(const QModelIndex& parent,
                           QList<boost::uuids::uuid>& uuids);
+    void onReparentRequested(const PortfolioTreeNode* node,
+                             const boost::uuids::uuid& newParentId);
 
     // Fetch result types
     struct PortfolioFetchResult {
@@ -149,9 +166,21 @@ private:
     ClientManager* clientManager_;
     QString username_;
 
+    // Controllers (not owned — lifetime guaranteed by MainWindow)
+    BookController* bookController_{nullptr};
+    PortfolioController* portfolioController_{nullptr};
+    TradeController* tradeController_{nullptr};
+
     // Layout
     QToolBar* toolbar_{nullptr};
     QAction* reloadAction_{nullptr};
+
+    // Selection-sensitive toolbar actions
+    QAction* addAction_{nullptr};
+    QAction* editAction_{nullptr};
+    QAction* deleteAction_{nullptr};
+    QAction* historyAction_{nullptr};
+
     QSplitter* splitter_{nullptr};
 
     // Left: tree
@@ -176,6 +205,10 @@ private:
     std::vector<refdata::domain::book> books_;
     bool portfolios_loaded_{false};
     bool books_loaded_{false};
+
+    // Drag state
+    QPoint dragStartPos_;
+    QModelIndex dragSourceIndex_;
 };
 
 }

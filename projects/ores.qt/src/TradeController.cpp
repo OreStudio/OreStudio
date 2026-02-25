@@ -126,6 +126,8 @@ void TradeController::reloadListWindow() {
     }
 }
 
+void TradeController::openEdit(const trading::domain::trade& t) { showDetailWindow(t); }
+
 void TradeController::onShowDetails(
     const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.external_id;

@@ -96,7 +96,16 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
       session_repo_(ctx), tenant_repo_(ctx), geo_service_(std::move(geo_service)),
-      bundle_provider_(std::move(bundle_provider)) {}
+      bundle_provider_(std::move(bundle_provider)) {
+    // Close sessions left open by a previous server run. Without this, sessions
+    // appear as "Active" indefinitely after a crash or restart, and their chart
+    // shows "no data yet" because in-memory samples were lost.
+    try {
+        session_repo_.close_orphaned_sessions(std::chrono::system_clock::now());
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to close orphaned sessions: " << e.what();
+    }
+}
 
 database::context accounts_message_handler::make_request_context(
     const comms::service::session_info& session) const {
@@ -109,10 +118,15 @@ accounts_message_handler::handle_message(message_type type,
 
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
 
-    // Drain any sample batches queued by record_sample() since the last request
+    // Drain any sample batches queued by record_sample() since the last request.
+    // Use a tenant-scoped context so the RLS WITH CHECK policy is satisfied;
+    // the class-level session_repo_ uses the system context which is rejected
+    // for non-system tenants.
     if (auto pending = sessions_->take_pending_samples(remote_address)) {
         try {
-            session_repo_.insert_samples(pending->session_id,
+            auto tenant_ctx = ctx_.with_tenant(pending->tenant_id);
+            repository::session_repository flush_repo(tenant_ctx);
+            flush_repo.insert_samples(pending->session_id,
                 pending->tenant_id.to_uuid(), pending->samples);
             BOOST_LOG_SEV(lg(), debug) << "Periodic flush: inserted " << pending->samples.size()
                                        << " samples for session "

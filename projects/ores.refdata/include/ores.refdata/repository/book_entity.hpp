@@ -20,6 +20,7 @@
 #ifndef ORES_REFDATA_REPOSITORY_BOOK_ENTITY_HPP
 #define ORES_REFDATA_REPOSITORY_BOOK_ENTITY_HPP
 
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -40,6 +41,7 @@ struct book_entity {
     std::string name;
     std::string description;
     std::string parent_portfolio_id;
+    std::optional<std::string> owner_unit_id;
     std::string ledger_ccy;
     std::string gl_account_ref;
     std::string cost_center;

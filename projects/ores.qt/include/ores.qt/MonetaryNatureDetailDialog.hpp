@@ -32,9 +32,9 @@ class MonetaryNatureDetailDialog;
 namespace ores::qt {
 
 /**
- * @brief Detail dialog for viewing and editing currency asset class records.
+ * @brief Detail dialog for viewing and editing monetary nature records.
  *
- * This dialog allows viewing, creating, and editing currency asset classes.
+ * This dialog allows viewing, creating, and editing monetary naturees.
  * It supports both create mode (for new records) and edit mode (for
  * existing records).
  */

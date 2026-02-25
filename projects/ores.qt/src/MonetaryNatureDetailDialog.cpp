@@ -166,7 +166,7 @@ bool MonetaryNatureDetailDialog::validateInput() {
 void MonetaryNatureDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save currency asset class while disconnected from server.");
+            "Cannot save monetary nature while disconnected from server.");
         return;
     }
 
@@ -178,7 +178,7 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
 
     updateClassFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving currency asset class: " << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving monetary nature: " << type_.code;
 
     QPointer<MonetaryNatureDetailDialog> self = this;
 
@@ -249,20 +249,20 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
 void MonetaryNatureDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete currency asset class while disconnected from server.");
+            "Cannot delete monetary nature while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
     auto reply = MessageBoxHelper::question(this, "Delete Monetary Nature",
-        QString("Are you sure you want to delete currency asset class '%1'?").arg(code),
+        QString("Are you sure you want to delete monetary nature '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting currency asset class: " << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting monetary nature: " << type_.code;
 
     QPointer<MonetaryNatureDetailDialog> self = this;
 

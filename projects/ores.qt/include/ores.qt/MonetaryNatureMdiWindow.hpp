@@ -33,9 +33,9 @@
 namespace ores::qt {
 
 /**
- * @brief MDI window for displaying and managing currency asset classes.
+ * @brief MDI window for displaying and managing monetary naturees.
  *
- * Provides a table view of currency asset classes with toolbar actions
+ * Provides a table view of monetary naturees with toolbar actions
  * for reload, add, edit, delete, and viewing history.
  */
 class MonetaryNatureMdiWindow final : public EntityListMdiWindow {
@@ -83,7 +83,7 @@ private slots:
 
 protected:
     QString normalRefreshTooltip() const override {
-        return tr("Refresh currency asset classes");
+        return tr("Refresh monetary naturees");
     }
 
 private:

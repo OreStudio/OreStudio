@@ -34,9 +34,9 @@ class MonetaryNatureHistoryDialog;
 namespace ores::qt {
 
 /**
- * @brief Dialog for viewing the version history of a currency asset class.
+ * @brief Dialog for viewing the version history of a monetary nature.
  *
- * Shows all historical versions of a currency asset class with ability
+ * Shows all historical versions of a monetary nature with ability
  * to view details or revert to a previous version.
  */
 class MonetaryNatureHistoryDialog final : public QWidget {

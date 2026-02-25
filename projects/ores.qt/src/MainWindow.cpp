@@ -661,7 +661,7 @@ MainWindow::MainWindow(QWidget* parent) :
             roundingTypeController_->showListWindow();
     });
 
-    // Connect Currency Asset Classes action to controller
+    // Connect Currency Monetary Natures action to controller
     connect(ui_->ActionMonetaryNatures, &QAction::triggered, this, [this]() {
         if (monetaryNatureController_)
             monetaryNatureController_->showListWindow();
@@ -1656,7 +1656,7 @@ void MainWindow::createControllers() {
             roundingTypeController_->showListWindow();
     });
 
-    // Create currency asset class controller
+    // Create monetary nature controller
     monetaryNatureController_ = std::make_unique<MonetaryNatureController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 

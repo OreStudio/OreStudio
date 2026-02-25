@@ -32,9 +32,9 @@
 namespace ores::qt {
 
 /**
- * @brief Model for displaying currency asset classes fetched from the server.
+ * @brief Model for displaying monetary naturees fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches currency asset class
+ * This model extends QAbstractTableModel and fetches monetary nature
  * data asynchronously using the ores.comms client.
  */
 class ClientMonetaryNatureModel final : public QAbstractTableModel {
@@ -77,15 +77,15 @@ public:
         int role = Qt::DisplayRole) const override;
 
     /**
-     * @brief Refresh currency asset class data from server asynchronously.
+     * @brief Refresh monetary nature data from server asynchronously.
      */
     void refresh();
 
     /**
-     * @brief Get currency asset class at the specified row.
+     * @brief Get monetary nature at the specified row.
      *
      * @param row The row index.
-     * @return The currency asset class, or nullptr if row is invalid.
+     * @return The monetary nature, or nullptr if row is invalid.
      */
     const refdata::domain::monetary_nature* getClass(int row) const;
 

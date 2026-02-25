@@ -34,9 +34,9 @@ class MonetaryNatureMdiWindow;
 class DetachableMdiSubWindow;
 
 /**
- * @brief Controller for managing currency asset class windows and operations.
+ * @brief Controller for managing monetary nature windows and operations.
  *
- * Manages the lifecycle of currency asset class list, detail, and history windows.
+ * Manages the lifecycle of monetary nature list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
 class MonetaryNatureController final : public EntityController {

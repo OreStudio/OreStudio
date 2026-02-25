@@ -114,7 +114,7 @@ void MonetaryNatureHistoryDialog::loadHistory() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for currency asset class: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for monetary nature: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     QPointer<MonetaryNatureHistoryDialog> self = this;

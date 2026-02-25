@@ -126,7 +126,7 @@ void MonetaryNatureController::onShowDetails(
 }
 
 void MonetaryNatureController::onAddNewRequested() {
-    BOOST_LOG_SEV(lg(), info) << "Add new currency asset class requested";
+    BOOST_LOG_SEV(lg(), info) << "Add new monetary nature requested";
     showAddWindow();
 }
 
@@ -137,7 +137,7 @@ void MonetaryNatureController::onShowHistory(
 }
 
 void MonetaryNatureController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency asset class";
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new monetary nature";
 
     auto* detailDialog = new MonetaryNatureDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -228,7 +228,7 @@ void MonetaryNatureController::showDetailWindow(
 }
 
 void MonetaryNatureController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for currency asset class: "
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for monetary nature: "
                               << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
@@ -288,7 +288,7 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
 void MonetaryNatureController::onOpenVersion(
     const refdata::domain::monetary_nature& type, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for currency asset class: " << type.code;
+                              << " for monetary nature: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
     const QString windowKey = build_window_key("version", QString("%1_v%2")
@@ -342,7 +342,7 @@ void MonetaryNatureController::onOpenVersion(
 
 void MonetaryNatureController::onRevertVersion(
     const refdata::domain::monetary_nature& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting currency asset class to version: "
+    BOOST_LOG_SEV(lg(), info) << "Reverting monetary nature to version: "
                               << type.version;
 
     // Open detail dialog with the old version data for editing

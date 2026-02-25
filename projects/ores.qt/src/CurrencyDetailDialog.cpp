@@ -289,13 +289,13 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
         // Populate lookup combos if already connected
         if (clientManager_->isConnected()) {
             populateRoundingTypeCombo();
-            populateAssetClassCombo();
+            populateMonetaryNatureCombo();
             populateMarketTierCombo();
         } else {
             connect(clientManager_, &ClientManager::loggedIn,
                     this, &CurrencyDetailDialog::populateRoundingTypeCombo);
             connect(clientManager_, &ClientManager::loggedIn,
-                    this, &CurrencyDetailDialog::populateAssetClassCombo);
+                    this, &CurrencyDetailDialog::populateMonetaryNatureCombo);
             connect(clientManager_, &ClientManager::loggedIn,
                     this, &CurrencyDetailDialog::populateMarketTierCombo);
         }
@@ -1245,12 +1245,12 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
     watcher->setFuture(future);
 }
 
-void CurrencyDetailDialog::populateAssetClassCombo() {
+void CurrencyDetailDialog::populateMonetaryNatureCombo() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Populating asset class combo";
+    BOOST_LOG_SEV(lg(), debug) << "Populating monetary nature combo";
 
     QPointer<CurrencyDetailDialog> self = this;
 
@@ -1300,8 +1300,8 @@ void CurrencyDetailDialog::populateAssetClassCombo() {
         if (!self) return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency asset classes for combo box.";
-            emit self->errorMessage(tr("Could not load currency asset classes."));
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary natures for combo box.";
+            emit self->errorMessage(tr("Could not load monetary natures."));
             return;
         }
 

@@ -93,7 +93,7 @@ void MonetaryNatureMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
-    addAction_->setToolTip(tr("Add new currency asset class"));
+    addAction_->setToolTip(tr("Add new monetary nature"));
     connect(addAction_, &QAction::triggered, this,
             &MonetaryNatureMdiWindow::addNew);
 
@@ -101,7 +101,7 @@ void MonetaryNatureMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
-    editAction_->setToolTip(tr("Edit selected currency asset class"));
+    editAction_->setToolTip(tr("Edit selected monetary nature"));
     editAction_->setEnabled(false);
     connect(editAction_, &QAction::triggered, this,
             &MonetaryNatureMdiWindow::editSelected);
@@ -110,7 +110,7 @@ void MonetaryNatureMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
-    deleteAction_->setToolTip(tr("Delete selected currency asset class"));
+    deleteAction_->setToolTip(tr("Delete selected monetary nature"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this,
             &MonetaryNatureMdiWindow::deleteSelected);
@@ -119,7 +119,7 @@ void MonetaryNatureMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             Icon::History, IconUtils::DefaultIconColor),
         tr("History"));
-    historyAction_->setToolTip(tr("View currency asset class history"));
+    historyAction_->setToolTip(tr("View monetary nature history"));
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &MonetaryNatureMdiWindow::viewHistorySelected);
@@ -178,16 +178,16 @@ void MonetaryNatureMdiWindow::setupConnections() {
 }
 
 void MonetaryNatureMdiWindow::reload() {
-    BOOST_LOG_SEV(lg(), debug) << "Reloading currency asset classes";
+    BOOST_LOG_SEV(lg(), debug) << "Reloading monetary naturees";
     clearStaleIndicator();
-    emit statusChanged(tr("Loading currency asset classes..."));
+    emit statusChanged(tr("Loading monetary naturees..."));
     model_->refresh();
 }
 
 void MonetaryNatureMdiWindow::onDataLoaded() {
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
-    emit statusChanged(tr("Loaded %1 of %2 currency asset classes").arg(loaded).arg(total));
+    emit statusChanged(tr("Loaded %1 of %2 monetary naturees").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
     paginationWidget_->set_load_all_enabled(
@@ -223,7 +223,7 @@ void MonetaryNatureMdiWindow::updateActionStates() {
 }
 
 void MonetaryNatureMdiWindow::addNew() {
-    BOOST_LOG_SEV(lg(), debug) << "Add new currency asset class requested";
+    BOOST_LOG_SEV(lg(), debug) << "Add new monetary nature requested";
     emit addNewRequested();
 }
 
@@ -264,7 +264,7 @@ void MonetaryNatureMdiWindow::deleteSelected() {
 
     if (!clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete currency asset class while disconnected.");
+            "Cannot delete monetary nature while disconnected.");
         return;
     }
 
@@ -277,19 +277,19 @@ void MonetaryNatureMdiWindow::deleteSelected() {
     }
 
     if (codes.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No valid currency asset classes to delete";
+        BOOST_LOG_SEV(lg(), warn) << "No valid monetary naturees to delete";
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " currency asset classes";
+                               << " monetary naturees";
 
     QString confirmMessage;
     if (codes.size() == 1) {
-        confirmMessage = QString("Are you sure you want to delete currency asset class '%1'?")
+        confirmMessage = QString("Are you sure you want to delete monetary nature '%1'?")
             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 currency asset classes?")
+        confirmMessage = QString("Are you sure you want to delete %1 monetary naturees?")
             .arg(codes.size());
     }
 
@@ -309,7 +309,7 @@ void MonetaryNatureMdiWindow::deleteSelected() {
         if (!self) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " currency asset classes";
+                                   << codes.size() << " monetary naturees";
 
         refdata::messaging::delete_monetary_nature_request request;
         request.codes = codes;
@@ -387,13 +387,13 @@ void MonetaryNatureMdiWindow::deleteSelected() {
 
         if (failure_count == 0) {
             QString msg = success_count == 1
-                ? "Successfully deleted 1 currency asset class"
-                : QString("Successfully deleted %1 currency asset classes").arg(success_count);
+                ? "Successfully deleted 1 monetary nature"
+                : QString("Successfully deleted %1 monetary naturees").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
                 .arg(failure_count)
-                .arg(failure_count == 1 ? "currency asset class" : "currency asset classes")
+                .arg(failure_count == 1 ? "monetary nature" : "monetary naturees")
                 .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);

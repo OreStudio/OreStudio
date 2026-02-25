@@ -138,7 +138,7 @@ void ClientMonetaryNatureModel::refresh() {
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh currency asset class model: disconnected.";
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh monetary nature model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
@@ -188,7 +188,7 @@ void ClientMonetaryNatureModel::fetch_types(
     QFuture<FetchResult> future =
         QtConcurrent::run([self, offset, limit]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making currency asset classes request with offset="
+                BOOST_LOG_SEV(lg(), debug) << "Making monetary naturees request with offset="
                                            << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false, .types = {},
@@ -203,24 +203,24 @@ void ClientMonetaryNatureModel::fetch_types(
                     process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency asset classes: "
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary naturees: "
                                                << comms::net::to_string(result.error());
                     return {.success = false, .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch currency asset classes: " + comms::net::to_string(result.error())),
+                                "Failed to fetch monetary naturees: " + comms::net::to_string(result.error())),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
-                                           << " currency asset classes";
+                                           << " monetary naturees";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
                         .types = std::move(result->types),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
-            }, "currency asset classes");
+            }, "monetary naturees");
         });
 
     watcher_->setFuture(future);
@@ -232,7 +232,7 @@ void ClientMonetaryNatureModel::onClasssLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency asset classes: "
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary naturees: "
                                    << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
@@ -251,11 +251,11 @@ void ClientMonetaryNatureModel::onClasssLoaded() {
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " currency asset classes newer than last reload";
+                                       << " monetary naturees newer than last reload";
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " currency asset classes."
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " monetary naturees."
                               << " Total available: " << total_available_count_;
 
     emit dataLoaded();

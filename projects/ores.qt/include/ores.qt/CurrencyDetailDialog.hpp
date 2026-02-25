@@ -161,7 +161,7 @@ private:
     void setupGenerateAction();
     void updateGenerateActionVisibility();
     void populateRoundingTypeCombo();
-    void populateAssetClassCombo();
+    void populateMonetaryNatureCombo();
     void populateMarketTierCombo();
 
 private:

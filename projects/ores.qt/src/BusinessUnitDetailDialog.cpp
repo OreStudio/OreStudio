@@ -274,6 +274,8 @@ void BusinessUnitDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Business Unit saved successfully";
             QString code = QString::fromStdString(self->business_unit_.unit_code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->business_unitSaved(code);
             self->notifySaveSuccess(tr("Business Unit '%1' saved").arg(code));
         } else {

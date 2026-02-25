@@ -1206,6 +1206,8 @@ void EntityDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " saved successfully";
             QString code = QString::fromStdString(self->entity_.short_code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->entitySaved(code);
             self->notifySaveSuccess(
                 tr("%1 '%2' saved").arg(qTypeName).arg(code));

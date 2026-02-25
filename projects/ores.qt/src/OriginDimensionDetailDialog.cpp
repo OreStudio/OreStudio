@@ -228,6 +228,8 @@ void OriginDimensionDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Origin dimension saved successfully";
             QString code = QString::fromStdString(self->dimension_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->dimensionSaved(code);
             self->notifySaveSuccess(tr("Origin dimension '%1' saved").arg(code));
         } else {

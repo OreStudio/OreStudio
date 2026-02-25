@@ -362,6 +362,8 @@ void BookDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Book saved successfully";
             QString code = QString::fromStdString(self->book_.name);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->bookSaved(code);
             self->notifySaveSuccess(tr("Book '%1' saved").arg(code));
         } else {

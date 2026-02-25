@@ -303,6 +303,8 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Business centre saved successfully";
             QString code = QString::fromStdString(self->business_centre_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->businessCentreSaved(code);
             self->notifySaveSuccess(tr("Business centre '%1' saved").arg(code));
         } else {

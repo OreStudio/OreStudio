@@ -367,6 +367,8 @@ void PortfolioDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Portfolio saved successfully";
             QString code = QString::fromStdString(self->portfolio_.name);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->portfolioSaved(code);
             self->notifySaveSuccess(tr("Portfolio '%1' saved").arg(code));
         } else {

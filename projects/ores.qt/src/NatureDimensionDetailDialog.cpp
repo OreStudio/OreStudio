@@ -188,6 +188,8 @@ void NatureDimensionDetailDialog::onSaveClicked() {
 
         if (result.success) {
             QString code = QString::fromStdString(self->dimension_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->dimensionSaved(code);
             self->notifySaveSuccess(tr("Nature dimension '%1' saved").arg(code));
         } else {

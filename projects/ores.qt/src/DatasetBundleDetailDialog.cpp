@@ -239,6 +239,8 @@ void DatasetBundleDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Dataset Bundle saved successfully";
             QString code = QString::fromStdString(self->bundle_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->bundleSaved(code);
             self->notifySaveSuccess(tr("Dataset Bundle '%1' saved").arg(code));
         } else {

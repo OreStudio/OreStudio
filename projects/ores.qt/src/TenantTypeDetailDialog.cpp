@@ -228,6 +228,8 @@ void TenantTypeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Tenant Type saved successfully";
             QString code = QString::fromStdString(self->tenant_type_.type);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->tenant_typeSaved(code);
             self->notifySaveSuccess(tr("Tenant Type '%1' saved").arg(code));
         } else {

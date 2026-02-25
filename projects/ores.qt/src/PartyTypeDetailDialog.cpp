@@ -235,6 +235,8 @@ void PartyTypeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Party Type saved successfully";
             QString code = QString::fromStdString(self->type_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->typeSaved(code);
             self->notifySaveSuccess(tr("Party Type '%1' saved").arg(code));
         } else {

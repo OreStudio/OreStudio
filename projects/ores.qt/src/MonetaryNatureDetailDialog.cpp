@@ -235,6 +235,8 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Monetary Nature saved successfully";
             QString code = QString::fromStdString(self->type_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->typeSaved(code);
             self->notifySaveSuccess(tr("Monetary Nature '%1' saved").arg(code));
         } else {

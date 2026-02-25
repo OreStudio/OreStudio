@@ -264,6 +264,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} saved successfully";
             QString code = QString::fromStdString(self->{{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->{{domain_entity.qt.item_var}}Saved(code);
             self->notifySaveSuccess(tr("{{domain_entity.entity_title}} '%1' saved").arg(code));
         } else {

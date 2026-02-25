@@ -235,6 +235,8 @@ void PartyIdSchemeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Party ID Scheme saved successfully";
             QString code = QString::fromStdString(self->scheme_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->schemeSaved(code);
             self->notifySaveSuccess(tr("Party ID Scheme '%1' saved").arg(code));
         } else {

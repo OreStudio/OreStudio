@@ -456,6 +456,8 @@ void TradeDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Trade saved successfully";
             QString code = QString::fromStdString(self->trade_.external_id);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->tradeSaved(code);
             self->notifySaveSuccess(tr("Trade '%1' saved").arg(code));
         } else {

@@ -279,6 +279,8 @@ void TenantDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Tenant saved successfully";
             QString code = QString::fromStdString(self->tenant_.code);
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
             emit self->tenantSaved(code);
             self->notifySaveSuccess(tr("Tenant '%1' saved").arg(code));
         } else {

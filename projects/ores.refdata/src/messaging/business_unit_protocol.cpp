@@ -49,6 +49,10 @@ void write_business_unit(std::vector<std::byte>& buffer,
     if (bu.parent_business_unit_id.has_value()) {
         writer::write_uuid(buffer, *bu.parent_business_unit_id);
     }
+    writer::write_bool(buffer, bu.unit_type_id.has_value());
+    if (bu.unit_type_id.has_value()) {
+        writer::write_uuid(buffer, *bu.unit_type_id);
+    }
     writer::write_string(buffer, bu.unit_code);
     writer::write_string(buffer, bu.business_centre_code);
     writer::write_string(buffer, bu.status);
@@ -86,6 +90,14 @@ read_business_unit(std::span<const std::byte>& data) {
         auto parent_business_unit_id_result = reader::read_uuid(data);
         if (!parent_business_unit_id_result) return std::unexpected(parent_business_unit_id_result.error());
         bu.parent_business_unit_id = *parent_business_unit_id_result;
+    }
+
+    auto unit_type_id_present_result = reader::read_bool(data);
+    if (!unit_type_id_present_result) return std::unexpected(unit_type_id_present_result.error());
+    if (*unit_type_id_present_result) {
+        auto unit_type_id_result = reader::read_uuid(data);
+        if (!unit_type_id_result) return std::unexpected(unit_type_id_result.error());
+        bu.unit_type_id = *unit_type_id_result;
     }
 
     auto unit_code_result = reader::read_string(data);

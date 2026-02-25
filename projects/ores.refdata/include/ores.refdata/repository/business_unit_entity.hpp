@@ -40,6 +40,7 @@ struct business_unit_entity {
     std::string party_id;
     std::string unit_name;
     std::optional<std::string> parent_business_unit_id;
+    std::optional<std::string> unit_type_id;
     std::string unit_code;
     std::string business_centre_code;
     std::string status;

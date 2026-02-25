@@ -130,6 +130,8 @@ void CurrencyMarketTierDetailDialog::updateUiFromTier() {
                        type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void CurrencyMarketTierDetailDialog::updateTierFromUi() {

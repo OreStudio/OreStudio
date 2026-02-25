@@ -130,6 +130,8 @@ void MonetaryNatureDetailDialog::updateUiFromClass() {
                        type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void MonetaryNatureDetailDialog::updateClassFromUi() {

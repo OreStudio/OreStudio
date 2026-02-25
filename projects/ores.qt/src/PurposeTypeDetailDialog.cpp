@@ -123,6 +123,8 @@ void PurposeTypeDetailDialog::updateUiFromType() {
     populateProvenance(type_.version, type_.modified_by,
         type_.performed_by, type_.recorded_at,
         type_.change_reason_code, type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PurposeTypeDetailDialog::updateTypeFromUi() {

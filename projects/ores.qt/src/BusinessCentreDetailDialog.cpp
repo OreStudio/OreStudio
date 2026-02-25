@@ -198,6 +198,8 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
                        business_centre_.performed_by, business_centre_.recorded_at,
                        business_centre_.change_reason_code,
                        business_centre_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {

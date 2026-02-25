@@ -130,6 +130,8 @@ void PartyIdSchemeDetailDialog::updateUiFromScheme() {
                        scheme_.recorded_at,
                        scheme_.change_reason_code,
                        scheme_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PartyIdSchemeDetailDialog::updateSchemeFromUi() {

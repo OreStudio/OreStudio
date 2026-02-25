@@ -113,6 +113,8 @@ void NatureDimensionDetailDialog::updateUiFromDimension() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension_.description));
     populateProvenance(dimension_.version, dimension_.modified_by, dimension_.performed_by,
                        dimension_.recorded_at, "", dimension_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void NatureDimensionDetailDialog::updateDimensionFromUi() {

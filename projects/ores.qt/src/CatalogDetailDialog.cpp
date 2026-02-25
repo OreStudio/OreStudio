@@ -99,6 +99,8 @@ void CatalogDetailDialog::updateUiFromCatalog() {
         catalog_.owner ? QString::fromStdString(*catalog_.owner) : QString());
     populateProvenance(catalog_.version, catalog_.modified_by, catalog_.performed_by,
                        catalog_.recorded_at, "", catalog_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void CatalogDetailDialog::updateCatalogFromUi() {

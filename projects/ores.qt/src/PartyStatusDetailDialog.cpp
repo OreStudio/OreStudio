@@ -130,6 +130,8 @@ void PartyStatusDetailDialog::updateUiFromStatus() {
                        status_.recorded_at,
                        status_.change_reason_code,
                        status_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PartyStatusDetailDialog::updateStatusFromUi() {

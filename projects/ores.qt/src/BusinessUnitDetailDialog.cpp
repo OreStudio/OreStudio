@@ -169,6 +169,8 @@ void BusinessUnitDetailDialog::updateUiFromUnit() {
                        business_unit_.performed_by, business_unit_.recorded_at,
                        business_unit_.change_reason_code,
                        business_unit_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BusinessUnitDetailDialog::updateUnitFromUi() {

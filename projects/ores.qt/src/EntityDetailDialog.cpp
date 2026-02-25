@@ -578,6 +578,8 @@ void EntityDetailDialog::updateUiFromEntity() {
     populateProvenance(entity_.version, entity_.modified_by, entity_.performed_by,
                        entity_.recorded_at, entity_.change_reason_code,
                        entity_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void EntityDetailDialog::updateEntityFromUi() {

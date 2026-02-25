@@ -145,6 +145,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
                        {{domain_entity.qt.item_var}}_.recorded_at,
                        {{domain_entity.qt.item_var}}_.change_reason_code,
                        {{domain_entity.qt.item_var}}_.change_commentary);
+
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_pascal_short}}FromUi() {

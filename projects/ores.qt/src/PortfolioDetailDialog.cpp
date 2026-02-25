@@ -246,6 +246,8 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
     populateProvenance(portfolio_.version, portfolio_.modified_by,
         portfolio_.performed_by, portfolio_.recorded_at,
         portfolio_.change_reason_code, portfolio_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void PortfolioDetailDialog::updatePortfolioFromUi() {

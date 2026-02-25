@@ -123,6 +123,8 @@ void BookStatusDetailDialog::updateUiFromStatus() {
     populateProvenance(status_.version, status_.modified_by, status_.performed_by,
                        status_.recorded_at, status_.change_reason_code,
                        status_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BookStatusDetailDialog::updateStatusFromUi() {

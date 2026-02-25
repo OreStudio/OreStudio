@@ -134,6 +134,8 @@ void DatasetBundleDetailDialog::updateUiFromBundle() {
                        bundle_.recorded_at,
                        bundle_.change_reason_code,
                        bundle_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void DatasetBundleDetailDialog::updateBundleFromUi() {

@@ -323,6 +323,8 @@ void TradeDetailDialog::updateUiFromTrade() {
     populateProvenance(trade_.version, trade_.modified_by, trade_.performed_by,
                        trade_.recorded_at, trade_.change_reason_code,
                        trade_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void TradeDetailDialog::updateTradeFromUi() {

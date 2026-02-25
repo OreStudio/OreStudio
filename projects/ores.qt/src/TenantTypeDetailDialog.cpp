@@ -123,6 +123,8 @@ void TenantTypeDetailDialog::updateUiFromType() {
     populateProvenance(tenant_type_.version, tenant_type_.modified_by,
         tenant_type_.performed_by, tenant_type_.recorded_at,
         tenant_type_.change_reason_code, tenant_type_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void TenantTypeDetailDialog::updateTypeFromUi() {

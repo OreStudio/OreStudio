@@ -243,6 +243,8 @@ void BookDetailDialog::updateUiFromBook() {
     populateProvenance(book_.version, book_.modified_by, book_.performed_by,
                        book_.recorded_at, book_.change_reason_code,
                        book_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void BookDetailDialog::updateBookFromUi() {

@@ -172,6 +172,8 @@ void TenantDetailDialog::updateUiFromTenant() {
     populateProvenance(tenant_.version, tenant_.modified_by,
         tenant_.performed_by, tenant_.recorded_at,
         tenant_.change_reason_code, tenant_.change_commentary);
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void TenantDetailDialog::updateTenantFromUi() {

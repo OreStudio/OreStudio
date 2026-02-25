@@ -42,5 +42,6 @@
 #include "ores.refdata/messaging/monetary_nature_history_protocol.hpp"
 #include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/messaging/currency_market_tier_history_protocol.hpp"
+#include "ores.refdata/messaging/business_unit_type_protocol.hpp"
 
 #endif

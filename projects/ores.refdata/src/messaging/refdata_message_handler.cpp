@@ -38,6 +38,8 @@
 #include "ores.refdata/service/counterparty_identifier_service.hpp"
 #include "ores.refdata/service/counterparty_contact_information_service.hpp"
 #include "ores.refdata/service/business_unit_service.hpp"
+#include "ores.refdata/repository/business_unit_type_repository.hpp"
+#include "ores.refdata/messaging/business_unit_type_protocol.hpp"
 #include "ores.refdata/service/portfolio_service.hpp"
 #include "ores.refdata/service/book_service.hpp"
 #include "ores.refdata/service/book_status_service.hpp"
@@ -204,6 +206,15 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_delete_business_unit_request(payload, remote_address);
     case comms::messaging::message_type::get_business_unit_history_request:
         co_return co_await handle_get_business_unit_history_request(payload, remote_address);
+    // Business unit type handlers
+    case comms::messaging::message_type::get_business_unit_types_request:
+        co_return co_await handle_get_business_unit_types_request(payload, remote_address);
+    case comms::messaging::message_type::save_business_unit_type_request:
+        co_return co_await handle_save_business_unit_type_request(payload, remote_address);
+    case comms::messaging::message_type::delete_business_unit_type_request:
+        co_return co_await handle_delete_business_unit_type_request(payload, remote_address);
+    case comms::messaging::message_type::get_business_unit_type_history_request:
+        co_return co_await handle_get_business_unit_type_history_request(payload, remote_address);
     // Portfolio handlers
     case comms::messaging::message_type::get_portfolios_request:
         co_return co_await handle_get_portfolios_request(payload, remote_address);
@@ -2172,6 +2183,186 @@ handle_get_business_unit_history_request(std::span<const std::byte> payload,
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error retrieving history for business unit "
+                                   << request.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// Business unit type handlers
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_business_unit_types_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_business_unit_types_request.";
+
+    auto auth = require_authentication(remote_address, "Get business unit types");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    repository::business_unit_type_repository repo(ctx);
+
+    auto request_result = get_business_unit_types_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_business_unit_types_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto types = repo.read_latest();
+
+    const auto count = static_cast<std::uint32_t>(types.size());
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << count << " business unit types";
+
+    get_business_unit_types_response response{
+        .types = std::move(types)
+    };
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_save_business_unit_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_business_unit_type_request.";
+
+    auto auth = require_authentication(remote_address, "Save business unit type");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    repository::business_unit_type_repository repo(ctx);
+
+    auto request_result = save_business_unit_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_business_unit_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving business unit type: " << request.type.id;
+
+    request.type.modified_by = auth->username;
+    request.type.performed_by.clear();
+
+    save_business_unit_type_response response;
+    try {
+        repo.write(request.type);
+        response.success = true;
+        response.message = "Business unit type saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved business unit type: "
+                                  << request.type.id
+                                  << " by " << auth->username;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to save business unit type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving business unit type "
+                                   << request.type.id << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_delete_business_unit_type_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_business_unit_type_request.";
+
+    auto auth = require_authentication(remote_address, "Delete business unit type");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    repository::business_unit_type_repository repo(ctx);
+
+    auto request_result = delete_business_unit_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_business_unit_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size()
+                              << " business unit type(s)";
+
+    delete_business_unit_type_response response;
+    for (const auto& id : request.ids) {
+        delete_business_unit_type_result result;
+        result.id = id;
+
+        try {
+            repo.remove(id);
+            result.success = true;
+            result.message = "Business unit type deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted business unit type: " << id;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete business unit type: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting business unit type "
+                                       << id << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+refdata_message_handler::
+handle_get_business_unit_type_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_business_unit_type_history_request.";
+
+    auto auth = require_authentication(remote_address, "Get business unit type history");
+    if (!auth) {
+        co_return std::unexpected(auth.error());
+    }
+
+    auto ctx = make_request_context(*auth);
+    repository::business_unit_type_repository repo(ctx);
+
+    auto request_result = get_business_unit_type_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_business_unit_type_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for business unit type: " << request.id;
+
+    get_business_unit_type_history_response response;
+    try {
+        auto history = repo.read_all(request.id);
+
+        if (history.empty()) {
+            response.success = false;
+            response.message = "Business unit type not found: " +
+                boost::uuids::to_string(request.id);
+            BOOST_LOG_SEV(lg(), warn) << "No history found for business unit type: "
+                                      << request.id;
+            co_return response.serialize();
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.versions = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
+                                  << " versions for business unit type: " << request.id;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for business unit type "
                                    << request.id << ": " << e.what();
     }
 

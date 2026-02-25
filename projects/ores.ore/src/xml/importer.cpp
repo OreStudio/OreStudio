@@ -109,4 +109,34 @@ importer::import_portfolio(const std::filesystem::path& path) {
     return r;
 }
 
+std::vector<trade_import_item>
+importer::import_portfolio_with_context(const std::filesystem::path& path) {
+    BOOST_LOG_SEV(lg(), debug) << "Started portfolio import with context: "
+                               << path.generic_string();
+
+    using namespace ores::platform::filesystem;
+    const std::string c(file::read_content(path));
+    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+
+    domain::portfolio p;
+    domain::load_data(c, p);
+
+    std::vector<trade_import_item> r;
+    r.reserve(p.Trade.size());
+
+    for (const auto& t : p.Trade) {
+        trade_import_item item;
+        item.trade = domain::trade_mapper::map(t);
+        item.source_file = path;
+        if (t.Envelope && t.Envelope->CounterParty) {
+            item.ore_counterparty_name = std::string(*t.Envelope->CounterParty);
+        }
+        r.push_back(std::move(item));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
+                               << " trades with context.";
+    return r;
+}
+
 }

@@ -154,7 +154,7 @@ void BookMdiWindow::setupTable() {
         cs::text_left,      // ModifiedBy
         cs::mono_left       // RecordedAt
     }, tableView_);
-    delegate->set_badge_color_resolver(resolve_status_badge_color);
+    delegate->set_badge_color_resolver(resolve_book_badge_color);
     tableView_->setItemDelegate(delegate);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);

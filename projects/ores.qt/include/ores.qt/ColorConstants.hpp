@@ -94,6 +94,10 @@ struct badge_colors {
     static inline const QColor locked{239, 68, 68};        // Red
     static inline const QColor unlocked{107, 114, 128};    // Gray
 
+    // Entity type badges (Virtual/Physical, Trading/Banking)
+    static inline const QColor type_virtual{124, 58, 237};     // Purple
+    static inline const QColor type_physical{59, 130, 246};    // Blue
+
     // Data governance dimension badges
     static inline const QColor origin_primary{59, 130, 246};   // Blue
     static inline const QColor origin_derived{139, 92, 246};   // Purple

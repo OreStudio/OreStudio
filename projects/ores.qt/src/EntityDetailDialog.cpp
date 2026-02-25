@@ -420,6 +420,9 @@ void EntityDetailDialog::populateParentCombo() {
     } else {
         ui_->parentEntityCombo->setCurrentIndex(0);
     }
+
+    hasChanges_ = false;
+    updateSaveButtonState();
 }
 
 void EntityDetailDialog::buildHierarchyTree() {

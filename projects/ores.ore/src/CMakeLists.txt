@@ -41,6 +41,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.refdata.lib
+        ores.trading.lib
     PRIVATE
         ores.logging.lib
         ores.platform.lib

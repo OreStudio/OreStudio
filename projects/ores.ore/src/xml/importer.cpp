@@ -24,10 +24,12 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
+#include "ores.ore/domain/trade_mapper.hpp"
 
 namespace ores::ore::xml {
 
 using refdata::domain::currency;
+using trading::domain::trade;
 using namespace ores::logging;
 
 std::string importer::validate_currency(const currency& c) {
@@ -72,6 +74,37 @@ importer::import_currency_config(const std::filesystem::path& path) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
                                << " currencies. Result: " << r;
+
+    return r;
+}
+
+std::string importer::validate_trade(const trade& t) {
+    std::ostringstream errors;
+
+    if (t.external_id.empty())
+        errors << "External ID is required\n";
+
+    if (t.trade_type.empty())
+        errors << "Trade type is required\n";
+
+    return errors.str();
+}
+
+std::vector<trade>
+importer::import_portfolio(const std::filesystem::path& path) {
+    BOOST_LOG_SEV(lg(), debug) << "Started portfolio import: "
+                               << path.generic_string();
+
+    using namespace ores::platform::filesystem;
+    const std::string c(file::read_content(path));
+    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+
+    domain::portfolio p;
+    domain::load_data(c, p);
+    const auto r = domain::trade_mapper::map(p);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
+                               << " trades.";
 
     return r;
 }

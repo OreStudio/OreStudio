@@ -25,6 +25,7 @@
 #include <filesystem>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
+#include "ores.trading/domain/trade.hpp"
 
 namespace ores::ore::xml {
 
@@ -55,6 +56,33 @@ public:
 
     static std::vector<refdata::domain::currency>
     import_currency_config(const std::filesystem::path& path);
+
+    /**
+     * @brief Validates a trade against minimum import requirements.
+     *
+     * Checks that the trade has at least the fields that can be directly
+     * mapped from ORE XML: external_id and trade_type. Fields that require
+     * external mapping (book_id, counterparty_id, etc.) are not validated
+     * here.
+     *
+     * @param trade Trade to validate
+     * @return Empty string if valid, otherwise error message describing issues
+     */
+    static std::string validate_trade(const trading::domain::trade& trade);
+
+    /**
+     * @brief Imports trades from an ORE portfolio XML file.
+     *
+     * Parses the portfolio XML and maps each trade to the ORES trading
+     * domain. UUID fields that require external context (book_id,
+     * counterparty_id, portfolio_id, party_id) are left as nil and must be
+     * populated by the calling code.
+     *
+     * @param path Path to the ORE portfolio XML file
+     * @return Vector of partially-mapped trading domain trades
+     */
+    static std::vector<trading::domain::trade>
+    import_portfolio(const std::filesystem::path& path);
 };
 
 }

@@ -520,7 +520,7 @@ returns table (
     action text,
     iso_code text,
     currency_name text,
-    asset_class text,
+    monetary_nature text,
     market_tier text,
     has_image boolean,
     reason text
@@ -534,7 +534,7 @@ begin
         end as action,
         dq.iso_code,
         dq.name as currency_name,
-        dq.asset_class,
+        dq.monetary_nature,
         dq.market_tier,
         dq.image_id is not null as has_image,
         case
@@ -559,8 +559,8 @@ $$ language plpgsql;
  * @param p_dataset_id           The DQ dataset to populate from
  * @param p_target_tenant_id     The tenant to publish data to
  * @param p_mode                 Population mode: 'upsert', 'insert_only', or 'replace_all'
- * @param p_asset_class_filter   Optional filter to only populate currencies with
- *                               matching asset_class (e.g., 'synthetic').
+ * @param p_monetary_nature_filter   Optional filter to only populate currencies with
+ *                               matching monetary_nature (e.g., 'synthetic').
  *                               If NULL, all currencies from the dataset are processed.
  *
  * IMPORTANT: Ensure images are populated first if you want image_id
@@ -577,7 +577,7 @@ create or replace function ores_dq_currencies_publish_fn(
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
     p_params jsonb default '{}'::jsonb,
-    p_asset_class_filter text default null
+    p_monetary_nature_filter text default null
 )
 returns table (
     action text,
@@ -621,7 +621,7 @@ begin
     end if;
 
     -- Process each currency from DQ dataset (read from system tenant)
-    -- Apply asset_class filter if specified
+    -- Apply monetary_nature filter if specified
     for r in
         select
             dq.iso_code,
@@ -633,13 +633,13 @@ begin
             dq.rounding_type,
             dq.rounding_precision,
             dq.format,
-            dq.asset_class,
+            dq.monetary_nature,
             dq.market_tier,
             dq.image_id
         from ores_dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_iam_system_tenant_id_fn()
-          and (p_asset_class_filter is null or dq.asset_class = p_asset_class_filter)
+          and (p_monetary_nature_filter is null or dq.monetary_nature = p_monetary_nature_filter)
     loop
         -- Check if record already exists (for mode handling and reporting)
         select exists (
@@ -681,13 +681,13 @@ begin
         insert into ores_refdata_currencies_tbl (
             tenant_id,
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
-            fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier,
+            fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier,
             coding_scheme_code, image_id,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
-            r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.asset_class, r.market_tier,
+            r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.monetary_nature, r.market_tier,
             v_coding_scheme_code, v_resolved_image_id,
             coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name

@@ -108,5 +108,5 @@ drop policy if exists ores_refdata_currencies_tenant_isolation_policy on "ores_r
 -- Currency Market Tiers
 drop policy if exists ores_refdata_currency_market_tiers_tenant_isolation_policy on "ores_refdata_currency_market_tiers_tbl";
 
--- Currency Asset Classes
-drop policy if exists ores_refdata_currency_asset_classes_tenant_isolation_policy on "ores_refdata_currency_asset_classes_tbl";
+-- Monetary Natures
+drop policy if exists ores_refdata_monetary_natures_tenant_isolation_policy on "ores_refdata_monetary_natures_tbl";

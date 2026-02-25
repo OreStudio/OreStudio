@@ -58,7 +58,7 @@ auto& lg() {
 }
 
 currency_row to_row(const refdata::domain::currency& c) {
-    return {c.iso_code, c.name, c.symbol, c.numeric_code, c.asset_class,
+    return {c.iso_code, c.name, c.symbol, c.numeric_code, c.monetary_nature,
             c.market_tier, c.version};
 }
 
@@ -75,7 +75,7 @@ refdata::domain::currency to_domain(const currency_data& d,
     c.rounding_type = d.rounding_type;
     c.rounding_precision = d.rounding_precision;
     c.format = d.format;
-    c.asset_class = d.asset_class;
+    c.monetary_nature = d.monetary_nature;
     c.market_tier = d.market_tier;
     c.modified_by = username;
     return c;
@@ -92,7 +92,7 @@ currency_data to_data(const refdata::domain::currency& c) {
     d.rounding_type = c.rounding_type;
     d.rounding_precision = c.rounding_precision;
     d.format = c.format;
-    d.asset_class = c.asset_class;
+    d.monetary_nature = c.monetary_nature;
     d.market_tier = c.market_tier;
     d.version = c.version;
     return d;

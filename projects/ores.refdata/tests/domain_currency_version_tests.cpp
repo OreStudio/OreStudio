@@ -54,7 +54,7 @@ TEST_CASE("create_currency_version_with_valid_fields", tags) {
     cv.data.rounding_type = "Closest";
     cv.data.rounding_precision = 2;
     cv.data.format = "%3% %1$.2f";
-    cv.data.asset_class = "fiat";
+    cv.data.monetary_nature = "fiat";
     cv.data.market_tier = "g10";
     cv.data.modified_by = "admin";
     cv.data.recorded_at = datetime::make_timepoint(2025, 1, 1);
@@ -86,7 +86,7 @@ TEST_CASE("create_currency_version_with_faker", tags) {
     cv.data.rounding_type = "Closest";
     cv.data.rounding_precision = faker::number::integer(0, 5);
     cv.data.format = "%3% %1$.2f";
-    cv.data.asset_class = "fiat";
+    cv.data.monetary_nature = "fiat";
     cv.data.market_tier = "g10";
     cv.data.modified_by = std::string(faker::internet::username());
     cv.data.recorded_at = {};
@@ -117,7 +117,7 @@ TEST_CASE("currency_version_convert_multiple_to_table", tags) {
         cv.data.rounding_type = "Closest";
         cv.data.rounding_precision = 2;
         cv.data.format = "%3% %1$.2f";
-        cv.data.asset_class = "fiat";
+        cv.data.monetary_nature = "fiat";
         cv.data.market_tier = "g10";
         cv.data.modified_by = "admin";
         cv.data.recorded_at = {};
@@ -156,7 +156,7 @@ TEST_CASE("currency_version_table_with_faker_data", tags) {
         cv.data.rounding_type = "Closest";
         cv.data.rounding_precision = faker::number::integer(0, 5);
         cv.data.format = "%3% %1$.2f";
-        cv.data.asset_class = "major";
+        cv.data.monetary_nature = "major";
         cv.data.market_tier = "g10";
         cv.data.modified_by = std::string(faker::internet::username());
         cv.data.recorded_at = {};

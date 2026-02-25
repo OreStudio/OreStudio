@@ -35,7 +35,7 @@ std::ostream& operator<<(std::ostream& s, const add_currency_options& v) {
     if (v.rounding_type) s << ", rounding_type: " << *v.rounding_type;
     if (v.rounding_precision) s << ", rounding_precision: " << *v.rounding_precision;
     if (v.format) s << ", format: " << *v.format;
-    if (v.asset_class) s << ", asset_class: " << *v.asset_class;
+    if (v.monetary_nature) s << ", monetary_nature: " << *v.monetary_nature;
     if (v.market_tier) s << ", market_tier: " << *v.market_tier;
 
     s << " }";

@@ -72,7 +72,7 @@ public:
         RoundingType,
         RoundingPrecision,
         Format,
-        AssetClass,
+        MonetaryNature,
         MarketTier,
         Version,
         ModifiedBy,
@@ -150,8 +150,8 @@ public:
             .default_width = kColumnWidthAuto
         },
         {
-            .column = AssetClass,
-            .header = std::string_view("Asset Class"),
+            .column = MonetaryNature,
+            .header = std::string_view("Monetary Nature"),
             .style = column_style::text_left,
             .hidden_by_default = true,
             .default_width = kColumnWidthAuto

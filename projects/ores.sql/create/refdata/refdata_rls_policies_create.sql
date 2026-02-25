@@ -27,11 +27,11 @@
 -- isolated, including the system tenant.
 
 -- -----------------------------------------------------------------------------
--- Currency Asset Classes
+-- Monetary Natures
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_currency_asset_classes_tbl enable row level security;
+alter table ores_refdata_monetary_natures_tbl enable row level security;
 
-create policy ores_refdata_currency_asset_classes_tenant_isolation_policy on ores_refdata_currency_asset_classes_tbl
+create policy ores_refdata_monetary_natures_tenant_isolation_policy on ores_refdata_monetary_natures_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

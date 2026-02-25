@@ -69,7 +69,7 @@ signals:
     void currencyDeleted(const QString& iso_code);
     void showCurrencyHistory(const QString& iso_code);
     void showRoundingTypesRequested();
-    void showAssetClassesRequested();
+    void showMonetaryNaturesRequested();
     void showMarketTiersRequested();
 
 public slots:

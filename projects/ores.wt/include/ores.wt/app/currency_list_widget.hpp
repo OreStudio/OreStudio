@@ -38,7 +38,7 @@ struct currency_row {
     std::string name;
     std::string symbol;
     std::string numeric_code;
-    std::string asset_class;
+    std::string monetary_nature;
     std::string market_tier;
     int version = 0;
 };

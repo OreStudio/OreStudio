@@ -80,7 +80,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="assetClassCombo">
+           <widget class="QComboBox" name="monetaryNatureCombo">
             <property name="editable">
              <bool>true</bool>
             </property>

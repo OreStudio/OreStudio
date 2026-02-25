@@ -144,13 +144,13 @@ CurrencyMdiWindow(ClientManager* clientManager,
         [this]() { emit showRoundingTypesRequested(); });
     toolBar_->addAction(roundingTypesAction);
 
-    auto assetClassesAction = new QAction("Asset Classes", this);
-    assetClassesAction->setIcon(IconUtils::createRecoloredIcon(
+    auto monetaryNaturesAction = new QAction("Monetary Natures", this);
+    monetaryNaturesAction->setIcon(IconUtils::createRecoloredIcon(
             Icon::Classification, IconUtils::DefaultIconColor));
-    assetClassesAction->setToolTip("Open Currency Asset Classes list");
-    connect(assetClassesAction, &QAction::triggered, this,
-        [this]() { emit showAssetClassesRequested(); });
-    toolBar_->addAction(assetClassesAction);
+    monetaryNaturesAction->setToolTip("Open Monetary Natures list");
+    connect(monetaryNaturesAction, &QAction::triggered, this,
+        [this]() { emit showMonetaryNaturesRequested(); });
+    toolBar_->addAction(monetaryNaturesAction);
 
     auto marketTiersAction = new QAction("Market Tiers", this);
     marketTiersAction->setIcon(IconUtils::createRecoloredIcon(

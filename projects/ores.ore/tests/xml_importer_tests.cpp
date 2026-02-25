@@ -180,7 +180,7 @@ TEST_CASE("import_currency_config_from_currencies_xml", tags) {
     CHECK(first.fractions_per_unit == 100);
     CHECK(first.rounding_type == "Closest");
     CHECK(first.rounding_precision == 2);
-    CHECK(first.asset_class == "Major");
+    CHECK(first.monetary_nature == "Major");
     CHECK(first.modified_by == "ores");
     CHECK(first.change_reason_code == "system.external_data_import");
 }
@@ -204,7 +204,7 @@ TEST_CASE("import_currency_config_from_example_1", tags) {
     CHECK(first.fractions_per_unit == 100);
     CHECK(first.rounding_type == "Closest");
     CHECK(first.rounding_precision == 2);
-    CHECK(first.asset_class.empty());
+    CHECK(first.monetary_nature.empty());
 }
 
 TEST_CASE("import_currency_config_maps_all_fields", tags) {

@@ -122,7 +122,7 @@ signals:
     void currencyDeleted(const QString& iso_code);
     void isDirtyChanged(bool isDirty);
     void showRoundingTypesRequested();
-    void showAssetClassesRequested();
+    void showMonetaryNaturesRequested();
     void showMarketTiersRequested();
 
     /**
@@ -161,7 +161,7 @@ private:
     void setupGenerateAction();
     void updateGenerateActionVisibility();
     void populateRoundingTypeCombo();
-    void populateAssetClassCombo();
+    void populateMonetaryNatureCombo();
     void populateMarketTierCombo();
 
 private:

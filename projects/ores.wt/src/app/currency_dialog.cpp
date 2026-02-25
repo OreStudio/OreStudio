@@ -108,20 +108,20 @@ void currency_dialog::setup_form() {
         std::make_unique<Wt::WLineEdit>());
     format_edit_->setPlaceholderText("e.g., #,##0.00");
 
-    auto asset_class_row = content->addWidget(
+    auto monetary_nature_row = content->addWidget(
         std::make_unique<Wt::WContainerWidget>());
-    asset_class_row->setStyleClass("mb-3");
-    auto asset_class_lbl = asset_class_row->addWidget(
-        std::make_unique<Wt::WLabel>("Asset Class"));
-    asset_class_lbl->setStyleClass("form-label");
-    asset_class_combo_ = asset_class_row->addWidget(
+    monetary_nature_row->setStyleClass("mb-3");
+    auto monetary_nature_lbl = monetary_nature_row->addWidget(
+        std::make_unique<Wt::WLabel>("Monetary Nature"));
+    monetary_nature_lbl->setStyleClass("form-label");
+    monetary_nature_combo_ = monetary_nature_row->addWidget(
         std::make_unique<Wt::WComboBox>());
-    asset_class_combo_->setStyleClass("form-select");
-    asset_class_combo_->addItem("Fiat");
-    asset_class_combo_->addItem("Crypto");
-    asset_class_combo_->addItem("Commodity");
-    asset_class_combo_->addItem("Other");
-    asset_class_lbl->setBuddy(asset_class_combo_);
+    monetary_nature_combo_->setStyleClass("form-select");
+    monetary_nature_combo_->addItem("Fiat");
+    monetary_nature_combo_->addItem("Crypto");
+    monetary_nature_combo_->addItem("Commodity");
+    monetary_nature_combo_->addItem("Other");
+    monetary_nature_lbl->setBuddy(monetary_nature_combo_);
 
     auto market_tier_row = content->addWidget(
         std::make_unique<Wt::WContainerWidget>());
@@ -170,9 +170,9 @@ void currency_dialog::set_currency(const currency_data& data) {
         rounding_type_combo_->setCurrentIndex(rounding_idx);
     }
 
-    int asset_class_idx = asset_class_combo_->findText(data.asset_class);
-    if (asset_class_idx >= 0) {
-        asset_class_combo_->setCurrentIndex(asset_class_idx);
+    int monetary_nature_idx = monetary_nature_combo_->findText(data.monetary_nature);
+    if (monetary_nature_idx >= 0) {
+        monetary_nature_combo_->setCurrentIndex(monetary_nature_idx);
     }
 
     int market_tier_idx = market_tier_combo_->findText(data.market_tier);
@@ -192,7 +192,7 @@ currency_data currency_dialog::get_currency() const {
     data.rounding_type = rounding_type_combo_->currentText().toUTF8();
     data.rounding_precision = precision_spinbox_->value();
     data.format = format_edit_->text().toUTF8();
-    data.asset_class = asset_class_combo_->currentText().toUTF8();
+    data.monetary_nature = monetary_nature_combo_->currentText().toUTF8();
     data.market_tier = market_tier_combo_->currentText().toUTF8();
     return data;
 }

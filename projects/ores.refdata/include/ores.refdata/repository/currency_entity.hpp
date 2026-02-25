@@ -45,7 +45,7 @@ struct currency_entity {
     std::string rounding_type;
     int rounding_precision;
     std::string format;
-    std::string asset_class;
+    std::string monetary_nature;
     std::string market_tier;
     std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
     std::string modified_by;

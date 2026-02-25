@@ -80,7 +80,7 @@
 #include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
-#include "ores.qt/CurrencyAssetClassController.hpp"
+#include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -229,7 +229,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionPurposeTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionRoundingTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
-    ui_->ActionCurrencyAssetClasses->setIcon(IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
+    ui_->ActionMonetaryNatures->setIcon(IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
     ui_->ActionCurrencyMarketTiers->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
@@ -661,10 +661,10 @@ MainWindow::MainWindow(QWidget* parent) :
             roundingTypeController_->showListWindow();
     });
 
-    // Connect Currency Asset Classes action to controller
-    connect(ui_->ActionCurrencyAssetClasses, &QAction::triggered, this, [this]() {
-        if (currencyAssetClassController_)
-            currencyAssetClassController_->showListWindow();
+    // Connect Currency Monetary Natures action to controller
+    connect(ui_->ActionMonetaryNatures, &QAction::triggered, this, [this]() {
+        if (monetaryNatureController_)
+            monetaryNatureController_->showListWindow();
     });
 
     // Connect Currency Market Tiers action to controller
@@ -1043,7 +1043,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionBookStatuses->setEnabled(isLoggedIn);
     ui_->ActionPurposeTypes->setEnabled(isLoggedIn);
     ui_->ActionRoundingTypes->setEnabled(isLoggedIn);
-    ui_->ActionCurrencyAssetClasses->setEnabled(isLoggedIn);
+    ui_->ActionMonetaryNatures->setEnabled(isLoggedIn);
     ui_->ActionCurrencyMarketTiers->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
 
@@ -1656,28 +1656,28 @@ void MainWindow::createControllers() {
             roundingTypeController_->showListWindow();
     });
 
-    // Create currency asset class controller
-    currencyAssetClassController_ = std::make_unique<CurrencyAssetClassController>(
+    // Create monetary nature controller
+    monetaryNatureController_ = std::make_unique<MonetaryNatureController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::statusMessage,
+    connect(monetaryNatureController_.get(), &MonetaryNatureController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::errorMessage,
+    connect(monetaryNatureController_.get(), &MonetaryNatureController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::detachableWindowCreated,
+    connect(monetaryNatureController_.get(), &MonetaryNatureController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
-    connect(currencyAssetClassController_.get(), &CurrencyAssetClassController::detachableWindowDestroyed,
+    connect(monetaryNatureController_.get(), &MonetaryNatureController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    // Connect currency controller relay to asset class controller
-    connect(currencyController_.get(), &CurrencyController::showAssetClassesRequested,
+    // Connect currency controller relay to monetary nature controller
+    connect(currencyController_.get(), &CurrencyController::showMonetaryNaturesRequested,
             this, [this]() {
-        if (currencyAssetClassController_)
-            currencyAssetClassController_->showListWindow();
+        if (monetaryNatureController_)
+            monetaryNatureController_->showListWindow();
     });
 
     // Create currency market tier controller
@@ -2534,8 +2534,8 @@ void MainWindow::onLoginSuccess(const QString& username) {
     if (roundingTypeController_) {
         roundingTypeController_->setUsername(username);
     }
-    if (currencyAssetClassController_) {
-        currencyAssetClassController_->setUsername(username);
+    if (monetaryNatureController_) {
+        monetaryNatureController_->setUsername(username);
     }
     if (currencyMarketTierController_) {
         currencyMarketTierController_->setUsername(username);

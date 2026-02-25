@@ -87,7 +87,7 @@ begin
     -- Insert FpML non-ISO currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -144,18 +144,18 @@ from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.asset_class = 'fiat' and c.market_tier = 'exotic'
+  and c.monetary_nature = 'fiat' and c.market_tier = 'exotic'
 union all
 select 'Emerging (fiat.emerging)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.asset_class = 'fiat' and c.market_tier = 'emerging'
+  and c.monetary_nature = 'fiat' and c.market_tier = 'emerging'
 union all
 select 'Historical (fiat.historical)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.code = 'fpml.non_iso_currency'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
-  and c.asset_class = 'fiat' and c.market_tier = 'historical';
+  and c.monetary_nature = 'fiat' and c.market_tier = 'historical';

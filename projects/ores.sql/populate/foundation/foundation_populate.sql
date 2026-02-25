@@ -97,7 +97,7 @@
 \echo ''
 \echo '--- Reference Data Lookup Tables ---'
 \ir ../refdata/refdata_rounding_types_populate.sql
-\ir ../refdata/refdata_currency_asset_classes_populate.sql
+\ir ../refdata/refdata_monetary_natures_populate.sql
 \ir ../refdata/refdata_currency_market_tiers_populate.sql
 \ir ../refdata/refdata_party_categories_populate.sql
 \ir ../refdata/refdata_party_types_populate.sql
@@ -144,8 +144,8 @@ union all
 select 'Rounding Types', count(*)
 from ores_refdata_rounding_types_tbl
 union all
-select 'Currency Asset Classes', count(*)
-from ores_refdata_currency_asset_classes_tbl
+select 'Monetary Natures', count(*)
+from ores_refdata_monetary_natures_tbl
 union all
 select 'Currency Market Tiers', count(*)
 from ores_refdata_currency_market_tiers_tbl

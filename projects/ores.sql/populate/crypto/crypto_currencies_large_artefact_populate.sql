@@ -79,7 +79,7 @@ begin
     -- Insert cryptocurrencies with icon links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -12370,13 +12370,13 @@ select 'Emerging (crypto.emerging)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Large'
-  and c.asset_class = 'crypto' and c.market_tier = 'emerging'
+  and c.monetary_nature = 'crypto' and c.market_tier = 'emerging'
 union all
 select 'Exotic (crypto.exotic)', count(*)
 from ores_dq_currencies_artefact_tbl c
 join ores_dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'Cryptocurrencies Large'
-  and c.asset_class = 'crypto' and c.market_tier = 'exotic'
+  and c.monetary_nature = 'crypto' and c.market_tier = 'exotic'
 union all
 select 'With Icons', count(*)
 from ores_dq_currencies_artefact_tbl c

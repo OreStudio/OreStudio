@@ -46,9 +46,9 @@
 #include "ores.refdata/messaging/purpose_type_protocol.hpp"
 #include "ores.refdata/service/rounding_type_service.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
-#include "ores.refdata/service/currency_asset_class_service.hpp"
-#include "ores.refdata/messaging/currency_asset_class_protocol.hpp"
-#include "ores.refdata/messaging/currency_asset_class_history_protocol.hpp"
+#include "ores.refdata/service/monetary_nature_service.hpp"
+#include "ores.refdata/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata/messaging/monetary_nature_history_protocol.hpp"
 #include "ores.refdata/service/currency_market_tier_service.hpp"
 #include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/messaging/currency_market_tier_history_protocol.hpp"
@@ -250,14 +250,14 @@ refdata_message_handler::handle_message(comms::messaging::message_type type,
     case comms::messaging::message_type::get_rounding_type_history_request:
         co_return co_await handle_get_rounding_type_history_request(payload, remote_address);
     // Currency asset class handlers
-    case comms::messaging::message_type::get_currency_asset_classes_request:
-        co_return co_await handle_get_currency_asset_classes_request(payload, remote_address);
-    case comms::messaging::message_type::save_currency_asset_class_request:
-        co_return co_await handle_save_currency_asset_class_request(payload, remote_address);
-    case comms::messaging::message_type::delete_currency_asset_class_request:
-        co_return co_await handle_delete_currency_asset_class_request(payload, remote_address);
-    case comms::messaging::message_type::get_currency_asset_class_history_request:
-        co_return co_await handle_get_currency_asset_class_history_request(payload, remote_address);
+    case comms::messaging::message_type::get_monetary_natures_request:
+        co_return co_await handle_get_monetary_natures_request(payload, remote_address);
+    case comms::messaging::message_type::save_monetary_nature_request:
+        co_return co_await handle_save_monetary_nature_request(payload, remote_address);
+    case comms::messaging::message_type::delete_monetary_nature_request:
+        co_return co_await handle_delete_monetary_nature_request(payload, remote_address);
+    case comms::messaging::message_type::get_monetary_nature_history_request:
+        co_return co_await handle_get_monetary_nature_history_request(payload, remote_address);
     // Currency market tier handlers
     case comms::messaging::message_type::get_currency_market_tiers_request:
         co_return co_await handle_get_currency_market_tiers_request(payload, remote_address);
@@ -3794,28 +3794,28 @@ handle_get_rounding_type_history_request(std::span<const std::byte> payload,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 refdata_message_handler::
-handle_get_currency_asset_classes_request(std::span<const std::byte> payload,
+handle_get_monetary_natures_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_asset_classes_request.";
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_monetary_natures_request.";
 
-    auto auth = require_authentication(remote_address, "Get currency asset classes");
+    auto auth = require_authentication(remote_address, "Get monetary natures");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
 
     auto ctx = make_request_context(*auth);
-    service::currency_asset_class_service svc(ctx);
+    service::monetary_nature_service svc(ctx);
 
-    auto request_result = get_currency_asset_classes_request::deserialize(payload);
+    auto request_result = get_monetary_natures_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_currency_asset_classes_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_monetary_natures_request";
         co_return std::unexpected(request_result.error());
     }
 
     auto types = svc.list_types();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << types.size() << " currency asset classes";
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << types.size() << " monetary natures";
 
-    get_currency_asset_classes_response response{
+    get_monetary_natures_response response{
         .types = std::move(types)
     };
     co_return response.serialize();
@@ -3824,35 +3824,35 @@ handle_get_currency_asset_classes_request(std::span<const std::byte> payload,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 refdata_message_handler::
-handle_save_currency_asset_class_request(std::span<const std::byte> payload,
+handle_save_monetary_nature_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing save_currency_asset_class_request.";
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_monetary_nature_request.";
 
-    auto auth = require_authentication(remote_address, "Save currency asset class");
+    auto auth = require_authentication(remote_address, "Save monetary nature");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
 
     auto ctx = make_request_context(*auth);
-    service::currency_asset_class_service svc(ctx);
+    service::monetary_nature_service svc(ctx);
 
-    auto request_result = save_currency_asset_class_request::deserialize(payload);
+    auto request_result = save_monetary_nature_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_currency_asset_class_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_monetary_nature_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    save_currency_asset_class_response response;
+    save_monetary_nature_response response;
     try {
         svc.save_type(request.type);
         response.success = true;
-        response.message = "Currency asset class saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved currency asset class: " << request.type.code;
+        response.message = "Monetary nature saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved monetary nature: " << request.type.code;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save currency asset class: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving currency asset class: " << e.what();
+        response.message = std::string("Failed to save monetary nature: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving monetary nature: " << e.what();
     }
 
     co_return response.serialize();
@@ -3861,41 +3861,41 @@ handle_save_currency_asset_class_request(std::span<const std::byte> payload,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 refdata_message_handler::
-handle_delete_currency_asset_class_request(std::span<const std::byte> payload,
+handle_delete_monetary_nature_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing delete_currency_asset_class_request.";
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_monetary_nature_request.";
 
-    auto auth = require_authentication(remote_address, "Delete currency asset class");
+    auto auth = require_authentication(remote_address, "Delete monetary nature");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
 
     auto ctx = make_request_context(*auth);
-    service::currency_asset_class_service svc(ctx);
+    service::monetary_nature_service svc(ctx);
 
-    auto request_result = delete_currency_asset_class_request::deserialize(payload);
+    auto request_result = delete_monetary_nature_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_currency_asset_class_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_monetary_nature_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " currency asset class(es)";
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " monetary nature(s)";
 
-    delete_currency_asset_class_response response;
+    delete_monetary_nature_response response;
     for (const auto& code : request.codes) {
-        delete_currency_asset_class_result result;
+        delete_monetary_nature_result result;
         result.code = code;
 
         try {
             svc.remove_type(code);
             result.success = true;
-            result.message = "Currency asset class deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency asset class: " << code;
+            result.message = "Monetary nature deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted monetary nature: " << code;
         } catch (const std::exception& e) {
             result.success = false;
-            result.message = std::string("Failed to delete currency asset class: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting currency asset class "
+            result.message = std::string("Failed to delete monetary nature: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting monetary nature "
                                        << code << ": " << e.what();
         }
 
@@ -3908,35 +3908,35 @@ handle_delete_currency_asset_class_request(std::span<const std::byte> payload,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 refdata_message_handler::
-handle_get_currency_asset_class_history_request(std::span<const std::byte> payload,
+handle_get_monetary_nature_history_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_asset_class_history_request.";
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_monetary_nature_history_request.";
 
-    auto auth = require_authentication(remote_address, "Get currency asset class history");
+    auto auth = require_authentication(remote_address, "Get monetary nature history");
     if (!auth) {
         co_return std::unexpected(auth.error());
     }
 
     auto ctx = make_request_context(*auth);
-    service::currency_asset_class_service svc(ctx);
+    service::monetary_nature_service svc(ctx);
 
-    auto request_result = get_currency_asset_class_history_request::deserialize(payload);
+    auto request_result = get_monetary_nature_history_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_currency_asset_class_history_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_monetary_nature_history_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Retrieving history for currency asset class: " << request.code;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for monetary nature: " << request.code;
 
-    get_currency_asset_class_history_response response;
+    get_monetary_nature_history_response response;
     try {
         auto history = svc.get_type_history(request.code);
 
         if (history.empty()) {
             response.success = false;
-            response.message = "Currency asset class not found: " + request.code;
-            BOOST_LOG_SEV(lg(), warn) << "No history found for currency asset class: " << request.code;
+            response.message = "Monetary nature not found: " + request.code;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for monetary nature: " << request.code;
             co_return response.serialize();
         }
 
@@ -3945,11 +3945,11 @@ handle_get_currency_asset_class_history_request(std::span<const std::byte> paylo
         response.versions = std::move(history);
 
         BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.versions.size()
-                                  << " versions for currency asset class: " << request.code;
+                                  << " versions for monetary nature: " << request.code;
     } catch (const std::exception& e) {
         response.success = false;
         response.message = std::string("Failed to retrieve history: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for currency asset class "
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for monetary nature "
                                    << request.code << ": " << e.what();
     }
 

@@ -102,7 +102,7 @@ void currency_list_widget::populate_table() {
         table_->elementAt(row, 3)->addWidget(
             std::make_unique<Wt::WText>(c.numeric_code));
         table_->elementAt(row, 4)->addWidget(
-            std::make_unique<Wt::WText>(c.asset_class));
+            std::make_unique<Wt::WText>(c.monetary_nature));
         table_->elementAt(row, 5)->addWidget(
             std::make_unique<Wt::WText>(c.market_tier));
         table_->elementAt(row, 6)->addWidget(

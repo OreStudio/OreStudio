@@ -46,7 +46,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.rounding_type = v.rounding_type;
     r.rounding_precision = v.rounding_precision;
     r.format = v.format;
-    r.asset_class = v.asset_class;
+    r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
     if (v.image_id) {
         r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
@@ -77,7 +77,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.rounding_type = v.rounding_type;
     r.rounding_precision = v.rounding_precision;
     r.format = v.format;
-    r.asset_class = v.asset_class;
+    r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
     if (v.image_id) {
         r.image_id = boost::uuids::to_string(*v.image_id);

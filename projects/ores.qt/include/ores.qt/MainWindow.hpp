@@ -82,7 +82,7 @@ class BookController;
 class BookStatusController;
 class PurposeTypeController;
 class RoundingTypeController;
-class CurrencyAssetClassController;
+class MonetaryNatureController;
 class CurrencyMarketTierController;
 class TradeController;
 class ImageCache;
@@ -622,7 +622,7 @@ private:
     std::unique_ptr<BookStatusController> bookStatusController_;
     std::unique_ptr<PurposeTypeController> purposeTypeController_;
     std::unique_ptr<RoundingTypeController> roundingTypeController_;
-    std::unique_ptr<CurrencyAssetClassController> currencyAssetClassController_;
+    std::unique_ptr<MonetaryNatureController> monetaryNatureController_;
     std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
     std::unique_ptr<TradeController> tradeController_;
 

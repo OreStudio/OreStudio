@@ -20,8 +20,8 @@
 
 -- Lookup tables (no bitemporal support - static configuration)
 \ir ./refdata_rounding_types_create.sql
-\ir ./refdata_currency_asset_classes_create.sql
-\ir ./refdata_currency_asset_classes_notify_trigger_create.sql
+\ir ./refdata_monetary_natures_create.sql
+\ir ./refdata_monetary_natures_notify_trigger_create.sql
 \ir ./refdata_currency_market_tiers_create.sql
 \ir ./refdata_currency_market_tiers_notify_trigger_create.sql
 

@@ -81,7 +81,7 @@ begin
     -- Insert Solvaris currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -218,7 +218,7 @@ end $$;
 \echo '--- DQ Solvaris Currencies Summary ---'
 
 with currencies as (
-    select c.asset_class, c.market_tier
+    select c.monetary_nature, c.market_tier
     from ores_dq_currencies_artefact_tbl c
     join ores_dq_datasets_tbl d on c.dataset_id = d.id
     where d.subject_area_name = 'Currencies'
@@ -227,6 +227,6 @@ with currencies as (
 )
 select 'Total Solvaris Currencies' as metric, count(*) as count from currencies
 union all
-select 'Fiat Currencies', count(*) from currencies where asset_class = 'fiat' and market_tier = 'standard'
+select 'Fiat Currencies', count(*) from currencies where monetary_nature = 'fiat' and market_tier = 'standard'
 union all
-select 'Synthetic Currencies', count(*) from currencies where asset_class = 'synthetic';
+select 'Synthetic Currencies', count(*) from currencies where monetary_nature = 'synthetic';

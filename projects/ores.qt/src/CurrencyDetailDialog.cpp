@@ -49,7 +49,7 @@
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/messaging/rounding_type_protocol.hpp"
-#include "ores.refdata/messaging/currency_asset_class_protocol.hpp"
+#include "ores.refdata/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -123,13 +123,13 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         [this]() { emit showRoundingTypesRequested(); });
     toolBar_->addAction(roundingTypesAction);
 
-    auto* assetClassesAction = new QAction("Asset Classes", this);
-    assetClassesAction->setIcon(IconUtils::createRecoloredIcon(
+    auto* monetaryNaturesAction = new QAction("Monetary Natures", this);
+    monetaryNaturesAction->setIcon(IconUtils::createRecoloredIcon(
             Icon::Classification, IconUtils::DefaultIconColor));
-    assetClassesAction->setToolTip("Open Currency Asset Classes list");
-    connect(assetClassesAction, &QAction::triggered, this,
-        [this]() { emit showAssetClassesRequested(); });
-    toolBar_->addAction(assetClassesAction);
+    monetaryNaturesAction->setToolTip("Open Monetary Natures list");
+    connect(monetaryNaturesAction, &QAction::triggered, this,
+        [this]() { emit showMonetaryNaturesRequested(); });
+    toolBar_->addAction(monetaryNaturesAction);
 
     auto* marketTiersAction = new QAction("Market Tiers", this);
     marketTiersAction->setIcon(IconUtils::createRecoloredIcon(
@@ -248,12 +248,12 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->formatEdit, &QLineEdit::textChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->assetClassCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->monetaryNatureCombo, &QComboBox::currentTextChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->assetClassCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(ui_->monetaryNatureCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int idx) {
-        const auto tip = ui_->assetClassCombo->itemData(idx, Qt::ToolTipRole).toString();
-        ui_->assetClassCombo->setToolTip(tip);
+        const auto tip = ui_->monetaryNatureCombo->itemData(idx, Qt::ToolTipRole).toString();
+        ui_->monetaryNatureCombo->setToolTip(tip);
     });
     connect(ui_->marketTierCombo, &QComboBox::currentTextChanged, this,
         &CurrencyDetailDialog::onFieldChanged);
@@ -289,13 +289,13 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
         // Populate lookup combos if already connected
         if (clientManager_->isConnected()) {
             populateRoundingTypeCombo();
-            populateAssetClassCombo();
+            populateMonetaryNatureCombo();
             populateMarketTierCombo();
         } else {
             connect(clientManager_, &ClientManager::loggedIn,
                     this, &CurrencyDetailDialog::populateRoundingTypeCombo);
             connect(clientManager_, &ClientManager::loggedIn,
-                    this, &CurrencyDetailDialog::populateAssetClassCombo);
+                    this, &CurrencyDetailDialog::populateMonetaryNatureCombo);
             connect(clientManager_, &ClientManager::loggedIn,
                     this, &CurrencyDetailDialog::populateMarketTierCombo);
         }
@@ -366,7 +366,7 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
     ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
-    ui_->assetClassCombo->setCurrentText(QString::fromStdString(currency.asset_class));
+    ui_->monetaryNatureCombo->setCurrentText(QString::fromStdString(currency.monetary_nature));
     ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency.market_tier));
     populateProvenance(currency.version, currency.modified_by, currency.performed_by,
         currency.recorded_at, currency.change_reason_code, currency.change_commentary);
@@ -389,7 +389,7 @@ refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.rounding_type = ui_->roundingTypeCombo->currentText().toStdString();
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
-    currency.asset_class = ui_->assetClassCombo->currentText().toStdString();
+    currency.monetary_nature = ui_->monetaryNatureCombo->currentText().toStdString();
     currency.market_tier = ui_->marketTierCombo->currentText().toStdString();
     currency.modified_by = username_.empty() ? "qt_user" : username_;
 
@@ -411,7 +411,7 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->roundingTypeCombo->setCurrentIndex(-1);
     ui_->roundingPrecisionSpinBox->clear();
     ui_->formatEdit->clear();
-    ui_->assetClassCombo->setCurrentIndex(-1);
+    ui_->monetaryNatureCombo->setCurrentIndex(-1);
     ui_->marketTierCombo->setCurrentIndex(-1);
     clearProvenance();
     pendingImageId_.clear();
@@ -725,7 +725,7 @@ void CurrencyDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->roundingTypeCombo->setEnabled(!readOnly);
     ui_->roundingPrecisionSpinBox->setReadOnly(readOnly);
     ui_->formatEdit->setReadOnly(readOnly);
-    ui_->assetClassCombo->setEnabled(!readOnly);
+    ui_->monetaryNatureCombo->setEnabled(!readOnly);
     ui_->marketTierCombo->setEnabled(!readOnly);
 }
 
@@ -1095,7 +1095,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
         ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
         ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
         ui_->formatEdit->setText(QString::fromStdString(currency.format));
-        ui_->assetClassCombo->setCurrentText(QString::fromStdString(currency.asset_class));
+        ui_->monetaryNatureCombo->setCurrentText(QString::fromStdString(currency.monetary_nature));
         ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency.market_tier));
 
         // Mark as dirty
@@ -1245,18 +1245,18 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
     watcher->setFuture(future);
 }
 
-void CurrencyDetailDialog::populateAssetClassCombo() {
+void CurrencyDetailDialog::populateMonetaryNatureCombo() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Populating asset class combo";
+    BOOST_LOG_SEV(lg(), debug) << "Populating monetary nature combo";
 
     QPointer<CurrencyDetailDialog> self = this;
 
     struct FetchResult {
         bool success;
-        std::vector<refdata::domain::currency_asset_class> types;
+        std::vector<refdata::domain::monetary_nature> types;
     };
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
@@ -1264,11 +1264,11 @@ void CurrencyDetailDialog::populateAssetClassCombo() {
             return {false, {}};
         }
 
-        refdata::messaging::get_currency_asset_classes_request request;
+        refdata::messaging::get_monetary_natures_request request;
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_currency_asset_classes_request,
+            comms::messaging::message_type::get_monetary_natures_request,
             0, std::move(payload));
 
         auto response_result = self->clientManager_->sendRequest(
@@ -1282,7 +1282,7 @@ void CurrencyDetailDialog::populateAssetClassCombo() {
             return {false, {}};
         }
 
-        auto response = refdata::messaging::get_currency_asset_classes_response::
+        auto response = refdata::messaging::get_monetary_natures_response::
             deserialize(*payload_result);
         if (!response) {
             return {false, {}};
@@ -1300,15 +1300,15 @@ void CurrencyDetailDialog::populateAssetClassCombo() {
         if (!self) return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency asset classes for combo box.";
-            emit self->errorMessage(tr("Could not load currency asset classes."));
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary natures for combo box.";
+            emit self->errorMessage(tr("Could not load monetary natures."));
             return;
         }
 
-        QString current = self->ui_->assetClassCombo->currentText();
+        QString current = self->ui_->monetaryNatureCombo->currentText();
 
-        self->ui_->assetClassCombo->blockSignals(true);
-        self->ui_->assetClassCombo->clear();
+        self->ui_->monetaryNatureCombo->blockSignals(true);
+        self->ui_->monetaryNatureCombo->clear();
 
         auto& types = result.types;
         std::sort(types.begin(), types.end(),
@@ -1318,24 +1318,24 @@ void CurrencyDetailDialog::populateAssetClassCombo() {
 
         for (const auto& type : types) {
             QString code = QString::fromStdString(type.code);
-            self->ui_->assetClassCombo->addItem(code);
-            int idx = self->ui_->assetClassCombo->count() - 1;
-            self->ui_->assetClassCombo->setItemData(
+            self->ui_->monetaryNatureCombo->addItem(code);
+            int idx = self->ui_->monetaryNatureCombo->count() - 1;
+            self->ui_->monetaryNatureCombo->setItemData(
                 idx, QString::fromStdString(type.description),
                 Qt::ToolTipRole);
         }
 
         if (!current.isEmpty()) {
-            self->ui_->assetClassCombo->setCurrentText(current);
+            self->ui_->monetaryNatureCombo->setCurrentText(current);
         }
 
-        self->ui_->assetClassCombo->blockSignals(false);
+        self->ui_->monetaryNatureCombo->blockSignals(false);
 
-        const int cur = self->ui_->assetClassCombo->currentIndex();
+        const int cur = self->ui_->monetaryNatureCombo->currentIndex();
         if (cur >= 0) {
-            const auto tip = self->ui_->assetClassCombo->itemData(
+            const auto tip = self->ui_->monetaryNatureCombo->itemData(
                 cur, Qt::ToolTipRole).toString();
-            self->ui_->assetClassCombo->setToolTip(tip);
+            self->ui_->monetaryNatureCombo->setToolTip(tip);
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Asset class combo populated with "

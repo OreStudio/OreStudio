@@ -68,7 +68,7 @@ TEST_CASE("map_currency_definition_to_domain_with_all_fields", tags) {
     CHECK(result.fractions_per_unit == 100);
     CHECK(result.rounding_type == "Closest");
     CHECK(result.rounding_precision == 2);
-    CHECK(result.asset_class == "Major");
+    CHECK(result.monetary_nature == "Major");
     CHECK(result.market_tier.empty());
     CHECK(result.modified_by == "ores");
     CHECK(result.change_reason_code == "system.external_data_import");
@@ -92,7 +92,7 @@ TEST_CASE("map_currency_definition_without_optional_fields", tags) {
     CHECK(result.iso_code == "TST");
     CHECK(result.name == "Test Currency");
     CHECK(result.numeric_code.empty());
-    CHECK(result.asset_class.empty());
+    CHECK(result.monetary_nature.empty());
     CHECK(result.market_tier.empty());
     CHECK(result.rounding_type == "Up");
 }
@@ -143,7 +143,7 @@ TEST_CASE("map_domain_currency_to_definition_with_all_fields", tags) {
     c.fractions_per_unit = 100;
     c.rounding_type = "Down";
     c.rounding_precision = 2;
-    c.asset_class = "Major";
+    c.monetary_nature = "Major";
 
     const auto result = currency_mapper::map(c);
     BOOST_LOG_SEV(lg, debug) << "Mapped definition: " << std::string(result.ISOCode);
@@ -306,7 +306,7 @@ TEST_CASE("map_currency_roundtrip_preserves_fields", tags) {
     original.fractions_per_unit = 1;
     original.rounding_type = "Floor";
     original.rounding_precision = 0;
-    original.asset_class = "Major";
+    original.monetary_nature = "Major";
 
     const auto def = currency_mapper::map(original);
     const auto roundtripped = currency_mapper::map(def);
@@ -319,5 +319,5 @@ TEST_CASE("map_currency_roundtrip_preserves_fields", tags) {
     CHECK(roundtripped.fractions_per_unit == original.fractions_per_unit);
     CHECK(roundtripped.rounding_type == original.rounding_type);
     CHECK(roundtripped.rounding_precision == original.rounding_precision);
-    CHECK(roundtripped.asset_class == original.asset_class);
+    CHECK(roundtripped.monetary_nature == original.monetary_nature);
 }

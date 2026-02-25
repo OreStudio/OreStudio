@@ -18,17 +18,21 @@
 # Installs system packages required to build OreStudio on Debian/Ubuntu.
 #
 # Usage:
-#   ./install_debian_packages.sh [--full-install]
+#   ./install_debian_packages.sh [--full-install] [--with-valgrind]
 #
 # Options:
 #   --full-install    Full developer environment setup. Installs compilers
 #                     (GCC, Clang), Ninja, CMake, PostgreSQL, Qt6, Valgrind,
 #                     and all other build tools from the distro.
 #                     Use this on a fresh Debian/Ubuntu box.
+#   --with-valgrind   Install Valgrind in addition to the baseline packages.
+#                     Use this in CI environments that need memory checking
+#                     but install other tools (e.g. Qt) separately.
 #
 set -e
 
 full_install=0
+with_valgrind=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -36,9 +40,13 @@ while [[ $# -gt 0 ]]; do
             full_install=1
             shift
             ;;
+        --with-valgrind)
+            with_valgrind=1
+            shift
+            ;;
         *)
             echo "Unknown argument: $1"
-            echo "Usage: $0 [--full-install]"
+            echo "Usage: $0 [--full-install] [--with-valgrind]"
             exit 1
             ;;
     esac
@@ -118,6 +126,11 @@ if [[ $full_install -eq 1 ]]; then
         # Memory analysis
         valgrind
     )
+fi
+
+# --with-valgrind adds valgrind without the rest of the full install.
+if [[ $with_valgrind -eq 1 && $full_install -eq 0 ]]; then
+    packages+=(valgrind)
 fi
 
 install_packages() {

@@ -75,6 +75,7 @@
 #include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/BusinessUnitController.hpp"
+#include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
@@ -224,6 +225,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionCounterparties->setIcon(IconUtils::createRecoloredIcon(Icon::Handshake, IconUtils::DefaultIconColor));
     ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
+    ui_->ActionBusinessUnitTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
@@ -625,6 +627,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionBusinessUnits, &QAction::triggered, this, [this]() {
         if (businessUnitController_)
             businessUnitController_->showListWindow();
+    });
+
+    // Connect Business Unit Types action to controller
+    connect(ui_->ActionBusinessUnitTypes, &QAction::triggered, this, [this]() {
+        if (businessUnitTypeController_)
+            businessUnitTypeController_->showListWindow();
     });
 
     // Connect Portfolios action to controller
@@ -1077,6 +1085,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionCounterparties->setEnabled(isLoggedIn);
     ui_->ActionBusinessCentres->setEnabled(isLoggedIn);
     ui_->ActionBusinessUnits->setEnabled(isLoggedIn);
+    ui_->ActionBusinessUnitTypes->setEnabled(isLoggedIn);
     ui_->ActionPortfolios->setEnabled(isLoggedIn);
     ui_->ActionBooks->setEnabled(isLoggedIn);
     ui_->ActionBookStatuses->setEnabled(isLoggedIn);
@@ -1602,6 +1611,23 @@ void MainWindow::createControllers() {
     connect(businessUnitController_.get(), &BusinessUnitController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(businessUnitController_.get(), &BusinessUnitController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create business unit type controller
+    businessUnitTypeController_ = std::make_unique<BusinessUnitTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(businessUnitTypeController_.get(), &BusinessUnitTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessUnitTypeController_.get(), &BusinessUnitTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessUnitTypeController_.get(), &BusinessUnitTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(businessUnitTypeController_.get(), &BusinessUnitTypeController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create portfolio controller
